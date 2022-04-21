@@ -238,10 +238,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   boolean notPrimary = true;
-  volatile boolean allChildBucketsBecomePrimary = false;
-  private Object allChildBucketsBecomePrimaryLock = new Object();
-  volatile boolean alreadyInWaitForAllChildBucketsToBecomePrimary = false;
-  private ExecutorService waitForAllChildBucketsToBecomePrimaryExecutor;
+  boolean allColocatedBucketsBecomePrimary = false;
+  private final Object allColocatedBucketsBecomePrimaryLock = new Object();
+  boolean alreadyInWaitForAllColocatedBucketsToBecomePrimary = false;
+  private ExecutorService waitForAllColocatedBucketsToBecomePrimaryExecutor;
 
   public BucketRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
@@ -292,7 +292,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   private void setEventSeqNum() {
     if (partitionedRegion.isShadowPR() && partitionedRegion.getColocatedWith() != null) {
-      PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(partitionedRegion);
+      PartitionedRegion parentPR = getLeaderRegion();
       BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
       // needs to be set only once.
       if (parentBucket.eventSeqNum == null) {
@@ -302,7 +302,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (partitionedRegion.getColocatedWith() == null) {
       eventSeqNum = new AtomicLong5(getId());
     } else {
-      PartitionedRegion parentPR = ColocationHelper.getLeaderRegion(partitionedRegion);
+      PartitionedRegion parentPR = getLeaderRegion();
       BucketRegion parentBucket = parentPR.getDataStore().getLocalBucketById(getId());
       if (parentBucket == null && logger.isDebugEnabled()) {
         logger.debug("The parentBucket of region {} bucketId {} is NULL",
@@ -612,7 +612,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (!(this instanceof AbstractBucketRegionQueue)) {
       if (getBucketAdvisor().isPrimary()) {
         if (notPrimary && needToWaitForColocatedBucketsBecomePrimary()) {
-          waitForAllChildColocatedBucketsBecomePrimary();
+          waitForAllColocatedBucketsBecomePrimary();
         }
         long key = eventSeqNum.addAndGet(partitionedRegion.getTotalNumberOfBuckets());
         if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
@@ -643,10 +643,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   boolean needToWaitForColocatedBucketsBecomePrimary() {
-    if (hasChildRegion()) {
-      synchronized (this) {
+    if (hasChildRegion() || getBucketAdvisor().hasParent()) {
+      synchronized (allColocatedBucketsBecomePrimaryLock) {
         return notPrimary;
       }
+    }
+    synchronized (allColocatedBucketsBecomePrimaryLock) {
+      // If there are no colocated regions for this bucket region,
+      notPrimary = false;
     }
     return false;
   }
@@ -655,31 +659,81 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return ColocationHelper.getFirstColocatedNonShadowChildRegions(partitionedRegion).size() > 0;
   }
 
-  void waitForAllChildColocatedBucketsBecomePrimary() {
-    synchronized (allChildBucketsBecomePrimaryLock) {
-      if (!alreadyInWaitForAllChildBucketsToBecomePrimary) {
-        alreadyInWaitForAllChildBucketsToBecomePrimary = true;
+  boolean isLeaderRegion() {
+    return getLeaderRegion().getName().equals(partitionedRegion.getName());
+  }
+
+  void waitForAllColocatedBucketsBecomePrimary() {
+    if (!isLeaderRegion()) {
+      checkOrWaitForNotificationFromLeaderRegion();
+      return;
+    }
+    // if it is leader region
+    waitForAllColocatedBucketsFromLeaderBecomePrimary();
+  }
+
+  void waitForAllColocatedBucketsFromLeaderBecomePrimary() {
+    synchronized (allColocatedBucketsBecomePrimaryLock) {
+      if (!alreadyInWaitForAllColocatedBucketsToBecomePrimary) {
+        alreadyInWaitForAllColocatedBucketsToBecomePrimary = true;
         executeCheckIfAllChildBucketsBecomePrimary();
       }
-      while (!allChildBucketsBecomePrimary && getBucketAdvisor().isPrimary()) {
-        // if no longer primary, no need to wait as the operation should fail
-        // with PrimaryBucketException later.
-        try {
-          allChildBucketsBecomePrimaryLock.wait(10);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          getCache().getCancelCriterion().checkCancelInProgress(e);
-        }
+      waitUntilNotified(this);
+    }
+  }
+
+  void waitUntilNotified(Bucket leader) {
+    while (!allColocatedBucketsBecomePrimary) {
+      if (getBucketAdvisor().getProxyBucketRegion().getHostedBucketRegion() == null) {
+        // bucket region removed under us, not sure if this could happen.
+        // in case this happens, no need to wait as operation will fail as
+        // there is no hosting region at all now.
+        return;
+      }
+      if (!leader.getBucketAdvisor().isPrimary()) {
+        return;
+      }
+      if (leader.getBucketAdvisor().checkIfAllColocatedChildBucketsBecomePrimary()) {
+        // if there are two newly added co-located regions, and leader has performed
+        // waitForAllColocatedBucketsFromLeaderBecomePrimary before the new additions.
+        return;
+      }
+      try {
+        allColocatedBucketsBecomePrimaryLock.wait(10);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        getCache().getCancelCriterion().checkCancelInProgress(e);
       }
     }
   }
 
+  void checkOrWaitForNotificationFromLeaderRegion() {
+    PartitionedRegion leader = getLeaderRegion();
+    Bucket leaderBucket = leader.getRegionAdvisor().getBucket(getId());
+    if (leaderBucket.getBucketAdvisor().checkIfAllColocatedChildBucketsBecomePrimary()) {
+      synchronized (allColocatedBucketsBecomePrimaryLock) {
+        // If leader bucket has checked and verified all its child regions become primary
+        // This might occur if we are a newly added child.
+        notPrimary = false;
+        allColocatedBucketsBecomePrimary = true;
+      }
+    } else {
+      synchronized (allColocatedBucketsBecomePrimaryLock) {
+        waitUntilNotified(leaderBucket);
+      }
+    }
+  }
+
+  PartitionedRegion getLeaderRegion() {
+    return ColocationHelper.getLeaderRegion(partitionedRegion);
+  }
+
   void executeCheckIfAllChildBucketsBecomePrimary() {
-    if (waitForAllChildBucketsToBecomePrimaryExecutor == null) {
-      waitForAllChildBucketsToBecomePrimaryExecutor =
+    if (waitForAllColocatedBucketsToBecomePrimaryExecutor == null) {
+      waitForAllColocatedBucketsToBecomePrimaryExecutor =
           LoggingExecutors.newSingleThreadExecutor("CheckPrimaryForColocation", true);
     }
-    waitForAllChildBucketsToBecomePrimaryExecutor
+    waitForAllColocatedBucketsToBecomePrimaryExecutor
         .execute(this::checkIfAllChildBucketsBecomePrimary);
   }
 
@@ -691,23 +745,46 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           return;
         }
       }
-      synchronized (allChildBucketsBecomePrimaryLock) {
-        allChildBucketsBecomePrimary = true;
+      synchronized (allColocatedBucketsBecomePrimaryLock) {
+        allColocatedBucketsBecomePrimary = true;
         notPrimary = false;
       }
     } finally {
-      synchronized (allChildBucketsBecomePrimaryLock) {
-        allChildBucketsBecomePrimaryLock.notifyAll();
-        alreadyInWaitForAllChildBucketsToBecomePrimary = false;
+      synchronized (allColocatedBucketsBecomePrimaryLock) {
+        allColocatedBucketsBecomePrimaryLock.notifyAll();
+        alreadyInWaitForAllColocatedBucketsToBecomePrimary = false;
+        notifyAllChildBuckets(notPrimary == false);
       }
     }
   }
 
+  void notifyAllChildBuckets(boolean success) {
+    List<PartitionedRegion> colocatedChildPRs =
+        getBucketAdvisor().getColocateNonShadowChildRegions();
+    for (PartitionedRegion partitionedRegion : colocatedChildPRs) {
+      BucketRegion childBucket = partitionedRegion.getRegionAdvisor().getBucket(getId())
+          .getBucketAdvisor().getProxyBucketRegion().getHostedBucketRegion();
+      if (childBucket != null) {
+        childBucket.notifyAllChildBucketsBecomePrimary(success);
+      }
+    }
+  }
+
+  void notifyAllChildBucketsBecomePrimary(boolean success) {
+    synchronized (allColocatedBucketsBecomePrimaryLock) {
+      if (success) {
+        allColocatedBucketsBecomePrimary = true;
+        notPrimary = false;
+      }
+      allColocatedBucketsBecomePrimaryLock.notifyAll();
+    }
+  }
+
   void setNotPrimaryIfNecessary() {
-    synchronized (allChildBucketsBecomePrimaryLock) {
+    synchronized (allColocatedBucketsBecomePrimaryLock) {
       if (!notPrimary) {
         notPrimary = true;
-        allChildBucketsBecomePrimary = false;
+        allColocatedBucketsBecomePrimary = false;
       }
     }
   }

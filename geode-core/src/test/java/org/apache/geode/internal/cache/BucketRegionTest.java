@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -55,7 +56,9 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.LockObject;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
@@ -79,6 +82,11 @@ public class BucketRegionTest {
   private BucketAdvisor bucketAdvisor;
   private Operation operation;
   private CacheClientProxy proxy;
+  private final PartitionedRegion colocatedPartitionedRegion = mock(PartitionedRegion.class);
+  private final Bucket colocatedBucket = mock(Bucket.class);
+  private final RegionAdvisor colocatedRegionAdvisor = mock(RegionAdvisor.class);
+  private final BucketAdvisor colocatedBucketAdvisor = mock(BucketAdvisor.class);
+  private final BucketRegion colocatedBucketRegion = mock(BucketRegion.class);
 
   private final String regionName = "name";
   private final Object[] keys = new Object[] {1};
@@ -767,7 +775,7 @@ public class BucketRegionTest {
 
     bucketRegion.handleWANEvent(event);
 
-    verify(bucketRegion, never()).waitForAllChildColocatedBucketsBecomePrimary();
+    verify(bucketRegion, never()).waitForAllColocatedBucketsBecomePrimary();
     verify(event).setTailKey(4L);
   }
 
@@ -778,13 +786,13 @@ public class BucketRegionTest {
             cache, internalRegionArgs, disabledClock()));
     when(bucketAdvisor.isPrimary()).thenReturn(true);
     doReturn(true).when(bucketRegion).hasChildRegion();
-    doNothing().when(bucketRegion).waitForAllChildColocatedBucketsBecomePrimary();
+    doNothing().when(bucketRegion).waitForAllColocatedBucketsBecomePrimary();
     when(partitionedRegion.getTotalNumberOfBuckets()).thenReturn(4);
     doReturn(0).when(bucketRegion).getId();
 
     bucketRegion.handleWANEvent(event);
 
-    verify(bucketRegion).waitForAllChildColocatedBucketsBecomePrimary();
+    verify(bucketRegion).waitForAllColocatedBucketsBecomePrimary();
     verify(event).setTailKey(4L);
   }
 
@@ -800,11 +808,11 @@ public class BucketRegionTest {
 
     verify(bucketRegion).setNotPrimaryIfNecessary();
     assertThat(bucketRegion.notPrimary).isTrue();
-    assertThat(bucketRegion.allChildBucketsBecomePrimary).isFalse();
+    assertThat(bucketRegion.allColocatedBucketsBecomePrimary).isFalse();
   }
 
   @Test
-  public void handleWANEventDoesNotSetNotPrimaryIfWasNotPrimary() {
+  public void handleWANEventDoesNotSetNotPrimaryIfWas0NotPrimary() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
@@ -817,18 +825,21 @@ public class BucketRegionTest {
   }
 
   @Test
-  public void onlyOneThreadWillExecuteCheckIfAllChildBucketsBecomePrimary() throws Exception {
+  public void onlyOneThreadWillExecuteCheckIfAllChildBucketsFromLeaderBecomePrimary()
+      throws Exception {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doNothing().when(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
 
-    Future<?> future = executor.submit(bucketRegion::waitForAllChildColocatedBucketsBecomePrimary);
-    Future<?> future2 = executor.submit(bucketRegion::waitForAllChildColocatedBucketsBecomePrimary);
+    Future<?> future =
+        executor.runAsync(bucketRegion::waitForAllColocatedBucketsFromLeaderBecomePrimary);
+    Future<?> future2 =
+        executor.runAsync(bucketRegion::waitForAllColocatedBucketsFromLeaderBecomePrimary);
 
     future.get();
     future2.get();
-    assertThat(bucketRegion.alreadyInWaitForAllChildBucketsToBecomePrimary).isTrue();
+    assertThat(bucketRegion.alreadyInWaitForAllColocatedBucketsToBecomePrimary).isTrue();
     verify(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
   }
 
@@ -839,14 +850,15 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doNothing().when(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
+    doReturn(true).when(bucketRegion).isLeaderRegion();
     when(bucketAdvisor.isPrimary()).thenReturn(true, true, true, true, true, false);
 
-    Future<?> future = executor.submit(bucketRegion::waitForAllChildColocatedBucketsBecomePrimary);
-    Future<?> future2 = executor.submit(bucketRegion::waitForAllChildColocatedBucketsBecomePrimary);
+    Future<?> future = executor.submit(bucketRegion::waitForAllColocatedBucketsBecomePrimary);
+    Future<?> future2 = executor.submit(bucketRegion::waitForAllColocatedBucketsBecomePrimary);
 
     future.get();
     future2.get();
-    assertThat(bucketRegion.alreadyInWaitForAllChildBucketsToBecomePrimary).isTrue();
+    assertThat(bucketRegion.alreadyInWaitForAllColocatedBucketsToBecomePrimary).isTrue();
     verify(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
   }
 
@@ -857,43 +869,138 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doNothing().when(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
+    doReturn(true).when(bucketRegion).isLeaderRegion();
     when(bucketAdvisor.isPrimary()).thenReturn(true);
 
-    Future<?> future = executor.submit(bucketRegion::waitForAllChildColocatedBucketsBecomePrimary);
-    Future<?> future2 = executor.submit(bucketRegion::waitForAllChildColocatedBucketsBecomePrimary);
-    bucketRegion.allChildBucketsBecomePrimary = true;
+    Future<?> future = executor.submit(bucketRegion::waitForAllColocatedBucketsBecomePrimary);
+    Future<?> future2 = executor.submit(bucketRegion::waitForAllColocatedBucketsBecomePrimary);
+    bucketRegion.allColocatedBucketsBecomePrimary = true;
 
     future.get();
     future2.get();
-    assertThat(bucketRegion.alreadyInWaitForAllChildBucketsToBecomePrimary).isTrue();
+    assertThat(bucketRegion.alreadyInWaitForAllColocatedBucketsToBecomePrimary).isTrue();
     verify(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
   }
 
   @Test
   public void checkIfAllChildBucketsBecomePrimaryCanReturnIfNoLongerPrimary() {
-    BucketRegion bucketRegion = new BucketRegion(regionName, regionAttributes, partitionedRegion,
-        cache, internalRegionArgs, disabledClock());
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
     when(bucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary()).thenReturn(false);
     when(bucketAdvisor.isPrimary()).thenReturn(false);
 
     bucketRegion.checkIfAllChildBucketsBecomePrimary();
 
     assertThat(bucketRegion.notPrimary).isTrue();
-    assertThat(bucketRegion.allChildBucketsBecomePrimary).isFalse();
-    assertThat(bucketRegion.alreadyInWaitForAllChildBucketsToBecomePrimary).isFalse();
+    assertThat(bucketRegion.allColocatedBucketsBecomePrimary).isFalse();
+    assertThat(bucketRegion.alreadyInWaitForAllColocatedBucketsToBecomePrimary).isFalse();
+    verify(bucketRegion).notifyAllChildBuckets(false);
   }
 
   @Test
   public void checkIfAllChildBucketsBecomePrimaryCanReturnIfAllChildBucketsArePrimary() {
-    BucketRegion bucketRegion = new BucketRegion(regionName, regionAttributes, partitionedRegion,
-        cache, internalRegionArgs, disabledClock());
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
     when(bucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary()).thenReturn(true);
 
     bucketRegion.checkIfAllChildBucketsBecomePrimary();
 
     assertThat(bucketRegion.notPrimary).isFalse();
-    assertThat(bucketRegion.allChildBucketsBecomePrimary).isTrue();
-    assertThat(bucketRegion.alreadyInWaitForAllChildBucketsToBecomePrimary).isFalse();
+    assertThat(bucketRegion.allColocatedBucketsBecomePrimary).isTrue();
+    assertThat(bucketRegion.alreadyInWaitForAllColocatedBucketsToBecomePrimary).isFalse();
+    verify(bucketRegion).notifyAllChildBuckets(true);
+  }
+
+  @Test
+  public void checkOrWaitForNotificationFromLeadRegionInvokedIfNotLeaderRegion() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+    doReturn(false).when(bucketRegion).isLeaderRegion();
+    doNothing().when(bucketRegion).checkOrWaitForNotificationFromLeaderRegion();
+
+    bucketRegion.waitForAllColocatedBucketsBecomePrimary();
+
+    verify(bucketRegion).checkOrWaitForNotificationFromLeaderRegion();
+  }
+
+  @Test
+  public void noNeedToWaitForNotificationIfAllColocatedBucketsFromLeaderReturnsTrue() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+    setupColocatedBucket();
+    doReturn(colocatedPartitionedRegion).when(bucketRegion).getLeaderRegion();
+    when(colocatedBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary()).thenReturn(true);
+
+    bucketRegion.checkOrWaitForNotificationFromLeaderRegion();
+
+    verify(bucketRegion, never()).waitUntilNotified(colocatedBucket);
+    assertThat(bucketRegion.notPrimary).isFalse();
+    assertThat(bucketRegion.allColocatedBucketsBecomePrimary).isTrue();
+  }
+
+  private void setupColocatedBucket() {
+    when(colocatedPartitionedRegion.getRegionAdvisor()).thenReturn(colocatedRegionAdvisor);
+    when(colocatedRegionAdvisor.getBucket(0)).thenReturn(colocatedBucket);
+    when(colocatedBucket.getBucketAdvisor()).thenReturn(colocatedBucketAdvisor);
+    ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    when(colocatedBucketAdvisor.getProxyBucketRegion()).thenReturn(proxyBucketRegion);
+    when(proxyBucketRegion.getHostedBucketRegion()).thenReturn(colocatedBucketRegion);
+  }
+
+  @Test
+  public void waitForNotificationIfAllColocatedBucketsFromLeaderReturnsFalse() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+    setupColocatedBucket();
+    doReturn(colocatedPartitionedRegion).when(bucketRegion).getLeaderRegion();
+    when(colocatedBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary()).thenReturn(false);
+    doNothing().when(bucketRegion).waitForAllColocatedBucketsBecomePrimary();
+
+    bucketRegion.checkOrWaitForNotificationFromLeaderRegion();
+
+    verify(bucketRegion).waitUntilNotified(colocatedBucket);
+  }
+
+  @Test
+  public void notifyAllChildBucketsNotifiesColocatedChildBucketRegion() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+    setupColocatedBucket();
+    List<PartitionedRegion> colocatedChildPRs = new ArrayList<>();
+    colocatedChildPRs.add(colocatedPartitionedRegion);
+    when(bucketAdvisor.getColocateNonShadowChildRegions()).thenReturn(colocatedChildPRs);
+
+    bucketRegion.notifyAllChildBuckets(true);
+
+    verify(colocatedBucketRegion).notifyAllChildBucketsBecomePrimary(true);
+  }
+
+  @Test
+  public void notifyAllChildBucketsBecomePrimarySetNotPrimaryToFalseIfSuccessIsTrue() {
+    BucketRegion bucketRegion = new BucketRegion(regionName, regionAttributes, partitionedRegion,
+        cache, internalRegionArgs, disabledClock());
+
+    bucketRegion.notifyAllChildBucketsBecomePrimary(true);
+
+    assertThat(bucketRegion.notPrimary).isFalse();
+    assertThat(bucketRegion.allColocatedBucketsBecomePrimary).isTrue();
+  }
+
+  @Test
+  public void notifyAllChildBucketsBecomePrimaryDoesNotResetNotPrimaryIfSuccessIsFalse() {
+    BucketRegion bucketRegion = new BucketRegion(regionName, regionAttributes, partitionedRegion,
+        cache, internalRegionArgs, disabledClock());
+
+    bucketRegion.notifyAllChildBucketsBecomePrimary(false);
+
+    assertThat(bucketRegion.notPrimary).isTrue();
+    assertThat(bucketRegion.allColocatedBucketsBecomePrimary).isFalse();
   }
 
 }

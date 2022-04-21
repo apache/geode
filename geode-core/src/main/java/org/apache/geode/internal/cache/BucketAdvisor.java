@@ -2766,23 +2766,23 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   boolean checkIfAllColocatedChildBucketsBecomePrimary() {
     List<PartitionedRegion> colocatedChildPRs = getColocateNonShadowChildRegions();
-    if (colocatedChildPRs.size() > 0) {
-      for (PartitionedRegion partitionedRegion : colocatedChildPRs) {
-        Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(getBucket().getId());
-        if (bucket != null) {
-          BucketAdvisor bucketAdvisor = bucket.getBucketAdvisor();
-          if (!bucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary()) {
+    if (colocatedChildPRs.isEmpty()) {
+      return checkIfBecomesPrimary();
+    }
+    for (PartitionedRegion partitionedRegion : colocatedChildPRs) {
+      Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(getBucket().getId());
+      if (bucket != null) {
+        BucketAdvisor bucketAdvisor = bucket.getBucketAdvisor();
+        if (!bucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary()) {
+          return false;
+        } else {
+          if (!checkIfBecomesPrimary()) {
             return false;
-          } else {
-            if (!checkIfBecomesPrimary()) {
-              return false;
-            }
           }
         }
       }
-      return true;
     }
-    return checkIfBecomesPrimary();
+    return true;
   }
 
   @NotNull
@@ -2802,5 +2802,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         return false;
       }
     }
+  }
+
+  boolean hasParent() {
+    return parentAdvisor != null;
   }
 }

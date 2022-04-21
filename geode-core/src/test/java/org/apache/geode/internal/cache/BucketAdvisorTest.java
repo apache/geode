@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -207,7 +206,7 @@ class BucketAdvisorTest {
         mock(BucketAdvisor.VolunteeringDelegate.class);
     advisorSpy.setVolunteeringDelegate(volunteeringDelegate);
     advisorSpy.initializePrimaryElector(missingElectorId);
-    Assertions.assertEquals(missingElectorId, advisorSpy.getPrimaryElector());
+    assertThat(missingElectorId).isEqualTo(advisorSpy.getPrimaryElector());
     advisorSpy.volunteerForPrimary();
     verify(volunteeringDelegate).volunteerForPrimary();
   }
@@ -374,7 +373,7 @@ class BucketAdvisorTest {
   }
 
   @Test
-  void checkIfAllColocatedChildBucketsBecomePrimaryRetrunsTrueIfAllChildBucketsArePrimary() {
+  void checkIfAllColocatedChildBucketsBecomePrimaryReturnsTrueIfAllChildBucketsArePrimary() {
     initSetup();
 
     boolean allChildBucketsBecomesPrimary =

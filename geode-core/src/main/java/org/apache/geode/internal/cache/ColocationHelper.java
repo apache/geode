@@ -381,9 +381,8 @@ public class ColocationHelper {
     List<PartitionedRegion> colocatedChildRegions =
         getColocatedChildRegions(partitionedRegion, true, false);
 
-    // Fix for 44484 - Make the list of colocated child regions
-    // is always in the same order on all nodes.
-    Collections.sort(colocatedChildRegions, (o1, o2) -> {
+    // Make the list of colocated child regions is always in the same order on all nodes.
+    colocatedChildRegions.sort((o1, o2) -> {
       if (o1.isShadowPR() == o2.isShadowPR()) {
         return o1.getFullPath().compareTo(o2.getFullPath());
       }
