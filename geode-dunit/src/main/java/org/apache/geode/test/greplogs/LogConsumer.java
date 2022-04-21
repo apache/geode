@@ -31,6 +31,7 @@ import static org.apache.geode.test.greplogs.Patterns.JAVA_LANG_ERROR;
 import static org.apache.geode.test.greplogs.Patterns.LOG_STATEMENT;
 import static org.apache.geode.test.greplogs.Patterns.MALFORMED_I18N_MESSAGE;
 import static org.apache.geode.test.greplogs.Patterns.MALFORMED_LOG4J_MESSAGE;
+import static org.apache.geode.test.greplogs.Patterns.MANAGEMENT_REQUEST;
 import static org.apache.geode.test.greplogs.Patterns.RMI_WARNING;
 import static org.apache.geode.test.greplogs.Patterns.RVV_BIT_SET_MESSAGE;
 import static org.apache.geode.test.greplogs.Patterns.WARN_OR_LESS_LOG_LEVEL;
@@ -162,13 +163,14 @@ public class LogConsumer {
   }
 
   private boolean isExceptionErrorOrSomeSpecialCase(CharSequence line) {
-    return (EXCEPTION.matcher(line).find() ||
-        JAVA_LANG_ERROR.matcher(line).find() ||
-        MALFORMED_I18N_MESSAGE.matcher(line).find() ||
-        MALFORMED_LOG4J_MESSAGE.matcher(line).find()) &&
-        !(HYDRA_MASTER_LOCATORS_WILDCARD.matcher(line).find()) &&
-        !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find() &&
-            RVV_BIT_SET_MESSAGE.matcher(line).find());
+    return (EXCEPTION.matcher(line).find() || JAVA_LANG_ERROR.matcher(line).find()
+        || MALFORMED_I18N_MESSAGE.matcher(line).find()
+        || MALFORMED_LOG4J_MESSAGE.matcher(line).find()) &&
+        !(HYDRA_MASTER_LOCATORS_WILDCARD.matcher(line).find())
+        && !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find()
+            && RVV_BIT_SET_MESSAGE.matcher(line).find())
+        && (WARN_OR_LESS_LOG_LEVEL.matcher(line).find()
+            && MANAGEMENT_REQUEST.matcher(line).find());
   }
 
   private void addErrLinesToAll(CharSequence line) {
