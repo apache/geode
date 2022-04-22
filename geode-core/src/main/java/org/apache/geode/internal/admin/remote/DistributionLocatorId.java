@@ -248,12 +248,14 @@ public class DistributionLocatorId implements java.io.Serializable {
       sb.append(hostnameForClients);
     } else if (!isEmpty(bindAddress)) {
       sb.append(bindAddress);
-    } else {
+    } else if (null != host) {
       if (isMcastId()) {
         sb.append(host.getHostAddress());
       } else {
         sb.append(SocketCreator.getHostName(host));
       }
+    } else {
+      sb.append(hostname);
     }
 
     sb.append("[").append(port).append("]");
