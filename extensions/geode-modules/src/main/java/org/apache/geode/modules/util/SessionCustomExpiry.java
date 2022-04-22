@@ -18,11 +18,14 @@ import java.io.Serializable;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @SuppressWarnings("serial")
 public class SessionCustomExpiry
@@ -33,12 +36,16 @@ public class SessionCustomExpiry
   private static final ExpirationAttributes EXPIRE_NOW =
       new ExpirationAttributes(1, ExpirationAction.DESTROY);
 
+  private static int SESSION_EXPIRY_DELAY = Integer
+      .parseInt(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "SessionExpiry.Delay", "0"));
+
+  private static Boolean isServer = null;
+
   @Override
   public ExpirationAttributes getExpiry(Region.Entry<String, HttpSession> entry) {
     HttpSession session = entry.getValue();
     if (session != null) {
-      return new ExpirationAttributes(entry.getValue().getMaxInactiveInterval(),
-          ExpirationAction.DESTROY);
+      return new ExpirationAttributes(getExpirationTime(entry), ExpirationAction.DESTROY);
     } else {
       return EXPIRE_NOW;
     }
@@ -64,6 +71,26 @@ public class SessionCustomExpiry
 
   @Override
   public String toString() {
-    return getClass().toString();
+    return this.getClass().toString();
+  }
+
+  private int getExpirationTime(Region.Entry<String, HttpSession> entry) {
+    int expirationTime = entry.getValue().getMaxInactiveInterval();
+    if (isServer() && expirationTime > 0) {
+      expirationTime = expirationTime + SESSION_EXPIRY_DELAY;
+    }
+    return expirationTime;
+  }
+
+  // The following helper method is to allow for proper mocking in unit tests
+  Cache getCache() {
+    return CacheFactory.getAnyInstance();
+  }
+
+  private boolean isServer() {
+    if (isServer == null) {
+      isServer = getCache().isServer();
+    }
+    return isServer;
   }
 }

@@ -45,7 +45,9 @@ dependencies {
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
-
+  testImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
 
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
