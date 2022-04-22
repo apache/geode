@@ -57,7 +57,7 @@ See [Authorization of Function Execution](../../managing/security/implementing_a
         -   For partitioned regions, the `PartitionRegionHelper` provides access to additional information and data for the region. For single regions, use `getLocalDataForContext`. For colocated regions, use `getLocalColocatedRegions`.
             **Note:**
             When you use `PartitionRegionHelper.getLocalDataForContext`, `putIfAbsent` may not return expected results if you are working on local data set instead of the region.
-    4.  To propagate an error condition or exception back to the caller of the function, throw a FunctionException from the `execute` method. <%=vars.product_name%> transmits the exception back to the caller as if it had been thrown on the calling side. See the Java API documentation for [FunctionException](/releases/latest/javadoc/org/apache/geode/cache/execute/FunctionException.html) for more information.
+    4.  To propagate an error condition or exception back to the caller of the function, throw a FunctionException from the `execute` method. <%=vars.product_name%> transmits the exception back to the caller as if it had been thrown on the calling side. See the Java API documentation for [FunctionException](/releases/latest/javadoc/org/apache/geode/cache/execute/FunctionException.html) for more information. Note, FunctionException logging on server side can be disabled by the Log4J filter for marker FUNCTION\_EXCEPTION\_MARKER. See [Advanced Users—Configuring Log4j 2 for <%=vars.product_name%>](../../managing/logging/configuring_log4j2.html) for more details.
 
 Example function code:
 

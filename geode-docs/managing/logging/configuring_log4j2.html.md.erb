@@ -64,6 +64,11 @@ Custom Log4j 2 configuration in <%=vars.product_name%> comes with some caveats a
 
     You can enable the GEODE\_VERBOSE log statements by changing `onMatch="DENY"` to `onMatch="ACCEPT"`. Typically, it's more useful to simply enable DEBUG or TRACE on certain classes or packages instead of for the entire <%=vars.product_name%> product. However, this setting can be used for internal debugging purposes if all other debugging methods fail.
 -   The usage of filters can have an impact on performance. <%=vars.product_name%> has some logging optimizations that are deactivated when filters are used (except for the GEODE_VERBOSE marker mentioned previously).
+-   The FUNCTION\_EXCEPTION\_MARKER marker (Log4J2 Marker) can be used to FunctionException logs on server side during execution function. For example  <%=vars.product_name%> `log4j2.xml` filter disables FunctionException logs with this line:
+
+    ``` pre
+    <MarkerFilter marker="FUNCTION_EXCEPTION_MARKER" onMatch="DENY" onMismatch="NEUTRAL"/>
+    ```
 
 - Geode's custom Log4j 2 Appenders can be used in a custom log4j2.xml. This requires:
  
