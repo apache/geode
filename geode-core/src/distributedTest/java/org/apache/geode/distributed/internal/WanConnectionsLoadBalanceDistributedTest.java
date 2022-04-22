@@ -12,15 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.parallel;
+package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMember;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewayReceiverMXBeanProxy;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewaySenderMXBeanProxy;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyReceiverState;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
+import static org.apache.geode.management.MXBeanAwaitility.awaitGatewaySenderMXBeanProxy;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +24,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,9 +33,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -46,7 +48,7 @@ import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({WanTest.class})
-public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implements Serializable {
+public class WanConnectionsLoadBalanceDistributedTest implements Serializable {
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(9);
@@ -57,9 +59,11 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
   private MemberVM locator1Site2;
   private MemberVM locator1Site1;
   private MemberVM locator2Site1;
+
   private MemberVM server1Site1;
   private MemberVM server2Site1;
   private MemberVM server3Site1;
+
   private MemberVM server1Site2;
   private MemberVM server2Site2;
 
@@ -102,22 +106,8 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
     gfsh.executeAndAssertThat(csb).statusIsSuccess();
 
     server1Site1.invoke(() -> verifyReceiverState(true));
-    locator2Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server1Site1.getVM()), true));
-    locator1Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server1Site1.getVM()), true));
-
     server2Site1.invoke(() -> verifyReceiverState(true));
-    locator2Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server2Site1.getVM()), true));
-    locator1Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server2Site1.getVM()), true));
-
     server3Site1.invoke(() -> verifyReceiverState(true));
-    locator2Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server3Site1.getVM()), true));
-    locator1Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server3Site1.getVM()), true));
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, DISTRIBUTED_SYSTEM_ID_SITE2);
     props.setProperty(REMOTE_LOCATORS,
@@ -140,12 +130,8 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
         .getCommandString();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    server1Site2.invoke(() -> verifySenderState("ln", true, false));
-    server2Site2.invoke(() -> verifySenderState("ln", true, false));
-    locator1Site2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(server1Site2.getVM()), "ln", true, false));
-    locator1Site2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(server2Site2.getVM()), "ln", true, false));
+    verifyGatewaySenderState(server1Site2, true);
+    verifyGatewaySenderState(server2Site2, true);
 
     // create partition region on site #2
     regionCmd = new CommandStringBuilder(CliStrings.CREATE_REGION);
@@ -203,15 +189,13 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
 
   void checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal expectedConnectionLoad) {
     locator1Site1.invoke(
-        () -> await().untilAsserted(() -> {
-          assertThat(getTotalGatewayReceiverConnectionLoad().compareTo(expectedConnectionLoad))
-              .isEqualTo(0);
-        }));
+        () -> await().untilAsserted(() -> assertThat(
+            getTotalGatewayReceiverConnectionLoad().compareTo(expectedConnectionLoad))
+                .isEqualTo(0)));
     locator2Site1.invoke(
-        () -> await().untilAsserted(() -> {
-          assertThat(getTotalGatewayReceiverConnectionLoad().compareTo(expectedConnectionLoad))
-              .isEqualTo(0);
-        }));
+        () -> await().untilAsserted(() -> assertThat(
+            getTotalGatewayReceiverConnectionLoad().compareTo(expectedConnectionLoad))
+                .isEqualTo(0)));
   }
 
   BigDecimal getTotalGatewayReceiverConnectionLoad() {
@@ -224,6 +208,39 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
       totalLoadOnLocator = totalLoadOnLocator.add(serverLoad);
     }
     return totalLoadOnLocator;
+  }
+
+  static void verifyReceiverState(boolean isRunning) {
+    Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
+    for (GatewayReceiver receiver : receivers) {
+      assertThat(receiver.isRunning()).isEqualTo(isRunning);
+    }
+  }
+
+  static void validateGatewaySenderMXBeanProxy(final InternalDistributedMember member,
+      final String senderId, final boolean isRunning, final boolean isPaused) {
+    GatewaySenderMXBean gatewaySenderMXBean = awaitGatewaySenderMXBeanProxy(member, senderId);
+    GeodeAwaitility.await(
+        "Awaiting GatewaySenderMXBean.isRunning(" + isRunning + ").isPaused(" + isPaused + ")")
+        .untilAsserted(() -> {
+          assertThat(gatewaySenderMXBean.isRunning()).isEqualTo(isRunning);
+          assertThat(gatewaySenderMXBean.isPaused()).isEqualTo(isPaused);
+        });
+    assertThat(gatewaySenderMXBean).isNotNull();
+  }
+
+  static void verifySenderState(String senderId, boolean isRunning, boolean isPaused) {
+    GatewaySender sender = ClusterStartupRule.getCache().getGatewaySenders().stream()
+        .filter(x -> senderId.equals(x.getId())).findFirst().orElse(null);
+    assertThat(sender.isRunning()).isEqualTo(isRunning);
+    assertThat(sender.isPaused()).isEqualTo(isPaused);
+  }
+
+  void verifyGatewaySenderState(MemberVM memberVM, boolean isRunning) {
+    memberVM.invoke(() -> verifySenderState("ln", isRunning, false));
+    locator1Site2.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(memberVM.getVM()), "ln", isRunning,
+            false));
   }
 
   void executeGatewaySenderActionCommandAndValidateStateSite2(String cliString, MemberVM memberVM)
@@ -251,11 +268,8 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
     return CliStrings.START_GATEWAYSENDER.equals(cliString);
   }
 
-  void verifyGatewaySenderState(MemberVM memberVM, boolean isRunning) {
-    memberVM.invoke(() -> verifySenderState("ln", isRunning, false));
-    locator1Site2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(memberVM.getVM()), "ln", isRunning,
-            false));
+  public static InternalDistributedMember getMember(final VM vm) {
+    return vm.invoke(() -> ClusterStartupRule.getCache().getMyId());
   }
 
   void startClientSite2(int locatorPort) throws Exception {

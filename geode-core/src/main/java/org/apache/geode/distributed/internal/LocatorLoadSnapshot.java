@@ -419,7 +419,7 @@ public class LocatorLoadSnapshot {
   }
 
   @TestOnly
-  public synchronized Map<ServerLocationAndMemberId, ServerLoad> getGatewayReceiverLoadMap() {
+  synchronized Map<ServerLocationAndMemberId, ServerLoad> getGatewayReceiverLoadMap() {
     Map<ServerLocationAndMemberId, LoadHolder> connectionMap =
         connectionLoadMap.get(GatewayReceiver.RECEIVER_GROUP);
     Map<ServerLocationAndMemberId, ServerLoad> result = new HashMap<>();
