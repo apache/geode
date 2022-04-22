@@ -237,7 +237,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return eventSeqNum;
   }
 
-  boolean notPrimary = true;
+  volatile boolean notPrimary = true;
   boolean allColocatedBucketsBecomePrimary = false;
   private final Object allColocatedBucketsBecomePrimaryLock = new Object();
   boolean alreadyInWaitForAllColocatedBucketsToBecomePrimary = false;
