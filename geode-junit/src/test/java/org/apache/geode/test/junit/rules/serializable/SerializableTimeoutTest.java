@@ -27,9 +27,10 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.geode.util.FilterSerializables;
 import org.junit.Test;
 import org.junit.rules.Timeout;
+
+import org.apache.geode.util.FilterSerializables;
 
 
 /**

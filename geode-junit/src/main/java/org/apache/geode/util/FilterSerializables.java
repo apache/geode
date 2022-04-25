@@ -21,11 +21,11 @@ import java.util.Collection;
 
 public class FilterSerializables {
 
-  //  Filter on class fields. This was added to support the jacoco plugin
-  //  and its addition of synthetic fields to Java classes
-  static public Collection<Field> getNonSyntheticFields(Field[] inputFields) {
+  // Filter on class fields. This was added to support the jacoco plugin
+  // and its addition of synthetic fields to Java classes
+  public static Collection<Field> getNonSyntheticFields(Field[] inputFields) {
     ArrayList<Field> genuineFields = new ArrayList<Field>();
-    for (Field f: inputFields) {
+    for (Field f : inputFields) {
       if (!f.isSynthetic()) {
         genuineFields.add(f);
       }

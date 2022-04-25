@@ -21,9 +21,10 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.geode.util.FilterSerializables;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+
+import org.apache.geode.util.FilterSerializables;
 
 
 /**
