@@ -44,6 +44,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class LogConsumer {
 
   /** Limit long errors to this many lines */
@@ -163,14 +164,18 @@ public class LogConsumer {
   }
 
   private boolean isExceptionErrorOrSomeSpecialCase(CharSequence line) {
+    // if one of the following finds is true
     return (EXCEPTION.matcher(line).find() || JAVA_LANG_ERROR.matcher(line).find()
         || MALFORMED_I18N_MESSAGE.matcher(line).find()
         || MALFORMED_LOG4J_MESSAGE.matcher(line).find()) &&
+    // and we don't find the below
         !(HYDRA_MASTER_LOCATORS_WILDCARD.matcher(line).find())
         && !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find()
-            && RVV_BIT_SET_MESSAGE.matcher(line).find())
-        && (WARN_OR_LESS_LOG_LEVEL.matcher(line).find()
-            && MANAGEMENT_REQUEST.matcher(line).find());
+            && MANAGEMENT_REQUEST.matcher(line).find())
+        && !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find() // Warning message or lower
+            && RVV_BIT_SET_MESSAGE.matcher(line).find()); // rvv bit sit message
+    // then it is an exception error or some special case.
+
   }
 
   private void addErrLinesToAll(CharSequence line) {
