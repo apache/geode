@@ -128,7 +128,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
       disconnectDurableClient(false);
 
       // Verify the durable client is present on the server for closeCache=false case.
-      verifyDurableClientNotPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT,
+      verifyDurableClientNotPresent(
           durableClientId, server1VM);
 
       // Stop the server

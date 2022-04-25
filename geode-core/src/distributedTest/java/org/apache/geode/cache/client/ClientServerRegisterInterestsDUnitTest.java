@@ -20,9 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -64,19 +61,19 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
   private final AtomicInteger serverPort = new AtomicInteger(0);
 
-  private final Stack entryEvents = new Stack();
+  private final Stack<EntryEvent<String, String>> entryEvents = new Stack<>();
 
   private VM gemfireServerVm;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUp() {
     disconnectAllFromDS();
     setupGemFireCacheServer();
     IgnoredException.addIgnoredException("java.net.ConnectException");
   }
 
   @Override
-  public final void preTearDown() throws Exception {
+  public final void preTearDown() {
     serverPort.set(0);
     entryEvents.clear();
     gemfireServerVm.invoke(() -> CacheFactory.getAnyInstance().close());
@@ -104,16 +101,17 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
         Region<String, String> example = regionFactory.create("Example");
 
-        assertNotNull("The 'Example' Region was not properly configured and initialized!",
-            example);
+        assertThat(example)
+            .describedAs("The 'Example' Region was not properly configured and initialized!")
+            .isNotNull();
         assertThat(example.getFullPath()).isEqualTo(SEPARATOR + "Example");
         assertThat(example.getName()).isEqualTo("Example");
-        assertTrue(example.isEmpty());
+        assertThat(example).isEmpty();
 
         example.put("1", "ONE");
 
-        assertFalse(example.isEmpty());
-        assertThat(example.size()).isEqualTo(1);
+        assertThat(example).isNotEmpty();
+        assertThat(example).hasSize(1);
 
         CacheServer cacheServer = cache.addCacheServer();
 
@@ -128,7 +126,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
         cacheServer.start();
 
-        assertTrue("Cache Server is not running!", cacheServer.isRunning());
+        assertThat(cacheServer.isRunning()).describedAs("Cache Server is not running!").isTrue();
       } catch (UnknownHostException e) {
         throw new RuntimeException(e);
       } catch (IOException e) {
@@ -153,7 +151,9 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
     Pool pool = poolFactory.create("serverConnectionPool");
 
-    assertNotNull("The 'serverConnectionPool' was not properly configured and initialized!", pool);
+    assertThat(pool)
+        .describedAs("The 'serverConnectionPool' was not properly configured and initialized!")
+        .isNotNull();
 
     ClientRegionFactory<String, String> regionFactory =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -165,8 +165,9 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
     Region<String, String> exampleCachingProxy = regionFactory.create("Example");
 
-    assertNotNull("The 'Example' Client Region was not properly configured and initialized",
-        exampleCachingProxy);
+    assertThat(exampleCachingProxy)
+        .describedAs("The 'Example' Client Region was not properly configured and initialized")
+        .isNotNull();
 
     clientCache.readyForEvents();
 
@@ -175,22 +176,23 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
     return clientCache;
   }
 
-  @SuppressWarnings("unchecked")
-  protected <K, V> V put(final String regionName, final K key, final V value) {
+  protected <K, V> V put() {
     return (V) gemfireServerVm.invoke(() -> {
       Cache cache = CacheFactory.getAnyInstance();
-      cache.getRegion(regionName).put(key, value);
-      return cache.getRegion(regionName).get(key);
+      cache.getRegion("/Example").put("2", "TWO");
+      return cache.getRegion("/Example").get("2");
     });
   }
 
-  protected void waitOnEvent(final long waitTimeMilliseconds) {
-    final long timeout = (System.currentTimeMillis() + waitTimeMilliseconds);
+  protected void waitOnEvent() {
+    final long timeout = (System.currentTimeMillis()
+        + ClientServerRegisterInterestsDUnitTest.WAIT_TIME_MILLISECONDS);
 
     while (entryEvents.empty() && (System.currentTimeMillis() < timeout)) {
       synchronized (this) {
         try {
-          TimeUnit.MILLISECONDS.timedWait(this, Math.min(500, waitTimeMilliseconds));
+          TimeUnit.MILLISECONDS.timedWait(this, Math.min(500,
+              ClientServerRegisterInterestsDUnitTest.WAIT_TIME_MILLISECONDS));
         } catch (InterruptedException ignore) {
         }
       }
@@ -199,35 +201,33 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
   @Test
   public void testClientRegisterInterests() {
-    ClientCache clientCache = setupGemFireClientCache();
 
-    try {
+    try (ClientCache clientCache = setupGemFireClientCache()) {
       Region<String, String> example = clientCache.getRegion(SEPARATOR + "Example");
 
-      assertNotNull("'Example' Region in Client Cache was not found!", example);
-      assertThat(example.size()).isEqualTo(1);
-      assertTrue(example.containsKey("1"));
+      assertThat(example).describedAs("'Example' Region in Client Cache was not found!")
+          .isNotNull();
+      assertThat(example).hasSize(1);
+      assertThat(example).containsKey("1");
       assertThat(example.get("1")).isEqualTo("ONE");
-      assertTrue(entryEvents.empty());
+      assertThat(entryEvents).isEmpty();
 
-      String value = put(SEPARATOR + "Example", "2", "TWO");
+      String value = put();
 
       assertThat(value).isEqualTo("TWO");
 
-      waitOnEvent(WAIT_TIME_MILLISECONDS);
+      waitOnEvent();
 
-      assertFalse(entryEvents.empty());
+      assertThat(entryEvents).isNotEmpty();
 
-      EntryEvent entryEvent = (EntryEvent) entryEvents.pop();
+      EntryEvent<String, String> entryEvent = entryEvents.pop();
 
       assertThat(entryEvent.getKey()).isEqualTo("2");
       assertThat(entryEvent.getNewValue()).isEqualTo("TWO");
       assertThat(entryEvent.getOldValue()).isNull();
-      assertThat(example.size()).isEqualTo(2);
-      assertTrue(example.containsKey("2"));
+      assertThat(example).hasSize(2);
+      assertThat(example).containsKey("2");
       assertThat(example.get("2")).isEqualTo("TWO");
-    } finally {
-      clientCache.close();
     }
   }
 

@@ -174,20 +174,19 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     verifyDurableClientPresence(durableClientTimeout, durableClientId, serverVM, 1);
   }
 
-  void verifyDurableClientNotPresent(int durableClientTimeout, String durableClientId,
+  void verifyDurableClientNotPresent(String durableClientId,
       final VM serverVM) {
-    verifyDurableClientPresence(durableClientTimeout, durableClientId, serverVM, 0);
+    verifyDurableClientPresence(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
+        serverVM, 0);
   }
 
-  void waitForDurableClientPresence(String durableClientId, VM serverVM, final int count) {
+  void waitForDurableClientPresence(String durableClientId, VM serverVM) {
     serverVM.invoke(() -> {
-      if (count > 0) {
-        GeodeAwaitility.await().until(() -> {
-          checkNumberOfClientProxies(count);
-          CacheClientProxy proxy = getClientProxy();
-          return proxy != null && durableClientId.equals(proxy.getDurableId());
-        });
-      }
+      GeodeAwaitility.await().until(() -> {
+        checkNumberOfClientProxies(1);
+        CacheClientProxy proxy = getClientProxy();
+        return proxy != null && durableClientId.equals(proxy.getDurableId());
+      });
     });
   }
 
@@ -229,7 +228,6 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     server1VM.invoke("Logging CCCP and ServerConnection state", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        // TODO Auto-generated method stub
         getCache().getLogger()
             .info(st + " CCP states: " + getAllClientProxyState());
         getCache().getLogger().info(st + " CHM states: "
@@ -684,7 +682,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     // Get the listener and wait for the appropriate number of events
     ControlCqListener listener =
         (ControlCqListener) cq.getCqAttributes().getCqListener();
-    listener.waitWhileNotEnoughEvents(secondsToWait * 1000L, numEvents);
+    listener.waitWhileNotEnoughEvents(SECONDS.toMillis(secondsToWait), numEvents);
     assertThat(numEvents).isEqualTo(listener.events.size());
   }
 
@@ -698,7 +696,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
       // Get the listener and wait for the appropriate number of events
       ControlListener controlListener =
           (ControlListener) region.getAttributes().getCacheListeners()[0];
-      controlListener.waitWhileNotEnoughEvents((long) sleepMinutes * 60 * 1000, numberOfEntries,
+      controlListener.waitWhileNotEnoughEvents(MINUTES.toMillis(sleepMinutes), numberOfEntries,
           controlListener.getEvents(eventType));
     });
   }

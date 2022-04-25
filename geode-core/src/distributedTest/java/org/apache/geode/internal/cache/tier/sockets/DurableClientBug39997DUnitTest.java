@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -35,7 +35,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -51,7 +50,6 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testNoServerAvailableOnStartup() {
-    Host host = Host.getHost(0);
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
 
@@ -63,44 +61,30 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
           .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
           .create("DurableClientReconnectDUnitTestPool");
       Cache cache = getCache();
-      RegionFactory regionFactory = cache.createRegionFactory();
+      RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
       regionFactory.setScope(Scope.LOCAL);
       regionFactory.setPoolName(p.getName());
-      Region region1 = regionFactory.create("region");
+      Region<Object, Object> region1 = regionFactory.create("region");
+      assertThrows(NoSubscriptionServersAvailableException.class,
+          () -> region1.registerInterestForAllKeys());
 
-      try {
-        region1.registerInterestForAllKeys();
-        fail("Should have received an exception trying to register interest");
-      } catch (NoSubscriptionServersAvailableException expected) {
-        // this is expected
-      }
     });
 
     vm1.invoke(() -> {
       Cache cache = getCache();
-      RegionFactory regionFactory = cache.createRegionFactory();
+      RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
       regionFactory.setScope(Scope.DISTRIBUTED_ACK);
       regionFactory.create("region");
       CacheServer server = cache.addCacheServer();
       server.setPort(port);
-      try {
-        server.start();
-      } catch (IOException e) {
-        fail("couldn't start server", e);
-      }
+      assertDoesNotThrow(server::start);
     });
 
     vm0.invoke(() -> {
       Cache cache = getCache();
-      final Region region = cache.getRegion("region");
-      GeodeAwaitility.await("Wait for register interest to succeed").until(() -> {
-        try {
-          region.registerInterestForAllKeys();
-        } catch (NoSubscriptionServersAvailableException e) {
-          return false;
-        }
-        return true;
-      });
+      final Region<Object, Object> region = cache.getRegion("region");
+      GeodeAwaitility.await("Wait for register interest to succeed")
+          .untilAsserted(() -> assertDoesNotThrow(() -> region.registerInterestForAllKeys()));
     });
   }
 
