@@ -46,12 +46,11 @@ class IsolatedTestPlugin implements Plugin<Project> {
         initializePortRangeWorkerProcessFactory(project.gradle.startParameter.maxWorkerCount)
 
         def usePortRangeTestWorker = {
-            if (!it.hasProperty('isolatedTest')) {
-                return
+          it.doFirst {
+            if (it.hasProperty('isolatedTest')) {
+              testExecuter = Executers.withFactory(it, portRangeWorkerProcessFactory)
             }
-            it.doFirst {
-                testExecuter = Executers.withFactory(it, portRangeWorkerProcessFactory)
-            }
+          }
         }
 
         project.tasks.withType(Test).each(usePortRangeTestWorker)
