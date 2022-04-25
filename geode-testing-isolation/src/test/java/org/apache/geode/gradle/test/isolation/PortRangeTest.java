@@ -16,31 +16,28 @@
 package org.apache.geode.gradle.test.isolation;
 
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.geode.gradle.testing.isolation.PortRange;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PortRangeTest {
   @Test
   public void firstPartitionHasSameLowerBoundAsFullRange() {
     PortRange fullRange = new PortRange(11111, 19994); // Arbitrary
     PortRange firstPartition = fullRange.partition(0, 24);
-    assertEquals(fullRange.lowerBound(), firstPartition.lowerBound());
+    Assertions.assertEquals(fullRange.lowerBound(), firstPartition.lowerBound());
+
   }
 
   @Test
   public void lastPartitionHasSameUpperBoundAsSourceRange() {
     PortRange fullRange = new PortRange(3333, 20002); // Arbitrary
     PortRange lastPartition = fullRange.partition(23, 24);
-    assertEquals(fullRange.upperBound(), lastPartition.upperBound());
+    Assertions.assertEquals(fullRange.upperBound(), lastPartition.upperBound());
   }
 
   @Test
@@ -59,7 +56,7 @@ public class PortRangeTest {
       String description = String.format(
           "partition %d upper bound (%d) is adjacent to partition %d lower bound (%d)",
           i - 1, lowerPartitionUpperBound, i, upperPartitionLowerBound);
-      assertTrue(description, areAdjacent);
+      Assertions.assertTrue(areAdjacent, description);
     }
   }
 
@@ -80,6 +77,6 @@ public class PortRangeTest {
     String description = String.format(
         "minimum (%d) and maximum (%d) partition sizes differ by no more than 1",
         minPartitionSize, maxPartitionSize);
-    assertTrue(description, maxPartitionSize - minPartitionSize <= 1);
+    Assertions.assertTrue(maxPartitionSize - minPartitionSize <= 1, description);
   }
 }

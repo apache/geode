@@ -15,12 +15,11 @@
  */
 package org.apache.geode.gradle.testing.isolation;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WorkingDirectoryIsolatorTest {
 
@@ -31,7 +30,7 @@ public class WorkingDirectoryIsolatorTest {
     processBuilder.command("/bin/java", "-javaagent:../some/jacocoagent.jar=destfile=../jacoco/integrationTest.exec", "GradleWorkerMain");
     new WorkingDirectoryIsolator().accept(processBuilder);
 
-    assertEquals(Arrays.asList("/bin/java", "-javaagent:../../some/jacocoagent.jar=destfile=../../jacoco/integrationTest.exec", "GradleWorkerMain"), processBuilder.command());
+    Assertions.assertEquals(Arrays.asList("/bin/java", "-javaagent:../../some/jacocoagent.jar=destfile=../../jacoco/integrationTest.exec", "GradleWorkerMain"), processBuilder.command());
   }
 
   @Test
@@ -41,7 +40,7 @@ public class WorkingDirectoryIsolatorTest {
     processBuilder.command("/bin/java", "-javaagent:..\\some\\jacocoagent.jar=destfile=..\\jacoco\\integrationTest.exec", "GradleWorkerMain");
     new WorkingDirectoryIsolator().accept(processBuilder);
 
-    assertEquals(Arrays.asList("/bin/java", "-javaagent:..\\..\\some\\jacocoagent.jar=destfile=..\\..\\jacoco\\integrationTest.exec", "GradleWorkerMain"), processBuilder.command());
+    Assertions.assertEquals(Arrays.asList("/bin/java", "-javaagent:..\\..\\some\\jacocoagent.jar=destfile=..\\..\\jacoco\\integrationTest.exec", "GradleWorkerMain"), processBuilder.command());
   }
 
 }
