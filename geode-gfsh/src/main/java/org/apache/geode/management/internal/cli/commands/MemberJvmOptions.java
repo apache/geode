@@ -29,7 +29,6 @@ import java.util.List;
 public class MemberJvmOptions {
   static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
   private static final List<String> JAVA_11_OPTIONS = Arrays.asList(
-      "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
       "--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED");
 
   public static List<String> getMemberJvmOptions() {

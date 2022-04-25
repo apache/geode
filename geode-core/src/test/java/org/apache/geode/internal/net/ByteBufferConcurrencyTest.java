@@ -32,6 +32,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
 import org.apache.geode.test.concurrency.RunnableWithException;
@@ -53,7 +54,7 @@ public class ByteBufferConcurrencyTest {
     final BufferPool poolMock = mock(BufferPool.class);
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(new PooledByteBuffer(someBuffer), BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final RunnableWithException useBuffer = () -> {
@@ -99,7 +100,7 @@ public class ByteBufferConcurrencyTest {
 
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(new PooledByteBuffer(someBuffer), BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final RunnableWithException accessBufferAndVerify = () -> {
@@ -134,7 +135,7 @@ public class ByteBufferConcurrencyTest {
     final BufferPool poolMock = mock(BufferPool.class);
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(new PooledByteBuffer(someBuffer), BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
@@ -163,7 +164,7 @@ public class ByteBufferConcurrencyTest {
     final BufferPool poolMock = mock(BufferPool.class);
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(new PooledByteBuffer(someBuffer), BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);

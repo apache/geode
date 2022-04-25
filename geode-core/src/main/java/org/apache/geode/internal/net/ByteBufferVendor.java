@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 
 /**
  * Produces (via {@link #open()}) an {@link ByteBufferSharing} meant to used only within a
@@ -69,7 +70,7 @@ public class ByteBufferVendor {
    * @param bufferType needed for freeing the buffer later
    * @param bufferPool needed for freeing the buffer later
    */
-  public ByteBufferVendor(@NotNull final ByteBuffer bufferArg,
+  public ByteBufferVendor(@NotNull final PooledByteBuffer bufferArg,
       final BufferType bufferType,
       final BufferPool bufferPool) {
     sharing = new ByteBufferSharingInternalImpl(bufferArg, bufferType, bufferPool);
@@ -171,11 +172,11 @@ public class ByteBufferVendor {
      * mutable because in general our ByteBuffer may need to be resized (grown or compacted)
      * no concurrency concerns since ByteBufferSharingNotNull is guarded by ByteBufferVendor.lock
      */
-    private ByteBuffer buffer;
+    private PooledByteBuffer buffer;
     private final BufferType bufferType;
     private final BufferPool bufferPool;
 
-    public ByteBufferSharingInternalImpl(final ByteBuffer buffer,
+    public ByteBufferSharingInternalImpl(final PooledByteBuffer buffer,
         final BufferType bufferType,
         final BufferPool bufferPool) {
       Objects.requireNonNull(buffer);
@@ -187,17 +188,19 @@ public class ByteBufferVendor {
     @Override
     public ByteBuffer getBuffer() throws IOException {
       exposingResource();
-      return buffer;
+      return buffer.getByteBuffer();
     }
 
     @Override
     public ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException {
-      return buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, getBuffer(), newCapacity);
+      buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, buffer, newCapacity);
+      return buffer.getByteBuffer();
     }
 
     @Override
     public ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException {
-      return buffer = bufferPool.expandReadBufferIfNeeded(bufferType, getBuffer(), newCapacity);
+      buffer = bufferPool.expandReadBufferIfNeeded(bufferType, buffer, newCapacity);
+      return buffer.getByteBuffer();
     }
 
     @Override
@@ -221,7 +224,7 @@ public class ByteBufferVendor {
   }
 
   @VisibleForTesting
-  public void setBufferForTestingOnly(final ByteBuffer newBufferForTesting) {
+  public void setBufferForTestingOnly(final PooledByteBuffer newBufferForTesting) {
     ((ByteBufferSharingInternalImpl) sharing).buffer = newBufferForTesting;
   }
 }

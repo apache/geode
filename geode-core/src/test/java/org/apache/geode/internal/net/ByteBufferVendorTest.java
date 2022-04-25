@@ -23,11 +23,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 
 public class ByteBufferVendorTest {
 
@@ -45,7 +46,7 @@ public class ByteBufferVendorTest {
   public void before() {
     poolMock = mock(BufferPool.class);
     sharingVendor =
-        new ByteBufferVendor(mock(ByteBuffer.class), BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(mock(PooledByteBuffer.class), BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
     clientHasOpenedResource = new CountDownLatch(1);
     clientMayComplete = new CountDownLatch(1);

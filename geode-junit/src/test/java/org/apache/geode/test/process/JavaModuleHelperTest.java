@@ -64,7 +64,6 @@ class JavaModuleHelperTest {
         "--add-opens=java.base/javax.net.ssl=ALL-UNNAMED",
         "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED",
         "--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED",
-        "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
         "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
         "--add-exports=java.base/sun.util.locale=ALL-UNNAMED",
         "--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED");
@@ -85,7 +84,6 @@ class JavaModuleHelperTest {
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
         "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
         "--add-opens=java.base/java.nio=ALL-UNNAMED",
-        "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
         "--add-opens=java.base/java.text=ALL-UNNAMED");
 
     // Add non-module options in between the module options

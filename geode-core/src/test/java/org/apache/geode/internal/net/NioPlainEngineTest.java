@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 
 public class NioPlainEngineTest {
 
@@ -56,18 +57,20 @@ public class NioPlainEngineTest {
 
   @Test
   public void ensureWrappedCapacity() {
-    ByteBuffer wrappedBuffer = bufferPool.acquireDirectReceiveBuffer(100);
-    wrappedBuffer.put(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    PooledByteBuffer wrappedBuffer = bufferPool.acquireDirectReceiveBuffer(100);
+    wrappedBuffer.getByteBuffer().put(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     nioEngine.lastReadPosition = 10;
     int requestedCapacity = 210;
-    ByteBuffer result = nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
-        BufferPool.BufferType.TRACKED_RECEIVER);
+    PooledByteBuffer pooledResult =
+        nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
+            BufferPool.BufferType.TRACKED_RECEIVER);
+    ByteBuffer result = pooledResult.getByteBuffer();
     verify(mockStats, times(2)).incReceiverBufferSize(any(Long.class), any(Boolean.class));
     assertThat(result.capacity()).isGreaterThanOrEqualTo(requestedCapacity);
-    assertThat(result).isGreaterThanOrEqualTo(wrappedBuffer);
+    assertThat(result).isGreaterThanOrEqualTo(wrappedBuffer.getByteBuffer());
     // make sure that data was transferred to the new buffer
     for (int i = 0; i < 10; i++) {
-      assertThat(result.get(i)).isEqualTo(wrappedBuffer.get(i));
+      assertThat(result.get(i)).isEqualTo(wrappedBuffer.getByteBuffer().get(i));
     }
   }
 
@@ -77,20 +80,21 @@ public class NioPlainEngineTest {
     final int consumedDataPresentInBuffer = 100;
     final int unconsumedDataPresentInBuffer = 10;
     // the buffer will have enough capacity but will need to be compacted
-    ByteBuffer wrappedBuffer =
-        ByteBuffer.allocate(requestedCapacity + unconsumedDataPresentInBuffer);
-    wrappedBuffer.put(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    PooledByteBuffer wrappedBuffer = new PooledByteBuffer(
+        ByteBuffer.allocate(requestedCapacity + unconsumedDataPresentInBuffer));
+    wrappedBuffer.getByteBuffer().put(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     nioEngine.lastProcessedPosition = consumedDataPresentInBuffer;
     // previous read left 10 bytes
     nioEngine.lastReadPosition = consumedDataPresentInBuffer + unconsumedDataPresentInBuffer;
-    ByteBuffer result =
+    PooledByteBuffer pooledResult =
         wrappedBuffer = nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
             BufferPool.BufferType.UNTRACKED);
+    ByteBuffer result = pooledResult.getByteBuffer();
     assertThat(result.capacity()).isEqualTo(requestedCapacity + unconsumedDataPresentInBuffer);
-    assertThat(result).isSameAs(wrappedBuffer);
+    assertThat(result).isSameAs(wrappedBuffer.getByteBuffer());
     // make sure that data was transferred to the new buffer
     for (int i = 0; i < 10; i++) {
-      assertThat(result.get(i)).isEqualTo(wrappedBuffer.get(i));
+      assertThat(result.get(i)).isEqualTo(wrappedBuffer.getByteBuffer().get(i));
     }
     assertThat(nioEngine.lastProcessedPosition).isEqualTo(0);
     assertThat(nioEngine.lastReadPosition).isEqualTo(10);

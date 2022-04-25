@@ -43,6 +43,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 import org.apache.geode.internal.net.ByteBufferVendor.OpenAttemptTimedOut;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -311,16 +312,16 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
+  public PooledByteBuffer ensureWrappedCapacity(int amount, PooledByteBuffer pooledWrappedBuffer,
       BufferType bufferType) {
-    ByteBuffer buffer = wrappedBuffer;
     int requiredSize = engine.getSession().getPacketBufferSize();
-    if (buffer == null) {
-      buffer = bufferPool.acquireDirectBuffer(bufferType, requiredSize);
-    } else if (buffer.capacity() < requiredSize) {
-      buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, buffer, requiredSize);
+    if (pooledWrappedBuffer == null) {
+      pooledWrappedBuffer = bufferPool.acquireDirectBuffer(bufferType, requiredSize);
+    } else if (pooledWrappedBuffer.getByteBuffer().capacity() < requiredSize) {
+      pooledWrappedBuffer =
+          bufferPool.expandWriteBufferIfNeeded(bufferType, pooledWrappedBuffer, requiredSize);
     }
-    return buffer;
+    return pooledWrappedBuffer;
   }
 
   @Override

@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
+
 /**
  * Prior to transmitting a buffer or processing a received buffer a NioFilter should be called to
  * wrap (transmit) or unwrap (received) the buffer in case SSL is being used.<br>
@@ -50,7 +52,7 @@ public interface NioFilter {
    * ensure that the wrapped buffer has enough room to read the given amount of data. This must be
    * invoked before readAtLeast. A new buffer may be returned by this method.
    */
-  ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
+  PooledByteBuffer ensureWrappedCapacity(int amount, PooledByteBuffer wrappedBuffer,
       BufferPool.BufferType bufferType);
 
   /**

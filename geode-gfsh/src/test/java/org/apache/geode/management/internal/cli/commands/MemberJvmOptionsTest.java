@@ -43,7 +43,6 @@ class MemberJvmOptionsTest {
   @EnabledForJreRange(min = JRE.JAVA_11)
   void java11Options() {
     List<String> expectedOptions = asList(
-        "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
         "--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED");
 
     assertThat(getMemberJvmOptions())

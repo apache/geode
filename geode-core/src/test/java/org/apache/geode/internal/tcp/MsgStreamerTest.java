@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 import org.apache.geode.internal.serialization.KnownVersion;
 
 public class MsgStreamerTest {
@@ -63,7 +64,7 @@ public class MsgStreamerTest {
   public void streamerListRelease() throws IOException {
     final MsgStreamerList msgStreamer = (MsgStreamerList) createMsgStreamer(true);
     msgStreamer.writeMessage();
-    verify(pool, times(2)).releaseSenderBuffer(isA(ByteBuffer.class));
+    verify(pool, times(2)).releaseSenderBuffer(isA(PooledByteBuffer.class));
   }
 
   @Test
@@ -74,7 +75,7 @@ public class MsgStreamerTest {
     doThrow(new SSLException("")).when(connection1).sendPreserialized(any(ByteBuffer.class),
         any(Boolean.class), any(DistributionMessage.class));
     msgStreamer.writeMessage();
-    verify(pool, times(2)).releaseSenderBuffer(isA(ByteBuffer.class));
+    verify(pool, times(2)).releaseSenderBuffer(isA(PooledByteBuffer.class));
   }
 
   @Test

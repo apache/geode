@@ -58,6 +58,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -126,7 +127,7 @@ public class NioSslEngineTest {
     verify(mockEngine, times(3)).wrap(any(ByteBuffer.class), any(ByteBuffer.class));
     verify(mockEngine, times(3)).unwrap(any(ByteBuffer.class), any(ByteBuffer.class));
     verify(spyBufferPool, times(2)).expandWriteBufferIfNeeded(any(BufferPool.BufferType.class),
-        any(ByteBuffer.class), any(Integer.class));
+        any(PooledByteBuffer.class), any(Integer.class));
     verify(spyNioSslEngine, times(1)).handleBlockingTasks();
     verify(mockChannel, times(3)).read(any(ByteBuffer.class));
   }
@@ -214,7 +215,7 @@ public class NioSslEngineTest {
         ByteBuffer wrappedBuffer = outputSharing2.getBuffer();
 
         verify(spyBufferPool, times(1)).expandWriteBufferIfNeeded(any(BufferPool.BufferType.class),
-            any(ByteBuffer.class), any(Integer.class));
+            any(PooledByteBuffer.class), any(Integer.class));
         appData.flip();
         assertThat(wrappedBuffer).isEqualTo(appData);
       }
@@ -428,7 +429,7 @@ public class NioSslEngineTest {
 
   @Test
   public void ensureWrappedCapacityOfSmallMessage() {
-    ByteBuffer buffer = ByteBuffer.allocate(netBufferSize);
+    PooledByteBuffer buffer = new PooledByteBuffer(ByteBuffer.allocate(netBufferSize));
     assertThat(
         nioSslEngine.ensureWrappedCapacity(10, buffer, BufferPool.BufferType.UNTRACKED))
             .isEqualTo(buffer);
@@ -438,7 +439,7 @@ public class NioSslEngineTest {
   public void ensureWrappedCapacityWithNoBuffer() {
     assertThat(
         nioSslEngine.ensureWrappedCapacity(10, null, BufferPool.BufferType.UNTRACKED)
-            .capacity())
+            .getByteBuffer().capacity())
                 .isEqualTo(netBufferSize);
   }
 
@@ -495,10 +496,13 @@ public class NioSslEngineTest {
 
     // force buffer expansion by making a small decoded buffer appear near to being full
     int initialUnwrappedBufferSize = 100;
-    ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
+    PooledByteBuffer unwrappedPooledBuffer =
+        new PooledByteBuffer(ByteBuffer.allocate(initialUnwrappedBufferSize));
+    ByteBuffer unwrappedBuffer = unwrappedPooledBuffer.getByteBuffer();
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
 
-    nioSslEngine.getInputBufferVendorForTestingOnly().setBufferForTestingOnly(unwrappedBuffer);
+    nioSslEngine.getInputBufferVendorForTestingOnly()
+        .setBufferForTestingOnly(unwrappedPooledBuffer);
 
     // simulate some socket reads
     when(mockChannel.read(any(ByteBuffer.class))).thenAnswer((Answer<Integer>) invocation -> {
@@ -548,9 +552,12 @@ public class NioSslEngineTest {
     SocketChannel mockChannel = mock(SocketChannel.class);
 
     // force buffer expansion by making a small decoded buffer appear near to being full
-    ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
+    PooledByteBuffer unwrappedPooledBuffer =
+        new PooledByteBuffer(ByteBuffer.allocate(initialUnwrappedBufferSize));
+    ByteBuffer unwrappedBuffer = unwrappedPooledBuffer.getByteBuffer();
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
-    nioSslEngine.getInputBufferVendorForTestingOnly().setBufferForTestingOnly(unwrappedBuffer);
+    nioSslEngine.getInputBufferVendorForTestingOnly()
+        .setBufferForTestingOnly(unwrappedPooledBuffer);
 
     // simulate some socket reads
     when(mockChannel.read(any(ByteBuffer.class))).thenAnswer((Answer<Integer>) invocation -> {

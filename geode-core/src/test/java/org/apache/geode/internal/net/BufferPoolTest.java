@@ -27,6 +27,7 @@ import org.junitpioneer.jupiter.ClearSystemProperty;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 
 public class BufferPoolTest {
 
@@ -39,28 +40,31 @@ public class BufferPoolTest {
 
   @Test
   public void expandBuffer() {
-    ByteBuffer buffer = ByteBuffer.allocate(256);
+    PooledByteBuffer pooledBuffer = new PooledByteBuffer(ByteBuffer.allocate(256));
+    ByteBuffer buffer = pooledBuffer.getByteBuffer();
     buffer.clear();
     for (int i = 0; i < 256; i++) {
       byte b = (byte) (i & 0xff);
       buffer.put(b);
     }
-    createAndVerifyNewWriteBuffer(buffer);
+    createAndVerifyNewWriteBuffer(pooledBuffer);
 
-    createAndVerifyNewWriteBuffer(buffer);
+    createAndVerifyNewWriteBuffer(pooledBuffer);
 
 
-    createAndVerifyNewReadBuffer(buffer);
+    createAndVerifyNewReadBuffer(pooledBuffer);
 
-    createAndVerifyNewReadBuffer(buffer);
+    createAndVerifyNewReadBuffer(pooledBuffer);
 
 
   }
 
-  private void createAndVerifyNewWriteBuffer(ByteBuffer buffer) {
+  private void createAndVerifyNewWriteBuffer(PooledByteBuffer pooledBuffer) {
+    ByteBuffer buffer = pooledBuffer.getByteBuffer();
     buffer.position(buffer.capacity());
-    ByteBuffer newBuffer =
-        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
+    PooledByteBuffer newPooledBuffer =
+        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, pooledBuffer, 500);
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
     assertThat(newBuffer.position()).isEqualTo(buffer.position());
     assertThat(newBuffer.capacity()).isEqualTo(500);
     newBuffer.flip();
@@ -71,11 +75,13 @@ public class BufferPoolTest {
     }
   }
 
-  private void createAndVerifyNewReadBuffer(ByteBuffer buffer) {
+  private void createAndVerifyNewReadBuffer(PooledByteBuffer pooledBuffer) {
+    ByteBuffer buffer = pooledBuffer.getByteBuffer();
     buffer.position(0);
     buffer.limit(256);
-    ByteBuffer newBuffer =
-        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
+    PooledByteBuffer newPooledBuffer =
+        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, pooledBuffer, 500);
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
     assertThat(newBuffer.position()).isZero();
     assertThat(newBuffer.capacity()).isEqualTo(500);
     for (int i = 0; i < 256; i++) {
@@ -89,12 +95,14 @@ public class BufferPoolTest {
   // the fixed numbers in this test came from a distributed unit test failure
   @Test
   public void bufferPositionAndLimitForReadAreCorrectAfterExpansion() {
-    ByteBuffer buffer = ByteBuffer.allocate(33842);
+    PooledByteBuffer pooledBuffer = new PooledByteBuffer(ByteBuffer.allocate(33842));
+    ByteBuffer buffer = pooledBuffer.getByteBuffer();
     buffer.position(7);
     buffer.limit(16384);
-    ByteBuffer newBuffer =
-        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer,
+    PooledByteBuffer newPooledBuffer =
+        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, pooledBuffer,
             40899);
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
     // buffer should be ready to read the same amount of data
     assertThat(newBuffer.position()).isEqualTo(0);
@@ -104,12 +112,14 @@ public class BufferPoolTest {
 
   @Test
   public void bufferPositionAndLimitForWriteAreCorrectAfterExpansion() {
-    ByteBuffer buffer = ByteBuffer.allocate(33842);
+    PooledByteBuffer pooledBuffer = new PooledByteBuffer(ByteBuffer.allocate(33842));
+    ByteBuffer buffer = pooledBuffer.getByteBuffer();
     buffer.position(16384);
     buffer.limit(buffer.capacity());
-    ByteBuffer newBuffer =
-        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer,
+    PooledByteBuffer newPooledBuffer =
+        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, pooledBuffer,
             40899);
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
     // buffer should have the same amount of data as the old one
     assertThat(newBuffer.position()).isEqualTo(16384);
@@ -119,10 +129,13 @@ public class BufferPoolTest {
 
   @Test
   public void checkBufferSizeAfterAllocation() {
-    ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
+    PooledByteBuffer pooledBuffer = bufferPool.acquireDirectReceiveBuffer(100);
+    ByteBuffer buffer = pooledBuffer.getByteBuffer();
 
-    ByteBuffer newBuffer =
+    PooledByteBuffer newPooledBuffer =
         bufferPool.acquireDirectReceiveBuffer(10000);
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
+
     assertThat(buffer.isDirect()).isTrue();
     assertThat(newBuffer.isDirect()).isTrue();
     assertThat(buffer.capacity()).isEqualTo(100);
@@ -137,17 +150,18 @@ public class BufferPoolTest {
 
   @Test
   public void checkBufferSizeAfterAcquire() {
-    ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
+    PooledByteBuffer pooledBuffer = bufferPool.acquireDirectReceiveBuffer(100);
+    ByteBuffer buffer = pooledBuffer.getByteBuffer();
+    PooledByteBuffer newPooledBuffer = bufferPool.acquireDirectReceiveBuffer(10000);
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
 
-    ByteBuffer newBuffer =
-        bufferPool.acquireDirectReceiveBuffer(10000);
     assertThat(buffer.capacity()).isEqualTo(100);
     assertThat(newBuffer.capacity()).isEqualTo(10000);
     assertThat(buffer.isDirect()).isTrue();
     assertThat(newBuffer.isDirect()).isTrue();
-    assertThat(bufferPool.getPoolableBuffer(buffer).capacity())
+    assertThat(pooledBuffer.getOriginal().capacity())
         .isGreaterThanOrEqualTo(BufferPool.SMALL_BUFFER_SIZE);
-    assertThat(bufferPool.getPoolableBuffer(newBuffer).capacity())
+    assertThat(newPooledBuffer.getOriginal().capacity())
         .isGreaterThanOrEqualTo(BufferPool.MEDIUM_BUFFER_SIZE);
 
     assertThat(buffer.position()).isEqualTo(0);
@@ -155,20 +169,21 @@ public class BufferPoolTest {
     assertThat(newBuffer.position()).isEqualTo(0);
     assertThat(newBuffer.limit()).isEqualTo(10000);
 
-    bufferPool.releaseReceiveBuffer(buffer);
-    bufferPool.releaseReceiveBuffer(newBuffer);
+    bufferPool.releaseReceiveBuffer(pooledBuffer);
+    bufferPool.releaseReceiveBuffer(newPooledBuffer);
 
-    buffer = bufferPool.acquireDirectReceiveBuffer(1000);
-    newBuffer =
-        bufferPool.acquireDirectReceiveBuffer(15000);
+    pooledBuffer = bufferPool.acquireDirectReceiveBuffer(1000);
+    buffer = pooledBuffer.getByteBuffer();
+    newPooledBuffer = bufferPool.acquireDirectReceiveBuffer(15000);
+    newBuffer = newPooledBuffer.getByteBuffer();
 
     assertThat(buffer.capacity()).isEqualTo(1000);
     assertThat(newBuffer.capacity()).isEqualTo(15000);
     assertThat(buffer.isDirect()).isTrue();
     assertThat(newBuffer.isDirect()).isTrue();
-    assertThat(bufferPool.getPoolableBuffer(buffer).capacity())
+    assertThat(pooledBuffer.getOriginal().capacity())
         .isGreaterThanOrEqualTo(BufferPool.SMALL_BUFFER_SIZE);
-    assertThat(bufferPool.getPoolableBuffer(newBuffer).capacity())
+    assertThat(newPooledBuffer.getOriginal().capacity())
         .isGreaterThanOrEqualTo(BufferPool.MEDIUM_BUFFER_SIZE);
 
     assertThat(buffer.position()).isEqualTo(0);

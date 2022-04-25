@@ -39,6 +39,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -66,6 +67,7 @@ public class MsgStreamer extends OutputStream
    */
   private @Nullable ConnectExceptions connectExceptions;
 
+  private final PooledByteBuffer pooledBuffer;
   /**
    * The byte buffer we used for preparing a chunk of the message. Currently this buffer is obtained
    * from the connection.
@@ -108,7 +110,7 @@ public class MsgStreamer extends OutputStream
     MsgIdGenerator.release(msgId);
     buffer.clear();
     overflowBuf = null;
-    bufferPool.releaseSenderBuffer(buffer);
+    bufferPool.releaseSenderBuffer(pooledBuffer);
   }
 
   @Override
@@ -134,7 +136,8 @@ public class MsgStreamer extends OutputStream
     this.msg = msg;
     this.connections = connections;
     int bufferSize = Math.min(sendBufferSize, Connection.MAX_MSG_SIZE);
-    buffer = bufferPool.acquireDirectSenderBuffer(bufferSize);
+    pooledBuffer = bufferPool.acquireDirectSenderBuffer(bufferSize);
+    buffer = pooledBuffer.getByteBuffer();
     buffer.clear();
     buffer.position(Connection.MSG_HEADER_BYTES);
     msgId = MsgIdGenerator.NO_MSG_ID;

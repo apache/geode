@@ -22,13 +22,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
@@ -90,46 +87,46 @@ public class BufferPool {
    *
    * @return a byte buffer to be used for sending on this connection.
    */
-  public ByteBuffer acquireDirectSenderBuffer(int size) {
+  public PooledByteBuffer acquireDirectSenderBuffer(int size) {
     return acquireDirectBuffer(size, true);
   }
 
-  public ByteBuffer acquireDirectReceiveBuffer(int size) {
+  public PooledByteBuffer acquireDirectReceiveBuffer(int size) {
     return acquireDirectBuffer(size, false);
   }
 
   /**
    * try to acquire direct buffer, if enabled by configuration
    */
-  private ByteBuffer acquireDirectBuffer(int size, boolean send) {
-    ByteBuffer result;
+  private PooledByteBuffer acquireDirectBuffer(int size, boolean send) {
+    ByteBuffer byteBuffer;
 
     if (useDirectBuffers) {
       if (size <= MEDIUM_BUFFER_SIZE) {
-        result = acquirePredefinedFixedBuffer(send, size);
+        byteBuffer = acquirePredefinedFixedBuffer(send, size);
       } else {
-        result = acquireLargeBuffer(send, size);
+        byteBuffer = acquireLargeBuffer(send, size);
       }
-      if (result.capacity() > size) {
-        result.position(0).limit(size);
-        result = result.slice();
+      if (byteBuffer.capacity() > size) {
+        byteBuffer.position(0).limit(size);
+        return new PooledByteBuffer(byteBuffer, byteBuffer.slice());
       }
-      return result;
+      return new PooledByteBuffer(byteBuffer);
     }
     // if we are using heap buffers then don't bother with keeping them around
-    result = ByteBuffer.allocate(size);
+    byteBuffer = ByteBuffer.allocate(size);
     updateBufferStats(size, send, false);
-    return result;
+    return new PooledByteBuffer(byteBuffer);
   }
 
-  public ByteBuffer acquireNonDirectSenderBuffer(int size) {
-    ByteBuffer result = ByteBuffer.allocate(size);
+  public PooledByteBuffer acquireNonDirectSenderBuffer(int size) {
+    PooledByteBuffer result = new PooledByteBuffer(ByteBuffer.allocate(size));
     stats.incSenderBufferSize(size, false);
     return result;
   }
 
-  public ByteBuffer acquireNonDirectReceiveBuffer(int size) {
-    ByteBuffer result = ByteBuffer.allocate(size);
+  public PooledByteBuffer acquireNonDirectReceiveBuffer(int size) {
+    PooledByteBuffer result = new PooledByteBuffer(ByteBuffer.allocate(size));
     stats.incReceiverBufferSize(size, false);
     return result;
   }
@@ -212,64 +209,68 @@ public class BufferPool {
     return result;
   }
 
-  public void releaseSenderBuffer(ByteBuffer bb) {
+  public void releaseSenderBuffer(PooledByteBuffer bb) {
     releaseBuffer(bb, true);
   }
 
-  public void releaseReceiveBuffer(ByteBuffer bb) {
+  public void releaseReceiveBuffer(PooledByteBuffer bb) {
     releaseBuffer(bb, false);
   }
 
   /**
    * expand a buffer that's currently being read from
    */
-  ByteBuffer expandReadBufferIfNeeded(BufferType type, ByteBuffer existing,
+  PooledByteBuffer expandReadBufferIfNeeded(BufferType type, PooledByteBuffer existingPooledBuffer,
       int desiredCapacity) {
+    ByteBuffer existing = existingPooledBuffer.getByteBuffer();
     if (existing.capacity() >= desiredCapacity) {
       if (existing.position() > 0) {
         existing.compact();
         existing.flip();
       }
-      return existing;
+      return existingPooledBuffer;
     }
-    ByteBuffer newBuffer;
+    PooledByteBuffer newPooledBuffer;
     if (existing.isDirect()) {
-      newBuffer = acquireDirectBuffer(type, desiredCapacity);
+      newPooledBuffer = acquireDirectBuffer(type, desiredCapacity);
     } else {
-      newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
+      newPooledBuffer = acquireNonDirectBuffer(type, desiredCapacity);
     }
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
     newBuffer.clear();
     newBuffer.put(existing);
     newBuffer.flip();
-    releaseBuffer(type, existing);
-    return newBuffer;
+    releaseBuffer(type, existingPooledBuffer);
+    return newPooledBuffer;
   }
 
   /**
    * expand a buffer that's currently being written to
    */
-  ByteBuffer expandWriteBufferIfNeeded(BufferType type, ByteBuffer existing,
+  PooledByteBuffer expandWriteBufferIfNeeded(BufferType type, PooledByteBuffer existingPooledBuffer,
       int desiredCapacity) {
+    ByteBuffer existing = existingPooledBuffer.getByteBuffer();
     if (existing.capacity() >= desiredCapacity) {
-      return existing;
+      return existingPooledBuffer;
     }
-    ByteBuffer newBuffer;
+    PooledByteBuffer newPooledBuffer;
     if (existing.isDirect()) {
-      newBuffer = acquireDirectBuffer(type, desiredCapacity);
+      newPooledBuffer = acquireDirectBuffer(type, desiredCapacity);
     } else {
-      newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
+      newPooledBuffer = acquireNonDirectBuffer(type, desiredCapacity);
     }
+    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
     newBuffer.clear();
     existing.flip();
     newBuffer.put(existing);
-    releaseBuffer(type, existing);
-    return newBuffer;
+    releaseBuffer(type, existingPooledBuffer);
+    return newPooledBuffer;
   }
 
-  ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
+  PooledByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
     switch (type) {
       case UNTRACKED:
-        return ByteBuffer.allocate(capacity);
+        return new PooledByteBuffer(ByteBuffer.allocate(capacity));
       case TRACKED_SENDER:
         return acquireDirectSenderBuffer(capacity);
       case TRACKED_RECEIVER:
@@ -278,10 +279,10 @@ public class BufferPool {
     throw new IllegalArgumentException("Unexpected buffer type " + type);
   }
 
-  ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
+  private PooledByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
     switch (type) {
       case UNTRACKED:
-        return ByteBuffer.allocate(capacity);
+        return new PooledByteBuffer(ByteBuffer.allocate(capacity));
       case TRACKED_SENDER:
         return acquireNonDirectSenderBuffer(capacity);
       case TRACKED_RECEIVER:
@@ -290,7 +291,7 @@ public class BufferPool {
     throw new IllegalArgumentException("Unexpected buffer type " + type);
   }
 
-  void releaseBuffer(BufferPool.BufferType type, @NotNull ByteBuffer buffer) {
+  void releaseBuffer(BufferPool.BufferType type, @NotNull PooledByteBuffer buffer) {
     switch (type) {
       case UNTRACKED:
         return;
@@ -308,9 +309,9 @@ public class BufferPool {
   /**
    * Releases a previously acquired buffer.
    */
-  private void releaseBuffer(ByteBuffer buffer, boolean send) {
+  private void releaseBuffer(PooledByteBuffer pooledByteBuffer, boolean send) {
+    ByteBuffer buffer = pooledByteBuffer.getOriginal();
     if (buffer.isDirect()) {
-      buffer = getPoolableBuffer(buffer);
       BBSoftReference bbRef = new BBSoftReference(buffer, send);
       if (buffer.capacity() <= SMALL_BUFFER_SIZE) {
         bufferSmallQueue.offer(bbRef);
@@ -322,31 +323,6 @@ public class BufferPool {
     } else {
       updateBufferStats(-buffer.capacity(), send, false);
     }
-  }
-
-  /**
-   * If we hand out a buffer that is larger than the requested size we create a
-   * "slice" of the buffer having the requested capacity and hand that out instead.
-   * When we put the buffer back in the pool we need to find the original, non-sliced,
-   * buffer. This is held in DirectBuffer in its "attachment" field.
-   *
-   * This method is visible for use in debugging and testing. For debugging, invoke this method if
-   * you need to see the non-sliced buffer for some reason, such as logging its hashcode.
-   */
-  @VisibleForTesting
-  ByteBuffer getPoolableBuffer(final ByteBuffer buffer) {
-    final Object attachment = DirectBuffer.attachment(buffer);
-
-    if (null == attachment) {
-      return buffer;
-    }
-
-    if (attachment instanceof ByteBuffer) {
-      return (ByteBuffer) attachment;
-    }
-
-    throw new InternalGemFireException("direct byte buffer attachment was not a byte buffer but a "
-        + attachment.getClass().getName());
   }
 
   /**
@@ -393,5 +369,37 @@ public class BufferPool {
       return super.get();
     }
   }
+
+  public static class PooledByteBuffer {
+    private final ByteBuffer original;
+    private final ByteBuffer byteBuffer;
+
+    PooledByteBuffer(ByteBuffer original, ByteBuffer byteBuffer) {
+      this.original = original;
+      this.byteBuffer = byteBuffer;
+    }
+
+    PooledByteBuffer(ByteBuffer byteBuffer) {
+      this(byteBuffer, byteBuffer);
+    }
+
+    /**
+     * Returns the byte buffer intended for use outside of the pool.
+     */
+    public ByteBuffer getByteBuffer() {
+      return byteBuffer;
+    }
+
+    /**
+     * The original byte buffer managed by the pool.
+     * This should only be used by the pool itself.
+     * It may differ from 'byteBuffer' since it may be a slice of the original.
+     */
+    ByteBuffer getOriginal() {
+      return original;
+    }
+  }
+
+
 
 }

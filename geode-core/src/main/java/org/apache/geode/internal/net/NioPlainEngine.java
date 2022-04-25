@@ -22,6 +22,7 @@ import java.nio.channels.SocketChannel;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.net.BufferPool.PooledByteBuffer;
 
 /**
  * A pass-through implementation of NioFilter. Use this if you don't need
@@ -56,17 +57,17 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
+  public PooledByteBuffer ensureWrappedCapacity(int amount, PooledByteBuffer pooledWrappedBuffer,
       BufferPool.BufferType bufferType) {
-    ByteBuffer buffer = wrappedBuffer;
 
-    if (buffer == null) {
-      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
-      buffer.clear();
+    if (pooledWrappedBuffer == null) {
+      pooledWrappedBuffer = bufferPool.acquireDirectBuffer(bufferType, amount);
+      pooledWrappedBuffer.getByteBuffer().clear();
       lastProcessedPosition = 0;
       lastReadPosition = 0;
-    } else if (buffer.capacity() > amount) {
+    } else if (pooledWrappedBuffer.getByteBuffer().capacity() > amount) {
       // we already have a buffer that's big enough
+      ByteBuffer buffer = pooledWrappedBuffer.getByteBuffer();
       if (buffer.capacity() - lastProcessedPosition < amount) {
         buffer.limit(lastReadPosition);
         buffer.position(lastProcessedPosition);
@@ -75,24 +76,24 @@ public class NioPlainEngine implements NioFilter {
         lastProcessedPosition = 0;
       }
     } else {
-      ByteBuffer oldBuffer = buffer;
+      ByteBuffer oldBuffer = pooledWrappedBuffer.getByteBuffer();
       oldBuffer.limit(lastReadPosition);
       oldBuffer.position(lastProcessedPosition);
-      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
+      PooledByteBuffer newPooledBuffer = bufferPool.acquireDirectBuffer(bufferType, amount);
+      ByteBuffer buffer = newPooledBuffer.getByteBuffer();
       buffer.clear();
       buffer.put(oldBuffer);
-      bufferPool.releaseBuffer(bufferType, oldBuffer);
+      bufferPool.releaseBuffer(bufferType, pooledWrappedBuffer);
       lastReadPosition = buffer.position();
       lastProcessedPosition = 0;
+      pooledWrappedBuffer = newPooledBuffer;
     }
-    return buffer;
+    return pooledWrappedBuffer;
   }
 
   @Override
-  public ByteBufferSharing readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer)
+  public ByteBufferSharing readAtLeast(SocketChannel channel, int bytes, ByteBuffer buffer)
       throws IOException {
-    ByteBuffer buffer = wrappedBuffer;
-
     Assert.assertTrue(buffer.capacity() - lastProcessedPosition >= bytes);
 
     // read into the buffer starting at the end of valid data
