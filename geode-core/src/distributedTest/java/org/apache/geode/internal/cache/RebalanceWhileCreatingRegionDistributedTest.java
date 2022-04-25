@@ -15,13 +15,11 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,10 +30,6 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.internal.ProcessOutputReader;
-import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
-import org.apache.geode.internal.cache.partitioned.PutMessage;
 import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -52,8 +46,10 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ProcessOutputReader;
 import org.apache.geode.internal.cache.backup.BackupOperation;
-import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage;
+import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
+import org.apache.geode.internal.cache.partitioned.PutMessage;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -69,6 +65,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@Ignore
 public class RebalanceWhileCreatingRegionDistributedTest implements Serializable {
 
   public static final String DISK_STORE_NAME = "diskStore1";
@@ -107,22 +104,24 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     int locatorPort = locator.getPort();
     MemberVM server1 = cluster.startServerVM(1, locatorPort);
     MemberVM server2 = cluster.startServerVM(2, locatorPort);
-//    MemberVM server3 = cluster.startServerVM(3, locatorPort);
-//    MemberVM server4 = cluster.startServerVM(4, locatorPort);
+    // MemberVM server3 = cluster.startServerVM(3, locatorPort);
+    // MemberVM server4 = cluster.startServerVM(4, locatorPort);
 
     String regionName = testName.getMethodName();
 
-//    server1.invoke(() -> addDistributionMessageObserver(regionName));
-//    server2.invoke(() -> addDistributionMessageObserver(regionName));
+    // server1.invoke(() -> addDistributionMessageObserver(regionName));
+    // server2.invoke(() -> addDistributionMessageObserver(regionName));
 
     // Create regions in each server
     server1.invoke(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
     server2.invoke(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
-//    server3.invoke(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
-//    server4.invoke(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
+    // server3.invoke(() -> createRegion(regionName,
+    // RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
+    // server4.invoke(() -> createRegion(regionName,
+    // RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
 
     AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> {
-//    server1.invoke(() -> {
+      // server1.invoke(() -> {
       Region region = getCache().getRegion(regionName);
       region.put("ABC", "def");
       blackboard.signalGate("RegionOps");
@@ -130,16 +129,16 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     });
 
     AsyncInvocation asyncInvocation2 = server1.invokeAsync(() -> {
-//    server2.invoke(() -> {
+      // server2.invoke(() -> {
       blackboard.waitForGate("RegionOps");
       doOnlineBackup();
     });
 
-//    AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> doConcurrentEntryOperations());
-//    AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> doConcurrentEntryOperations());
-//    AsyncInvocation asyncInvocation3 = server3.invokeAsync(() -> doConcurrentEntryOperations());
-//    AsyncInvocation asyncInvocation4 = server4.invokeAsync(() -> doOnlineBackup());
-//
+    // AsyncInvocation asyncInvocation1 = server1.invokeAsync(() -> doConcurrentEntryOperations());
+    // AsyncInvocation asyncInvocation2 = server2.invokeAsync(() -> doConcurrentEntryOperations());
+    // AsyncInvocation asyncInvocation3 = server3.invokeAsync(() -> doConcurrentEntryOperations());
+    // AsyncInvocation asyncInvocation4 = server4.invokeAsync(() -> doOnlineBackup());
+    //
     asyncInvocation1.get();
     asyncInvocation2.get();
 
@@ -154,14 +153,20 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     server1 = cluster.startServerVM(1, locatorPort);
     server2 = cluster.startServerVM(2, locatorPort);
 
-    asyncInvocation1 = server1.invokeAsync(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
-    asyncInvocation2 = server2.invokeAsync(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
+    asyncInvocation1 = server1
+        .invokeAsync(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
+    asyncInvocation2 = server2
+        .invokeAsync(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
     asyncInvocation1.get();
     asyncInvocation2.get();
 
-//    System.out.println("JC debug: server1.getWorkingDir().getAbsolutePath():" + server1.getWorkingDir().getAbsolutePath());
-//    System.out.println("JC debug: server1.getWorkingDir().listFiles().length: " + server1.getWorkingDir().listFiles().length);
-//    FileUtils.copyFileToDirectory(new File("/Users/jchen/workspace/geode/geode-core/build/distributedTest/"), server1.getWorkingDir());
+    // System.out.println("JC debug: server1.getWorkingDir().getAbsolutePath():" +
+    // server1.getWorkingDir().getAbsolutePath());
+    // System.out.println("JC debug: server1.getWorkingDir().listFiles().length: " +
+    // server1.getWorkingDir().listFiles().length);
+    // FileUtils.copyFileToDirectory(new
+    // File("/Users/jchen/workspace/geode/geode-core/build/distributedTest/"),
+    // server1.getWorkingDir());
 
     server1.invoke(() -> {
       Thread.sleep(1000);
@@ -176,31 +181,31 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       }
       String result = compareBucketMaps(listOfMaps.get(0), listOfMaps.get(1));
       System.out.println("JC debug: compareBucketMaps result:" + result);
-//      compareRVVs(new StringBuilder(), listOfMaps.get(0), listOfMaps.get(1));
+      // compareRVVs(new StringBuilder(), listOfMaps.get(0), listOfMaps.get(1));
     });
 
-//    asyncInvocation3.get();
-//    BackupStatus backupStatus = (BackupStatus) asyncInvocation4.get();
-//    assertThat(backupStatus.getBackedUpDiskStores()).hasSize(5); // locator ???
-//    assertThat(backupStatus.getOfflineDiskStores()).isEmpty();
-//    validateBackupComplete();
-//
-//    server1.stop();
-//    server2.stop();
-//    server3.stop();
-//    server4.stop();
-//
-//    // TODO: copy backup files to disk store dirs
-//
-//    cluster.startServerVM(1, locatorPort);
-//    cluster.startServerVM(2, locatorPort);
-//    cluster.startServerVM(3, locatorPort);
-//    server4 = cluster.startServerVM(4, locatorPort);
-//
-//    server4.invoke(() -> {
-//      Region region = getCache().getRegion(regionName);
-//      verify_bucket_copies(region, 2);
-//    });
+    // asyncInvocation3.get();
+    // BackupStatus backupStatus = (BackupStatus) asyncInvocation4.get();
+    // assertThat(backupStatus.getBackedUpDiskStores()).hasSize(5); // locator ???
+    // assertThat(backupStatus.getOfflineDiskStores()).isEmpty();
+    // validateBackupComplete();
+    //
+    // server1.stop();
+    // server2.stop();
+    // server3.stop();
+    // server4.stop();
+    //
+    // // TODO: copy backup files to disk store dirs
+    //
+    // cluster.startServerVM(1, locatorPort);
+    // cluster.startServerVM(2, locatorPort);
+    // cluster.startServerVM(3, locatorPort);
+    // server4 = cluster.startServerVM(4, locatorPort);
+    //
+    // server4.invoke(() -> {
+    // Region region = getCache().getRegion(regionName);
+    // verify_bucket_copies(region, 2);
+    // });
   }
 
   public void deleteExistingDiskDirs(String dirPath) {
@@ -216,7 +221,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   public void runRestoreScript() throws InterruptedException {
     // restore script is (for example)
     // /backup_1/2010-10-14-11-10/bilbo_21339_v1_16273_51816/restore.sh
-    //Users/jchen/workspace/geode/geode-core/build/distributedTest/2022-04-19-10-35-22/t2000_z4_server_1_89223_v1_41002/restore.sh
+    // Users/jchen/workspace/geode/geode-core/build/distributedTest/2022-04-19-10-35-22/t2000_z4_server_1_89223_v1_41002/restore.sh
     // where backup_1 is the argument backupDir
     File backupDir = new File("/Users/jchen/workspace/geode/geode-core/build/distributedTest/");
     File[] backupContents = backupDir.listFiles();
@@ -256,23 +261,23 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   private void fgexec(String command) throws InterruptedException {
     logger.info("Executing fgexec command: " + command);
     Thread thread = new Thread(() -> {
-        Process process = null;
-        try {
-          process = Runtime.getRuntime().exec(command);
-        } catch (IOException e) {
-          throw new RuntimeException("Failed to create process", e);
-        }
-        ProcessOutputReader reader = new ProcessOutputReader(process);
-        String output = reader.getOutput();
-        if (output != null) {
-          output = output.trim();
-        }
-        int exitCode = reader.getExitCode();
-        if (exitCode != 0) {
-          String s = output + "\n\nCommand failed with exit code: " + exitCode;
-          throw new RuntimeException(s);
-        }
-      });
+      Process process = null;
+      try {
+        process = Runtime.getRuntime().exec(command);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to create process", e);
+      }
+      ProcessOutputReader reader = new ProcessOutputReader(process);
+      String output = reader.getOutput();
+      if (output != null) {
+        output = output.trim();
+      }
+      int exitCode = reader.getExitCode();
+      if (exitCode != 0) {
+        String s = output + "\n\nCommand failed with exit code: " + exitCode;
+        throw new RuntimeException(s);
+      }
+    });
     thread.start();
     thread.join();
     logger.info("Executed fgexec command: " + command);
@@ -330,7 +335,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   }
 
   private BackupStatus doOnlineBackup() throws IOException {
-//    backupBaseDir = temporaryFolder.newFolder("backupDir");
+    // backupBaseDir = temporaryFolder.newFolder("backupDir");
     return new BackupOperation(getCache().getDistributionManager(), getCache())
         .backupAllMembers("/Users/jchen/workspace/geode/geode-core/build/distributedTest/", null);
   }
@@ -764,8 +769,9 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 
     public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof PrepareBackupRequest) {
-//        logger.info(
-//            "TestDistributionMessageObserver.beforeProcessMessage about to signal Before_RemoveBucketMessage gate");
+        // logger.info(
+        // "TestDistributionMessageObserver.beforeProcessMessage about to signal
+        // Before_RemoveBucketMessage gate");
         // When processing RemoveBucketMessage, it will create DestroyRegionMessage.
         // At this time, the partitioned region has not been created on the accessor.
         // Therefore, DistributionAdvisor doesn't have PartitionProfile from the accessor.
@@ -774,8 +780,9 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
         logger.info("beforeProcessMessage PrepareBackupRequest signalGate", new Throwable());
         blackboard.signalGate(BEFORE_REMOVE_BUCKET_MESSAGE);
         logger.info("beforeProcessMessage PrepareBackupRequest DONE signalGate");
-//        logger.info(
-//            "TestDistributionMessageObserver.beforeProcessMessage done signal Before_RemoveBucketMessage gate");
+        // logger.info(
+        // "TestDistributionMessageObserver.beforeProcessMessage done signal
+        // Before_RemoveBucketMessage gate");
       }
     }
 
@@ -808,36 +815,38 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       }
 
       if (message instanceof PutMessage) {
-//        DestroyRegionOperation.DestroyRegionMessage drm =
-//            (DestroyRegionOperation.DestroyRegionMessage) message;
-//        if (drm.regionPath.contains(regionName)) {
-//          logger.info(
-//              "TestDistributionMessageObserver.beforeSendMessage about to wait for After_CreateProxyRegion gate regionName={}",
-//              drm.regionPath);
-          try {
-            // When processing RemoveBucketMessage, it will create DestroyRegionMessage.
-            // At this time, the partitioned region has not been created on the accessor.
-            // Therefore, DistributionAdvisor doesn't have PartitionProfile from the accessor.
-            // If the recipients of DestroyRegionMessage is calculated based on DistributionAdvisor,
-            // the accessor will miss DestroyRegionMessage.
-            // We also don't want to send DestroyRegionMessage too early before the accessor has
-            // actually start creating the partitioned region.
-            // Otherwise, the accessor will not have the bucket profile to be removed.
+        // DestroyRegionOperation.DestroyRegionMessage drm =
+        // (DestroyRegionOperation.DestroyRegionMessage) message;
+        // if (drm.regionPath.contains(regionName)) {
+        // logger.info(
+        // "TestDistributionMessageObserver.beforeSendMessage about to wait for
+        // After_CreateProxyRegion gate regionName={}",
+        // drm.regionPath);
+        try {
+          // When processing RemoveBucketMessage, it will create DestroyRegionMessage.
+          // At this time, the partitioned region has not been created on the accessor.
+          // Therefore, DistributionAdvisor doesn't have PartitionProfile from the accessor.
+          // If the recipients of DestroyRegionMessage is calculated based on DistributionAdvisor,
+          // the accessor will miss DestroyRegionMessage.
+          // We also don't want to send DestroyRegionMessage too early before the accessor has
+          // actually start creating the partitioned region.
+          // Otherwise, the accessor will not have the bucket profile to be removed.
 
-            logger.info("beforeSendMessage PutMessage signalGate");
-            blackboard.signalGate(AFTER_CREATE_PROXY_REGION);
-            logger.info("beforeSendMessage PutMessage DONE signalGate");
+          logger.info("beforeSendMessage PutMessage signalGate");
+          blackboard.signalGate(AFTER_CREATE_PROXY_REGION);
+          logger.info("beforeSendMessage PutMessage DONE signalGate");
 
-            logger.info("beforeSendMessage PutMessage waitForGate");
-            blackboard.waitForGate(BEFORE_REMOVE_BUCKET_MESSAGE);
-            logger.info("beforeSendMessage PutMessage DONE waitForGate");
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-//          logger.info(
-//              "TestDistributionMessageObserver.beforeSendMessage done wait for After_CreateProxyRegion gate regionName={}",
-//              drm.regionPath);
-//        }
+          logger.info("beforeSendMessage PutMessage waitForGate");
+          blackboard.waitForGate(BEFORE_REMOVE_BUCKET_MESSAGE);
+          logger.info("beforeSendMessage PutMessage DONE waitForGate");
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+        // logger.info(
+        // "TestDistributionMessageObserver.beforeSendMessage done wait for After_CreateProxyRegion
+        // gate regionName={}",
+        // drm.regionPath);
+        // }
       }
     }
   }

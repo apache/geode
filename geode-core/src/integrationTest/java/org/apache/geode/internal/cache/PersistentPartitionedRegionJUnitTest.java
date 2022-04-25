@@ -357,7 +357,8 @@ public class PersistentPartitionedRegionJUnitTest {
     RegionFactory<Object, Object> rf = cache.createRegionFactory()
         .setDataPolicy(DataPolicy.PERSISTENT_PARTITION).setDiskSynchronous(true)
         .setDiskStoreName("diskStore1");
-    rf.setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create());
+    rf.setPartitionAttributes(
+        new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create());
     // if (ttl > 0) {
     // rf.setEntryTimeToLive(new ExpirationAttributes(ttl, ExpirationAction.DESTROY));
     // }

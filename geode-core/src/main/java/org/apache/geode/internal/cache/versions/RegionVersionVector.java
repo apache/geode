@@ -1349,7 +1349,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
         myExceptions = localExceptions.clone();
       }
       HashMap<T, RegionVersionHolder<T>> results =
-              new HashMap<>(memberToVersion);
+          new HashMap<>(memberToVersion);
 
       results.put(getOwnerId(), myExceptions);
       return results;
