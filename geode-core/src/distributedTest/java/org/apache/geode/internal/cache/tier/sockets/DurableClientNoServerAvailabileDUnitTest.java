@@ -22,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
@@ -38,10 +38,9 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category({ClientSubscriptionTest.class})
-public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
+@Tag("ClientSubscriptionTest")
+public class DurableClientNoServerAvailabileDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() {

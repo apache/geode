@@ -19,8 +19,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.InterestResultPolicy.NONE;
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.cache.client.PoolManager.createFactory;
-import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.TYPE_CREATE;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClient;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClientFromXmlN;
@@ -34,11 +32,9 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ClientSession;
@@ -46,19 +42,16 @@ import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.HARegionQueueStats;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category({ClientSubscriptionTest.class})
-public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
+@Tag("ClientSubscriptionTest")
+class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
   /**
    * Test that a durable client correctly receives updates.
@@ -173,68 +166,6 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
   }
 
   /**
-   * Test that a second VM with the same durable id cannot connect to the server while the first VM
-   * is connected. Also, verify that the first client is not affected by the second one attempting
-   * to connect.
-   */
-  @Ignore("TODO: test is disabled")
-  @Test
-  public void testMultipleVMsWithSameDurableId() {
-    // Start a server
-    server1Port = server1VM
-        .invoke(() -> createCacheServer(regionName, true));
-
-    // Start a durable client that is not kept alive on the server when it
-    // stops normally
-    final String durableClientId = getName() + "_client";
-    durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(getServerHostName(), server1Port, true), regionName,
-        getClientDistributedSystemProperties(durableClientId), true));
-
-    // Send clientReady message
-    sendClientReady(durableClientVM);
-
-    registerInterest(durableClientVM, regionName, true, NONE);
-
-    // Attempt to start another durable client VM with the same id.
-    publisherClientVM.invoke("Create another durable client", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getSystem(getClientDistributedSystemProperties(durableClientId));
-        PoolFactoryImpl pf = (PoolFactoryImpl) createFactory();
-        pf.init(getClientPool(getServerHostName(), server1Port, true));
-        assertThrows(ServerRefusedConnectionException.class, () -> pf.create("uncreatablePool"));
-        disconnectFromDS();
-      }
-    });
-
-    // Verify durable client on server
-    verifyDurableClientPresent(DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
-        server1VM);
-
-    // Start normal publisher client
-    publisherClientVM.invoke(() -> createCacheClient(
-        getClientPool(getServerHostName(), server1Port, false),
-        regionName));
-
-    // Publish some entries
-    final int numberOfEntries = 10;
-    publishEntries(publisherClientVM, 0, numberOfEntries);
-
-    // Verify the durable client received the updates
-    checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
-
-    // Stop the publisher client
-    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-
-    // Stop the durable client
-    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-
-    // Stop the server
-    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-  }
-
-  /**
    * Test that the server correctly processes starting two durable clients.
    */
   @Test
@@ -295,94 +226,6 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     durableClient2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the server
-    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-  }
-
-  /**
-   * Test that starting a durable client on multiple servers (one live and one not live) is
-   * processed correctly.
-   */
-  @Ignore("TODO: test is disabled for bug 52043")
-  @Test
-  public void testDurableClientMultipleServersOneLive() throws InterruptedException {
-    // Start server 1
-    server1Port = server1VM
-        .invoke(() -> createCacheServer(regionName, true));
-
-    // Start server 2
-    final int server2Port = server2VM
-        .invoke(() -> createCacheServer(regionName, true));
-
-    // Stop server 2
-    server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-
-    // Start a durable client that is kept alive on the server when it stops
-    // normally
-    final String durableClientId = getName() + "_client";
-    final int durableClientTimeout = 60; // keep the client alive for 60 seconds
-    // final boolean durableClientKeepAlive = true; // keep the client alive when it stops normally
-    durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(getServerHostName(), server1Port, server2Port, true),
-        regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
-        true));
-
-    // Send clientReady message
-    sendClientReady(durableClientVM);
-
-    registerInterest(durableClientVM, regionName, true, NONE);
-
-    // Verify durable client on server1
-    verifyDurableClientPresent(durableClientTimeout, durableClientId, server1VM);
-    // Start normal publisher client
-    publisherClientVM.invoke(() -> createCacheClient(getClientPool(getServerHostName(),
-        server1Port, server2Port, false), regionName));
-
-    // Publish some entries
-    final int numberOfEntries = 10;
-    publishEntries(publisherClientVM, 0, numberOfEntries);
-
-    // Verify the durable client received the updates
-    checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
-
-    sleep(10000);
-
-    // Stop the durable client
-    durableClientVM.invoke(() -> CacheServerTestUtil.closeCache(true));
-
-    // Verify the durable client still exists on the server
-    server1VM.invoke("Verify durable client", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        // Find the proxy
-        CacheClientProxy proxy = getClientProxy();
-        assertThat(proxy).isNotNull();
-      }
-    });
-
-    // Publish some more entries
-    publishEntries(publisherClientVM, 10, numberOfEntries);
-
-    // Re-start the durable client
-    durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(getServerHostName(), server1Port, server2Port, true),
-        regionName, getClientDistributedSystemProperties(durableClientId), true));
-
-    // Send clientReady message
-    sendClientReady(durableClientVM);
-
-    // Verify durable client on server
-    verifyDurableClientPresent(durableClientTimeout, durableClientId, server1VM);
-
-    // Verify the durable client received the updates held for it on the server
-    checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
-
-    // Stop the durable client
-    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-
-    // Stop the publisher client
-    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-
-    // Stop server 1
     server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 

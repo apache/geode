@@ -29,8 +29,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -44,7 +44,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
@@ -53,8 +52,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 5.2
  */
-@Category({ClientSubscriptionTest.class})
-public class DurableClientTestCase extends DurableClientTestBase {
+@Tag("ClientSubscriptionTest")
+class DurableClientTestCase extends DurableClientTestBase {
 
 
   /**

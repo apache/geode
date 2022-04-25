@@ -619,12 +619,8 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
             final CacheClientProxy clientProxy = ccnInstance.getClientProxy(durableClientId);
 
             // Wait until we get the expected number of events or until 10 seconds are up
-            await()
-                .until(() -> clientProxy.getQueueSizeStat() == expectedNumber
-                    || clientProxy.getQueueSizeStat() == remaining);
-
-            assertThat(clientProxy.getQueueSizeStat() == expectedNumber
-                || clientProxy.getQueueSizeStat() == remaining).isTrue();
+            await().untilAsserted(
+                () -> assertThat(clientProxy.getQueueSizeStat()).isIn(expectedNumber, remaining));
           }
         });
   }

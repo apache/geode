@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -50,7 +50,6 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
  * The DUnitTest checks whether the following Three counts are incremented correctly or not: 1)
@@ -62,7 +61,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * In the given test DurableClient comes up and goes down discreetly with different
  * DurableClientTimeouts so as to increment the counts
  */
-@Category({ClientSubscriptionTest.class})
+@Tag("ClientSubscriptionTest")
 public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;

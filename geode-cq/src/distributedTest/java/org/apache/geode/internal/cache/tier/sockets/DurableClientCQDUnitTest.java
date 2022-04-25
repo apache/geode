@@ -25,7 +25,6 @@ import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.g
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getClientCache;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getPool;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -34,8 +33,8 @@ import static org.junit.Assert.assertFalse;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -60,12 +59,10 @@ import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category({ClientSubscriptionTest.class})
+@Tag("ClientSubscriptionTest")
 public class DurableClientCQDUnitTest extends DurableClientTestBase {
 
   /**
@@ -181,7 +178,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     // Start a durable client that is kept alive on the server when it stops normally
     durableClientId = getName() + "_client";
     createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(), server1Port, server2Port, true, 0),
+        getClientPool(VM.getHostName(), server1Port, server2Port, true, 0),
         regionName, getClientDistributedSystemProperties(durableClientId), true);
 
     // register non durable cq
@@ -220,7 +217,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
 
     // Restart the durable client
     createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(), primaryPort, true),
+        getClientPool(VM.getHostName(), primaryPort, true),
         regionName, getClientDistributedSystemProperties(durableClientId), true);
     assertThat(getClientCache()).isNotNull();
 
@@ -904,7 +901,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     // Start a durable client
     durableClientId = getName() + "_client";
     durableClientVM.invoke(() -> {
-      createCacheClient(getClientPool(getServerHostName(), server1Port, server2Port,
+      createCacheClient(getClientPool(VM.getHostName(), server1Port, server2Port,
           true, 0),
           regionName, getClientDistributedSystemProperties(durableClientId, 60), true);
 
@@ -999,7 +996,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
 
       // Start normal publisher client
       publisherClientVM.invoke(() -> createCacheClient(
-          getClientPool(getServerHostName(), server1Port, false),
+          getClientPool(VM.getHostName(), server1Port, false),
           regionName));
 
       // Publish some entries
