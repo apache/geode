@@ -7,7 +7,7 @@ commons-digester-2.1.jar
 commons-validator-1.7.jar
 spring-jcl-5.3.18.jar
 commons-codec-1.15.jar
-classgraph-4.8.143.jar
+classgraph-4.8.145.jar
 jackson-databind-2.13.2.2.jar
 commons-logging-1.2.jar
 geode-management-0.0.0.jar

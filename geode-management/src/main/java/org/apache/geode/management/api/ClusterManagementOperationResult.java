@@ -52,7 +52,7 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
   /**
    * normally called by {@link ClusterManagementService#start(ClusterManagementOperation)}
    *
-   * @param statusCode the {@link StatusCode} of the result
+   * @param statusCode the {@code StatusCode} of the result
    * @param message the status message to set
    * @param operationStart a {@link Date} representing the time the operation started
    * @param operationEnd a {@link Date} representing the time the operation ended

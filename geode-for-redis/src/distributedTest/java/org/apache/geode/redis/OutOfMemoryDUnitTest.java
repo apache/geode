@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_13;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__DIR;
@@ -143,8 +145,12 @@ public class OutOfMemoryDUnitTest {
         .addOption(START_SERVER__INITIAL_HEAP, "125m")
         .addOption(START_SERVER__MAXHEAP, "125m")
         .addOption(START_SERVER__CRITICAL__HEAP__PERCENTAGE, "50")
-        .addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45")
         .addOption(START_SERVER__CLASSPATH, redisHome.getGeodeForRedisHome() + "/lib/*");
+    if (isJavaVersionAtMost(JAVA_13)) {
+      startServerCommand.addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45");
+    } else {
+      startServerCommand.addOption(START_SERVER__J, "-XX:+UseZGC");
+    }
     gfsh.executeAndAssertThat(startServerCommand.getCommandString()).statusIsSuccess();
   }
 

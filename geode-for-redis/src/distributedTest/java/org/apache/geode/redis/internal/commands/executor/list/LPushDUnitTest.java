@@ -32,6 +32,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -58,10 +59,11 @@ public class LPushDUnitTest {
   @Before
   public void testSetup() {
     MemberVM locator = clusterStartUp.startLocatorVM(0);
-    clusterStartUp.startRedisVM(1, locator.getPort());
+    int redisServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    clusterStartUp.startRedisVM(1, Integer.toString(redisServerPort), locator.getPort());
     clusterStartUp.startRedisVM(2, locator.getPort());
     clusterStartUp.startRedisVM(3, locator.getPort());
-    int redisServerPort = clusterStartUp.getRedisPort(1);
+
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), 10_000);
     listHashtags = makeListHashtags();
     keys = makeListKeys(listHashtags);

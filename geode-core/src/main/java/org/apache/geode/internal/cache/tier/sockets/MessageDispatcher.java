@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.internal.cache.EntryEventImpl.deserialize;
 import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -22,6 +21,7 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -83,7 +83,7 @@ public class MessageDispatcher extends LoggingThread {
   /**
    * Default value in milliseconds for waiting for re-authentication
    */
-  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = 5000;
+  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = Duration.ofMinutes(1).toMillis();
 
   /**
    * The queue of messages to be sent to the client
@@ -531,6 +531,10 @@ public class MessageDispatcher extends LoggingThread {
 
   private boolean handleAuthenticationExpiredException(AuthenticationExpiredException expired)
       throws InterruptedException {
+    if (unregisterUnsupportedClient(expired)) {
+      return true;
+    }
+
     long reAuthenticateWaitTime =
         getSystemProperty(RE_AUTHENTICATE_WAIT_TIME, DEFAULT_RE_AUTHENTICATE_WAIT_TIME);
     synchronized (reAuthenticationLock) {
@@ -539,15 +543,9 @@ public class MessageDispatcher extends LoggingThread {
       // flag for the notification to happen.
       waitForReAuthenticationStartTime = System.currentTimeMillis();
       subjectUpdated = false;
-      // only send the message to clients who can handle the message
-      if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
-        EventID eventId = createEventId();
-        sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
-      }
+      EventID eventId = createEventId();
+      sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
 
-      // We wait for all versions of clients to re-authenticate. For older clients we still
-      // wait, just in case client will perform some operations to
-      // trigger credential refresh on its own.
       long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
       long remainingWaitTime = waitFinishTime - System.currentTimeMillis();
       while (!subjectUpdated && remainingWaitTime > 0) {
@@ -565,10 +563,28 @@ public class MessageDispatcher extends LoggingThread {
             "Client did not re-authenticate back successfully in {} ms. Unregister this client proxy.",
             elapsedTime);
         pauseOrUnregisterProxy(expired);
-        return true;
       }
+      return true;
     }
     return false;
+  }
+
+  /**
+   * for old client, don't wait for re-auth but unregister this proxy completely.
+   */
+  private boolean unregisterUnsupportedClient(AuthenticationExpiredException expired) {
+    if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
+      return false;
+    }
+
+    logger.warn(
+        "Authentication expired for a client with a version less than Geode 1.15. Cannot re-authenticate an older client "
+            + "that has a server to client queue for CQs or interest registrations. "
+            + "Please upgrade your client to Geode 1.15 or greater to allow re-authentication.");
+    synchronized (_stopDispatchingLock) {
+      pauseOrUnregisterProxy(expired);
+    }
+    return true;
   }
 
   @VisibleForTesting
