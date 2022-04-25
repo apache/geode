@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -75,6 +76,7 @@ public class InternalCacheForClientAccessDistributedTest implements java.io.Seri
       cache = serverCache;
 
       CacheServer cacheServer = serverCache.addCacheServer();
+      cacheServer.setPort(getRandomAvailableTCPPort());
       cacheServer.start();
     });
     clientVM.invoke(() -> {
