@@ -1343,14 +1343,17 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * member.
    */
   public Map<T, RegionVersionHolder<T>> getMemberToVersion() {
-    RegionVersionHolder<T> myExceptions;
-    myExceptions = localExceptions.clone();
+    synchronized (memberToVersion) {
+      RegionVersionHolder<T> myExceptions;
+      synchronized (localExceptions) {
+        myExceptions = localExceptions.clone();
+      }
+      HashMap<T, RegionVersionHolder<T>> results =
+              new HashMap<>(memberToVersion);
 
-    HashMap<T, RegionVersionHolder<T>> results =
-        new HashMap<>(memberToVersion);
-
-    results.put(getOwnerId(), myExceptions);
-    return results;
+      results.put(getOwnerId(), myExceptions);
+      return results;
+    }
   }
 
   /**
