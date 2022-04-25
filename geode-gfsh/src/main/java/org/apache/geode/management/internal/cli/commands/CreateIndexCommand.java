@@ -79,7 +79,7 @@ public class CreateIndexCommand extends GfshCommand {
 
     // first find out what groups this region belongs to when using cluster configuration
     InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    final Set<DistributedMember> targetMembers;
+    Set<DistributedMember> targetMembers;
     ResultModel resultModel = new ResultModel();
     InfoResultModel info = resultModel.addInfo();
     String regionName = null;
@@ -123,6 +123,20 @@ public class CreateIndexCommand extends GfshCommand {
       index.setKeyIndex(false);
       index.setType(indexType.getName());
     }
+    if (groups == null || groups.length == 0) {
+      groups = new String[] {"cluster"};
+    }
+
+    for (String group : groups) {
+      if (ccService != null) {
+        CacheConfig cacheConfig1 = ccService.getCacheConfig(group);
+        RegionConfig regionConfig1 = cacheConfig1.findRegionConfiguration(regionName);
+        if (regionConfig1.getType().equals("PARTITION")) {
+          DistributedMember member = targetMembers.iterator().next();
+          targetMembers.removeIf(s -> (s != member));
+        }
+      }
+    }
 
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
@@ -147,10 +161,6 @@ public class CreateIndexCommand extends GfshCommand {
 
     final InfoResultModel groupStatus = resultModel.addInfo("groupStatus");
     String finalRegionName = regionName;
-    // at this point, groups should be the regionConfig's groups
-    if (groups.length == 0) {
-      groups = new String[] {"cluster"};
-    }
     for (String group : groups) {
       ccService.updateCacheConfig(group, cacheConfig -> {
         RegionConfig regionConfig = cacheConfig.findRegionConfiguration(finalRegionName);
