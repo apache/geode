@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.LongAdder;
 
+import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
@@ -52,7 +53,6 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -66,7 +66,7 @@ import org.apache.geode.test.version.VersionManager;
  * sends P2P messages via TLS and verifies request-reply message processing.
  */
 @Category({MembershipTest.class})
-@RunWith(GeodeParamsRunner.class)
+@RunWith(JUnitParamsRunner.class)
 public class P2pMessagingSslTlsKeyUpdateDistributedTest {
 
   private static final String TLS_PROTOCOL = "TLSv1.3";

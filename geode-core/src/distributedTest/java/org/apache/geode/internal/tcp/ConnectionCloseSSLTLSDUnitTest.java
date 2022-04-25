@@ -43,7 +43,6 @@ import java.nio.ByteBuffer;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,7 +59,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -82,7 +80,6 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
   private static final String UPDATE_ENTERED_GATE = "connectionCloseDUnitTest.regionUpdateEntered";
   private static final String SUSPEND_UPDATE_GATE = "connectionCloseDUnitTest.suspendRegionUpdate";
   private static final String regionName = "connectionCloseDUnitTestRegion";
-  private static final Logger logger = LogService.getLogger();
 
   private static Cache cache;
 
