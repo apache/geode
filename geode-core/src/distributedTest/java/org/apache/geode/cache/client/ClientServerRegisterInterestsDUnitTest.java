@@ -176,7 +176,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
     return clientCache;
   }
 
-  protected <K, V> V put() {
+  protected <V> V put() {
     return (V) gemfireServerVm.invoke(() -> {
       Cache cache = CacheFactory.getAnyInstance();
       cache.getRegion("/Example").put("2", "TWO");

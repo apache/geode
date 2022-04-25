@@ -217,24 +217,9 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   public void disconnectDurableClient(boolean keepAlive) {
-    // printClientProxyState("Before");
     durableClientVM.invoke("close durable client cache",
         () -> CacheServerTestUtil.closeCache(keepAlive));
     await().until(CacheServerTestUtil::getCache, nullValue());
-    // printClientProxyState("after");
-  }
-
-  private void printClientProxyState(String st) {
-    server1VM.invoke("Logging CCCP and ServerConnection state", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getCache().getLogger()
-            .info(st + " CCP states: " + getAllClientProxyState());
-        getCache().getLogger().info(st + " CHM states: "
-            + printMap(
-                ClientHealthMonitor.getInstance().getConnectedClients(null)));
-      }
-    });
   }
 
   private static String printMap(Map<String, Object[]> m) {
