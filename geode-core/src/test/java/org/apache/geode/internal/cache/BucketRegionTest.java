@@ -812,7 +812,7 @@ public class BucketRegionTest {
   }
 
   @Test
-  public void handleWANEventDoesNotSetNotPrimaryIfWas0NotPrimary() {
+  public void handleWANEventDoesNotSetNotPrimaryIfWasNotPrimary() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
@@ -825,20 +825,15 @@ public class BucketRegionTest {
   }
 
   @Test
-  public void onlyOneThreadWillExecuteCheckIfAllChildBucketsFromLeaderBecomePrimary()
-      throws Exception {
+  public void multipleCallsToWaitForAllColocatedBucketsFromLeaderBecomePrimaryWillOnlyInvokeExecuteCheckIfAllChildBucketsFromLeaderBecomePrimaryOnce() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doNothing().when(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
 
-    Future<?> future =
-        executor.runAsync(bucketRegion::waitForAllColocatedBucketsFromLeaderBecomePrimary);
-    Future<?> future2 =
-        executor.runAsync(bucketRegion::waitForAllColocatedBucketsFromLeaderBecomePrimary);
+    bucketRegion.waitForAllColocatedBucketsFromLeaderBecomePrimary();
+    bucketRegion.waitForAllColocatedBucketsFromLeaderBecomePrimary();
 
-    future.get();
-    future2.get();
     assertThat(bucketRegion.alreadyInWaitForAllColocatedBucketsToBecomePrimary).isTrue();
     verify(bucketRegion).executeCheckIfAllChildBucketsBecomePrimary();
   }
