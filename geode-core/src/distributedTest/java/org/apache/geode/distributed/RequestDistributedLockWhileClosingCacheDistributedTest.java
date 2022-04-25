@@ -16,6 +16,7 @@ package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.Serializable;
 import java.util.Properties;
@@ -38,6 +39,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -48,6 +50,9 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
+
+  @Rule
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   @Rule
   public DistributedBlackboard blackboard = new DistributedBlackboard();
@@ -121,14 +126,11 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
   }
 
   private void requestDistributedLock(String lockName) {
-    // Request a distributed lock from the partitioned region lock service
+    // Attempt to request a distributed lock from the partitioned region lock service
     DistributedLockService service =
         ClusterStartupRule.getCache().getPartitionedRegionLockService();
-    try {
-      service.lock(lockName, GeodeAwaitility.getTimeout().toMillis(), -1);
-    } catch (Exception e) {
-      /* ignore */
-    }
+    assertThatExceptionOfType(LockServiceDestroyedException.class)
+        .isThrownBy(() -> service.lock(lockName, GeodeAwaitility.getTimeout().toMillis(), -1));
   }
 
   private void verifyCacheIsClosed() {
@@ -144,7 +146,7 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
     assertThat(dLockService.isLockGrantor()).isTrue();
     DLockGrantor dLockGrantor = dLockService.getGrantor();
     DLockGrantor.DLockGrantToken grantToken = dLockGrantor.getGrantToken(lockName);
-    // assertThat(grantToken).isNull();
+    assertThat(grantToken).isNull();
   }
 
   class TestDistributionMessageObserver extends DistributionMessageObserver implements
@@ -175,7 +177,7 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
           try {
             blackboard.waitForGate(MEMBER_DEPARTED);
           } catch (Exception e) {
-            throw new RuntimeException(e);
+            errorCollector.addError(e);
           }
         }
       }

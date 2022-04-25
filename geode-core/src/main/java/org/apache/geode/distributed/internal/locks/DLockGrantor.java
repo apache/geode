@@ -544,9 +544,14 @@ public class DLockGrantor {
     }
   }
 
-  protected boolean hasMemberDeparted(InternalDistributedMember owner) {
+  void checkIfMemberDeparted(DLockRequestMessage request) {
     synchronized (membersDepartedTime) {
-      return membersDepartedTime.containsKey(owner);
+      if (membersDepartedTime.containsKey(request.getSender())) {
+        throw new RuntimeException(
+            "The lock request for " + request.getObjectName() + " in " + dlock.getName()
+                + " was not granted because the host " + request.getSender()
+                + " is no longer a member of the cluster.");
+      }
     }
   }
 
@@ -788,12 +793,6 @@ public class DLockGrantor {
       return;
     }
 
-    if (hasMemberDeparted(request.getSender())) {
-      logger.warn("XXX DLockGrantor.handleLockRequest would have returned grantor={}; request={}",
-          this, request);
-      // return;
-    }
-
     waitWhileInitializing(); // calcWaitMillisFromNow
 
     final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
@@ -830,6 +829,7 @@ public class DLockGrantor {
         dLockLessorDepartureHandler.waitForInProcessDepartures();
       }
       checkDestroyed();
+      checkIfMemberDeparted(request);
       if (acquireLockPermission(request)) {
         handlePermittedLockRequest(request);
       } else {
