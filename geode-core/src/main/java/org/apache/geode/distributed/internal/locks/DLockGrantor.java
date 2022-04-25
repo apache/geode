@@ -788,9 +788,11 @@ public class DLockGrantor {
       return;
     }
 
-    // if (hasMemberDeparted(request.getSender())) {
-    // return;
-    // }
+    if (hasMemberDeparted(request.getSender())) {
+      logger.warn("XXX DLockGrantor.handleLockRequest would have returned grantor={}; request={}",
+          this, request);
+      // return;
+    }
 
     waitWhileInitializing(); // calcWaitMillisFromNow
 
