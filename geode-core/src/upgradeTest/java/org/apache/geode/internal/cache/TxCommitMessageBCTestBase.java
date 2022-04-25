@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -50,7 +51,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * This test class tests the communication pattern of a transaction for replicate and partition
@@ -70,17 +72,16 @@ import org.apache.geode.test.version.VersionManager;
 @SuppressWarnings("serial")
 public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCase {
   @Parameterized.Parameter
-  public String testVersion;
+  public VmConfiguration sourceConfiguration;
 
-  @Parameterized.Parameters
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
-    }
-    return result;
+  @Parameterized.Parameters(name = "From {0}")
+  public static Collection<VmConfiguration> data() {
+    List<VmConfiguration> sourceConfigurations = VmConfigurations.upgrades();
+    assertThat(sourceConfigurations)
+        .as("upgrade configurations")
+        .isNotEmpty();
+    System.out.println("upgrading from configurations: " + sourceConfigurations);
+    return sourceConfigurations;
   }
 
   protected static VM server1 = null;
@@ -106,7 +107,7 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
     server1 = host.getVM(0); // server
     server2 = host.getVM(1); // server
     server3 = host.getVM(2); // server with pool
-    client = host.getVM(testVersion, 3); // client
+    client = host.getVM(sourceConfiguration, 3);
     oldClient = host.getVM(4); // client old version
 
     int port1 =

@@ -37,9 +37,9 @@ public class RollingUpgradeTracePRQuery extends RollingUpgrade2DUnitTestBase {
   public void testTracePRQuery() throws Exception {
     final Host host = Host.getHost(0);
     VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    VM oldServer = host.getVM(oldVersion, 1);
+    VM oldServer = host.getVM(sourceConfiguration, 1);
     VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM oldServerAndLocator = host.getVM(oldVersion, 3);
+    VM oldServerAndLocator = host.getVM(sourceConfiguration, 3);
 
     String regionName = "cqs";
 

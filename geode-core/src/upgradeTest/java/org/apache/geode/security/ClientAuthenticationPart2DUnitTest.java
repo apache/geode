@@ -14,6 +14,7 @@
  */
 package org.apache.geode.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,13 +28,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * this class contains test methods that used to be in its superclass but that test started taking
@@ -43,20 +46,18 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthenticationPart2DUnitTest extends ClientAuthenticationTestCase {
-  @Parameterized.Parameters
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersions();
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
-    }
-    return result;
+  @Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    List<VmConfiguration> vmConfigurations = VmConfigurations.all();
+    assertThat(vmConfigurations)
+        .as("client configurations")
+        .isNotEmpty();
+    System.out.println("using client configurations: " + vmConfigurations);
+    return vmConfigurations;
   }
 
-  public ClientAuthenticationPart2DUnitTest(String version) {
-    super();
-    clientVersion = version;
+  public ClientAuthenticationPart2DUnitTest(VmConfiguration clientVmConfiguration) {
+    super(clientVmConfiguration);
   }
 
   @Test

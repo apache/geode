@@ -14,6 +14,9 @@
  */
 package org.apache.geode.security;
 
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -27,7 +30,8 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * Test for authentication from client to server. This tests for both valid and invalid
@@ -41,18 +45,18 @@ import org.apache.geode.test.version.VersionManager;
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase {
 
-  @Parameters(name = "{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersions();
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    }
-    System.out.println("running against these versions: " + result);
-    return result;
+  @Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    List<VmConfiguration> vmConfigurations = VmConfigurations.all();
+    assertThat(vmConfigurations)
+        .as("client configurations")
+        .isNotEmpty();
+    System.out.println("using client configurations: " + vmConfigurations);
+    return vmConfigurations;
   }
 
-  public ClientAuthenticationDUnitTest(String version) {
-    clientVersion = version;
+  public ClientAuthenticationDUnitTest(VmConfiguration clientVmConfiguration) {
+    super(clientVmConfiguration);
   }
 
   @Test

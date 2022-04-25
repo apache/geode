@@ -90,6 +90,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
 
 /**
  * Base class for tests for authorization from client to server. It contains utility functions for
@@ -110,7 +111,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   protected static VM client1 = null;
   protected static VM client2 = null;
 
-  public String clientVersion = VersionManager.CURRENT_VERSION;
+  public final VmConfiguration clientVmConfiguration;
 
   protected static final String regionName = REGION_NAME; // TODO: remove
   protected static final String SUBREGION_NAME = "AuthSubregion";
@@ -124,6 +125,14 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   private static final String[] clientIgnoredExceptions =
       {AuthenticationFailedException.class.getName(), NotAuthorizedException.class.getName(),
           RegionDestroyedException.class.getName()};
+
+  public ClientAuthorizationTestCase() {
+    this(VmConfiguration.current());
+  }
+
+  protected ClientAuthorizationTestCase(VmConfiguration clientVmConfiguration) {
+    this.clientVmConfiguration = clientVmConfiguration;
+  }
 
   @Override
   public final void preSetUp() throws Exception {}
@@ -141,13 +150,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     server2 = host.getVM(VersionManager.CURRENT_VERSION, 1);
     server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
     server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
-    if (VersionManager.isCurrentVersion(clientVersion)) {
-      client1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-      client2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
-    } else {
-      client1 = host.getVM(clientVersion, 2);
-      client2 = host.getVM(clientVersion, 3);
-    }
+    client1 = host.getVM(clientVmConfiguration, 2);
+    client2 = host.getVM(clientVmConfiguration, 3);
     setUpIgnoredExceptions();
   }
 

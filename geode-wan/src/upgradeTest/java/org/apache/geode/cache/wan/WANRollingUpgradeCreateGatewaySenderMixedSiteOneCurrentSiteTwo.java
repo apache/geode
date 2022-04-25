@@ -32,6 +32,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
@@ -42,9 +43,9 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     final Host host = Host.getHost(0);
 
     // Get mixed site members
-    VM site1Locator = host.getVM(oldVersion, 0);
-    VM site1Server1 = host.getVM(oldVersion, 1);
-    VM site1Server2 = host.getVM(oldVersion, 2);
+    VM site1Locator = host.getVM(sourceVmConfiguration, 0);
+    VM site1Server1 = host.getVM(sourceVmConfiguration, 1);
+    VM site1Server2 = host.getVM(sourceVmConfiguration, 2);
 
     // Get current site members
     VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
@@ -108,13 +109,17 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
     CommandResultAssert cmd = gfsh
         .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId));
-    if (!majorMinor(oldVersion).equals(majorMinor(KnownVersion.CURRENT.getName()))) {
+    if (isCurrentVersionMajorMinor(sourceVmConfiguration.geodeVersion())) {
+      cmd.statusIsSuccess();
+    } else {
       cmd.statusIsError()
           .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
-    } else {
-      // generally serialization version is unchanged between patch releases
-      cmd.statusIsSuccess();
     }
+  }
+
+  private boolean isCurrentVersionMajorMinor(TestVersion geodeVersion) {
+    return geodeVersion.equals(TestVersion.CURRENT_VERSION) ||
+        majorMinor(geodeVersion.toString()).equals(majorMinor(KnownVersion.CURRENT.getName()));
   }
 
   /**

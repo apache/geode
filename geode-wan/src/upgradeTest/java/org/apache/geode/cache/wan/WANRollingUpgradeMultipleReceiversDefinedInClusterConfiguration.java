@@ -15,9 +15,12 @@
 
 package org.apache.geode.cache.wan;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -48,7 +51,10 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.TestVersion;
+import org.apache.geode.test.version.TestVersions;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     extends WANRollingUpgradeDUnitTest {
@@ -65,11 +71,11 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
   @Parameterized.Parameters(name = "from_v{0}; attributes={1}; expectedReceiverCount={2}")
   public static Collection data() {
     // Get initial versions to test against
-    List<String> versions = getVersionsToTest();
+    List<VmConfiguration> configurations = getConfigurationsToTest();
 
     // Build up a list of version->attributes->expectedReceivers
     List<Object[]> result = new ArrayList<>();
-    versions.forEach(version -> {
+    configurations.forEach(version -> {
       // Add a case for hostname-for-senders
       addReceiversWithHostNameForSenders(result, version);
 
@@ -91,58 +97,61 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     return result;
   }
 
-  private static List<String> getVersionsToTest() {
+  private static List<VmConfiguration> getConfigurationsToTest() {
     // There is no need to test old versions beyond 130. Individual member configuration is not
     // saved in cluster configuration and multiple receivers are not supported starting in 140.
     // Note: This comparison works because '130' < '140'.
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(version -> (TestVersion.compare(version, "1.4.0") >= 0));
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    }
-    return result;
+    List<VmConfiguration> oldConfigurations = VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.valueOf("1.4.0"))))
+        .collect(toList());
+    assumeThat(oldConfigurations)
+        .as("old configurations")
+        .isNotEmpty();
+    return oldConfigurations;
   }
 
-  private static void addReceiversWithHostNameForSenders(List<Object[]> result, String version) {
+  private static void addReceiversWithHostNameForSenders(List<Object[]> result,
+      VmConfiguration vmConfiguration) {
     List<Attribute> attributes = new ArrayList<>();
     attributes.add(new Attribute("hostname-for-senders", "121.21.21.21"));
     attributes.add(new Attribute("hostname-for-senders", "121.21.21.22"));
-    result.add(new Object[] {version, attributes, 2, 0});
+    result.add(new Object[] {vmConfiguration, attributes, 2, 0});
   }
 
-  private static void addReceiversWithBindAddresses(List<Object[]> result, String version) {
+  private static void addReceiversWithBindAddresses(List<Object[]> result,
+      VmConfiguration vmConfiguration) {
     List<Attribute> attributes = new ArrayList<>();
     attributes.add(new Attribute("bind-address", "121.21.21.21"));
     attributes.add(new Attribute("bind-address", "121.21.21.22"));
-    result.add(new Object[] {version, attributes, 2, 0});
+    result.add(new Object[] {vmConfiguration, attributes, 2, 0});
   }
 
   private static void addMultipleReceiversWithDefaultAttributes(List<Object[]> result,
-      String version) {
+      VmConfiguration vmConfiguration) {
     List<Attribute> attributes = new ArrayList<>();
     attributes.add(Attribute.DEFAULT);
     attributes.add(Attribute.DEFAULT);
-    result.add(new Object[] {version, attributes, 2, 1});
+    result.add(new Object[] {vmConfiguration, attributes, 2, 1});
   }
 
   private static void addSingleReceiverWithDefaultAttributes(List<Object[]> result,
-      String version) {
+      VmConfiguration vmConfiguration) {
     List<Attribute> attributes = new ArrayList<>();
     attributes.add(Attribute.DEFAULT);
-    result.add(new Object[] {version, attributes, 1, 1});
+    result.add(new Object[] {vmConfiguration, attributes, 1, 1});
   }
 
   private static void addSingleReceiverWithDefaultBindAddress(List<Object[]> result,
-      String version) {
+      VmConfiguration configuration) {
     List<Attribute> attributes = new ArrayList<>();
     attributes.add(new Attribute("bind-address", "0.0.0.0"));
-    result.add(new Object[] {version, attributes, 1, 1});
+    result.add(new Object[] {configuration, attributes, 1, 1});
   }
 
   @Test
   public void testMultipleReceiversRemovedDuringRoll() {
     // Get old locator properties
-    VM locator = Host.getHost(0).getVM(oldVersion, 0);
+    VM locator = Host.getHost(0).getVM(sourceVmConfiguration, 0);
     String hostName = NetworkUtils.getServerHostName();
     final int locatorPort = getRandomAvailableTCPPort();
 

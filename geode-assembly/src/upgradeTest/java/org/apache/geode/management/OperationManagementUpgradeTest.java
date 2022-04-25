@@ -15,7 +15,6 @@
 
 package org.apache.geode.management;
 
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
 import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,7 +64,7 @@ public class OperationManagementUpgradeTest {
     oldGfsh = new GfshRule(oldVersion);
     DUnitLauncher.launchIfNeeded(false);
     // get the vm with the same version of the oldGfsh
-    vm = getHost(0).getVM(oldVersion, 0);
+    vm = VM.getVM(oldVersion, 0);
   }
 
   @Rule

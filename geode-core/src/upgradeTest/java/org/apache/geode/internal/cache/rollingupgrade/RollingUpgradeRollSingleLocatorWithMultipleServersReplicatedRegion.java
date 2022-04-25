@@ -33,9 +33,9 @@ public class RollingUpgradeRollSingleLocatorWithMultipleServersReplicatedRegion
   @Test
   public void testRollSingleLocatorWithMultipleServersReplicatedRegion() throws Exception {
     final Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 0);
-    VM server2 = host.getVM(oldVersion, 1);
-    VM server3 = host.getVM(oldVersion, 2);
+    VM locator = host.getVM(sourceConfiguration, 0);
+    VM server2 = host.getVM(sourceConfiguration, 1);
+    VM server3 = host.getVM(sourceConfiguration, 2);
 
     final String objectType = "strings";
     final String regionName = "aRegion";

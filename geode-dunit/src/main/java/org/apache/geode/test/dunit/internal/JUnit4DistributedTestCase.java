@@ -376,18 +376,17 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * Do not override this method.
    */
   private void doSetUpDistributedTestCase() {
-    final String className = getTestClass().getCanonicalName();
     final String methodName = getName();
 
     TestHistoryLogger.logTestHistory(getTestClass().getSimpleName(), methodName);
 
-    setUpVM(methodName, getDefaultDiskStoreName(0, -1, className, methodName));
+    setUpVM(methodName, getDefaultDiskStoreName(0, -1, methodName));
 
     for (int hostIndex = 0; hostIndex < Host.getHostCount(); hostIndex++) {
       Host host = Host.getHost(hostIndex);
       for (int vmIndex = 0; vmIndex < host.getVMCount(); vmIndex++) {
         final String vmDefaultDiskStoreName =
-            getDefaultDiskStoreName(hostIndex, vmIndex, className, methodName);
+            getDefaultDiskStoreName(hostIndex, vmIndex, methodName);
         host.getVM(vmIndex).invoke("setupVM", () -> setUpVM(methodName, vmDefaultDiskStoreName));
       }
     }
@@ -422,9 +421,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   private static String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
-      final String className, final String methodName) {
-    return "DiskStore-" + hostIndex + "-" + vmIndex + "-"
-        + className + "." + methodName; // used to be getDeclaringClass()
+      final String methodName) {
+    return "DiskStore-" + hostIndex + "-" + vmIndex + "-" + methodName;
   }
 
   private static void setUpVM(final String methodName, final String defaultDiskStoreName) {

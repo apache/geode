@@ -15,8 +15,10 @@
 package org.apache.geode.management;
 
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
+
 import java.util.Collection;
-import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,22 +32,24 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.TestVersions;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 public class ConfigurationCompatibilityTest {
-  private final String oldVersion;
+  private final VmConfiguration sourceVmConfiguration;
 
   @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.10.0") < 0);
-    return result;
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(TestVersions.atLeast(TestVersion.valueOf("1.10.0"))))
+        .collect(toList());
   }
 
-  public ConfigurationCompatibilityTest(String oldVersion) {
-    this.oldVersion = oldVersion;
+  public ConfigurationCompatibilityTest(VmConfiguration sourceVmConfiguration) {
+    this.sourceVmConfiguration = sourceVmConfiguration;
   }
 
   @Rule
@@ -57,21 +61,20 @@ public class ConfigurationCompatibilityTest {
   @Test
   public void whenConfigurationIsExchangedBetweenMixedVersionLocatorsThenItShouldNotThrowExceptions()
       throws Exception {
-    MemberVM locator1 = clusterStartupRule.startLocatorVM(0, oldVersion);
+    MemberVM locator1 = clusterStartupRule.startLocatorVM(0, sourceVmConfiguration);
     int locatorPort1 = locator1.getPort();
-    MemberVM locator2 =
-        clusterStartupRule
-            .startLocatorVM(1, 0, oldVersion, l -> l.withConnectionToLocator(locatorPort1));
+    MemberVM locator2 = clusterStartupRule
+        .startLocatorVM(1, 0, sourceVmConfiguration, l -> l.withConnectionToLocator(locatorPort1));
     int locatorPort2 = locator2.getPort();
 
     gfsh.connect(locator1);
     gfsh.executeAndAssertThat("configure pdx --read-serialized=true --disk-store=DEFAULT")
         .statusIsSuccess();
 
-    clusterStartupRule.startServerVM(2, oldVersion,
+    clusterStartupRule.startServerVM(2, sourceVmConfiguration,
         s -> s.withConnectionToLocator(locatorPort1, locatorPort2).withRegion(
             RegionShortcut.PARTITION, "region"));
-    clusterStartupRule.startServerVM(3, oldVersion,
+    clusterStartupRule.startServerVM(3, sourceVmConfiguration,
         s -> s.withConnectionToLocator(locatorPort1, locatorPort2)
             .withRegion(RegionShortcut.PARTITION, "region"));
 

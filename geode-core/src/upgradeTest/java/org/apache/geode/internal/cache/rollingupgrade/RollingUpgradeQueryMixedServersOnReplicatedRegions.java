@@ -21,7 +21,7 @@ public class RollingUpgradeQueryMixedServersOnReplicatedRegions
 
   @Test
   public void testQueryMixedServersOnReplicatedRegions() throws Exception {
-    doTestQueryMixedServers(false, oldVersion);
+    doTestQueryMixedServers(false, sourceConfiguration);
   }
 
 }

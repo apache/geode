@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit;
 
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ import org.apache.geode.test.dunit.internal.ChildVMLauncher;
 import org.apache.geode.test.dunit.internal.ProcessHolder;
 import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.internal.VMEventNotifier;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
 
 /**
  * This class represents a host on which a remote method may be invoked. It provides access to the
@@ -35,16 +36,21 @@ import org.apache.geode.test.version.VersionManager;
  */
 @SuppressWarnings("serial")
 public abstract class Host implements Serializable {
-
-  /** The available hosts */
+  /**
+   * The available hosts
+   */
   private static final List<Host> hosts = new ArrayList<>();
 
   private static VM locator;
 
-  /** The name of this host machine */
+  /**
+   * The name of this host machine
+   */
   private final String hostName;
 
-  /** The VMs that run on this host */
+  /**
+   * The VMs that run on this host
+   */
   private final List<VM> vms;
 
   private final transient VMEventNotifier vmEventNotifier;
@@ -68,7 +74,6 @@ public abstract class Host implements Serializable {
    *
    * @param whichHost A zero-based identifier of the host
    * @return the Host
-   *
    * @throws IllegalArgumentException {@code n} is more than the number of hosts
    */
   public static Host getHost(int whichHost) {
@@ -93,7 +98,7 @@ public abstract class Host implements Serializable {
       int numVMs = host.getVMCount();
       for (int i = 0; i < numVMs; i++) {
         try {
-          host.getVM(VersionManager.CURRENT_VERSION, i);
+          host.getVM(VmConfiguration.current(), i);
         } catch (UnsupportedOperationException e) {
           // not all implementations support versioning
         }
@@ -132,12 +137,18 @@ public abstract class Host implements Serializable {
     return vms.size();
   }
 
+  /*
+   * return a collection of all VMs
+   */
+  public List<VM> getAllVMs() {
+    return new ArrayList<>(vms);
+  }
+
   /**
    * Returns a VM that runs on this host
    *
    * @param n A zero-based identifier of the VM
    * @return a VM that runs on this host
-   *
    * @throws IllegalArgumentException {@code n} is more than the number of VMs
    * @deprecated use the static methods in VM instead
    */
@@ -155,28 +166,41 @@ public abstract class Host implements Serializable {
     }
   }
 
-  /*
-   * return a collection of all VMs
+  /**
+   * Returns the nth VM, ensuring that it is configured with the given geode version. Optional
+   * operation currently supported only in distributedTests.
+   *
+   * @param geodeVersion the desired geode version for the VM
+   * @param n the index the VM
+   * @return the specified VM, configured with the specified Geode version
+   * @deprecated use {@link VM#getVM(String, int)}
    */
-  public List<VM> getAllVMs() {
-    return new ArrayList<>(vms);
+  @Deprecated
+  public VM getVM(String geodeVersion, int n) {
+    throw new UnsupportedOperationException("Not supported in this implementation of Host");
   }
 
-  /*
-   * Returns the nth VM of the given version. Optional operation currently supported only in
-   * distributedTests.
+  /**
+   * Returns the nth VM, ensuring that it is configured with the given VM configuration. Optional
+   * operation currently supported only in distributedTests.
+   *
+   * @param configuration the desired configuration for the VM
+   * @param whichVM the index the VM
+   * @return the specified VM, configured with the specified configuration
+   * @deprecated use {@link VM#getVM(VmConfiguration, int)}
    */
-  public VM getVM(String version, int n) {
+  @Deprecated
+  public VM getVM(VmConfiguration configuration, int whichVM) {
     throw new UnsupportedOperationException("Not supported in this implementation of Host");
   }
 
   /*
    * Adds a VM to this Host with the given process id and client record.
    */
-  protected void addVM(int vmid, final String version, RemoteDUnitVMIF client,
+  protected void addVM(int vmid, VmConfiguration configuration, RemoteDUnitVMIF client,
       ProcessHolder processHolder,
       ChildVMLauncher childVMLauncher) {
-    VM vm = new VM(this, version, vmid, client, processHolder,
+    VM vm = new VM(this, configuration, vmid, client, processHolder,
         childVMLauncher);
     vms.add(vm);
     vmEventNotifier.notifyAfterCreateVM(vm);
@@ -192,8 +216,8 @@ public abstract class Host implements Serializable {
 
   protected void addLocator(int vmid, RemoteDUnitVMIF client, ProcessHolder processHolder,
       ChildVMLauncher childVMLauncher) {
-    setLocator(new VM(this, VersionManager.CURRENT_VERSION, vmid, client, processHolder,
-        childVMLauncher));
+    setLocator(
+        new VM(this, VmConfiguration.current(), vmid, client, processHolder, childVMLauncher));
   }
 
   @Override
