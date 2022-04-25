@@ -375,8 +375,6 @@ public class NioSslEngine implements NioFilter {
   @Override
   public synchronized void close(SocketChannel socketChannel) {
 
-    assert socketChannel.isBlocking();
-
     if (closed) {
       return;
     }

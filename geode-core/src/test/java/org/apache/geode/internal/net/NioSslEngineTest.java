@@ -372,7 +372,6 @@ public class NioSslEngineTest {
     SocketChannel mockChannel = mock(SocketChannel.class);
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
-    when(mockChannel.isBlocking()).thenReturn(true);
     when(mockSocket.isClosed()).thenReturn(false);
 
     when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE).thenReturn(Boolean.TRUE);
@@ -393,7 +392,6 @@ public class NioSslEngineTest {
     SocketChannel mockChannel = mock(SocketChannel.class);
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
-    when(mockChannel.isBlocking()).thenReturn(true);
     when(mockSocket.isClosed()).thenReturn(true);
 
     when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE).thenReturn(Boolean.TRUE);
@@ -410,9 +408,7 @@ public class NioSslEngineTest {
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(true);
-    when(mockChannel.isBlocking()).thenReturn(true);
 
-    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenAnswer((x) -> {
       try (final ByteBufferSharing outputSharing =
           nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {

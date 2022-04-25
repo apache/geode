@@ -53,9 +53,9 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
@@ -109,7 +109,7 @@ public class NioSslEngineKeyUpdateTest {
   private SSLEngine serverEngine;
   private int packetBufferSize;
 
-  @BeforeAll
+  @BeforeClass
   public static void beforeClass() throws GeneralSecurityException, IOException {
     DMStats mockStats = mock(DMStats.class);
     bufferPool = new BufferPool(mockStats);
@@ -128,7 +128,7 @@ public class NioSslEngineKeyUpdateTest {
         truststorePassword);
   }
 
-  @BeforeEach
+  @Before
   public void before() throws NoSuchAlgorithmException, UnrecoverableKeyException,
       KeyStoreException, KeyManagementException {
     final KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX");
