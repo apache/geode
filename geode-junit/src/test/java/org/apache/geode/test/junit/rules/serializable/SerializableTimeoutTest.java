@@ -23,10 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.geode.util.FilterSerializables;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
@@ -39,7 +40,9 @@ public class SerializableTimeoutTest {
   @Test
   public void hasThreeFields() {
     Field[] fields = Timeout.class.getDeclaredFields();
-    assertThat(fields.length).as("Fields: " + Arrays.asList(fields)).isEqualTo(3);
+    Collection<Field> genuineFields = FilterSerializables.getNonSyntheticFields(fields);
+    assertThat(genuineFields.size()).as("Fields: " + genuineFields).isEqualTo(3);
+    assertThat(genuineFields).hasSize(3);
   }
 
   @Test

@@ -50,10 +50,21 @@ if (project.hasProperty("staticAnalysis")) {
 //  }
 }
 
+test {
+  jacoco {
+    enabled = false
+  }
+}
+
 // JaCoCo configuration
 if (project.hasProperty("codeCoverage")) {
+  test {
+    jacoco {
+      enabled = true
+    }
+  }
 
-  task mergeIntegrationTestCoverage(type: JacocoMerge) {
+  tasks.register('mergeIntegrationTestCoverage', JacocoMerge) {
     description 'Merges Distributed and Integration test coverage results'
 
     destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
@@ -61,10 +72,9 @@ if (project.hasProperty("codeCoverage")) {
         '**/distributedTest.exec',
         '**/integrationTest.exec'
     ])
-
   }
 
-  task jacocoIntegrationTestReport(type: JacocoReport) {
+  tasks.register('jacocoIntegrationTestReport', JacocoReport) {
     reports {
       csv.enabled false
       sourceSets project.sourceSets.main
@@ -73,7 +83,7 @@ if (project.hasProperty("codeCoverage")) {
     }
   }
 
-  task jacocoDistributedTestReport(type: JacocoReport) {
+  tasks.register('jacocoDistributedTestReport', JacocoReport) {
     reports {
       csv.enabled false
       sourceSets project.sourceSets.main
@@ -82,7 +92,7 @@ if (project.hasProperty("codeCoverage")) {
     }
   }
 
-  task jacocoOverallTestReport(type: JacocoReport) {
+  tasks.register('jacocoOverallTestReport', JacocoReport) {
     reports {
       csv.enabled false
       sourceSets project.sourceSets.main
