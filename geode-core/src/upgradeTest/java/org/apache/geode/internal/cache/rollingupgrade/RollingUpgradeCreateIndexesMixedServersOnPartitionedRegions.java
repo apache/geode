@@ -22,7 +22,7 @@ public class RollingUpgradeCreateIndexesMixedServersOnPartitionedRegions
 
   @Test
   public void testCreateIndexesMixedServersOnPartitionedRegions() throws Exception {
-    doTestCreateIndexes(false, true, oldVersion);
+    doTestCreateIndexes(false, true, sourceConfiguration);
   }
 
 }

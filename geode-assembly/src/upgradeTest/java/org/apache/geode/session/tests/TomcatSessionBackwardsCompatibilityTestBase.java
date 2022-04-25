@@ -14,6 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -38,7 +41,10 @@ import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
+import org.apache.geode.test.version.TestVersions;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * This test iterates through the versions of Geode and executes session client compatibility with
@@ -50,14 +56,20 @@ import org.apache.geode.test.version.VersionManager;
 public abstract class TomcatSessionBackwardsCompatibilityTestBase {
   private final UniquePortSupplier portSupplier = new UniquePortSupplier();
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.2.0") < 0);
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    }
-    return result;
+    List<String> sourceVersions = VmConfigurations.upgrades().stream()
+        // Skip versions older than 1.2
+        .filter(hasGeodeVersion(TestVersions.atLeast(TestVersion.valueOf("1.2.0"))))
+        // Skip Java upgrades
+        .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.CURRENT_VERSION)))
+        .map(VmConfiguration::geodeVersion)
+        .map(String::valueOf)
+        .collect(toList());
+    assumeThat(sourceVersions)
+        .as("source versions")
+        .isNotEmpty();
+    return sourceVersions;
   }
 
   @Rule

@@ -35,10 +35,10 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
   public void luceneQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServersAreRolled()
       throws Exception {
     final Host host = Host.getHost(0);
-    VM locator1 = host.getVM(oldVersion, 0);
-    VM locator2 = host.getVM(oldVersion, 1);
-    VM server1 = host.getVM(oldVersion, 2);
-    VM server2 = host.getVM(oldVersion, 3);
+    VM locator1 = host.getVM(sourceConfiguration, 0);
+    VM locator2 = host.getVM(sourceConfiguration, 1);
+    VM server1 = host.getVM(sourceConfiguration, 2);
+    VM server2 = host.getVM(sourceConfiguration, 3);
 
     final String regionName = "aRegion";
     RegionShortcut shortcut = RegionShortcut.PARTITION_REDUNDANT;

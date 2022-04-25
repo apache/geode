@@ -52,6 +52,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
 
 class ProcessManager implements ChildVMLauncher {
   private final int namingPort;
@@ -70,12 +71,12 @@ class ProcessManager implements ChildVMLauncher {
   }
 
   public synchronized void launchVM(int vmNum) throws IOException {
-    launchVM(VersionManager.CURRENT_VERSION, vmNum, false, 0);
+    launchVM(VmConfiguration.current(), vmNum, false, 0);
   }
 
   @Override
-  public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM,
-      int remoteStubPort) throws IOException {
+  public synchronized ProcessHolder launchVM(VmConfiguration vmConfiguration, int vmNum,
+      boolean bouncedVM, int remoteStubPort) throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);
     }
@@ -83,6 +84,7 @@ class ProcessManager implements ChildVMLauncher {
       throw new IllegalStateException("VM " + vmNum + " is already running.");
     }
 
+    String version = vmConfiguration.geodeVersion().toString();
     File workingDir = getVMDir(version, vmNum);
     if (!workingDir.exists()) {
       workingDir.mkdirs();
@@ -98,7 +100,7 @@ class ProcessManager implements ChildVMLauncher {
       workingDir.mkdirs();
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort, version, remoteStubPort);
+    String[] cmd = buildJavaCommand(vmNum, namingPort, vmConfiguration, remoteStubPort);
     System.out.println("Executing " + Arrays.toString(cmd));
 
     if (log4jConfig != null) {
@@ -236,23 +238,23 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort)
+  private String[] buildJavaCommand(int vmNum, int namingPort, VmConfiguration configuration,
+      int remoteStubPort)
       throws IOException {
-    String cmd = System.getProperty("java.home") + File.separator
-        + "bin" + File.separator + "java";
+    Path javaCommand = configuration.javaVersion().home().resolve("bin").resolve("java");
     String classPath;
     String dunitClasspath = System.getProperty("java.class.path");
     String separator = File.separator;
-    if (VersionManager.isCurrentVersion(version)) {
+    String geodeVersion = configuration.geodeVersion().toString();
+    if (VersionManager.isCurrentVersion(geodeVersion)) {
       classPath = dunitClasspath;
     } else {
       // remove current-version product classes and resources from the classpath
       dunitClasspath =
-          dunitClasspath =
-              removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
-                  "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
-                  "geode-serialization", "geode-wan", "geode-gfsh");
-      classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
+          removeModulesFromPath(dunitClasspath, "geode-common", "geode-core", "geode-cq",
+              "geode-http-service", "geode-json", "geode-log4j", "geode-lucene",
+              "geode-serialization", "geode-wan", "geode-gfsh");
+      classPath = versionManager.getClasspath(geodeVersion) + File.pathSeparator + dunitClasspath;
     }
     String jreLib = separator + "jre" + separator + "lib" + separator;
     classPath = removeFromPath(classPath, jreLib);
@@ -268,14 +270,14 @@ class ProcessManager implements ChildVMLauncher {
 
     String jdkSuspend = vmNum == suspendVM ? "y" : "n"; // ignore version
     ArrayList<String> cmds = new ArrayList<>();
-    cmds.add(cmd);
+    cmds.add(javaCommand.toString());
     cmds.add("-classpath");
     // Set the classpath via a "pathing" jar to shorten cmd to a length allowed by Windows.
-    cmds.add(createPathingJar(getVMDir(version, vmNum).getName(), classPath).toString());
+    cmds.add(createPathingJar(getVMDir(geodeVersion, vmNum).getName(), classPath).toString());
     cmds.add("-D" + DUnitLauncher.REMOTE_STUB_PORT_PARAM + "=" + remoteStubPort);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
-    cmds.add("-D" + DUnitLauncher.VM_VERSION_PARAM + "=" + version);
+    cmds.add("-D" + DUnitLauncher.VM_VERSION_PARAM + "=" + geodeVersion);
     cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
     cmds.add("-DAvailablePort.lowerBound=" + AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
     cmds.add("-DAvailablePort.upperBound=" + AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
@@ -286,7 +288,8 @@ class ProcessManager implements ChildVMLauncher {
               membershipPortRange));
     }
     if (vmNum >= 0) { // let the locator print a banner
-      if (version.equals(VersionManager.CURRENT_VERSION)) { // enable the banner for older versions
+      if (geodeVersion.equals(
+          VersionManager.CURRENT_VERSION)) { // enable the banner for older versions
         cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
       }
     } else {
@@ -314,7 +317,9 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
-    cmds.addAll(getJvmModuleOptions());
+    if (configuration.javaVersion().specificationVersion() >= 11) {
+      cmds.addAll(getJvmModuleOptions());
+    }
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);

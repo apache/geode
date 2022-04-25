@@ -51,7 +51,8 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * Tests for authorization from client to server for data puts and gets. For similar test in the
@@ -87,11 +88,11 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
 
   // Using a client of every version...
   @Parameterized.Parameter
-  public String clientVersion;
+  public VmConfiguration clientVmConfiguration;
 
-  @Parameterized.Parameters(name = "clientVersion={0}")
-  public static Collection<String> data() {
-    return VersionManager.getInstance().getVersions();
+  @Parameterized.Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.all();
   }
 
   @Before
@@ -99,7 +100,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     // We want the cluster VMs to be super-users for ease of testing / remote invocation.
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
 
-    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
@@ -119,7 +120,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataWrite");
     int locatorPort = locator.getPort();
 
-    ClientVM clientVM = csRule.startClientVM(2, clientVersion, props, cf -> cf
+    ClientVM clientVM = csRule.startClientVM(2, clientVmConfiguration, props, cf -> cf
         .addPoolLocator("localhost", locatorPort));
 
     // Client adds data
@@ -145,14 +146,14 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataWriteCannotGet() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
-    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, clientVersion, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort));
+    ClientVM client = csRule.startClientVM(2, clientVmConfiguration, props,
+        cf -> cf.addPoolLocator("localhost", locatorPort));
 
     // Client cannot get through any avenue
     client.invoke(() -> {
@@ -177,8 +178,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataRead");
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, clientVersion, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort));
+    ClientVM client = csRule.startClientVM(2, clientVmConfiguration, props,
+        cf -> cf.addPoolLocator("localhost", locatorPort));
 
     // Add some values for the client to get
     server.invoke(() -> {
@@ -205,15 +206,15 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataReadCannotPut() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataRead");
-    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
     int locatorPort = locator.getPort();
 
-    ClientVM clientVM = csRule.startClientVM(2, clientVersion, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort));
+    ClientVM clientVM = csRule.startClientVM(2, clientVmConfiguration, props,
+        cf -> cf.addPoolLocator("localhost", locatorPort));
 
     clientVM.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
@@ -253,12 +254,16 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     props.setProperty(SECURITY_CLIENT_AUTH_INIT,
         UserPasswordAuthInit.class.getCanonicalName() + ".create");
 
-    // We can't sent the object filter property versions before 1.4.0 because
-    // it's not a valid property, but we must set it in 140 and above to allow
-    // serialization of UsernamePrincipal
-    if (clientVersion.compareTo("1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       props.setProperty(SERIALIZABLE_OBJECT_FILTER, UsernamePrincipal.class.getCanonicalName());
     }
     return props;
+  }
+
+  private boolean shouldSetObjectFilterProperty(VmConfiguration config) {
+    // We can't set the object filter property versions before 1.4.0 because
+    // it's not a valid property, but we must set it in 140 and above to allow
+    // serialization of UsernamePrincipal
+    return config.geodeVersion().greaterThanOrEqualTo(TestVersion.valueOf("1.4.0"));
   }
 }

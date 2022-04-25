@@ -14,6 +14,7 @@
  */
 package org.apache.geode;
 
+import static java.util.Comparator.comparing;
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
@@ -38,7 +39,9 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -48,7 +51,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -98,7 +101,11 @@ import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
+import org.apache.geode.test.version.TestVersions;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * This class tests cluster tcp/ip communications both with and without SSL enabled
@@ -272,12 +279,18 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   @Test
   public void performARollingUpgrade() {
-    List<String> testVersions = VersionManager.getInstance().getVersionsWithoutCurrent();
-    String testVersion = testVersions.get(testVersions.size() - 1);
+    Optional<VmConfiguration> sourceConfiguration = VmConfigurations.upgrades().stream()
+        // Skip the configurations with the current Geode
+        .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.CURRENT_VERSION)))
+        // Get the configuration with the latest Geode
+        .max(comparing(VmConfiguration::geodeVersion));
+    assumeThat(sourceConfiguration)
+        .as("newest old configuration")
+        .isNotEmpty();
 
     // create a cluster with the previous version of Geode
-    VM locatorVM = Host.getHost(0).getVM(testVersion, 0);
-    VM server1VM = Host.getHost(0).getVM(testVersion, 1);
+    VM locatorVM = Host.getHost(0).getVM(sourceConfiguration.get(), 0);
+    VM server1VM = Host.getHost(0).getVM(sourceConfiguration.get(), 1);
     int locatorPort = createLocator(locatorVM, true);
     createCacheAndRegion(server1VM, locatorPort);
     performCreate(getVM(1));

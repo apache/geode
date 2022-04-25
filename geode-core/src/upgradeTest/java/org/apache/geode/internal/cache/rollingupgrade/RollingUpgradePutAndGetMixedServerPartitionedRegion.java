@@ -22,7 +22,7 @@ public class RollingUpgradePutAndGetMixedServerPartitionedRegion
 
   @Test
   public void testPutAndGetMixedServerPartitionedRegion() throws Exception {
-    doTestPutAndGetMixedServers("dataserializable", true, oldVersion);
+    doTestPutAndGetMixedServers("dataserializable", true, sourceConfiguration);
   }
 
 

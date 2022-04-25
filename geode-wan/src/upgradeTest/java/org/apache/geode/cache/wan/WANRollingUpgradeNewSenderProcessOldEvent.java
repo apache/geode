@@ -60,15 +60,15 @@ public class WANRollingUpgradeNewSenderProcessOldEvent
   @Before
   public void prepare() {
     // Get mixed site members
-    site1Locator = host.getVM(oldVersion, 0);
-    site1Server1 = host.getVM(oldVersion, 1);
-    site1Server2 = host.getVM(oldVersion, 2);
-    site1Client = host.getVM(oldVersion, 3);
+    site1Locator = host.getVM(sourceVmConfiguration, 0);
+    site1Server1 = host.getVM(sourceVmConfiguration, 1);
+    site1Server2 = host.getVM(sourceVmConfiguration, 2);
+    site1Client = host.getVM(sourceVmConfiguration, 3);
 
     // Get old site members
-    site2Locator = host.getVM(oldVersion, 4);
-    site2Server1 = host.getVM(oldVersion, 5);
-    site2Server2 = host.getVM(oldVersion, 6);
+    site2Locator = host.getVM(sourceVmConfiguration, 4);
+    site2Server1 = host.getVM(sourceVmConfiguration, 5);
+    site2Server2 = host.getVM(sourceVmConfiguration, 6);
 
     // Get mixed site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
@@ -104,12 +104,13 @@ public class WANRollingUpgradeNewSenderProcessOldEvent
                     || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
     // Start and configure mixed site servers
-    regionName = getName() + "_region";
-    site1SenderId = getName() + "_gatewaysender_" + site2DistributedSystemId;
+    String sanitizedTestName = getSanitizedTestName();
+    regionName = sanitizedTestName + "_region";
+    site1SenderId = sanitizedTestName + "_gatewaysender_" + site2DistributedSystemId;
     startAndConfigureServers(site1Server1, site1Server2, site1Locators, site2DistributedSystemId,
         regionName, site1SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
-    site2SenderId = getName() + "_gatewaysender_" + site1DistributedSystemId;
+    site2SenderId = sanitizedTestName + "_gatewaysender_" + site1DistributedSystemId;
 
     // pause the senders at mixed site
     site1Server1.invoke(() -> pauseSender(site1SenderId));

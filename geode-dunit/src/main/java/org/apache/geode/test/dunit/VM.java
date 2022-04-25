@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit;
 
 import static org.apache.geode.test.dunit.internal.AsyncThreadId.nextId;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
+import static org.apache.geode.test.version.VersionManager.isCurrentVersion;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +46,7 @@ import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
 import org.apache.geode.test.dunit.internal.VMEventNotifier;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
 
 /**
  * This class represents a Java Virtual Machine that runs in a DistributedTest.
@@ -65,8 +67,8 @@ public class VM implements Serializable {
   /** The sequential id of this VM */
   private final int id;
 
-  /** The version of Geode used in this VM */
-  private String version;
+  /** The configuration (Java version + Geode version) used in this VM */
+  private VmConfiguration configuration;
 
   /** The hydra client for this VM */
   private RemoteDUnitVMIF client;
@@ -124,12 +126,16 @@ public class VM implements Serializable {
   /**
    * Returns a VM running the specified Geode version in this DistributedTest.
    *
-   * @param version String specifying the Geode version
+   * @param geodeVersion String specifying the Geode version
    * @param whichVM A zero-based identifier of the VM
    * @return a VM running the specified Geode version in this DistributedTest
    */
-  public static VM getVM(String version, int whichVM) {
-    return Host.getHost(0).getVM(version, whichVM);
+  public static VM getVM(String geodeVersion, int whichVM) {
+    return getVM(VmConfiguration.forGeodeVersion(geodeVersion), whichVM);
+  }
+
+  public static VM getVM(VmConfiguration configuration, int whichVM) {
+    return Host.getHost(0).getVM(configuration, whichVM);
   }
 
   /*
@@ -174,7 +180,7 @@ public class VM implements Serializable {
     if (pid == -2) {
       return "locator";
     }
-    if (pid < 0 || VersionManager.isCurrentVersion(version)) {
+    if (pid < 0 || isCurrentVersion(version)) {
       return "vm" + pid;
     } else {
       return "vm" + pid + "_v" + version;
@@ -243,11 +249,12 @@ public class VM implements Serializable {
     return Host.getHost(0).getVMEventNotifier();
   }
 
-  public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client,
-      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
+  public VM(final Host host, VmConfiguration configuration, final int id,
+      final RemoteDUnitVMIF client, final ProcessHolder processHolder,
+      final ChildVMLauncher childVMLauncher) {
     this.host = host;
     this.id = id;
-    this.version = version;
+    this.configuration = configuration;
     this.client = client;
     this.processHolder = processHolder;
     this.childVMLauncher = childVMLauncher;
@@ -255,6 +262,7 @@ public class VM implements Serializable {
   }
 
   /**
+   *
    * Returns the {@code Host} on which this {@code VM} is running.
    *
    * @return the {@code Host} on which this {@code VM} is running.
@@ -264,15 +272,20 @@ public class VM implements Serializable {
   }
 
   /**
-   * Returns the version of Geode used in this VM.
-   *
    * @return the version of Geode used in this VM
    *
    * @see VersionManager#CURRENT_VERSION
    * @see Host#getVM(String, int)
    */
   public String getVersion() {
-    return version;
+    return configuration.geodeVersion().toString();
+  }
+
+  /**
+   * @return the VM configuration used in this VM
+   */
+  public VmConfiguration getConfiguration() {
+    return configuration;
   }
 
   /**
@@ -579,8 +592,7 @@ public class VM implements Serializable {
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public VM bounce() {
-    bounce(version, false);
-    return this;
+    return bounce(configuration, false);
   }
 
   /**
@@ -598,19 +610,17 @@ public class VM implements Serializable {
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public VM bounceForcibly() {
-    bounce(version, true);
-    return this;
+    return bounce(configuration, true);
   }
 
   public VM bounce(final String targetVersion) {
-    bounce(targetVersion, false);
-    return this;
+    return bounce(VmConfiguration.forGeodeVersion(targetVersion), false);
   }
 
-  private synchronized void bounce(final String targetVersion, boolean force) {
+  public synchronized VM bounce(final VmConfiguration configuration, boolean force) {
     checkAvailability(getClass().getName(), "bounceVM");
 
-    logger.info("Bouncing {} old pid is {} and version is {}", id, getPid(), version);
+    logger.info("Bouncing {} old pid is {} and configuration is {}", id, getPid(), configuration);
     getVMEventNotifier().notifyBeforeBounceVM(this);
 
     available = false;
@@ -637,17 +647,19 @@ public class VM implements Serializable {
       // fixed ports. So when we bounce a VM, use an RMI port outside the usual range of ephemeral
       // ports for MacOS (49152–65535) and Linux (32768-60999).
       int remoteStubPort = AvailablePortHelper.getRandomAvailableTCPPort();
-      processHolder = childVMLauncher.launchVM(targetVersion, id, true, remoteStubPort);
-      version = targetVersion;
+      processHolder = childVMLauncher.launchVM(configuration, id, true, remoteStubPort);
+      this.configuration = configuration;
       client = childVMLauncher.getStub(id);
       available = true;
 
-      logger.info("Bounced {}.  New pid is {} and version is {}", id, getPid(), version);
+      logger.info("Bounced {}.  New pid is {} and configuration is {}", id, getPid(),
+          configuration);
       getVMEventNotifier().notifyAfterBounceVM(this);
 
     } catch (InterruptedException | IOException | NotBoundException e) {
       throw new Error("Unable to restart VM " + id, e);
     }
+    return this;
   }
 
   private void checkAvailability(String className, String methodName) {
@@ -663,8 +675,8 @@ public class VM implements Serializable {
 
   @Override
   public String toString() {
-    return "VM " + getId() + " running on " + getHost()
-        + (VersionManager.isCurrentVersion(version) ? "" : (" with version " + version));
+    return String.format("VM %d, Host %s, Geode %s, Java %s",
+        getId(), getHost(), configuration.geodeVersion(), configuration.javaVersion());
   }
 
   private <V> V executeMethodOnObject(final Object targetObject, final String methodName,

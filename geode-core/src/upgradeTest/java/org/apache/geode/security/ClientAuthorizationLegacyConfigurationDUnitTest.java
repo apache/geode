@@ -44,7 +44,8 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
@@ -75,11 +76,11 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
 
   // Using a client of every version...
   @Parameterized.Parameter
-  public String clientVersion;
+  public VmConfiguration clientVmConfiguration;
 
-  @Parameterized.Parameters(name = "clientVersion={0}")
-  public static Collection<String> data() {
-    return VersionManager.getInstance().getVersions();
+  @Parameterized.Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.all();
   }
 
   @Test
@@ -96,8 +97,8 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
 
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, clientVersion, c -> c.withCredential("data", "data")
-        .withLocatorConnection(locatorPort));
+    ClientVM client = csRule.startClientVM(2, clientVmConfiguration,
+        c -> c.withCredential("data", "data").withLocatorConnection(locatorPort));
 
     client.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
@@ -139,7 +140,7 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
 
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, clientVersion,
+    ClientVM client = csRule.startClientVM(2, clientVmConfiguration,
         c -> c.withCredential("data", "data").withLocatorConnection(locatorPort));
     client.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
