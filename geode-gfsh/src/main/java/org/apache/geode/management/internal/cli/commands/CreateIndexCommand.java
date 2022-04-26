@@ -128,12 +128,14 @@ public class CreateIndexCommand extends GfshCommand {
     }
 
     for (String group : groups) {
-      if (ccService != null) {
+      if (ccService != null && regionName != null) {
         CacheConfig cacheConfig1 = ccService.getCacheConfig(group);
-        RegionConfig regionConfig1 = cacheConfig1.findRegionConfiguration(regionName);
-        if (regionConfig1.getType().equals("PARTITION")) {
-          DistributedMember member = targetMembers.iterator().next();
-          targetMembers.removeIf(s -> (s != member));
+        if (cacheConfig1 != null && !regionName.isEmpty()) {
+          RegionConfig regionConfig1 = cacheConfig1.findRegionConfiguration(regionName);
+          if (regionConfig1.getType().equals("PARTITION")) {
+            DistributedMember member = targetMembers.iterator().next();
+            targetMembers.removeIf(s -> (s != member));
+          }
         }
       }
     }
