@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.entry;
 import static org.assertj.core.data.Offset.offset;
 
 import java.util.Arrays;
@@ -38,7 +39,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  * the locator to compare the load between multiple servers.
  */
 @Category({MembershipTest.class})
-public class LocatorLoadSnapshotJUnitTest {
+public class LocatorLoadSnapshotTest {
 
   final int LOAD_POLL_INTERVAL = 30000;
 
@@ -510,7 +511,7 @@ public class LocatorLoadSnapshotJUnitTest {
 
     List<LocatorLoadSnapshot.LoadHolder> result =
         loadSnapshot.findBestServers(groupServers, Collections.emptySet(), 1);
-    assertThat(result.size()).isEqualTo(1);
+    assertThat(result).hasSize(1);
     assertThat(result.get(0)).isEqualTo(loadHolder2);
   }
 
@@ -548,12 +549,12 @@ public class LocatorLoadSnapshotJUnitTest {
 
     List<LocatorLoadSnapshot.LoadHolder> result =
         loadSnapshot.findBestServers(groupServers, Collections.emptySet(), 2);
-    assertThat(result.size()).isEqualTo(2);
+    assertThat(result).hasSize(2);
     assertThat(result.get(0)).isEqualTo(loadHolder2);
     assertThat(result.get(1)).isEqualTo(loadHolder3);
 
     result = loadSnapshot.findBestServers(groupServers, Collections.emptySet(), 0);
-    assertThat(result.size()).isEqualTo(0);
+    assertThat(result).hasSize(0);
   }
 
   @Test
@@ -590,7 +591,7 @@ public class LocatorLoadSnapshotJUnitTest {
 
     List<LocatorLoadSnapshot.LoadHolder> result =
         loadSnapshot.findBestServers(groupServers, Collections.emptySet(), 0);
-    assertThat(result.size()).isEqualTo(0);
+    assertThat(result).hasSize(0);
   }
 
   @Test
@@ -627,10 +628,7 @@ public class LocatorLoadSnapshotJUnitTest {
 
     List<LocatorLoadSnapshot.LoadHolder> result =
         loadSnapshot.findBestServers(groupServers, Collections.emptySet(), -1);
-    assertThat(result.size()).isEqualTo(3);
-    assertThat(result.get(0)).isEqualTo(loadHolder2);
-    assertThat(result.get(1)).isEqualTo(loadHolder3);
-    assertThat(result.get(2)).isEqualTo(loadHolder1);
+    assertThat(result).containsExactly(loadHolder2, loadHolder3, loadHolder1);
   }
 
   @Test
@@ -796,8 +794,8 @@ public class LocatorLoadSnapshotJUnitTest {
 
     loadSnapshot.removeFromMap(map, new String[] {""}, sl1, uniqueId1);
 
-    assertThat(groupServers.size()).isEqualTo(1);
-    assertThat(groupServers.get(sli1)).isNull();
+    assertThat(groupServers).hasSize(1);
+    assertThat(groupServers).doesNotContainKey(sli1);
   }
 
   @Test
@@ -836,11 +834,11 @@ public class LocatorLoadSnapshotJUnitTest {
 
     loadSnapshot.removeFromMap(map, new String[] {"a"}, sl1, uniqueId1);
 
-    assertThat(groupServers.size()).isEqualTo(2);
-    assertThat(groupServers.get(sli1)).isNull();
+    assertThat(groupServers).hasSize(2);
+    assertThat(groupServers).doesNotContainKey(sli1);
 
-    assertThat(groupAServers.size()).isEqualTo(1);
-    assertThat(groupAServers.get(sli1)).isNull();
+    assertThat(groupAServers).hasSize(1);
+    assertThat(groupServers).doesNotContainKey(sli1);
   }
 
   @Test
@@ -864,8 +862,8 @@ public class LocatorLoadSnapshotJUnitTest {
 
     loadSnapshot.removeFromMap(map, new String[] {""}, sl1);
 
-    assertThat(groupServers.size()).isEqualTo(1);
-    assertThat(groupServers.get(sl1)).isNull();
+    assertThat(groupServers).hasSize(1);
+    assertThat(groupServers).doesNotContainKey(sl1);
   }
 
   @Test
@@ -899,11 +897,11 @@ public class LocatorLoadSnapshotJUnitTest {
 
     loadSnapshot.removeFromMap(map, new String[] {"a"}, sl1);
 
-    assertThat(groupServers.size()).isEqualTo(2);
-    assertThat(groupServers.get(sl1)).isNull();
+    assertThat(groupServers).hasSize(2);
+    assertThat(groupServers).doesNotContainKey(sl1);
 
-    assertThat(groupAServers.size()).isEqualTo(1);
-    assertThat(groupAServers.get(sl1)).isNull();
+    assertThat(groupAServers).hasSize(1);
+    assertThat(groupServers).doesNotContainKey(sl1);
   }
 
   @Test
@@ -933,17 +931,10 @@ public class LocatorLoadSnapshotJUnitTest {
     loadSnapshot.addGroups(map, new String[] {"a", "b"}, loadHolder2, uniqueId2);
     loadSnapshot.addGroups(map, new String[] {}, loadHolder3, uniqueId3);
 
-    assertThat(map.get(null).size()).isEqualTo(3);
-    assertThat(map.get(null).get(sli1)).isEqualTo(loadHolder1);
-    assertThat(map.get(null).get(sli2)).isEqualTo(loadHolder2);
-    assertThat(map.get(null).get(sli3)).isEqualTo(loadHolder3);
-
-    assertThat(map.get("a").size()).isEqualTo(2);
-    assertThat(map.get("a").get(sli1)).isEqualTo(loadHolder1);
-    assertThat(map.get("a").get(sli2)).isEqualTo(loadHolder2);
-
-    assertThat(map.get("b").size()).isEqualTo(1);
-    assertThat(map.get("b").get(sli2)).isEqualTo(loadHolder2);
+    assertThat(map.get(null)).containsOnly(entry(sli1, loadHolder1), entry(sli2, loadHolder2),
+        entry(sli3, loadHolder3));
+    assertThat(map.get("a")).containsOnly(entry(sli1, loadHolder1), entry(sli2, loadHolder2));
+    assertThat(map.get("b")).containsOnly(entry(sli2, loadHolder2));
   }
 
   @Test
@@ -968,16 +959,9 @@ public class LocatorLoadSnapshotJUnitTest {
     loadSnapshot.addGroups(map, new String[] {"a", "b"}, loadHolder2);
     loadSnapshot.addGroups(map, new String[] {}, loadHolder3);
 
-    assertThat(map.get(null).size()).isEqualTo(3);
-    assertThat(map.get(null).get(sl1)).isEqualTo(loadHolder1);
-    assertThat(map.get(null).get(sl2)).isEqualTo(loadHolder2);
-    assertThat(map.get(null).get(sl3)).isEqualTo(loadHolder3);
-
-    assertThat(map.get("a").size()).isEqualTo(2);
-    assertThat(map.get("a").get(sl1)).isEqualTo(loadHolder1);
-    assertThat(map.get("a").get(sl2)).isEqualTo(loadHolder2);
-
-    assertThat(map.get("b").size()).isEqualTo(1);
-    assertThat(map.get("b").get(sl2)).isEqualTo(loadHolder2);
+    assertThat(map.get(null)).containsOnly(entry(sl1, loadHolder1), entry(sl2, loadHolder2),
+        entry(sl3, loadHolder3));
+    assertThat(map.get("a")).containsOnly(entry(sl1, loadHolder1), entry(sl2, loadHolder2));
+    assertThat(map.get("b")).containsOnly(entry(sl2, loadHolder2));
   }
 }
