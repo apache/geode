@@ -15,11 +15,12 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
@@ -29,13 +30,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
@@ -50,14 +51,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * <p>
  * Test must be DistributedTest because it requires ClusterDistributionManager.
- *
- * <p>
- * TRAC #40299: Suspect String - DiskAccessException : Data for DiskEntry could not be obtained
- * from Disk. A clear operation may have deleted the oplogs (logged as error)
  */
 
 public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
 
+  private static final long serialVersionUID = 7516996008283858222L;
   private String uniqueName;
   private String regionName;
   private File[] diskDirs;
@@ -88,7 +86,7 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
     disconnectAllFromDS();
   }
 
-  /**
+  /*
    * The Clear operation during a NetSearchMessage.doGet() in progress can cause DiskAccessException
    * by accessing cleared oplogs and eventually destroy region. The Test verifies that fix prevents
    * this.
@@ -117,14 +115,14 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
 
     DiskStore diskStore = diskStoreFactory.create(uniqueName);
 
-    AttributesFactory factory = new AttributesFactory();
+    RegionFactory<String, Integer> factory = getCache().createRegionFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
     factory.setDiskSynchronous(false);
     factory.setDiskStoreName(diskStore.getName());
     factory.setEvictionAttributes(createLRUEntryAttributes(2, EvictionAction.OVERFLOW_TO_DISK));
 
-    getCache().createRegion(regionName, factory.create());
+    factory.create(regionName);
   }
 
   private void putSevenEntries() {
@@ -135,7 +133,7 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
   }
 
   private void concurrentNetSearchGetAndClear() throws InterruptedException {
-    InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
+    InternalRegion region = getCache().getInternalRegionByPath(SEPARATOR + regionName);
     assertThat(region.size()).isEqualTo(7);
 
     Thread getter = new Thread(new Getter(region));
@@ -157,13 +155,11 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
     // start getThread
     getter.start();
 
-    await()
-        .untilAsserted(() -> verify(observer, times(1)).afterSettingDiskRef());
+    await().untilAsserted(() -> verify(observer, atLeast(1)).afterSettingDiskRef());
 
-    // This test appears to be testing a problem with the non-RVV
-    // based clear. So we'll use that functionality here.
-    // Region.clear uses an RVV, and will deadlock if called while
-    // the write lock is held.
+    // This test appears to be testing a problem with the non-RVV based clear. So we'll use that
+    // functionality here. Region.clear uses an RVV, and will deadlock if called while the write
+    // lock is held.
     RegionEventImpl regionEvent = new RegionEventImpl(region, Operation.REGION_CLEAR, null, false,
         region.getMyId(), region.generateEventID());
 
@@ -172,7 +168,7 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
   }
 
   private void verifyRegionNotDestroyed() {
-    Region region = getCache().getRegion(regionName);
+    Region<String, Integer> region = getCache().getRegion(regionName);
     assertThat(region).isNotNull();
     assertThat(region.isDestroyed()).isFalse();
   }
@@ -190,14 +186,10 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
     public void run() {
       SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
       processor.initialize((LocalRegion) region, "key1", null);
-      sendNetSearchRequestMessage(processor, "key1", 1500, 1500, 1500);
-    }
-
-    private void sendNetSearchRequestMessage(SearchLoadAndWriteProcessor processor, Object key,
-        int timeoutMillis, int ttlMillis, int idleMillis) {
-      NetSearchRequestMessage message = new SearchLoadAndWriteProcessor.NetSearchRequestMessage();
-      message.initialize(processor, region.getName(), key, timeoutMillis, ttlMillis, idleMillis);
+      NetSearchRequestMessage message = new NetSearchRequestMessage();
+      message.initialize(processor, region.getName(), "key1", 1500, 1500, 1500);
       message.doGet((ClusterDistributionManager) region.getDistributionManager());
     }
+
   }
 }
