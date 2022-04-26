@@ -167,7 +167,6 @@ public class P2PMessagingConcurrencyDUnitTest {
       bytesTransferredAdder = new LongAdder();
 
       final ClusterDistributionManager cdm = getCDM();
-      final Random random = new Random(RANDOM_SEED);
       final AtomicInteger nextSenderId = new AtomicInteger();
 
       /*
@@ -194,6 +193,7 @@ public class P2PMessagingConcurrencyDUnitTest {
           throw new RuntimeException("doSending failed", e);
         }
         final int firstMessageId = senderId * SENDER_COUNT;
+        final Random random = new Random(RANDOM_SEED);
         for (int messageId = firstMessageId; messageId < firstMessageId
             + MESSAGES_PER_SENDER; messageId++) {
           final TestMessage msg = new TestMessage(receiverMember, random, messageId);
