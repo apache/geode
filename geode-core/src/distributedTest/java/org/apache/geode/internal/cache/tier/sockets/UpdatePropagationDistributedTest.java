@@ -71,7 +71,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * the same across servers
  */
 @Category({ClientSubscriptionTest.class})
-public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
+public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
 
   private static final String REGION_NAME = "UpdatePropagationDUnitTest_region";
 
@@ -85,6 +85,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   private int PORT2;
   private int PORT3;
 
+  private final int minNumEntries = 2;
+
   private String hostnameServer1;
   private String hostnameServer3;
 
@@ -93,19 +95,15 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
-    // Server1 VM
+
     server1 = host.getVM(0);
 
-    // Server2 VM
     server2 = host.getVM(1);
 
-    // Server3 VM
     server3 = host.getVM(2);
 
-    // Client 1 VM
     client1 = host.getVM(3);
 
-    // client 2 VM
     client2 = host.getVM(4);
 
     PORT1 = server1.invoke(() -> createServerCache());
@@ -131,7 +129,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     AsyncInvocation invocation = client1.invokeAsync(() -> doPuts(entries));
 
     // Wait for some entries to be put
-    Thread.sleep(5000);
+    server1.invoke(this::verifyMinEntriesInserted);
 
     // Simulate crash
     server2.invoke(() -> {
@@ -358,22 +356,31 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
+  private void verifyMinEntriesInserted() {
+    await().until(() -> getRegionSizeGreaterThen(minNumEntries));
+  }
+
   private void doPuts(int entries) throws Exception {
-    Region r1 = getCache().getRegion(REGION_NAME);
+    Region<String, String> r1 = getCache().getRegion(REGION_NAME);
     assertNotNull(r1);
     for (int i = 0; i < entries; i++) {
       try {
         r1.put("" + i, "" + i);
       } catch (Exception e) {
-        // ignore
       }
       Thread.sleep(1000);
     }
   }
 
+  private boolean getRegionSizeGreaterThen(int numEntries) {
+    Region<String, String> r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
+    assertNotNull(r1);
+    return (r1.size() > numEntries);
+  }
+
   private int getNotNullEntriesNumber(int entries) {
     int notNullEntries = 0;
-    Region r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
+    Region<String, String> r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     for (int i = 0; i < entries; i++) {
       Object value = r1.get("" + i, "" + i);

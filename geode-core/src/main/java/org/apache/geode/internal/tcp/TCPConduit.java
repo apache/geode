@@ -927,8 +927,7 @@ public class TCPConduit implements Runnable {
       throw new DistributedSystemDisconnectedException("The conduit is stopped");
     }
 
-    InternalDistributedMember memberInTrouble = null;
-    Connection conn = null;
+    Connection connection = null;
     stopper.checkCancelInProgress(null);
     boolean interrupted = Thread.interrupted();
     try {
@@ -943,20 +942,21 @@ public class TCPConduit implements Runnable {
         boolean debugRetry = false;
         do {
           retryForOldConnection = false;
-          conn = getConTable().get(memberAddress, preserveOrder, startTime, ackTimeout,
+          connection = getConTable().get(memberAddress, preserveOrder, startTime, ackTimeout,
               ackSATimeout, true);
-          if (conn == null) {
+          if (connection == null) {
             // conduit may be closed - otherwise an ioexception would be thrown
             problem = new IOException(
                 String.format("Unable to reconnect to server; possible shutdown: %s",
                     memberAddress));
-          } else if (conn.isClosing() || !conn.getRemoteAddress().equals(memberAddress)) {
+          } else if (connection.isClosing()
+              || !connection.getRemoteAddress().equals(memberAddress)) {
             if (logger.isDebugEnabled()) {
-              logger.debug("Got an old connection for {}: {}@{}", memberAddress, conn,
-                  conn.hashCode());
+              logger.debug("Got an old connection for {}: {}@{}", memberAddress, connection,
+                  connection.hashCode());
             }
-            conn.closeOldConnection("closing old connection");
-            conn = null;
+            connection.closeOldConnection("closing old connection");
+            connection = null;
             retryForOldConnection = true;
             debugRetry = true;
           }
@@ -995,7 +995,7 @@ public class TCPConduit implements Runnable {
       }
       // Success!
 
-      return conn;
+      return connection;
     } finally {
       if (interrupted) {
         Thread.currentThread().interrupt();
