@@ -200,6 +200,8 @@ similar to:
 ``` pre
 gfsh>alter region --name=regionA --gateway-sender-id=""
 ```
+**Note:** Do not reuse the removed parallel gateway-sender in the new region unless that region
+is colocated with the previously attached region, as that will lead to data replication issues.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
