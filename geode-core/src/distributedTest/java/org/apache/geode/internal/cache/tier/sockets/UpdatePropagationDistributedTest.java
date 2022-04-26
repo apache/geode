@@ -357,12 +357,13 @@ public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
   }
 
   private void verifyMinEntriesInserted() {
-    await().until(() -> getRegionSizeGreaterThen(minNumEntries));
+    await().untilAsserted(() -> assertThat(getCache().getRegion(SEPARATOR + REGION_NAME))
+        .hasSizeGreaterThan(minNumEntries));
   }
 
   private void doPuts(int entries) throws Exception {
     Region<String, String> r1 = getCache().getRegion(REGION_NAME);
-    assertNotNull(r1);
+    assertThat(r1).isNotNull();
     for (int i = 0; i < entries; i++) {
       try {
         r1.put("" + i, "" + i);
@@ -372,16 +373,10 @@ public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
     }
   }
 
-  private boolean getRegionSizeGreaterThen(int numEntries) {
-    Region<String, String> r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
-    assertNotNull(r1);
-    return (r1.size() > numEntries);
-  }
-
   private int getNotNullEntriesNumber(int entries) {
     int notNullEntries = 0;
     Region<String, String> r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
-    assertNotNull(r1);
+    assertThat(r1).isNotNull();
     for (int i = 0; i < entries; i++) {
       Object value = r1.get("" + i, "" + i);
       if (value != null) {
