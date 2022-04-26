@@ -437,13 +437,13 @@ public class DirectChannel {
    * @param retry whether this is a retransmission
    * @param ackTimeout the ack warning timeout
    * @param ackSDTimeout the ack severe alert timeout
-   * @param cons a list to hold the connections
+   * @param connectionsList a list to hold the connections
    * @return null if everything went okay, or a ConnectExceptions object if some connections
    *         couldn't be obtained
    */
   private ConnectExceptions getConnections(Membership mgr, DistributionMessage msg,
       InternalDistributedMember[] destinations, boolean preserveOrder, boolean retry,
-      long ackTimeout, long ackSDTimeout, List cons) {
+      long ackTimeout, long ackSDTimeout, List<Connection> connectionsList) {
     ConnectExceptions ce = null;
     for (InternalDistributedMember destination : destinations) {
       if (destination == null) {
@@ -472,18 +472,18 @@ public class DirectChannel {
           if (ackTimeout > 0) {
             startTime = System.currentTimeMillis();
           }
-          Connection con;
+          final Connection connection;
           if (!retry) {
-            con = conduit.getFirstScanForConnection(destination, preserveOrder, startTime,
+            connection = conduit.getFirstScanForConnection(destination, preserveOrder, startTime,
                 ackTimeout, ackSDTimeout);
           } else {
-            con = conduit.getConnection(destination, preserveOrder, startTime,
+            connection = conduit.getConnection(destination, preserveOrder, startTime,
                 ackTimeout, ackSDTimeout);
           }
 
-          con.setInUse(true, startTime, 0, 0, null); // fix for bug#37657
-          cons.add(con);
-          if (con.isSharedResource() && msg instanceof DirectReplyMessage) {
+          connection.setInUse(true, startTime, 0, 0, null); // fix for bug#37657
+          connectionsList.add(connection);
+          if (connection.isSharedResource() && msg instanceof DirectReplyMessage) {
             DirectReplyMessage directMessage = (DirectReplyMessage) msg;
             directMessage.registerProcessor();
           }
