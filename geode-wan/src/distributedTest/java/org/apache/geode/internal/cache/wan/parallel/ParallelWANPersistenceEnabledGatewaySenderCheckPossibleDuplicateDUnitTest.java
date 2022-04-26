@@ -36,6 +36,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderCheckPossibleDuplicateDUn
     super();
   }
 
+
+  private final int localId = 1;
+  private final int remoteId = 2;
+
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
     // The restart tests log this string
@@ -49,8 +53,8 @@ public class ParallelWANPersistenceEnabledGatewaySenderCheckPossibleDuplicateDUn
   @Test
   public void testPersistentPartitionedRegionWithGatewaySenderCheckReceiverNoPossibleDuplicate()
       throws InterruptedException {
-    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    int lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(localId));
+    int nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(remoteId, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -93,17 +97,18 @@ public class ParallelWANPersistenceEnabledGatewaySenderCheckPossibleDuplicateDUn
   @Test
   public void testPersistentPartitionedRegionWithGatewaySenderCheckReceiverPossibleDuplicate()
       throws InterruptedException {
-    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    int lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(localId));
+    int nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(remoteId, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
-
     createCacheInVMs(lnPort, vm4, vm5);
     vm4.invoke(() -> setNumDispatcherThreadsForTheRun(5));
     vm5.invoke(() -> setNumDispatcherThreadsForTheRun(5));
 
-    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, false));
-    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, false));
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln", remoteId, true, 100, 10, false, true, null, false));
+    vm5.invoke(
+        () -> WANTestBase.createSender("ln", remoteId, true, 100, 10, false, true, null, false));
 
     vm4.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
         100, isOffHeap()));
@@ -131,17 +136,21 @@ public class ParallelWANPersistenceEnabledGatewaySenderCheckPossibleDuplicateDUn
 
   @Test
   public void testpersistentWanGateway_CheckReceiverPossibleDuplicate_afterSenderRestarted() {
-    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    int lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(localId));
+    int nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(remoteId, lnPort));
     createCacheInVMs(nyPort, vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     // keep a larger batch to minimize number of exception occurrences in the log
-    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, false));
-    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, false));
-    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, false));
-    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, false));
+    vm4.invoke(
+        () -> WANTestBase.createSender("ln", remoteId, true, 100, 10, false, true, null, false));
+    vm5.invoke(
+        () -> WANTestBase.createSender("ln", remoteId, true, 100, 10, false, true, null, false));
+    vm6.invoke(
+        () -> WANTestBase.createSender("ln", remoteId, true, 100, 10, false, true, null, false));
+    vm7.invoke(
+        () -> WANTestBase.createSender("ln", remoteId, true, 100, 10, false, true, null, false));
 
     vm4.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
         100, isOffHeap()));

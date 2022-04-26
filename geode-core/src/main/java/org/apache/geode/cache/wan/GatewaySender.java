@@ -218,7 +218,28 @@ public interface GatewaySender {
 
 
   /**
-   * prepare GatewaySender for closing of Cache.
+   * Prepare GatewaySender for closing of Cache.
+   *
+   * <p>
+   * Implementation of new API in ParallelGatewaySenderImpl:
+   *
+   *
+   * <pre>
+   * public void prepareForStop() {
+   *   if (!isRunning()) {
+   *     return;
+   *   }
+   *   pause();
+   *   if (eventProcessor != null &amp;&amp; !eventProcessor.isStopped()) {
+   *     eventProcessor.prepareForStopProcessing();
+   *   }
+   * }
+   * </pre>
+   *
+   *
+   * <p>
+   * Invoked at closing of cache.
+   *
    */
   @Experimental
   void prepareForStop();

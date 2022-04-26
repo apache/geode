@@ -1478,8 +1478,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     notifyPossibleDuplicate(STOPPED_GATEWAY_SENDER, pendingEventsInBatches());
   }
 
-  private Set<InternalDistributedMember> getAllRecipients(InternalCache cache, Map map) {
-    Set recipients = new ObjectOpenHashSet();
+  private Set<InternalDistributedMember> getAllRecipients(InternalCache cache,
+      Map<String, Map<Integer, List<Object>>> map) {
+    Set<InternalDistributedMember> recipients = new ObjectOpenHashSet<>();
     for (Object pr : map.keySet()) {
       PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion((String) pr);
       if (partitionedRegion != null && partitionedRegion.getRegionAdvisor() != null) {

@@ -74,8 +74,8 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
   public String toString() {
     String cname = getShortClassName();
     final StringBuilder sb = new StringBuilder(cname);
-    sb.append("reason=" + reason);
-    sb.append(" regionToDispatchedKeysMap=" + regionToDuplicateEventsMap);
+    sb.append("reason=").append(reason);
+    sb.append(" regionToDispatchedKeysMap=").append(regionToDuplicateEventsMap);
     sb.append(" sender=").append(getSender());
     return sb.toString();
   }
@@ -110,10 +110,8 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
           BucketRegionQueue brq =
               (BucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
 
-          if (brq != null) {
-            if (reason == STOPPED_GATEWAY_SENDER) {
-              brq.setReceivedGatewaySenderStoppedMessage(true);
-            }
+          if (brq != null && reason == STOPPED_GATEWAY_SENDER) {
+            brq.setReceivedGatewaySenderStoppedMessage(true);
           }
 
           if (isDebugEnabled) {
