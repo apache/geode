@@ -593,6 +593,8 @@ public class DLockGrantor {
           }
         }
         membersDepartedTime.put(owner, currentTime);
+        logger.info("XXX DLockGrantor.recordMemberDepartedTime owner={}; currentTime={}", owner,
+            currentTime);
       }
     }
   }
