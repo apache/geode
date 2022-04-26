@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SocketChannel;
@@ -190,7 +191,7 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void wrap() throws Exception {
+  public void engineWrapCausesResizeThenSucceeds() throws Exception {
     try (final ByteBufferSharing outputSharing =
         nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {
 
@@ -206,6 +207,7 @@ public class NioSslEngineTest {
       // buffer
       TestSSLEngine testEngine = new TestSSLEngine();
       testEngine.addReturnResult(
+          new SSLEngineResult(BUFFER_OVERFLOW, NEED_TASK, 0, 0),
           new SSLEngineResult(OK, NEED_TASK, appData.remaining(), appData.remaining()));
       spyNioSslEngine.engine = testEngine;
 
@@ -217,12 +219,12 @@ public class NioSslEngineTest {
         appData.flip();
         assertThat(wrappedBuffer).isEqualTo(appData);
       }
-      verify(spyNioSslEngine, times(1)).handleBlockingTasks();
+      verify(spyNioSslEngine, times(2)).handleBlockingTasks();
     }
   }
 
   @Test
-  public void wrapFails() throws IOException {
+  public void engineWrapCausesResizeThenCloses() throws IOException {
     try (final ByteBufferSharing outputSharing =
         nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {
       // make the application data too big to fit into the engine's encryption buffer
@@ -237,10 +239,12 @@ public class NioSslEngineTest {
       // buffer
       TestSSLEngine testEngine = new TestSSLEngine();
       testEngine.addReturnResult(
+          new SSLEngineResult(BUFFER_OVERFLOW, NEED_TASK, 0, 0),
           new SSLEngineResult(CLOSED, NEED_TASK, appData.remaining(), appData.remaining()));
       spyNioSslEngine.engine = testEngine;
 
-      assertThatThrownBy(() -> spyNioSslEngine.wrap(appData)).isInstanceOf(SSLException.class)
+      assertThatThrownBy(() -> spyNioSslEngine.wrap(appData))
+          .isInstanceOf(SSLException.class)
           .hasMessageContaining("Error encrypting data");
     }
   }
@@ -370,7 +374,7 @@ public class NioSslEngineTest {
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(false);
 
-    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
+    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE).thenReturn(Boolean.TRUE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 0));
     nioSslEngine.close(mockChannel);
@@ -384,13 +388,13 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void closeWhenUnwrapError() throws Exception {
+  public void closeWhenWrapError() throws Exception {
     SocketChannel mockChannel = mock(SocketChannel.class);
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(true);
 
-    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
+    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE).thenReturn(Boolean.TRUE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(BUFFER_OVERFLOW, FINISHED, 0, 0));
     assertThatThrownBy(() -> nioSslEngine.close(mockChannel)).isInstanceOf(GemFireIOException.class)
@@ -405,14 +409,13 @@ public class NioSslEngineTest {
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(true);
 
-    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenAnswer((x) -> {
       try (final ByteBufferSharing outputSharing =
           nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {
         // give the NioSslEngine something to write on its socket channel, simulating a TLS close
         // message
         outputSharing.getBuffer().put("Goodbye cruel world".getBytes());
-        return new SSLEngineResult(CLOSED, FINISHED, 0, 0);
+        return new SSLEngineResult(OK, NEED_UNWRAP, 0, 0);
       }
     });
     when(mockChannel.write(any(ByteBuffer.class))).thenThrow(new ClosedChannelException());
@@ -605,10 +608,19 @@ public class NioSslEngineTest {
 
     @Override
     public SSLEngineResult wrap(ByteBuffer[] sources, int i, int i1, ByteBuffer destination) {
-      for (ByteBuffer source : sources) {
+      assertThat(sources.length)
+          .as("test unexpectedly tried to wrap with multiple sources")
+          .isEqualTo(1);
+      final ByteBuffer source = sources[0];
+      final SSLEngineResult nextResult = nextResult();
+      try {
         destination.put(source);
+      } catch (final BufferOverflowException e) {
+        assertThat(BUFFER_OVERFLOW)
+            .as("got unexpected buffer overflow")
+            .isEqualTo(nextResult.getStatus());
       }
-      return nextResult();
+      return nextResult;
     }
 
     @Override
@@ -672,7 +684,9 @@ public class NioSslEngineTest {
 
     @Override
     public SSLSession getSession() {
-      return null;
+      final SSLSession session = mock(SSLSession.class);
+      when(session.getPacketBufferSize()).thenReturn(16 * 1024);
+      return session;
     }
 
     @Override

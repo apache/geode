@@ -1801,7 +1801,7 @@ public class Connection implements Runnable {
    * checks to see if an exception should not be logged: i.e., "forcibly closed", "reset by peer",
    * or "connection reset"
    */
-  private static boolean isIgnorableIOException(Exception e) {
+  private static boolean isIgnorableIOException(IOException e) {
     if (e instanceof ClosedChannelException) {
       return true;
     }

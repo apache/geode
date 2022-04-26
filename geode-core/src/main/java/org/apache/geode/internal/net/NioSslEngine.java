@@ -18,7 +18,7 @@ import static javax.net.ssl.SSLEngineResult.HandshakeStatus.FINISHED;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_TASK;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
 import static javax.net.ssl.SSLEngineResult.Status.BUFFER_OVERFLOW;
-import static javax.net.ssl.SSLEngineResult.Status.OK;
+import static javax.net.ssl.SSLEngineResult.Status.CLOSED;
 import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_RECEIVER;
 import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_SENDER;
 
@@ -40,6 +40,7 @@ import javax.net.ssl.SSLSession;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
 import org.apache.geode.internal.net.ByteBufferVendor.OpenAttemptTimedOut;
@@ -51,6 +52,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Its use should be confined to one thread or should be protected by external synchronization.
  */
 public class NioSslEngine implements NioFilter {
+  @Immutable
+  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.wrap(new byte[0]);
   private static final Logger logger = LogService.getLogger();
 
   private final BufferPool bufferPool;
@@ -229,7 +232,8 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public ByteBufferSharing wrap(ByteBuffer appData) throws IOException {
+  public ByteBufferSharing wrap(ByteBuffer appData)
+      throws IOException {
     try (final ByteBufferSharing outputSharing = outputBufferVendor.open()) {
 
       ByteBuffer myNetData = outputSharing.getBuffer();
@@ -237,23 +241,20 @@ public class NioSslEngine implements NioFilter {
       myNetData.clear();
 
       while (appData.hasRemaining()) {
-        // ensure we have lots of capacity since encrypted data might
-        // be larger than the app data
-        int remaining = myNetData.capacity() - myNetData.position();
-
-        if (remaining < (appData.remaining() * 2)) {
-          int newCapacity = expandedCapacity(appData, myNetData);
-          myNetData = outputSharing.expandWriteBufferIfNeeded(newCapacity);
+        final SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
+        switch (wrapResult.getStatus()) {
+          case BUFFER_OVERFLOW:
+            final int newCapacity =
+                myNetData.position() + engine.getSession().getPacketBufferSize();
+            myNetData = outputSharing.expandWriteBufferIfNeeded(newCapacity);
+            break;
+          case BUFFER_UNDERFLOW:
+          case CLOSED:
+            throw new SSLException("Error encrypting data: " + wrapResult);
         }
-
-        SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
 
         if (wrapResult.getHandshakeStatus() == NEED_TASK) {
           handleBlockingTasks();
-        }
-
-        if (wrapResult.getStatus() != OK) {
-          throw new SSLException("Error encrypting data: " + wrapResult);
         }
       }
 
@@ -373,6 +374,7 @@ public class NioSslEngine implements NioFilter {
 
   @Override
   public synchronized void close(SocketChannel socketChannel) {
+
     if (closed) {
       return;
     }
@@ -381,19 +383,25 @@ public class NioSslEngine implements NioFilter {
     try (final ByteBufferSharing outputSharing = outputBufferVendor.open(1, TimeUnit.MINUTES)) {
       final ByteBuffer myNetData = outputSharing.getBuffer();
 
-      if (!engine.isOutboundDone()) {
-        ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
-        engine.closeOutbound();
+      engine.closeOutbound();
+
+      SSLEngineResult result = null;
+
+      while (!engine.isOutboundDone()) {
 
         // clear the buffer to receive a CLOSE message from the SSLEngine
         myNetData.clear();
 
         // Get close message
-        SSLEngineResult result = engine.wrap(empty, myNetData);
+        result = engine.wrap(EMPTY_BYTE_BUFFER, myNetData);
 
-        if (result.getStatus() != SSLEngineResult.Status.CLOSED) {
-          throw new SSLHandshakeException(
-              "Error closing SSL session.  Status=" + result.getStatus());
+        /*
+         * We would have liked to make this one of the while() conditions but
+         * if status is CLOSED we'll get a "Broken pipe" exception in the next write()
+         * so it needs to be handled here.
+         */
+        if (result.getStatus() == CLOSED) {
+          break;
         }
 
         // Send close message to peer
@@ -401,6 +409,10 @@ public class NioSslEngine implements NioFilter {
         while (myNetData.hasRemaining()) {
           socketChannel.write(myNetData);
         }
+      }
+      if (result != null && result.getStatus() != CLOSED) {
+        throw new SSLHandshakeException(
+            "Error closing SSL session.  Status=" + result.getStatus());
       }
     } catch (ClosedChannelException e) {
       // we can't send a close message if the channel is closed
@@ -416,18 +428,13 @@ public class NioSslEngine implements NioFilter {
     }
   }
 
-  private int expandedCapacity(ByteBuffer sourceBuffer, ByteBuffer targetBuffer) {
-    return Math.max(targetBuffer.position() + sourceBuffer.remaining() * 2,
-        targetBuffer.capacity() * 2);
-  }
-
   @VisibleForTesting
-  public ByteBufferVendor getOutputBufferVendorForTestingOnly() throws IOException {
+  public ByteBufferVendor getOutputBufferVendorForTestingOnly() {
     return outputBufferVendor;
   }
 
   @VisibleForTesting
-  public ByteBufferVendor getInputBufferVendorForTestingOnly() throws IOException {
+  public ByteBufferVendor getInputBufferVendorForTestingOnly() {
     return inputBufferVendor;
   }
 }
