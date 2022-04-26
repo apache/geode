@@ -46,11 +46,11 @@ public class LiveServerPinger extends EndpointListenerAdapter {
   /**
    * Initial delay offset time between LiveServerPinger tasks. Time in milliseconds.
    */
-  public static final int INITIAL_DELAY_MULTIPLYER_IN_MILLISECONDS =
+  public static final int INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX
-          + "LiveServerPinger.INITIAL_DELAY_MULTIPLYER_IN_MILLISECONDS", 0);
+          + "LiveServerPinger.INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS", 0);
 
-  private final AtomicInteger offsetIndex = new AtomicInteger(0);
+  private final AtomicInteger initialDelayIndex = new AtomicInteger(0);
 
 
   public LiveServerPinger(InternalPool pool) {
@@ -60,13 +60,13 @@ public class LiveServerPinger extends EndpointListenerAdapter {
 
   @Override
   public void endpointCrashed(Endpoint endpoint) {
-    offsetIndex.set(0); // Reset counter
+    resetInitialDelay();
     cancelFuture(endpoint);
   }
 
   @Override
   public void endpointNoLongerInUse(Endpoint endpoint) {
-    offsetIndex.set(0); // Reset counter
+    resetInitialDelay();
     cancelFuture(endpoint);
   }
 
@@ -75,10 +75,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     try {
       // At each registration of new endpoint increase counter for calculation of initial delay
       // offset
-      long initDelay = offsetIndex.getAndIncrement();
-      initDelay =
-          TimeUnit.MILLISECONDS.toNanos(initDelay * INITIAL_DELAY_MULTIPLYER_IN_MILLISECONDS)
-              + pingIntervalNanos;
+      long initDelay = calculateInitialDelay();
 
       // initDelay - the time to delay first execution
       // pingIntervalNanos - the delay between the termination of one execution and the commencement
@@ -99,6 +96,19 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     if (future != null) {
       future.cancel(false);
     }
+  }
+
+
+  long calculateInitialDelay() {
+    long initDelay = initialDelayIndex.getAndIncrement();
+    initDelay =
+        TimeUnit.MILLISECONDS.toNanos(initDelay * INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS)
+            + pingIntervalNanos;
+    return initDelay;
+  }
+
+  void resetInitialDelay() {
+    initialDelayIndex.set(0);
   }
 
   private class PingTask extends PoolTask {

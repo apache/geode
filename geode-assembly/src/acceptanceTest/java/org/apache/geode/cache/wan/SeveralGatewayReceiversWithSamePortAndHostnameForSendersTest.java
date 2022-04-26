@@ -235,7 +235,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
     vm1.invoke(() -> {
       System.setProperty(
-          GeodeGlossary.GEMFIRE_PREFIX + "InitialServerPinger.OFFSET", "500");
+          GeodeGlossary.GEMFIRE_PREFIX
+              + "LiveServerPinger.INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS",
+          "500");
 
       Properties props = new Properties();
       props.setProperty(LOCATORS, "localhost[" + locPort + "]");
