@@ -16,14 +16,20 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSenderTest.MethodToInvoke.LAST_RESULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -32,31 +38,28 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
+@RunWith(GeodeParamsRunner.class)
 public class PartitionedRegionFunctionResultSenderTest {
-  DistributionManager dm = mock(DistributionManager.class);
-  PartitionedRegion region = mock(PartitionedRegion.class);
-  ATestResultCollector rc = new ATestResultCollector();
-  ServerToClientFunctionResultSender serverToClientFunctionResultSender =
+  private DistributionManager dm = mock(DistributionManager.class);
+  private PartitionedRegion region = mock(PartitionedRegion.class);
+  private PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+  private ATestResultCollector rc = new ATestResultCollector();
+  private ServerToClientFunctionResultSender serverToClientFunctionResultSender =
       mock(ServerToClientFunctionResultSender.class);
-  FunctionStats functionStats = mock(FunctionStats.class);
+  private FunctionStats functionStats = mock(FunctionStats.class);
 
-  @Test
-  public void whenResponseToClientInLastResultFailsEndResultsIsCalled_OnlyLocal_NotOnlyRemote() {
-    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .lastResult(any(), any());
-    PartitionedRegionFunctionResultSender sender =
-        new PartitionedRegionFunctionResultSender(dm,
-            region, 1, rc, serverToClientFunctionResultSender, true, false, true,
-            new TestFunction(), new int[2]);
+  enum MethodToInvoke {
+    SEND_EXCEPTION, LAST_RESULT
+  }
 
-    try {
-      sender.lastResult(new FunctionException());
-    } catch (FunctionException expected) {
-    }
-
-    assertThat(rc.isEndResultsCalled()).isEqualTo(true);
+  @BeforeEach
+  public void setUp() {
+    when(region.getDataStore()).thenReturn(dataStore);
+    when(dataStore.areAllBucketsHosted(any())).thenReturn(true);
   }
 
   @Test
@@ -66,80 +69,69 @@ public class PartitionedRegionFunctionResultSenderTest {
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, false, true, true,
-            new TestFunction(), new int[2], (x, y) -> functionStats);
+            new TestFunction(), new int[2], null, (x, y) -> functionStats);
 
-    try {
-      sender.lastResult(new FunctionException(), true, rc, null);
-    } catch (FunctionException expected) {
-    }
+    sender.lastResult(new Object(), true, rc, null);
 
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
-  @Test
-  public void whenResponseToClientInLastResultFailsEndResultsIsCalled_NotOnlyLocal_NotOnlyRemote() {
-    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+  @ParameterizedTest(name = "{displayName} with {arguments}")
+  @EnumSource(MethodToInvoke.class)
+  public void whenResponseToClientInLastResultFailsEndResultsIsCalled_OnlyLocal_NotOnlyRemote(
+      MethodToInvoke methodToInvoke) {
+    doThrow(new FunctionException("IOException")).when(serverToClientFunctionResultSender)
         .lastResult(any(), any());
-    PartitionedRegionFunctionResultSender sender =
-        new PartitionedRegionFunctionResultSender(dm,
-            region, 1, rc, serverToClientFunctionResultSender, false, false, true,
-            new TestFunction(), new int[2], (x, y) -> functionStats);
 
-    sender.sendException(new FunctionException());
-    try {
-      sender.lastResult(new FunctionException(), true, rc, null);
-    } catch (FunctionException expected) {
-    }
-
-    assertThat(rc.isEndResultsCalled()).isEqualTo(true);
-  }
-
-  @Test
-  public void whenResponseToClientInSendResultFailsEndResultsIsCalled_OnlyLocal_NotOnlyRemote() {
-    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .sendResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, true, false, true,
             new TestFunction(), new int[2]);
 
-    try {
-      sender.sendResult(new FunctionException());
-    } catch (FunctionException expected) {
+    if (methodToInvoke == LAST_RESULT) {
+      sender.lastResult(new Object());
+    } else {
+      sender.sendException(new Exception());
     }
 
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
-  @Test
-  public void whenResponseToClientInSendResultFailsEndResultsIsCalled_NotOnlyLocal_OnlyRemote() {
-    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+  @ParameterizedTest(name = "{displayName} with {arguments}")
+  @EnumSource(MethodToInvoke.class)
+  public void whenResponseToClientInSendResultFailsEndResultsIsCalled_NotOnlyLocal_OnlyRemote(
+      MethodToInvoke methodToInvoke) {
+    doThrow(new FunctionException("IOException")).when(serverToClientFunctionResultSender)
         .sendResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, false, true, true,
-            new TestFunction(), new int[2], (x, y) -> functionStats);
+            new TestFunction(), new int[2], null, (x, y) -> functionStats);
 
-    try {
-      sender.sendResult(new FunctionException());
-    } catch (FunctionException expected) {
+    if (methodToInvoke == LAST_RESULT) {
+      sender.lastResult(new Object());
+    } else {
+      sender.sendException(new Exception());
     }
 
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
-  @Test
-  public void whenResponseToClientInSendResultFailsEndResultsIsCalled_NotOnlyLocal_NotOnlyRemote() {
-    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+  @ParameterizedTest(name = "{displayName} with {arguments}")
+  @EnumSource(MethodToInvoke.class)
+  public void whenResponseToClientInSendResultFailsEndResultsIsCalled_NotOnlyLocal_NotOnlyRemote(
+      MethodToInvoke methodToInvoke) {
+    doThrow(new FunctionException("IOException")).when(serverToClientFunctionResultSender)
         .sendResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, false, false, true,
-            new TestFunction(), new int[2], (x, y) -> functionStats);
+            new TestFunction(), new int[2], null, (x, y) -> functionStats);
 
-    try {
-      sender.sendResult(new FunctionException());
-    } catch (FunctionException expected) {
+    if (methodToInvoke == LAST_RESULT) {
+      sender.lastResult(new Object(), true, rc, null);
+    } else {
+      sender.sendException(new Exception());
     }
 
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);

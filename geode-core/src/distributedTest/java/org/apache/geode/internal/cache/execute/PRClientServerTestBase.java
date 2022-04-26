@@ -80,6 +80,8 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
   protected static Cache cache = null;
 
+  protected String hostName;
+
   static String PartitionedRegionName = "TestPartitionedRegion"; // default name
 
   protected static String regionName = "TestRegion"; // default name
@@ -99,10 +101,11 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     server2 = host.getVM(1);
     server3 = host.getVM(2);
     client = host.getVM(3);
+    hostName = NetworkUtils.getServerHostName();
     postSetUpPRClientServerTestBase();
   }
 
-  protected void postSetUpPRClientServerTestBase() throws Exception {}
+  protected void postSetUpPRClientServerTestBase() {}
 
   private enum ExecuteFunctionMethod {
     ExecuteFunctionByObject, ExecuteFunctionById
@@ -120,7 +123,8 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     return ExecuteFunctionMethod.ExecuteFunctionByObject == functionExecutionType;
   }
 
-  ArrayList createCommonServerAttributes(String regionName, PartitionResolver pr, int red,
+  ArrayList<Object> createCommonServerAttributes(String regionName, PartitionResolver<?, ?> pr,
+      int red,
       String colocatedWithRegion) {
     ArrayList<Object> commonAttributes = new ArrayList<>();
     commonAttributes.add(regionName); // 0
@@ -131,26 +135,26 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     return commonAttributes;
   }
 
-  public static Integer createCacheServer(ArrayList commonAttributes, Integer localMaxMemory) {
+  public static Integer createCacheServer(ArrayList<?> commonAttributes, Integer localMaxMemory) {
     return createCacheServer(commonAttributes, localMaxMemory, -1);
   }
 
-  public static Integer createCacheServer(ArrayList commonAttributes, Integer localMaxMemory,
+  public static Integer createCacheServer(ArrayList<?> commonAttributes, Integer localMaxMemory,
       int maxThreads) {
-    AttributesFactory factory = new AttributesFactory();
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    AttributesFactory<?, ?> factory = new AttributesFactory<>();
+    PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
 
     paf.setPartitionResolver((PartitionResolver) commonAttributes.get(1));
     paf.setRedundantCopies((Integer) commonAttributes.get(2));
     paf.setTotalNumBuckets((Integer) commonAttributes.get(3));
     paf.setColocatedWith((String) commonAttributes.get(4));
     paf.setLocalMaxMemory(localMaxMemory);
-    PartitionAttributes partitionAttributes = paf.create();
+    PartitionAttributes<?, ?> partitionAttributes = paf.create();
     factory.setDataPolicy(DataPolicy.PARTITION);
     factory.setPartitionAttributes(partitionAttributes);
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<?, ?> attrs = factory.create();
 
-    Region region = cache.createRegion((String) commonAttributes.get(0), attrs);
+    Region<?, ?> region = cache.createRegion((String) commonAttributes.get(0), attrs);
     assertNotNull(region);
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
@@ -169,22 +173,22 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     return server1.getPort();
   }
 
-  private static Integer createSelectorCacheServer(ArrayList commonAttributes,
+  private static Integer createSelectorCacheServer(ArrayList<?> commonAttributes,
       Integer localMaxMemory) throws Exception {
-    AttributesFactory factory = new AttributesFactory();
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    AttributesFactory<?, ?> factory = new AttributesFactory();
+    PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
 
     paf.setPartitionResolver((PartitionResolver) commonAttributes.get(1));
     paf.setRedundantCopies((Integer) commonAttributes.get(2));
     paf.setTotalNumBuckets((Integer) commonAttributes.get(3));
     paf.setColocatedWith((String) commonAttributes.get(4));
     paf.setLocalMaxMemory(localMaxMemory);
-    PartitionAttributes partitionAttributes = paf.create();
+    PartitionAttributes<?, ?> partitionAttributes = paf.create();
     factory.setDataPolicy(DataPolicy.PARTITION);
     factory.setPartitionAttributes(partitionAttributes);
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<?, ?> attrs = factory.create();
 
-    Region region = cache.createRegion((String) commonAttributes.get(0), attrs);
+    Region<?, ?> region = cache.createRegion((String) commonAttributes.get(0), attrs);
     assertNotNull(region);
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
@@ -197,24 +201,24 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     return server1.getPort();
   }
 
-  private static Integer createCacheServerWith2Regions(ArrayList commonAttributes,
+  private static Integer createCacheServerWith2Regions(ArrayList<?> commonAttributes,
       Integer localMaxMemory) throws Exception {
-    AttributesFactory factory = new AttributesFactory();
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    AttributesFactory<?, ?> factory = new AttributesFactory<>();
+    PartitionAttributesFactory<?, ?> paf = new PartitionAttributesFactory<>();
 
     paf.setPartitionResolver((PartitionResolver) commonAttributes.get(1));
     paf.setRedundantCopies((Integer) commonAttributes.get(2));
     paf.setTotalNumBuckets((Integer) commonAttributes.get(3));
     paf.setColocatedWith((String) commonAttributes.get(4));
     paf.setLocalMaxMemory(localMaxMemory);
-    PartitionAttributes partitionAttributes = paf.create();
+    PartitionAttributes<?, ?> partitionAttributes = paf.create();
     factory.setDataPolicy(DataPolicy.PARTITION);
     factory.setPartitionAttributes(partitionAttributes);
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<?, ?> attrs = factory.create();
 
-    Region region1 = cache.createRegion(PartitionedRegionName + "1", attrs);
+    Region<?, ?> region1 = cache.createRegion(PartitionedRegionName + "1", attrs);
     assertNotNull(region1);
-    Region region2 = cache.createRegion(PartitionedRegionName + "2", attrs);
+    Region<?, ?> region2 = cache.createRegion(PartitionedRegionName + "2", attrs);
     assertNotNull(region2);
     CacheServer server1 = cache.addCacheServer();
     assertNotNull(server1);
@@ -237,25 +241,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     return server1.getPort();
   }
 
-  private static Integer createCacheServerWithDR() throws Exception {
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    assertNotNull(cache);
-    Region region = cache.createRegion(regionName, factory.create());
-    assertNotNull(region);
-
-    CacheServer server1 = cache.addCacheServer();
-    assertNotNull(server1);
-    int port = getRandomAvailableTCPPort();
-    server1.setPort(port);
-    server1.start();
-    assertTrue(server1.isRunning());
-
-    return server1.getPort();
-  }
-
-  public static void createCacheClient(String host, Integer port1, Integer port2, Integer port3) {
+  public static void createCacheClient(String host, int port1, int port2, int port3) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
 
@@ -273,12 +259,12 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setDataPolicy(DataPolicy.EMPTY);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.create();
-    Region region = cache.createRegion(PartitionedRegionName, attrs);
+    RegionAttributes<?, ?> attrs = factory.create();
+    Region<?, ?> region = cache.createRegion(PartitionedRegionName, attrs);
     assertNotNull(region);
   }
 
-  private static void createCacheClient_SingleConnection(String host, Integer port1) {
+  private static void createCacheClient_SingleConnection(String host, int port1) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
 
@@ -295,13 +281,13 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setDataPolicy(DataPolicy.EMPTY);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.create();
-    Region region = cache.createRegion(PartitionedRegionName, attrs);
+    RegionAttributes<?, ?> attrs = factory.create();
+    Region<?, ?> region = cache.createRegion(PartitionedRegionName, attrs);
     assertNotNull(region);
   }
 
-  private static void createCacheClientWith2Regions(String host, Integer port1, Integer port2,
-      Integer port3) {
+  private static void createCacheClientWith2Regions(String host, int port1, int port2,
+      int port3) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
 
@@ -318,19 +304,19 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.EMPTY);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.create();
-    Region region1 = cache.createRegion(PartitionedRegionName + "1", attrs);
+    RegionAttributes<?, ?> attrs = factory.create();
+    Region<?, ?> region1 = cache.createRegion(PartitionedRegionName + "1", attrs);
     assertNotNull(region1);
 
     factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.EMPTY);
     attrs = factory.create();
-    Region region2 = cache.createRegion(PartitionedRegionName + "2", attrs);
+    Region<?, ?> region2 = cache.createRegion(PartitionedRegionName + "2", attrs);
     assertNotNull(region2);
   }
 
-  private static void createSingleHopCacheClient(String host, Integer port1, Integer port2,
-      Integer port3) {
+  private static void createSingleHopCacheClient(String host, int port1, int port2,
+      int port3) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
 
     Pool p;
@@ -348,13 +334,13 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setDataPolicy(DataPolicy.EMPTY);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.create();
-    Region region = cache.createRegion(PartitionedRegionName, attrs);
+    RegionAttributes<?, ?> attrs = factory.create();
+    Region<?, ?> region = cache.createRegion(PartitionedRegionName, attrs);
     assertNotNull(region);
   }
 
-  private static void createNoSingleHopCacheClient(String host, Integer port1, Integer port2,
-      Integer port3) {
+  private static void createNoSingleHopCacheClient(String host, int port1, int port2,
+      int port3) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
 
     Pool p;
@@ -372,13 +358,13 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setDataPolicy(DataPolicy.EMPTY);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.create();
-    Region region = cache.createRegion(PartitionedRegionName, attrs);
+    RegionAttributes<?, ?> attrs = factory.create();
+    Region<?, ?> region = cache.createRegion(PartitionedRegionName, attrs);
     assertNotNull(region);
   }
 
   private static void createNoSingleHopCacheClient(String host,
-      Integer port1, Integer port2, Integer port3, int connectTimeout) {
+      int port1, int port2, int port3, int connectTimeout) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
 
     Pool p;
@@ -399,13 +385,13 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setDataPolicy(DataPolicy.EMPTY);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.create();
-    Region region = cache.createRegion(PartitionedRegionName, attrs);
+    RegionAttributes<?, ?> attrs = factory.create();
+    Region<?, ?> region = cache.createRegion(PartitionedRegionName, attrs);
     assertNotNull(region);
   }
 
-  private static void createCacheClientWithoutRegion(String host, Integer port1, Integer port2,
-      Integer port3) {
+  private static void createCacheClientWithoutRegion(String host, int port1, int port2,
+      int port3) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     logger
         .info("PRClientServerTestBase#createCacheClientWithoutRegion : creating pool");
@@ -423,81 +409,56 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     pool = (PoolImpl) p;
   }
 
-  private static void createCacheClientWithDistributedRegion(String host, Integer port1,
-      Integer port2, Integer port3) throws Exception {
-    CacheServerTestUtil.disableShufflingOfEndpoints();
-    logger
-        .info("PRClientServerTestBase#createCacheClientWithoutRegion : creating pool");
-
-    Pool p;
-    try {
-      p = PoolManager.createFactory().addServer(host, port1)
-          .addServer(host, port2).addServer(host, port3).setPingInterval(250)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(0)
-          .create("PRClientServerTestBaseWithoutRegion");
-    } finally {
-      CacheServerTestUtil.enableShufflingOfEndpoints();
-    }
-    pool = (PoolImpl) p;
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    assertNotNull(cache);
-    Region region = cache.createRegion(regionName, factory.create());
-    assertNotNull(region);
-  }
-
-  void createClientServerScenarion(ArrayList commonAttributes, int localMaxMemoryServer1,
+  void createClientServerScenarion(ArrayList<?> commonAttributes, int localMaxMemoryServer1,
       int localMaxMemoryServer2, int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+    int port1 = server1.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer1));
-    Integer port2 = server2.invoke(() -> PRClientServerTestBase
+    int port2 = server2.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer2));
-    Integer port3 = server3.invoke(() -> PRClientServerTestBase
+    int port3 = server3.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer3));
     client.invoke(() -> PRClientServerTestBase
-        .createCacheClient(NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3));
+        .createCacheClient(hostName, port1, port2, port3));
   }
 
-  void createClientServerScenarion_SingleConnection(ArrayList commonAttributes,
+  void createClientServerScenarion_SingleConnection(ArrayList<?> commonAttributes,
       int localMaxMemoryServer1,
       int localMaxMemoryServer2) {
     createCacheInClientServer();
-    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+    int port1 = server1.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer1));
     server2.invoke(() -> PRClientServerTestBase.createCacheServer(commonAttributes,
         localMaxMemoryServer2));
     client.invoke(() -> PRClientServerTestBase.createCacheClient_SingleConnection(
-        NetworkUtils.getServerHostName(server1.getHost()), port1));
+        hostName, port1));
   }
 
 
 
-  void createClientServerScenarionWith2Regions(ArrayList commonAttributes,
+  void createClientServerScenarionWith2Regions(ArrayList<?> commonAttributes,
       int localMaxMemoryServer1, int localMaxMemoryServer2,
       int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+    int port1 = server1.invoke(() -> PRClientServerTestBase
         .createCacheServerWith2Regions(commonAttributes, localMaxMemoryServer1));
-    Integer port2 = server2.invoke(() -> PRClientServerTestBase
+    int port2 = server2.invoke(() -> PRClientServerTestBase
         .createCacheServerWith2Regions(commonAttributes, localMaxMemoryServer2));
-    Integer port3 = server3.invoke(() -> PRClientServerTestBase
+    int port3 = server3.invoke(() -> PRClientServerTestBase
         .createCacheServerWith2Regions(commonAttributes, localMaxMemoryServer3));
     client.invoke(() -> PRClientServerTestBase.createCacheClientWith2Regions(
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3));
+        hostName, port1, port2, port3));
   }
 
-  void createClientServerScenarioSingleHop(ArrayList commonAttributes,
+  void createClientServerScenarioSingleHop(ArrayList<?> commonAttributes,
       int localMaxMemoryServer1, int localMaxMemoryServer2,
       int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+    int port1 = server1.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer1));
-    Integer port2 = server2.invoke(() -> PRClientServerTestBase
+    int port2 = server2.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer2));
-    Integer port3 = server3.invoke(() -> PRClientServerTestBase
+    int port3 = server3.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer3));
     // Workaround for the issue that hostnames returned by the client metadata may
     // not match those configured by the pool, leading to multiple copies
@@ -511,49 +472,49 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     return cache.getDistributedSystem().getDistributedMember().getHost();
   }
 
-  void createClientServerScenarioNoSingleHop(ArrayList commonAttributes,
+  void createClientServerScenarioNoSingleHop(ArrayList<?> commonAttributes,
       int localMaxMemoryServer1, int localMaxMemoryServer2,
       int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+    int port1 = server1.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer1));
-    Integer port2 = server2.invoke(() -> PRClientServerTestBase
+    int port2 = server2.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer2));
-    Integer port3 = server3.invoke(() -> PRClientServerTestBase
+    int port3 = server3.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer3));
     client.invoke(() -> PRClientServerTestBase.createNoSingleHopCacheClient(
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3));
+        hostName, port1, port2, port3));
   }
 
-  void createClientServerScenarioNoSingleHop(ArrayList commonAttributes,
+  void createClientServerScenarioNoSingleHop(ArrayList<?> commonAttributes,
       int localMaxMemoryServer1, int localMaxMemoryServer2,
       int localMaxMemoryServer3,
       int maxThreads,
       int connectTimeout) {
     createCacheInClientServer();
-    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+    int port1 = server1.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer1, maxThreads));
-    Integer port2 = server2.invoke(() -> PRClientServerTestBase
+    int port2 = server2.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer2, maxThreads));
-    Integer port3 = server3.invoke(() -> PRClientServerTestBase
+    int port3 = server3.invoke(() -> PRClientServerTestBase
         .createCacheServer(commonAttributes, localMaxMemoryServer3, maxThreads));
     client.invoke(() -> PRClientServerTestBase.createNoSingleHopCacheClient(
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3, connectTimeout));
+        hostName, port1, port2, port3, connectTimeout));
   }
 
-  void createClientServerScenarioSelectorNoSingleHop(ArrayList commonAttributes,
+  void createClientServerScenarioSelectorNoSingleHop(ArrayList<?> commonAttributes,
       int localMaxMemoryServer1,
       int localMaxMemoryServer2,
       int localMaxMemoryServer3) {
     createCacheInClientServer();
-    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+    int port1 = server1.invoke(() -> PRClientServerTestBase
         .createSelectorCacheServer(commonAttributes, localMaxMemoryServer1));
-    Integer port2 = server2.invoke(() -> PRClientServerTestBase
+    int port2 = server2.invoke(() -> PRClientServerTestBase
         .createSelectorCacheServer(commonAttributes, localMaxMemoryServer2));
-    Integer port3 = server3.invoke(() -> PRClientServerTestBase
+    int port3 = server3.invoke(() -> PRClientServerTestBase
         .createSelectorCacheServer(commonAttributes, localMaxMemoryServer3));
     client.invoke(() -> PRClientServerTestBase.createNoSingleHopCacheClient(
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3));
+        hostName, port1, port2, port3));
   }
 
 
@@ -561,15 +522,15 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     logger.info(
         "PRClientServerTestBase#createClientServerScenarionWithoutRegion : creating client server");
     createCacheInClientServer();
-    Integer port1 = server1.invoke(
+    int port1 = server1.invoke(
         (SerializableCallableIF<Integer>) PRClientServerTestBase::createCacheServer);
-    Integer port2 = server2.invoke(
+    int port2 = server2.invoke(
         (SerializableCallableIF<Integer>) PRClientServerTestBase::createCacheServer);
-    Integer port3 = server3.invoke(
+    int port3 = server3.invoke(
         (SerializableCallableIF<Integer>) PRClientServerTestBase::createCacheServer);
 
     client.invoke(() -> PRClientServerTestBase.createCacheClientWithoutRegion(
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3));
+        hostName, port1, port2, port3));
   }
 
   void runOnAllServers(SerializableRunnable runnable) {
@@ -578,7 +539,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     server3.invoke(runnable);
   }
 
-  void registerFunctionAtServer(Function function) {
+  void registerFunctionAtServer(Function<?> function) {
     server1.invoke(PRClientServerTestBase.class, "registerFunction", new Object[] {function});
 
     server2.invoke(PRClientServerTestBase.class, "registerFunction", new Object[] {function});
@@ -586,7 +547,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     server3.invoke(PRClientServerTestBase.class, "registerFunction", new Object[] {function});
   }
 
-  public static void registerFunction(Function function) {
+  public static void registerFunction(Function<?> function) {
     FunctionService.registerFunction(function);
   }
 
@@ -625,10 +586,10 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
   static void startServerHA() throws Exception {
     Wait.pause(2000);
-    Collection bridgeServers = cache.getCacheServers();
+    Collection<?> bridgeServers = cache.getCacheServers();
     logger
         .info("Start Server cache servers list : " + bridgeServers.size());
-    Iterator bridgeIterator = bridgeServers.iterator();
+    Iterator<?> bridgeIterator = bridgeServers.iterator();
     CacheServer bridgeServer = (CacheServer) bridgeIterator.next();
     logger.info("start Server cache server" + bridgeServer);
     bridgeServer.start();
@@ -636,7 +597,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
   static void stopServerHA() {
     Wait.pause(1000);
-    Iterator iter = cache.getCacheServers().iterator();
+    Iterator<?> iter = cache.getCacheServers().iterator();
     if (iter.hasNext()) {
       CacheServer server = (CacheServer) iter.next();
       server.stop();
@@ -674,7 +635,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
       testKeysSet.add(i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
+    Function<?> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     if (shouldRegisterFunctionsOnClient()) {
       FunctionService.registerFunction(function);
     }
@@ -705,7 +666,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
       testKeysSet.add(i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
+    Function<?> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     if (shouldRegisterFunctionsOnClient()) {
       FunctionService.registerFunction(function);
     }
@@ -730,13 +691,14 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     assertTrue(expectedBucketSet.isEmpty());
   }
 
-  public static class BucketFilterPRResolver implements PartitionResolver, Serializable {
+  public static class BucketFilterPRResolver
+      implements PartitionResolver<Object, Object>, Serializable {
 
     @Override
     public void close() {}
 
     @Override
-    public Object getRoutingObject(EntryOperation opDetails) {
+    public Object getRoutingObject(EntryOperation<Object, Object> opDetails) {
       Object key = opDetails.getKey();
       return getBucketID(key);
     }

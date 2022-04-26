@@ -47,7 +47,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   private static final Logger logger = LogService.getLogger();
 
-  PartitionedRegionFunctionStreamingMessage msg = null;
+  private final PartitionedRegionFunctionStreamingMessage msg;
 
   private final DistributionManager dm;
 
@@ -57,15 +57,15 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   private final boolean forwardExceptions;
 
-  private ResultCollector rc;
+  private final ResultCollector rc;
 
-  private ServerToClientFunctionResultSender serverSender;
+  private final ServerToClientFunctionResultSender serverSender;
 
   private boolean localLastResultReceived = false;
 
-  private boolean onlyLocal = false;
+  private final boolean onlyLocal;
 
-  private boolean onlyRemote = false;
+  private final boolean onlyRemote;
 
   private boolean completelyDoneFromRemote = false;
 
@@ -89,25 +89,8 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
       long time, PartitionedRegionFunctionStreamingMessage msg,
       Function function, int[] bucketArray) {
-    this(dm, pr, time, msg, function, bucketArray,
+    this(dm, pr, time, null, null, false, false, false, function, bucketArray, msg,
         (x, y) -> FunctionStatsManager.getFunctionStats((String) x, (InternalDistributedSystem) y));
-  }
-
-  /**
-   * Have to combine next two constructor in one and make a new class which will send Results back.
-   *
-   */
-  public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
-      long time, PartitionedRegionFunctionStreamingMessage msg, Function function,
-      int[] bucketArray, BiFunction functionStatsFunctionProvider) {
-    this.msg = msg;
-    this.dm = dm;
-    this.pr = pr;
-    this.time = time;
-    this.function = function;
-    this.bucketArray = bucketArray;
-    this.functionStatsFunctionProvider = functionStatsFunctionProvider;
-    forwardExceptions = false;
   }
 
   public PartitionedRegionFunctionResultSender(DistributionManager dm,
@@ -115,23 +98,21 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
       ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
       boolean forwardExceptions, Function function, int[] bucketArray) {
     this(dm, partitionedRegion, time, rc, sender, onlyLocal, onlyRemote, forwardExceptions,
-        function, bucketArray,
+        function, bucketArray, null,
         (x, y) -> FunctionStatsManager.getFunctionStats((String) x, (InternalDistributedSystem) y));
   }
 
-  /**
-   * Have to combine next two constructor in one and make a new class which will send Results back.
-   *
-   */
-  public PartitionedRegionFunctionResultSender(DistributionManager dm,
+  PartitionedRegionFunctionResultSender(DistributionManager dm,
       PartitionedRegion partitionedRegion, long time, ResultCollector rc,
       ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
       boolean forwardExceptions, Function function, int[] bucketArray,
+      PartitionedRegionFunctionStreamingMessage msg,
       BiFunction functionStatsFunctionProvider) {
     this.dm = dm;
     pr = partitionedRegion;
     this.time = time;
     this.rc = rc;
+    this.msg = msg;
     serverSender = sender;
     this.onlyLocal = onlyLocal;
     this.onlyRemote = onlyRemote;
