@@ -46,15 +46,16 @@ public class LiveServerPinger extends EndpointListenerAdapter {
   /**
    * Initial delay offset time between LiveServerPinger tasks. Time in milliseconds.
    */
-  public static final int OFFSET =
-      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "InitialServerPinger.OFFSET", 0);
+  public static final int INITIAL_DELAY_MULTIPLYER_IN_MILLISECONDS =
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX
+          + "LiveServerPinger.INITIAL_DELAY_MULTIPLYER_IN_MILLISECONDS", 0);
 
   private final AtomicInteger offsetIndex = new AtomicInteger(0);
 
 
   public LiveServerPinger(InternalPool pool) {
     this.pool = pool;
-    pingIntervalNanos = ((pool.getPingInterval() + 1) / 2) * NANOS_PER_MS;
+    pingIntervalNanos = TimeUnit.MILLISECONDS.toNanos((pool.getPingInterval() + 1) / 2);
   }
 
   @Override
@@ -75,7 +76,9 @@ public class LiveServerPinger extends EndpointListenerAdapter {
       // At each registration of new endpoint increase counter for calculation of initial delay
       // offset
       long initDelay = offsetIndex.getAndIncrement();
-      initDelay = (initDelay * OFFSET * NANOS_PER_MS) + pingIntervalNanos;
+      initDelay =
+          TimeUnit.MILLISECONDS.toNanos(initDelay * INITIAL_DELAY_MULTIPLYER_IN_MILLISECONDS)
+              + pingIntervalNanos;
 
       // initDelay - the time to delay first execution
       // pingIntervalNanos - the delay between the termination of one execution and the commencement

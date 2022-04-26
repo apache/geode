@@ -262,11 +262,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     int maxTimeBetweenPingsInReceiver = 10000;
     Thread.sleep(maxTimeBetweenPingsInReceiver);
 
-    int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
-    assertEquals(0, senderPoolDisconnects);
+    await().untilAsserted(() -> assertThat(getSenderPoolDisconnects(vm1, senderId)).isEqualTo(0));
 
-    int poolEndPointSize = getSenderPoolConnects(vm1, senderId);
-    assertEquals(3, poolEndPointSize);
+    await().untilAsserted(() -> assertThat(getSenderPoolConnects(vm1, senderId)).isEqualTo(3));
   }
 
 
