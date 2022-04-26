@@ -317,7 +317,7 @@ public class NioSslEngine implements NioFilter {
     int requiredSize = engine.getSession().getPacketBufferSize();
     if (pooledWrappedBuffer == null) {
       pooledWrappedBuffer = bufferPool.acquireDirectBuffer(bufferType, requiredSize);
-    } else if (pooledWrappedBuffer.getByteBuffer().capacity() < requiredSize) {
+    } else if (pooledWrappedBuffer.getBuffer().capacity() < requiredSize) {
       pooledWrappedBuffer =
           bufferPool.expandWriteBufferIfNeeded(bufferType, pooledWrappedBuffer, requiredSize);
     }

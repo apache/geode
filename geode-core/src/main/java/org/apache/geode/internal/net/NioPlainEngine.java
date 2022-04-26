@@ -62,12 +62,12 @@ public class NioPlainEngine implements NioFilter {
 
     if (pooledWrappedBuffer == null) {
       pooledWrappedBuffer = bufferPool.acquireDirectBuffer(bufferType, amount);
-      pooledWrappedBuffer.getByteBuffer().clear();
+      pooledWrappedBuffer.getBuffer().clear();
       lastProcessedPosition = 0;
       lastReadPosition = 0;
-    } else if (pooledWrappedBuffer.getByteBuffer().capacity() > amount) {
+    } else if (pooledWrappedBuffer.getBuffer().capacity() > amount) {
       // we already have a buffer that's big enough
-      ByteBuffer buffer = pooledWrappedBuffer.getByteBuffer();
+      ByteBuffer buffer = pooledWrappedBuffer.getBuffer();
       if (buffer.capacity() - lastProcessedPosition < amount) {
         buffer.limit(lastReadPosition);
         buffer.position(lastProcessedPosition);
@@ -76,11 +76,11 @@ public class NioPlainEngine implements NioFilter {
         lastProcessedPosition = 0;
       }
     } else {
-      ByteBuffer oldBuffer = pooledWrappedBuffer.getByteBuffer();
+      ByteBuffer oldBuffer = pooledWrappedBuffer.getBuffer();
       oldBuffer.limit(lastReadPosition);
       oldBuffer.position(lastProcessedPosition);
       PooledByteBuffer newPooledBuffer = bufferPool.acquireDirectBuffer(bufferType, amount);
-      ByteBuffer buffer = newPooledBuffer.getByteBuffer();
+      ByteBuffer buffer = newPooledBuffer.getBuffer();
       buffer.clear();
       buffer.put(oldBuffer);
       bufferPool.releaseBuffer(bufferType, pooledWrappedBuffer);

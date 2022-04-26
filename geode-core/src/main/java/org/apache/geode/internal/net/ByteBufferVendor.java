@@ -188,19 +188,19 @@ public class ByteBufferVendor {
     @Override
     public ByteBuffer getBuffer() throws IOException {
       exposingResource();
-      return buffer.getByteBuffer();
+      return buffer.getBuffer();
     }
 
     @Override
     public ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException {
       buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, buffer, newCapacity);
-      return buffer.getByteBuffer();
+      return buffer.getBuffer();
     }
 
     @Override
     public ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException {
       buffer = bufferPool.expandReadBufferIfNeeded(bufferType, buffer, newCapacity);
-      return buffer.getByteBuffer();
+      return buffer.getBuffer();
     }
 
     @Override

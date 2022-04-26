@@ -128,7 +128,7 @@ public class MsgReader {
   private ByteBufferSharing readAtLeast(int bytes) throws IOException {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         BufferPool.BufferType.TRACKED_RECEIVER);
-    return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData.getByteBuffer());
+    return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData.getBuffer());
   }
 
   public void close() {

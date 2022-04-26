@@ -137,7 +137,7 @@ public class MsgStreamer extends OutputStream
     this.connections = connections;
     int bufferSize = Math.min(sendBufferSize, Connection.MAX_MSG_SIZE);
     pooledBuffer = bufferPool.acquireDirectSenderBuffer(bufferSize);
-    buffer = pooledBuffer.getByteBuffer();
+    buffer = pooledBuffer.getBuffer();
     buffer.clear();
     buffer.position(Connection.MSG_HEADER_BYTES);
     msgId = MsgIdGenerator.NO_MSG_ID;

@@ -222,7 +222,7 @@ public class BufferPool {
    */
   PooledByteBuffer expandReadBufferIfNeeded(BufferType type, PooledByteBuffer existingPooledBuffer,
       int desiredCapacity) {
-    ByteBuffer existing = existingPooledBuffer.getByteBuffer();
+    ByteBuffer existing = existingPooledBuffer.getBuffer();
     if (existing.capacity() >= desiredCapacity) {
       if (existing.position() > 0) {
         existing.compact();
@@ -236,7 +236,7 @@ public class BufferPool {
     } else {
       newPooledBuffer = acquireNonDirectBuffer(type, desiredCapacity);
     }
-    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
+    ByteBuffer newBuffer = newPooledBuffer.getBuffer();
     newBuffer.clear();
     newBuffer.put(existing);
     newBuffer.flip();
@@ -249,7 +249,7 @@ public class BufferPool {
    */
   PooledByteBuffer expandWriteBufferIfNeeded(BufferType type, PooledByteBuffer existingPooledBuffer,
       int desiredCapacity) {
-    ByteBuffer existing = existingPooledBuffer.getByteBuffer();
+    ByteBuffer existing = existingPooledBuffer.getBuffer();
     if (existing.capacity() >= desiredCapacity) {
       return existingPooledBuffer;
     }
@@ -259,7 +259,7 @@ public class BufferPool {
     } else {
       newPooledBuffer = acquireNonDirectBuffer(type, desiredCapacity);
     }
-    ByteBuffer newBuffer = newPooledBuffer.getByteBuffer();
+    ByteBuffer newBuffer = newPooledBuffer.getBuffer();
     newBuffer.clear();
     existing.flip();
     newBuffer.put(existing);
@@ -310,7 +310,7 @@ public class BufferPool {
    * Releases a previously acquired buffer.
    */
   private void releaseBuffer(PooledByteBuffer pooledByteBuffer, boolean send) {
-    ByteBuffer buffer = pooledByteBuffer.getOriginal();
+    ByteBuffer buffer = pooledByteBuffer.getPoolableBuffer();
     if (buffer.isDirect()) {
       BBSoftReference bbRef = new BBSoftReference(buffer, send);
       if (buffer.capacity() <= SMALL_BUFFER_SIZE) {
@@ -371,12 +371,12 @@ public class BufferPool {
   }
 
   public static class PooledByteBuffer {
-    private final ByteBuffer original;
-    private final ByteBuffer byteBuffer;
+    private final ByteBuffer poolableBuffer;
+    private final ByteBuffer usableSlice;
 
-    PooledByteBuffer(ByteBuffer original, ByteBuffer byteBuffer) {
-      this.original = original;
-      this.byteBuffer = byteBuffer;
+    PooledByteBuffer(ByteBuffer poolableBuffer, ByteBuffer usableSlice) {
+      this.poolableBuffer = poolableBuffer;
+      this.usableSlice = usableSlice;
     }
 
     PooledByteBuffer(ByteBuffer byteBuffer) {
@@ -384,19 +384,20 @@ public class BufferPool {
     }
 
     /**
-     * Returns the byte buffer intended for use outside of the pool.
+     * Returns the byte buffer intended for use by client's of the pool.
+     * This buffer will either be the poolableBuffer or a slice of it.
      */
-    public ByteBuffer getByteBuffer() {
-      return byteBuffer;
+    public ByteBuffer getBuffer() {
+      return usableSlice;
     }
 
     /**
      * The original byte buffer managed by the pool.
      * This should only be used by the pool itself.
-     * It may differ from 'byteBuffer' since it may be a slice of the original.
+     * This will differ from usableSlice when usableSlice is a slice of poolableBuffer.
      */
-    ByteBuffer getOriginal() {
-      return original;
+    ByteBuffer getPoolableBuffer() {
+      return poolableBuffer;
     }
   }
 

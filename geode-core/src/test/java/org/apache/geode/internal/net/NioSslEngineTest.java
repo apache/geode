@@ -439,7 +439,7 @@ public class NioSslEngineTest {
   public void ensureWrappedCapacityWithNoBuffer() {
     assertThat(
         nioSslEngine.ensureWrappedCapacity(10, null, BufferPool.BufferType.UNTRACKED)
-            .getByteBuffer().capacity())
+            .getBuffer().capacity())
                 .isEqualTo(netBufferSize);
   }
 
@@ -498,7 +498,7 @@ public class NioSslEngineTest {
     int initialUnwrappedBufferSize = 100;
     PooledByteBuffer unwrappedPooledBuffer =
         new PooledByteBuffer(ByteBuffer.allocate(initialUnwrappedBufferSize));
-    ByteBuffer unwrappedBuffer = unwrappedPooledBuffer.getByteBuffer();
+    ByteBuffer unwrappedBuffer = unwrappedPooledBuffer.getBuffer();
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
 
     nioSslEngine.getInputBufferVendorForTestingOnly()
@@ -554,7 +554,7 @@ public class NioSslEngineTest {
     // force buffer expansion by making a small decoded buffer appear near to being full
     PooledByteBuffer unwrappedPooledBuffer =
         new PooledByteBuffer(ByteBuffer.allocate(initialUnwrappedBufferSize));
-    ByteBuffer unwrappedBuffer = unwrappedPooledBuffer.getByteBuffer();
+    ByteBuffer unwrappedBuffer = unwrappedPooledBuffer.getBuffer();
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
     nioSslEngine.getInputBufferVendorForTestingOnly()
         .setBufferForTestingOnly(unwrappedPooledBuffer);
