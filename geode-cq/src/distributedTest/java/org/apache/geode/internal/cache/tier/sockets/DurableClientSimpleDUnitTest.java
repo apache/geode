@@ -33,8 +33,8 @@ import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ClientSession;
@@ -49,9 +49,10 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.HARegionQueueStats;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Tag("ClientSubscriptionTest")
-class DurableClientSimpleDUnitTest extends DurableClientTestBase {
+@Category({ClientSubscriptionTest.class})
+public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
   /**
    * Test that a durable client correctly receives updates.

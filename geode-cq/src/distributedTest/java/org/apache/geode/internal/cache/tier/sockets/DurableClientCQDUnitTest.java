@@ -33,8 +33,8 @@ import static org.junit.Assert.assertFalse;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -59,10 +59,12 @@ import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Tag("ClientSubscriptionTest")
+@Category({ClientSubscriptionTest.class})
 public class DurableClientCQDUnitTest extends DurableClientTestBase {
 
   /**
@@ -901,7 +903,8 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     // Start a durable client
     durableClientId = getName() + "_client";
     durableClientVM.invoke(() -> {
-      createCacheClient(getClientPool(VM.getHostName(), server1Port, server2Port,
+      createCacheClient(getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()),
+          server1Port, server2Port,
           true, 0),
           regionName, getClientDistributedSystemProperties(durableClientId, 60), true);
 
@@ -996,7 +999,8 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
 
       // Start normal publisher client
       publisherClientVM.invoke(() -> createCacheClient(
-          getClientPool(VM.getHostName(), server1Port, false),
+          getClientPool(NetworkUtils.getServerHostName(publisherClientVM.getHost()), server1Port,
+              false),
           regionName));
 
       // Publish some entries

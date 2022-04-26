@@ -27,8 +27,8 @@ import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -44,6 +44,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
  * The ClientServerRegisterInterestsDUnitTest class is a test suite of test cases testing the
@@ -51,7 +52,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
  *
  * @since GemFire 8.0
  */
-@Tag("ClientSubscriptionTest")
+@Category({ClientSubscriptionTest.class})
 public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final long WAIT_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(5);

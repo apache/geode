@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -47,9 +47,11 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
  * The DUnitTest checks whether the following Three counts are incremented correctly or not: 1)
@@ -61,7 +63,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
  * In the given test DurableClient comes up and goes down discreetly with different
  * DurableClientTimeouts so as to increment the counts
  */
-@Tag("ClientSubscriptionTest")
+@Category({ClientSubscriptionTest.class})
 public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;
@@ -131,6 +133,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testDurableClientStatistics() {
 
+    assertThat(server1VM).isNotNull();
     // Step 1: Starting the servers
     PORT1 = server1VM
         .invoke(() -> createCacheServer(regionName, true));
@@ -176,7 +179,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     final String durableClientId = getName() + "_client";
 
     durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(VM.getHostName(), PORT1), regionName,
+        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1), regionName,
         getDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
         true));
 
@@ -196,7 +199,9 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
   public void startRegisterAndCloseNonDurableClientCache() {
 
     durableClientVM
-        .invoke(() -> createCacheClient(getClientPool(VM.getHostName(), PORT1), regionName,
+        .invoke(() -> createCacheClient(
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1),
+            regionName,
             getNonDurableClientDistributedSystemProperties(), true));
 
     durableClientVM.invoke(() -> DurableClientStatsDUnitTest.registerKey(false));
@@ -209,7 +214,9 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     final String durableClientId = getName() + "_client";
 
     durableClientVM
-        .invoke(() -> createCacheClient(getClientPool(VM.getHostName(), PORT1), regionName,
+        .invoke(() -> createCacheClient(
+            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1),
+            regionName,
             getDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
             true));
 
@@ -228,7 +235,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
   public void startAndCloseNonDurableClientCache() {
 
     durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(VM.getHostName(), PORT1), regionName,
+        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1), regionName,
         getNonDurableClientDistributedSystemProperties(), true));
 
     durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
