@@ -16,16 +16,7 @@
  */
 
 plugins {
-  //  id 'standard-subproject-configuration'
-  id 'geode-java'
-  id 'dependency-resolution'
-  id 'geode-test'
-  id 'code-analysis'
-  id 'spotless'
-  id 'ide'
-  id "com.github.ben-manes.versions"
-
-
+  id 'standard-subproject-configuration'
   id 'warnings'
   id 'distribution'
   id 'com.palantir.docker'

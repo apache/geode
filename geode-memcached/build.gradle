@@ -41,9 +41,3 @@ dependencies {
 
   distributedTestImplementation(project(':geode-dunit'))
 }
-
-integrationTest {
-  jacoco {
-    enabled = false
-  }
-}
