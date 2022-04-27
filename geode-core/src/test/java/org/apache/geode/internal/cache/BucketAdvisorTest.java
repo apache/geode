@@ -33,13 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.server.CacheServer;
@@ -49,14 +45,6 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 
 class BucketAdvisorTest {
-  @Mock
-  private PartitionedRegion partitionedRegion;
-  @Mock
-  private Bucket bucket;
-  @Mock
-  private RegionAdvisor regionAdvisor;
-
-  private AutoCloseable closeable;
 
   @Test
   void shouldBeMockable() throws Exception {
@@ -334,6 +322,9 @@ class BucketAdvisorTest {
 
   @Test
   void removePrimaryDeposePrimaryForColocatedChildrenBeforeReleasePrimaryLock() {
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    Bucket bucket = mock(Bucket.class);
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
     when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(regionAdvisor.getBucket(any(Integer.class))).thenReturn(bucket);
     when(partitionedRegion.getPartitionAttributes()).thenReturn(new PartitionAttributesImpl());
@@ -344,7 +335,7 @@ class BucketAdvisorTest {
     doReturn(true).when(bucketAdvisor).isPrimary();
     doReturn(manager).when(bucketAdvisor).getDistributionManager();
     when(manager.getId()).thenReturn(member);
-    bucketAdvisor.setPrimaryMemberForTest(member);
+    bucketAdvisor.setPrimaryMember(member);
     bucketAdvisor.setInitialized();
     doNothing().when(bucketAdvisor).deposePrimaryForColocatedChildren();
 
@@ -354,15 +345,5 @@ class BucketAdvisorTest {
     order.verify(bucketAdvisor).deposePrimaryForColocatedChildren();
     order.verify(bucketAdvisor).releasePrimaryLock();
     assertThat(bucketAdvisor.basicGetPrimaryMember()).isNull();
-  }
-
-  @BeforeEach
-  void init() {
-    closeable = MockitoAnnotations.openMocks(this);
-  }
-
-  @AfterEach
-  void close() throws Exception {
-    closeable.close();
   }
 }

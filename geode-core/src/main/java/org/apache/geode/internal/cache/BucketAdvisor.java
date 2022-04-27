@@ -43,7 +43,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -151,7 +150,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * The advisor for the bucket region that we are colocated with, if this region is a colocated
    * region.
    */
-  private BucketAdvisor parentAdvisor;
+  private final BucketAdvisor parentAdvisor;
 
   /**
    * The member that is responsible for choosing the primary for this bucket. While this field is
@@ -181,7 +180,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     pRegion = this.regionAdvisor.getPartitionedRegion();
     redundancyTracker =
         new BucketRedundancyTracker(pRegion.getRedundantCopies(), pRegion.getRedundancyTracker());
-    resetParentAdvisor(bucket.getId());
+    parentAdvisor = getParentAdvisor(bucket.getId());
 
     if (parentAdvisor == null) {
       primaryMoveReadWriteLock = new ReentrantReadWriteLock();
@@ -198,7 +197,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     return advisor;
   }
 
-  private void resetParentAdvisor(int bucketId) {
+  private BucketAdvisor getParentAdvisor(int bucketId) {
     PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(pRegion);
     if (colocatedRegion != null) {
       if (colocatedRegion.isFixedPartitionedRegion()) {
@@ -206,18 +205,15 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         if (fpas != null) {
           for (FixedPartitionAttributesImpl fpa : fpas) {
             if (fpa.hasBucket(bucketId)) {
-              parentAdvisor =
-                  colocatedRegion.getRegionAdvisor().getBucketAdvisor(fpa.getStartingBucketID());
-              break;
+              return colocatedRegion.getRegionAdvisor().getBucketAdvisor(fpa.getStartingBucketID());
             }
           }
         }
       } else {
-        parentAdvisor = colocatedRegion.getRegionAdvisor().getBucketAdvisor(bucketId);
+        return colocatedRegion.getRegionAdvisor().getBucketAdvisor(bucketId);
       }
-    } else {
-      parentAdvisor = null;
     }
+    return null;
   }
 
   private void assignStartingBucketAdvisorIfFixedPartitioned() {
@@ -1667,7 +1663,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @param id the member to use as primary for this bucket
    */
-  private void setPrimaryMember(InternalDistributedMember id) {
+  synchronized void setPrimaryMember(InternalDistributedMember id) {
     if (!getDistributionManager().getId().equals(id)) {
       // volunteerForPrimary handles primary state change if its our id
       if (isHosting()) {
@@ -1683,11 +1679,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       primaryElector = null;
     }
     notifyAll(); // wake up any threads in waitForPrimaryMember
-  }
-
-  @TestOnly
-  void setPrimaryMemberForTest(InternalDistributedMember member) {
-    primaryMember.set(member);
   }
 
   void setHadPrimary() {
