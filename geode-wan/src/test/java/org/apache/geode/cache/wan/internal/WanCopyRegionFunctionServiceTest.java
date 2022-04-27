@@ -25,8 +25,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -37,7 +37,7 @@ public class WanCopyRegionFunctionServiceTest {
   private WanCopyRegionFunctionService service;
   private final InternalCache cache = mock(InternalCache.class);
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     service = new WanCopyRegionFunctionService();
     service.init(cache);

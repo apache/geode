@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.lang.SystemProperty;
@@ -33,6 +32,9 @@ import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class WanCopyRegionFunctionService implements CacheService {
+
+  private static final String WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
+      "WAN Copy Region Function Execution Processor";
 
   private volatile ExecutorService wanCopyRegionFunctionExecutionPool;
 
@@ -50,10 +52,7 @@ public class WanCopyRegionFunctionService implements CacheService {
     return init(maxConcurrentThreads);
   }
 
-  @VisibleForTesting
   boolean init(int maxConcurrentThreads) {
-    String WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
-        "WAN Copy Region Function Execution Processor";
     wanCopyRegionFunctionExecutionPool = LoggingExecutors
         .newFixedThreadPool(maxConcurrentThreads,
             WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX, true);
