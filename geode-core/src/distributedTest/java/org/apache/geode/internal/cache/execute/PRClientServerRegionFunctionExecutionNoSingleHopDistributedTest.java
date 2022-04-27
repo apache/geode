@@ -15,11 +15,8 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -56,11 +53,9 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -93,7 +88,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testServerAllKeyExecution_byInstance() {
     createScenario();
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = Boolean.FALSE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -125,7 +120,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testServerSingleKeyExecution_byName() {
     createScenario();
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = Boolean.TRUE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -150,7 +145,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testBucketFilter() {
     createScenarioForBucketFilter();
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     registerFunctionAtServer(function);
 
     Set<Integer> bucketFilterSet = new HashSet<>();
@@ -167,7 +162,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testBucketFilterOverride() {
     createScenarioForBucketFilter();
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     registerFunctionAtServer(function);
     // test multi key filter
     Set<Integer> bucketFilterSet = new HashSet<>();
@@ -187,7 +182,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testServerSingleKeyExecution_SocketTimeOut() {
     createScenario();
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     registerFunctionAtServer(function);
     isByName = Boolean.TRUE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -201,7 +196,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testServerSingleKeyExecution_byInstance() {
     createScenario();
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = Boolean.FALSE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -225,7 +220,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testserverMultiKeyExecution_byName() {
     createScenario();
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = Boolean.TRUE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -241,7 +236,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testserverMultiKeyExecution_SocektTimeOut() {
     createScenario();
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     registerFunctionAtServer(function);
     isByName = Boolean.TRUE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -278,7 +273,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testserverMultiKeyExecutionNoResult_byName() {
     createScenario();
-    Function function = new TestFunction(false, TEST_FUNCTION7);
+    Function<Object> function = new TestFunction<>(false, TEST_FUNCTION7);
     registerFunctionAtServer(function);
     isByName = Boolean.TRUE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -292,7 +287,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testserverMultiKeyExecution_byInstance() {
     createScenario();
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = Boolean.FALSE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -306,7 +301,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testserverMultiKeyExecutionOnASingleBucket_byName() {
     createScenario();
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = Boolean.TRUE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -320,7 +315,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   @Test
   public void testserverMultiKeyExecutionOnASingleBucket_byInstance() {
     createScenario();
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     registerFunctionAtServer(function);
     isByName = Boolean.FALSE;
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
@@ -332,19 +327,19 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
    * failover to other available server
    */
   @Test
-  public void testServerFailoverWithTwoServerAliveHA() {
+  public void testServerFailoverWithTwoServerAliveHA() throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
-    ArrayList commonAttributes =
+    ArrayList<Object> commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_HA);
     registerFunctionAtServer(function);
     server2.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::putOperation);
 
     int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
+    AsyncInvocation<?>[] async = new AsyncInvocation<?>[AsyncInvocationArrSize];
     async[0] = client.invokeAsync(
         PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::startServerHA);
@@ -352,13 +347,10 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     server1.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .verifyDeadAndLiveServers(2));
-    ThreadUtils.join(async[0], 6 * 60 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
-    }
-    List l = (List) async[0].getReturnValue();
 
-    assertEquals(2, l.size());
+    List<?> l = (List<?>) async[0].get();
+
+    assertThat(l.size()).isEqualTo(2);
   }
 
   /*
@@ -366,18 +358,18 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
    * failover to other available server
    */
   @Test
-  public void testServerCacheClosedFailoverWithTwoServerAliveHA() {
+  public void testServerCacheClosedFailoverWithTwoServerAliveHA() throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
-    ArrayList commonAttributes =
+    ArrayList<Object> commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_HA);
     registerFunctionAtServer(function);
     server2.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::putOperation);
     int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
+    AsyncInvocation<?>[] async = new AsyncInvocation<?>[AsyncInvocationArrSize];
     async[0] = client.invokeAsync(
         PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::startServerHA);
@@ -385,12 +377,9 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     server1.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::closeCacheHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
         .verifyDeadAndLiveServers(2));
-    ThreadUtils.join(async[0], 5 * 60 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
-    }
-    List l = (List) async[0].getReturnValue();
-    assertEquals(2, l.size());
+
+    List<?> l = (List<?>) async[0].get();
+    assertThat(l.size()).isEqualTo(2);
   }
 
   @Test
@@ -533,57 +522,56 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
 
   public static void executeFunction() {
 
-    Region region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    Region<Object, Object> region = cache.getRegion(PartitionedRegionName);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 10); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
     try {
-      ResultCollector rc1 =
+      ResultCollector<?, ?> rc1 =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
 
-      HashMap resultMap = ((HashMap) rc1.getResult());
-      assertEquals(3, resultMap.size());
+      HashMap<?, ?> resultMap = ((HashMap<?, ?>) rc1.getResult());
+      assertThat(resultMap).size().isEqualTo(3);
 
-      for (Object o : resultMap.entrySet()) {
-        Map.Entry entry = (Map.Entry) o;
-        ArrayList resultListForMember = (ArrayList) entry.getValue();
+      for (Map.Entry<?, ?> o : resultMap.entrySet()) {
+        ArrayList<?> resultListForMember = (ArrayList<?>) o.getValue();
 
         for (Object result : resultListForMember) {
-          assertEquals(Boolean.TRUE, result);
+          assertThat(result).isEqualTo(Boolean.TRUE);
         }
       }
     } catch (Exception e) {
       logger.info("Got an exception : " + e.getMessage());
-      assertTrue(e instanceof CacheClosedException);
+      assertThat(e).isInstanceOf(CacheClosedException.class);
     }
   }
 
   private static Object executeFunctionHA() {
-    Region region = cache.getRegion(PartitionedRegionName);
+    Region<Object, Object> region = cache.getRegion(PartitionedRegionName);
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 10); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_HA);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
-    ResultCollector rc1 =
+    ResultCollector<?, ?> rc1 =
         dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-    List l = ((List) rc1.getResult());
+    List<?> l = ((List<?>) rc1.getResult());
     logger.info("Result size : " + l.size());
     return l;
   }
 
   private static void putOperation() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 10); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
@@ -596,139 +584,123 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   }
 
   private void createScenario() {
-    ArrayList commonAttributes =
+    ArrayList<Object> commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
     createClientServerScenarioNoSingleHop(commonAttributes, 20, 20, 20);
   }
 
   private void createScenarioWithClientConnectTimeout(int connectTimeout, int maxThreads) {
-    ArrayList commonAttributes =
+    ArrayList<Object> commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
     createClientServerScenarioNoSingleHop(commonAttributes, 20, 20, 20, maxThreads, connectTimeout);
   }
 
 
   private void createScenarioForBucketFilter() {
-    ArrayList commonAttributes = createCommonServerAttributes("TestPartitionedRegion",
+    ArrayList<Object> commonAttributes = createCommonServerAttributes("TestPartitionedRegion",
         new BucketFilterPRResolver(), 0, null);
     createClientServerScenarioNoSingleHop(commonAttributes, 20, 20, 20);
   }
 
   private static void checkBucketsOnServer() {
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(PartitionedRegionName);
-    HashMap localBucket2RegionMap = (HashMap) region.getDataStore().getSizeLocally();
+    HashMap<Integer, Integer> localBucket2RegionMap =
+        (HashMap<Integer, Integer>) region.getDataStore().getSizeLocally();
     logger.info(
         "Size of the " + PartitionedRegionName + " in this VM :- " + localBucket2RegionMap.size());
-    Set entrySet = localBucket2RegionMap.entrySet();
-    assertNotNull(entrySet);
+    Set<Map.Entry<Integer, Integer>> entrySet = localBucket2RegionMap.entrySet();
+    assertThat(entrySet).isNotNull();
   }
 
   private static void serverAllKeyExecution(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets / 2); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
-    try {
-      int j = 0;
-      HashSet<Integer> origVals = new HashSet<>();
-      for (String item : testKeysSet) {
-        Integer val = j++;
-        origVals.add(val);
-        region.put(item, val);
-      }
-      ResultCollector rc1 = executeOnAll(dataSet, Boolean.TRUE, function, isByName);
-      List resultList = (List) rc1.getResult();
-      logger.info("Result size : " + resultList.size());
-      logger.info("Result are SSSS : " + resultList);
-      assertEquals(3, resultList.size());
 
-      for (Object result : resultList) {
-        assertEquals(Boolean.TRUE, result);
-      }
-      ResultCollector rc2 = executeOnAll(dataSet, testKeysSet, function, isByName);
-      List l2 = ((List) rc2.getResult());
-      assertEquals(3, l2.size());
-      HashSet<Integer> foundVals = new HashSet<>();
-      for (Object value : l2) {
-        ArrayList subL = (ArrayList) (value);
-        assertTrue(subL.size() > 0);
-        for (Object o : subL) {
-          assertTrue(foundVals.add((Integer) o));
-        }
-      }
-      assertEquals(origVals, foundVals);
-
-    } catch (Exception e) {
-      Assert.fail("Test failed after the put operation", e);
-
+    int j = 0;
+    HashSet<Integer> origVals = new HashSet<>();
+    for (String item : testKeysSet) {
+      Integer val = j++;
+      origVals.add(val);
+      region.put(item, val);
     }
+    ResultCollector<?, ?> rc1 = executeOnAll(dataSet, Boolean.TRUE, function, isByName);
+    List<?> resultList = (List<?>) rc1.getResult();
+    logger.info("Result size : " + resultList.size());
+    logger.info("Result are SSSS : " + resultList);
+    assertThat(resultList.size()).isEqualTo(3);
+
+    for (Object result : resultList) {
+      assertThat(result).isEqualTo(Boolean.TRUE);
+    }
+    ResultCollector<?, ?> rc2 = executeOnAll(dataSet, testKeysSet, function, isByName);
+    List<?> l2 = (List<?>) rc2.getResult();
+    assertThat(l2.size()).isEqualTo(3);
+    HashSet<Integer> foundVals = new HashSet<>();
+    for (Object value : l2) {
+      List<?> subL = (List<?>) value;
+      assertThat(subL.size()).isGreaterThan(0);
+      for (Object o : subL) {
+        assertThat(foundVals.add((Integer) o)).isTrue();
+      }
+    }
+    assertThat(foundVals).isEqualTo(origVals);
   }
 
   public static void getAll() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final List<String> testKeysList = new ArrayList<>();
     for (int i = (totalNumBuckets * 3); i > 0; i--) {
       testKeysList.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    try {
-      int j = 0;
-      Map<String, Integer> origVals = new HashMap<>();
-      for (String key : testKeysList) {
-        Integer val = j++;
-        origVals.put(key, val);
-        region.put(key, val);
-      }
-      Map resultMap = region.getAll(testKeysList);
-      assertEquals(resultMap, origVals);
-      Wait.pause(2000);
-      Map secondResultMap = region.getAll(testKeysList);
-      assertEquals(secondResultMap, origVals);
-
-    } catch (Exception e) {
-      Assert.fail("Test failed after the put operation", e);
-
+    int j = 0;
+    Map<String, Integer> origVals = new HashMap<>();
+    for (String key : testKeysList) {
+      Integer val = j++;
+      origVals.put(key, val);
+      region.put(key, val);
     }
+    Map<String, Integer> resultMap = region.getAll(testKeysList);
+    assertThat(resultMap).isEqualTo(origVals);
+    Wait.pause(2000);
+    Map<String, Integer> secondResultMap = region.getAll(testKeysList);
+    assertThat(secondResultMap).isEqualTo(origVals);
   }
 
   public static void putAll() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final List<String> testKeysList = new ArrayList<>();
     for (int i = (totalNumBuckets * 3); i > 0; i--) {
       testKeysList.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    try {
-      int j = 0;
-      Map<String, Integer> origVals = new HashMap<>();
-      for (String key : testKeysList) {
-        Integer val = j++;
-        origVals.put(key, val);
-        region.put(key, val);
-      }
-      Map resultMap = region.getAll(testKeysList);
-      assertEquals(resultMap, origVals);
-      Wait.pause(2000);
-      Map secondResultMap = region.getAll(testKeysList);
-      assertEquals(secondResultMap, origVals);
-
-    } catch (Exception e) {
-      Assert.fail("Test failed after the put operation", e);
-
+    int j = 0;
+    Map<String, Integer> origVals = new HashMap<>();
+    for (String key : testKeysList) {
+      Integer val = j++;
+      origVals.put(key, val);
+      region.put(key, val);
     }
+    Map<String, Integer> resultMap = region.getAll(testKeysList);
+    assertThat(resultMap).isEqualTo(origVals);
+    Wait.pause(2000);
+    Map<String, Integer> secondResultMap = region.getAll(testKeysList);
+    assertThat(secondResultMap).isEqualTo(origVals);
   }
 
   private static void serverMultiKeyExecutionOnASingleBucket(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 2); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
@@ -740,191 +712,163 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     }
     DistributedSystem.setThreadsSocketPolicy(false);
     for (String o : testKeysSet) {
-      try {
-        Set<String> singleKeySet = Collections.singleton(o);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(region);
-        ResultCollector rc1 = execute(dataSet, singleKeySet, Boolean.TRUE, function, isByName);
-        List l = ((List) rc1.getResult());
-        assertEquals(1, l.size());
+      Set<String> singleKeySet = Collections.singleton(o);
+      Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution dataSet = FunctionService.onRegion(region);
+      ResultCollector<?, ?> rc1 = execute(dataSet, singleKeySet, Boolean.TRUE, function, isByName);
+      List<?> l = (List<?>) rc1.getResult();
+      assertThat(l.size()).isEqualTo(1);
 
-        ResultCollector rc2 =
-            execute(dataSet, singleKeySet, new HashSet<>(singleKeySet), function, isByName);
-        List l2 = ((List) rc2.getResult());
+      ResultCollector<?, ?> rc2 =
+          execute(dataSet, singleKeySet, new HashSet<>(singleKeySet), function, isByName);
+      List<?> l2 = (List<?>) rc2.getResult();
 
-        assertEquals(1, l2.size());
-        List subList = (List) l2.iterator().next();
-        assertEquals(1, subList.size());
-        assertEquals(region.get(singleKeySet.iterator().next()), subList.iterator().next());
-      } catch (Exception expected) {
-        logger.info("Exception : " + expected.getMessage());
-        expected.printStackTrace();
-        fail("Test failed after the put operation");
-      }
+      assertThat(l2.size()).isEqualTo(1);
+      List<?> subList = (List<?>) l2.iterator().next();
+      assertThat(subList.size()).isEqualTo(1);
+      assertThat(subList.iterator().next()).isEqualTo(region.get(singleKeySet.iterator().next()));
     }
   }
 
   private static void serverMultiKeyExecution(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 2); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
-    try {
-      int j = 0;
-      HashSet<Integer> origVals = new HashSet<>();
-      for (String element : testKeysSet) {
-        Integer val = j++;
-        origVals.add(val);
-        region.put(element, val);
-      }
-      ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-      List l = ((List) rc1.getResult());
-      logger.info("Result size : " + l.size());
-      assertEquals(3, l.size());
-      for (Object item : l) {
-        assertEquals(Boolean.TRUE, item);
-      }
 
-      ResultCollector rc2 = execute(dataSet, testKeysSet, testKeysSet, function, isByName);
-      List l2 = ((List) rc2.getResult());
-      assertEquals(3, l2.size());
-      HashSet<Integer> foundVals = new HashSet<>();
-      for (Object value : l2) {
-        ArrayList subL = (ArrayList) value;
-        assertTrue(subL.size() > 0);
-        for (Object o : subL) {
-          assertTrue(foundVals.add((Integer) o));
-        }
-      }
-      assertEquals(origVals, foundVals);
-
-    } catch (Exception e) {
-      Assert.fail("Test failed after the put operation", e);
-
+    int j = 0;
+    HashSet<Integer> origVals = new HashSet<>();
+    for (String element : testKeysSet) {
+      Integer val = j++;
+      origVals.add(val);
+      region.put(element, val);
     }
+    ResultCollector<?, ?> rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
+    List<?> l = (List<?>) rc1.getResult();
+    logger.info("Result size : " + l.size());
+    assertThat(l.size()).isEqualTo(3);
+    for (Object item : l) {
+      assertThat(item).isEqualTo(Boolean.TRUE);
+    }
+
+    ResultCollector<?, ?> rc2 = execute(dataSet, testKeysSet, testKeysSet, function, isByName);
+    List<?> l2 = (List<?>) rc2.getResult();
+    assertThat(l2.size()).isEqualTo(3);
+    HashSet<Integer> foundVals = new HashSet<>();
+    for (Object value : l2) {
+      List<?> subL = (List<?>) value;
+      assertThat(subL.size()).isGreaterThan(0);
+      for (Object o : subL) {
+        assertThat(foundVals.add((Integer) o)).isTrue();
+      }
+    }
+    assertThat(foundVals).isEqualTo(origVals);
   }
 
 
   private static void serverMultiKeyExecutionSocketTimeOut(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 2); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
-    try {
-      int j = 0;
-      for (String value : testKeysSet) {
-        Integer val = j++;
-        region.put(value, val);
-      }
-      ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-      List l = ((List) rc1.getResult());
-      logger.info("Result size : " + l.size());
-      assertEquals(3, l.size());
-      for (Object o : l) {
-        assertEquals(Boolean.TRUE, o);
-      }
 
-    } catch (Exception e) {
-      Assert.fail("Test failed after the function execution", e);
-
+    int j = 0;
+    for (String value : testKeysSet) {
+      Integer val = j++;
+      region.put(value, val);
+    }
+    ResultCollector<?, ?> rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
+    List<?> l = (List<?>) rc1.getResult();
+    logger.info("Result size : " + l.size());
+    assertThat(l.size()).isEqualTo(3);
+    for (Object o : l) {
+      assertThat(o).isEqualTo(Boolean.TRUE);
     }
   }
 
   private static void serverSingleKeyExecutionSocketTimeOut(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final String testKey = "execKey";
     final Set<String> testKeysSet = new HashSet<>();
     testKeysSet.add(testKey);
     DistributedSystem.setThreadsSocketPolicy(false);
 
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
+    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
 
     region.put(testKey, 1);
-    try {
-      ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-      assertEquals(Boolean.TRUE, ((List) rs.getResult()).get(0));
 
-      ResultCollector rs2 = execute(dataSet, testKeysSet, testKey, function, isByName);
-      assertEquals(testKey, ((List) rs2.getResult()).get(0));
+    ResultCollector<?, ?> rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
+    assertThat(((List<?>) rs.getResult()).get(0)).isEqualTo(Boolean.TRUE);
 
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      logger.info("Exception : ", ex);
-      Assert.fail("Test failed after the put operation", ex);
-    }
+    ResultCollector<?, ?> rs2 = execute(dataSet, testKeysSet, testKey, function, isByName);
+    assertThat(((List<?>) rs2.getResult()).get(0)).isEqualTo(testKey);
   }
 
   private static void serverMultiKeyExecution_Inline() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 2); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
     Execution dataSet = FunctionService.onRegion(region);
-    try {
-      int j = 0;
-      for (String value : testKeysSet) {
-        Integer val = j++;
-        region.put(value, val);
-      }
-      ResultCollector rc1 =
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
-            @Override
-            public void execute(FunctionContext context) {
-              @SuppressWarnings("unchecked")
-              final ResultSender<Object> resultSender = context.getResultSender();
-              if (context.getArguments() instanceof String) {
-                resultSender.lastResult("Success");
-              } else if (context.getArguments() instanceof Boolean) {
-                resultSender.lastResult(Boolean.TRUE);
-              }
-            }
 
-            @Override
-            public String getId() {
-              return getClass().getName();
+    int j = 0;
+    for (String value : testKeysSet) {
+      Integer val = j++;
+      region.put(value, val);
+    }
+    ResultCollector<?, ?> rc1 =
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+          @Override
+          public void execute(FunctionContext context) {
+            @SuppressWarnings("unchecked")
+            final ResultSender<Object> resultSender = context.getResultSender();
+            if (context.getArguments() instanceof String) {
+              resultSender.lastResult("Success");
+            } else if (context.getArguments() instanceof Boolean) {
+              resultSender.lastResult(Boolean.TRUE);
             }
+          }
 
-            @Override
-            public boolean hasResult() {
-              return true;
-            }
-          });
-      List l = ((List) rc1.getResult());
-      logger.info("Result size : " + l.size());
-      assertEquals(3, l.size());
-      for (Object o : l) {
-        assertEquals(Boolean.TRUE, o);
-      }
-    } catch (Exception e) {
-      logger.info("Exception : " + e.getMessage());
-      e.printStackTrace();
-      fail("Test failed after the put operation");
+          @Override
+          public String getId() {
+            return getClass().getName();
+          }
 
+          @Override
+          public boolean hasResult() {
+            return true;
+          }
+        });
+    List<?> l = (List<?>) rc1.getResult();
+    logger.info("Result size : " + l.size());
+    assertThat(l.size()).isEqualTo(3);
+    for (Object o : l) {
+      assertThat(o).isEqualTo(Boolean.TRUE);
     }
   }
 
   private static void serverMultiKeyExecution_FunctionInvocationTargetException() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 2); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
@@ -936,49 +880,43 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
       Integer val = j++;
       region.put(o, val);
     }
-    try {
-      ResultCollector rc1 =
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
-            @Override
-            public void execute(FunctionContext context) {
-              if (context.isPossibleDuplicate()) {
-                context.getResultSender().lastResult(retryCount);
-                return;
-              }
-              if (context.getArguments() instanceof Boolean) {
-                throw new FunctionInvocationTargetException("I have been thrown from TestFunction");
-              }
+    ResultCollector<?, ?> rc1 =
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+          @Override
+          public void execute(FunctionContext context) {
+            if (context.isPossibleDuplicate()) {
+              context.getResultSender().lastResult(retryCount);
+              return;
             }
-
-            @Override
-            public String getId() {
-              return getClass().getName();
+            if (context.getArguments() instanceof Boolean) {
+              throw new FunctionInvocationTargetException("I have been thrown from TestFunction");
             }
+          }
 
-            @Override
-            public boolean hasResult() {
-              return true;
-            }
-          });
+          @Override
+          public String getId() {
+            return getClass().getName();
+          }
 
-      List list = (ArrayList) rc1.getResult();
-      assertEquals(list.get(0), 0);
-    } catch (Throwable e) {
-      e.printStackTrace();
-      Assert.fail("This is not expected Exception", e);
-    }
+          @Override
+          public boolean hasResult() {
+            return true;
+          }
+        });
 
+    List<?> list = (List<?>) rc1.getResult();
+    assertThat(list.get(0)).isEqualTo(0);
   }
 
   private static void serverMultiKeyExecutionNoResult(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final HashSet<String> testKeysSet = new HashSet<>();
     for (int i = (totalNumBuckets * 2); i > 0; i--) {
       testKeysSet.add("execKey-" + i);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(false, TEST_FUNCTION7);
+    Function<Object> function = new TestFunction<>(false, TEST_FUNCTION7);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
     try {
@@ -989,18 +927,11 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
         Integer val = j++;
         region.put(o, val);
       }
-      ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-      rc1.getResult();
-      Thread.sleep(20000);
-      fail("Test failed after the put operation");
-    } catch (FunctionException expected) {
-      expected.printStackTrace();
-      logger.info("Exception : " + expected.getMessage());
-      assertTrue(expected.getMessage()
-          .startsWith((String.format("Cannot %s result as the Function#hasResult() is false",
-              "return any"))));
-    } catch (Exception notexpected) {
-      Assert.fail("Test failed during execute or sleeping", notexpected);
+      ResultCollector<?, ?> rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
+      assertThatThrownBy(rc1::getResult).isExactlyInstanceOf(FunctionException.class)
+          .hasMessageStartingWith(
+              String.format("Cannot %s result as the Function#hasResult() is false",
+                  "return any"));
     } finally {
       cache.getLogger()
           .info("<ExpectedException action=remove>" + "FunctionException" + "</ExpectedException>");
@@ -1009,179 +940,149 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
 
   private static void serverSingleKeyExecution(Boolean isByName) {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final String testKey = "execKey";
     final Set<String> testKeysSet = new HashSet<>();
     testKeysSet.add(testKey);
     DistributedSystem.setThreadsSocketPolicy(false);
 
-    Function function = new TestFunction(true, TEST_FUNCTION2);
+    Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
-    try {
-      execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-    } catch (Exception expected) {
-      assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey)
-          || expected.getMessage().startsWith("Server could not send the reply")
-          || expected.getMessage().startsWith("Unexpected exception during"));
-    }
+
+    execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
 
     region.put(testKey, 1);
-    try {
-      ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-      assertEquals(Boolean.TRUE, ((List) rs.getResult()).get(0));
 
-      ResultCollector rs2 = execute(dataSet, testKeysSet, testKey, function, isByName);
-      assertEquals(1, ((List) rs2.getResult()).get(0));
+    ResultCollector<?, ?> rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
+    assertThat(((List<?>) rs.getResult()).get(0)).isEqualTo(Boolean.TRUE);
 
-      HashMap<String, Integer> putData = new HashMap<>();
-      putData.put(testKey + "1", 2);
-      putData.put(testKey + "2", 3);
+    ResultCollector<?, ?> rs2 = execute(dataSet, testKeysSet, testKey, function, isByName);
+    assertThat(((List<?>) rs2.getResult()).get(0)).isEqualTo(1);
 
-      ResultCollector rs1 = execute(dataSet, testKeysSet, putData, function, isByName);
-      assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
+    HashMap<String, Integer> putData = new HashMap<>();
+    putData.put(testKey + "1", 2);
+    putData.put(testKey + "2", 3);
 
-      assertEquals((Integer) 2, region.get(testKey + "1"));
-      assertEquals((Integer) 3, region.get(testKey + "2"));
+    ResultCollector<?, ?> rs1 = execute(dataSet, testKeysSet, putData, function, isByName);
+    assertThat(((List<?>) rs1.getResult()).get(0)).isEqualTo(Boolean.TRUE);
 
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      logger.info("Exception : ", ex);
-      Assert.fail("Test failed after the put operation", ex);
-    }
+    assertThat(region.get(testKey + "1")).isEqualTo(2);
+    assertThat(region.get(testKey + "2")).isEqualTo(3);
   }
 
   private static void serverSingleKeyExecution_FunctionInvocationTargetException() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final String testKey = "execKey";
     final Set<String> testKeysSet = new HashSet<>();
     testKeysSet.add(testKey);
     DistributedSystem.setThreadsSocketPolicy(false);
 
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION);
+    Function<Object> function =
+        new TestFunction<>(true, TestFunction.TEST_FUNCTION_REEXECUTE_EXCEPTION);
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
 
     region.put(testKey, 1);
-    try {
-      ResultCollector rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, false);
-      ArrayList list = (ArrayList) rs.getResult();
-      assertTrue(((Integer) list.get(0)) >= 5);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      Assert.fail("This is not expected Exception", ex);
-    }
+
+    ResultCollector<?, ?> rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, false);
+    ArrayList<?> list = (ArrayList<?>) rs.getResult();
+    assertThat(((Integer) list.get(0))).isGreaterThanOrEqualTo(5);
   }
 
   private static void serverSingleKeyExecution_Inline() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     final String testKey = "execKey";
     final Set<String> testKeysSet = new HashSet<>();
     testKeysSet.add(testKey);
     DistributedSystem.setThreadsSocketPolicy(false);
 
     Execution dataSet = FunctionService.onRegion(region);
-    try {
-      cache.getLogger()
-          .info("<ExpectedException action=add>" + "No target node found for KEY = "
-              + "|Server could not send the reply" + "|Unexpected exception during"
-              + "</ExpectedException>");
-      dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
-        @Override
-        public void execute(FunctionContext context) {
-          @SuppressWarnings("unchecked")
-          final ResultSender<Object> resultSender = context.getResultSender();
-          if (context.getArguments() instanceof String) {
-            resultSender.lastResult("Success");
-          }
-          resultSender.lastResult("Failure");
-        }
 
-        @Override
-        public String getId() {
-          return getClass().getName();
+    FunctionAdapter functionAdapter = new FunctionAdapter() {
+      @Override
+      public void execute(FunctionContext context) {
+        @SuppressWarnings("unchecked")
+        final ResultSender<Object> resultSender = context.getResultSender();
+        if (context.getArguments() instanceof String) {
+          resultSender.lastResult("Success");
         }
+        resultSender.lastResult("Failure");
+      }
 
-        @Override
-        public boolean hasResult() {
-          return true;
-        }
-      });
-    } catch (Exception expected) {
-      logger.debug("Exception occurred : " + expected.getMessage());
-      assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey)
-          || expected.getMessage().startsWith("Server could not send the reply")
-          || expected.getMessage().startsWith("Unexpected exception during"));
-    } finally {
-      cache.getLogger()
-          .info("<ExpectedException action=remove>" + "No target node found for KEY = "
-              + "|Server could not send the reply" + "|Unexpected exception during"
-              + "</ExpectedException>");
-    }
+      @Override
+      public String getId() {
+        return getClass().getName();
+      }
+
+      @Override
+      public boolean hasResult() {
+        return true;
+      }
+    };
+
+    dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(functionAdapter);
 
     region.put(testKey, 1);
-    try {
-      ResultCollector rs =
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
-            @Override
-            public void execute(FunctionContext context) {
-              @SuppressWarnings("unchecked")
-              final ResultSender<Object> resultSender = context.getResultSender();
-              if (context.getArguments() instanceof String) {
-                resultSender.lastResult("Success");
-              } else {
-                resultSender.lastResult("Failure");
-              }
-            }
 
-            @Override
-            public String getId() {
-              return getClass().getName();
+    ResultCollector<?, ?> rs =
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+          @Override
+          public void execute(FunctionContext context) {
+            @SuppressWarnings("unchecked")
+            final ResultSender<Object> resultSender = context.getResultSender();
+            if (context.getArguments() instanceof String) {
+              resultSender.lastResult("Success");
+            } else {
+              resultSender.lastResult("Failure");
             }
+          }
 
-            @Override
-            public boolean hasResult() {
-              return true;
+          @Override
+          public String getId() {
+            return getClass().getName();
+          }
+
+          @Override
+          public boolean hasResult() {
+            return true;
+          }
+        });
+    assertThat(((List<?>) rs.getResult()).get(0)).isEqualTo("Failure");
+
+    ResultCollector<?, ?> rs2 =
+        dataSet.withFilter(testKeysSet).setArguments(testKey).execute(new FunctionAdapter() {
+          @Override
+          public void execute(FunctionContext context) {
+            @SuppressWarnings("unchecked")
+            final ResultSender<Object> resultSender = context.getResultSender();
+            if (context.getArguments() instanceof String) {
+              resultSender.lastResult("Success");
+            } else {
+              resultSender.lastResult("Failure");
             }
-          });
-      assertEquals("Failure", ((List) rs.getResult()).get(0));
+          }
 
-      ResultCollector rs2 =
-          dataSet.withFilter(testKeysSet).setArguments(testKey).execute(new FunctionAdapter() {
-            @Override
-            public void execute(FunctionContext context) {
-              @SuppressWarnings("unchecked")
-              final ResultSender<Object> resultSender = context.getResultSender();
-              if (context.getArguments() instanceof String) {
-                resultSender.lastResult("Success");
-              } else {
-                resultSender.lastResult("Failure");
-              }
-            }
+          @Override
+          public String getId() {
+            return getClass().getName();
+          }
 
-            @Override
-            public String getId() {
-              return getClass().getName();
-            }
+          @Override
+          public boolean hasResult() {
+            return true;
+          }
+        });
 
-            @Override
-            public boolean hasResult() {
-              return true;
-            }
-          });
-      assertEquals("Success", ((List) rs2.getResult()).get(0));
+    assertThat(((List<?>) rs2.getResult()).get(0)).isEqualTo("Success");
 
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      logger.info("Exception : ", ex);
-      Assert.fail("Test failed after the put operation", ex);
-    }
   }
 
-  private static ResultCollector execute(Execution dataSet, Set testKeysSet, Serializable args,
-      Function function, Boolean isByName) {
+  private static ResultCollector<?, ?> execute(Execution dataSet, Set<?> testKeysSet,
+      Serializable args,
+      Function<?> function, Boolean isByName) {
     if (isByName) {// by name
       return dataSet.withFilter(testKeysSet).setArguments(args).execute(function.getId());
     } else { // By Instance
@@ -1189,8 +1090,8 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     }
   }
 
-  private static ResultCollector executeOnAll(Execution dataSet, Serializable args,
-      Function function, Boolean isByName) {
+  private static ResultCollector<?, ?> executeOnAll(Execution dataSet, Serializable args,
+      Function<?> function, Boolean isByName) {
     if (isByName) {// by name
       return dataSet.setArguments(args).execute(function.getId());
     } else { // By Instance
