@@ -1846,18 +1846,27 @@ public class FilterProfile implements DataSerializableFixedID {
         }
 
         CacheDistributionAdvisor cda = (CacheDistributionAdvisor) r.getDistributionAdvisor();
-        CacheDistributionAdvisor.CacheProfile cp =
-            (CacheDistributionAdvisor.CacheProfile) cda.getProfile(getSender());
-        if (cp == null) { // PR accessors do not keep filter profiles around
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "No cache profile to update, adding filter profile message to queue. Message :{}",
-                this);
+        CacheDistributionAdvisor.CacheProfile cp;
+
+        // prevent adding the message to queue after we have processed the queue
+        // in CreateRegionReplyProcessor.process
+        synchronized (cda) {
+          cp = (CacheDistributionAdvisor.CacheProfile) cda.getProfile(getSender());
+          if (cp == null) {
+            // only need to hold the lock if cda doesn't have the profile yet. This makes sure
+            // we add the message to the queue before they are processed
+            if (logger.isDebugEnabled()) {
+              logger.debug(
+                  "No cache profile to update, adding filter profile message to queue. Message :{}",
+                  this);
+            }
+            FilterProfile localFP = ((LocalRegion) r).getFilterProfile();
+            localFP.addToFilterProfileQueue(getSender(), this);
+            dm.getCancelCriterion().checkCancelInProgress(null);
           }
-          FilterProfile localFP = ((LocalRegion) r).getFilterProfile();
-          localFP.addToFilterProfileQueue(getSender(), this);
-          dm.getCancelCriterion().checkCancelInProgress(null);
-        } else {
+        }
+
+        if (cp != null) {
           cp.hasCacheServer = true;
           FilterProfile fp = cp.filterProfile;
           if (fp == null) { // PR accessors do not keep filter profiles around

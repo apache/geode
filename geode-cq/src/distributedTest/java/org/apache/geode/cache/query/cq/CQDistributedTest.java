@@ -21,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Properties;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,9 +43,11 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 
 @Category({ClientSubscriptionTest.class})
@@ -65,12 +69,12 @@ public class CQDistributedTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    locator = clusterStartupRule.startLocatorVM(1, new Properties());
+    locator = clusterStartupRule.startLocatorVM(0, new Properties());
     Integer locator1Port = locator.getPort();
-    server = clusterStartupRule.startServerVM(3, locator1Port);
+    server = clusterStartupRule.startServerVM(1, locator1Port);
     createServerRegion(server, RegionShortcut.PARTITION);
 
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server2 = clusterStartupRule.startServerVM(2, locator1Port);
     createServerRegion(server2, RegionShortcut.PARTITION);
 
     ClientCache clientCache = createClientCache(locator1Port);
@@ -85,6 +89,47 @@ public class CQDistributedTest implements Serializable {
     cqaf.addCqListener(testListener2);
 
     cqa = cqaf.create();
+  }
+
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
+
+  @Test
+  // Before the fix, this test will reproduce pretty consistently if we put a sleep statement before
+  // we do localFP.addToFilterProfileQueue in FilterProfile$OperationMessage.process().
+  public void filterProfileUpdate() throws Exception {
+    MemberVM newServer = clusterStartupRule.startServerVM(3, locator.getPort());
+
+    // create 10 cqs to begin with
+    for (int i = 0; i < 10; i++) {
+      qs.newCq("query_" + i, "Select * from " + SEPARATOR + "region r where r.ID = " + i, cqa)
+          .execute();
+    }
+
+    AsyncInvocation regionCreate = newServer.invokeAsync(() -> {
+      ClusterStartupRule.memberStarter.createRegion(RegionShortcut.PARTITION, "region");
+    });
+
+    Future<Void> createCqs = executor.submit(() -> {
+      for (int i = 10; i < 100; i++) {
+        qs.newCq("query_" + i, "Select * from " + SEPARATOR + "region r where r.ID = " + i, cqa)
+            .execute();
+      }
+    });
+
+    regionCreate.await();
+    createCqs.get();
+
+    newServer.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      for (int i = 0; i < 100; i++) {
+        regionOnServer.put(i, new Portfolio(i));
+      }
+    });
+
+    // make sure all cq's will get its own event, so total events = total # of cqs.
+    await().atMost(10, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(testListener.onEventCalls).isEqualTo(100));
   }
 
   @Test
