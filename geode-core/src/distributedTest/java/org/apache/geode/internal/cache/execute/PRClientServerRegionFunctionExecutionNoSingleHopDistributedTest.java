@@ -350,7 +350,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
 
     List<?> l = (List<?>) async[0].get();
 
-    assertThat(l.size()).isEqualTo(2);
+    assertThat(l).hasSize(2);
   }
 
   /*
@@ -379,7 +379,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
         .verifyDeadAndLiveServers(2));
 
     List<?> l = (List<?>) async[0].get();
-    assertThat(l.size()).isEqualTo(2);
+    assertThat(l).hasSize(2);
   }
 
   @Test
@@ -537,7 +537,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
 
       HashMap<?, ?> resultMap = ((HashMap<?, ?>) rc1.getResult());
-      assertThat(resultMap).size().isEqualTo(3);
+      assertThat(resultMap).hasSize(3);
 
       for (Map.Entry<?, ?> o : resultMap.entrySet()) {
         ArrayList<?> resultListForMember = (ArrayList<?>) o.getValue();
@@ -633,25 +633,23 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     }
     ResultCollector<?, ?> rc1 = executeOnAll(dataSet, Boolean.TRUE, function, isByName);
     List<?> resultList = (List<?>) rc1.getResult();
-    logger.info("Result size : " + resultList.size());
-    logger.info("Result are SSSS : " + resultList);
-    assertThat(resultList.size()).isEqualTo(3);
+    assertThat(resultList).hasSize(3);
 
     for (Object result : resultList) {
       assertThat(result).isEqualTo(Boolean.TRUE);
     }
     ResultCollector<?, ?> rc2 = executeOnAll(dataSet, testKeysSet, function, isByName);
     List<?> l2 = (List<?>) rc2.getResult();
-    assertThat(l2.size()).isEqualTo(3);
+    assertThat(l2).hasSize(3);
     HashSet<Integer> foundVals = new HashSet<>();
     for (Object value : l2) {
       List<?> subL = (List<?>) value;
-      assertThat(subL.size()).isGreaterThan(0);
+      assertThat(subL).hasSizeGreaterThan(0);
       for (Object o : subL) {
         assertThat(foundVals.add((Integer) o)).isTrue();
       }
     }
-    assertThat(foundVals).isEqualTo(origVals);
+    assertThat(foundVals).containsExactlyInAnyOrderElementsOf(origVals);
   }
 
   public static void getAll() {
@@ -670,10 +668,10 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
       region.put(key, val);
     }
     Map<String, Integer> resultMap = region.getAll(testKeysList);
-    assertThat(resultMap).isEqualTo(origVals);
+    assertThat(resultMap).containsExactlyInAnyOrderEntriesOf(origVals);
     Wait.pause(2000);
     Map<String, Integer> secondResultMap = region.getAll(testKeysList);
-    assertThat(secondResultMap).isEqualTo(origVals);
+    assertThat(secondResultMap).containsExactlyInAnyOrderEntriesOf(origVals);
   }
 
   public static void putAll() {
@@ -692,10 +690,10 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
       region.put(key, val);
     }
     Map<String, Integer> resultMap = region.getAll(testKeysList);
-    assertThat(resultMap).isEqualTo(origVals);
+    assertThat(resultMap).containsExactlyInAnyOrderEntriesOf(origVals);
     Wait.pause(2000);
     Map<String, Integer> secondResultMap = region.getAll(testKeysList);
-    assertThat(secondResultMap).isEqualTo(origVals);
+    assertThat(secondResultMap).containsExactlyInAnyOrderEntriesOf(origVals);
   }
 
   private static void serverMultiKeyExecutionOnASingleBucket(Boolean isByName) {
@@ -718,16 +716,16 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
       Execution dataSet = FunctionService.onRegion(region);
       ResultCollector<?, ?> rc1 = execute(dataSet, singleKeySet, Boolean.TRUE, function, isByName);
       List<?> l = (List<?>) rc1.getResult();
-      assertThat(l.size()).isEqualTo(1);
+      assertThat(l).hasSize(1);
 
       ResultCollector<?, ?> rc2 =
           execute(dataSet, singleKeySet, new HashSet<>(singleKeySet), function, isByName);
       List<?> l2 = (List<?>) rc2.getResult();
 
-      assertThat(l2.size()).isEqualTo(1);
-      List<?> subList = (List<?>) l2.iterator().next();
-      assertThat(subList.size()).isEqualTo(1);
-      assertThat(subList.iterator().next()).isEqualTo(region.get(singleKeySet.iterator().next()));
+      assertThat(l2).hasSize(1);
+      List<Integer> subList = (List<Integer>) l2.iterator().next();
+      assertThat(subList).hasSize(1);
+      assertThat(subList).containsOnly(region.get(singleKeySet.iterator().next()));
     }
   }
 
@@ -752,24 +750,23 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     }
     ResultCollector<?, ?> rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
     List<?> l = (List<?>) rc1.getResult();
-    logger.info("Result size : " + l.size());
-    assertThat(l.size()).isEqualTo(3);
+    assertThat(l).hasSize(3);
     for (Object item : l) {
       assertThat(item).isEqualTo(Boolean.TRUE);
     }
 
     ResultCollector<?, ?> rc2 = execute(dataSet, testKeysSet, testKeysSet, function, isByName);
     List<?> l2 = (List<?>) rc2.getResult();
-    assertThat(l2.size()).isEqualTo(3);
+    assertThat(l2).hasSize(3);
     HashSet<Integer> foundVals = new HashSet<>();
     for (Object value : l2) {
       List<?> subL = (List<?>) value;
-      assertThat(subL.size()).isGreaterThan(0);
+      assertThat(subL).hasSizeGreaterThan(0);
       for (Object o : subL) {
         assertThat(foundVals.add((Integer) o)).isTrue();
       }
     }
-    assertThat(foundVals).isEqualTo(origVals);
+    assertThat(foundVals).containsExactlyInAnyOrderElementsOf(origVals);
   }
 
 
@@ -793,7 +790,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     ResultCollector<?, ?> rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
     List<?> l = (List<?>) rc1.getResult();
     logger.info("Result size : " + l.size());
-    assertThat(l.size()).isEqualTo(3);
+    assertThat(l).hasSize(3);
     for (Object o : l) {
       assertThat(o).isEqualTo(Boolean.TRUE);
     }
@@ -860,7 +857,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
         });
     List<?> l = (List<?>) rc1.getResult();
     logger.info("Result size : " + l.size());
-    assertThat(l.size()).isEqualTo(3);
+    assertThat(l).hasSize(3);
     for (Object o : l) {
       assertThat(o).isEqualTo(Boolean.TRUE);
     }
