@@ -136,7 +136,6 @@ public class UpdateOperation extends AbstractUpdateOperation {
      * copy constructor
      */
     public UpdateMessage(UpdateMessage upMsg) {
-      logger.info("JC debug: UpdateMessage {}", upMsg, new Throwable());
       appliedOperation = upMsg.appliedOperation;
       callbackArg = upMsg.callbackArg;
       deserializationPolicy = upMsg.deserializationPolicy;

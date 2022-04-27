@@ -3453,7 +3453,7 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   private void basicCreate(DiskRegion dr, DiskEntry entry, ValueWrapper value, byte userBits,
       boolean async) throws IOException, InterruptedException {
-    logger.info("Oplog.basicCreate(): entry: {}", entry, new Throwable());
+    logger.info("Oplog.basicCreate(): entry: {}", entry);
     DiskId id = entry.getDiskId();
     boolean useNextOplog = false;
     long startPosForSynchOp = -1;
