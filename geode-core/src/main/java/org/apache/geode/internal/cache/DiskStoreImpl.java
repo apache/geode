@@ -699,7 +699,7 @@ public class DiskStoreImpl implements DiskStore {
    */
   void put(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async)
       throws RegionClearedException {
-    logger.info("JC debug: DiskStoreImpl.put(): entry: {}", entry, new Throwable());
+    logger.info("JC debug: DiskStoreImpl.put(): entry: {}", entry);
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
     long start = async ? getStats().startFlush() : getStats().startWrite();
