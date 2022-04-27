@@ -1177,7 +1177,7 @@ public class DistributionAdvisor {
     // empty by default
   }
 
-  /**
+  /*
    * All advise methods go through this method
    */
   protected Set<InternalDistributedMember> adviseFilter(Predicate<Profile> f) {
@@ -1199,9 +1199,10 @@ public class DistributionAdvisor {
   }
 
   /**
-   * This method calls filter->include on every profile until include returns true.
+   * This method calls predicate->test on every profile until include returns true.
    *
-   * @return false if all filter->include calls returns false; otherwise true.
+   * @param f the predicate to test with
+   * @return false if all predicate->test calls returns false; otherwise true.
    **/
   protected boolean satisfiesFilter(Predicate<Profile> f) {
     initializationGate();
@@ -1216,7 +1217,7 @@ public class DistributionAdvisor {
 
   /**
    * Invoke the given {@link ProfileVisitor} on all the {@link Profile}s exiting when the
-   * {@link ProfileVisitor#visit} method returns false. Unlike the {@link #adviseFilter(Filter)}
+   * {@link ProfileVisitor#visit} method returns false. Unlike the {@link #adviseFilter(Predicate)}
    * method this does assume the return type to be a Set of qualifying members rather allows for
    * population of an arbitrary aggregator passed as the argument to this method.
    *
@@ -1244,8 +1245,8 @@ public class DistributionAdvisor {
     return true;
   }
 
-  /**
-   * Get an unmodifiable list of the {@code Profile}s that match the given {@code Filter}.
+  /*
+   * Get an unmodifiable list of the {@code Profile}s that match the given {@code Predicate}.
    *
    * @since GemFire 5.7
    */
@@ -1373,8 +1374,8 @@ public class DistributionAdvisor {
 
   /**
    * A visitor interface for all the available profiles used by
-   * {@link DistributionAdvisor#accept(ProfileVisitor, Object)}. Unlike the {@link Filter} class
-   * this does not assume of two state visit of inclusion or exclusion rather allows manipulation of
+   * {@link DistributionAdvisor#accept(ProfileVisitor, Object)}.
+   * This does not assume of two state visit of inclusion or exclusion rather allows manipulation of
    * an arbitrary aggregator that has been passed to the {@link #visit} method. In addition this is
    * public for use by other classes.
    */
