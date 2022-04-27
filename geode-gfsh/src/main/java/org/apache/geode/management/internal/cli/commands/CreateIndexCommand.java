@@ -79,7 +79,7 @@ public class CreateIndexCommand extends GfshCommand {
 
     // first find out what groups this region belongs to when using cluster configuration
     InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
-    final Set<DistributedMember> targetMembers;
+    Set<DistributedMember> targetMembers;
     ResultModel resultModel = new ResultModel();
     InfoResultModel info = resultModel.addInfo();
     String regionName = null;
@@ -96,7 +96,7 @@ public class CreateIndexCommand extends GfshCommand {
             .createError("Region " + regionName + " does not exist in some of the groups.");
       }
       if (groups == null) {
-        // the calculatedGroups will have "cluster" value to indicate the "cluster" level, in thise
+        // the calculatedGroups will have "cluster" value to indicate the "cluster" level, in this
         // case
         // we want the groups to an empty array
         groups = calculatedGroups.stream().filter(s -> !AbstractConfiguration.CLUSTER.equals(s))
@@ -124,6 +124,23 @@ public class CreateIndexCommand extends GfshCommand {
       index.setType(indexType.getName());
     }
 
+    if (groups == null || groups.length == 0) {
+      groups = new String[] {"cluster"};
+    }
+
+    for (String group : groups) {
+      if (ccService != null && regionName != null) {
+        CacheConfig cacheConf = ccService.getCacheConfig(group);
+        if (cacheConf != null && !regionName.isEmpty()) {
+          RegionConfig regionConf = cacheConf.findRegionConfiguration(regionName);
+          if (regionConf.getType().equals("PARTITION")) {
+            DistributedMember member = targetMembers.iterator().next();
+            targetMembers.removeIf(s -> (s != member));
+          }
+        }
+      }
+    }
+
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
     resultModel.addTableAndSetStatus("createIndex", functionResults, true, false);
@@ -147,10 +164,7 @@ public class CreateIndexCommand extends GfshCommand {
 
     final InfoResultModel groupStatus = resultModel.addInfo("groupStatus");
     String finalRegionName = regionName;
-    // at this point, groups should be the regionConfig's groups
-    if (groups.length == 0) {
-      groups = new String[] {"cluster"};
-    }
+
     for (String group : groups) {
       ccService.updateCacheConfig(group, cacheConfig -> {
         RegionConfig regionConfig = cacheConfig.findRegionConfiguration(finalRegionName);

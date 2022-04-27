@@ -48,7 +48,9 @@ public class CreateIndexCommandDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator, server1, server2;
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -71,7 +73,7 @@ public class CreateIndexCommandDUnitTest {
   }
 
   @Test
-  public void createIndexOnSubRegion() throws Exception {
+  public void createIndexOnSubRegion() {
     gfsh.executeAndAssertThat(
         "create region --name=regionB" + SEPARATOR + "child --group=group2 --type=REPLICATE")
         .statusIsSuccess();
@@ -107,7 +109,7 @@ public class CreateIndexCommandDUnitTest {
   @Test
   // index can't be created on region name with ".".
   // GEODE-7523
-  public void createIndexOnRegionNameWithDot() throws Exception {
+  public void createIndexOnRegionNameWithDot() {
     gfsh.executeAndAssertThat("create region --name=A.B --type=REPLICATE")
         .statusIsSuccess();
     gfsh.executeAndAssertThat("create index --name=indexWithDot --region=A.B --expression=id")
@@ -124,7 +126,7 @@ public class CreateIndexCommandDUnitTest {
   }
 
   @Test
-  public void regionNotExistInThatMember() throws Exception {
+  public void regionNotExistInThatMember() {
     gfsh.executeAndAssertThat(
         "create index --name=myIndex --expression=id --region=" + SEPARATOR
             + "regionB --member=server-1")
@@ -210,4 +212,35 @@ public class CreateIndexCommandDUnitTest {
     commandAssert.hasInfoSection().hasOutput()
         .contains("Region regionB does not exist in some of the groups.");
   }
+
+  @Test
+  public void indexCreationOnPartitionedRegionUpdateClusterConfig() {
+    int serversNum = 8;
+    MemberVM serversArray[] = new MemberVM[serversNum];
+
+    int initialIndex = 1;
+    for (int index = 2; index < serversArray.length; index++) {
+      serversArray[index] =
+          cluster.startServerVM(initialIndex + index, locator.getPort());
+    }
+
+    gfsh.executeAndAssertThat("create region --name=regionC --type=PARTITION")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create index --name=index1 --expression=id --region=regionC")
+        .statusIsSuccess()
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasRow(0)
+        .contains("OK", "Index successfully created");
+
+    gfsh.executeAndAssertThat("export cluster-configuration")
+        .statusIsSuccess()
+        .hasInfoSection()
+        .hasOutput()
+        .contains(
+            "index name=\"index1\" expression=\"id\" from-clause=\"/regionC\" key-index=\"false\" type=\"range\"");
+  }
+
 }
