@@ -18,6 +18,8 @@ import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 
@@ -73,12 +75,17 @@ class ControlFileWatchdog implements Runnable {
   private void doWork() {
     try { // handle handle exceptions
       if (file.exists()) {
-        try { // always check stopAfterRequest after handleRequest
-          handleRequest();
-        } finally {
-          if (stopAfterRequest) {
-            stopMe();
+        // see if file is accessible
+        try (FileReader fileReader = new FileReader(file)) {
+          try { // always check stopAfterRequest after handleRequest
+            handleRequest(fileReader);
+          } finally {
+            if (stopAfterRequest) {
+              stopMe();
+            }
           }
+        } catch (FileNotFoundException e) {
+          logger.warn(e);
         }
       }
       Thread.sleep(LOOP_INTERVAL_MILLIS);
@@ -93,12 +100,15 @@ class ControlFileWatchdog implements Runnable {
     }
   }
 
-  private void handleRequest() throws IOException {
+  private void handleRequest(FileReader fileReader) throws IOException {
     try { // always delete file after invoking handler
       requestHandler.handleRequest();
     } finally {
       try {
-        file.delete();
+        fileReader.close();
+        if (!file.delete()) {
+          logger.warn("Unable to delete {}", file);
+        }
       } catch (SecurityException e) {
         logger.warn("Unable to delete {}", file, e);
       }
