@@ -256,17 +256,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
     await().untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
 
-
-    // Wait longer than the value set in the receivers for
-    // maximum-time-between-pings: 10000 (see geode-starter-create.gfsh)
-    // to verify that connections are not closed
-    // by the receivers because each has received the pings timely.
-    int maxTimeBetweenPingsInReceiver = 10000;
-    Thread.sleep(maxTimeBetweenPingsInReceiver);
-
     await().untilAsserted(() -> assertThat(getSenderPoolDisconnects(vm1, senderId)).isEqualTo(0));
 
-    await().untilAsserted(() -> assertThat(getSenderPoolConnects(vm1, senderId)).isEqualTo(3));
+    await().untilAsserted(() -> assertThat(getSenderPoolConnects(vm1, senderId)).isEqualTo(4));
   }
 
 

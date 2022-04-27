@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -31,26 +31,28 @@ public class LiveServerPingerTest {
 
   private InternalPool pool;
 
+  private LiveServerPinger lsp;
+
   private static long PING_INTERVAL = 10L;
   private static long DEFAULT_PING_INTERVAL_NANOS = 5000000L;
 
   private static long CONFIG_PING_INTERVAL_NANOS = 1000000L;
 
 
-  @Before
-  public void before() throws Exception {
+  @BeforeEach
+  public void init() throws Exception {
     System.setProperty(
         GeodeGlossary.GEMFIRE_PREFIX + "LiveServerPinger.INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS",
         "1");
 
     pool = mock(InternalPool.class);
     when(pool.getPingInterval()).thenReturn(PING_INTERVAL);
+
+    lsp = new LiveServerPinger(pool);
   }
 
   @Test
   public void testInitialDelay() throws Exception {
-
-    LiveServerPinger lsp = new LiveServerPinger(pool);
 
     assertThat(lsp.calculateInitialDelay()).isEqualTo(DEFAULT_PING_INTERVAL_NANOS);
     assertThat(lsp.calculateInitialDelay())
@@ -64,8 +66,6 @@ public class LiveServerPingerTest {
 
   @Test
   public void testInitialDelayWithReset() throws Exception {
-
-    LiveServerPinger lsp = new LiveServerPinger(pool);
 
     assertThat(lsp.calculateInitialDelay()).isEqualTo(DEFAULT_PING_INTERVAL_NANOS);
     assertThat(lsp.calculateInitialDelay())
