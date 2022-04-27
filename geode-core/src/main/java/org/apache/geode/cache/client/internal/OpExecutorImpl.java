@@ -320,13 +320,14 @@ public class OpExecutorImpl implements ExecutablePool {
     if (op instanceof PingOp.PingOpImpl) {
       // currently for pings we prefer to queue clientToServer cnx so that we will
       // not create a pooled cnx when all we have is queue connections.
-      final ServerLocationAndMemberId slAndMId = new ServerLocationAndMemberId(server,
-          ((PingOp.PingOpImpl) op).getServerID().getUniqueId());
+      final ServerLocationAndMemberId serverLocationAndMemberId =
+          new ServerLocationAndMemberId(server,
+              ((PingOp.PingOpImpl) op).getServerID().getUniqueId());
 
       if (queueManager != null) {
         // see if our QueueManager has a connection to this server that we can send
         // the ping on.
-        final Endpoint endpoint = endpointManager.getEndpointMap().get(slAndMId);
+        final Endpoint endpoint = endpointManager.getEndpointMap().get(serverLocationAndMemberId);
         if (endpoint != null) {
           QueueConnections queueConnections = queueManager.getAllConnectionsNoWait();
           connection = queueConnections.getConnection(endpoint);
@@ -337,7 +338,7 @@ public class OpExecutorImpl implements ExecutablePool {
         }
       }
       if (connection == null) {
-        ServerLocationExtension sle = new ServerLocationExtension(slAndMId);
+        ServerLocationExtension sle = new ServerLocationExtension(serverLocationAndMemberId);
         connection = connectionManager.borrowConnection(sle, singleServerTimeout,
             onlyUseExistingConnection);
       }
