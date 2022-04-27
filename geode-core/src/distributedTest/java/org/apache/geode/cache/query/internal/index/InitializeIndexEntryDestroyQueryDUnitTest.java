@@ -107,9 +107,9 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
       final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
       vm0.invoke(
           PRQHelp.getCacheSerializableRunnableForPRPuts(regionName, portfolio, cnt, cntDest));
-      AsyncInvocation asyInvk0 =
+      AsyncInvocation<Void> asyInvk0 =
           vm0.invokeAsync(() -> consecutivelyCreateAndDestroyIndex(regionName));
-      AsyncInvocation asyInvk1 =
+      AsyncInvocation<Void> asyInvk1 =
           vm0.invokeAsync(() -> consecutivelyPutAndDestroyEntries(regionName));
       vm0.invoke(() -> executeAndValidateQueryResults(query));
       waitForAsyncThreadsToComplete(asyInvk0, asyInvk1);
@@ -141,7 +141,8 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
 
   }
 
-  private void waitForAsyncThreadsToComplete(AsyncInvocation asyInvk0, AsyncInvocation asyInvk1) {
+  private void waitForAsyncThreadsToComplete(AsyncInvocation<Void> asyInvk0,
+      AsyncInvocation<Void> asyInvk1) {
     ThreadUtils.join(asyInvk0, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
     if (asyInvk0.exceptionOccurred()) {
       logger.error("Asynchronous thread to create and destroy index failed",

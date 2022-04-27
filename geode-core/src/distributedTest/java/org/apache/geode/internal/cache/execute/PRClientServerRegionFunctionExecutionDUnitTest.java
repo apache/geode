@@ -703,23 +703,6 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
   }
 
-  static Object executeFunctionHA() {
-    Region region = cache.getRegion(PartitionedRegionName);
-    final HashSet<String> testKeysSet = new HashSet<>();
-    for (int i = (totalNumBuckets * 10); i > 0; i--) {
-      testKeysSet.add("execKey-" + i);
-    }
-    DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
-    FunctionService.registerFunction(function);
-    Execution dataSet = FunctionService.onRegion(region);
-    ResultCollector rc1 =
-        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-    List l = ((List) rc1.getResult());
-    logger.info("Result size : " + l.size());
-    return l;
-  }
-
   static void putOperation() {
     Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);

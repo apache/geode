@@ -239,7 +239,7 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
     });
 
     // start asynchronous process that does updates to the data
-    AsyncInvocation updateDataInVM0 = vm0.invokeAsync(() -> {
+    AsyncInvocation<Void> updateDataInVM0 = vm0.invokeAsync(() -> {
       await().until(() -> getCache().getCachePerfStats().getGetInitialImagesCompleted() < 1);
 
       Region<Object, Object> region = getCache().getRegion(regionName);
@@ -259,7 +259,7 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
     addIgnoredException(RegionDestroyedException.class);
 
     // in the meantime, do the get initial image in vm2
-    AsyncInvocation getInitialImageInVM2 = vm2.invokeAsync(() -> {
+    AsyncInvocation<Void> getInitialImageInVM2 = vm2.invokeAsync(() -> {
       if (!regionDefinition.getScope().isGlobal()) {
         InitialImageOperation.slowImageProcessing = 200;
       }
@@ -341,7 +341,7 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
     });
 
     // start asynchronous process that does updates to the data
-    AsyncInvocation updateDataInVM0 = vm0.invokeAsync("Do Nonblocking Operations", () -> {
+    AsyncInvocation<Void> updateDataInVM0 = vm0.invokeAsync("Do Nonblocking Operations", () -> {
       Region<Object, Object> region = getCache().getRegion(regionName);
 
       // wait for profile of getInitialImage cache to show up
@@ -364,7 +364,7 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
       });
     }
 
-    AsyncInvocation getInitialImageInVM2 = vm2.invokeAsync("Create Mirrored Region", () -> {
+    AsyncInvocation<Void> getInitialImageInVM2 = vm2.invokeAsync("Create Mirrored Region", () -> {
       cacheXmlRule.beginCacheXml();
 
       // root region must be DACK because its used to sync up async subregions

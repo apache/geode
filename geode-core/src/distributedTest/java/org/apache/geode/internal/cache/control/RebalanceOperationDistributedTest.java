@@ -1879,10 +1879,10 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // We need to restart both VMs at the same time, because
     // they will wait for each other before allowing operations.
-    AsyncInvocation createRegionOnVM0 = vm0.invokeAsync(
+    AsyncInvocation<Void> createRegionOnVM0 = vm0.invokeAsync(
         () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(),
             redundantCopies));
-    AsyncInvocation createRegionOnVM2 = vm2.invokeAsync(
+    AsyncInvocation<Void> createRegionOnVM2 = vm2.invokeAsync(
         () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(),
             redundantCopies));
 

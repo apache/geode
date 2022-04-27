@@ -89,13 +89,13 @@ public class VMDistributedTest extends DistributedTestCase {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
     // Assert class static invocation works
-    AsyncInvocation a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
+    AsyncInvocation<Integer> a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
-    assertEquals(0, a1.getReturnValue());
+    assertEquals(0, (long) a1.getReturnValue());
     // Assert class static invocation with args works
     a1 = vm.invokeAsync(() -> incrementStaticCount(2));
     a1.join();
-    assertEquals(3, a1.getReturnValue());
+    assertEquals(3, (long) a1.getReturnValue());
     // Assert that previous values are not returned when invoking method w/ no return val
     a1 = vm.invokeAsync(VMDistributedTest::incStaticCount);
     a1.join();
@@ -103,13 +103,13 @@ public class VMDistributedTest extends DistributedTestCase {
     // Assert that previous null returns are over-written
     a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
-    assertEquals(4, a1.getReturnValue());
+    assertEquals(4, (long) a1.getReturnValue());
 
     // Assert object method invocation works with zero arg method
     final VMTestObject o = new VMTestObject(0);
     a1 = vm.invokeAsync(o, "incrementAndGet", new Object[] {});
     a1.join();
-    assertEquals(1, a1.getReturnValue());
+    assertEquals(1, (long) a1.getReturnValue());
     // Assert object method invocation works with no return
     a1 = vm.invokeAsync(o, "set", new Object[] {3});
     a1.join();

@@ -181,7 +181,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
           DistributedLockService.create("testLockService", cache.getDistributedSystem());
       distLockService.lock("myLock", 50000, 50000);
     });
-    AsyncInvocation async = waitForTheLockAsync(dUnitBlackboard, true);
+    AsyncInvocation<Void> async = waitForTheLockAsync(dUnitBlackboard, true);
     for (int i = 0; i < 5; i++) {
       getVM(1).invoke("update cache and release lock in vm1", () -> {
         DistributedLockService distLockService =
@@ -210,10 +210,11 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   @NotNull
-  private AsyncInvocation waitForTheLockAsync(DUnitBlackboard dUnitBlackboard, boolean initialWait)
+  private AsyncInvocation<Void> waitForTheLockAsync(DUnitBlackboard dUnitBlackboard,
+      boolean initialWait)
       throws Exception {
     dUnitBlackboard.clearGate("waitingForLock");
-    AsyncInvocation async = getVM(2).invokeAsync("wait for the lock", () -> {
+    AsyncInvocation<Void> async = getVM(2).invokeAsync("wait for the lock", () -> {
       DistributedLockService distLockService = initialWait
           ? DistributedLockService.create("testLockService", cache.getDistributedSystem())
           : DistributedLockService.getServiceNamed("testLockService");

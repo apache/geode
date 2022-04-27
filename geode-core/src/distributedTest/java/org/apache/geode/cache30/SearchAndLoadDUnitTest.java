@@ -220,7 +220,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    AsyncInvocation async1 = null;
+    AsyncInvocation<Void> async1 = null;
     try {
       async1 = vm0.invokeAsync("Concurrently invoke the remote loader on the same key - t1",
           new CacheSerializableRunnable() {

@@ -202,10 +202,10 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
     vm7.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
     Wait.pause(2000);
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation<Void> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
     inv1.join();
     inv2.join();

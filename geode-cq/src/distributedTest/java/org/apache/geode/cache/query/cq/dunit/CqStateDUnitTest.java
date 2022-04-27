@@ -76,7 +76,7 @@ public class CqStateDUnitTest extends HelperTestCase {
     createReplicatedRegion(serverB, regionName, null);
     startCacheServers(serverB);
 
-    AsyncInvocation async = executeCQ(client, cqName);
+    AsyncInvocation<Void> async = executeCQ(client, cqName);
     ThreadUtils.join(async, 10000);
 
     client.invoke(() -> {

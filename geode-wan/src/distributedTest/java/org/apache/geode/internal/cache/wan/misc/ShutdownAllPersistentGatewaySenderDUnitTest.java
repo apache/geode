@@ -110,18 +110,18 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     vm2.invoke(waitAtShutdownAll);
     vm3.invoke(waitAtShutdownAll);
 
-    AsyncInvocation vm4_future =
+    AsyncInvocation<Void> vm4_future =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS));
 
     // ShutdownAll will be suspended at observer, so puts will continue
-    AsyncInvocation future = shutDownAllMembers(vm2, 2, MAX_WAIT);
+    AsyncInvocation<Void> future = shutDownAllMembers(vm2, 2, MAX_WAIT);
     future.join(MAX_WAIT);
 
     // now restart vm1 with gatewayHub
     LogWriterUtils.getLogWriter().info("restart in VM2");
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
-    AsyncInvocation vm3_future = vm3.invokeAsync(() -> WANTestBase
+    AsyncInvocation<Void> vm3_future = vm3.invokeAsync(() -> WANTestBase
         .createPersistentPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100, isOffHeap()));
     vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
         "ln", 1, 100, isOffHeap()));
@@ -178,31 +178,33 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
 
   }
 
-  private AsyncInvocation shutDownAllMembers(VM vm, final int expectedNumber, final long timeout) {
-    AsyncInvocation future = vm.invokeAsync(new SerializableRunnable("Shutdown all the members") {
+  private AsyncInvocation<Void> shutDownAllMembers(VM vm, final int expectedNumber,
+      final long timeout) {
+    AsyncInvocation<Void> future =
+        vm.invokeAsync(new SerializableRunnable("Shutdown all the members") {
 
-      @Override
-      public void run() {
-        DistributedSystemConfig config;
-        AdminDistributedSystemImpl adminDS = null;
-        try {
-          config = AdminDistributedSystemFactory
-              .defineDistributedSystem(cache.getDistributedSystem(), "");
-          adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
-          adminDS.connect();
-          Set members = adminDS.shutDownAllMembers(timeout);
-          int num = members == null ? 0 : members.size();
-          assertEquals(expectedNumber, num);
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
+          @Override
+          public void run() {
+            DistributedSystemConfig config;
+            AdminDistributedSystemImpl adminDS = null;
+            try {
+              config = AdminDistributedSystemFactory
+                  .defineDistributedSystem(cache.getDistributedSystem(), "");
+              adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
+                  .getDistributedSystem(config);
+              adminDS.connect();
+              Set members = adminDS.shutDownAllMembers(timeout);
+              int num = members == null ? 0 : members.size();
+              assertEquals(expectedNumber, num);
+            } catch (AdminException e) {
+              throw new RuntimeException(e);
+            } finally {
+              if (adminDS != null) {
+                adminDS.disconnect();
+              }
+            }
           }
-        }
-      }
-    });
+        });
     return future;
   }
 

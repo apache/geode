@@ -98,7 +98,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     client = clusterStartupRule.startClientVM(3,
         cacheRule -> cacheRule.withServerConnection(server2.getPort()).withPoolSubscription(true));
 
-    AsyncInvocation<?> serverAsync = server1.invokeAsync(() -> {
+    AsyncInvocation<Void> serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
       txManager.begin();
@@ -192,7 +192,7 @@ public class PartitionedRegionTxDUnitTest implements Serializable {
     client = clusterStartupRule.startClientVM(3,
         cacheRule -> cacheRule.withServerConnection(server2.getPort()).withPoolSubscription(true));
 
-    AsyncInvocation serverAsync = server1.invokeAsync(() -> {
+    AsyncInvocation<Void> serverAsync = server1.invokeAsync(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
       txManager.begin();

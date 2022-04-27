@@ -386,7 +386,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void test1AllCommit() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
-    AsyncInvocation asyncObj1 =
+    AsyncInvocation<Void> asyncObj1 =
         vm0.invokeAsync(TxnManagerMultiThreadDUnitTest::callCommitThreads);
     ThreadUtils.join(asyncObj1, 30 * 1000);
     if (asyncObj1.exceptionOccurred()) {
@@ -419,7 +419,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void test3Commit2Rollback() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
-    AsyncInvocation asyncObj1 =
+    AsyncInvocation<Void> asyncObj1 =
         vm0.invokeAsync(TxnManagerMultiThreadDUnitTest::callCommitandRollbackThreads);
     ThreadUtils.join(asyncObj1, 30 * 1000);
     if (asyncObj1.exceptionOccurred()) {

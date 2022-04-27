@@ -276,7 +276,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     // Run getAll
     {
       final int THREAD_COUNT = 4;
-      AsyncInvocation[] ais = new AsyncInvocation[THREAD_COUNT];
+      AsyncInvocation<?>[] ais = new AsyncInvocation[THREAD_COUNT];
       for (int i = 0; i < THREAD_COUNT; i++) {
         ais[i] = client.invokeAsync(clientGetAll);
       }
@@ -414,7 +414,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     // Run getAll
     {
       final int THREAD_COUNT = 4;
-      AsyncInvocation[] ais = new AsyncInvocation[THREAD_COUNT];
+      AsyncInvocation<?>[] ais = new AsyncInvocation[THREAD_COUNT];
       for (int i = 0; i < THREAD_COUNT; i++) {
         ais[i] = client.invokeAsync(clientGetAll);
       }

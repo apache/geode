@@ -69,13 +69,13 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
     // exercise region and gateway operations with different messaging
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
+    AsyncInvocation<Void> invVM4transaction =
         vm4.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
-    AsyncInvocation invVM5transaction =
+    AsyncInvocation<Void> invVM5transaction =
         vm5.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
-    AsyncInvocation invVM4 =
+    AsyncInvocation<Void> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<Void> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();
@@ -110,16 +110,16 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
     startSerialSenders();
 
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
+    AsyncInvocation<Void> invVM4transaction =
         vm4.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
             .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
-    AsyncInvocation invVM5transaction =
+    AsyncInvocation<Void> invVM5transaction =
         vm5.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
             .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
 
-    AsyncInvocation invVM4 =
+    AsyncInvocation<Void> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<Void> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();
@@ -152,14 +152,14 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
 
     // exercise region and gateway operations with messaging
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
+    AsyncInvocation<Void> invVM4transaction =
         vm4.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
-    AsyncInvocation invVM5transaction =
+    AsyncInvocation<Void> invVM5transaction =
         vm5.invokeAsync("doTxPutsAsync", () -> WANTestBase.doTxPuts(getTestMethodName() + "_RR"));
 
-    AsyncInvocation invVM4 =
+    AsyncInvocation<Void> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<Void> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();
@@ -189,16 +189,16 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
     startSerialSenders();
 
     exerciseWANOperations();
-    AsyncInvocation invVM4transaction =
+    AsyncInvocation<Void> invVM4transaction =
         vm4.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
             .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
-    AsyncInvocation invVM5transaction =
+    AsyncInvocation<Void> invVM5transaction =
         vm5.invokeAsync("doTxPutsPRAsync", () -> SerialGatewaySenderDistributedDeadlockDUnitTest
             .doTxPutsPR(getTestMethodName() + "_RR", 100, 1000));
 
-    AsyncInvocation invVM4 =
+    AsyncInvocation<Void> invVM4 =
         vm4.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    AsyncInvocation invVM5 =
+    AsyncInvocation<Void> invVM5 =
         vm5.invokeAsync("doPutsAsync", () -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
     exerciseFunctions();

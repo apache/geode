@@ -120,7 +120,7 @@ public class PRQueryRegionDestroyedDUnitTest extends CacheTestCase {
 
     // Now execute the query. And while query execution in process destroy the region
     // on one of the node.
-    AsyncInvocation async0 =
+    AsyncInvocation<Void> async0 =
         vm0.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
             PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
 

@@ -95,7 +95,7 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
 
   @Test
   public void readsInOtherMemberShouldPreventExpiration() throws Exception {
-    AsyncInvocation<?> memberReading = member3.invokeAsync(() -> {
+    AsyncInvocation<Void> memberReading = member3.invokeAsync(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       region.put(KEY, VALUE);
       while (KEEP_READING.get()) {
@@ -140,7 +140,7 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
       factory.setEntryIdleTimeout(new ExpirationAttributes(1, DESTROY));
       factory.create(regionName);
     });
-    AsyncInvocation<?> memberReading = member4.invokeAsync(() -> {
+    AsyncInvocation<Void> memberReading = member4.invokeAsync(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       region.put(KEY, VALUE);
       while (KEEP_READING.get()) {
@@ -179,7 +179,7 @@ public class ReplicateEntryIdleExpirationDistributedTest implements Serializable
     member1.invoke(() -> createEvictionRegion(evictionRegionName));
     member2.invoke(() -> createEvictionRegion(evictionRegionName));
     member3.invoke(() -> createEvictionRegion(evictionRegionName));
-    AsyncInvocation<?> memberReading = member3.invokeAsync(() -> {
+    AsyncInvocation<Void> memberReading = member3.invokeAsync(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(evictionRegionName);
       region.put(KEY, VALUE);
       while (KEEP_READING.get()) {

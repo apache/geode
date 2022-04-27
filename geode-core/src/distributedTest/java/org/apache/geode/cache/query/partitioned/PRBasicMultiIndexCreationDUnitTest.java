@@ -401,7 +401,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForCloseCache());
     setCacheInVMs(vm0);
 
-    AsyncInvocation regionCreateFuture = vm0.invokeAsync(PRQHelp
+    AsyncInvocation<Void> regionCreateFuture = vm0.invokeAsync(PRQHelp
         .getCacheSerializableRunnableForPersistentPRCreate(name, redundancy, PortfolioData.class));
 
     ArrayList<String> names = new ArrayList<>();
@@ -410,7 +410,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
     ArrayList<String> exps = new ArrayList<>();
     exps.add("ID");
 
-    AsyncInvocation indexCreateFuture =
+    AsyncInvocation<Void> indexCreateFuture =
         vm1.invokeAsync(PRQHelp.getCacheSerializableRunnableForDefineIndex(name, names, exps));
 
     regionCreateFuture.await();

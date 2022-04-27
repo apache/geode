@@ -235,7 +235,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
   @Category({WanTest.class})
   @Test
-  public void test_NY_Recognises_TK_AND_HK_Simultaneously() {
+  public void test_NY_Recognises_TK_AND_HK_Simultaneously() throws InterruptedException {
     Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
 
     Set<InetSocketAddress> locatorPortsln = new HashSet<>();
@@ -249,8 +249,8 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnLocPort1));
     locatorPortsny.add(new InetSocketAddress("localhost", nyLocPort1));
 
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
+    int asyncInvocationArrSize = 4;
+    AsyncInvocation<Integer>[] async = new AsyncInvocation[asyncInvocationArrSize];
 
     Set<InetSocketAddress> locatorPortstk = new HashSet<>();
     dsVsPort.put(3, locatorPortstk);
@@ -277,10 +277,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
       fail();
     }
 
-    locatorPortstk.add(new InetSocketAddress("localhost", (Integer) async[0].getReturnValue()));
-    locatorPortshk.add(new InetSocketAddress("localhost", (Integer) async[1].getReturnValue()));
-    locatorPortsln.add(new InetSocketAddress("localhost", (Integer) async[2].getReturnValue()));
-    locatorPortsny.add(new InetSocketAddress("localhost", (Integer) async[3].getReturnValue()));
+    locatorPortstk.add(new InetSocketAddress("localhost", async[0].get()));
+    locatorPortshk.add(new InetSocketAddress("localhost", async[1].get()));
+    locatorPortsln.add(new InetSocketAddress("localhost", async[2].get()));
+    locatorPortsny.add(new InetSocketAddress("localhost", async[3].get()));
 
     final int siteSizeToCheck = dsVsPort.size();
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
@@ -377,8 +377,8 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     dsVsPort.put(3, site33LocatorsPort);
     dsVsPort.put(4, site44LocatorsPort);
 
-    int AsyncInvocationArrSize = 9;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
+    int asyncInvocationArrSize = 9;
+    AsyncInvocation<?>[] async = new AsyncInvocation[asyncInvocationArrSize];
 
     async[0] = vm0.invokeAsync(
         () -> WANTestBase.createLocator(1, ports[0], site1LocatorsPort, site2LocatorsPort));
@@ -441,8 +441,8 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     dsVsPort.put(2, site2LocatorsPort);
     dsVsPort.put(3, site3LocatorsPort);
 
-    int AsyncInvocationArrSize = 9;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
+    int asyncInvocationArrSize = 9;
+    AsyncInvocation<?>[] async = new AsyncInvocation[asyncInvocationArrSize];
 
     async[0] = vm0.invokeAsync(
         () -> WANTestBase.createLocator(1, site1Port1, site1LocatorsPort, site2LocatorsPort));

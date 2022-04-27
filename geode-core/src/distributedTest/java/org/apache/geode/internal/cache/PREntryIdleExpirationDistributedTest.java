@@ -106,7 +106,7 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
 
   @Test
   public void readsInOtherMemberShouldPreventExpiration() throws Exception {
-    AsyncInvocation<?> memberReading = member3.invokeAsync(() -> {
+    AsyncInvocation<Void> memberReading = member3.invokeAsync(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
       region.put(KEY, VALUE);
       ExpiryTask.permitExpiration();

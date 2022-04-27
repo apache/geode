@@ -51,7 +51,7 @@ public class ClientUnregisterInterestAuthDUnitTest extends JUnit4DistributedTest
   @Test
   public void testUnregisterInterest() throws Exception {
     // client2 connects to user as a user authorized to use AuthRegion region
-    AsyncInvocation ai1 = client2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = client2.invokeAsync(() -> {
       ClientCache cache = createClientCache("authRegionUser", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);

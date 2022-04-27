@@ -202,8 +202,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     P.invoke(() -> GIIDeltaDUnitTest.slowGII(blocklist));
     R.invoke(() -> GIIDeltaDUnitTest.slowGII(blocklist));
-    AsyncInvocation async1 = doOnePutAsync(P, 2, "key1");
-    AsyncInvocation async2 = doOnePutAsync(R, 3, "key1");
+    AsyncInvocation<Void> async1 = doOnePutAsync(P, 2, "key1");
+    AsyncInvocation<Void> async2 = doOnePutAsync(R, 3, "key1");
 
     // wait for the local puts are done at P & R before distribution
     waitForToVerifyRVV(P, memberP, 2, null, 0); // P's rvv=p2, gc=0
@@ -237,10 +237,10 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     // let r6 to succeed, r4,r5 to be blocked
     R.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist));
-    AsyncInvocation async1 = doOnePutAsync(R, 4, "key4");
+    AsyncInvocation<Void> async1 = doOnePutAsync(R, 4, "key4");
     waitForToVerifyRVV(R, memberR, 4, null, 0); // P's rvv=r4, gc=0
 
-    AsyncInvocation async2 = doOneDestroyAsync(R, 5, "key5");
+    AsyncInvocation<Void> async2 = doOneDestroyAsync(R, 5, "key5");
     waitForToVerifyRVV(R, memberR, 5, null, 0); // P's rvv=r5, gc=0
 
     doOnePut(R, 6, "key1"); // r6 will pass
@@ -480,7 +480,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     // restart and gii
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, false);
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
 
     // 2
     waitForCallbackStarted(R, GIITestHookType.AfterRequestRVV);
@@ -603,7 +603,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     });
 
     // restart R and gii, it will be blocked at test hook
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
     // 7
     waitForCallbackStarted(P, GIITestHookType.AfterReceivedRequestImage);
 
@@ -779,7 +779,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     final long[] exceptionlist2 = {8};
     // let p9 to succeed, p8 to be blocked
     P.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist2));
-    AsyncInvocation async1 = doOneDestroyAsync(P, 8, "key1");
+    AsyncInvocation<Void> async1 = doOneDestroyAsync(P, 8, "key1");
     waitForToVerifyRVV(P, memberP, 8, null, 0);
     doOnePut(P, 9, "key3");
     waitForToVerifyRVV(P, memberP, 9, null, 0);
@@ -823,10 +823,10 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     final long[] exceptionlist = {4, 5};
     R.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist));
-    AsyncInvocation async1 = doOnePutAsync(R, 4, "key4");
+    AsyncInvocation<Void> async1 = doOnePutAsync(R, 4, "key4");
     waitForToVerifyRVV(R, memberR, 4, null, 0); // P's rvv=r4, gc=0
 
-    AsyncInvocation async2 = doOneDestroyAsync(R, 5, "key5");
+    AsyncInvocation<Void> async2 = doOneDestroyAsync(R, 5, "key5");
     waitForToVerifyRVV(R, memberR, 5, null, 0); // P's rvv=r5, gc=0
 
     // P should have unfinished ops R4,R5, but they did not show up in exception list
@@ -986,7 +986,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     closeCache(R);
     changeForceFullGII(R, true, false);
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
     waitForCallbackStarted(R, GIITestHookType.BeforeSavedReceivedRVV);
 
     doOnePut(P, 4, "key1");
@@ -1055,7 +1055,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     });
 
     closeCache(R);
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
     waitForCallbackStarted(R, GIITestHookType.AfterCalculatedUnfinishedOps);
 
     doOnePut(P, 4, "key1");
@@ -1099,10 +1099,10 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     final long[] exceptionlist = {4, 5};
     R.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist));
-    AsyncInvocation async1 = doOnePutAsync(R, 4, "key4");
+    AsyncInvocation<Void> async1 = doOnePutAsync(R, 4, "key4");
     waitForToVerifyRVV(R, memberR, 4, null, 0); // P's rvv=r4, gc=0
 
-    AsyncInvocation async2 = doOneDestroyAsync(R, 5, "key5");
+    AsyncInvocation<Void> async2 = doOneDestroyAsync(R, 5, "key5");
     waitForToVerifyRVV(R, memberR, 5, null, 0); // P's rvv=r5, gc=0
 
     // P should have unfinished ops R4,R5, but they did not show up in exception list
@@ -1253,7 +1253,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     waitForToVerifyRVV(P, memberR, 3, null, 0); // P's rvv=r3, gc=0
     // now P's rvv=P7,R3, R's RVV=P6,R5
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, false);
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
 
     // 1
     waitForCallbackStarted(R, GIITestHookType.BeforeRequestRVV);
@@ -1386,9 +1386,9 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, false);
 
     // restart R and gii, it will be blocked at test hook
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
     // restart R and gii, it will be blocked at test hook
-    AsyncInvocation async4 = createDistributedRegionAsync(T);
+    AsyncInvocation<Void> async4 = createDistributedRegionAsync(T);
     // 8
     waitForCallbackStarted(P, DuringPackingImage);
     WaitCriterion ev = new WaitCriterion() {
@@ -1530,7 +1530,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, false);
 
     // restart R and gii, it will be blocked at test hook
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
     // 8
     waitForCallbackStarted(P, DuringPackingImage);
     WaitCriterion ev = new WaitCriterion() {
@@ -1632,7 +1632,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, false);
 
     // restart R and gii, it will be blocked at test hook
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
     // 8
     waitForCallbackStarted(P, GIITestHookType.AfterReceivedRequestImage);
     int count = getDeltaGIICount(P);
@@ -1831,7 +1831,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     // retart R
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, false);
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
 
     // when chunk arrived, do clear()
     waitForCallbackStarted(R, GIITestHookType.AfterReceivedImageReply);
@@ -1902,7 +1902,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     doOnePut(P, 7, "key1");
 
     // retart R
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
 
     // when chunk arrived, do clear()
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
@@ -2055,7 +2055,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     doOnePut(P, 7, "key1");
 
     // retart R
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
 
     // when chunk arrived, do clear()
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
@@ -2125,7 +2125,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
 
     // retart R
-    AsyncInvocation async3 = createDistributedRegionAsync(R);
+    AsyncInvocation<Void> async3 = createDistributedRegionAsync(R);
 
     // when chunk arrived, do clear()
     waitForCallbackStarted(R, GIITestHookType.BeforeSavedReceivedRVV);
@@ -2214,7 +2214,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
                 && ((TombstoneMessage) message).regionPath.contains(REGION_NAME)) {
               System.err.println("DAN DEBUG  about to send tombstone message, starting up R - "
                   + message.getSender());
-              AsyncInvocation async3 = createDistributedRegionAsync(vmR);
+              AsyncInvocation<Void> async3 = createDistributedRegionAsync(vmR);
 
               // Wait for R to finish requesting the RVV before letting the tombstone GC proceeed.
               waitForCallbackStarted(vmR, GIITestHookType.AfterCalculatedUnfinishedOps);
@@ -2284,7 +2284,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void createDistributedRegion(VM vm) {
-    AsyncInvocation future = createDistributedRegionAsync(vm);
+    AsyncInvocation<Void> future = createDistributedRegionAsync(vm);
     try {
       future.join(MAX_WAIT);
     } catch (InterruptedException e) {
@@ -2298,7 +2298,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  protected AsyncInvocation createDistributedRegionAsync(VM vm) {
+  protected AsyncInvocation<Void> createDistributedRegionAsync(VM vm) {
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
       @Override
       public void run() {
@@ -2753,11 +2753,11 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(putOp);
   }
 
-  private AsyncInvocation doOnePutAsync(final VM vm, final long regionVersionForThisOp,
+  private AsyncInvocation<Void> doOnePutAsync(final VM vm, final long regionVersionForThisOp,
       final String key) {
     SerializableRunnable putOp =
         onePutOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm), false);
-    AsyncInvocation async = vm.invokeAsync(putOp);
+    AsyncInvocation<Void> async = vm.invokeAsync(putOp);
     return async;
   }
 
@@ -2787,11 +2787,11 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(destroyOp);
   }
 
-  private AsyncInvocation doOneDestroyAsync(final VM vm, final long regionVersionForThisOp,
+  private AsyncInvocation<Void> doOneDestroyAsync(final VM vm, final long regionVersionForThisOp,
       final String key) {
     SerializableRunnable destroyOp =
         oneDestroyOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm), false);
-    AsyncInvocation async = vm.invokeAsync(destroyOp);
+    AsyncInvocation<Void> async = vm.invokeAsync(destroyOp);
     return async;
   }
 
@@ -2869,7 +2869,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     return result;
   }
 
-  private void checkAsyncCall(AsyncInvocation async) {
+  private void checkAsyncCall(AsyncInvocation<Void> async) {
     try {
       async.join(30000);
       if (async.exceptionOccurred()) {

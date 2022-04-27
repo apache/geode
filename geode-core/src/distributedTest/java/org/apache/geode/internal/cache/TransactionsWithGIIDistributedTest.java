@@ -112,8 +112,8 @@ public class TransactionsWithGIIDistributedTest implements Serializable {
   }
 
   private void doConcurrentOpsAndRebalance(String s, boolean doRebalance) throws Exception {
-    AsyncInvocation async0 = vm0.invokeAsync(this::doConcurrentDestroyInTx);
-    AsyncInvocation async1;
+    AsyncInvocation<Void> async0 = vm0.invokeAsync(this::doConcurrentDestroyInTx);
+    AsyncInvocation<Void> async1;
     if (doRebalance) {
       async1 = vm1.invokeAsync(() -> doConcurrentPutInTx(s));
     } else {
@@ -279,7 +279,7 @@ public class TransactionsWithGIIDistributedTest implements Serializable {
       cacheRule.getOrCreateCache();
     });
 
-    AsyncInvocation async = vm1.invokeAsync(() -> createRegion(regionName));
+    AsyncInvocation<Void> async = vm1.invokeAsync(() -> createRegion(regionName));
     doConcurrentOpsAndRebalance("C", false);
     async.await();
     validateVersionsInVms(false, vm0, vm1);

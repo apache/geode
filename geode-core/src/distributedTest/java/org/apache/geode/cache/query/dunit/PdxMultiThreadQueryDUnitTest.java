@@ -158,7 +158,7 @@ public class PdxMultiThreadQueryDUnitTest extends PDXQueryTestBase {
         new int[] {port0, port1, port2}, true);
 
     final int size = 100;
-    AsyncInvocation[] asyncInvocationArray = new AsyncInvocation[size];
+    AsyncInvocation<?>[] asyncInvocationArray = new AsyncInvocation[size];
     for (int i = 0; i < size; i++) {
       asyncInvocationArray[i] =
           client.invokeAsync(() -> {

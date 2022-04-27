@@ -154,9 +154,9 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
 
     // Asynchronously recreate the regions in servers 1 and 2 (since they are recovering persistent
     // data)
-    AsyncInvocation recreateRegionInServer1 =
+    AsyncInvocation<Void> recreateRegionInServer1 =
         server1.getVM().invokeAsync(() -> createRegion(PARTITION_PERSISTENT, 1));
-    AsyncInvocation recreateRegionInServer2 =
+    AsyncInvocation<Void> recreateRegionInServer2 =
         server2.getVM().invokeAsync(() -> createRegion(PARTITION_PERSISTENT, 1));
     recreateRegionInServer1.await();
     recreateRegionInServer2.await();

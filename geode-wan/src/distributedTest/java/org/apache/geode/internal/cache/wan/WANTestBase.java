@@ -1061,11 +1061,11 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void startSenderInVMsAsync(String senderId, VM... vms) {
-    List<AsyncInvocation<?>> tasks = new LinkedList<>();
+    List<AsyncInvocation<Void>> tasks = new LinkedList<>();
     for (VM vm : vms) {
       tasks.add(vm.invokeAsync(() -> startSender(senderId)));
     }
-    for (AsyncInvocation<?> invocation : tasks) {
+    for (AsyncInvocation<Void> invocation : tasks) {
       try {
         invocation.await();
       } catch (InterruptedException e) {
@@ -1076,11 +1076,11 @@ public class WANTestBase extends DistributedTestCase {
 
 
   public static void startSenderwithCleanQueuesInVMsAsync(String senderId, VM... vms) {
-    List<AsyncInvocation<?>> tasks = new LinkedList<>();
+    List<AsyncInvocation<Void>> tasks = new LinkedList<>();
     for (VM vm : vms) {
       tasks.add(vm.invokeAsync(() -> startSenderwithCleanQueues(senderId)));
     }
-    for (AsyncInvocation<?> invocation : tasks) {
+    for (AsyncInvocation<Void> invocation : tasks) {
       try {
         invocation.await();
       } catch (InterruptedException e) {
@@ -1640,11 +1640,11 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void stopSenderInVMsAsync(String senderId, VM... vms) {
-    List<AsyncInvocation<?>> tasks = new LinkedList<>();
+    List<AsyncInvocation<Void>> tasks = new LinkedList<>();
     for (VM vm : vms) {
       tasks.add(vm.invokeAsync(() -> stopSender(senderId)));
     }
-    for (AsyncInvocation<?> invocation : tasks) {
+    for (AsyncInvocation<Void> invocation : tasks) {
       try {
         invocation.await();
       } catch (InterruptedException e) {
@@ -3873,12 +3873,12 @@ public class WANTestBase extends DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     cleanupVM();
-    List<AsyncInvocation<?>> invocations = new ArrayList<>();
+    List<AsyncInvocation<Void>> invocations = new ArrayList<>();
     final Host host = getHost(0);
     for (int i = 0; i < host.getVMCount(); i++) {
       invocations.add(host.getVM(i).invokeAsync(WANTestBase::cleanupVM));
     }
-    for (AsyncInvocation<?> invocation : invocations) {
+    for (AsyncInvocation<Void> invocation : invocations) {
       invocation.await();
     }
   }

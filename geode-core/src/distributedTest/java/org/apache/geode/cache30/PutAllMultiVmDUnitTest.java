@@ -127,13 +127,13 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     }
   }// end of closeCache
 
-  private AsyncInvocation invokeClear(VM vm) {
-    AsyncInvocation async = vm.invokeAsync(() -> region.clear());
+  private AsyncInvocation<Void> invokeClear(VM vm) {
+    AsyncInvocation<Void> async = vm.invokeAsync(() -> region.clear());
     return async;
   }
 
-  private AsyncInvocation invokeBulkOp(VM vm) {
-    AsyncInvocation async = vm.invokeAsync(() -> {
+  private AsyncInvocation<Void> invokeBulkOp(VM vm) {
+    AsyncInvocation<Void> async = vm.invokeAsync(() -> {
       Map m = new HashMap();
       for (int i = 0; i < 20; i++) {
         m.put(i, "map" + i);
@@ -159,8 +159,8 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     Random rand = new Random();
     for (int k = 0; k < 100; k++) {
       int shuffle = rand.nextInt(2);
-      AsyncInvocation a1 = null;
-      AsyncInvocation a2 = null;
+      AsyncInvocation<Void> a1 = null;
+      AsyncInvocation<Void> a2 = null;
       if (shuffle == 1) {
         a1 = invokeClear(vm1);
         a2 = invokeBulkOp(vm2);

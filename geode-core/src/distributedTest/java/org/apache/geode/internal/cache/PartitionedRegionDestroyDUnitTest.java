@@ -97,7 +97,7 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
       }
     });
 
-    AsyncInvocation asyncVM2 = vm2.invokeAsync(() -> {
+    AsyncInvocation<Void> asyncVM2 = vm2.invokeAsync(() -> {
       try (IgnoredException ie = addIgnoredException(RegionDestroyedException.class)) {
         Cache cache = getCache();
 

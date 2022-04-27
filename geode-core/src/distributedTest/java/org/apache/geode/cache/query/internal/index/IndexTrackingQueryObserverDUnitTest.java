@@ -95,8 +95,8 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
     initializeRegion(ds0);
 
     // Check query verbose on both VMs
-    AsyncInvocation async1 = verifyQueryVerboseData(ds0, TOTAL_OBJECTS / 2);
-    AsyncInvocation async2 = verifyQueryVerboseData(ds1, TOTAL_OBJECTS / 2);
+    AsyncInvocation<Void> async1 = verifyQueryVerboseData(ds0, TOTAL_OBJECTS / 2);
+    AsyncInvocation<Void> async2 = verifyQueryVerboseData(ds1, TOTAL_OBJECTS / 2);
 
     // Run query on one vm only.
     runQuery(ds1);
@@ -243,7 +243,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(runQuery);
   }
 
-  private AsyncInvocation verifyQueryVerboseData(VM vm, final int results) {
+  private AsyncInvocation<Void> verifyQueryVerboseData(VM vm, final int results) {
 
     SerializableRunnable testQueryVerbose = new SerializableRunnable("Test Query Verbose Data") {
 
@@ -287,7 +287,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
         assertEquals(results, totalResults);
       }
     };
-    AsyncInvocation asyncInv = vm.invokeAsync(testQueryVerbose);
+    AsyncInvocation<Void> asyncInv = vm.invokeAsync(testQueryVerbose);
     return asyncInv;
   }
 

@@ -96,10 +96,10 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
           regionName, new int[] {locatorPort});
 
 
-      AsyncInvocation ai1 = server1
+      AsyncInvocation<Void> ai1 = server1
           .invokeAsync(() -> createLuceneIndexOnExistingRegion(cache, regionName, INDEX_NAME));
 
-      AsyncInvocation ai2 = server2
+      AsyncInvocation<Void> ai2 = server2
           .invokeAsync(() -> createLuceneIndexOnExistingRegion(cache, regionName, INDEX_NAME));
 
       ai1.join();

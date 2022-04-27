@@ -233,7 +233,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     }
 
     // Do some puts from both vm4 and vm5 while restarting a sender
-    AsyncInvocation doPutsInVm4 =
+    AsyncInvocation<Void> doPutsInVm4 =
         vm4.invokeAsync(() -> doPuts(className + "_RR", 1000));
 
     updateBatchSize(50);
@@ -288,7 +288,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     }
 
     // Do some puts from both vm4 and vm5 while restarting a sender
-    AsyncInvocation doPutsInVm4 =
+    AsyncInvocation<Void> doPutsInVm4 =
         vm4.invokeAsync(() -> doPuts(className + "_RR", 5000));
 
     updateBatchSize(40);

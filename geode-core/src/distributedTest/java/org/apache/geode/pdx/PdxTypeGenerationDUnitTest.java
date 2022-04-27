@@ -93,12 +93,12 @@ public class PdxTypeGenerationDUnitTest {
   public void testNoConflictsWhenGeneratingPdxTypesFromJSONOnMultipleServers() {
     int repeats = 10000;
 
-    AsyncInvocation invocation1 = server1.invokeAsync(() -> {
+    AsyncInvocation<Void> invocation1 = server1.invokeAsync(() -> {
       for (int i = 0; i < repeats; ++i) {
         JSONFormatter.fromJSON("{\"counter" + i + "\": " + i + "}");
       }
     });
-    AsyncInvocation invocation2 = server2.invokeAsync(() -> {
+    AsyncInvocation<Void> invocation2 = server2.invokeAsync(() -> {
       for (int i = 0; i < repeats; ++i) {
         JSONFormatter.fromJSON("{\"counter" + i + "\": " + i + "}");
       }

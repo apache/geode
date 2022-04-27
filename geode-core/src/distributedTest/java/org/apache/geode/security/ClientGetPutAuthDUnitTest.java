@@ -78,7 +78,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
     keys.add("key2");
 
     // client1 connects to server as a user not authorized to do any operations
-    AsyncInvocation ai1 = client1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = client1.invokeAsync(() -> {
       ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
 
@@ -97,7 +97,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
 
     // client2 connects to user as a user authorized to use AuthRegion region
-    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = client2.invokeAsync(() -> {
       ClientCache cache = createClientCache("authRegionUser", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
 
@@ -117,7 +117,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
     });
 
     // client3 connects to user as a user authorized to use key1 in AuthRegion region
-    AsyncInvocation ai3 = client3.invokeAsync(() -> {
+    AsyncInvocation<Void> ai3 = client3.invokeAsync(() -> {
       ClientCache cache = createClientCache("key1User", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
 

@@ -336,7 +336,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_2", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // do puts in RR_2 in main thread
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 500));
@@ -398,7 +398,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_1"));
@@ -480,7 +480,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
 
     inv1.join();
@@ -545,10 +545,10 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // start puts in RR_2 in another thread
-    AsyncInvocation inv2 =
+    AsyncInvocation<Void> inv2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
     // destroy RR_2 on remote site in the middle
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_2"));
@@ -629,7 +629,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 500));
     // close cache in remote site. This will automatically kill the remote receivers.
     vm2.invoke(WANTestBase::closeCache);
@@ -671,7 +671,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
@@ -727,7 +727,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
@@ -782,7 +782,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
@@ -848,7 +848,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
@@ -909,7 +909,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.startSender("ln"));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
@@ -1005,10 +1005,10 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm6.invoke(createReplicatedRegionRunnable());
     vm7.invoke(createReplicatedRegionRunnable());
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
     Wait.pause(2000);
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation<Void> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
     inv1.join();
     inv2.join();
@@ -1060,7 +1060,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm4.invoke(createReplicatedRegionRunnable());
     vm5.invoke(createReplicatedRegionRunnable());
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
     LogWriterUtils.getLogWriter().info("Started async puts on local site");
     Wait.pause(1000);
@@ -1072,7 +1072,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     int oldServerPort = (Integer) oldConnectionInfo.get("serverPort");
     LogWriterUtils.getLogWriter().info("Got sender to receiver connection information");
 
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation<Void> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
     inv2.join();
     LogWriterUtils.getLogWriter().info("Killed primary sender on local site");
     Wait.pause(5000);// give some time for vm5 to take primary charge
@@ -1137,7 +1137,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm4.invoke(createReplicatedRegionRunnable());
     vm5.invoke(createReplicatedRegionRunnable());
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
     LogWriterUtils.getLogWriter().info("Started async puts on local site");
     Wait.pause(1000);
@@ -1151,7 +1151,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     // ---------------------------- KILL vm4
     // --------------------------------------
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation<Void> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
     inv2.join();
     LogWriterUtils.getLogWriter().info("Killed vm4 (primary sender) on local site");
     // -----------------------------------------------------------------------------

@@ -319,11 +319,11 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       regionType.createDataStore(getCache(), REGION_NAME);
     });
 
-    AsyncInvocation createIndex1 = dataStore1.invokeAsync(() -> {
+    AsyncInvocation<Void> createIndex1 = dataStore1.invokeAsync(() -> {
       createIndexAfterRegion("field1");
     });
 
-    AsyncInvocation createIndex2 = dataStore2.invokeAsync(() -> {
+    AsyncInvocation<Void> createIndex2 = dataStore2.invokeAsync(() -> {
       createIndexAfterRegion("field1");
     });
 

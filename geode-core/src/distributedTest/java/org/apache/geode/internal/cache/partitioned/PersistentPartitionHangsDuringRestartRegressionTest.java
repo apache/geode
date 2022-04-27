@@ -153,7 +153,8 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
 
     try (IgnoredException ie = addIgnoredException(PartitionOfflineException.class)) {
       // This should recover redundancy, which should cause vm0 to bounce/disconnect
-      AsyncInvocation createPRAsync = vm1.invokeAsync(() -> createPartitionedRegion(1, 0, 1, true));
+      AsyncInvocation<Void> createPRAsync =
+          vm1.invokeAsync(() -> createPartitionedRegion(1, 0, 1, true));
 
       beforeBounceLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
       vm0.bounceForcibly();

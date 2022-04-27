@@ -138,8 +138,8 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
     getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    AsyncInvocation async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
-    AsyncInvocation async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
+    AsyncInvocation<Void> async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
+    AsyncInvocation<Void> async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
 
     async1.await();
     async0.await();
@@ -365,7 +365,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
     getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    AsyncInvocation async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
+    AsyncInvocation<Void> async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
 
     async0.await();
 
@@ -374,7 +374,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(setTestHook());
 
-    AsyncInvocation async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
+    AsyncInvocation<Void> async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
 
     vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
 
@@ -451,7 +451,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
     getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    AsyncInvocation async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
+    AsyncInvocation<Void> async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
 
     async0.await();
 
@@ -460,7 +460,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(setTestHook());
 
-    AsyncInvocation async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
+    AsyncInvocation<Void> async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
 
     async1.await();
     async0.await();
@@ -496,7 +496,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     vm0.invokeAsync(loadRegion(NAME, 500));
     vm0.invokeAsync(loadRegion(REP_REG_NAME, 500));
 
-    AsyncInvocation async0 = vm0.invokeAsync(loadRegion(PERSISTENT_REG_NAME, 500));
+    AsyncInvocation<Void> async0 = vm0.invokeAsync(loadRegion(PERSISTENT_REG_NAME, 500));
 
     vm0.invokeAsync(loadRegion(NO_INDEX_REP_REG, 500));
 

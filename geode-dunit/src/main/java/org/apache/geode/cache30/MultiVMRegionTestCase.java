@@ -457,7 +457,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       flushIfNecessary(region);
     });
 
-    AsyncInvocation verify = vm1.invokeAsync("Verify", () -> {
+    AsyncInvocation<Void> verify = vm1.invokeAsync("Verify", () -> {
       Region<String, Integer> region = getRootRegion().getSubregion(regionName);
       @SuppressWarnings("unchecked")
       BlockingQueue<Integer> queue = (BlockingQueue<Integer>) region.getUserAttribute();
@@ -471,7 +471,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     });
 
-    AsyncInvocation populate = vm0.invokeAsync("Populate", () -> {
+    AsyncInvocation<Void> populate = vm0.invokeAsync("Populate", () -> {
       Region<String, Integer> region = getRootRegion().getSubregion(regionName);
       for (int i = 0; i <= lastValue; i++) {
         region.put(key, i);
@@ -3240,7 +3240,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
     // start asynchronous process that does updates to the data
-    AsyncInvocation async =
+    AsyncInvocation<Void> async =
         vm0.invokeAsync("Do Nonblocking Operations", () -> {
           Region<Object, Object> region = getRootRegion().getSubregion(name);
 
@@ -3356,7 +3356,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    AsyncInvocation asyncGII = vm2.invokeAsync("Create Mirrored Region", create);
+    AsyncInvocation<Void> asyncGII = vm2.invokeAsync("Create Mirrored Region", create);
 
     if (!getRegionAttributes().getScope().isGlobal()) {
       // wait for nonblocking operations to complete
@@ -3495,7 +3495,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
     // start asynchronous process that does updates to the data
-    AsyncInvocation async =
+    AsyncInvocation<Void> async =
         vm0.invokeAsync("Do Nonblocking Operations", new CacheSerializableRunnable() {
           @Override
           public void run2() throws CacheException {
@@ -3589,7 +3589,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       });
     }
 
-    AsyncInvocation asyncGII = vm2.invokeAsync(create);
+    AsyncInvocation<Void> asyncGII = vm2.invokeAsync(create);
 
     if (!getRegionAttributes().getScope().isGlobal()) {
       // wait for nonblocking operations to complete
@@ -5870,8 +5870,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    AsyncInvocation a0 = vm0.invokeAsync("perform concurrent ops", performOps);
-    AsyncInvocation a1 = vm1.invokeAsync("perform concurrent ops", performOps);
+    AsyncInvocation<Void> a0 = vm0.invokeAsync("perform concurrent ops", performOps);
+    AsyncInvocation<Void> a1 = vm1.invokeAsync("perform concurrent ops", performOps);
 
     vm2.invoke(createRegion);
 
@@ -5975,7 +5975,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     return DataSerializer.readObject(dis);
   }
 
-  private AsyncInvocation performOps4ClearWithConcurrentEvents(VM vm) {
+  private AsyncInvocation<Void> performOps4ClearWithConcurrentEvents(VM vm) {
     return vm.invokeAsync("perform concurrent ops", () -> {
       try {
         doOpsLoop(true);
@@ -6010,8 +6010,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     createRegionWithAttribute(vm0, name, syncDiskWrite);
     createRegionWithAttribute(vm1, name, syncDiskWrite);
 
-    AsyncInvocation a0 = performOps4ClearWithConcurrentEvents(vm0);
-    AsyncInvocation a1 = performOps4ClearWithConcurrentEvents(vm1);
+    AsyncInvocation<Void> a0 = performOps4ClearWithConcurrentEvents(vm0);
+    AsyncInvocation<Void> a1 = performOps4ClearWithConcurrentEvents(vm1);
 
     try {
       Thread.sleep(500);
@@ -6062,14 +6062,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
 
 
-    AsyncInvocation a0 = vm0.invokeAsync("perform concurrent ops", () -> {
+    AsyncInvocation<Void> a0 = vm0.invokeAsync("perform concurrent ops", () -> {
       doOpsLoop(true);
       if (CCRegion.getScope().isDistributedNoAck()) {
         sendSerialMessageToAll(); // flush the ops
       }
     });
 
-    AsyncInvocation a1 = vm1.invokeAsync("perform concurrent ops", () -> {
+    AsyncInvocation<Void> a1 = vm1.invokeAsync("perform concurrent ops", () -> {
 
       doOpsLoop(true);
       if (CCRegion.getScope().isDistributedNoAck()) {
@@ -6411,8 +6411,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    AsyncInvocation a0 = vm0.invokeAsync("perform concurrent ops", performOps);
-    AsyncInvocation a1 = vm1.invokeAsync("perform concurrent ops", performOps);
+    AsyncInvocation<Void> a0 = vm0.invokeAsync("perform concurrent ops", performOps);
+    AsyncInvocation<Void> a1 = vm1.invokeAsync("perform concurrent ops", performOps);
 
     // try {
     // Thread.sleep(500);
@@ -6677,7 +6677,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
   }
 
-  boolean waitForAsyncProcessing(AsyncInvocation async, String expectedError) {
+  boolean waitForAsyncProcessing(AsyncInvocation<Void> async, String expectedError) {
     try {
       async.await();
     } catch (Throwable e) {

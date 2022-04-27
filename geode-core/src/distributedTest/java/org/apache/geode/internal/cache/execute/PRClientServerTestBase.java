@@ -47,6 +47,7 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -614,6 +615,23 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     if (cache != null && !cache.isClosed()) {
       cache.close();
     }
+  }
+
+  protected static List<Boolean> executeFunctionHA() {
+    Region region = cache.getRegion(PartitionedRegionName);
+    final HashSet<String> testKeysSet = new HashSet<>();
+    for (int i = (totalNumBuckets * 10); i > 0; i--) {
+      testKeysSet.add("execKey-" + i);
+    }
+    DistributedSystem.setThreadsSocketPolicy(false);
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
+    FunctionService.registerFunction(function);
+    Execution dataSet = FunctionService.onRegion(region);
+    ResultCollector rc1 =
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
+    List<Boolean> list = ((List<Boolean>) rc1.getResult());
+    logger.info("Result size : " + list.size());
+    return list;
   }
 
   void serverBucketFilterExecution(Set<Integer> bucketFilterSet) {

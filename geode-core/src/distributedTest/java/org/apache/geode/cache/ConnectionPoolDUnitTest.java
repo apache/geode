@@ -466,8 +466,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     };
 
     logger.info("before initialize client");
-    AsyncInvocation inv2 = vm2.invokeAsync("Initialize Client", initializeClient);
-    AsyncInvocation inv3 = vm3.invokeAsync("Initialize Client", initializeClient);
+    AsyncInvocation<Void> inv2 = vm2.invokeAsync("Initialize Client", initializeClient);
+    AsyncInvocation<Void> inv3 = vm3.invokeAsync("Initialize Client", initializeClient);
 
     inv2.await();
     inv3.await();
@@ -526,7 +526,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     // Initialize each client with entries (so that afterInvalidate is called)
 
     logger.info("before initialize client");
-    AsyncInvocation inv2 = client.invokeAsync("Initialize Client", () -> {
+    AsyncInvocation<Void> inv2 = client.invokeAsync("Initialize Client", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       PoolStats stats = ((PoolImpl) PoolManager.find(poolName)).getStats();
       int oldConnects = stats.getConnects();
@@ -780,8 +780,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       throws CacheException, InterruptedException {
     final String name = getName();
 
-    AsyncInvocation putAI = null;
-    AsyncInvocation putAI2 = null;
+    AsyncInvocation<Void> putAI = null;
+    AsyncInvocation<Void> putAI2 = null;
 
     try {
 

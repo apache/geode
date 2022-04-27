@@ -461,10 +461,10 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // start the senders again
-    AsyncInvocation vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
     int START_TIMEOUT = 30000;
     vm4start.getResult(START_TIMEOUT);
     vm5start.getResult(START_TIMEOUT);
@@ -482,7 +482,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: do some more puts
-    AsyncInvocation async =
+    AsyncInvocation<Void> async =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     async.join();
 
@@ -573,7 +573,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: start async puts on region
-    AsyncInvocation async =
+    AsyncInvocation<Void> async =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
     LogWriterUtils.getLogWriter().info("Started high number of puts by async thread");
 
@@ -662,10 +662,10 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // start the senders again
-    AsyncInvocation vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
-    AsyncInvocation vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm4start = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm5start = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm6start = vm6.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> vm7start = vm7.invokeAsync(() -> WANTestBase.startSender("ln"));
     vm4start.join();
     vm5start.join();
     vm6start.join();
@@ -682,7 +682,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: do some more puts
-    AsyncInvocation async =
+    AsyncInvocation<Void> async =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     async.join();
 
@@ -770,7 +770,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm6.invoke(() -> WANTestBase.verifySenderPausedState("ln"));
     vm7.invoke(() -> WANTestBase.verifySenderPausedState("ln"));
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     LogWriterUtils.getLogWriter().info("Started 1000 async puts on local site");
 

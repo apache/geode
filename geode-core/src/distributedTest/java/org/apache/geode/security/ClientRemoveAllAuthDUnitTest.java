@@ -55,7 +55,7 @@ public class ClientRemoveAllAuthDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testRemoveAll() throws Exception {
 
-    AsyncInvocation ai1 = client1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = client1.invokeAsync(() -> {
       ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);
@@ -63,7 +63,7 @@ public class ClientRemoveAllAuthDUnitTest extends JUnit4DistributedTestCase {
           "DATA:WRITE:AuthRegion");
     });
 
-    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = client2.invokeAsync(() -> {
       ClientCache cache = createClientCache("authRegionWriter", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);

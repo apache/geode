@@ -339,7 +339,7 @@ public class AuthExpirationMultiServerDUnitTest {
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withLocatorConnection(locatorPort));
-    AsyncInvocation invokePut = client.invokeAsync(() -> {
+    AsyncInvocation<Void> invokePut = client.invokeAsync(() -> {
       UpdatableUserAuthInitialize.setUser("user1");
       Region<Object, Object> proxyRegion =
           ClusterStartupRule.getClientCache()

@@ -150,17 +150,11 @@ public class CacheMapTxnDUnitTest extends JUnit4DistributedTestCase { // TODO: r
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     vm0.invoke(CacheMapTxnDUnitTest::miscMethodsOwner);
-    AsyncInvocation o2 = vm0.invokeAsync(CacheMapTxnDUnitTest::miscMethodsNotOwner);// invoke
-                                                                                    // in
-                                                                                    // same
-                                                                                    // vm but
-                                                                                    // in
-                                                                                    // separate
-                                                                                    // thread
-    AsyncInvocation o3 = vm1.invokeAsync(CacheMapTxnDUnitTest::miscMethodsNotOwner);// invoke
-                                                                                    // in
-                                                                                    // another
-                                                                                    // vm
+    // invoke in same vm but in separate thread
+    AsyncInvocation<Void> o2 = vm0.invokeAsync(CacheMapTxnDUnitTest::miscMethodsNotOwner);
+    // invoke in another vm
+    AsyncInvocation<Void> o3 = vm1.invokeAsync(CacheMapTxnDUnitTest::miscMethodsNotOwner);
+
     ThreadUtils.join(o2, 30 * 1000);
     ThreadUtils.join(o3, 30 * 1000);
 

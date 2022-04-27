@@ -119,7 +119,7 @@ public class PRQueryRegionCloseDUnitTest extends CacheTestCase {
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
         portfolio, START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX));
 
-    AsyncInvocation async0 =
+    AsyncInvocation<Void> async0 =
         vm0.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
             PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
 
