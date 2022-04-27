@@ -70,11 +70,13 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     cancelFuture(endpoint);
   }
 
+  /**
+   * At each registration of new endpoint increase counter for calculation of initial delay offset
+   *
+   */
   @Override
   public void endpointNowInUse(Endpoint endpoint) {
     try {
-      // At each registration of new endpoint increase counter for calculation of initial delay
-      // offset
       long initDelay = calculateInitialDelay();
 
       // initDelay - the time to delay first execution

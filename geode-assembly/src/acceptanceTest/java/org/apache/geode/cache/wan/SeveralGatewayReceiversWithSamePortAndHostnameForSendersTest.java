@@ -400,7 +400,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     return vm.invoke(() -> {
       AbstractGatewaySender sender =
           (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
-      assertNotNull(sender);
+      assertThat(sender).isNotNull();
       PoolStats poolStats = sender.getProxy().getStats();
       return poolStats.getDisConnects();
     });
@@ -410,7 +410,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     return vm.invoke(() -> {
       AbstractGatewaySender sender =
           (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
-      assertNotNull(sender);
+      assertThat(sender).isNotNull();
       PoolStats poolStats = sender.getProxy().getStats();
       return poolStats.getConnects();
     });

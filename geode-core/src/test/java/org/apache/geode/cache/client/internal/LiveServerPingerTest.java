@@ -19,14 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
-@Category({ClientServerTest.class})
 public class LiveServerPingerTest {
 
   private InternalPool pool;
