@@ -101,6 +101,16 @@ public class P2pMessagingSslTlsKeyUpdateDistributedTest {
 
   @After
   public void afterEach() {
+    /*
+     * Disconnect DSs before killing JVMs.
+     */
+    clusterStartupRule.getVM(2).invoke(
+        () -> ClusterStartupRule.getCache().close());
+    clusterStartupRule.getVM(1).invoke(
+        () -> ClusterStartupRule.getCache().close());
+    clusterStartupRule.getVM(0).invoke(
+        () -> ClusterStartupRule.getCache().close());
+
     clusterStartupRule.getVM(0).bounceForcibly();
     clusterStartupRule.getVM(1).bounceForcibly();
     clusterStartupRule.getVM(2).bounceForcibly();
