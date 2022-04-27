@@ -1434,6 +1434,7 @@ public interface DiskEntry extends RegionEntry {
         dr.setClearCountReference();
       }
       synchronized (entry) { // fixes 40116
+        logger.info("JC debug: DiskEntry.Helper.writeEntryToDisk() entry: {}", entry);
         // If I don't sync the entry and this method ends up doing an eviction
         // thus setting value to null
         // some other thread is free to fetch the value while the entry is synced
