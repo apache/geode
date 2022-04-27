@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
@@ -54,11 +55,11 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   private volatile Set/* <DistributedMember> */ cachedControllerAdvise;
 
   @Immutable
-  private static final Filter CONTROLLER_FILTER =
+  private static final Predicate<Profile> CONTROLLER_FILTER =
       profile -> profile instanceof ControllerAdvisor.ControllerProfile;
 
   @Immutable
-  private static final Filter BRIDGE_SERVER_FILTER =
+  private static final Predicate<Profile> BRIDGE_SERVER_FILTER =
       profile -> profile instanceof CacheServerAdvisor.CacheServerProfile;
 
   /**

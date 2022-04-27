@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -1179,12 +1180,12 @@ public class DistributionAdvisor {
   /**
    * All advise methods go through this method
    */
-  protected Set<InternalDistributedMember> adviseFilter(Filter f) {
+  protected Set<InternalDistributedMember> adviseFilter(Predicate<Profile> f) {
     initializationGate();
     Set<InternalDistributedMember> recipients = null;
     Profile[] locProfiles = profiles; // grab current profiles
     for (Profile profile : locProfiles) {
-      if (f == null || f.include(profile)) {
+      if (f == null || f.test(profile)) {
         if (recipients == null) {
           recipients = new HashSet<>();
         }
@@ -1202,11 +1203,11 @@ public class DistributionAdvisor {
    *
    * @return false if all filter->include calls returns false; otherwise true.
    **/
-  protected boolean satisfiesFilter(Filter f) {
+  protected boolean satisfiesFilter(Predicate<Profile> f) {
     initializationGate();
     Profile[] locProfiles = profiles; // grab current profiles
     for (Profile p : locProfiles) {
-      if (f.include(p)) {
+      if (f.test(p)) {
         return true;
       }
     }
@@ -1248,12 +1249,12 @@ public class DistributionAdvisor {
    *
    * @since GemFire 5.7
    */
-  protected List<Profile> fetchProfiles(Filter f) {
+  protected List<Profile> fetchProfiles(Predicate<Profile> f) {
     initializationGate();
     List<Profile> result = null;
     Profile[] locProfiles = profiles;
     for (Profile profile : locProfiles) {
-      if (f == null || f.include(profile)) {
+      if (f == null || f.test(profile)) {
         if (result == null) {
           result = new ArrayList<>(locProfiles.length);
         }
@@ -1394,12 +1395,6 @@ public class DistributionAdvisor {
      */
     boolean visit(DistributionAdvisor advisor, Profile profile, int profileIndex, int numProfiles,
         T aggregate);
-  }
-
-  @FunctionalInterface
-  protected interface Filter {
-
-    boolean include(Profile profile);
   }
 
   /**

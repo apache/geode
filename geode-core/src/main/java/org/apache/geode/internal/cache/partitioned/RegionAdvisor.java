@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -871,7 +872,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   @Immutable
-  private static final Filter prServerWithInterestFilter = profile -> {
+  private static final Predicate<Profile> prServerWithInterestFilter = profile -> {
     CacheProfile prof = (CacheProfile) profile;
     return prof.isPartitioned && prof.hasCacheServer && prof.filterProfile != null
         && prof.filterProfile.hasInterest();
