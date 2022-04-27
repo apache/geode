@@ -43,6 +43,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -142,9 +143,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * A read/write lock to prevent making this bucket not primary while a write is in progress on the
    * bucket.
    */
-  private final ReadWriteLock primaryMoveReadWriteLock = new ReentrantReadWriteLock();
-  private final Lock primaryMoveReadLock = primaryMoveReadWriteLock.readLock();
-  private final Lock primaryMoveWriteLock = primaryMoveReadWriteLock.writeLock();
+  private final ReadWriteLock primaryMoveReadWriteLock;
+  private final Lock primaryMoveReadLock;
+  private final Lock primaryMoveWriteLock;
 
   /**
    * The advisor for the bucket region that we are colocated with, if this region is a colocated
@@ -181,6 +182,14 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     redundancyTracker =
         new BucketRedundancyTracker(pRegion.getRedundantCopies(), pRegion.getRedundancyTracker());
     resetParentAdvisor(bucket.getId());
+
+    if (parentAdvisor == null) {
+      primaryMoveReadWriteLock = new ReentrantReadWriteLock();
+    } else {
+      primaryMoveReadWriteLock = parentAdvisor.primaryMoveReadWriteLock;
+    }
+    primaryMoveReadLock = primaryMoveReadWriteLock.readLock();
+    primaryMoveWriteLock = primaryMoveReadWriteLock.writeLock();
   }
 
   public static BucketAdvisor createBucketAdvisor(Bucket bucket, RegionAdvisor regionAdvisor) {
@@ -241,19 +250,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   }
 
   /**
-   * Returns the lock that prevents the parent's primary from moving while active writes are in
-   * progress. This should be locked before checking if the local bucket is primary.
-   *
-   * @return the lock for in-progress write operations
-   */
-  Lock getParentPrimaryMoveReadLock() {
-    if (parentAdvisor != null) {
-      return parentAdvisor.getPrimaryMoveReadLock();
-    }
-    return null;
-  }
-
-  /**
    * Try to lock the primary bucket to make sure no operation is on-going at current bucket.
    *
    */
@@ -309,7 +305,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * Caller must synchronize on this BucketAdvisor.
    *
    */
-  private void deposePrimaryForColocatedChildren() {
+  void deposePrimaryForColocatedChildren() {
     boolean deposedChildPrimaries = true;
     List<PartitionedRegion> colocatedChildPRs = ColocationHelper.getColocatedChildRegions(pRegion);
     if (colocatedChildPRs != null) {
@@ -845,7 +841,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @param member the member who is not primary
    */
-  private void removePrimary(InternalDistributedMember member) {
+  void removePrimary(InternalDistributedMember member) {
     boolean needToVolunteerForPrimary = false;
     if (!isClosed()) { // hole: requestPrimaryState not hosting
       initializationGate();
@@ -896,9 +892,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           ((BucketRegion) br).beforeReleasingPrimaryLockDuringDemotion();
         }
 
-        releasePrimaryLock();
         // this was a deposePrimary call so we need to depose children as well
         deposePrimaryForColocatedChildren();
+        releasePrimaryLock();
+
         if (pRegion.isFixedPartitionedRegion()) {
           deposeOtherPrimaryBucketForFixedPartition();
         }
@@ -1688,6 +1685,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     notifyAll(); // wake up any threads in waitForPrimaryMember
   }
 
+  @TestOnly
+  void setPrimaryMemberForTest(InternalDistributedMember member) {
+    primaryMember.set(member);
+  }
+
   void setHadPrimary() {
     everHadPrimary = true;
   }
@@ -1809,7 +1811,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Releases the primary lock for this bucket.
    */
-  private void releasePrimaryLock() {
+  void releasePrimaryLock() {
     // We don't have a lock if we have a parent advisor
     if (parentAdvisor != null) {
       return;
