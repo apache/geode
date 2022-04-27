@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,7 +61,7 @@ public class CQDistributedTest implements Serializable {
   private TestCqListener testListener;
   private TestCqListener2 testListener2;
 
-  private Region region;
+  private Region<Integer, Portfolio> region;
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -79,7 +78,9 @@ public class CQDistributedTest implements Serializable {
 
     ClientCache clientCache = createClientCache(locator1Port);
     region =
-        clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+        clientCache
+            .<Integer, Portfolio>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+            .create("region");
 
     qs = clientCache.getQueryService();
     CqAttributesFactory cqaf = new CqAttributesFactory();
@@ -121,15 +122,14 @@ public class CQDistributedTest implements Serializable {
     createCqs.get();
 
     newServer.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       for (int i = 0; i < 100; i++) {
         regionOnServer.put(i, new Portfolio(i));
       }
     });
 
     // make sure all cq's will get its own event, so total events = total # of cqs.
-    await().atMost(10, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(testListener.onEventCalls).isEqualTo(100));
+    await().untilAsserted(() -> assertThat(testListener.onEventCalls).isEqualTo(100));
   }
 
   @Test
@@ -137,7 +137,7 @@ public class CQDistributedTest implements Serializable {
     qs.newCq("Select * from " + SEPARATOR + "region r where r.ID % 2 = 1", cqa).execute();
 
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
       regionOnServer.put(1, new Portfolio(1));
       regionOnServer.put(2, new Portfolio(2));
@@ -153,7 +153,7 @@ public class CQDistributedTest implements Serializable {
   public void cqUsingPlusShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
     qs.newCq("Select * from " + SEPARATOR + "region r where r.ID + 3 > 4", cqa).execute();
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
       regionOnServer.put(1, new Portfolio(1));
       regionOnServer.put(2, new Portfolio(2));
@@ -169,7 +169,7 @@ public class CQDistributedTest implements Serializable {
   public void cqUsingSubtractShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
     qs.newCq("Select * from " + SEPARATOR + "region r where r.ID - 3 < 0", cqa).execute();
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
       regionOnServer.put(1, new Portfolio(1));
       regionOnServer.put(2, new Portfolio(2));
@@ -185,7 +185,7 @@ public class CQDistributedTest implements Serializable {
   public void cqUsingDivideShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
     qs.newCq("Select * from " + SEPARATOR + "region r where r.ID / 2 = 1", cqa).execute();
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
       regionOnServer.put(1, new Portfolio(1));
       regionOnServer.put(2, new Portfolio(2));
@@ -201,7 +201,7 @@ public class CQDistributedTest implements Serializable {
   public void cqUsingMultiplyShouldFireEventsWhenFilterCriteriaIsMet() throws Exception {
     qs.newCq("Select * from " + SEPARATOR + "region r where r.ID * 2 > 3", cqa).execute();
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.put(0, new Portfolio(0));
       regionOnServer.put(1, new Portfolio(1));
       regionOnServer.put(2, new Portfolio(2));
@@ -217,7 +217,7 @@ public class CQDistributedTest implements Serializable {
   public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKeyShouldNotThrowClassCastException()
       throws Exception {
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       ClusterStartupRule.getCache().getQueryService().createKeyIndex("PrimaryKeyIndex", "ID",
           SEPARATOR + "region");
       regionOnServer.put(0, new Portfolio(0));
@@ -238,7 +238,7 @@ public class CQDistributedTest implements Serializable {
     qs.newCq("Select * from /region r where r.ID = 1", cqa).execute();
 
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       final CacheTransactionManager txMgr =
           ClusterStartupRule.getCache().getCacheTransactionManager();
 
@@ -267,7 +267,7 @@ public class CQDistributedTest implements Serializable {
     qs.newCq("Select * from /region r where r.ID = 1", cqa).execute();
 
     server.invoke(() -> {
-      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      Region<Integer, Portfolio> regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       // CREATE new entry
       regionOnServer.put(0, new Portfolio(1));
 
