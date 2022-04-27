@@ -41,7 +41,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
-public class DurableClientNoServerAvailabileDUnitTest extends JUnit4CacheTestCase {
+public class DurableClientNoServerAvailabileDistributedTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() {

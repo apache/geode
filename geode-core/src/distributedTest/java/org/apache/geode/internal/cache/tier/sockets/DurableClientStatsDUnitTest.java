@@ -24,9 +24,10 @@ import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.d
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getCache;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getClientCache;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.assertj.core.api.AssertionsForClassTypes.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -179,7 +180,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     final String durableClientId = getName() + "_client";
 
     durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1), regionName,
+        getClientPool(NetworkUtils.getServerHostName(), PORT1), regionName,
         getDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
         true));
 
@@ -200,7 +201,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
     durableClientVM
         .invoke(() -> createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1),
+            getClientPool(NetworkUtils.getServerHostName(), PORT1),
             regionName,
             getNonDurableClientDistributedSystemProperties(), true));
 
@@ -215,7 +216,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
     durableClientVM
         .invoke(() -> createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1),
+            getClientPool(NetworkUtils.getServerHostName(), PORT1),
             regionName,
             getDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
             true));
@@ -235,7 +236,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
   public void startAndCloseNonDurableClientCache() {
 
     durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1), regionName,
+        getClientPool(NetworkUtils.getServerHostName(), PORT1), regionName,
         getNonDurableClientDistributedSystemProperties(), true));
 
     durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
@@ -272,9 +273,12 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
       logger.info("Stats:" + "\nDurableReconnectionCount:" + stats.get_durableReconnectionCount()
           + "\nQueueDroppedCount" + stats.get_queueDroppedCount()
           + "\nEventsEnqueuedWhileClientAwayCount" + stats.get_eventEnqueuedWhileClientAwayCount());
-      assertThat(stats.get_durableReconnectionCount()).isEqualTo(reconnectionCount);
-      assertThat(stats.get_queueDroppedCount()).isEqualTo(queueDropCount);
-      assertThat(stats.get_eventEnqueuedWhileClientAwayCount()).isEqualTo(enqueueCount);
+      await().untilAsserted(
+          () -> assertThat(stats.get_durableReconnectionCount()).isEqualTo(reconnectionCount));
+      await()
+          .untilAsserted(() -> assertThat(stats.get_queueDroppedCount()).isEqualTo(queueDropCount));
+      await().untilAsserted(
+          () -> assertThat(stats.get_eventEnqueuedWhileClientAwayCount()).isEqualTo(enqueueCount));
     } catch (Exception e) {
       fail("Exception thrown while executing checkStatisticsWithExpectedValues()", e);
     }

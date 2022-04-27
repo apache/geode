@@ -103,8 +103,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
   @Test
   public void testMultipleBridgeClientsInSingleDurableVM() {
     // Start a server
-    server1Port = server1VM
-        .invoke(() -> createCacheServer(regionName, true));
+    server1Port = server1VM.invoke(() -> createCacheServer(regionName, true));
 
     // Start a durable client with 2 regions (and 2 BridgeClients) that is not
     // kept alive on the server when it stops normally
@@ -119,7 +118,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        assertThat(2).isEqualTo(PoolManager.getAll().size());
+        assertThat(PoolManager.getAll()).hasSize(2);
         getClientCache().readyForEvents();
       }
     });
@@ -136,15 +135,15 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
         String firstProxyRegionName = null;
         for (CacheClientProxy proxy : notifier.getClientProxies()) {
           assertThat(proxy.isDurable()).isTrue();
-          assertThat(durableClientId).isEqualTo(proxy.getDurableId());
-          assertThat(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT)
-              .isEqualTo(proxy.getDurableTimeout());
+          assertThat(proxy.getDurableId()).isEqualTo(durableClientId);
+          assertThat(proxy.getDurableTimeout())
+              .isEqualTo(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT);
 
           // Verify the two HA region names aren't the same
           if (firstProxyRegionName == null) {
             firstProxyRegionName = proxy.getHARegionName();
           } else {
-            assertThat(!firstProxyRegionName.equals(proxy.getHARegionName())).isTrue();
+            assertThat(proxy.getHARegionName()).isNotEqualTo(firstProxyRegionName);
           }
         }
       }
@@ -214,8 +213,8 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
           if (proxy.getDurableId().equals(durableClientId2)) {
             durableClient2Found = true;
           }
-          assertThat(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT)
-              .isEqualTo(proxy.getDurableTimeout());
+          assertThat(proxy.getDurableTimeout())
+              .isEqualTo(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT);
         }
         assertThat(durableClient1Found).isTrue();
         assertThat(durableClient2Found).isTrue();
@@ -311,7 +310,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
         // Iterate the CacheClientProxies and verify the queue sizes
         checkNumberOfClientProxies(2);
         for (CacheClientProxy proxy : notifier.getClientProxies()) {
-          assertThat(numberOfEntries).isEqualTo(proxy.getQueueSize());
+          assertThat(proxy.getQueueSize()).isEqualTo(numberOfEntries);
         }
       }
     });
