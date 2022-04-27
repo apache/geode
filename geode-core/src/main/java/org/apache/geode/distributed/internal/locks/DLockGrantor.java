@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -547,7 +548,10 @@ public class DLockGrantor {
   void checkIfMemberDeparted(DLockRequestMessage request) {
     synchronized (membersDepartedTime) {
       if (membersDepartedTime.containsKey(request.getSender())) {
-        throw new RuntimeException(
+        logger.info(
+            "XXX DLockGrantor.checkIfMemberDeparted about to throw CacheClosedException owner={}; membersDepartedTimeSize={}; membersDepartedTime={}",
+            request.getSender(), membersDepartedTime.size(), membersDepartedTime);
+        throw new CacheClosedException(
             "The lock request for " + request.getObjectName() + " in " + dlock.getName()
                 + " was not granted because the host " + request.getSender()
                 + " is no longer a member of the cluster.");
@@ -593,8 +597,9 @@ public class DLockGrantor {
           }
         }
         membersDepartedTime.put(owner, currentTime);
-        logger.info("XXX DLockGrantor.recordMemberDepartedTime owner={}; currentTime={}", owner,
-            currentTime);
+        logger.info(
+            "XXX DLockGrantor.recordMemberDepartedTime recorded membersDepartedTime owner={}; currentTime={}; membersDepartedTimeSize={}; membersDepartedTime={}",
+            owner, currentTime, membersDepartedTime.size(), membersDepartedTime);
       }
     }
   }
@@ -3615,7 +3620,9 @@ public class DLockGrantor {
   private final MembershipListener membershipListener = new MembershipListener() {
     @Override
     public void memberJoined(DistributionManager distributionManager,
-        InternalDistributedMember id) {}
+        InternalDistributedMember id) {
+      logger.info("XXX DLockGrantor.memberJoined member={}", id);
+    }
 
     @Override
     public void quorumLost(DistributionManager distributionManager,
