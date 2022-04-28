@@ -548,9 +548,10 @@ public class DLockGrantor {
   void checkIfMemberDeparted(DLockRequestMessage request) {
     synchronized (membersDepartedTime) {
       if (membersDepartedTime.containsKey(request.getSender())) {
-        logger.info(
-            "XXX DLockGrantor.checkIfMemberDeparted about to throw CacheClosedException owner={}; membersDepartedTimeSize={}; membersDepartedTime={}",
-            request.getSender(), membersDepartedTime.size(), membersDepartedTime);
+        // logger.info(
+        // "XXX DLockGrantor.checkIfMemberDeparted about to throw CacheClosedException owner={};
+        // membersDepartedTimeSize={}; membersDepartedTime={}",
+        // request.getSender(), membersDepartedTime.size(), membersDepartedTime);
         throw new CacheClosedException(
             "The lock request for " + request.getObjectName() + " in " + dlock.getName()
                 + " was not granted because the host " + request.getSender()
@@ -597,9 +598,10 @@ public class DLockGrantor {
           }
         }
         membersDepartedTime.put(owner, currentTime);
-        logger.info(
-            "XXX DLockGrantor.recordMemberDepartedTime recorded membersDepartedTime owner={}; currentTime={}; membersDepartedTimeSize={}; membersDepartedTime={}",
-            owner, currentTime, membersDepartedTime.size(), membersDepartedTime);
+        // logger.info(
+        // "XXX DLockGrantor.recordMemberDepartedTime recorded membersDepartedTime owner={};
+        // currentTime={}; membersDepartedTimeSize={}; membersDepartedTime={}",
+        // owner, currentTime, membersDepartedTime.size(), membersDepartedTime);
       }
     }
   }
