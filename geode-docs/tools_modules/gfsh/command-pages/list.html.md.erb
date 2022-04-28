@@ -218,9 +218,9 @@ list durable-cqs --durable-client-id=value
 
 | Name                                                       | Description                                                                                            |
 |------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-durable-client-id </span> | *Required.* The ID used to identify the durable client.                                                |
-| <span class="keyword parmname">\\-\\-members</span>             | Name or Id of the member(s) for which the durable client is registered and durable CQs will be displayed. |
-| <span class="keyword parmname">\\-\\-groups</span>              | Group(s) of members for which the durable client is registered and durable CQs will be displayed.         |
+| <span class="keyword parmname">&#8209;&#8209;durable-client-id </span> | *Required.* The ID used to identify the durable client.                                                |
+| <span class="keyword parmname">&#8209;&#8209;members</span>             | Name or Id of the member(s) for which the durable client is registered and durable CQs will be displayed. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>              | Group(s) of members for which the durable client is registered and durable CQs will be displayed.         |
 
 
 **Example Commands**:
@@ -271,8 +271,8 @@ list functions [--matches=value] [--groups=value(,value)*]
 
 | Name                                             | Description                                                                                                                                                                                     |
 |--------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-matches </span> | Pattern that the function ID must match in order to be included. Uses Java pattern matching rules, not UNIX. For example, to match any character any number of times use ".\*" rather than "\*". |
-| <span class="keyword parmname">\\-\\-groups</span>    | Group(s) of members for which functions will be displayed. Use a comma separated list for multiple groups.                                                                                      |
+| <span class="keyword parmname">&#8209;&#8209;matches </span> | Pattern that the function ID must match in order to be included. Uses Java pattern matching rules, not UNIX. For example, to match any character any number of times use ".\*" rather than "\*". |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>    | Group(s) of members for which functions will be displayed. Use a comma separated list for multiple groups.                                                                                      |
 | <span class="keyword parmname">&#8209;&#8209;members </span>  | Name or ID of the member(s) for which functions will be displayed. Use a comma separated list for multiple members.                                                                             |
 
 
@@ -330,7 +330,7 @@ list gateways [--members=value(,value)*] [--groups=value(,value)*]
 | Name                                           | Description                                                                                                                    |
 |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">&#8209;&#8209;members</span> | Member(s) whose gateways senders and receiver display.                                                                         |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members for which Gateway Senders and Receivers will be displayed. Use a comma separated list for multiple groups. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>  | Group(s) of members for which Gateway Senders and Receivers will be displayed. Use a comma separated list for multiple groups. |
 
 
 **Example Commands:**
@@ -381,7 +381,7 @@ list indexes [--with-stats(=value)?]
 
 | Name                                               | Description                                            | Default Value |
 |----------------------------------------------------|--------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-with-stats</span> | Specifies whether statistics should also be displayed. | false         |
+| <span class="keyword parmname">&#8209;&#8209;with-stats</span> | Specifies whether statistics should also be displayed. | false         |
 
 
 **Example Commands:**
@@ -409,7 +409,7 @@ gfsh>list indexes --with-stats
 
 Member Name  | Member ID | Region Path |   Name   | Type  | Indexed Expression | From Clause | Uses | Updates | Update Time | Keys | Values
 ------------ | --------- | ----------- | -------- | ----- | ------------------ | ----------- | ---- | ------- | ----------- | ---- | ------
-cs...        | 192...    | /consumers  | cidIdx   | KEY   | id                 | /consumers  | 2512 | 0       | 0           | 5020 | 5020  
+cs...        | 192...    | /consumers  | cidIdx   | KEY   | id                 | /consumers  | 2512 | 0       | 0           | 5020 | 5020
 cs...        | 192...    | /consumers  | cnameIdx | RANGE | name               | /consumers  | 0    | 5020    | 421224000   | 0    | 5020
 ps...        | 192...    | /producers  | pidIdx   | RANGE | id                 | /producers  | 0    | 5031    | 497872000   | 5031 | 5031
 ```
@@ -441,13 +441,13 @@ list jndi-binding
 ``` pre
 gfsh>list jndi-binding
 
-Configured JNDI bindings: 
+Configured JNDI bindings:
 
 Group Name | JNDI Name | JDBC Driver Class
 ---------- | --------- | ------------------------------------
 cluster    | jndi1     | org.apache.derby.jdbc.EmbeddedDriver
 
-Active JNDI bindings found on each member: 
+Active JNDI bindings found on each member:
 
     Member      |        JNDI Name        | JDBC Driver Class
 --------------- | ----------------------- | ----------------------------------------------------
@@ -473,7 +473,7 @@ list lucene indexes [--with-stats(=value)]
 
 | Name                                               | Description                                            | Default Value |
 |----------------------------------------------------|--------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-with\\-stats</span> | Specifies whether statistics should also be displayed. | false if not specified, true if specified         |
+| <span class="keyword parmname">&#8209;&#8209;with&#8209;stats</span> | Specifies whether statistics should also be displayed. | false if not specified, true if specified         |
 
 
 **Example Commands:**
@@ -521,7 +521,7 @@ list members [--group=value]
 
 | Name                                          | Description                                     |
 |-----------------------------------------------|-------------------------------------------------|
-| <span class="keyword parmname">\\-\\-group</span> | Group name for which members will be displayed. |
+| <span class="keyword parmname">&#8209;&#8209;group</span> | Group name for which members will be displayed. |
 
 
 **Example Commands:**
@@ -557,8 +557,8 @@ list regions [--groups=value(,value)*] [--members=value(,value)*]
 
 | Name                                            | Description                                                                 |
 |-------------------------------------------------|-----------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-groups</span>   | Group(s) of members for which regions will be displayed.                       |
-| <span class="keyword parmname">\\-\\-members </span> | Name or ID of the member(s) for which regions will be displayed. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>   | Group(s) of members for which regions will be displayed.                       |
+| <span class="keyword parmname">&#8209;&#8209;members </span> | Name or ID of the member(s) for which regions will be displayed. |
 
 
 **Example Commands:**

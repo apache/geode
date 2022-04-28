@@ -108,9 +108,9 @@ export config [--members=value(,value)*] [--groups=value(,value)*]
 
 | Name                                           | Description                                                          |
 |------------------------------------------------|----------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) whose configuration will be exported.       |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose configuration will be exported.            |
-| <span class="keyword parmname">\\-\\-dir</span>    | Directory to which the exported configuration files will be written. |
+| <span class="keyword parmname">&#8209;&#8209;members</span> | Name/Id of the member(s) whose configuration will be exported.       |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>  | Group(s) of members whose configuration will be exported.            |
+| <span class="keyword parmname">&#8209;&#8209;dir</span>    | Directory to which the exported configuration files will be written. |
 
 **Example Commands:**
 
@@ -159,11 +159,11 @@ In this scenario, partitioned region data is exported simultaneously on all host
 
 | Name                                           | Description                                                                                                                                     |
 |------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-region</span> | *Required.* Region from which data is to be exported.                                                                                           |
+| <span class="keyword parmname">&#8209;&#8209;region</span> | *Required.* Region from which data is to be exported.                                                                                           |
 | <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/Id of a member that hosts the region. In a serial export, all data is exported to the specified file on the host where the member is running. In a parallel export, data from a partitioned region partially hosted on this member is exported for each partition to files on the nodes that host those partitions. |
-| <span class="keyword parmname">\\-\\-file</span>   | File to which the exported data is to be written. The file must have an extension of `.gfd`. Cannot be specified at the same time as \\-\\-dir, cannot be used with &#8209;&#8209;parallel.|
-| <span class="keyword parmname">\\-\\-dir</span>   | Directory to which the exported data is to be written. Required if \\-\\-parallel is true. Cannot be specified at the same time as \\-\\-file.|
-| <span class="keyword parmname">\\-\\-parallel</span>   | Export local data on each node to a directory on that machine. Available for partitioned regions only.  |
+| <span class="keyword parmname">&#8209;&#8209;file</span>   | File to which the exported data is to be written. The file must have an extension of `.gfd`. Cannot be specified at the same time as &#8209;&#8209;dir, cannot be used with &#8209;&#8209;parallel.|
+| <span class="keyword parmname">&#8209;&#8209;dir</span>   | Directory to which the exported data is to be written. Required if &#8209;&#8209;parallel is true. Cannot be specified at the same time as &#8209;&#8209;file.|
+| <span class="keyword parmname">&#8209;&#8209;parallel</span>   | Export local data on each node to a directory on that machine. Available for partitioned regions only.  |
 
 **Example Commands:**
 
@@ -192,9 +192,9 @@ The `--dir` parameter specifies a local directory to which log files will be wri
 **Syntax:**
 
 ``` pre
-export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*] 
-[--log-level=value] [--only-log-level=value] [--merge-log=value] 
-[--start-time=value] [--end-time=value] [logs-only(=value)?] 
+export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*]
+[--log-level=value] [--only-log-level=value] [--merge-log=value]
+[--start-time=value] [--end-time=value] [logs-only(=value)?]
 [--stats-only(=value)?] [--file-size-limit(=value)?]
 ```
 
@@ -202,17 +202,17 @@ export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*]
 
 | Name                                                   | Description                                                                                                                | Default Value |
 |--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-dir</span>            | Local directory to which log files will be written when logs are exported using an http connection. Ignored when the command is executed over JMX.     |               | 
-| <span class="keyword parmname">\\-\\-groups</span>          | Group(s) of members whose log files will be exported.                                                                         |               |
+| <span class="keyword parmname">&#8209;&#8209;dir</span>            | Local directory to which log files will be written when logs are exported using an http connection. Ignored when the command is executed over JMX.     |               |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>          | Group(s) of members whose log files will be exported.                                                                         |               |
 | <span class="keyword parmname">&#8209;&#8209;members</span>         | Name/ID of the member(s) whose log files will be exported.                                                            |               |
-| <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, and `ALL`. | `INFO`        |
-| <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include only entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
+| <span class="keyword parmname">&#8209;&#8209;log-level</span>      | Minimum level of log entries to export. Valid values are: `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, and `ALL`. | `INFO`        |
+| <span class="keyword parmname">&#8209;&#8209;only-log-level</span> | Whether to only include only entries that exactly match the <span class="keyword parmname">&#8209;&#8209;log-level</span> specified.  | false         |
 | <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory (deprecated).                                                             | false         |
-| <span class="keyword parmname">\\-\\-start-time</span>     | Log entries that occurred after this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`.                | no limit      |
-| <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`. An end time specified by only a date implements a time of `00:00`. This exports logs written up until `23:59:59.999` on the date prior to the one specified.             | no limit      |
-| <span class="keyword parmname">\\-\\-logs-only</span>       | Whether to export only logs (not statistics)               | If parameter not specified: false. If parameter specified without a value: true      |
-| <span class="keyword parmname">\\-\\-stats-only</span>       | Whether to export only statistics (not logs)               | If parameter not specified: false. If parameter specified without a value: true      |
-| <span class="keyword parmname">\\-\\-file-size-limit</span>       | Limits total unzipped size of the exported files. Specify 0 (zero) for no limit. Value is in megabytes by default or [k,m,g,t] may be specified.              | If parameter not specified: 100m. If parameter specified without a value: 0      |
+| <span class="keyword parmname">&#8209;&#8209;start-time</span>     | Log entries that occurred after this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`.                | no limit      |
+| <span class="keyword parmname">&#8209;&#8209;end-time</span>       | Log entries that occurred before this time will be exported. Format: `yyyy/MM/dd/HH/mm/ss/SSS/z` OR `yyyy/MM/dd`. When using the `yyyy/MM/dd/HH/mm/ss/SSS/z` format, the time zone, denoted `z`, should be specified as either a 3-letter time zone such as `PST` or as an offset to GMT/UTC such as `GMT+08:00`. An end time specified by only a date implements a time of `00:00`. This exports logs written up until `23:59:59.999` on the date prior to the one specified.             | no limit      |
+| <span class="keyword parmname">&#8209;&#8209;logs-only</span>       | Whether to export only logs (not statistics)               | If parameter not specified: false. If parameter specified without a value: true      |
+| <span class="keyword parmname">&#8209;&#8209;stats-only</span>       | Whether to export only statistics (not logs)               | If parameter not specified: false. If parameter specified without a value: true      |
+| <span class="keyword parmname">&#8209;&#8209;file-size-limit</span>       | Limits total unzipped size of the exported files. Specify 0 (zero) for no limit. Value is in megabytes by default or [k,m,g,t] may be specified.              | If parameter not specified: 100m. If parameter specified without a value: 0      |
 
 **Example commands, showing output:**
 
@@ -254,9 +254,9 @@ export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 
 | Name                                              | Description                                        |
 |---------------------------------------------------|----------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span>      | *Required.* Name of the disk store to be exported. |
-| <span class="keyword parmname">\\-\\-disk-dirs</span> | Directories which contain the disk store files.    |
-| <span class="keyword parmname">\\-\\-dir</span>       | Directory to export the snapshot files to.         |
+| <span class="keyword parmname">&#8209;&#8209;name</span>      | *Required.* Name of the disk store to be exported. |
+| <span class="keyword parmname">&#8209;&#8209;disk-dirs</span> | Directories which contain the disk store files.    |
+| <span class="keyword parmname">&#8209;&#8209;dir</span>       | Directory to export the snapshot files to.         |
 
 **Example Commands:**
 
@@ -281,9 +281,9 @@ export stack-traces --file=value [--members=value(,value)*] [--groups=value(,val
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-file</span>   | *Required.* Filename to which the stack-traces will be written. |
-| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) whose log files will be exported.      |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose log files will be exported.          |
+| <span class="keyword parmname">&#8209;&#8209;file</span>   | *Required.* Filename to which the stack-traces will be written. |
+| <span class="keyword parmname">&#8209;&#8209;members</span> | Name or ID of the member(s) whose log files will be exported.      |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>  | Group(s) of members whose log files will be exported.          |
 
 **Example Commands:**
 

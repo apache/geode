@@ -58,7 +58,7 @@ import cluster-configuration [--action=value] [--group(=value)?]
 | <span class="keyword parmname">&#8209;&#8209;action</span> | When the value is `APPLY` (the default), the configuration is applied to the running servers that have no configuration. If any servers already have configuration, the command fails. When the value is `STAGE`, the configuration is overwritten and will be used during future server creation; the configuration of currently running servers is not changed. |                   |
 | <span class="keyword parmname">&#8209;&#8209;group</span> | Do the import for the specified server group. When no group is specified, the `cluster` is implied. |                  |
 | <span class="keyword parmname">&#8209;&#8209;xml-file</span> | Filename from which to import the cluster configuration. May also include an absolute or relative path. Only specify one of `--xml-file` or `--zip-file-name`. |                   |
-| <span class="keyword parmname">\\-\\-zip-file-name</span> | Name of the ZIP file containing the cluster configuration artifacts to be imported.  Only specify one of `--xml-file` or `--zip-file-name`. |      |
+| <span class="keyword parmname">&#8209;&#8209;zip-file-name</span> | Name of the ZIP file containing the cluster configuration artifacts to be imported.  Only specify one of `--xml-file` or `--zip-file-name`. |      |
 
 **Example Commands:**
 
@@ -110,10 +110,10 @@ In this scenario, partitioned region data is imported simultaneously on all host
 
 | Name                                           | Description                                                                                                                                                                                                                      | Default Value |
 |------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----|
-| <span class="keyword parmname">\\-\\-region</span> | *Required.* Region into which data will be imported. | |
+| <span class="keyword parmname">&#8209;&#8209;region</span> | *Required.* Region into which data will be imported. | |
 | <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/ID of a member that hosts the region. In a serial import, all data is imported from the specified file on the host where the member is running.  In a parallel import, data from a partitioned region partially hosted on this member is imported for each partition from files on the nodes that host those partitions. | |
-| <span class="keyword parmname">\\-\\-file </span>  | File from which the imported data will be read. The file must have an extension of `.gfd` and must be on the file system of the member (or accessible to that member via NFS) that is being targeted for the import. Cannot be specified at the same time as \\-\\-dir, cannot be used with &#8209;&#8209;parallel. | |
-| <span class="keyword parmname">\\-\\-dir</span>   | Directory from which the data is to be imported. Required if \\-\\-parallel is true. Cannot be specified at the same time as \\-\\-file. If a given node has no data file in the specified directory, the import operation is silently skipped for that node. | |
+| <span class="keyword parmname">&#8209;&#8209;file </span>  | File from which the imported data will be read. The file must have an extension of `.gfd` and must be on the file system of the member (or accessible to that member via NFS) that is being targeted for the import. Cannot be specified at the same time as &#8209;&#8209;dir, cannot be used with &#8209;&#8209;parallel. | |
+| <span class="keyword parmname">&#8209;&#8209;dir</span>   | Directory from which the data is to be imported. Required if &#8209;&#8209;parallel is true. Cannot be specified at the same time as &#8209;&#8209;file. If a given node has no data file in the specified directory, the import operation is silently skipped for that node. | |
 | <span class="keyword parmname">&#8209;&#8209;invoke&#8209;callbacks</span> | Boolean value that, when true, invokes callbacks during the data import. |  false |
 
 **Example Commands:**
