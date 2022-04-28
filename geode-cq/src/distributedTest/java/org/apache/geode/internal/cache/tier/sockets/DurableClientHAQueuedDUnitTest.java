@@ -65,7 +65,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // verify cq stats are correct
     checkNumDurableCqs(server1VM, durableClientId, 3);
@@ -148,7 +148,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // verify cq stats are correct
     checkNumDurableCqs(server1VM, durableClientId, 3);
@@ -246,7 +246,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // Restart the durable client
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
@@ -338,7 +338,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // verify cq stats are correct
     checkNumDurableCqs(server1VM, durableClientId, 3);
@@ -429,7 +429,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // verify cq stats are correct on both servers
     checkNumDurableCqs(server1VM, durableClientId, 3);
@@ -538,7 +538,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // Re-start server2, should get events through gii
     server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
@@ -636,7 +636,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // Restart the durable client
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
@@ -747,7 +747,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // Re-start server2, should get events through gii
     server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
@@ -848,7 +848,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     closeCache(server1VM);
 
@@ -933,7 +933,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // verify cq stats are correct
     checkNumDurableCqs(server1VM, durableClientId, 3);

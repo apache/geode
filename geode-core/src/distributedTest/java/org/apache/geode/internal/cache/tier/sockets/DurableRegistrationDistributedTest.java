@@ -462,6 +462,12 @@ public class DurableRegistrationDistributedTest extends JUnit4DistributedTestCas
             1),
         regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout)));
 
+    // Step 3: Client registers Interests
+    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K2, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K3, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K4, Boolean.TRUE));
+
     // Send clientReady message
     durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
@@ -469,13 +475,6 @@ public class DurableRegistrationDistributedTest extends JUnit4DistributedTestCas
         getClientCache().readyForEvents();
       }
     });
-
-    // Step 3: Client registers Interests
-    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
-    durableClientVM.invoke(() -> registerKey(K2, Boolean.FALSE));
-    durableClientVM.invoke(() -> registerKey(K3, Boolean.TRUE));
-    durableClientVM.invoke(() -> registerKey(K4, Boolean.TRUE));
-
     // Close Cache of the DurableClient
     durableClientVM.invoke(this::closeCache);
     GeodeAwaitility.await().until(() -> durableClientVM.invoke(() -> getClientCache().isClosed()));
