@@ -19,7 +19,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.InterestResultPolicy.NONE;
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.TYPE_CREATE;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClient;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClientFromXmlN;
@@ -577,7 +576,6 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
   @Test
   public void testReadyForEventsNotCalledImplicitlyForRegisterInterestWithCacheXML() {
-    int[] ports = getRandomAvailableTCPPorts(2);
     regionName = "testReadyForEventsNotCalledImplicitlyWithCacheXML_region";
     // Start a server
     server1Port =
