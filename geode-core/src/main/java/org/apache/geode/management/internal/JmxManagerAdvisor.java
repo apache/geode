@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -102,13 +103,13 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
    * Overridden to also include our profile. If our profile is included it will always be first.
    */
   @Override
-  protected List/* <Profile> */ fetchProfiles(Filter f) {
+  protected List/* <Profile> */ fetchProfiles(Predicate<Profile> f) {
     initializationGate();
     List result = null;
     {
       JmxManagerAdvisee advisee = (JmxManagerAdvisee) getAdvisee();
       Profile myp = advisee.getMyMostRecentProfile();
-      if (f == null || f.include(myp)) {
+      if (f == null || f.test(myp)) {
         if (result == null) {
           result = new ArrayList();
         }
@@ -117,7 +118,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
     Profile[] locProfiles = profiles; // grab current profiles
     for (Profile profile : locProfiles) {
-      if (f == null || f.include(profile)) {
+      if (f == null || f.test(profile)) {
         if (result == null) {
           result = new ArrayList(locProfiles.length);
         }
