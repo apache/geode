@@ -38,10 +38,35 @@ public class ServerLocationTest {
   }
 
   @Test
-  public void objectCreatedWithCopyConstructorwhenComparedToOrigin_isEqual() {
+  public void objectCreatedWithCopyConstructorwhenComparedToOriginWithInitialRequiresCredentials_isEqual() {
     final ServerLocation serverLocation1 = new ServerLocation("localhost", 1);
+    serverLocation1.setRequiresCredentials(false);
     final ServerLocation serverLocation2 = new ServerLocation(serverLocation1);
 
     assertThat(serverLocation1).isEqualTo(serverLocation2);
+    assertThat(serverLocation1.getRequiresCredentials())
+        .isEqualTo(serverLocation2.getRequiresCredentials());
+  }
+
+  @Test
+  public void objectCreatedWithCopyConstructorwhenComparedToOriginWithNotRequiresCredentials_isEqual() {
+    final ServerLocation serverLocation1 = new ServerLocation("localhost", 1);
+    serverLocation1.setRequiresCredentials(false);
+    final ServerLocation serverLocation2 = new ServerLocation(serverLocation1);
+
+    assertThat(serverLocation1).isEqualTo(serverLocation2);
+    assertThat(serverLocation1.getRequiresCredentials())
+        .isEqualTo(serverLocation2.getRequiresCredentials());
+  }
+
+  @Test
+  public void objectCreatedWithCopyConstructorwhenComparedToOriginWithRequiresCredentials_isEqual() {
+    final ServerLocation serverLocation1 = new ServerLocation("localhost", 1);
+    serverLocation1.setRequiresCredentials(true);
+    final ServerLocation serverLocation2 = new ServerLocation(serverLocation1);
+
+    assertThat(serverLocation1).isEqualTo(serverLocation2);
+    assertThat(serverLocation1.getRequiresCredentials())
+        .isEqualTo(serverLocation2.getRequiresCredentials());
   }
 }
