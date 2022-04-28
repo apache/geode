@@ -58,6 +58,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
@@ -214,6 +215,54 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   }
 
+
+  /**
+   * The aim of this test is verify that when several gateway receivers in a remote site share the
+   * same port and hostname-for-senders, the pings sent from the gateway senders reach the right
+   * gateway receiver and not just any of the receivers. Check that only one additional connection
+   * is used.
+   */
+  @Test
+  public void testPingsToReceiversWithSamePortAndHostnameForSendersUseOnlyOneMoreConnection()
+      throws InterruptedException {
+    String senderId = "ln";
+    String regionName = "region-wan";
+    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+
+    int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
+
+    VM vm1 = VM.getVM(1);
+
+    vm1.invoke(() -> {
+      System.setProperty(
+          GeodeGlossary.GEMFIRE_PREFIX
+              + "LiveServerPinger.INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS",
+          "500");
+
+      Properties props = new Properties();
+      props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+      CacheFactory cacheFactory = new CacheFactory(props);
+      cache = cacheFactory.create();
+    });
+
+    createGatewaySender(vm1, senderId, 2, true, 5,
+        2, GatewaySender.DEFAULT_ORDER_POLICY);
+
+    createPartitionedRegion(vm1, regionName, senderId, 0, 10);
+
+    int NUM_PUTS = 10;
+
+    putKeyValues(vm1, NUM_PUTS, regionName);
+
+    await().untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
+
+    await().untilAsserted(() -> assertThat(getSenderPoolDisconnects(vm1, senderId)).isEqualTo(0));
+
+    await().untilAsserted(() -> assertThat(getSenderPoolConnects(vm1, senderId)).isEqualTo(4));
+  }
+
+
+
   private boolean allDispatchersConnectedToSameReceiver(int server) {
 
     String gfshOutput = runListGatewayReceiversCommandInServer(server);
@@ -351,9 +400,19 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     return vm.invoke(() -> {
       AbstractGatewaySender sender =
           (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
-      assertNotNull(sender);
+      assertThat(sender).isNotNull();
       PoolStats poolStats = sender.getProxy().getStats();
       return poolStats.getDisConnects();
+    });
+  }
+
+  private static int getSenderPoolConnects(VM vm, String senderId) {
+    return vm.invoke(() -> {
+      AbstractGatewaySender sender =
+          (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
+      assertThat(sender).isNotNull();
+      PoolStats poolStats = sender.getProxy().getStats();
+      return poolStats.getConnects();
     });
   }
 

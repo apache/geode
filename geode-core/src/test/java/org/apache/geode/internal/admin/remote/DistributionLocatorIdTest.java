@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.internal.admin.remote.DistributionLocatorId.unmarshal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.mock;
@@ -56,7 +57,7 @@ class DistributionLocatorIdTest {
     DistributionLocatorId distributionLocatorId3 =
         new DistributionLocatorId(40404, "127.0.0.1", null, "member3");
     DistributionLocatorId distributionLocatorId4 =
-        DistributionLocatorId.unmarshal(distributionLocatorId3.marshal());
+        unmarshal(distributionLocatorId3.marshal());
 
     assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId2);
     assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId3);
@@ -74,10 +75,17 @@ class DistributionLocatorIdTest {
   }
 
   @Test
-  void marshalForClientsMarshaledAddressWhenConstructedWithMarshaledAddress() {
-    final DistributionLocatorId locatorId = DistributionLocatorId.unmarshal("localhost[1234]");
+  void marshalForClientsReturnsOriginalHostnameWhenUnmarshalledHostnameIsResolvable() {
+    final String marshalled = "localhost[1234]";
+    final DistributionLocatorId locatorId = unmarshal(marshalled);
+    assertThat(locatorId.marshalForClients()).isEqualTo(marshalled);
+  }
 
-    assertThat(locatorId.marshalForClients()).isEqualTo("localhost[1234]");
+  @Test
+  void marshalForClientsReturnsOriginalHostnameWhenUnmarshalledHostnameIsNotResolvable() {
+    final String marshalled = "unknown.invalid[1234]";
+    final DistributionLocatorId locatorId = unmarshal(marshalled);
+    assertThat(locatorId.marshalForClients()).isEqualTo(marshalled);
   }
 
   @Test
@@ -142,9 +150,8 @@ class DistributionLocatorIdTest {
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
-  void hashCodeDoesNotThrowWhenHostIsNull() {
-    final DistributionLocatorId locatorId =
-        DistributionLocatorId.unmarshal("unknown.invalid[1234]");
+  void hashCodeDoesNotThrowWhenHostnameIsNotResolvable() {
+    final DistributionLocatorId locatorId = unmarshal("unknown.invalid[1234]");
     assertThatNoException().isThrownBy(locatorId::hashCode);
   }
 }

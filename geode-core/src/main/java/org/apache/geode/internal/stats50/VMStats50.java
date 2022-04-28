@@ -113,10 +113,7 @@ public class VMStats50 implements VMStatsContract {
   private static final int mp_l_maxMemoryId;
   private static final int mp_l_usedMemoryId;
   private static final int mp_l_committedMemoryId;
-  // private static final int mp_gc_initMemoryId;
-  // private static final int mp_gc_maxMemoryId;
   private static final int mp_gc_usedMemoryId;
-  // private static final int mp_gc_committedMemoryId;
   private static final int mp_usageThresholdId;
   private static final int mp_collectionUsageThresholdId;
   private static final int mp_usageExceededId;
@@ -128,7 +125,6 @@ public class VMStats50 implements VMStatsContract {
   private static final int unix_fdLimitId;
   private static final int unix_fdsOpenId;
   private static final int processCpuTimeId;
-
   private long threadStartCount = 0;
   private long[] allThreadIds = null;
   private static final boolean THREAD_STATS_ENABLED =
@@ -147,6 +143,9 @@ public class VMStats50 implements VMStatsContract {
   private static final int thread_cpuTimeId;
   private static final int thread_userTimeId;
 
+  @Immutable
+  private static final BufferPoolStats bufferPoolStats;
+
   static {
     clBean = ManagementFactory.getClassLoadingMXBean();
     memBean = ManagementFactory.getMemoryMXBean();
@@ -157,20 +156,17 @@ public class VMStats50 implements VMStatsContract {
       Method m3 = null;
       Object bean = null;
       try {
-        Class c =
+        Class<?> c =
             ClassPathLoader.getLatest().forName("com.sun.management.UnixOperatingSystemMXBean");
         if (c.isInstance(osBean)) {
           m1 = c.getMethod("getMaxFileDescriptorCount");
           m2 = c.getMethod("getOpenFileDescriptorCount");
           bean = osBean;
-        } else {
-          // leave them null
         }
+
         // Always set ProcessCpuTime
         m3 = osBean.getClass().getMethod("getProcessCpuTime");
-        if (m3 != null) {
-          m3.setAccessible(true);
-        }
+        m3.setAccessible(true);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -215,17 +211,17 @@ public class VMStats50 implements VMStatsContract {
     }
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     List<StatisticDescriptor> sds = new ArrayList<>();
-    sds.add(f.createIntGauge("pendingFinalization",
+    sds.add(f.createLongGauge("pendingFinalization",
         "Number of objects that are pending finalization in the java VM.", "objects"));
-    sds.add(f.createIntGauge("daemonThreads", "Current number of live daemon threads in this VM.",
+    sds.add(f.createLongGauge("daemonThreads", "Current number of live daemon threads in this VM.",
         "threads"));
-    sds.add(f.createIntGauge("threads",
+    sds.add(f.createLongGauge("threads",
         "Current number of live threads (both daemon and non-daemon) in this VM.", "threads"));
     sds.add(
-        f.createIntGauge("peakThreads", "High water mark of live threads in this VM.", "threads"));
+        f.createLongGauge("peakThreads", "High water mark of live threads in this VM.", "threads"));
     sds.add(f.createLongCounter("threadStarts",
         "Total number of times a thread has been started since this vm started.", "threads"));
-    sds.add(f.createIntGauge("cpus", "Number of cpus available to the java VM on its machine.",
+    sds.add(f.createLongGauge("cpus", "Number of cpus available to the java VM on its machine.",
         "cpus", true));
     sds.add(f.createLongCounter("loadedClasses", "Total number of classes loaded since vm started.",
         "classes"));
@@ -350,8 +346,8 @@ public class VMStats50 implements VMStatsContract {
                   "milliseconds"),
               f.createLongGauge("lockOwner",
                   "The thread id that owns the lock that this thread is blocking on.", "threadId"),
-              f.createIntGauge("inNative", "1 if the thread is in native code.", "boolean"),
-              f.createIntGauge("suspended", "1 if this thread is suspended", "boolean"),
+              f.createLongGauge("inNative", "1 if the thread is in native code.", "boolean"),
+              f.createLongGauge("suspended", "1 if this thread is suspended", "boolean"),
               f.createLongCounter("waited",
                   "Total number of times this thread waited for notification.", "operations"),
               f.createLongCounter("waitedTime",
@@ -384,6 +380,8 @@ public class VMStats50 implements VMStatsContract {
       thread_cpuTimeId = -1;
       thread_userTimeId = -1;
     }
+
+    bufferPoolStats = new BufferPoolStats(f);
   }
 
   private final Statistics vmStats;
@@ -399,7 +397,8 @@ public class VMStats50 implements VMStatsContract {
     vmStats = f.createStatistics(vmType, "vmStats", id);
     heapMemStats = f.createStatistics(memoryUsageType, "vmHeapMemoryStats", id);
     nonHeapMemStats = f.createStatistics(memoryUsageType, "vmNonHeapMemoryStats", id);
-    initMemoryPools(); // Fix for #40424
+    initMemoryPools();
+    bufferPoolStats.init(f, id);
     initGC();
   }
 
@@ -443,8 +442,8 @@ public class VMStats50 implements VMStatsContract {
       s.setLong(thread_blockedId, ti.getBlockedCount());
       s.setLong(thread_lockOwnerId, ti.getLockOwnerId());
       s.setLong(thread_waitedId, ti.getWaitedCount());
-      s.setInt(thread_inNativeId, ti.isInNative() ? 1 : 0);
-      s.setInt(thread_suspendedId, ti.isSuspended() ? 1 : 0);
+      s.setLong(thread_inNativeId, ti.isInNative() ? 1 : 0);
+      s.setLong(thread_suspendedId, ti.isSuspended() ? 1 : 0);
       if (threadBean.isThreadContentionMonitoringSupported()
           && threadBean.isThreadContentionMonitoringEnabled()) {
         s.setLong(thread_blockedTimeId, ti.getBlockedTime());
@@ -499,7 +498,7 @@ public class VMStats50 implements VMStatsContract {
         it.remove();
         reInitPools = true;
       } else {
-        MemoryUsage mu = null;
+        MemoryUsage mu;
         try {
           mu = mp.getUsage();
         } catch (IllegalArgumentException ex) {
@@ -584,11 +583,11 @@ public class VMStats50 implements VMStatsContract {
   @Override
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
-    vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
-    vmStats.setInt(cpusId, osBean.getAvailableProcessors());
-    vmStats.setInt(threadsId, threadBean.getThreadCount());
-    vmStats.setInt(daemonThreadsId, threadBean.getDaemonThreadCount());
-    vmStats.setInt(peakThreadsId, threadBean.getPeakThreadCount());
+    vmStats.setLong(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
+    vmStats.setLong(cpusId, osBean.getAvailableProcessors());
+    vmStats.setLong(threadsId, threadBean.getThreadCount());
+    vmStats.setLong(daemonThreadsId, threadBean.getDaemonThreadCount());
+    vmStats.setLong(peakThreadsId, threadBean.getPeakThreadCount());
     vmStats.setLong(threadStartsId, threadBean.getTotalStartedThreadCount());
     vmStats.setLong(loadedClassesId, clBean.getTotalLoadedClassCount());
     vmStats.setLong(unloadedClassesId, clBean.getUnloadedClassCount());
@@ -641,6 +640,7 @@ public class VMStats50 implements VMStatsContract {
     refresh(nonHeapMemStats, getNonHeapMemoryUsage(memBean));
     refreshGC();
     refreshMemoryPools();
+    bufferPoolStats.refresh();
     refreshThreads();
   }
 
@@ -693,6 +693,7 @@ public class VMStats50 implements VMStatsContract {
     vmStats.close();
     closeStatsMap(mpMap);
     closeStatsMap(gcMap);
+    bufferPoolStats.close();
   }
 
   private void closeStatsMap(Map<?, Statistics> map) {
@@ -723,23 +724,8 @@ public class VMStats50 implements VMStatsContract {
     return heapMemStats;
   }
 
-  public Statistics getVMNonHeapStats() {
-    return nonHeapMemStats;
-  }
-
   public static StatisticsType getGCType() {
     return gcType;
   }
 
-  public static StatisticsType getMemoryPoolType() {
-    return mpType;
-  }
-
-  public static StatisticsType getThreadType() {
-    return threadType;
-  }
-
-  public static StatisticsType getMemoryUsageType() {
-    return memoryUsageType;
-  }
 }

@@ -367,31 +367,6 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   }
 
   @Test
-  public void cqOlderClientWithClientInteractionWillDeliverEventEventually() throws Exception {
-    // this test should only test the older client
-    if (TestVersion.compare(clientVersion, feature_start_version) >= 0) {
-      return;
-    }
-    startClientWithCQ();
-
-    Region<Object, Object> region = server.getCache().getRegion("/region");
-    region.put("1", "value1");
-    getSecurityManager().addExpiredUser("user1");
-    region.put("2", "value2");
-
-    clientVM.invoke(() -> {
-      UpdatableUserAuthInitialize.setUser("user2");
-      Region<Object, Object> proxyRegion =
-          ClusterStartupRule.clientCacheRule.createProxyRegion("region");
-      proxyRegion.put("3", "value3");
-      await().untilAsserted(
-          () -> assertThat(CQLISTENER0.getKeys())
-              .containsExactly("1", "2", "3"));
-
-    });
-  }
-
-  @Test
   public void createCQWillReAuth() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0, clientVersion,

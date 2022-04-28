@@ -31,6 +31,7 @@ import static org.apache.geode.test.greplogs.Patterns.JAVA_LANG_ERROR;
 import static org.apache.geode.test.greplogs.Patterns.LOG_STATEMENT;
 import static org.apache.geode.test.greplogs.Patterns.MALFORMED_I18N_MESSAGE;
 import static org.apache.geode.test.greplogs.Patterns.MALFORMED_LOG4J_MESSAGE;
+import static org.apache.geode.test.greplogs.Patterns.MANAGEMENT_REQUEST;
 import static org.apache.geode.test.greplogs.Patterns.RMI_WARNING;
 import static org.apache.geode.test.greplogs.Patterns.RVV_BIT_SET_MESSAGE;
 import static org.apache.geode.test.greplogs.Patterns.WARN_OR_LESS_LOG_LEVEL;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class LogConsumer {
 
@@ -162,13 +164,18 @@ public class LogConsumer {
   }
 
   private boolean isExceptionErrorOrSomeSpecialCase(CharSequence line) {
-    return (EXCEPTION.matcher(line).find() ||
-        JAVA_LANG_ERROR.matcher(line).find() ||
-        MALFORMED_I18N_MESSAGE.matcher(line).find() ||
-        MALFORMED_LOG4J_MESSAGE.matcher(line).find()) &&
-        !(HYDRA_MASTER_LOCATORS_WILDCARD.matcher(line).find()) &&
-        !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find() &&
-            RVV_BIT_SET_MESSAGE.matcher(line).find());
+    // if one of the following finds is true
+    return (EXCEPTION.matcher(line).find() || JAVA_LANG_ERROR.matcher(line).find()
+        || MALFORMED_I18N_MESSAGE.matcher(line).find()
+        || MALFORMED_LOG4J_MESSAGE.matcher(line).find()) &&
+    // and we don't find the below
+        !(HYDRA_MASTER_LOCATORS_WILDCARD.matcher(line).find())
+        && !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find()
+            && MANAGEMENT_REQUEST.matcher(line).find())
+        && !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find() // Warning message or lower
+            && RVV_BIT_SET_MESSAGE.matcher(line).find()); // rvv bit sit message
+    // then it is an exception error or some special case.
+
   }
 
   private void addErrLinesToAll(CharSequence line) {

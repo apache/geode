@@ -169,9 +169,7 @@ public class FileControllableProcess implements ControllableProcess {
 
   private static ControlRequestHandler createStatusHandler(final ControlNotificationHandler handler,
       final File directory, final ProcessType processType) {
-    return () -> {
-      writeStatusToFile(fetchStatusWithValidation(handler), directory, processType);
-    };
+    return () -> writeStatusToFile(fetchStatusWithValidation(handler), directory, processType);
   }
 
   private static ControlFileWatchdog createStopRequestFileWatchdog(final File directory,
@@ -225,10 +223,10 @@ public class FileControllableProcess implements ControllableProcess {
           "Unable to create statusFileTmp '" + statusFileTmp.getCanonicalPath() + "'");
     }
 
-    FileWriter writer = new FileWriter(statusFileTmp);
-    writer.write(jsonContent);
-    writer.flush();
-    writer.close();
+    try (FileWriter writer = new FileWriter(statusFileTmp)) {
+      writer.write(jsonContent);
+      writer.flush();
+    }
 
     if (!statusFileTmp.renameTo(statusFile)) {
       throw new IOException("Unable to rename statusFileTmp '" + statusFileTmp.getCanonicalPath()
