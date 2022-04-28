@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -244,6 +245,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       ccf.set(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
       ccf.set(LOG_FILE, "abs_server_system.log");
       ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
+      ccf.set(TCP_PORT, Integer.toString(getRandomAvailableTCPPort()));
     } catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
     }
@@ -258,6 +260,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       ccf.set(CACHE_XML_FILE, cacheXmlFile.toURI().getPath());
       ccf.set(MCAST_PORT, "0");
       ccf.set(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+      ccf.set(TCP_PORT, Integer.toString(getRandomAvailableTCPPort()));
     } catch (URISyntaxException e) {
       throw new ExceptionInInitializerError(e);
     }

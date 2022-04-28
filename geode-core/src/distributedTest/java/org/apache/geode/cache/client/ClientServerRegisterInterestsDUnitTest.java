@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -207,9 +208,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
       assertThat(example).describedAs("'Example' Region in Client Cache was not found!")
           .isNotNull();
-      assertThat(example).hasSize(1);
-      assertThat(example).containsKey("1");
-      assertThat(example.get("1")).isEqualTo("ONE");
+      assertThat(example).containsOnly(entry("1", "ONE"));
       assertThat(entryEvents).isEmpty();
 
       String value = put();
@@ -226,8 +225,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
       assertThat(entryEvent.getNewValue()).isEqualTo("TWO");
       assertThat(entryEvent.getOldValue()).isNull();
       assertThat(example).hasSize(2);
-      assertThat(example).containsKey("2");
-      assertThat(example.get("2")).isEqualTo("TWO");
+      assertThat(example).contains(entry("2", "TWO"));
     }
   }
 
