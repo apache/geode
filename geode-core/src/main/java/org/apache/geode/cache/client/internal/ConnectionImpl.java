@@ -113,16 +113,17 @@ public class ConnectionImpl implements Connection {
     }
     theSocket.setSoTimeout(readTimeout);
 
+    Endpoint tempEndpoint = null;
+
     if (location instanceof ServerLocationExtension) {
-      ServerLocationAndMemberId serverLocationAndMemberId =
-          ((ServerLocationExtension) location).getServerLocationAndMemberId();
-      endpoint = endpointManager.getEndpointMap().get(serverLocationAndMemberId);
+      tempEndpoint = getEndpoint(endpointManager, (ServerLocationExtension) location);
     }
 
-    if (endpoint == null) {
-      endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
+    if (tempEndpoint == null) {
+      tempEndpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
     }
 
+    endpoint = tempEndpoint;
     connectFinished = true;
     endpoint.getStats().incConnections(1);
     return status;
@@ -212,6 +213,13 @@ public class ConnectionImpl implements Connection {
       commBufferForAsyncRead = null;
       ServerConnection.releaseCommBuffer(bb);
     }
+  }
+
+  Endpoint getEndpoint(EndpointManager endpointManager,
+      ServerLocationExtension serverLocationExtension) {
+    ServerLocationAndMemberId serverLocationAndMemberId =
+        serverLocationExtension.getServerLocationAndMemberId();
+    return endpointManager.getEndpointMap().get(serverLocationAndMemberId);
   }
 
   @Override
