@@ -784,8 +784,7 @@ public class TCPConduit implements Runnable {
             conn.closeForReconnect("closing before retrying");
           } catch (CancelException ex) {
             throw ex;
-          } catch (Exception ex) {
-            // ignored
+          } catch (Exception ignored) {
           }
         } // not first time in loop
 
@@ -931,39 +930,13 @@ public class TCPConduit implements Runnable {
     stopper.checkCancelInProgress(null);
     boolean interrupted = Thread.interrupted();
     try {
-      // If this is the second time through this loop, we had problems.
-      // Tear down the connection so that it gets rebuilt.
 
       Exception problem = null;
       try {
+
+        connection = getConnectionThatIsNotClosed(memberAddress, preserveOrder, startTime,
+            ackTimeout, ackSATimeout);
         // Get (or regenerate) the connection
-        // this could generate a ConnectionException, so it must be caught and retried
-        boolean retryForOldConnection;
-        boolean debugRetry = false;
-        do {
-          retryForOldConnection = false;
-          connection = getConTable().get(memberAddress, preserveOrder, startTime, ackTimeout,
-              ackSATimeout, true);
-          if (connection == null) {
-            // conduit may be closed - otherwise an ioexception would be thrown
-            problem = new IOException(
-                String.format("Unable to reconnect to server; possible shutdown: %s",
-                    memberAddress));
-          } else if (connection.isClosing()
-              || !connection.getRemoteAddress().equals(memberAddress)) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Got an old connection for {}: {}@{}", memberAddress, connection,
-                  connection.hashCode());
-            }
-            connection.closeOldConnection("closing old connection");
-            connection = null;
-            retryForOldConnection = true;
-            debugRetry = true;
-          }
-        } while (retryForOldConnection);
-        if (debugRetry && logger.isDebugEnabled()) {
-          logger.debug("Done removing old connections");
-        }
 
         // we have a connection; fall through and return it
       } catch (ConnectionException e) {
@@ -1003,6 +976,28 @@ public class TCPConduit implements Runnable {
     }
   }
 
+  private Connection getConnectionThatIsNotClosed(InternalDistributedMember memberAddress,
+      final boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout)
+      throws IOException, ConnectionException {
+    boolean debugEnabled = logger.isDebugEnabled();
+    Connection connection;
+    while (true) {
+      connection = getConTable().get(memberAddress, preserveOrder, startTime, ackTimeout,
+          ackSATimeout, true);
+      if (connection == null) {
+        throw new IOException("Unable to reconnect to server; possible shutdown: " + memberAddress);
+      }
+
+      if (!connection.isClosing() && connection.getRemoteAddress().equals(memberAddress)) {
+        return connection;
+      }
+      if (debugEnabled) {
+        logger.debug("Got an old connection for {}: {}@{}", memberAddress, connection,
+            connection.hashCode());
+      }
+      connection.closeOldConnection("closing old connection");
+    }
+  }
 
   @Override
   public String toString() {
