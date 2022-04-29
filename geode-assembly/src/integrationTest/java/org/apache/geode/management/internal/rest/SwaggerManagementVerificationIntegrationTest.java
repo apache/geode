@@ -51,7 +51,7 @@ public class SwaggerManagementVerificationIntegrationTest {
   @Test
   public void isSwaggerRunning() throws Exception {
     // Check the UI
-    assertResponse(client.get("/management/swagger-ui/index.html")).hasStatusCode(200);
+    assertResponse(client.get("/management/swagger-ui.html")).hasStatusCode(200);
 
     // Check the JSON
     JsonNode json =

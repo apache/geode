@@ -48,7 +48,7 @@ public class DevRestSwaggerVerificationIntegrationTest {
   @Test
   public void isSwaggerRunning() throws Exception {
     // Check the UI
-    assertResponse(client.get("/geode/swagger-ui/index.html")).hasStatusCode(200);
+    assertResponse(client.get("/geode/swagger-ui.html")).hasStatusCode(200);
 
     // Check the JSON
     JsonNode json =

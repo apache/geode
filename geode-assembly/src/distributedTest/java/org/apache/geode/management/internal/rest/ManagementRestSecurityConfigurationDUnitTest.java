@@ -40,11 +40,11 @@ public class ManagementRestSecurityConfigurationDUnitTest {
         new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
 
     // Unsecured no credentials
-    assertResponse(client.doGet("/swagger-ui/index.html", null, null)).hasStatusCode(200);
+    assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", null, null)).hasStatusCode(200);
 
     // unsecured with credentials
-    assertResponse(client.doGet("/swagger-ui/index.html", "cluster", "cluster")).hasStatusCode(200);
+    assertResponse(client.doGet("/swagger-ui.html", "cluster", "cluster")).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
@@ -65,11 +65,11 @@ public class ManagementRestSecurityConfigurationDUnitTest {
         new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
 
     // Unsecured no credentials
-    assertResponse(client.doGet("/swagger-ui/index.html", null, null)).hasStatusCode(200);
+    assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", null, null)).hasStatusCode(200);
 
     // unsecured with credentials
-    assertResponse(client.doGet("/swagger-ui/index.html", "cluster", "cluster")).hasStatusCode(200);
+    assertResponse(client.doGet("/swagger-ui.html", "cluster", "cluster")).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
