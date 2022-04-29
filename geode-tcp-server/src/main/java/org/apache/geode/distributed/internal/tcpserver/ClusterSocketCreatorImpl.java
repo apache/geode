@@ -69,8 +69,6 @@ public class ClusterSocketCreatorImpl implements ClusterSocketCreator {
       result.setReceiveBufferSize(socketBufferSize);
     }
     try {
-      System.out.printf("BGB binding bindAddr: %s, nport: %d%n",
-          bindAddr, nport);
       result.bind(new InetSocketAddress(bindAddr, nport), backlog);
     } catch (BindException e) {
       BindException throwMe =

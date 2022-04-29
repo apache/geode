@@ -645,7 +645,6 @@ public class DirectChannel {
    * new local address to be generated.
    */
   public synchronized void disconnect(Exception cause) {
-    System.out.printf("BGB DirectChannel.disconnect() called%n");
     disconnected = true;
     disconnectCompleted = false;
     conduit.stop(cause);

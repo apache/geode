@@ -573,12 +573,20 @@ public class AcceptorImpl implements Acceptor, Runnable {
           try {
             serverSock = socketCreator.createServerSocket(port, backLog, getBindAddress(),
                 this.gatewayTransportFilters, socketBufferSize);
+            logger.info("BGB AcceptorImpl bound server socket address: {}, port: {} at: {}",
+                getBindAddress(), port, getStackTrace(new Throwable()));
             break;
           } catch (SocketException e) {
             if (System.currentTimeMillis() > tilt) {
+              logger.info(
+                  "BGB AcceptorImpl gave up trying to bind server socket address: {}, port: {} because of timeout {} at: {}",
+                  getBindAddress(), port,
+                  tilt, getStackTrace(e));
               throw e;
             } else {
-              System.out.printf("BGB caught: %s%n", getStackTrace(e));
+              logger.info(
+                  "BGB AcceptorImpl continuing to try to bind server socket address: {}, port: {} until: {}",
+                  getBindAddress(), port, tilt);
             }
           }
 
@@ -1613,13 +1621,18 @@ public class AcceptorImpl implements Acceptor, Runnable {
           thread.interrupt();
         }
         try {
-          System.out.printf(
-              "BGB in AcceptorImpl.close() closing server socket bound to port: %s, %s%n",
+          serverSock.close();
+          logger.info(
+              "BGB AcceptorImpl closed server socket bound to address: {}, port: {} at: {}",
+              serverSock.getInetAddress(),
               serverSock.getLocalPort(),
               getStackTrace(new Throwable()));
-
-          serverSock.close();
-        } catch (IOException ignore) {
+        } catch (IOException e) {
+          logger.info(
+              "BGB: AcceptorImpl got exception closing socket bound to address: {}, port: {}",
+              serverSock.getInetAddress(),
+              serverSock.getLocalPort(),
+              e);
         }
 
         crHelper.setShutdown(true); // set this before shutting down the pool

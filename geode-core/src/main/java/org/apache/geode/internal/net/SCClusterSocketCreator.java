@@ -26,11 +26,17 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.tcpserver.ClusterSocketCreatorImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.net.SSLParameterExtension;
 
 class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
+
+  private static final Logger logger = LogService.getLogger();
+
   private final SocketCreator coreSocketCreator;
 
   protected SCClusterSocketCreator(SocketCreator socketCreator) {
@@ -52,9 +58,6 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
   @Override
   protected ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
       int socketBufferSize, boolean sslConnection) throws IOException {
-    System.out.printf("BGB HERE sslConnection: %s, binding socket at: %s%n", sslConnection,
-        getStackTrace(new Throwable()));
-
     coreSocketCreator.printConfig();
     if (!sslConnection) {
       return super.createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConnection);
@@ -72,11 +75,9 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
     if (socketBufferSize != -1) {
       serverSocket.setReceiveBufferSize(socketBufferSize);
     }
-    System.out.printf("BGB HERE sslConnection: %s, binding socket at: %s%n", sslConnection,
-        getStackTrace(new Throwable()));
-    System.out.printf("BGB binding bindAddr: %s, nport: %d%n",
-        bindAddr, nport);
     serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
+    logger.info("BGB bound (TLS) address: {}, port: {}, at {}",
+        bindAddr, nport, getStackTrace(new Throwable()));
     finishServerSocket(serverSocket);
     return serverSocket;
   }

@@ -71,8 +71,6 @@ public class ReconnectWithTlsAndClientsCacheServerDistributedTest {
   public void before() throws GeneralSecurityException, IOException {
     final Properties geodeConfig = geodeConfigurationProperties();
 
-    System.out.printf("BGB configuration settings: %s%n", geodeConfig);
-
     final MemberVM locator =
         clusterStartupRule.startLocatorVM(0, 0, VersionManager.CURRENT_VERSION,
             x -> x.withConnectionToLocator().withProperties(geodeConfig)

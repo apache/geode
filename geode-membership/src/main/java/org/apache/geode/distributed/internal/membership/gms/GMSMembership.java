@@ -1778,7 +1778,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
 
     void uncleanShutdownReconnectingDS(String reason, Exception shutdownCause) {
-      System.out.printf("BGB uncleanShutdownReconnectingDS() called %n");
       logger.info("Reconnecting system failed to connect");
       lifecycleListener.forcedDisconnect(reason, RECONNECTING);
       uncleanShutdown(reason,
@@ -1786,16 +1785,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
 
     void uncleanShutdownDS(String reason, Exception shutdownCause) {
-      System.out.printf("BGB uncleanShutdownDS() called. Delaying shutdown...%n");
       try {
         listener.saveConfig();
       } finally {
         new LoggingThread("DisconnectThread", false, () -> {
-          try {
-            Thread.sleep(30_000);
-          } catch (InterruptedException e) {
-            // ignore
-          }
           lifecycleListener.forcedDisconnect(reason, NOT_RECONNECTING);
           uncleanShutdown(reason, shutdownCause);
         }).start();

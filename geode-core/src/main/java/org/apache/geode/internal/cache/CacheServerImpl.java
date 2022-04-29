@@ -374,7 +374,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       }
     };
 
-    System.out.printf("BGB in CacheServerImpl.start()%n");
     acceptor = createAcceptor(overflowAttributes);
 
     acceptor.start();
