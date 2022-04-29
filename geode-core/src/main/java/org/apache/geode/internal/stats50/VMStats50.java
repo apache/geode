@@ -40,7 +40,6 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
@@ -103,9 +102,6 @@ public class VMStats50 implements VMStatsContract {
   private static final StatisticsType gcType;
   private static final int gc_collectionsId;
   private static final int gc_collectionTimeId;
-  @MakeNotStatic
-  private final Map<GarbageCollectorMXBean, Statistics> gcMap =
-      new HashMap<>();
 
   @Immutable
   private static final StatisticsType mpType;
@@ -118,19 +114,12 @@ public class VMStats50 implements VMStatsContract {
   private static final int mp_collectionUsageThresholdId;
   private static final int mp_usageExceededId;
   private static final int mp_collectionUsageExceededId;
-  @MakeNotStatic
-  private final Map<MemoryPoolMXBean, Statistics> mpMap =
-      new HashMap<>();
 
   private static final int unix_fdLimitId;
   private static final int unix_fdsOpenId;
   private static final int processCpuTimeId;
-  private long threadStartCount = 0;
-  private long[] allThreadIds = null;
   private static final boolean THREAD_STATS_ENABLED =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableThreadStats");
-  private final Map<Long, ThreadStatInfo> threadMap =
-      THREAD_STATS_ENABLED ? new HashMap<>() : null;
   @Immutable
   private static final StatisticsType threadType;
   private static final int thread_blockedId;
@@ -142,9 +131,6 @@ public class VMStats50 implements VMStatsContract {
   private static final int thread_waitedTimeId;
   private static final int thread_cpuTimeId;
   private static final int thread_userTimeId;
-
-  @Immutable
-  private static final BufferPoolStats bufferPoolStats;
 
   static {
     clBean = ManagementFactory.getClassLoadingMXBean();
@@ -380,13 +366,21 @@ public class VMStats50 implements VMStatsContract {
       thread_cpuTimeId = -1;
       thread_userTimeId = -1;
     }
-
-    bufferPoolStats = new BufferPoolStats(f);
   }
 
   private final Statistics vmStats;
   private final Statistics heapMemStats;
   private final Statistics nonHeapMemStats;
+  private final Map<GarbageCollectorMXBean, Statistics> gcMap =
+      new HashMap<>();
+  private final Map<MemoryPoolMXBean, Statistics> mpMap =
+      new HashMap<>();
+  private final BufferPoolStats bufferPoolStats;
+
+  private final Map<Long, ThreadStatInfo> threadMap =
+      THREAD_STATS_ENABLED ? new HashMap<>() : null;
+  private long threadStartCount = 0;
+  private long[] allThreadIds = null;
 
   private final StatisticsFactory f;
   private final long id;
@@ -398,6 +392,7 @@ public class VMStats50 implements VMStatsContract {
     heapMemStats = f.createStatistics(memoryUsageType, "vmHeapMemoryStats", id);
     nonHeapMemStats = f.createStatistics(memoryUsageType, "vmNonHeapMemoryStats", id);
     initMemoryPools();
+    bufferPoolStats = new BufferPoolStats(f);
     bufferPoolStats.init(f, id);
     initGC();
   }
