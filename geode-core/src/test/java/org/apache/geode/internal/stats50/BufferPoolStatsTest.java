@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.management.BufferPoolMXBean;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -36,32 +37,30 @@ import org.junit.jupiter.api.Test;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
 
 class BufferPoolStatsTest {
 
   @Test
   void constructorCreatesStatisticsType() {
-    final StatisticsTypeFactory statisticsTypeFactory = mock(StatisticsTypeFactory.class);
-    when(statisticsTypeFactory.createType(anyString(), anyString(), any()))
+    final StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
+    when(statisticsFactory.createType(anyString(), anyString(), any()))
         .thenReturn(mock(StatisticsType.class));
 
-    new BufferPoolStats(statisticsTypeFactory);
+    new BufferPoolStats(statisticsFactory, 42, Collections.emptyList());
 
-    verify(statisticsTypeFactory).createType(eq("PlatformBufferPoolStats"), anyString(), any());
-    verify(statisticsTypeFactory).createLongGauge(eq("count"), anyString(), eq("buffers"));
-    verify(statisticsTypeFactory).createLongGauge(eq("totalCapacity"), anyString(), eq("bytes"));
-    verify(statisticsTypeFactory).createLongGauge(eq("memoryUsed"), anyString(), eq("bytes"));
-    verifyNoMoreInteractions(statisticsTypeFactory);
+    verify(statisticsFactory).createType(eq("PlatformBufferPoolStats"), anyString(), any());
+    verify(statisticsFactory).createLongGauge(eq("count"), anyString(), eq("buffers"));
+    verify(statisticsFactory).createLongGauge(eq("totalCapacity"), anyString(), eq("bytes"));
+    verify(statisticsFactory).createLongGauge(eq("memoryUsed"), anyString(), eq("bytes"));
+    verifyNoMoreInteractions(statisticsFactory);
   }
 
   @Test
-  void initCreatesStatistics() {
-    final StatisticsTypeFactory statisticsTypeFactory = mock(StatisticsTypeFactory.class);
-    final StatisticsType statisticsType = mock(StatisticsType.class);
-    when(statisticsTypeFactory.createType(anyString(), anyString(), any()))
-        .thenReturn(statisticsType);
+  void constructorCreatesStatistics() {
     final StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
+    final StatisticsType statisticsType = mock(StatisticsType.class);
+    when(statisticsFactory.createType(anyString(), anyString(), any()))
+        .thenReturn(statisticsType);
     when(statisticsFactory.createStatistics(any(), anyString(), anyLong()))
         .thenReturn(mock(Statistics.class), mock(Statistics.class));
     final BufferPoolMXBean bufferPoolMXBean1 = mock(BufferPoolMXBean.class);
@@ -70,35 +69,13 @@ class BufferPoolStatsTest {
     when(bufferPoolMXBean2.getName()).thenReturn("mocked2");
     final List<BufferPoolMXBean> platformMXBeans = asList(bufferPoolMXBean1, bufferPoolMXBean2);
 
-    final BufferPoolStats bufferPoolStats = new BufferPoolStats(statisticsTypeFactory);
-    bufferPoolStats.init(statisticsFactory, 42, platformMXBeans);
+    final BufferPoolStats bufferPoolStats =
+        new BufferPoolStats(statisticsFactory, 42, platformMXBeans);
 
-    verify(bufferPoolMXBean1).getName();
-    verify(bufferPoolMXBean2).getName();
-    verify(statisticsFactory).createStatistics(same(statisticsType), contains("mocked1"), eq(42L));
-    verify(statisticsFactory).createStatistics(same(statisticsType), contains("mocked2"), eq(42L));
-    verifyNoMoreInteractions(bufferPoolMXBean1, bufferPoolMXBean2, statisticsFactory);
-  }
-
-  @Test
-  void initCreatesStatisticsOnceIfCalledTwice() {
-    final StatisticsTypeFactory statisticsTypeFactory = mock(StatisticsTypeFactory.class);
-    final StatisticsType statisticsType = mock(StatisticsType.class);
-    when(statisticsTypeFactory.createType(anyString(), anyString(), any()))
-        .thenReturn(statisticsType);
-    final StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
-    when(statisticsFactory.createStatistics(any(), anyString(), anyLong()))
-        .thenReturn(mock(Statistics.class), mock(Statistics.class));
-    final BufferPoolMXBean bufferPoolMXBean1 = mock(BufferPoolMXBean.class);
-    when(bufferPoolMXBean1.getName()).thenReturn("mocked1");
-    final BufferPoolMXBean bufferPoolMXBean2 = mock(BufferPoolMXBean.class);
-    when(bufferPoolMXBean2.getName()).thenReturn("mocked2");
-    final List<BufferPoolMXBean> platformMXBeans = asList(bufferPoolMXBean1, bufferPoolMXBean2);
-
-    final BufferPoolStats bufferPoolStats = new BufferPoolStats(statisticsTypeFactory);
-    bufferPoolStats.init(statisticsFactory, 42, platformMXBeans);
-    bufferPoolStats.init(statisticsFactory, 42, platformMXBeans);
-
+    verify(statisticsFactory).createType(eq("PlatformBufferPoolStats"), anyString(), any());
+    verify(statisticsFactory).createLongGauge(eq("count"), anyString(), eq("buffers"));
+    verify(statisticsFactory).createLongGauge(eq("totalCapacity"), anyString(), eq("bytes"));
+    verify(statisticsFactory).createLongGauge(eq("memoryUsed"), anyString(), eq("bytes"));
     verify(bufferPoolMXBean1).getName();
     verify(bufferPoolMXBean2).getName();
     verify(statisticsFactory).createStatistics(same(statisticsType), contains("mocked1"), eq(42L));
@@ -108,10 +85,9 @@ class BufferPoolStatsTest {
 
   @Test
   void refreshUpdatesStatistics() {
-    final StatisticsTypeFactory statisticsTypeFactory = mock(StatisticsTypeFactory.class);
-    when(statisticsTypeFactory.createType(anyString(), anyString(), any()))
-        .thenReturn(mock(StatisticsType.class));
     final StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
+    when(statisticsFactory.createType(anyString(), anyString(), any()))
+        .thenReturn(mock(StatisticsType.class));
     final Statistics statistics1 = mock(Statistics.class);
     final Statistics statistics2 = mock(Statistics.class);
     when(statisticsFactory.createStatistics(any(), anyString(), anyLong()))
@@ -128,8 +104,8 @@ class BufferPoolStatsTest {
     when(bufferPoolMXBean2.getMemoryUsed()).thenReturn(3L);
     final List<BufferPoolMXBean> platformMXBeans = asList(bufferPoolMXBean1, bufferPoolMXBean2);
 
-    final BufferPoolStats bufferPoolStats = new BufferPoolStats(statisticsTypeFactory);
-    bufferPoolStats.init(statisticsFactory, 42, platformMXBeans);
+    final BufferPoolStats bufferPoolStats =
+        new BufferPoolStats(statisticsFactory, 42, platformMXBeans);
     bufferPoolStats.refresh();
 
     verify(bufferPoolMXBean1).getName();
@@ -151,10 +127,9 @@ class BufferPoolStatsTest {
 
   @Test
   void closeClosesAllStatistics() {
-    final StatisticsTypeFactory statisticsTypeFactory = mock(StatisticsTypeFactory.class);
-    when(statisticsTypeFactory.createType(anyString(), anyString(), any()))
-        .thenReturn(mock(StatisticsType.class));
     final StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
+    when(statisticsFactory.createType(anyString(), anyString(), any()))
+        .thenReturn(mock(StatisticsType.class));
     final Statistics statistics1 = mock(Statistics.class);
     final Statistics statistics2 = mock(Statistics.class);
     when(statisticsFactory.createStatistics(any(), anyString(), anyLong()))
@@ -162,8 +137,8 @@ class BufferPoolStatsTest {
     final List<BufferPoolMXBean> platformMXBeans =
         asList(mock(BufferPoolMXBean.class), mock(BufferPoolMXBean.class));
 
-    final BufferPoolStats bufferPoolStats = new BufferPoolStats(statisticsTypeFactory);
-    bufferPoolStats.init(statisticsFactory, 42, platformMXBeans);
+    final BufferPoolStats bufferPoolStats =
+        new BufferPoolStats(statisticsFactory, 42, platformMXBeans);
     bufferPoolStats.close();
 
     verify(statistics1).close();

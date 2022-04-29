@@ -18,6 +18,7 @@ package org.apache.geode.internal.stats50;
 import static java.lang.management.ManagementFactory.getPlatformMXBeans;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,7 +38,6 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
 
 class BufferPoolStatsIntegrationTest {
 
@@ -46,42 +46,43 @@ class BufferPoolStatsIntegrationTest {
     assumeThat(getPlatformMXBeans(BufferPoolMXBean.class))
         .anySatisfy(p -> assertThat(p.getName()).contains("direct"));
 
-    final StatisticsTypeFactory statisticsTypeFactory = mock(StatisticsTypeFactory.class);
+    final StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     final StatisticsType statisticsType = mock(StatisticsType.class);
-    when(statisticsTypeFactory.createType(anyString(), anyString(), any()))
+    when(statisticsFactory.createType(anyString(), anyString(), any()))
         .thenReturn(statisticsType);
     when(statisticsType.nameToId(eq("count"))).thenReturn(0);
     when(statisticsType.nameToId(eq("totalCapacity"))).thenReturn(1);
     when(statisticsType.nameToId(eq("memoryUsed"))).thenReturn(2);
-    final StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
-    final Statistics statistics = mock(Statistics.class);
+    final Statistics directStatistics = mock(Statistics.class);
+    final Statistics nonDirectStatistics = mock(Statistics.class);
     when(statisticsFactory.createStatistics(any(), contains("direct"), anyLong()))
-        .thenReturn(statistics);
+        .thenReturn(directStatistics);
+    when(statisticsFactory.createStatistics(any(), not(contains("direct")), anyLong()))
+        .thenReturn(nonDirectStatistics);
 
-    final BufferPoolStats bufferPoolStats = new BufferPoolStats(statisticsTypeFactory);
-    bufferPoolStats.init(statisticsFactory, 42);
+    final BufferPoolStats bufferPoolStats = new BufferPoolStats(statisticsFactory, 42);
 
     bufferPoolStats.refresh();
 
     final ArgumentCaptor<Long> count = ArgumentCaptor.forClass(Long.class);
-    verify(statistics).setLong(eq(0), count.capture());
+    verify(directStatistics).setLong(eq(0), count.capture());
     final ArgumentCaptor<Long> totalCapacity = ArgumentCaptor.forClass(Long.class);
-    verify(statistics).setLong(eq(1), totalCapacity.capture());
+    verify(directStatistics).setLong(eq(1), totalCapacity.capture());
     final ArgumentCaptor<Long> memoryUsed = ArgumentCaptor.forClass(Long.class);
-    verify(statistics).setLong(eq(2), memoryUsed.capture());
+    verify(directStatistics).setLong(eq(2), memoryUsed.capture());
 
-    clearInvocations(statistics);
+    clearInvocations(directStatistics);
 
     final ByteBuffer directBuffer = ByteBuffer.allocateDirect(1000);
 
     bufferPoolStats.refresh();
 
     final ArgumentCaptor<Long> countAfterAllocate = ArgumentCaptor.forClass(Long.class);
-    verify(statistics).setLong(eq(0), countAfterAllocate.capture());
+    verify(directStatistics).setLong(eq(0), countAfterAllocate.capture());
     final ArgumentCaptor<Long> totalCapacityAfterAllocate = ArgumentCaptor.forClass(Long.class);
-    verify(statistics).setLong(eq(1), totalCapacityAfterAllocate.capture());
+    verify(directStatistics).setLong(eq(1), totalCapacityAfterAllocate.capture());
     final ArgumentCaptor<Long> memoryUsedAfterAllocate = ArgumentCaptor.forClass(Long.class);
-    verify(statistics).setLong(eq(2), memoryUsedAfterAllocate.capture());
+    verify(directStatistics).setLong(eq(2), memoryUsedAfterAllocate.capture());
 
     assertThat(countAfterAllocate.getValue()).isGreaterThan(count.getValue());
     assertThat(totalCapacityAfterAllocate.getValue()).isGreaterThan(totalCapacity.getValue());

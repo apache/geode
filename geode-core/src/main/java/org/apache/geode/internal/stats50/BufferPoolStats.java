@@ -18,9 +18,9 @@ package org.apache.geode.internal.stats50;
 import static java.lang.management.ManagementFactory.getPlatformMXBeans;
 
 import java.lang.management.BufferPoolMXBean;
-import java.util.IdentityHashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +28,6 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
 
 /**
  * Polls Java platform buffer pool statistics from {@link BufferPoolMXBean}.
@@ -40,47 +39,62 @@ public class BufferPoolStats {
   private final int bufferPoolTotalCapacityId;
   private final int bufferPoolMemoryUsedId;
 
-  private final Map<BufferPoolMXBean, Statistics> bufferPoolStatistics =
-      new IdentityHashMap<>();
+  private final List<BufferPoolMXBeanStatistics> bufferPoolStatistics;
 
-  BufferPoolStats(final @NotNull StatisticsTypeFactory typeFactory) {
+  BufferPoolStats(final @NotNull StatisticsFactory statisticsFactory, final long id) {
+    this(statisticsFactory, id, getPlatformMXBeans(BufferPoolMXBean.class));
+  }
+
+  BufferPoolStats(final @NotNull StatisticsFactory statisticsFactory, final long id,
+      final List<BufferPoolMXBean> platformMXBeans) {
     bufferPoolType =
-        typeFactory.createType("PlatformBufferPoolStats", "Java platform buffer pools.",
+        statisticsFactory.createType("PlatformBufferPoolStats", "Java platform buffer pools.",
             new StatisticDescriptor[] {
-                typeFactory.createLongGauge("count",
+                statisticsFactory.createLongGauge("count",
                     "An estimate of the number of buffers in this pool.", "buffers"),
-                typeFactory.createLongGauge("totalCapacity",
+                statisticsFactory.createLongGauge("totalCapacity",
                     "An estimate of the total capacity of the buffers in this pool in bytes.",
                     "bytes"),
-                typeFactory.createLongGauge("memoryUsed",
+                statisticsFactory.createLongGauge("memoryUsed",
                     "An estimate of the memory that the Java virtual machine is using for this buffer pool in bytes, or -1L if an estimate of the memory usage is not available.",
                     "bytes")});
     bufferPoolCountId = bufferPoolType.nameToId("count");
     bufferPoolTotalCapacityId = bufferPoolType.nameToId("totalCapacity");
     bufferPoolMemoryUsedId = bufferPoolType.nameToId("memoryUsed");
-  }
 
-  void init(final @NotNull StatisticsFactory statisticsFactory, final long id) {
-    init(statisticsFactory, id, getPlatformMXBeans(BufferPoolMXBean.class));
-  }
-
-  void init(final StatisticsFactory statisticsFactory, final long id,
-      final List<BufferPoolMXBean> platformMXBeans) {
-    platformMXBeans.forEach(
-        pool -> bufferPoolStatistics.computeIfAbsent(pool,
-            k -> statisticsFactory.createStatistics(bufferPoolType, k.getName() + " buffer pool",
-                id)));
+    ArrayList<BufferPoolMXBeanStatistics> statList = new ArrayList<>(platformMXBeans.size());
+    platformMXBeans
+        .forEach(bean -> statList.add(new BufferPoolMXBeanStatistics(bean, statisticsFactory, id)));
+    bufferPoolStatistics = Collections.unmodifiableList(statList);
   }
 
   void refresh() {
-    bufferPoolStatistics.forEach((bufferPool, statistics) -> {
-      statistics.setLong(bufferPoolCountId, bufferPool.getCount());
-      statistics.setLong(bufferPoolTotalCapacityId, bufferPool.getTotalCapacity());
-      statistics.setLong(bufferPoolMemoryUsedId, bufferPool.getMemoryUsed());
-    });
+    bufferPoolStatistics.forEach(BufferPoolMXBeanStatistics::refresh);
   }
 
   public void close() {
-    bufferPoolStatistics.values().forEach(Statistics::close);
+    bufferPoolStatistics.forEach(BufferPoolMXBeanStatistics::close);
+  }
+
+  private class BufferPoolMXBeanStatistics {
+    private final BufferPoolMXBean bean;
+    private final Statistics statistics;
+
+    BufferPoolMXBeanStatistics(final BufferPoolMXBean bean,
+        final StatisticsFactory statisticsFactory, final long id) {
+      this.bean = bean;
+      this.statistics =
+          statisticsFactory.createStatistics(bufferPoolType, bean.getName() + " buffer pool", id);
+    }
+
+    void refresh() {
+      statistics.setLong(bufferPoolCountId, bean.getCount());
+      statistics.setLong(bufferPoolTotalCapacityId, bean.getTotalCapacity());
+      statistics.setLong(bufferPoolMemoryUsedId, bean.getMemoryUsed());
+    }
+
+    void close() {
+      statistics.close();
+    }
   }
 }

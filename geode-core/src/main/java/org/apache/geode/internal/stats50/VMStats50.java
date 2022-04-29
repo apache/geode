@@ -392,8 +392,7 @@ public class VMStats50 implements VMStatsContract {
     heapMemStats = f.createStatistics(memoryUsageType, "vmHeapMemoryStats", id);
     nonHeapMemStats = f.createStatistics(memoryUsageType, "vmNonHeapMemoryStats", id);
     initMemoryPools();
-    bufferPoolStats = new BufferPoolStats(f);
-    bufferPoolStats.init(f, id);
+    bufferPoolStats = new BufferPoolStats(f, id);
     initGC();
   }
 
