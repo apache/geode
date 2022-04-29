@@ -36,7 +36,7 @@ dependencies {
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
   }
-  compileOnly('io.springfox:springfox-swagger2') {
+  compileOnly('org.springdoc:springdoc-openapi-ui') {
     exclude module: 'slf4j-api'
     exclude module: "jackson-annotations"
   }
@@ -47,7 +47,7 @@ dependencies {
   }
 
   testCompileOnly(platform(project(':boms:geode-all-bom')))
-  testCompileOnly('io.swagger:swagger-annotations')
+  testCompileOnly('io.swagger.core.v3:swagger-annotations')
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))

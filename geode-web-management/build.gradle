@@ -72,15 +72,9 @@ dependencies {
     exclude module: 'jackson-annotations'
   }
 
-  compileOnly('io.swagger:swagger-annotations')
-
-  implementation('io.springfox:springfox-swagger2') {
+  implementation('org.springdoc:springdoc-openapi-ui') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
-    exclude module: 'swagger-annotations'
-  }
-  implementation('io.springfox:springfox-swagger-ui') {
-    exclude module: 'slf4j-api'
   }
 
   implementation('org.springframework:spring-beans')

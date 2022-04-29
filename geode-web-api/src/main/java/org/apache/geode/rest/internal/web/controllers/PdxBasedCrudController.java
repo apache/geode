@@ -21,10 +21,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -54,7 +54,7 @@ import org.apache.geode.rest.internal.web.util.ArrayUtils;
  * @since GemFire 8.0
  */
 @Controller("pdxCrudController")
-@Api(value = "region", tags = "region")
+@Tag(name = "region", description = "region")
 @RequestMapping(PdxBasedCrudController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class PdxBasedCrudController extends CommonCrudController {
@@ -80,16 +80,16 @@ public class PdxBasedCrudController extends CommonCrudController {
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{region}",
       consumes = APPLICATION_JSON_UTF8_VALUE, produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region."
+  @Operation(summary = "create entry", description = "Create (put-if-absent) data in region."
       + " The key is not decoded so if the key contains special characters use PUT/{region}?keys=EncodedKey&op=CREATE.")
-  @ApiResponses({@ApiResponse(code = 201, message = "Created."),
-      @ApiResponse(code = 400,
-          message = "Data specified (JSON doc) in the request body is invalid."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "Region does not exist."),
-      @ApiResponse(code = 409, message = "Key already exist in region."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @ApiResponses({@ApiResponse(responseCode = "201", description = "Created."),
+      @ApiResponse(responseCode = "400",
+          description = "Data specified (JSON doc) in the request body is invalid."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "Region does not exist."),
+      @ApiResponse(responseCode = "409", description = "Key already exist in region."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'WRITE', #region)")
   public ResponseEntity<?> create(@PathVariable("region") String region,
       @RequestParam(value = "key", required = false) String key, @RequestBody final String json) {
@@ -141,15 +141,15 @@ public class PdxBasedCrudController extends CommonCrudController {
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
       produces = APPLICATION_JSON_UTF8_VALUE)
-  @ApiOperation(value = "read all data for region or the specified keys",
-      notes = "If reading all data for region then the limit parameter can be used to give the maximum number of values to return."
+  @Operation(summary = "read all data for region or the specified keys",
+      description = "If reading all data for region then the limit parameter can be used to give the maximum number of values to return."
           + " If reading specif keys then the ignoredMissingKey parameter can be used to not fail if a key is missing.")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "Region does not exist."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "Region does not exist."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> read(@PathVariable("region") String region,
       @RequestParam(value = "limit",
@@ -228,14 +228,14 @@ public class PdxBasedCrudController extends CommonCrudController {
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
       produces = APPLICATION_JSON_UTF8_VALUE)
-  @ApiOperation(value = "read data for specific keys",
-      notes = "Read data for specif set of keys in a region. Deprecated in favor of /{region}?keys=.")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 400, message = "Bad Request."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "Region does not exist."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @Operation(summary = "read data for specific keys",
+      description = "Read data for specif set of keys in a region. Deprecated in favor of /{region}?keys=.")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "400", description = "Bad Request."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "Region does not exist."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   public ResponseEntity<?> read(@PathVariable("region") String region,
       @PathVariable("keys") final String[] keys,
       @RequestParam(value = "ignoreMissingKey", required = false) final String ignoreMissingKey) {
@@ -339,20 +339,20 @@ public class PdxBasedCrudController extends CommonCrudController {
   @RequestMapping(method = RequestMethod.PUT, value = "/{region}/{keys}",
       consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
           APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "update data for key",
-      notes = "Update or insert (put) data for keys in a region."
+  @Operation(summary = "update data for key",
+      description = "Update or insert (put) data for keys in a region."
           + " Deprecated in favor of /{region}?keys=."
           + " If op=REPLACE, update (replace) data with key if and only if the key exists in the region."
           + " If op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 400, message = "Bad Request."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404,
-          message = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
-      @ApiResponse(code = 409,
-          message = "For CAS, @old value does not match to the current value in region"),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "400", description = "Bad Request."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404",
+          description = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
+      @ApiResponse(responseCode = "409",
+          description = "For CAS, @old value does not match to the current value in region"),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
   public ResponseEntity<?> update(@PathVariable("region") String region,
       @PathVariable("keys") String[] keys,
@@ -403,8 +403,8 @@ public class PdxBasedCrudController extends CommonCrudController {
   @RequestMapping(method = RequestMethod.PUT, value = "/{region}",
       consumes = {APPLICATION_JSON_UTF8_VALUE}, produces = {
           APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "update data for key(s)",
-      notes = "Update or insert (put) data for keys in a region."
+  @Operation(summary = "update data for key(s)",
+      description = "Update or insert (put) data for keys in a region."
           + " The keys are a comma separated list."
           + " If multiple keys are given then put (create or update) the data for each key."
           + " The op parameter is ignored if more than one key is given."
@@ -412,16 +412,16 @@ public class PdxBasedCrudController extends CommonCrudController {
           + " If op=CREATE, create data for the given key if and only if the key does not exit in the region."
           + " If op=REPLACE, update (replace) data for the given key if and only if the key exists in the region."
           + " If op=CAS, update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in the region.")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 201, message = "For op=CREATE on success."),
-      @ApiResponse(code = 400, message = "Bad Request."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404,
-          message = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
-      @ApiResponse(code = 409,
-          message = "For op=CREATE, key already exist in region. For op=CAS, @old value does not match to the current value in region."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "201", description = "For op=CREATE on success."),
+      @ApiResponse(responseCode = "400", description = "Bad Request."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404",
+          description = "Region does not exist or if key is not mapped to some value for REPLACE or CAS."),
+      @ApiResponse(responseCode = "409",
+          description = "For op=CREATE, key already exist in region. For op=CAS, @old value does not match to the current value in region."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   public ResponseEntity<?> updateKeys(@PathVariable("region") final String encodedRegion,
       @RequestParam(value = "keys") final String[] encodedKeys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
@@ -461,14 +461,14 @@ public class PdxBasedCrudController extends CommonCrudController {
 
   @RequestMapping(method = RequestMethod.HEAD, value = "/{region}",
       produces = APPLICATION_JSON_UTF8_VALUE)
-  @ApiOperation(value = "Get total number of entries",
-      notes = "Get total number of entries into the specified region")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "Region does not exist."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @Operation(summary = "Get total number of entries",
+      description = "Get total number of entries into the specified region")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "Region does not exist."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> size(@PathVariable("region") String region) {
     logger.debug("Determining the number of entries in Region ({})...", region);

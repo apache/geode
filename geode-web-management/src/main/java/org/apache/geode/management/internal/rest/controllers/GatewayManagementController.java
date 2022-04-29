@@ -18,9 +18,9 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.GatewayReceiver.GATEWAY_RECEIVERS_ENDPOINTS;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +43,7 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
 @RestController("gatewayManagement")
 @RequestMapping(URI_VERSION)
 public class GatewayManagementController extends AbstractManagementController {
-  @ApiOperation(value = "list gateway-receivers")
+  @Operation(summary = "list gateway-receivers")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(GATEWAY_RECEIVERS_ENDPOINTS)
   public ClusterManagementListResult<GatewayReceiver, GatewayReceiverInfo> listGatewayReceivers(
@@ -55,7 +55,7 @@ public class GatewayManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "get gateway-receiver")
+  @Operation(summary = "get gateway-receiver")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(GATEWAY_RECEIVERS_ENDPOINTS + "/{id:.+}")
   public ClusterManagementGetResult<GatewayReceiver, GatewayReceiverInfo> getGatewayReceiver(
@@ -65,11 +65,11 @@ public class GatewayManagementController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
-  @ApiOperation(value = "create gateway-receiver")
+  @Operation(summary = "create gateway-receiver")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 409, message = "Gateway receiver already exists."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "409", description = "Gateway receiver already exists."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @PostMapping(GATEWAY_RECEIVERS_ENDPOINTS)
   public ResponseEntity<ClusterManagementResult> createGatewayReceiver(

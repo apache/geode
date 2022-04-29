@@ -14,46 +14,46 @@
  */
 package org.apache.geode.rest.internal.web.swagger.config;
 
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import org.springdoc.core.GroupedOpenApi;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 
 @PropertySource({"classpath:swagger.properties"})
-@Configuration
-@EnableSwagger2
+@SpringBootApplication(exclude = {TransactionAutoConfiguration.class, LdapAutoConfiguration.class})
 @SuppressWarnings("unused")
 public class SwaggerConfig {
 
   @Bean
-  public Docket api() {
-    return new Docket(DocumentationType.SWAGGER_2).select().apis(RequestHandlerSelectors.any())
-        .paths(PathSelectors.any()).build().apiInfo(apiInfo());
+  public GroupedOpenApi api() {
+    return GroupedOpenApi.builder()
+        .group("developer-apis")
+        .pathsToMatch("/**")
+        .build();
   }
 
   /**
    * API Info as it appears on the Swagger-UI page
    */
-  private ApiInfo apiInfo() {
-    return new ApiInfoBuilder()
-        .title("Apache Geode Developer REST API")
-        .description(
-            "Developer REST API and interface to Geode's distributed, in-memory data grid and cache.")
-        .version("1.0")
-        .termsOfServiceUrl("http://www.apache.org/licenses/")
-        .license("Apache License, version 2.0")
-        .licenseUrl("http://www.apache.org/licenses/")
-        .contact(new Contact("the Apache Geode Community",
-            "http://geode.apache.org",
-            "user@geode.apache.org"))
-        .build();
+  @Bean
+  public OpenAPI apiInfo() {
+    return new OpenAPI()
+        .info(new Info().title("Apache Geode Developer REST API")
+            .description(
+                "Developer REST API and interface to Geode's distributed, in-memory data grid and cache.")
+            .version("v1")
+            .termsOfService("http://www.apache.org/licenses/")
+            .license(new License().name("Apache License, version 2.0")
+                .url("http://www.apache.org/licenses/"))
+            .contact(new Contact().name("the Apache Geode Community").url("http://geode.apache.org")
+                .email("user@geode.apache.org")));
   }
 }

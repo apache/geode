@@ -20,7 +20,7 @@ import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE
 
 import java.util.Optional;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,7 +40,7 @@ import org.apache.geode.management.runtime.RebalanceResult;
 @RestController("rebalanceOperation")
 @RequestMapping(URI_VERSION)
 public class RebalanceOperationController extends AbstractManagementController {
-  @ApiOperation(value = "start rebalance")
+  @Operation(summary = "start rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @PostMapping(REBALANCE_ENDPOINT)
   public ResponseEntity<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> startRebalance(
@@ -54,14 +54,14 @@ public class RebalanceOperationController extends AbstractManagementController {
     return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
 
-  @ApiOperation(value = "list rebalances")
+  @Operation(summary = "list rebalances")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(REBALANCE_ENDPOINT)
   public ClusterManagementListOperationsResult<RebalanceOperation, RebalanceResult> listRebalances() {
     return clusterManagementService.list(new RebalanceOperation());
   }
 
-  @ApiOperation(value = "get rebalance")
+  @Operation(summary = "get rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(REBALANCE_ENDPOINT + "/{id:.+}")
   public ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> getRebalance(

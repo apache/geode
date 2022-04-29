@@ -18,9 +18,9 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Member.MEMBER_ENDPOINT;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Extension;
-import io.swagger.annotations.ExtensionProperty;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +37,7 @@ import org.apache.geode.management.runtime.MemberInformation;
 @RestController("members")
 @RequestMapping(URI_VERSION)
 public class MemberManagementController extends AbstractManagementController {
-  @ApiOperation(value = "get member",
+  @Operation(summary = "get member",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .groups[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})
@@ -50,7 +50,7 @@ public class MemberManagementController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
-  @ApiOperation(value = "list members",
+  @Operation(summary = "list members",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .groups[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})

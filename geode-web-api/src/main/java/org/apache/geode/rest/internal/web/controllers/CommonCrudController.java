@@ -19,9 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -63,12 +63,12 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.GET, produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "list all resources (Regions)",
-      notes = "List all available resources (Regions) in the Geode cluster")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @Operation(summary = "list all resources (Regions)",
+      description = "List all available resources (Regions) in the Geode cluster")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> regions() {
     logger.debug("Listing all resources (Regions) in Geode...");
@@ -90,12 +90,12 @@ public abstract class CommonCrudController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/keys",
       produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "list all keys", notes = "List all keys in region")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK"),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "Region does not exist"),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
+  @Operation(summary = "list all keys", description = "List all keys in region")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK"),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "Region does not exist"),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
   @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
   public ResponseEntity<?> keys(@PathVariable("region") String region) {
     logger.debug("Reading all Keys in Region ({})...", region);
@@ -118,13 +118,13 @@ public abstract class CommonCrudController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/{keys}",
       produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "delete data for key(s)",
-      notes = "Delete data for one or more keys in a region. Deprecated in favor of /{region}?keys=.")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK"),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "Region or key(s) does not exist"),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
+  @Operation(summary = "delete data for key(s)",
+      description = "Delete data for one or more keys in a region. Deprecated in favor of /{region}?keys=.")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK"),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "Region or key(s) does not exist"),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
   public ResponseEntity<?> delete(@PathVariable("region") String region,
       @PathVariable("keys") String[] keys) {
     region = decode(region);
@@ -147,13 +147,13 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}")
-  @ApiOperation(value = "delete all data or the specified keys",
-      notes = "Delete all in the region or just the specified keys")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK"),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "Region does not exist"),
-      @ApiResponse(code = 500, message = "if GemFire throws an error or exception")})
+  @Operation(summary = "delete all data or the specified keys",
+      description = "Delete all in the region or just the specified keys")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK"),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "Region does not exist"),
+      @ApiResponse(responseCode = "500", description = "if GemFire throws an error or exception")})
   public ResponseEntity<?> deleteAllOrGivenKeys(@PathVariable("region") String region,
       @RequestParam(value = "keys", required = false) final String[] encodedKeys) {
     logger.debug("Deleting all data in Region ({})...", region);
@@ -178,22 +178,22 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * Ping is not secured so that it may not be used to determine a valid username/password
    */
   @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD}, value = "/ping")
-  @ApiOperation(value = "Check Rest service status ",
-      notes = "Check whether gemfire REST service is up and running!")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK"),
-      @ApiResponse(code = 500, message = "if GemFire throws an error or exception")})
+  @Operation(summary = "Check Rest service status ",
+      description = "Check whether gemfire REST service is up and running!")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK"),
+      @ApiResponse(responseCode = "500", description = "if GemFire throws an error or exception")})
   public ResponseEntity<?> ping() {
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @RequestMapping(method = {RequestMethod.GET}, value = "/servers",
       produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "fetch all REST enabled servers in the DS",
-      notes = "Find all gemfire node where developer REST service is up and running!")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK"),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 500, message = "if GemFire throws an error or exception")})
+  @Operation(summary = "fetch all REST enabled servers in the DS",
+      description = "Find all gemfire node where developer REST service is up and running!")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK"),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "500", description = "if GemFire throws an error or exception")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   public ResponseEntity<?> servers() {
     logger.debug("Executing function to get REST enabled gemfire nodes in the DS!");
