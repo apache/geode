@@ -3543,17 +3543,17 @@ public class Oplog implements CompactableOplog, Flushable {
           // we do not require a lock on DiskID, as concurrent access for
           // value will not occur.
           startPosForSynchOp += getOpStateValueOffset();
-          if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
-            VersionTag tag = null;
-            if (entry.getVersionStamp() != null) {
-              tag = entry.getVersionStamp().asVersionTag();
-            }
-            logger.trace(LogMarker.PERSIST_WRITES_VERBOSE,
-                "basicCreate: id=<{}> key=<{}> valueOffset={} userBits={} valueLen={} valueBytes={} drId={} versionTag={} oplog#{}",
-                abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits,
-                value.getLength(), value.getBytesAsString(), dr.getId(), tag,
-                getOplogId());
+          // if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+          VersionTag tag = null;
+          if (entry.getVersionStamp() != null) {
+            tag = entry.getVersionStamp().asVersionTag();
           }
+          logger.info(
+              "JC debug: basicCreate: id=<{}> key=<{}> valueOffset={} userBits={} valueLen={} valueBytes={} drId={} versionTag={} oplog#{}",
+              abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits,
+              value.getLength(), value.getBytesAsString(), dr.getId(), tag,
+              getOplogId());
+          // }
           id.setOffsetInOplog(startPosForSynchOp);
           addLive(dr, entry);
           // Size of the current oplog being increased
@@ -3649,10 +3649,10 @@ public class Oplog implements CompactableOplog, Flushable {
     // if length of operation is greater than max Dir Size than an exception is
     // thrown
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Oplog::switchOpLog: Entry causing Oplog switch has diskID={}",
-          (entryCausingSwitch != null ? entryCausingSwitch.getDiskId() : "Entry is null"));
-    }
+    // if (logger.isDebugEnabled()) {
+    logger.info("JC debug: Oplog::switchOpLog: Entry causing Oplog switch has diskID={}",
+        (entryCausingSwitch != null ? entryCausingSwitch.getDiskId() : "Entry is null"));
+    // }
     if (lengthOfOperationCausingSwitch > getParent().getMaxDirSize()) {
       throw new DiskAccessException(
           String.format(
@@ -3665,12 +3665,12 @@ public class Oplog implements CompactableOplog, Flushable {
       CacheObserverHolder.getInstance().beforeSwitchingOplog();
     }
 
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Oplog::switchOpLog: About to add the Oplog = {} for compaction. Entry causing the switch is having DiskID = {}",
-          oplogId,
-          (entryCausingSwitch != null ? entryCausingSwitch.getDiskId() : "null Entry"));
-    }
+    // if (logger.isDebugEnabled()) {
+    logger.info(
+        "JC debug: Oplog::switchOpLog: About to add the Oplog = {} for compaction. Entry causing the switch is having DiskID = {}",
+        oplogId,
+        (entryCausingSwitch != null ? entryCausingSwitch.getDiskId() : "null Entry"));
+    // }
     if (needsCompaction()) {
       addToBeCompacted();
     } else {
@@ -4418,6 +4418,7 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   private void basicModify(DiskRegionView dr, DiskEntry entry, ValueWrapper value, byte userBits,
       boolean async, boolean calledByCompactor) throws IOException, InterruptedException {
+    logger.info("JC debug: basicModify entry {}", entry);
     DiskId id = entry.getDiskId();
     boolean useNextOplog = false;
     long startPosForSynchOp = -1L;
@@ -4456,16 +4457,16 @@ public class Oplog implements CompactableOplog, Flushable {
             startPosForSynchOp = writeOpLogBytes(crf, async, true);
             crf.currSize = temp;
             startPosForSynchOp += getOpStateValueOffset();
-            if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
-              VersionTag tag = null;
-              if (entry.getVersionStamp() != null) {
-                tag = entry.getVersionStamp().asVersionTag();
-              }
-              logger.trace(LogMarker.PERSIST_WRITES_VERBOSE,
-                  "basicModify: id=<{}> key=<{}> valueOffset={} userBits={} valueLen={} valueBytes=<{}> drId={} versionStamp={} oplog#{}",
-                  abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits,
-                  value.getLength(), value.getBytesAsString(), dr.getId(), tag, getOplogId());
+            // if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+            VersionTag tag = null;
+            if (entry.getVersionStamp() != null) {
+              tag = entry.getVersionStamp().asVersionTag();
             }
+            logger.info(
+                "JC debug: basicModify: id=<{}> key=<{}> valueOffset={} userBits={} valueLen={} valueBytes=<{}> drId={} versionStamp={} oplog#{}",
+                abs(id.getKeyId()), entry.getKey(), startPosForSynchOp, userBits,
+                value.getLength(), value.getBytesAsString(), dr.getId(), tag, getOplogId());
+            // }
             if (EntryBits.isNeedsValue(userBits)) {
               id.setValueLength(value.getLength());
             } else {
@@ -4579,11 +4580,12 @@ public class Oplog implements CompactableOplog, Flushable {
             firstRecord = false;
             writeOpLogBytes(crf, async, true);
             crf.currSize = temp;
-            if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
-              logger.trace(LogMarker.PERSIST_WRITES_VERBOSE,
-                  "basicSaveConflictVersionTag: drId={} versionStamp={} oplog#{}", dr.getId(), tag,
-                  getOplogId());
-            }
+            // if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+            logger.info(
+                "JC debug: basicSaveConflictVersionTag: drId={} versionStamp={} oplog#{}",
+                dr.getId(), tag,
+                getOplogId());
+            // }
             dirHolder.incrementTotalOplogSize(adjustment);
             // Update the region version vector for the disk store.
             // This needs to be done under lock so that we don't switch oplogs
@@ -4869,6 +4871,7 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   private void basicRemove(DiskRegionView dr, DiskEntry entry, boolean async, boolean isClear)
       throws IOException, InterruptedException {
+    logger.info("JC debug: basicRemove entry {} async {} isClear {}", entry, async, isClear);
     DiskId id = entry.getDiskId();
 
     boolean useNextOplog = false;
@@ -4905,11 +4908,11 @@ public class Oplog implements CompactableOplog, Flushable {
 
             drf.currSize += adjustment;
             // do the io while holding lock so that switch can set doneAppending
-            if (logger.isTraceEnabled()) {
-              logger.trace(
-                  "Oplog::basicRemove: Recording the Deletion of entry in the Oplog with id = {} The Oplog Disk ID for the entry being deleted = {} Mode is Synch",
-                  getOplogId(), id);
-            }
+            // if (logger.isTraceEnabled()) {
+            logger.info(
+                "JC debug: Oplog::basicRemove: Recording the Deletion of entry in the Oplog with id = {} The Oplog Disk ID for the entry being deleted = {} Mode is Synch",
+                getOplogId(), id);
+            // }
 
             // Write the data to the opLog for the synch mode
             // TODO: if we don't sync write destroys what will happen if
@@ -4924,10 +4927,11 @@ public class Oplog implements CompactableOplog, Flushable {
             // because we might be killed right after we do this write.
             startPosForSynchOp = writeOpLogBytes(drf, async, true);
             setHasDeletes(true);
-            if (logger.isDebugEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
-              logger.debug("basicRemove: id=<{}> key=<{}> drId={} oplog#{}", abs(id.getKeyId()),
-                  entry.getKey(), dr.getId(), getOplogId());
-            }
+            // if (logger.isDebugEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
+            logger.info("JC debug: basicRemove: id=<{}> key=<{}> drId={} oplog#{}",
+                abs(id.getKeyId()),
+                entry.getKey(), dr.getId(), getOplogId());
+            // }
 
             if (logger.isTraceEnabled()) {
               logger.trace("Oplog::basicRemove:Released ByteBuffer for Disk ID = {}", id);
