@@ -5,7 +5,6 @@ accessors-smart
 antlr
 asm
 byte-buddy
-checker-qual
 classgraph
 classmate
 commons-beanutils
@@ -20,15 +19,11 @@ commons-modeler
 commons-text
 commons-validator
 content-type
-error_prone_annotations
-failureaccess
 fastutil
 gfsh-dependencies.jar
-guava
 httpclient
 httpcore
 istack-commons-runtime
-j2objc-annotations
 jackson-annotations
 jackson-core
 jackson-databind
@@ -56,9 +51,7 @@ jna-platform
 jopt-simple
 json-path
 json-smart
-jsr
 lang-tag
-listenablefuture
 log4j-api
 log4j-core
 log4j-jcl
@@ -117,6 +110,8 @@ springfox-core
 springfox-schema
 springfox-spi
 springfox-spring-web
+springfox-spring-webflux
+springfox-spring-webmvc
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
