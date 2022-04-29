@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -60,7 +60,7 @@ import org.apache.geode.security.ResourcePermission;
  * @since GemFire 8.0
  */
 @Controller("functionController")
-@Api(value = "functions", tags = "functions")
+@Tag(name = "functions", description = "functions")
 @RequestMapping(FunctionAccessController.REST_API_VERSION + "/functions")
 @SuppressWarnings("unused")
 public class FunctionAccessController extends AbstractBaseController {
@@ -84,12 +84,12 @@ public class FunctionAccessController extends AbstractBaseController {
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "list all functions",
-      notes = "list all functions available in the GemFire cluster")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @Operation(summary = "list all functions",
+      description = "list all functions available in the GemFire cluster")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
@@ -121,14 +121,14 @@ public class FunctionAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId:.+}",
       produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "execute function",
-      notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 500, message = "if GemFire throws an error or exception"),
-      @ApiResponse(code = 400,
-          message = "if Function arguments specified as JSON document in the request body is invalid")})
+  @Operation(summary = "execute function",
+      description = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "500", description = "if GemFire throws an error or exception"),
+      @ApiResponse(responseCode = "400",
+          description = "if Function arguments specified as JSON document in the request body is invalid")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<String> execute(@PathVariable("functionId") String functionId,

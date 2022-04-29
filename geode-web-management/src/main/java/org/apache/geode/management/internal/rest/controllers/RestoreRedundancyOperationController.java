@@ -21,7 +21,7 @@ import static org.apache.geode.management.operation.RestoreRedundancyRequest.RES
 
 import java.util.Optional;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +41,7 @@ import org.apache.geode.management.runtime.RestoreRedundancyResults;
 @RestController("restoreRedundancyOperation")
 @RequestMapping(URI_VERSION)
 public class RestoreRedundancyOperationController extends AbstractManagementController {
-  @ApiOperation(value = "start restore-redundancy")
+  @Operation(summary = "start restore-redundancy")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @PostMapping(RESTORE_REDUNDANCY_ENDPOINT)
   public ResponseEntity<ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResults>> startRestoreRedundancy(
@@ -55,14 +55,14 @@ public class RestoreRedundancyOperationController extends AbstractManagementCont
     return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
 
-  @ApiOperation(value = "list restore-redundancy")
+  @Operation(summary = "list restore-redundancy")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(RESTORE_REDUNDANCY_ENDPOINT)
   public ClusterManagementListOperationsResult<RestoreRedundancyRequest, RestoreRedundancyResults> listRestoreRedundancies() {
     return clusterManagementService.list(new RestoreRedundancyRequest());
   }
 
-  @ApiOperation(value = "get restore-redundancy")
+  @Operation(summary = "get restore-redundancy")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(RESTORE_REDUNDANCY_ENDPOINT + "/{id:.+}")
   public ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResults> getRestoreRedundancy(

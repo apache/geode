@@ -17,19 +17,20 @@ package org.apache.geode.management.internal.rest.controllers;
 
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@ApiOperation(value = "ping")
+
 @Controller("ping")
 @RequestMapping(URI_VERSION)
 public class PingManagementController extends AbstractManagementController {
 
   @GetMapping("/ping")
+  @Operation(summary = "ping")
   public ResponseEntity<String> ping() {
     return new ResponseEntity<>("pong", HttpStatus.OK);
   }

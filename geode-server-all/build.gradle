@@ -54,7 +54,7 @@ dependencies {
   // These were ext.optional in geode-core
   serverNonOptional(project(':geode-http-service'))
   serverNonOptional('org.iq80.snappy:snappy')
-  serverNonOptional('io.swagger:swagger-annotations')
+  serverNonOptional('io.swagger.core.v3:swagger-annotations')
 
 
   integrationTestImplementation(project(':geode-junit'))

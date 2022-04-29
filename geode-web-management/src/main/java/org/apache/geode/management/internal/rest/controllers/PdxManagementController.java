@@ -18,9 +18,9 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Pdx.PDX_ENDPOINT;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,11 +41,11 @@ import org.apache.geode.management.runtime.PdxInfo;
 @RequestMapping(URI_VERSION)
 public class PdxManagementController extends AbstractManagementController {
 
-  @ApiOperation(value = "configure pdx")
+  @Operation(summary = "configure pdx")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 409, message = "Pdx already configured."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "409", description = "Pdx already configured."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @PostMapping(PDX_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> configurePdx(
@@ -54,17 +54,17 @@ public class PdxManagementController extends AbstractManagementController {
     return new ResponseEntity<>(result, HttpStatus.CREATED);
   }
 
-  @ApiOperation(value = "get pdx")
+  @Operation(summary = "get pdx")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(PDX_ENDPOINT)
   public ClusterManagementGetResult<Pdx, PdxInfo> getPDX() {
     return clusterManagementService.get(new Pdx());
   }
 
-  @ApiOperation(value = "update pdx")
+  @Operation(summary = "update pdx")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @PutMapping(PDX_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> updatePdx(@RequestBody Pdx pdxType) {
@@ -73,7 +73,7 @@ public class PdxManagementController extends AbstractManagementController {
     return new ResponseEntity<>(result, HttpStatus.CREATED);
   }
 
-  @ApiOperation(value = "delete pdx")
+  @Operation(summary = "delete pdx")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @DeleteMapping(PDX_ENDPOINT)
   public ClusterManagementResult deletePDX() {
