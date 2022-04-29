@@ -1070,3 +1070,4 @@ tools/Modules/Apache_Geode_Modules-0.0.0-tcServer.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer30.zip
 tools/Modules/geode-for-redis-0.0.0.zip
 tools/Pulse/geode-pulse-0.0.0.war
+tools/Utilities/OpenAllJdkPackages.java
