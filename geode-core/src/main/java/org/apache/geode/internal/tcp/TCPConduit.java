@@ -905,7 +905,6 @@ public class TCPConduit implements Runnable {
     }
   }
 
-
   /**
    * Return a connection to the given member. This method performs quick scan for connection.
    * Only one attempt to create a connection to the given member .
@@ -933,10 +932,8 @@ public class TCPConduit implements Runnable {
 
       Exception problem = null;
       try {
-
         connection = getConnectionThatIsNotClosed(memberAddress, preserveOrder, startTime,
             ackTimeout, ackSATimeout);
-        // Get (or regenerate) the connection
 
         // we have a connection; fall through and return it
       } catch (ConnectionException e) {
