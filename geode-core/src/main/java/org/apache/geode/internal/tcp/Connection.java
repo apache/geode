@@ -2376,6 +2376,7 @@ public class Connection implements Runnable {
               Socket s = socket;
               if (s != null) {
                 try {
+                  logger.debug("closing socket", new Exception("closing socket"));
                   ioFilter.close(s.getChannel());
                   s.close();
                 } catch (IOException e) {
