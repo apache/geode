@@ -259,9 +259,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     await().untilAsserted(() -> assertThat(getSenderPoolDisconnects(vm1, senderId)).isEqualTo(0));
 
     await().untilAsserted(
-        () -> assertThat(getSenderPoolConnects(vm1, senderId)).isLessThanOrEqualTo(4));
+        () -> assertThat(getSenderPoolConnects(vm1, senderId)).isIn(3, 4));
   }
-
 
 
   private boolean allDispatchersConnectedToSameReceiver(int server) {
