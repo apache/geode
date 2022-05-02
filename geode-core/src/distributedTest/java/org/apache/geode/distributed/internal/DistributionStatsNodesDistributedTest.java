@@ -17,8 +17,7 @@ package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
-
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -28,34 +27,32 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-public class DistributionStatsNodesDistributedTest implements Serializable {
+public class DistributionStatsNodesDistributedTest {
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
+  private MemberVM locator;
+  private MemberVM server;
+
+  @Before
+  public void before() throws Exception {
+    // Start Locator
+    locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    // Start server
+    server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
+  }
+
   @Test
   public void testNodesStatistic() {
-    // Start Locator
-    MemberVM locator = cluster.startLocatorVM(0);
-
-    // Start server
-    MemberVM server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locator.getPort()));
-
     // Verify DistributionStats nodes is 1
     server.invoke(() -> verifyNodesStatistic(1));
   }
 
   @Test
   public void testDecrement() {
-    // Start Locator
-    MemberVM locator = cluster.startLocatorVM(0);
-
-    // Start server
-    MemberVM server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locator.getPort()));
-
-    CacheFactory cacheFactory = new CacheFactory();
-    InternalCache internalCache = (InternalCache) cacheFactory
-        .set("locators", "localhost[" + locator.getPort() + "]").create();
+    InternalCache internalCache = createCache(locator.getPort());
 
     DistributionManager distributionManager = internalCache.getDistributionManager();
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
@@ -69,37 +66,23 @@ public class DistributionStatsNodesDistributedTest implements Serializable {
 
   @Test
   public void testDuplicateEntry() {
-    // Start Locator
-    MemberVM locator = cluster.startLocatorVM(0);
-
-    // Start server
-    MemberVM server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locator.getPort()));
-
-    CacheFactory cacheFactory = new CacheFactory();
-    InternalCache internalCache = (InternalCache) cacheFactory
-        .set("locators", "localhost[" + locator.getPort() + "]").create();
+    int locatorPort = locator.getPort();
+    InternalCache internalCache = createCache(locatorPort);
 
     DistributionManager distributionManager = internalCache.getDistributionManager();
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
     assertThat(distributionStats.getNodes()).isEqualTo(2);
 
     server.stop();
-    cluster.startServerVM(1, s -> s.withConnectionToLocator(locator.getPort()));
+    cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
 
     assertThat(distributionStats.getNodes()).isEqualTo(2);
   }
 
   @Test
-  public void testNewTest() {
-    // Start Locator
-    MemberVM locator = cluster.startLocatorVM(0);
-
-    // Start server
-    MemberVM server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locator.getPort()));
-
-    CacheFactory cacheFactory = new CacheFactory();
-    InternalCache internalCache = (InternalCache) cacheFactory
-        .set("locators", "localhost[" + locator.getPort() + "]").create();
+  public void testNewServerWillUpdateTheStats() {
+    int locatorPort = locator.getPort();
+    InternalCache internalCache = createCache(locatorPort);
 
     DistributionManager distributionManager = internalCache.getDistributionManager();
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
@@ -107,29 +90,31 @@ public class DistributionStatsNodesDistributedTest implements Serializable {
 
     VM server2VM = VM.getVM(2);
     server2VM.invoke(() -> {
-      CacheFactory cacheFactory2 = new CacheFactory();
-      InternalCache internalCache3 = (InternalCache) cacheFactory2
-          .set("locators", "localhost[" + locator.getPort() + "]").create();
-
+      InternalCache internalCache3 = createCache(locatorPort);
       DistributionManager distributionManager3 = internalCache3.getDistributionManager();
       DistributionStats distributionStats3 = (DistributionStats) distributionManager3.getStats();
       assertThat(distributionStats3.getNodes()).isEqualTo(3);
     });
 
-    // Verify DistributionStats nodes is 1
+    // Verify DistributionStats nodes is updated
     server.invoke(() -> {
       InternalCache internalCache2 = ClusterStartupRule.getCache();
-
       DistributionManager distributionManager2 = internalCache2.getDistributionManager();
       DistributionStats distributionStats2 = (DistributionStats) distributionManager2.getStats();
       assertThat(distributionStats2.getNodes()).isEqualTo(3);
     });
   }
 
-  private void verifyNodesStatistic(int numNodes) {
+  private static void verifyNodesStatistic(int numNodes) {
     DistributionManager distributionManager =
         ClusterStartupRule.getCache().getDistributionManager();
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
     assertThat(distributionStats.getNodes()).isEqualTo(numNodes);
+  }
+
+  private static InternalCache createCache(int locatorPort) {
+    CacheFactory cacheFactory = new CacheFactory();
+    return (InternalCache) cacheFactory
+        .set("locators", "localhost[" + locatorPort + "]").create();
   }
 }

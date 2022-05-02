@@ -248,11 +248,6 @@ public class ClusterDistributionManager implements DistributionManager {
   private Map<InternalDistributedMember, Collection<String>> hostedLocatorsWithSharedConfiguration =
       Collections.emptyMap();
 
-  /**
-   * a map keyed on InternalDistributedMember, to direct channels to other systems
-   */
-  // protected final Map channelMap = CFactory.createCM();
-
   private volatile boolean readyForMessages = false;
 
   /**
@@ -380,9 +375,7 @@ public class ClusterDistributionManager implements DistributionManager {
             }
           }
         }
-        // if (!system.getDistributionManager().getViewMembers().contains(id)) {
         distributionManager.addNewMember(id); // add ourselves
-        // }
       }
 
       // Send out a StartupMessage to the other members.
@@ -2368,9 +2361,7 @@ public class ClusterDistributionManager implements DistributionManager {
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
       try {
-        // if (!dm.getViewMembers().contains(member)) {
         dm.addNewMember(member);
-        // }
       } catch (VirtualMachineError err) {
         // If this ever returns, rethrow the error. We're poisoned
         // now, so don't let this thread continue.
@@ -2397,9 +2388,8 @@ public class ClusterDistributionManager implements DistributionManager {
           message.setSender(theId);
           message.setCrashed(crashed);
           message.setAlertListenerExpected(true);
-          message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener
-          // so
-          // don't issue a warning
+          // we don't know if it was a listener so don't issue a warning
+          message.setIgnoreAlertListenerRemovalFailure(true);
           message.setRecipient(dm.getDistributionManagerId());
           message.setReason(reason);
           dm.handleIncomingDMsg(message);
