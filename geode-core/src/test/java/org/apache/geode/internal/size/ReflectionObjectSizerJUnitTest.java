@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Proxy;
+import java.util.function.Predicate;
 
 import org.junit.Test;
 
@@ -59,8 +60,10 @@ public class ReflectionObjectSizerJUnitTest {
   @Test
   public void proxyCanBeSized() {
     final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
-    Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-        new Class[] {CacheListener.class}, (proxy1, method, args) -> null);
+    ClassLoader loader = String.class.getClassLoader();
+    Object proxy = Proxy.newProxyInstance(loader,
+        new Class[] {Predicate.class}, (proxy1, method, args) -> null);
+    assertThat(Proxy.isProxyClass(proxy.getClass())).isTrue();
     long size = sizer.sizeof(proxy);
     assertThat(size).isNotZero();
   }
