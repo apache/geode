@@ -73,9 +73,9 @@ pushd /tmp
   curl -fO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
   tar xzf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz -C /
   rm google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
-  curl -fsSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
-  bash install-monitoring-agent.sh
-  rm install-monitoring-agent.sh
+  curl -fsSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
+  sudo bash  add-google-cloud-ops-agent-repo.sh --also-install
+  rm add-google-cloud-ops-agent-repo.sh
 popd
 export PATH=/google-cloud-sdk/bin:${PATH}
 gcloud config set core/disable_usage_reporting true
