@@ -770,10 +770,17 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createCustomerOrderShipmentPartitionedRegion(String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap) {
+    createCustomerOrderShipmentPartitionedRegion(senderIds, redundantCopies, totalNumBuckets,
+        offHeap, RegionShortcut.PARTITION);
+  }
+
+  public static void createCustomerOrderShipmentPartitionedRegion(String senderIds,
+      Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap,
+      RegionShortcut regionShortcut) {
     IgnoredException exp =
         addIgnoredException(ForceReattemptException.class.getName());
     try {
-      RegionFactory<?, ?> fact = cache.createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory<?, ?> fact = cache.createRegionFactory(regionShortcut);
       if (senderIds != null) {
         StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
         while (tokenizer.hasMoreTokens()) {
@@ -795,7 +802,7 @@ public class WANTestBase extends DistributedTestCase {
       paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumBuckets)
           .setColocatedWith(customerRegionName)
           .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-      fact = cache.createRegionFactory(RegionShortcut.PARTITION);
+      fact = cache.createRegionFactory(regionShortcut);
       if (senderIds != null) {
         StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
         while (tokenizer.hasMoreTokens()) {
@@ -813,7 +820,7 @@ public class WANTestBase extends DistributedTestCase {
       paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumBuckets)
           .setColocatedWith(orderRegionName)
           .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-      fact = cache.createRegionFactory(RegionShortcut.PARTITION);
+      fact = cache.createRegionFactory(regionShortcut);
       if (senderIds != null) {
         StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
         while (tokenizer.hasMoreTokens()) {

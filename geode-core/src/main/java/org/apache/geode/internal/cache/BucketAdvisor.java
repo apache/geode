@@ -888,9 +888,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           ((BucketRegion) br).beforeReleasingPrimaryLockDuringDemotion();
         }
 
+        releasePrimaryLock();
         // this was a deposePrimary call so we need to depose children as well
         deposePrimaryForColocatedChildren();
-        releasePrimaryLock();
 
         if (pRegion.isFixedPartitionedRegion()) {
           deposeOtherPrimaryBucketForFixedPartition();

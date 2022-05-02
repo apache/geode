@@ -21,23 +21,46 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
+import org.apache.logging.log4j.Logger;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.locks.DLockReleaseProcessor;
+import org.apache.geode.internal.cache.UpdateOperation;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
+import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
 public class ParallelWANConflationDistributedTest extends WANTestBase {
+  @Rule
+  public DistributedBlackboard blackboard = new DistributedBlackboard();
+
   private static final long serialVersionUID = 1L;
+  private static final Logger logger = LogService.getLogger();
+  private static final String DEPOSE_PRIMARY_MESSAGE_RECEIVED = "received_deposePrimaryMessage";
+  private static final String CONTINUE_PUT_OP = "continue_put_op";
+  private static final String CONTINUE_DEPOSE_PRIMARY = "continue_depose_primary";
 
   public ParallelWANConflationDistributedTest() {
     super();
@@ -384,6 +407,106 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
     validateColocatedRegionContents(custKeyValues, orderKeyValues, shipmentKeyValues);
   }
 
+  @Test
+  public void wanEventNotLostWhenDoOperationOnColocatedRegionsDuringRebalance() throws Exception {
+    blackboard.initBlackboard();
+
+    initialSetUp();
+    int numberOfBuckets = 2;
+    int numberOfPuts = 101;
+    int newId = numberOfPuts + 1;
+
+    createSendersNoConflation();
+
+    Stream.of(vm4, vm5, vm6)
+        .forEach(server -> server.invoke(this::addDistributionMessageObserver));
+
+    vm4.invoke(
+        () -> createCustomerOrderShipmentPartitionedRegion("ln", 1, numberOfBuckets, isOffHeap(),
+            RegionShortcut.PARTITION_PROXY));
+    vm5.invoke(
+        () -> createCustomerOrderShipmentPartitionedRegion("ln", 1, numberOfBuckets, isOffHeap()));
+
+    startSenderInVMs("ln", vm4, vm5, vm6);
+    vm2.invoke(
+        () -> createCustomerOrderShipmentPartitionedRegion(null, 0, numberOfBuckets, isOffHeap()));
+    vm3.invoke(
+        () -> createCustomerOrderShipmentPartitionedRegion(null, 0, numberOfBuckets, isOffHeap()));
+
+    vm4.invoke(() -> putCustomerPartitionedRegion(numberOfPuts));
+    vm4.invoke(() -> putOrderPartitionedRegion(numberOfPuts));
+    vm4.invoke(() -> putShipmentPartitionedRegion(numberOfPuts));
+
+    vm6.invoke(
+        () -> createCustomerOrderShipmentPartitionedRegion("ln", 1, numberOfBuckets, isOffHeap()));
+
+    AsyncInvocation<?> asyncInvocation = vm4.invokeAsync(this::doRebalance);
+
+    if (!blackboard.isGateSignaled(DEPOSE_PRIMARY_MESSAGE_RECEIVED)) {
+      blackboard.waitForGate(DEPOSE_PRIMARY_MESSAGE_RECEIVED);
+    }
+    vm4.invokeAsync(() -> putInShipmentRegion(newId));
+
+    if (!blackboard.isGateSignaled(CONTINUE_PUT_OP)) {
+      blackboard.waitForGate(CONTINUE_PUT_OP);
+    }
+    vm4.invokeAsync(() -> putInCustomerRegion(newId));
+    vm4.invokeAsync(() -> putInOrderRegion(newId));
+
+    asyncInvocation.get();
+
+    vm2.invoke(() -> verifyContent(newId));
+    vm3.invoke(() -> verifyContent(newId));
+  }
+
+  private void addDistributionMessageObserver() {
+    DistributionMessageObserver.setInstance(new TestDistributionMessageObserver());
+  }
+
+  private RebalanceResults doRebalance() throws Exception {
+    ResourceManager manager = cache.getResourceManager();
+    return manager.createRebalanceFactory().includeRegions(null).start().getResults();
+  }
+
+  private void putInCustomerRegion(int id) {
+    CustId custid = new CustId(id);
+    Customer customer = new Customer("name" + id, "Address" + id);
+    customerRegion.put(custid, customer);
+  }
+
+  private void putInOrderRegion(int id) {
+    CustId custid = new CustId(id);
+    int oid = id + 1;
+    OrderId orderId = new OrderId(oid, custid);
+    Order order = new Order("ORDER" + oid);
+    orderRegion.put(orderId, order);
+  }
+
+  private void putInShipmentRegion(int id) {
+    CustId custid = new CustId(id);
+    int oid = id + 1;
+    OrderId orderId = new OrderId(oid, custid);
+    int sid = oid + 1;
+    ShipmentId shipmentId = new ShipmentId(sid, orderId);
+    Shipment shipment = new Shipment("Shipment" + sid);
+    shipmentRegion.put(shipmentId, shipment);
+  }
+
+  private void verifyContent(int id) {
+    CustId custid = new CustId(id);
+    int oid = id + 1;
+    OrderId orderId = new OrderId(oid, custid);
+    int sid = oid + 1;
+    ShipmentId shipmentId = new ShipmentId(sid, orderId);
+
+    await().atMost(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(orderRegion.get(orderId)).isNotNull());
+    await().atMost(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(shipmentRegion.get(shipmentId)).isNotNull());
+    await().atMost(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(customerRegion.get(custid)).isNotNull());
+  }
+
   protected void validateColocatedRegionContents(Map<?, ?> custKeyValues, Map<?, ?> orderKeyValues,
       Map<?, ?> shipmentKeyValues) {
     vm2.invoke(() -> validateRegionSize(WANTestBase.customerRegionName, custKeyValues.size()));
@@ -508,4 +631,44 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
     vm7.invoke(() -> createSender("ln", 2, true, 100, 2, true, false, null, true));
   }
 
+  private class TestDistributionMessageObserver extends DistributionMessageObserver {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      if (message instanceof DeposePrimaryBucketMessage) {
+        logger.info(
+            "TestDistributionMessageObserver.beforeProcessMessage about to signal received_deposePrimaryMessage gate",
+            new Exception());
+        blackboard.signalGate(DEPOSE_PRIMARY_MESSAGE_RECEIVED);
+        logger.info(
+            "TestDistributionMessageObserver.beforeProcessMessage done signal received_deposePrimaryMessage gate");
+      } else if (message instanceof DLockReleaseProcessor.DLockReleaseReplyMessage
+          && blackboard.isGateSignaled(DEPOSE_PRIMARY_MESSAGE_RECEIVED)) {
+        try {
+          logger.info(
+              "TestDistributionMessageObserver.beforeSendMessage about to signal on continue_put_op");
+          blackboard.signalGate(CONTINUE_PUT_OP);
+
+          logger.info(
+              "TestDistributionMessageObserver.beforeSendMessage waits for signal on "
+                  + CONTINUE_DEPOSE_PRIMARY);
+          blackboard.waitForGate(CONTINUE_DEPOSE_PRIMARY);
+          logger.info(
+              "TestDistributionMessageObserver.beforeSendMessage done wait for signal on "
+                  + CONTINUE_DEPOSE_PRIMARY);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      if (blackboard.isGateSignaled(DEPOSE_PRIMARY_MESSAGE_RECEIVED)) {
+        if (message instanceof UpdateOperation.UpdateMessage) {
+          logger.info(
+              "TestDistributionMessageObserver.beforeSendMessage sending signal to stop wait on "
+                  + CONTINUE_DEPOSE_PRIMARY);
+          blackboard.signalGate(CONTINUE_DEPOSE_PRIMARY);
+        }
+      }
+    }
+  }
 }

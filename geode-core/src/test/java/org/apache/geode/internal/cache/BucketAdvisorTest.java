@@ -23,7 +23,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.PartitionAttributes;
@@ -318,32 +316,5 @@ class BucketAdvisorTest {
     assertThat(bucketAdvisor.putProfile(bp2, true)).isTrue();
 
     assertThat(bucketAdvisor.adviseInitialized().size()).isEqualTo(1);
-  }
-
-  @Test
-  void removePrimaryDeposePrimaryForColocatedChildrenBeforeReleasePrimaryLock() {
-    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
-    Bucket bucket = mock(Bucket.class);
-    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
-    when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
-    when(regionAdvisor.getBucket(any(Integer.class))).thenReturn(bucket);
-    when(partitionedRegion.getPartitionAttributes()).thenReturn(new PartitionAttributesImpl());
-    when(bucket.getDistributionManager()).thenReturn(mock(DistributionManager.class));
-    BucketAdvisor bucketAdvisor = spy(BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor));
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    DistributionManager manager = mock(DistributionManager.class);
-    doReturn(true).when(bucketAdvisor).isPrimary();
-    doReturn(manager).when(bucketAdvisor).getDistributionManager();
-    when(manager.getId()).thenReturn(member);
-    bucketAdvisor.setPrimaryMember(member);
-    bucketAdvisor.setInitialized();
-    doNothing().when(bucketAdvisor).deposePrimaryForColocatedChildren();
-
-    InOrder order = inOrder(bucketAdvisor);
-    bucketAdvisor.removePrimary(member);
-
-    order.verify(bucketAdvisor).deposePrimaryForColocatedChildren();
-    order.verify(bucketAdvisor).releasePrimaryLock();
-    assertThat(bucketAdvisor.basicGetPrimaryMember()).isNull();
   }
 }
