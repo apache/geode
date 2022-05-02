@@ -262,7 +262,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
         () -> assertThat(getSenderPoolConnects(vm1, senderId)).isIn(3, 4));
   }
 
-  
+
   /**
    * The aim of this test is verify that when several gateway receivers in a remote site share the
    * same port and hostname-for-senders, the pings sent from the gateway senders reach the right
