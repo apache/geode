@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -545,23 +544,6 @@ public class DLockGrantor {
     }
   }
 
-  void checkIfMemberDeparted(DLockRequestMessage request) {
-    synchronized (membersDepartedTime) {
-      if (membersDepartedTime.containsKey(request.getSender())) {
-        logger.info(
-            "XXX DLockGrantor.checkIfMemberDeparted about to throw CacheClosedException owner={}; membersDepartedTimeSize={}; membersDepartedTime={}",
-            request.getSender(), membersDepartedTime.size(), membersDepartedTime);
-        throw new CacheClosedException(
-            "The lock request for " + request.getObjectName() + " in " + dlock.getName()
-                + " was not granted because the host " + request.getSender()
-                + " is no longer a member of the cluster.");
-      } else {
-        logger.info("XXX DLockGrantor.checkIfMemberDeparted member hasn't departed member={}",
-            request.getSender());
-      }
-    }
-  }
-
   /**
    * Returns transaction optimized lock batches that were created by the specified owner.
    * <p>
@@ -797,6 +779,7 @@ public class DLockGrantor {
    * @throws LockGrantorDestroyedException if grantor is destroyed
    */
   void handleLockRequest(DLockRequestMessage request) throws InterruptedException {
+    logger.info("XXX DLockGrantor.handleLockRequest request={}", request);
     Assert.assertTrue(request.getRemoteThread() != null);
     if (request.getObjectName() instanceof DLockBatch) {
       handleLockBatch(request);
@@ -840,7 +823,6 @@ public class DLockGrantor {
       }
       checkDestroyed();
       if (acquireLockPermission(request)) {
-        checkIfMemberDeparted(request);
         handlePermittedLockRequest(request);
       } else {
         // request has been added to suspendQueue for deferred handling
@@ -865,6 +847,7 @@ public class DLockGrantor {
     }
     Assert.assertTrue(request.getRemoteThread() != null);
     DLockGrantToken grant = getOrCreateGrant(request.getObjectName());
+    logger.info("XXX DLockGrantor.handlePermittedLockRequest token={}", grant);
     try {
 
       // try to grant immediately if not currently granted...
@@ -2911,7 +2894,13 @@ public class DLockGrantor {
         }
 
         Assert.assertTrue(request.getRemoteThread() != null);
-        if (!grantor.dm.isCurrentMember(request.getSender())) {
+        logger.info(
+            "XXX DLockGrantToken.grantAndRespondToRequest currentMember={}; distributionManagerIdsContainsMember={}",
+            request.getSender(),
+            grantor.dm.getDistributionManagerIds().contains(request.getSender()));
+        if (!grantor.dm.getDistributionManagerIds().contains(request.getSender())) {
+          logger.info("XXX DLockGrantToken.grantAndRespondToRequest returning -1 currentMember={}",
+              request.getSender(), new Exception());
           grantor.cleanupSuspendState(request);
           return -1;
         }
@@ -2947,6 +2936,8 @@ public class DLockGrantor {
         // NOTE: if grantor is local and client interrupts the request, the
         // following will release the lock because the reply processor is gone
         request.respondWithGrant(newLeaseExpireTime);
+        logger.info("XXX DLockGrantToken.grantAndRespondToRequest done respondWithGrant request={}",
+            request);
         if (!isLeaseHeldBy(request.getSender(), request.getLockId())) {
           // lock request was local and interrupted then released
           return -1;

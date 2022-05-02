@@ -14,12 +14,10 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.Serializable;
-import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
@@ -70,15 +68,13 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
     MemberVM locator = cluster.startLocatorVM(0);
 
     // Start the grantor server
-    Properties properties = new Properties();
-    properties.setProperty(LOG_LEVEL, "fine");
-    MemberVM grantorServer = cluster.startServerVM(1, properties, locator.getPort());
+    MemberVM grantorServer = cluster.startServerVM(1, locator.getPort());
 
     // Become lock grantor for the DistributedLockService
     grantorServer.invoke(this::becomeLockGrantor);
 
     // Start the lock requesting server
-    MemberVM lockRequestingServer = cluster.startServerVM(2, properties, locator.getPort());
+    MemberVM lockRequestingServer = cluster.startServerVM(2, locator.getPort());
 
     // Add the DistributionMessageObserver
     String lockName = testName.getMethodName() + "_lockName";
@@ -101,8 +97,14 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
     // Verify the lock requesting server is disconnected
     lockRequestingServer.invoke(this::verifyCacheIsClosed);
 
-    // Verify the grantor server holds no locks for the lock requesting server
-    grantorServer.invoke(() -> verifyLockServiceDoesNotHoldToken(lockName));
+    // Verify the grantor server hasn't granted the lock to the lock requesting server
+    grantorServer.invoke(() -> verifyLockIsNotGranted(lockName));
+
+    // Start another lock requesting server
+    MemberVM lockRequestingServer2 = cluster.startServerVM(3, locator.getPort());
+
+    // Request and get the lock
+    lockRequestingServer2.invoke(() -> requestAndGetDistributedLock(lockName));
   }
 
   private void becomeLockGrantor() {
@@ -138,15 +140,22 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
     assertThat(ClusterStartupRule.getCache().isClosed()).isTrue();
   }
 
-  private void verifyLockServiceDoesNotHoldToken(Object lockName) {
-    // Verify no the lock token is not held by the grantor server after the lock requesting server
-    // has departed
+  private void verifyLockIsNotGranted(Object lockName) {
     DLockService dLockService =
         (DLockService) ClusterStartupRule.getCache().getPartitionedRegionLockService();
     assertThat(dLockService.isLockGrantor()).isTrue();
     DLockGrantor dLockGrantor = dLockService.getGrantor();
     DLockGrantor.DLockGrantToken grantToken = dLockGrantor.getGrantToken(lockName);
-    assertThat(grantToken).isNull();
+    assertThat(grantToken).isNotNull();
+    assertThat(grantToken.getOwner()).isNull();
+  }
+
+  private void requestAndGetDistributedLock(String lockName) {
+    // Request a distributed lock from the partitioned region lock service
+    DistributedLockService service =
+        ClusterStartupRule.getCache().getPartitionedRegionLockService();
+    boolean gotLock = service.lock(lockName, GeodeAwaitility.getTimeout().toMillis(), -1);
+    assertThat(gotLock).isTrue();
   }
 
   class TestDistributionMessageObserver extends DistributionMessageObserver implements
