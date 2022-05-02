@@ -17,7 +17,7 @@
 
 plugins {
 //  id 'com.github.spotbugs'
-  id 'jacoco' apply false
+  id 'jacoco'
 }
 
 if (project.hasProperty("staticAnalysis")) {

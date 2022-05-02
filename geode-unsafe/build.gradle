@@ -16,9 +16,10 @@
  */
 
 plugins {
-  id 'java-library' ; // TODO
+  id 'java-library'
   id 'standard-subproject-configuration'
   id 'geode-publish-java'
+  id 'warnings'
 }
 
 dependencies {

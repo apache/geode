@@ -21,33 +21,7 @@ import org.gradle.api.tasks.testing.Test;
 public class RepeatTestPlugin implements Plugin<Project> {
   public void apply(Project project) {
     // this plugin doesn't create any task by default
-
-//    project.getTasks().withType(Test).each { Test origTestTask ->
-//      def baseName = origTestTask.name
-//      def newTaskName = baseName.equals('test') ? "unitTest" : baseName
-//
-//        project.tasks.register('repeat' + newTaskName.capitalize(), RepeatTest) {
-//          group = 'Verification'
-//
-//          dependsOn { origTestTask.taskDependencies }
-//          classpath = project.sourceSets[baseName].runtimeClasspath
-//          testClassesDirs = project.sourceSets[baseName].output.classesDirs
-//
-//          useJUnitPlatform()
-//
-//          times = Integer.parseInt(System.getProperty('repeat'))
-//          forkEvery 1
-//
-//          testFramework.options.excludeTags += "org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks"
-//
-//          outputs.upToDateWhen { false }
-//
-//          if (project.hasProperty("failOnNoMatchingTests")) {
-//            filter {
-//              setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
-//            }
-//          }
-//        }
-//    }
+    // TODO: Look at how Dale did the test-isolation instrumentation to configure existing tasks on the project, and
+    //  also any new tasks created on the project, and use that to create our repeat tasks
   }
 }
