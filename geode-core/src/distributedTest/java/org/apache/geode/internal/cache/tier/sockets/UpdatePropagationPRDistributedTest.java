@@ -21,7 +21,7 @@ import org.apache.geode.cache.RegionAttributes;
 /**
  * subclass of UpdatePropagationDUnitTest to exercise partitioned regions
  */
-public class UpdatePropagationPRDUnitTest extends UpdatePropagationDUnitTest {
+public class UpdatePropagationPRDistributedTest extends UpdatePropagationDistributedTest {
 
   @Override
   protected RegionAttributes createCacheServerAttributes() {
