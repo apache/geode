@@ -62,7 +62,7 @@ public class MemberJvmOptions {
    * open needed by {@link VMStats50}
    */
   private static final String COM_SUN_MANAGEMENT_INTERNAL_OPEN =
-      "--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED";
+      "--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED";
 
   static final List<String> JAVA_11_OPTIONS = Arrays.asList(
       COM_SUN_JMX_REMOTE_SECURITY_EXPORT,
