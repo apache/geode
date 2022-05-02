@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
@@ -499,12 +498,9 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
     int sid = oid + 1;
     ShipmentId shipmentId = new ShipmentId(sid, orderId);
 
-    await().atMost(15, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(orderRegion.get(orderId)).isNotNull());
-    await().atMost(15, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(shipmentRegion.get(shipmentId)).isNotNull());
-    await().atMost(15, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(customerRegion.get(custid)).isNotNull());
+    await().untilAsserted(() -> assertThat(orderRegion.get(orderId)).isNotNull());
+    await().untilAsserted(() -> assertThat(shipmentRegion.get(shipmentId)).isNotNull());
+    await().untilAsserted(() -> assertThat(customerRegion.get(custid)).isNotNull());
   }
 
   protected void validateColocatedRegionContents(Map<?, ?> custKeyValues, Map<?, ?> orderKeyValues,
