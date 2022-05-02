@@ -24,7 +24,6 @@ import java.util.function.Predicate;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.CacheListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
