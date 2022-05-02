@@ -14,12 +14,16 @@
  */
 package org.apache.geode.internal.size;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
 
+import java.lang.reflect.Proxy;
+
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -50,6 +54,15 @@ public class ReflectionObjectSizerJUnitTest {
 
     assertEquals(sizeWithoutReference, sizer.sizeof(distributedSystemReference));
     assertNotEquals(sizeWithoutReference, sizer.sizeof(stringReference));
+  }
+
+  @Test
+  public void proxyCanBeSized() {
+    final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
+    Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+        new Class[] {CacheListener.class}, (proxy1, method, args) -> null);
+    long size = sizer.sizeof(proxy);
+    assertThat(size).isNotZero();
   }
 
   private static class TestObject {
