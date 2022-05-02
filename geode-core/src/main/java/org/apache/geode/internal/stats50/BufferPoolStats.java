@@ -84,7 +84,7 @@ public class BufferPoolStats {
         final StatisticsFactory statisticsFactory, final long id) {
       this.bean = bean;
       this.statistics =
-          statisticsFactory.createStatistics(bufferPoolType, bean.getName() + " buffer pool", id);
+          statisticsFactory.createStatistics(bufferPoolType, bean.getName() + "BufferPool", id);
     }
 
     void refresh() {
