@@ -301,7 +301,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * Caller must synchronize on this BucketAdvisor.
    *
    */
-  void deposePrimaryForColocatedChildren() {
+  private void deposePrimaryForColocatedChildren() {
     boolean deposedChildPrimaries = true;
     List<PartitionedRegion> colocatedChildPRs = ColocationHelper.getColocatedChildRegions(pRegion);
     if (colocatedChildPRs != null) {
@@ -837,7 +837,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @param member the member who is not primary
    */
-  void removePrimary(InternalDistributedMember member) {
+  private void removePrimary(InternalDistributedMember member) {
     boolean needToVolunteerForPrimary = false;
     if (!isClosed()) { // hole: requestPrimaryState not hosting
       initializationGate();
@@ -1663,7 +1663,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @param id the member to use as primary for this bucket
    */
-  synchronized void setPrimaryMember(InternalDistributedMember id) {
+  private void setPrimaryMember(InternalDistributedMember id) {
     if (!getDistributionManager().getId().equals(id)) {
       // volunteerForPrimary handles primary state change if its our id
       if (isHosting()) {
@@ -1802,7 +1802,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Releases the primary lock for this bucket.
    */
-  void releasePrimaryLock() {
+  private void releasePrimaryLock() {
     // We don't have a lock if we have a parent advisor
     if (parentAdvisor != null) {
       return;
