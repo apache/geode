@@ -2894,13 +2894,9 @@ public class DLockGrantor {
         }
 
         Assert.assertTrue(request.getRemoteThread() != null);
-        logger.info(
-            "XXX DLockGrantToken.grantAndRespondToRequest currentMember={}; distributionManagerIdsContainsMember={}",
-            request.getSender(),
-            grantor.dm.getDistributionManagerIds().contains(request.getSender()));
         if (!grantor.dm.getDistributionManagerIds().contains(request.getSender())) {
-          logger.info("XXX DLockGrantToken.grantAndRespondToRequest returning -1 currentMember={}",
-              request.getSender(), new Exception());
+          logger.info("XXX DLockGrantToken.grantAndRespondToRequest returning -1 request={}",
+              request);
           grantor.cleanupSuspendState(request);
           return -1;
         }
