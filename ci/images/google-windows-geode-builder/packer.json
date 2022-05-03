@@ -42,6 +42,22 @@
     {
       "type": "powershell",
       "inline": [
+        "(New-Object Net.WebClient).DownloadFile(\"https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.ps1\", \"c:/add-google-cloud-ops-agent-repo.ps1\")",
+        "Invoke-Expression \"c:/add-google-cloud-ops-agent-repo.ps1 -Verbose -AlsoInstall\"",
+        "while ($true) {",
+        "  try {",
+        "    Get-Service -Name google-cloud-ops-agent",
+        "    break",
+        "  } catch {",
+        "    Write-Warning \"Wating on service google-cloud-ops-agent\"",
+        "    Start-Sleep -s 10",
+        "  }",
+        "}"
+      ]
+    },
+    {
+      "type": "powershell",
+      "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
         "Install-WindowsFeature Containers"
@@ -97,24 +113,6 @@
         "winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'",
         "New-NetFirewallRule -DisplayName sshd -Direction inbound -Action allow -Protocol tcp -LocalPort 22",
         "New-NetFirewallRule -DisplayName \"Docker containers\" -LocalAddress 172.0.0.0/8 -Action allow -Direction inbound"
-      ]
-    },
-    {
-      "type": "powershell",
-      "inline": [
-        "$ErrorActionPreference = \"Stop\"",
-        "Set-ExecutionPolicy Bypass -Scope Process -Force",
-        "(New-Object Net.WebClient).DownloadFile(\"https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.ps1\", \"${env:UserProfile}\\add-google-cloud-ops-agent-repo.ps1\")",
-        "Invoke-Expression \"${env:UserProfile}\\add-google-cloud-ops-agent-repo.ps1 -AlsoInstall\"",
-        "while ($true) {",
-        "  try {",
-        "    Get-Service -Name google-cloud-ops-agent",
-        "    break",
-        "  } catch {",
-        "    Write-Warning \"Wating on service google-cloud-ops-agent\"",
-        "    Start-Sleep -s 10",
-        "  }",
-        "}"
       ]
     },
     {
