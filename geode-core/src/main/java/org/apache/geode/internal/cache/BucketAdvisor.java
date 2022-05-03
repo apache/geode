@@ -142,15 +142,15 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * A read/write lock to prevent making this bucket not primary while a write is in progress on the
    * bucket.
    */
-  private final ReadWriteLock primaryMoveReadWriteLock = new ReentrantReadWriteLock();
-  private final Lock primaryMoveReadLock = primaryMoveReadWriteLock.readLock();
-  private final Lock primaryMoveWriteLock = primaryMoveReadWriteLock.writeLock();
+  private final ReadWriteLock primaryMoveReadWriteLock;
+  private final Lock primaryMoveReadLock;
+  private final Lock primaryMoveWriteLock;
 
   /**
    * The advisor for the bucket region that we are colocated with, if this region is a colocated
    * region.
    */
-  private BucketAdvisor parentAdvisor;
+  private final BucketAdvisor parentAdvisor;
 
   /**
    * The member that is responsible for choosing the primary for this bucket. While this field is
@@ -180,7 +180,15 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     pRegion = this.regionAdvisor.getPartitionedRegion();
     redundancyTracker =
         new BucketRedundancyTracker(pRegion.getRedundantCopies(), pRegion.getRedundancyTracker());
-    resetParentAdvisor(bucket.getId());
+    parentAdvisor = getParentAdvisor(bucket.getId());
+
+    if (parentAdvisor == null) {
+      primaryMoveReadWriteLock = new ReentrantReadWriteLock();
+    } else {
+      primaryMoveReadWriteLock = parentAdvisor.primaryMoveReadWriteLock;
+    }
+    primaryMoveReadLock = primaryMoveReadWriteLock.readLock();
+    primaryMoveWriteLock = primaryMoveReadWriteLock.writeLock();
   }
 
   public static BucketAdvisor createBucketAdvisor(Bucket bucket, RegionAdvisor regionAdvisor) {
@@ -189,7 +197,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     return advisor;
   }
 
-  private void resetParentAdvisor(int bucketId) {
+  private BucketAdvisor getParentAdvisor(int bucketId) {
     PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(pRegion);
     if (colocatedRegion != null) {
       if (colocatedRegion.isFixedPartitionedRegion()) {
@@ -197,18 +205,15 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         if (fpas != null) {
           for (FixedPartitionAttributesImpl fpa : fpas) {
             if (fpa.hasBucket(bucketId)) {
-              parentAdvisor =
-                  colocatedRegion.getRegionAdvisor().getBucketAdvisor(fpa.getStartingBucketID());
-              break;
+              return colocatedRegion.getRegionAdvisor().getBucketAdvisor(fpa.getStartingBucketID());
             }
           }
         }
       } else {
-        parentAdvisor = colocatedRegion.getRegionAdvisor().getBucketAdvisor(bucketId);
+        return colocatedRegion.getRegionAdvisor().getBucketAdvisor(bucketId);
       }
-    } else {
-      parentAdvisor = null;
     }
+    return null;
   }
 
   private void assignStartingBucketAdvisorIfFixedPartitioned() {
@@ -238,19 +243,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   public Lock getPrimaryMoveReadLock() {
     return primaryMoveReadLock;
-  }
-
-  /**
-   * Returns the lock that prevents the parent's primary from moving while active writes are in
-   * progress. This should be locked before checking if the local bucket is primary.
-   *
-   * @return the lock for in-progress write operations
-   */
-  Lock getParentPrimaryMoveReadLock() {
-    if (parentAdvisor != null) {
-      return parentAdvisor.getPrimaryMoveReadLock();
-    }
-    return null;
   }
 
   /**
@@ -899,6 +891,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         releasePrimaryLock();
         // this was a deposePrimary call so we need to depose children as well
         deposePrimaryForColocatedChildren();
+
         if (pRegion.isFixedPartitionedRegion()) {
           deposeOtherPrimaryBucketForFixedPartition();
         }
