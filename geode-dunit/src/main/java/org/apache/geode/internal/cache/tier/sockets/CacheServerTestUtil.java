@@ -22,8 +22,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -94,8 +94,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     createClientCache(poolAttr, regionName, getClientProperties());
   }
 
-  public static void createClientCache(Pool poolAttr, String regionName, Properties dsProperties)
-      throws Exception {
+  public static void createClientCache(Pool poolAttr, String regionName, Properties dsProperties) {
     ClientCacheFactory ccf = new ClientCacheFactory(dsProperties);
     if (poolAttr != null) {
       ccf.setPoolFreeConnectionTimeout(poolAttr.getFreeConnectionTimeout())
@@ -131,22 +130,10 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     pool = (PoolImpl) cc.getDefaultPool();
   }
 
-  public static void createPool(PoolAttributes poolAttr) throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-
-    DistributedSystem ds = new CacheServerTestUtil().getSystem(props);
-
+  public static void createPool(PoolAttributes poolAttr) {
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
-    PoolImpl p = (PoolImpl) pf.create("CacheServerTestUtil");
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.LOCAL);
-    factory.setPoolName(p.getName());
-
-    RegionAttributes attrs = factory.create();
-    pool = p;
+    pool = (PoolImpl) pf.create("CacheServerTestUtil");
   }
 
   public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties,
@@ -155,12 +142,12 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
   }
 
   public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties,
-      Boolean addControlListener, Properties javaSystemProperties) throws Exception {
+      Boolean addControlListener, Properties javaSystemProperties) {
     new CacheServerTestUtil().createCache(dsProperties);
     IgnoredException.addIgnoredException("java.net.ConnectException||java.net.SocketException");
 
     if (javaSystemProperties != null && javaSystemProperties.size() > 0) {
-      Enumeration e = javaSystemProperties.propertyNames();
+      Enumeration<?> e = javaSystemProperties.propertyNames();
 
       while (e.hasMoreElements()) {
         String key = (String) e.nextElement();
@@ -171,20 +158,20 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
     PoolImpl p = (PoolImpl) pf.create("CacheServerTestUtil");
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<Object, Object> factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
     if (addControlListener) {
       factory.addCacheListener(new ControlListener());
     }
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<Object, Object> attrs = factory.create();
     cache.createRegion(regionName, attrs);
     pool = p;
   }
 
   public static void unsetJavaSystemProperties(Properties javaSystemProperties) {
     if (javaSystemProperties != null && javaSystemProperties.size() > 0) {
-      Enumeration e = javaSystemProperties.propertyNames();
+      Enumeration<?> e = javaSystemProperties.propertyNames();
 
       while (e.hasMoreElements()) {
         String key = (String) e.nextElement();
@@ -193,16 +180,15 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void createCacheClient(Pool poolAttr, String regionName1, String regionName2)
-      throws Exception {
+  public static void createCacheClient(Pool poolAttr, String regionName1, String regionName2) {
     new CacheServerTestUtil().createCache(getClientProperties());
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
     PoolImpl p = (PoolImpl) pf.create("CacheServerTestUtil");
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<Object, Object> factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<Object, Object> attrs = factory.create();
     cache.createRegion(regionName1, attrs);
     cache.createRegion(regionName2, attrs);
     pool = p;
@@ -284,21 +270,21 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
    * Create client regions
    */
   public static void createCacheClients(Pool poolAttr, String regionName1, String regionName2,
-      Properties dsProperties) throws Exception {
+      Properties dsProperties) {
     new CacheServerTestUtil().createCache(dsProperties);
 
     // Initialize region1
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
     Pool p = pf.create("CacheServerTestUtil1");
-    AttributesFactory factory1 = new AttributesFactory();
+    AttributesFactory<Object, Object> factory1 = new AttributesFactory<>();
     factory1.setScope(Scope.LOCAL);
     factory1.setPoolName(p.getName());
     cache.createRegion(regionName1, factory1.create());
 
     // Initialize region2
     p = pf.create("CacheServerTestUtil2");
-    AttributesFactory factory2 = new AttributesFactory();
+    AttributesFactory<Object, Object> factory2 = new AttributesFactory<>();
     factory2.setScope(Scope.LOCAL);
     factory2.setPoolName(p.getName());
     cache.createRegion(regionName2, factory2.create());
@@ -338,11 +324,11 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     new CacheServerTestUtil().createCache(props);
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<Object, Object> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<Object, Object> attrs = factory.create();
     cache.createRegion(regionName, attrs);
     CacheServer server = cache.addCacheServer();
     server.setPort(serverPort);
@@ -353,11 +339,11 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
   public static Integer createCacheServer(String regionName1, String regionName2,
       Boolean notifyBySubscription) throws Exception {
     new CacheServerTestUtil().createCache(new Properties());
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<Object, Object> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<Object, Object> attrs = factory.create();
     if (!regionName1.equals("")) {
       cache.createRegion(regionName1, attrs);
     }
@@ -372,23 +358,23 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     return server1.getPort();
   }
 
-  private void createCache(Properties props) throws Exception {
+  private void createCache(Properties props) {
     DistributedSystem ds = getSystem(props);
-    assertNotNull(ds);
+    assertThat(ds).isNotNull();
     ds.disconnect();
     ds = getSystem(props);
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
   }
 
-  private void createClientCache(Properties props, ClientCacheFactory ccf) throws Exception {
+  private void createClientCache(Properties props, ClientCacheFactory ccf) {
     DistributedSystem ds = getSystem(props);
-    assertNotNull(ds);
+    assertThat(ds).isNotNull();
     ds.disconnect();
     ClientCache cc = ccf.create();
     setSystem(props, cc.getDistributedSystem());
     cache = (Cache) cc;
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
     expected = IgnoredException
         .addIgnoredException("java.net.ConnectionException||java.net.SocketException");
   }
@@ -491,10 +477,10 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
   }
 
   public static class ControlListener extends CacheListenerAdapter implements Declarable {
-    public final LinkedList<EventWrapper> events = new LinkedList();
-    public final LinkedList<EntryEvent> createEvents = new LinkedList();
-    public final LinkedList<EntryEvent> updateEvents = new LinkedList();
-    public final LinkedList<EntryEvent> destroyEvents = new LinkedList();
+    public final LinkedList<EventWrapper> events = new LinkedList<>();
+    public final LinkedList<EntryEvent> createEvents = new LinkedList<>();
+    public final LinkedList<EntryEvent> updateEvents = new LinkedList<>();
+    public final LinkedList<EntryEvent> destroyEvents = new LinkedList<>();
     public final Object CONTROL_LOCK = new Object();
 
     // added to test creation of cache from xml
@@ -509,6 +495,11 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       return waitWhileNotEnoughEvents(sleepMs, eventCount, getEvents(eventType));
     }
 
+
+    /**
+     * This method is not implemented to test event count matches the eventsToCheck.size() which is
+     * confusing. It will wait and return if it got something in the eventsToCheck or not.
+     */
     public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount, List eventsToCheck) {
       long maxMillis = System.currentTimeMillis() + sleepMs;
       synchronized (CONTROL_LOCK) {
@@ -528,7 +519,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     }
 
     public List getEvents(int eventType) {
-      List eventsToCheck = null;
+      List eventsToCheck;
       switch (eventType) {
         case TYPE_CREATE:
           eventsToCheck = createEvents;

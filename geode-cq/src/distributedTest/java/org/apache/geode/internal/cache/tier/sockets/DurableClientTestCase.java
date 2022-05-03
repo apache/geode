@@ -16,12 +16,18 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClient;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheServer;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheServerReturnPorts;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getCache;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getClientCache;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.unsetJavaSystemProperties;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -71,26 +77,26 @@ public class DurableClientTestCase extends DurableClientTestBase {
    * not
    */
   @Test
-  public void testSpecialDurableProperty() throws InterruptedException {
+  public void testSpecialDurableProperty() {
     final Properties jp = new Properties();
     jp.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
 
     try {
 
       server1Port = server1VM
-          .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+          .invoke(() -> createCacheServer(regionName, true));
 
       durableClientId = getName() + "_client";
       final String dId = durableClientId + "_gem_" + "CacheServerTestUtil";
 
-      durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-          getClientPool(NetworkUtils.getServerHostName(), server1Port, Boolean.TRUE),
+      durableClientVM.invoke(() -> createCacheClient(
+          getClientPool(NetworkUtils.getServerHostName(), server1Port, true),
           regionName, getClientDistributedSystemProperties(durableClientId,
               DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT),
-          Boolean.TRUE, jp));
+          true, jp));
 
       durableClientVM.invoke(() -> {
-        await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+        await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
             .pollInterval(100, MILLISECONDS)
             .until(CacheServerTestUtil::getCache, notNullValue());
       });
@@ -122,7 +128,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
       disconnectDurableClient(false);
 
       // Verify the durable client is present on the server for closeCache=false case.
-      verifyDurableClientNotPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT,
+      verifyDurableClientNotPresent(
           durableClientId, server1VM);
 
       // Stop the server
@@ -131,7 +137,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
       closeDurableClient();
     } finally {
 
-      durableClientVM.invoke(() -> CacheServerTestUtil.unsetJavaSystemProperties(jp));
+      durableClientVM.invoke(() -> unsetJavaSystemProperties(jp));
     }
 
   }
@@ -151,7 +157,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
 
     // Re-start the durable client
-    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
+    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, true);
 
     // Verify durable client on server
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
@@ -181,13 +187,12 @@ public class DurableClientTestCase extends DurableClientTestBase {
       assertThat(proxy).isNotNull();
       assertThat(proxy._socket).isNotNull();
 
-      await()
-          .untilAsserted(() -> assertThat(proxy._socket.isClosed()).isTrue());
+      await().untilAsserted(() -> assertThat(proxy._socket.isClosed()).isTrue());
     });
 
     // Re-start the durable client (this is necessary so the
     // netDown test will set the appropriate system properties.
-    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
+    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, true);
 
     // Stop the durable client
     durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
@@ -210,7 +215,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     disconnectDurableClient(true);
 
     // Verify it no longer exists on the server
-    server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
+    server1VM.invoke("Verify durable client", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         // Find the proxy
@@ -220,7 +225,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
       }
     });
 
-    restartDurableClient(durableClientTimeout, Boolean.TRUE);
+    restartDurableClient(durableClientTimeout, true);
 
     // Stop the durable client
     durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
@@ -239,13 +244,13 @@ public class DurableClientTestCase extends DurableClientTestBase {
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
     // Start normal publisher client
-    publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+    publisherClientVM.invoke(() -> createCacheClient(
         getClientPool(NetworkUtils.getServerHostName(), server1Port,
             false),
         regionName));
 
     // Publish some entries
-    publishEntries(0, 1);
+    publishEntries(publisherClientVM, 0, 1);
 
     // Wait until queue count is 0 on server1VM
     waitUntilQueueContainsRequiredNumberOfEvents(server1VM, 0);
@@ -260,7 +265,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     server1VM.invoke(DurableClientTestBase::waitForCacheClientProxyPaused);
 
     // Publish some more entries
-    publishEntries(1, 1);
+    publishEntries(publisherClientVM, 1, 1);
 
     // Verify the durable client's queue contains the entries
     waitUntilQueueContainsRequiredNumberOfEvents(server1VM, 1);
@@ -269,7 +274,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     verifyListenerUpdatesDisconnected(1);
 
     // Re-start the durable client
-    restartDurableClient(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, Boolean.TRUE);
+    restartDurableClient(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, true);
 
     // Verify durable client on server
     verifyDurableClientPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
@@ -299,13 +304,13 @@ public class DurableClientTestCase extends DurableClientTestBase {
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
     // Start normal publisher client
-    publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+    publisherClientVM.invoke(() -> createCacheClient(
         getClientPool(NetworkUtils.getServerHostName(), server1Port,
             false),
         regionName));
 
     // Publish some entries
-    publishEntries(0, 1);
+    publishEntries(publisherClientVM, 0, 1);
 
     // Verify the durable client received the updates
     checkListenerEvents(1, 1, -1, durableClientVM);
@@ -324,10 +329,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
     server1VM.invoke(DurableClientTestBase::waitForCacheClientProxyPaused);
 
     // Publish some entries
-    publishEntries(1, 1);
+    publishEntries(publisherClientVM, 1, 1);
 
     // Verify the durable client's queue contains the entries
-    server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
+    server1VM.invoke("Verify durable client", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         CacheClientProxy proxy = getClientProxy();
@@ -341,7 +346,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     verifyListenerUpdatesDisconnected(1);
 
     // Re-start the durable client
-    restartDurableClient(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, Boolean.TRUE);
+    restartDurableClient(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, true);
 
     // Verify durable client on server
     verifyDurableClientPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
@@ -368,25 +373,25 @@ public class DurableClientTestCase extends DurableClientTestBase {
     // Start a server
     // Start server 1
     Integer[] ports = server1VM.invoke(
-        () -> CacheServerTestUtil.createCacheServerReturnPorts(regionName, Boolean.TRUE));
+        () -> createCacheServerReturnPorts(regionName, true));
     final int serverPort = ports[0];
 
     // Start a durable client that is not kept alive on the server when it
     // stops normally
     final String durableClientId = getName() + "_client";
-    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+    durableClientVM.invoke(() -> createCacheClient(
         getClientPool(NetworkUtils.getServerHostName(), serverPort, true),
-        regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
-
-    // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
-      @Override
-      public void run2() throws CacheException {
-        CacheServerTestUtil.getClientCache().readyForEvents();
-      }
-    });
+        regionName, getClientDistributedSystemProperties(durableClientId), true));
 
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
+
+    // Send clientReady message
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        getClientCache().readyForEvents();
+      }
+    });
 
     // Verify durable client on server
     verifyDurableClientPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
@@ -396,21 +401,18 @@ public class DurableClientTestCase extends DurableClientTestBase {
     server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Re-start the server
-    server1VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
-        serverPort));
+    server1VM.invoke(() -> createCacheServer(regionName, true, serverPort));
 
     // Verify durable client on server
     verifyDurableClientPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, durableClientId,
         server1VM);
 
     // Start a publisher
-    publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(), serverPort,
-            false),
-        regionName));
+    publisherClientVM.invoke(() -> createCacheClient(getClientPool(NetworkUtils.getServerHostName(),
+        serverPort, false), regionName));
 
     // Publish some entries
-    publishEntries(0, 10);
+    publishEntries(publisherClientVM, 0, 10);
 
     // Verify the durable client received the updates
     checkListenerEvents(10, 1, -1, durableClientVM);
@@ -429,6 +431,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
   @Test
   public void testDurableNonHAFailover() {
     durableFailover(0);
+  }
+
+  @Test
+  public void testDurableNonHAFailoverAfterReconnect() {
     durableFailoverAfterReconnect(0);
   }
 
@@ -437,6 +443,12 @@ public class DurableClientTestCase extends DurableClientTestBase {
     // Clients see this when the servers disconnect
     IgnoredException.addIgnoredException("Could not find any server");
     durableFailover(1);
+  }
+
+  @Test
+  public void testDurableHAFailoverAfterReconnect() {
+    // Clients see this when the servers disconnect
+    IgnoredException.addIgnoredException("Could not find any server");
     durableFailoverAfterReconnect(1);
   }
 
@@ -446,14 +458,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
    * Redundancy level is set to 1 for this test case.
    */
   private void durableFailover(int redundancyLevel) {
-
     // Start server 1
-    server1Port = server1VM.invoke(
-        () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+    server1Port = server1VM.invoke(() -> createCacheServer(regionName, true));
 
-    // Start server 2 using the same mcast port as server 1
-    final int server2Port = server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+    final int server2Port = server2VM.invoke(() -> createCacheServer(regionName, true));
 
     // Stop server 2
     server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
@@ -471,61 +479,74 @@ public class DurableClientTestCase extends DurableClientTestBase {
     }
 
     durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
-    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(clientPool, regionName,
+    durableClientVM.invoke(() -> createCacheClient(clientPool, regionName,
         getClientDistributedSystemProperties(durableClientId, VERY_LONG_DURABLE_TIMEOUT_SECONDS),
-        Boolean.TRUE));
-
-    // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
-      @Override
-      public void run2() throws CacheException {
-        CacheServerTestUtil.getClientCache().readyForEvents();
-      }
-    });
+        true));
 
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
-    // Re-start server2
-    server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
-        server2Port));
+    // Send clientReady message
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        getCache().readyForEvents();
+      }
+    });
 
+    // Verify the durable client is connected to server1
+    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+
+    // Re-start server2 and wait for it to be up.
+    server2VM.invoke(() -> createCacheServer(regionName, true, server2Port));
+
+    if (redundancyLevel == 1) {
+      // Verify the durable client is connected to server2
+      verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server2VM);
+    }
     // Start normal publisher client
-    publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(), server1Port,
-            server2Port, false),
-        regionName));
+    publisherClientVM.invoke(() -> createCacheClient(getClientPool(
+        NetworkUtils.getServerHostName(), server1Port, server2Port,
+        false), regionName));
 
     // Publish some entries
-    publishEntries(0, 1);
+    publishEntries(publisherClientVM, 0, 1);
 
     // Verify the durable client received the updates
     checkListenerEvents(1, 1, -1, durableClientVM);
 
+    // Wait to until the HARegionQueue has emptied before disconnecting the Durable client
+    // to avoid having left over messages that processed, in particular, the key 0 message
+    waitUntilHARegionQueueSizeIsZero(server1VM);
+
     // Stop the durable client, which discards the known entry
     disconnectDurableClient(true);
 
-    // Publish updates during client downtime
-    publishEntries(1, 1);
+    // Put key 1 during client downtime
+    publishEntries(publisherClientVM, 1, 1);
 
     // Re-start the durable client that is kept alive on the server
-    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, clientPool, Boolean.TRUE);
+    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, clientPool, true);
 
+    // Re-register interest
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
-    publishEntries(2, 1);
+    // Send clientReady message
+    sendClientReady(durableClientVM);
 
-    // Verify the durable client received the updates before failover
+    // put key 2
+    publishEntries(publisherClientVM, 2, 1);
+
+    // Verify the durable client received the 2 total updates
     checkListenerEvents(2, 1, -1, durableClientVM);
 
-    durableClientVM.invoke("Get", () -> {
-      await().untilAsserted(() -> {
-        Region<Object, Object> region = getCache().getRegion(regionName);
-        assertThat(region).isNotNull();
+    // Verify that the 0 entry is not present, but that 2 is.
+    durableClientVM.invoke("Get", () -> await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+      Region<Object, Object> region = getCache().getRegion(regionName);
+      assertThat(region).isNotNull();
 
-        assertThat(region.getEntry("0")).isNull();
-        assertThat(region.getEntry("2")).isNotNull();
-      });
-    });
+      assertThat(region.getEntry("0")).isNull();
+      assertThat(region.getEntry("2")).isNotNull();
+    }));
 
     // Stop server 1
     server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
@@ -535,7 +556,8 @@ public class DurableClientTestCase extends DurableClientTestBase {
       server2VM.invoke(this::verifyClientHasConnected);
     }
 
-    publishEntries(3, 1);
+    // put key 3
+    publishEntries(publisherClientVM, 3, 1);
 
     // Verify the durable client received the updates after failover
     checkListenerEvents(3, 1, -1, durableClientVM);
@@ -550,13 +572,16 @@ public class DurableClientTestCase extends DurableClientTestBase {
     server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
+  /**
+   * wait unit we have the required number of events in the queue
+   */
   private void waitUntilQueueContainsRequiredNumberOfEvents(final VM vm,
       final int requiredEntryCount) {
-    vm.invoke(new CacheSerializableRunnable("Verify durable client") {
+    vm.invoke("Verify durable client", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
 
-        await().until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).until(() -> {
           CacheClientProxy proxy = getClientProxy();
           if (proxy == null) {
             return false;
@@ -571,11 +596,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
   private void durableFailoverAfterReconnect(int redundancyLevel) {
     // Start server 1
-    server1Port = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, true));
+    server1Port = server1VM.invoke(() -> createCacheServer(regionName, true));
 
-    int server2Port = server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, true));
+    // start server 2
+    final int server2Port = server2VM.invoke(() -> createCacheServer(regionName, true));
 
     // Start a durable client
     durableClientId = getName() + "_client";
@@ -590,73 +614,90 @@ public class DurableClientTestCase extends DurableClientTestBase {
     }
 
     durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
-    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(clientPool, regionName,
+    // Create the durable client cache (type = cache)
+    durableClientVM.invoke(() -> createCacheClient(clientPool, regionName,
         getClientDistributedSystemProperties(durableClientId, VERY_LONG_DURABLE_TIMEOUT_SECONDS),
-        Boolean.TRUE));
+        true));
+
+    // Register interest in all entries in the region
+    registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
     // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
+        getCache().readyForEvents();
       }
     });
 
-    registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
-
+    // Verify the durable client is connected to the servers.
+    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+    if (redundancyLevel == 1) {
+      verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server2VM);
+    }
     // Start normal publisher client
-    publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+    publisherClientVM.invoke(() -> createCacheClient(
         getClientPool(NetworkUtils.getServerHostName(), server1Port,
             server2Port, false),
         regionName));
 
-    // Publish some entries
-    publishEntries(0, 1);
+    // put key 0
+    publishEntries(publisherClientVM, 0, 1);
 
-    // Verify the durable client received the updates
+    // Verify the durable client received key 0
     checkListenerEvents(1, 1, -1, durableClientVM);
 
-    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+    // Wait to until the HARegionQueue has emptied before disconnecting the Durable client
+    // to avoid having left over messages that processed, in particular, the key 0 message
+    waitUntilHARegionQueueSizeIsZero(server1VM);
+    if (redundancyLevel == 1) {
+      waitUntilHARegionQueueSizeIsZero(server2VM);
+    }
 
     // Stop the durable client
     disconnectDurableClient(true);
 
-    // Stop server 1 - publisher will put 10 entries during shutdown/primary identification
+    // Stop server 1 - publisher will put 1 entries during shutdown/primary identification
     server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
-    // Publish updates during client downtime
-    publishEntries(1, 1);
+    // Put key 1 during client downtime
+    publishEntries(publisherClientVM, 1, 1);
 
     // Re-start the durable client that is kept alive on the server
-    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, clientPool, Boolean.TRUE);
+    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, clientPool, true);
 
+    // Re-register interest in all entries in the region
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
-    publishEntries(2, 2);
+    // Send clientReady message
+    sendClientReady(durableClientVM);
+
+    // Put keys 2 and 3
+    publishEntries(publisherClientVM, 2, 2);
 
     // Verify the durable client received the updates before failover
+    if (redundancyLevel == 1) {
+      checkListenerEvents(3, 1, -1, durableClientVM);
+    } else {
+      checkListenerEvents(1, 1, -1, durableClientVM);
+    }
+
+    // Verify that key 0 is not present
+    durableClientVM.invoke("Get", () -> await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      Region<Object, Object> region = getCache().getRegion(regionName);
+      assertThat(region).isNotNull();
+
+      assertThat(region.getEntry("0")).isNull();
+    }));
+
+    // put key 4
+    publishEntries(publisherClientVM, 4, 1);
+
+    // Verify the durable client received the updates after failover
     if (redundancyLevel == 1) {
       checkListenerEvents(4, 1, -1, durableClientVM);
     } else {
       checkListenerEvents(2, 1, -1, durableClientVM);
-    }
-
-    durableClientVM.invoke("Get", () -> {
-      await().untilAsserted(() -> {
-        Region<Object, Object> region = getCache().getRegion(regionName);
-        assertThat(region).isNotNull();
-        // Register interest in all keys
-        assertThat(region.getEntry("0")).isNull();
-      });
-    });
-
-    publishEntries(4, 1);
-
-    // Verify the durable client received the updates after failover
-    if (redundancyLevel == 1) {
-      checkListenerEvents(5, 1, -1, durableClientVM);
-    } else {
-      checkListenerEvents(3, 1, -1, durableClientVM);
     }
 
     // Stop the durable client
@@ -669,8 +710,9 @@ public class DurableClientTestCase extends DurableClientTestBase {
     server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
+
   private void verifyClientHasConnected() {
-    CacheServer cacheServer = CacheServerTestUtil.getCache().getCacheServers().get(0);
+    CacheServer cacheServer = getCache().getCacheServers().get(0);
     CacheClientNotifier ccn =
         ((InternalCacheServer) cacheServer).getAcceptor().getCacheClientNotifier();
     await().until(() -> ccn.getClientProxies().size() == 1);

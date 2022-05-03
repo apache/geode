@@ -19,7 +19,6 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.CacheServerImpl.CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
@@ -33,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.PartitionAttributes;
@@ -43,10 +42,10 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 
-public class BucketAdvisorTest {
+class BucketAdvisorTest {
 
   @Test
-  public void shouldBeMockable() throws Exception {
+  void shouldBeMockable() throws Exception {
     BucketAdvisor mockBucketAdvisor = mock(BucketAdvisor.class);
     InternalDistributedMember mockInternalDistributedMember = mock(InternalDistributedMember.class);
 
@@ -58,7 +57,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void whenServerStopsAfterTheFirstIsRunningCheckThenItShouldNotBeAddedToLocations() {
+  void whenServerStopsAfterTheFirstIsRunningCheckThenItShouldNotBeAddedToLocations() {
     InternalCache mockCache = mock(InternalCache.class);
     ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
     RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
@@ -86,7 +85,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void whenServerThrowsIllegalStateExceptionWithoutBindAddressMsgThenExceptionMustBeThrown() {
+  void whenServerThrowsIllegalStateExceptionWithoutBindAddressMsgThenExceptionMustBeThrown() {
     InternalCache mockCache = mock(InternalCache.class);
     ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
     RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
@@ -114,7 +113,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void volunteerForPrimaryIgnoresMissingPrimaryElector() {
+  void volunteerForPrimaryIgnoresMissingPrimaryElector() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -153,12 +152,13 @@ public class BucketAdvisorTest {
         mock(BucketAdvisor.VolunteeringDelegate.class);
     advisorSpy.setVolunteeringDelegate(volunteeringDelegate);
     advisorSpy.initializePrimaryElector(missingElectorId);
-    assertEquals(missingElectorId, advisorSpy.getPrimaryElector());
+    assertThat(missingElectorId).isEqualTo(advisorSpy.getPrimaryElector());
     advisorSpy.volunteerForPrimary();
     verify(volunteeringDelegate).volunteerForPrimary();
   }
 
-  BucketAdvisor mockBucketAdvisorWithShadowBucketsDestroyedMap(Map<String, Boolean> shadowBuckets) {
+  BucketAdvisor mockBucketAdvisorWithShadowBucketsDestroyedMap(
+      Map<String, Boolean> shadowBuckets) {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -180,7 +180,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void markAllShadowBucketsAsNonDestroyedShouldClearTheShadowBucketsDestroyedMap() {
+  void markAllShadowBucketsAsNonDestroyedShouldClearTheShadowBucketsDestroyedMap() {
     Map<String, Boolean> buckets = of(SEPARATOR + "b1", false, SEPARATOR + "b2", true);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
 
@@ -190,7 +190,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void markAllShadowBucketsAsDestroyedShouldSetTheFlagAsTrueForEveryKnownShadowBucket() {
+  void markAllShadowBucketsAsDestroyedShouldSetTheFlagAsTrueForEveryKnownShadowBucket() {
     Map<String, Boolean> buckets =
         of(SEPARATOR + "b1", false, SEPARATOR + "b2", false, SEPARATOR + "b3", false);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
@@ -201,7 +201,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void markShadowBucketAsDestroyedShouldSetTheFlagAsTrueOnlyForTheSpecificBucket() {
+  void markShadowBucketAsDestroyedShouldSetTheFlagAsTrueOnlyForTheSpecificBucket() {
     Map<String, Boolean> buckets = of(SEPARATOR + "b1", false);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
 
@@ -217,7 +217,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void isShadowBucketDestroyedShouldReturnCorrectly() {
+  void isShadowBucketDestroyedShouldReturnCorrectly() {
     Map<String, Boolean> buckets = of(SEPARATOR + "b1", true, SEPARATOR + "b2", false);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
 
@@ -230,7 +230,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void testGetAllHostingMembersReturnsNoMembersWhenBucketAdvisorHasNoProfiles() {
+  void testGetAllHostingMembersReturnsNoMembersWhenBucketAdvisorHasNoProfiles() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -252,7 +252,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasOneProfileWithHostingBucket() {
+  void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasOneProfileWithHostingBucket() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     InternalDistributedMember memberId = new InternalDistributedMember("localhost", 321);
 
@@ -282,7 +282,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasTwoProfilesAndOneIsHostingBucket() {
+  void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasTwoProfilesAndOneIsHostingBucket() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     InternalDistributedMember memberId = new InternalDistributedMember("localhost", 321);
     InternalDistributedMember memberId2 = new InternalDistributedMember("localhost", 323);

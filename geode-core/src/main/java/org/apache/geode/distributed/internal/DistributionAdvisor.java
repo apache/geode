@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -1176,15 +1177,15 @@ public class DistributionAdvisor {
     // empty by default
   }
 
-  /**
+  /*
    * All advise methods go through this method
    */
-  protected Set<InternalDistributedMember> adviseFilter(Filter f) {
+  protected Set<InternalDistributedMember> adviseFilter(Predicate<Profile> f) {
     initializationGate();
     Set<InternalDistributedMember> recipients = null;
     Profile[] locProfiles = profiles; // grab current profiles
     for (Profile profile : locProfiles) {
-      if (f == null || f.include(profile)) {
+      if (f == null || f.test(profile)) {
         if (recipients == null) {
           recipients = new HashSet<>();
         }
@@ -1198,15 +1199,16 @@ public class DistributionAdvisor {
   }
 
   /**
-   * This method calls filter->include on every profile until include returns true.
+   * This method calls predicate->test on every profile until include returns true.
    *
-   * @return false if all filter->include calls returns false; otherwise true.
+   * @param f the predicate to test with
+   * @return false if all predicate->test calls returns false; otherwise true.
    **/
-  protected boolean satisfiesFilter(Filter f) {
+  protected boolean satisfiesFilter(Predicate<Profile> f) {
     initializationGate();
     Profile[] locProfiles = profiles; // grab current profiles
     for (Profile p : locProfiles) {
-      if (f.include(p)) {
+      if (f.test(p)) {
         return true;
       }
     }
@@ -1215,7 +1217,7 @@ public class DistributionAdvisor {
 
   /**
    * Invoke the given {@link ProfileVisitor} on all the {@link Profile}s exiting when the
-   * {@link ProfileVisitor#visit} method returns false. Unlike the {@link #adviseFilter(Filter)}
+   * {@link ProfileVisitor#visit} method returns false. Unlike the {@link #adviseFilter(Predicate)}
    * method this does assume the return type to be a Set of qualifying members rather allows for
    * population of an arbitrary aggregator passed as the argument to this method.
    *
@@ -1243,17 +1245,17 @@ public class DistributionAdvisor {
     return true;
   }
 
-  /**
-   * Get an unmodifiable list of the {@code Profile}s that match the given {@code Filter}.
+  /*
+   * Get an unmodifiable list of the {@code Profile}s that match the given {@code Predicate}.
    *
    * @since GemFire 5.7
    */
-  protected List<Profile> fetchProfiles(Filter f) {
+  protected List<Profile> fetchProfiles(Predicate<Profile> f) {
     initializationGate();
     List<Profile> result = null;
     Profile[] locProfiles = profiles;
     for (Profile profile : locProfiles) {
-      if (f == null || f.include(profile)) {
+      if (f == null || f.test(profile)) {
         if (result == null) {
           result = new ArrayList<>(locProfiles.length);
         }
@@ -1372,8 +1374,8 @@ public class DistributionAdvisor {
 
   /**
    * A visitor interface for all the available profiles used by
-   * {@link DistributionAdvisor#accept(ProfileVisitor, Object)}. Unlike the {@link Filter} class
-   * this does not assume of two state visit of inclusion or exclusion rather allows manipulation of
+   * {@link DistributionAdvisor#accept(ProfileVisitor, Object)}.
+   * This does not assume of two state visit of inclusion or exclusion rather allows manipulation of
    * an arbitrary aggregator that has been passed to the {@link #visit} method. In addition this is
    * public for use by other classes.
    */
@@ -1394,12 +1396,6 @@ public class DistributionAdvisor {
      */
     boolean visit(DistributionAdvisor advisor, Profile profile, int profileIndex, int numProfiles,
         T aggregate);
-  }
-
-  @FunctionalInterface
-  protected interface Filter {
-
-    boolean include(Profile profile);
   }
 
   /**

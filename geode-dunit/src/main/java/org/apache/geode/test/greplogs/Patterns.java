@@ -58,7 +58,11 @@ public enum Patterns {
   /** "{}" literal which is probably unused Log4J parameter */
   MALFORMED_LOG4J_MESSAGE(compile("\\{\\}")),
   /** "{}" literal used for hydra master locators wildcard */
-  HYDRA_MASTER_LOCATORS_WILDCARD(compile("hydra\\.MasterDescription\\.master\\.locators=\\{\\}"));
+  HYDRA_MASTER_LOCATORS_WILDCARD(compile("hydra\\.MasterDescription\\.master\\.locators=\\{\\}")),
+  /**
+   * "Management Request:" messages "Management Request: PUT[url=/management/v1/deployments]...."
+   */
+  MANAGEMENT_REQUEST(compile("Management Request:"));
 
   private final Pattern pattern;
 

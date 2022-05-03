@@ -799,7 +799,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   /**
-   * lock this bucket and, if present, its colocated "parent"
+   * lock this bucket
    *
    * @param tryLock - whether to use tryLock (true) or a blocking lock (false)
    * @return true if locks were obtained and are still held
@@ -832,41 +832,20 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   private boolean lockPrimaryStateReadLock(boolean tryLock) {
     Lock primaryMoveReadLock = getBucketAdvisor().getPrimaryMoveReadLock();
-    Lock parentLock = getBucketAdvisor().getParentPrimaryMoveReadLock();
     for (;;) {
       boolean interrupted = Thread.interrupted();
       try {
         // Get the lock. If we have to wait here, it's because
         // this VM is actively becoming "not primary". We don't want
         // to throw an exception until this VM is actually no longer
-        // primary, so we wait here for not primary to complete. See bug #39963
-        if (parentLock != null) {
-          if (tryLock) {
-            boolean locked = parentLock.tryLock();
-            if (!locked) {
-              return false;
-            }
-          } else {
-            parentLock.lockInterruptibly();
-          }
-          if (tryLock) {
-            boolean locked = primaryMoveReadLock.tryLock();
-            if (!locked) {
-              parentLock.unlock();
-              return false;
-            }
-          } else {
-            primaryMoveReadLock.lockInterruptibly();
+        // primary, so we wait here for not primary to complete.
+        if (tryLock) {
+          boolean locked = primaryMoveReadLock.tryLock();
+          if (!locked) {
+            return false;
           }
         } else {
-          if (tryLock) {
-            boolean locked = primaryMoveReadLock.tryLock();
-            if (!locked) {
-              return false;
-            }
-          } else {
-            primaryMoveReadLock.lockInterruptibly();
-          }
+          primaryMoveReadLock.lockInterruptibly();
         }
         break; // success
       } catch (InterruptedException e) {
@@ -886,10 +865,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public void doUnlockForPrimary() {
     Lock primaryMoveReadLock = getBucketAdvisor().getPrimaryMoveReadLock();
     primaryMoveReadLock.unlock();
-    Lock parentLock = getBucketAdvisor().getParentPrimaryMoveReadLock();
-    if (parentLock != null) {
-      parentLock.unlock();
-    }
   }
 
   /**

@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +28,7 @@ import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Responsible for pinging live servers to make sure they are still alive.
@@ -41,26 +43,48 @@ public class LiveServerPinger extends EndpointListenerAdapter {
   protected final InternalPool pool;
   protected final long pingIntervalNanos;
 
+  /**
+   * Initial delay offset time between LiveServerPinger tasks. Time in milliseconds.
+   */
+  public static final int INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS =
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX
+          + "LiveServerPinger.INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS", 0);
+
+  private final AtomicInteger initialDelayIndex = new AtomicInteger(0);
+
+
   public LiveServerPinger(InternalPool pool) {
     this.pool = pool;
-    pingIntervalNanos = ((pool.getPingInterval() + 1) / 2) * NANOS_PER_MS;
+    pingIntervalNanos = TimeUnit.MILLISECONDS.toNanos((pool.getPingInterval() + 1) / 2);
   }
 
   @Override
   public void endpointCrashed(Endpoint endpoint) {
+    resetInitialDelay();
     cancelFuture(endpoint);
   }
 
   @Override
   public void endpointNoLongerInUse(Endpoint endpoint) {
+    resetInitialDelay();
     cancelFuture(endpoint);
   }
 
+  /**
+   * At each registration of new endpoint increase counter for calculation of initial delay offset
+   *
+   */
   @Override
   public void endpointNowInUse(Endpoint endpoint) {
     try {
+      long initDelay = calculateInitialDelay();
+
+      // initDelay - the time to delay first execution
+      // pingIntervalNanos - the delay between the termination of one execution and the commencement
+      // of the next
+
       Future future = pool.getBackgroundProcessor().scheduleWithFixedDelay(new PingTask(endpoint),
-          pingIntervalNanos, pingIntervalNanos, TimeUnit.NANOSECONDS);
+          initDelay, pingIntervalNanos, TimeUnit.NANOSECONDS);
       taskFutures.put(endpoint, future);
     } catch (RejectedExecutionException e) {
       if (!pool.getCancelCriterion().isCancelInProgress()) {
@@ -74,6 +98,19 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     if (future != null) {
       future.cancel(false);
     }
+  }
+
+
+  long calculateInitialDelay() {
+    long initDelay = initialDelayIndex.getAndIncrement();
+    initDelay =
+        TimeUnit.MILLISECONDS.toNanos(initDelay * INITIAL_DELAY_MULTIPLIER_IN_MILLISECONDS)
+            + pingIntervalNanos;
+    return initDelay;
+  }
+
+  void resetInitialDelay() {
+    initialDelayIndex.set(0);
   }
 
   private class PingTask extends PoolTask {
