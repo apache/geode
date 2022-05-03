@@ -58,10 +58,16 @@ public class MemberJvmOptions {
    * open needed by {@link AddressableMemoryManager}
    */
   private static final String JAVA_NIO_OPEN = "--add-opens=java.base/java.nio=ALL-UNNAMED";
+  /**
+   * open needed by {@link VMStats50}
+   */
+  private static final String COM_SUN_MANAGEMENT_INTERNAL_OPEN =
+      "--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED";
 
   static final List<String> JAVA_11_OPTIONS = Arrays.asList(
       COM_SUN_JMX_REMOTE_SECURITY_EXPORT,
       SUN_NIO_CH_EXPORT,
+      COM_SUN_MANAGEMENT_INTERNAL_OPEN,
       JAVA_LANG_OPEN,
       JAVA_NIO_OPEN,
       SUN_MANAGEMENT_OPEN);
