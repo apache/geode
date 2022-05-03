@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -589,7 +590,13 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         // should mean we are now primary
         return;
       }
-      my_executor.execute(() -> basicHandlePrimaryDestroy(gatewayEvent.getEventId(), false));
+      try {
+        my_executor.execute(() -> basicHandlePrimaryDestroy(gatewayEvent.getEventId(), false));
+      } catch (RejectedExecutionException exception) {
+        if (!sender.getCache().getCancelCriterion().isCancelInProgress()) {
+          throw exception;
+        }
+      }
     }
   }
 
