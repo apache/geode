@@ -83,29 +83,6 @@ dependencies {
 }
 ```
 
-**Connect to the server from your application**
- 
-```
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-
-public class HelloWorld {
-
-  public static void main(String[] args) {
-      ClientCache cache = new ClientCacheFactory().addPoolLocator("127.0.0.1", 10334).create();
-
-      System.out.println(cache.getDefaultPool().getLocators());
-
-      cache.close();
- }
-}
-```
-
-The information printed out should match the host and port of your <%=vars.product_name_long%> instance locators and should resemble
-
-```
-[/127.0.0.1:10334]
-```
 
 **Simple Put and Get with <%=vars.product_name_long%> Java client**
  
