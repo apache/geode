@@ -27,6 +27,7 @@ configurations {
   jdbcTestingJars
 }
 def jdbcJarsDir = "$buildDir/generated-resources/jdbcJars"
+
 sourceSets {
   distributedTest {
     resources {
@@ -38,6 +39,10 @@ sourceSets {
 task downloadJdbcJars(type:Copy) {
   from {configurations.jdbcTestingJars}
   into jdbcJarsDir
+}
+
+processDistributedTestResources {
+  dependsOn('downloadJdbcJars')
 }
 
 dependencies {
