@@ -12,9 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.rules;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static java.lang.String.format;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,9 +25,11 @@ import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-public class StatusLocatorRealGfshTest {
+public class GfshRuleExampleTest {
 
   private int locatorPort;
+  private int httpPort;
+  private int jmxPort;
 
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
@@ -35,32 +38,19 @@ public class StatusLocatorRealGfshTest {
 
   @Before
   public void setUp() {
-    locatorPort = getRandomAvailableTCPPort();
+    int[] ports = getRandomAvailableTCPPorts(3);
+    locatorPort = ports[0];
+    httpPort = ports[1];
+    jmxPort = ports[2];
   }
 
   @Test
-  public void statusLocatorSucceedsWhenConnected() {
+  public void test() {
     GfshScript
-        .of("start locator --name=locator1 --port=" + locatorPort)
-        .execute(gfshRule);
-
-    GfshScript
-        .of("connect --locator=localhost[" + locatorPort + "]",
-            "status locator --name=locator1")
-        .execute(gfshRule);
-  }
-
-  @Test
-  public void statusLocatorFailsWhenNotConnected() {
-    GfshScript
-        .of("start locator --name=locator1 --port=" + locatorPort)
-        .withName("start-locator")
-        .execute(gfshRule);
-
-    GfshScript
-        .of("status locator --name=locator1")
-        .withName("status-locator")
-        .expectFailure()
+        .of(format(
+            "start locator --name=locator --port=%d --http-service-port=%d --J=-Dgeode.jmx-manager-port=%d",
+            locatorPort, httpPort, jmxPort),
+            "start server --name=server --disable-default-server")
         .execute(gfshRule);
   }
 }

@@ -14,124 +14,157 @@
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
-import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.TestVersions.atLeast;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecutor;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * This test iterates through the versions of Geode and executes client compatibility with
  * the current version of Geode.
  */
-@Category({BackwardCompatibilityTest.class})
+@Category(BackwardCompatibilityTest.class)
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RollingUpgradeWithGfshDUnitTest {
-  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
-  private final String oldVersion;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.10.0") < 0);
-    return result;
+  @Parameters(name = "{0}")
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(atLeast(TestVersion.valueOf("1.10.0"))))
+        .collect(toList());
   }
 
-  @Rule
-  public GfshRule oldGfsh;
+  private static final String HOSTNAME = "localhost";
 
-  @Rule
-  public GfshRule currentGfsh = new GfshRule();
+  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
 
-  @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
+  private final VmConfiguration sourceVmConfiguration;
 
-  public RollingUpgradeWithGfshDUnitTest(String version) {
-    oldVersion = version;
-    oldGfsh = new GfshRule(oldVersion);
+  private GfshExecutor currentGfsh;
+  private GfshExecutor oldGfsh;
+
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule();
+
+  public RollingUpgradeWithGfshDUnitTest(VmConfiguration sourceVmConfiguration) {
+    this.sourceVmConfiguration = sourceVmConfiguration;
+  }
+
+  @Before
+  public void setUp() {
+    currentGfsh = gfshRule.executor()
+        .build(folderRule.getFolder().toPath());
+    oldGfsh = gfshRule.executor()
+        .withVmConfiguration(sourceVmConfiguration)
+        .build(folderRule.getFolder().toPath());
   }
 
   @Test
-  public void testRollingUpgradeWithDeployment() throws Exception {
+  public void testRollingUpgradeWithDeployment() throws IOException {
     int locatorPort = portSupplier.getAvailablePort();
     int locatorJmxPort = portSupplier.getAvailablePort();
     int locator2Port = portSupplier.getAvailablePort();
     int locator2JmxPort = portSupplier.getAvailablePort();
     int server1Port = portSupplier.getAvailablePort();
     int server2Port = portSupplier.getAvailablePort();
-    final String hostname = "localhost";
 
-    GfshExecution startupExecution =
-        GfshScript.of(startLocatorCommand("loc1", hostname, locatorPort, locatorJmxPort, 0,
-            -1))
-            .and(startLocatorCommand("loc2", hostname, locator2Port, locator2JmxPort, 0,
-                locatorPort))
-            .and(startServerCommand("server1", hostname, server1Port, locatorPort))
-            .and(startServerCommand("server2", hostname, server2Port, locatorPort))
-            .and(deployDirCommand())
-            .execute(oldGfsh);
+    GfshExecution startupExecution = GfshScript
+        .of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, 0, -1))
+        .and(startLocatorCommand("loc2", locator2Port, locator2JmxPort, 0, locatorPort))
+        .and(startServerCommand("server1", server1Port, locatorPort))
+        .and(startServerCommand("server2", server2Port, locatorPort))
+        .and(deployDirCommand())
+        .execute(oldGfsh);
 
     // doing rolling upgrades
-    oldGfsh.stopLocator(startupExecution, "loc1");
+    startupExecution.locatorStopper().stop("loc1");
     GfshScript
-        .of(startLocatorCommand("loc1", hostname, locatorPort, locatorJmxPort, 0,
-            locator2Port))
+        .of(startLocatorCommand("loc1", locatorPort, locatorJmxPort, 0, locator2Port))
         .execute(currentGfsh);
     verifyListDeployed(locatorPort);
 
-    oldGfsh.stopLocator(startupExecution, "loc2");
+    startupExecution.locatorStopper().stop("loc2");
     GfshScript
-        .of(startLocatorCommand("loc2", hostname, locator2Port, locator2JmxPort, 0,
-            locatorPort))
+        .of(startLocatorCommand("loc2", locator2Port, locator2JmxPort, 0, locatorPort))
         .execute(currentGfsh);
     verifyListDeployed(locator2Port);
 
     // make sure servers can do rolling upgrade too
-    oldGfsh.stopServer(startupExecution, "server1");
-    GfshScript.of(startServerCommand("server1", hostname, server1Port, locatorPort))
+    startupExecution.serverStopper().stop("server1");
+    GfshScript
+        .of(startServerCommand("server1", server1Port, locatorPort))
         .execute(currentGfsh);
 
-    oldGfsh.stopServer(startupExecution, "server2");
-    GfshScript.of(startServerCommand("server2", hostname, server2Port, locatorPort))
+    startupExecution.serverStopper().stop("server2");
+    GfshScript
+        .of(startServerCommand("server2", server2Port, locatorPort))
         .execute(currentGfsh);
   }
 
   private void verifyListDeployed(int locatorPort) {
-    GfshExecution list_deployed = GfshScript.of("connect --locator=localhost[" + locatorPort + "]")
-        .and("list deployed").execute(currentGfsh);
-    assertThat(list_deployed.getOutputText()).contains("DeployCommandsDUnit1.jar")
-        .contains("server1").contains("server2");
+    GfshExecution list_deployed = GfshScript
+        .of("connect --locator=" + HOSTNAME + "[" + locatorPort + "]")
+        .and("list deployed")
+        .execute(currentGfsh);
+    assertThat(list_deployed.getOutputText())
+        .contains("DeployCommandsDUnit1.jar")
+        .contains("server1")
+        .contains("server2");
     currentGfsh.execute("disconnect");
   }
 
   private String deployDirCommand() throws IOException {
     ClassBuilder classBuilder = new ClassBuilder();
-    File jarsDir = tempFolder.newFolder();
+    File jarsDir = folderRule.getFolder().toPath().toFile();
     String jarName1 = "DeployCommandsDUnit1.jar";
     File jar1 = new File(jarsDir, jarName1);
     String class1 = "DeployCommandsDUnitA";
     classBuilder.writeJarFromName(class1, jar1);
     return "deploy --dir=" + jarsDir.getAbsolutePath();
+  }
+
+  private static String startServerCommand(String name, int port, int connectedLocatorPort) {
+    return String.format("start server --name=%s --server-port=%d --locators=%s[%d]",
+        name, port, HOSTNAME, connectedLocatorPort);
+  }
+
+  private static String startLocatorCommand(String name, int port, int jmxPort, int httpPort,
+      int connectedLocatorPort) {
+    String startLocatorCommand =
+        "start locator --name=%s --port=%d --http-service-port=%d --J=-Dgemfire.jmx-manager-port=%d";
+    if (connectedLocatorPort > 0) {
+      return String.format(startLocatorCommand + " --locators=%s[%d]",
+          name, port, httpPort, jmxPort, HOSTNAME, connectedLocatorPort);
+    }
+    return String.format(startLocatorCommand, name, port, httpPort, jmxPort);
   }
 }

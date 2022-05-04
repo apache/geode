@@ -14,109 +14,120 @@
  */
 package org.apache.geode.session.tests;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.geode.internal.GemFireVersion.getGemFireVersion;
+import static org.apache.geode.test.version.TestVersions.atLeast;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
+import org.apache.geode.test.junit.rules.FolderRule;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecutor;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * This test iterates through the versions of Geode and executes session client compatibility with
  * the current version of Geode.
  */
-@Category({BackwardCompatibilityTest.class})
+@Category(BackwardCompatibilityTest.class)
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class Tomcat8ClientServerRollingUpgradeTest {
-  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
-  private final String oldVersion;
-  private String locatorDir;
-  private String server1Dir;
-  private String server2Dir;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    String minimumVersion =
-        SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) ? "1.8.0" : "1.7.0";
-    result.removeIf(s -> TestVersion.compare(s, minimumVersion) < 0);
-    return result;
+  @Parameters(name = "{0}")
+  public static Collection<VmConfiguration> data() {
+    String minimumVersion = isJavaVersionAtLeast(JavaVersion.JAVA_9) ? "1.8.0" : "1.7.0";
+    return VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(atLeast(TestVersion.valueOf(minimumVersion))))
+        .collect(toList());
   }
 
-  @Rule
-  public transient GfshRule oldGfsh;
+  private final UniquePortSupplier portSupplier = new UniquePortSupplier();
+  private final VmConfiguration sourceVmConfiguration;
+  private Path locatorDir;
+  private Path server1Dir;
+  private Path server2Dir;
+  private GfshExecutor oldGfsh;
 
-  @Rule
-  public final transient GfshRule currentGfsh = new GfshRule();
+  private GfshExecutor currentGfsh;
 
-  @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
+  protected Client client;
+  protected ContainerManager manager;
 
-  @Rule
-  public transient TestName testName = new TestName();
+  private TomcatInstall tomcat8AndOldModules;
+  private TomcatInstall tomcat8AndCurrentModules;
 
-  protected transient Client client;
-  protected transient ContainerManager manager;
+  private int locatorPort;
+  private int locatorJmxPort;
 
-
-  protected TomcatInstall tomcat8AndOldModules;
-  protected TomcatInstall tomcat8AndCurrentModules;
-
-  protected int locatorPort;
-  protected int locatorJmxPort;
-
-  protected String classPathTomcat8AndCurrentModules;
+  private String classPathTomcat8AndCurrentModules;
   private String classPathTomcat8AndOldModules;
 
-  public Tomcat8ClientServerRollingUpgradeTest(String version) {
-    oldVersion = version;
-    oldGfsh = new GfshRule(oldVersion);
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule();
+  @Rule
+  public TestName testName = new TestName();
+
+  public Tomcat8ClientServerRollingUpgradeTest(VmConfiguration vmConfiguration) {
+    sourceVmConfiguration = vmConfiguration;
   }
 
-  protected void startServer(String name, String classPath, int locatorPort, GfshRule gfsh,
-      String serverDir) throws Exception {
+  private void startServer(String name, String classPath, int locatorPort, GfshExecutor gfsh,
+      Path serverDir) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
     command.addOption(CliStrings.START_SERVER__NAME, name);
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
     command.addOption(CliStrings.START_SERVER__CLASSPATH, classPath);
     command.addOption(CliStrings.START_SERVER__LOCATORS, "localhost[" + locatorPort + "]");
-    command.addOption(CliStrings.START_SERVER__DIR, serverDir);
+    command.addOption(CliStrings.START_SERVER__DIR, serverDir.toString());
+
     gfsh.execute(GfshScript.of(command.toString()).expectExitCode(0));
   }
 
-  protected void startLocator(String name, String classPath, int port, GfshRule gfsh,
-      String locatorDir) throws Exception {
+  private void startLocator(String name, String classPath, int port, GfshExecutor gfsh,
+      Path locatorDir) {
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
     locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
     locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
-    locStarter.addOption(CliStrings.START_LOCATOR__DIR, locatorDir);
+    locStarter.addOption(CliStrings.START_LOCATOR__DIR, locatorDir.toString());
     locStarter.addOption(CliStrings.START_LOCATOR__HTTP_SERVICE_PORT, "0");
     locStarter.addOption(CliStrings.START_LOCATOR__J,
         "-Dgemfire.jmx-manager-port=" + locatorJmxPort);
@@ -125,21 +136,34 @@ public class Tomcat8ClientServerRollingUpgradeTest {
 
   @Before
   public void setup() throws Exception {
-    VersionManager versionManager = VersionManager.getInstance();
-    String installLocation = versionManager.getInstall(oldVersion);
-    File oldBuild = new File(installLocation);
-    File oldModules = new File(installLocation + "/tools/Modules/");
+    Path tempFolder = folderRule.getFolder().toPath();
+    currentGfsh = gfshRule.executor()
+        .build(tempFolder);
+    oldGfsh = gfshRule.executor()
+        .withVmConfiguration(sourceVmConfiguration)
+        .build(tempFolder);
 
+    String version = sourceVmConfiguration.geodeVersion().toString();
+    Path installLocation;
+    if (version == null || VersionManager.isCurrentVersion(version)) {
+      installLocation = new RequiresGeodeHome().getGeodeHome().toPath();
+    } else {
+      installLocation = Paths.get(VersionManager.getInstance().getInstall(version));
+    }
+
+    File oldBuild = installLocation.toFile();
+    File oldModules = installLocation.resolve("tools").resolve("Modules").toFile();
 
     tomcat8AndOldModules =
-        new TomcatInstall("Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall(tempFolder, "Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             oldModules.getAbsolutePath(),
             oldBuild.getAbsolutePath() + "/lib",
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
     tomcat8AndCurrentModules =
-        new TomcatInstall("Tomcat8AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT8,
+        new TomcatInstall(tempFolder, "Tomcat8AndCurrentModules",
+            TomcatInstall.TomcatVersion.TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
@@ -158,42 +182,26 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     manager = new ContainerManager();
     // Due to parameterization of the test name, the URI would be malformed. Instead, it strips off
     // the [] symbols
-    manager.setTestName(testName.getMethodName().replace("[", "").replace("]", ""));
+    manager.setTestName(testName.getMethodName().replaceAll("[\\[\\] ,]+", ""));
 
-    locatorDir = tempFolder.newFolder("loc").getPath();
-    server1Dir = tempFolder.newFolder("server1").getPath();
-    server2Dir = tempFolder.newFolder("server2").getPath();
+    locatorDir = tempFolder.resolve("loc");
+    server1Dir = tempFolder.resolve("server1");
+    server2Dir = tempFolder.resolve("server2");
   }
 
   /**
    * Stops all containers that were previously started and cleans up their configurations
    */
   @After
-  public void stop() throws Exception {
+  public void stop() throws IOException {
     manager.stopAllActiveContainers();
     manager.cleanUp();
-
-    CommandStringBuilder connect = new CommandStringBuilder(CliStrings.CONNECT)
-        .addOption(CliStrings.CONNECT__LOCATOR, "localhost[" + locatorPort + "]");
-
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.SHUTDOWN);
-    command.addOption(CliStrings.INCLUDE_LOCATORS, "true");
-    final GfshScript script = GfshScript.of(connect.toString(), command.toString());
-    try {
-      oldGfsh.execute(script);
-    } catch (Throwable e) {
-      // ignore
-    }
-
-    try {
-      currentGfsh.execute(script);
-    } catch (Throwable e) {
-      // ignore
-    }
   }
 
   @Test
-  public void canDoARollingUpgradeOfGeodeServersWithSessionModules() throws Exception {
+  public void canDoARollingUpgradeOfGeodeServersWithSessionModules()
+      throws IOException, ExecutionException, InterruptedException, TimeoutException,
+      URISyntaxException {
 
     startLocator("loc", classPathTomcat8AndOldModules, locatorPort, oldGfsh, locatorDir);
     startServer("server1", classPathTomcat8AndOldModules, locatorPort, oldGfsh, server1Dir);
@@ -244,7 +252,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     verifySessionReplication();
   }
 
-  private void createRegion(GfshRule gfsh) {
+  private void createRegion(GfshExecutor gfsh) {
     CommandStringBuilder connect = new CommandStringBuilder(CliStrings.CONNECT)
         .addOption(CliStrings.CONNECT__LOCATOR, "localhost[" + locatorPort + "]");
 
@@ -260,15 +268,15 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     gfsh.execute(script);
   }
 
-  private void stopLocator(GfshRule gfsh, String locatorDir) {
+  private void stopLocator(GfshExecutor gfsh, Path locatorDir) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_LOCATOR)
-        .addOption(CliStrings.STOP_LOCATOR__DIR, locatorDir);
+        .addOption(CliStrings.STOP_LOCATOR__DIR, locatorDir.toString());
     gfsh.execute(command.toString());
   }
 
-  private void stopServer(GfshRule gfsh, String serverDir) {
+  private void stopServer(GfshExecutor gfsh, Path serverDir) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER)
-        .addOption(CliStrings.STOP_SERVER__DIR, serverDir);
+        .addOption(CliStrings.STOP_SERVER__DIR, serverDir.toString());
     gfsh.execute(command.toString());
   }
 
@@ -301,16 +309,12 @@ public class Tomcat8ClientServerRollingUpgradeTest {
    * @return Paths to required jars
    */
   private String getClassPathTomcat8AndOldModules() {
-    final String[] requiredClasspathJars = {
-        "/lib/geode-modules-" + oldVersion + ".jar",
-        "/lib/geode-modules-tomcat8-" + oldVersion + ".jar",
-        "/lib/servlet-api.jar",
-        "/lib/catalina.jar",
-        "/lib/tomcat-util.jar",
-        "/bin/tomcat-juli.jar"
-    };
+    TestVersion geodeVersion = sourceVmConfiguration.geodeVersion();
+    if (geodeVersion.equals(TestVersion.CURRENT_VERSION)) {
+      return getClassPathTomcat8AndCurrentModules();
+    }
 
-    return getRequiredClasspathJars(tomcat8AndOldModules.getHome(), requiredClasspathJars);
+    return getRequiredClasspathJars(tomcat8AndOldModules.getHome(), geodeVersion.toString());
   }
 
   /**
@@ -324,31 +328,18 @@ public class Tomcat8ClientServerRollingUpgradeTest {
    * @return Paths to required jars
    */
   private String getClassPathTomcat8AndCurrentModules() {
-    String currentVersion = GemFireVersion.getGemFireVersion();
+    return getRequiredClasspathJars(tomcat8AndCurrentModules.getHome(), getGemFireVersion());
+  }
 
-    final String[] requiredClasspathJars = {
-        "/lib/geode-modules-" + currentVersion + ".jar",
-        "/lib/geode-modules-tomcat8-" + currentVersion + ".jar",
+  private String getRequiredClasspathJars(final Path installDir, final String version) {
+    return Stream.of(
+        "/lib/geode-modules-" + version + ".jar",
+        "/lib/geode-modules-tomcat8-" + version + ".jar",
         "/lib/servlet-api.jar",
         "/lib/catalina.jar",
         "/lib/tomcat-util.jar",
-        "/bin/tomcat-juli.jar"
-    };
-
-    return getRequiredClasspathJars(tomcat8AndCurrentModules.getHome(), requiredClasspathJars);
-  }
-
-  private String getRequiredClasspathJars(final String tomcat8AndRequiredModules,
-      final String[] requiredClasspathJars) {
-    StringBuilder completeJarList = new StringBuilder();
-    for (String requiredJar : requiredClasspathJars) {
-      completeJarList.append(tomcat8AndRequiredModules)
-          .append(requiredJar)
-          .append(File.pathSeparator);
-    }
-
-    completeJarList.deleteCharAt(completeJarList.length() - 1);
-
-    return completeJarList.toString();
+        "/bin/tomcat-juli.jar")
+        .map(installDir.toString()::concat)
+        .collect(joining(File.pathSeparator));
   }
 }

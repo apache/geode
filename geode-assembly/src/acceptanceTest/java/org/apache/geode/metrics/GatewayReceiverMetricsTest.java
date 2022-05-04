@@ -12,17 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.metrics;
 
+import static java.nio.file.Files.createDirectories;
+import static java.util.Arrays.asList;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
 
 import io.micrometer.core.instrument.Counter;
@@ -31,27 +31,17 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.categories.MetricsTest;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 @Category(MetricsTest.class)
 public class GatewayReceiverMetricsTest {
-
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Rule
-  public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   private static final String SENDER_LOCATOR_NAME = "sender-locator";
   private static final String RECEIVER_LOCATOR_NAME = "receiver-locator";
@@ -59,16 +49,31 @@ public class GatewayReceiverMetricsTest {
   private static final String RECEIVER_SERVER_NAME = "receiver-server";
   private static final String REGION_NAME = "region";
   private static final String GFSH_COMMAND_SEPARATOR = " ";
-  private String senderLocatorFolder;
-  private String receiverLocatorFolder;
-  private String senderServerFolder;
-  private String receiverServerFolder;
+
+  private Path rootFolder;
+  private Path senderLocatorFolder;
+  private Path receiverLocatorFolder;
+  private Path senderServerFolder;
+  private Path receiverServerFolder;
   private int receiverLocatorPort;
   private int senderLocatorPort;
 
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public ServiceJarRule serviceJarRule = new ServiceJarRule();
+
   @Before
   public void startClusters() throws IOException {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(6);
+    rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
+    senderLocatorFolder = createDirectories(rootFolder.resolve(SENDER_LOCATOR_NAME));
+    receiverLocatorFolder = createDirectories(rootFolder.resolve(RECEIVER_LOCATOR_NAME));
+    senderServerFolder = createDirectories(rootFolder.resolve(SENDER_SERVER_NAME));
+    receiverServerFolder = createDirectories(rootFolder.resolve(RECEIVER_SERVER_NAME));
+
+    int[] ports = getRandomAvailableTCPPorts(6);
 
     receiverLocatorPort = ports[0];
     senderLocatorPort = ports[1];
@@ -79,11 +84,6 @@ public class GatewayReceiverMetricsTest {
 
     int senderSystemId = 2;
     int receiverSystemId = 1;
-
-    senderLocatorFolder = newFolder(SENDER_LOCATOR_NAME);
-    receiverLocatorFolder = newFolder(RECEIVER_LOCATOR_NAME);
-    senderServerFolder = newFolder(SENDER_SERVER_NAME);
-    receiverServerFolder = newFolder(RECEIVER_SERVER_NAME);
 
     String startSenderLocatorCommand = String.join(GFSH_COMMAND_SEPARATOR,
         "start locator",
@@ -163,7 +163,7 @@ public class GatewayReceiverMetricsTest {
         createReceiverRegionCommand);
 
     // Deploy function to members
-    String functionJarPath =
+    Path functionJarPath =
         newJarForFunctionClass(GetEventsReceivedCountFunction.class, "function.jar");
     String deployCommand = "deploy --jar=" + functionJarPath;
     String listFunctionsCommand = "list functions";
@@ -178,7 +178,8 @@ public class GatewayReceiverMetricsTest {
     String stopReceiverLocatorCommand = "stop locator --dir=" + receiverLocatorFolder;
     String stopSenderLocatorCommand = "stop locator --dir=" + senderLocatorFolder;
 
-    gfshRule.execute(stopReceiverServerCommand, stopSenderServerCommand, stopReceiverLocatorCommand,
+    gfshRule.execute(stopReceiverServerCommand, stopSenderServerCommand,
+        stopReceiverLocatorCommand,
         stopSenderLocatorCommand);
   }
 
@@ -209,12 +210,12 @@ public class GatewayReceiverMetricsTest {
         "connect --locator=localhost[" + receiverLocatorPort + "]";
     String executeFunctionCommand = "execute function --id=" + GetEventsReceivedCountFunction.ID;
 
-    Collection<String> gatewayEventsExpectedToReceive =
-        Arrays.asList(doPutCommand, doRemoveCommand);
+    Collection<String> gatewayEventsExpectedToReceive = asList(doPutCommand, doRemoveCommand);
 
     await().untilAsserted(() -> {
-      String output =
-          gfshRule.execute(connectToReceiverLocatorCommand, executeFunctionCommand).getOutputText();
+      String output = gfshRule
+          .execute(connectToReceiverLocatorCommand, executeFunctionCommand)
+          .getOutputText();
 
       assertThat(output.trim())
           .as("Returned count of events received.")
@@ -222,18 +223,14 @@ public class GatewayReceiverMetricsTest {
     });
   }
 
-  private String newFolder(String folderName) throws IOException {
-    return temporaryFolder.newFolder(folderName).getAbsolutePath();
-  }
-
-  private String newJarForFunctionClass(Class clazz, String jarName) throws IOException {
-    File jar = temporaryFolder.newFile(jarName);
-    writeJarFromClasses(jar, clazz);
-    return jar.getAbsolutePath();
+  private Path newJarForFunctionClass(Class<?> clazz, String jarName) throws IOException {
+    Path jarPath = rootFolder.resolve(jarName);
+    writeJarFromClasses(jarPath.toFile(), clazz);
+    return jarPath;
   }
 
   public static class GetEventsReceivedCountFunction implements Function<Void> {
-    static final String ID = "GetEventsReceivedCountFunction";
+    private static final String ID = "GetEventsReceivedCountFunction";
 
     @Override
     public void execute(FunctionContext<Void> context) {
