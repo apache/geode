@@ -134,8 +134,7 @@ public class CreateIndexCommand extends GfshCommand {
         if (cacheConf != null && !regionName.isEmpty()) {
           RegionConfig regionConf = cacheConf.findRegionConfiguration(regionName);
           if (regionConf.getType().equals("PARTITION")) {
-            DistributedMember member = targetMembers.iterator().next();
-            targetMembers.removeIf(s -> (s != member));
+            targetMembers = findAnyMembersForRegion(regionPath);
           }
         }
       }
