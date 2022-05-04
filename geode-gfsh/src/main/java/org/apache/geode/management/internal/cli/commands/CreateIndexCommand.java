@@ -133,13 +133,13 @@ public class CreateIndexCommand extends GfshCommand {
         CacheConfig cacheConf = ccService.getCacheConfig(group);
         if (cacheConf != null && !regionName.isEmpty()) {
           RegionConfig regionConf = cacheConf.findRegionConfiguration(regionName);
-          if (regionConf.getType().equals("PARTITION")) {
+          if (regionConf.getType().equals("PARTITION") && targetMembers.size() > 1) {
+            targetMembers.clear();
             targetMembers = findAnyMembersForRegion(regionPath);
           }
         }
       }
     }
-
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
     resultModel.addTableAndSetStatus("createIndex", functionResults, true, false);
