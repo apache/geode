@@ -1085,7 +1085,7 @@ public class ClusterDistributionManager implements DistributionManager {
         break;
       case NORMAL_DM_TYPE:
         // Note test is under membersLock
-        stats.setNodes(getNonLocatorViewMembers());
+        stats.setNodes(getNormalDistributionManagerIds().size());
         addMemberEvent(new MemberJoinedEvent(member));
         break;
       default:
@@ -1877,12 +1877,6 @@ public class ClusterDistributionManager implements DistributionManager {
     handleManagerDeparture(theId, false, reason);
   }
 
-  long getNonLocatorViewMembers() {
-    return getViewMembers().stream()
-        .filter((member) -> member.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE)
-        .count();
-  }
-
   /*
    * handleManagerDeparted may be invoked multiple times for a member identifier.
    * We allow this and inform listeners on each invocation, but only perform some
@@ -1922,7 +1916,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
     logger.info(msg, new Object[] {theId, prettifyReason(reason)});
     executors.handleManagerDeparture(theId);
-    stats.setNodes(getNonLocatorViewMembers());
+    stats.setNodes(getNormalDistributionManagerIds().size());
   }
 
   private void handleManagerSuspect(InternalDistributedMember suspect,
