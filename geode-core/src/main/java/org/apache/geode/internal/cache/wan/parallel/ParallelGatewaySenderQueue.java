@@ -1649,6 +1649,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   public int localSize(boolean includeSecondary) {
     int size = 0;
     for (PartitionedRegion prQ : userRegionNameToShadowPRMap.values()) {
+      if (prQ.isDestroyed()) {
+        continue;
+      }
       if (prQ.getDataStore() != null) {
         if (includeSecondary) {
           size += prQ.getDataStore().getSizeOfLocalBuckets();
@@ -1667,6 +1670,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   public int localSizeForProcessor() {
     int size = 0;
     for (PartitionedRegion prQ : userRegionNameToShadowPRMap.values()) {
+      if (prQ.isDestroyed()) {
+        continue;
+      }
       if (((PartitionedRegion) prQ.getRegion()).getDataStore() != null) {
         Set<BucketRegion> primaryBuckets =
             ((PartitionedRegion) prQ.getRegion()).getDataStore().getAllLocalPrimaryBucketRegions();
@@ -1689,6 +1695,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   public int size() {
     int size = 0;
     for (PartitionedRegion prQ : userRegionNameToShadowPRMap.values()) {
+      if (prQ.isDestroyed()) {
+        continue;
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("The name of the queue region is {} and the size is {}. keyset size is {}",
             prQ.getName(), prQ.size(), prQ.keys().size());
