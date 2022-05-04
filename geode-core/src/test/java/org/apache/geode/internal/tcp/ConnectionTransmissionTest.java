@@ -168,7 +168,7 @@ public class ConnectionTransmissionTest {
     senderAddr.setDirectChannelPort(conduit.getPort());
 
     return spy(Connection.createSender(membership, writerTable, true, remoteAddr, true,
-        System.currentTimeMillis(), 1000, 1000, false));
+        System.currentTimeMillis(), 1000, 1000));
   }
 
   private Connection createReceiverConnectionOnFirstAccept(final ServerSocketChannel acceptorSocket,
