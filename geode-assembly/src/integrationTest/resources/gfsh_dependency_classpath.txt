@@ -53,8 +53,8 @@ commons-collections-3.2.2.jar
 commons-digester-2.1.jar
 commons-io-2.11.0.jar
 commons-logging-1.2.jar
-classgraph-4.8.145.jar
-micrometer-core-1.8.4.jar
+classgraph-4.8.146.jar
+micrometer-core-1.8.5.jar
 fastutil-8.5.8.jar
 javax.resource-api-1.7.1.jar
 jetty-webapp-9.4.46.v20220331.jar

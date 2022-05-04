@@ -7,7 +7,7 @@ commons-digester-2.1.jar
 commons-validator-1.7.jar
 spring-jcl-5.3.19.jar
 commons-codec-1.15.jar
-classgraph-4.8.145.jar
+classgraph-4.8.146.jar
 jackson-databind-2.13.2.2.jar
 commons-logging-1.2.jar
 geode-management-0.0.0.jar
@@ -72,7 +72,7 @@ jna-platform-5.11.0.jar
 log4j-jul-2.17.2.jar
 HdrHistogram-2.1.12.jar
 jackson-annotations-2.13.2.jar
-micrometer-core-1.8.4.jar
+micrometer-core-1.8.5.jar
 shiro-config-ogdl-1.9.0.jar
 geode-log4j-0.0.0.jar
 lucene-analyzers-phonetic-6.6.6.jar
