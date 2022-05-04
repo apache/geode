@@ -59,6 +59,7 @@ public class ExpectedStrings {
     expected.add(Pattern.compile("Found expected warning"));
     expected.add(Pattern.compile("CacheClosedException: The cache is closed."));
     expected.add(Pattern.compile("Invoked MembershipNotifierHook"));
+    expected.add(Pattern.compile("java.io.IOException: Connection reset"));
     expected.add(Pattern.compile("java.io.IOException: Connection reset by peer"));
     expected.add(Pattern.compile("client connections exceeds the licensed limit"));
     // Exclude this since the only tests with security enabled, expect to see
