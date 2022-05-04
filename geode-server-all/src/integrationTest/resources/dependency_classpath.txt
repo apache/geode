@@ -1,11 +1,11 @@
-spring-web-5.3.18.jar
+spring-web-5.3.19.jar
 shiro-event-1.9.0.jar
 shiro-crypto-hash-1.9.0.jar
 shiro-crypto-cipher-1.9.0.jar
 shiro-config-core-1.9.0.jar
 commons-digester-2.1.jar
 commons-validator-1.7.jar
-spring-jcl-5.3.18.jar
+spring-jcl-5.3.19.jar
 commons-codec-1.15.jar
 classgraph-4.8.145.jar
 jackson-databind-2.13.2.2.jar
@@ -17,7 +17,7 @@ javax.resource-api-1.7.1.jar
 LatencyUtils-2.0.3.jar
 jline-2.12.jar
 jetty-servlet-9.4.46.v20220331.jar
-spring-core-5.3.18.jar
+spring-core-5.3.19.jar
 jetty-util-ajax-9.4.46.v20220331.jar
 geode-cq-0.0.0.jar
 geode-old-client-support-0.0.0.jar
@@ -25,7 +25,7 @@ javax.servlet-api-3.1.0.jar
 jgroups-3.6.14.Final.jar
 shiro-cache-1.9.0.jar
 httpcore-4.4.15.jar
-spring-beans-5.3.18.jar
+spring-beans-5.3.19.jar
 lucene-queries-6.6.6.jar
 shiro-core-1.9.0.jar
 HikariCP-4.0.3.jar
@@ -76,7 +76,7 @@ micrometer-core-1.8.4.jar
 shiro-config-ogdl-1.9.0.jar
 geode-log4j-0.0.0.jar
 lucene-analyzers-phonetic-6.6.6.jar
-spring-context-5.3.18.jar
+spring-context-5.3.19.jar
 jetty-security-9.4.46.v20220331.jar
 geode-logging-0.0.0.jar
 commons-io-2.11.0.jar
