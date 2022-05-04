@@ -170,7 +170,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.15.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
-        api(group: 'redis.clients', name: 'jedis', version: '4.1.1')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
         api(group: 'xml-apis', name: 'xml-apis', version: '1.4.01')
         api(group: 'org.junit-pioneer', name: 'junit-pioneer', version: '1.6.2')
@@ -246,11 +245,6 @@ class DependencyConstraints implements Plugin<Project> {
       entry('junit-vintage-engine')
     }
 
-    dependencySet(group: 'io.netty', version: '4.1.76.Final') {
-      entry('netty-codec-redis')
-      entry('netty-handler')
-    }
-
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {
       entry('selenium-api')
       entry('selenium-chrome-driver')
@@ -286,11 +280,6 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-boot-starter')
       entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
-      entry('spring-boot-starter-data-redis')
-    }
-
-    dependencySet(group: 'org.springframework.session', version: '2.6.2') {
-      entry('spring-session-data-redis')
     }
 
     dependencySet(group: 'org.jetbrains', version: '23.0.0') {

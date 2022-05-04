@@ -35,13 +35,6 @@ benchmarks:
     options: '--tests=org.apache.geode.benchmark.tests.Partitioned*'
     max_in_flight: 2
     timeout: 10h
-  - title: 'radish'
-    baseline_branch: 'geode-for-redis-benchmark-baseline'
-    baseline_version: ''
-    flag: '-PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64 -Pbenchmark.withRedisCluster=geode -Pbenchmark.withServerCount=2'
-    options: '--tests=org.apache.geode.benchmark.redis.tests.*'
-    max_in_flight: 2
-    timeout: 10h
 
 build_test:
   ARTIFACT_SLUG: build
@@ -159,20 +152,6 @@ tests:
   PLATFORM: linux
   RAM: '210'
   name: upgrade
-- ARTIFACT_SLUG: redistests
-  CALL_STACK_TIMEOUT: '1200'
-  CPUS: '4'
-  DISK: '200GB'
-  DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 30m
-  GRADLE_TASK: ':geode-for-redis:redisAPITest'
-  MAX_IN_FLIGHT: 1
-  ONLY_JDK: 11
-  PARALLEL_DUNIT: 'false'
-  PARALLEL_GRADLE: 'true'
-  PLATFORM: linux
-  RAM: '8'
-  name: redis
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '35100'
   CPUS: '96'
