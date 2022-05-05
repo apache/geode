@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -51,8 +50,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
-import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
-import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -71,76 +68,45 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * the same across servers
  */
 @Category({ClientSubscriptionTest.class})
-public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
+public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
   private static final String REGION_NAME = "UpdatePropagationDUnitTest_region";
 
   private VM server1 = null;
   private VM server2 = null;
-  private VM server3 = null;
   private VM client1 = null;
   private VM client2 = null;
 
   private int PORT1;
   private int PORT2;
-  private int PORT3;
-
-  private final int minNumEntries = 2;
-
-  private String hostnameServer1;
-  private String hostnameServer3;
 
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
 
     final Host host = Host.getHost(0);
-
+    // Server1 VM
     server1 = host.getVM(0);
 
+    // Server2 VM
     server2 = host.getVM(1);
 
-    server3 = host.getVM(2);
+    // Client 1 VM
+    client1 = host.getVM(2);
 
-    client1 = host.getVM(3);
+    // client 2 VM
+    client2 = host.getVM(3);
 
-    client2 = host.getVM(4);
+    PORT1 = server1.invoke(this::createServerCache);
+    PORT2 = server2.invoke(this::createServerCache);
 
-    PORT1 = server1.invoke(() -> createServerCache());
-    PORT2 = server2.invoke(() -> createServerCache());
-    PORT3 = server3.invoke(() -> createServerCache());
-
-    hostnameServer1 = NetworkUtils.getServerHostName(server1.getHost());
-    hostnameServer3 = NetworkUtils.getServerHostName(server3.getHost());
+    client1.invoke(
+        () -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
+    client2.invoke(
+        () -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
 
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
-  }
-
-
-
-  @Test
-  public void updatesArePropagatedToAllMembersWhenOneKilled() throws Exception {
-    client1.invoke(
-        () -> createClientCache(hostnameServer1, PORT1));
-    client2.invoke(
-        () -> createClientCache(hostnameServer3, PORT3));
-    int entries = 20;
-    AsyncInvocation invocation = client1.invokeAsync(() -> doPuts(entries));
-
-    // Wait for some entries to be put
-    server1.invoke(this::verifyMinEntriesInserted);
-
-    // Simulate crash
-    server2.invoke(() -> {
-      MembershipManagerHelper.crashDistributedSystem(getSystemStatic());
-    });
-
-    invocation.await();
-
-    int notNullEntriesIn1 = client1.invoke(() -> getNotNullEntriesNumber(entries));
-    int notNullEntriesIn3 = client2.invoke(() -> getNotNullEntriesNumber(entries));
-    assertThat(notNullEntriesIn3).isEqualTo(notNullEntriesIn1);
   }
 
   /**
@@ -149,11 +115,6 @@ public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
    */
   @Test
   public void updatesAreProgegatedAfterFailover() {
-    client1.invoke(
-        () -> createClientCache(hostnameServer1, PORT1, PORT2));
-    client2.invoke(
-        () -> createClientCache(hostnameServer1, PORT1, PORT2));
-
     // First create entries on both servers via the two client
     client1.invoke(this::createEntriesK1andK2);
     client2.invoke(this::createEntriesK1andK2);
@@ -287,18 +248,6 @@ public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
         .addCacheListener(new EventTrackingCacheListener()).create(REGION_NAME);
   }
 
-  private void createClientCache(String host, Integer port1) {
-    Properties props = new Properties();
-    props.setProperty(LOCATORS, "");
-    ClientCacheFactory cf = new ClientCacheFactory();
-    cf.addPoolServer(host, port1).setPoolSubscriptionEnabled(false)
-        .setPoolSubscriptionRedundancy(-1).setPoolMinConnections(4).setPoolSocketBufferSize(1000)
-        .setPoolReadTimeout(100).setPoolPingInterval(300);
-    ClientCache cache = getClientCache(cf);
-    cache.createClientRegionFactory(ClientRegionShortcut.PROXY)
-        .create(REGION_NAME);
-  }
-
   private Integer createServerCache() throws Exception {
     Cache cache = getCache();
     RegionAttributes attrs = createCacheServerAttributes();
@@ -309,7 +258,7 @@ public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   protected RegionAttributes createCacheServerAttributes() {
@@ -354,36 +303,6 @@ public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
         assertEquals("server-value1", r.get("key1"));
       }
     });
-  }
-
-  private void verifyMinEntriesInserted() {
-    await().untilAsserted(() -> assertThat(getCache().getRegion(SEPARATOR + REGION_NAME))
-        .hasSizeGreaterThan(minNumEntries));
-  }
-
-  private void doPuts(int entries) throws Exception {
-    Region<String, String> r1 = getCache().getRegion(REGION_NAME);
-    assertThat(r1).isNotNull();
-    for (int i = 0; i < entries; i++) {
-      try {
-        r1.put("" + i, "" + i);
-      } catch (Exception e) {
-      }
-      Thread.sleep(1000);
-    }
-  }
-
-  private int getNotNullEntriesNumber(int entries) {
-    int notNullEntries = 0;
-    Region<String, String> r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
-    assertThat(r1).isNotNull();
-    for (int i = 0; i < entries; i++) {
-      Object value = r1.get("" + i, "" + i);
-      if (value != null) {
-        notNullEntries++;
-      }
-    }
-    return notNullEntries;
   }
 
   private static class EventTrackingCacheListener extends CacheListenerAdapter {

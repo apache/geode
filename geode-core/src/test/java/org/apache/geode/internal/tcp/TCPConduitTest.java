@@ -94,8 +94,7 @@ public class TCPConduitTest {
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
-        .when(connectionTable)
-        .get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
+        .when(connectionTable).get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong());
     when(membership.memberExists(eq(member)))
         .thenReturn(true);
     when(membership.isShunned(same(member)))
@@ -103,7 +102,7 @@ public class TCPConduitTest {
 
     AlertingAction.execute(() -> {
       Throwable thrown = catchThrowable(() -> {
-        tcpConduit.getConnection(member, false, 0L, 0L, 0L);
+        tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
       });
 
       assertThat(thrown)
@@ -124,14 +123,13 @@ public class TCPConduitTest {
     doThrow(new IOException("Cannot form connection to alert listener"))
         // getConnection will loop indefinitely until connectionTable returns connection
         .doReturn(connection)
-        .when(connectionTable)
-        .get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
+        .when(connectionTable).get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong());
     when(membership.memberExists(eq(member)))
         .thenReturn(true);
     when(membership.isShunned(same(member)))
         .thenReturn(false);
 
-    Connection value = tcpConduit.getConnection(member, false, 0L, 0L, 0L);
+    Connection value = tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
 
     assertThat(value)
         .isSameAs(connection);
@@ -145,13 +143,12 @@ public class TCPConduitTest {
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
-        .when(connectionTable)
-        .get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
+        .when(connectionTable).get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong());
     when(membership.memberExists(eq(member)))
         .thenReturn(false);
 
     Throwable thrown = catchThrowable(() -> {
-      tcpConduit.getConnection(member, false, 0L, 0L, 0L);
+      tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
     });
 
     assertThat(thrown)
@@ -167,15 +164,14 @@ public class TCPConduitTest {
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
-        .when(connectionTable)
-        .get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
+        .when(connectionTable).get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong());
     when(membership.memberExists(same(member)))
         .thenReturn(true);
     when(membership.isShunned(same(member)))
         .thenReturn(true);
 
     Throwable thrown = catchThrowable(() -> {
-      tcpConduit.getConnection(member, false, 0L, 0L, 0L);
+      tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
     });
 
     assertThat(thrown)
@@ -192,8 +188,7 @@ public class TCPConduitTest {
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
-        .when(connectionTable)
-        .get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
+        .when(connectionTable).get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong());
     when(membership.memberExists(same(member)))
         .thenReturn(true);
     when(membership.isShunned(same(member)))
@@ -202,7 +197,7 @@ public class TCPConduitTest {
         .thenReturn(true);
 
     Throwable thrown = catchThrowable(() -> {
-      tcpConduit.getConnection(member, false, 0L, 0L, 0L);
+      tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
     });
 
     assertThat(thrown)
@@ -219,8 +214,7 @@ public class TCPConduitTest {
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
-        .when(connectionTable)
-        .get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
+        .when(connectionTable).get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong());
     when(membership.memberExists(same(member)))
         .thenReturn(true);
     when(membership.isShunned(same(member)))
@@ -229,56 +223,12 @@ public class TCPConduitTest {
         .thenReturn(true);
 
     Throwable thrown = catchThrowable(() -> {
-      tcpConduit.getConnection(member, false, 0L, 0L, 0L);
+      tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
     });
 
     assertThat(thrown)
         .isInstanceOf(DistributedSystemDisconnectedException.class)
         .hasMessage("Abandoned because shutdown is in progress");
-  }
-
-  @Test
-  public void getFirstScanForConnectionThrowsAlertingIOException_ifCaughtIOException_whileAlerting()
-      throws Exception {
-    TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
-            new Properties(),
-            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    doThrow(new IOException("Cannot form connection to alert listener"))
-        .when(connectionTable)
-        .get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
-
-    AlertingAction.execute(() -> {
-      Throwable thrown = catchThrowable(() -> {
-        tcpConduit.getFirstScanForConnection(member, false, 0L, 0L, 0L);
-      });
-
-      assertThat(thrown)
-          .isInstanceOf(AlertingIOException.class);
-    });
-  }
-
-  @Test
-  public void getFirstScanForConnectionRethrows_ifCaughtIOException_whileNotAlerting()
-      throws Exception {
-    TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
-            new Properties(),
-            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    Connection connection = mock(Connection.class);
-    doThrow(new IOException("Connection not created in first try"))
-        .doReturn(connection)
-        .when(connectionTable)
-        .get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
-
-    Throwable thrown = catchThrowable(() -> {
-      tcpConduit.getFirstScanForConnection(member, false, 0L, 0L, 0L);
-    });
-
-    assertThat(thrown)
-        .isInstanceOf(IOException.class);
   }
 
   private Runnable doNothing() {
