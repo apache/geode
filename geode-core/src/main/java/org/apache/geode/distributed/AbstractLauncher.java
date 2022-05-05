@@ -479,6 +479,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     static final String TO_STRING_CLASS_PATH = "Class-Path: ";
     static final String TO_STRING_UPTIME = "Uptime: ";
     static final String TO_STRING_GEODE_VERSION = "Geode Version: ";
+    static final String TO_STRING_STATUS_MESSAGE = "Status Message: ";
 
     private static final String DATE_TIME_FORMAT_PATTERN = "MM/dd/yyyy hh:mm a";
 
@@ -797,8 +798,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
           sb.append(TO_STRING_CLASS_PATH).append("%s");
           return String.format(sb.toString(),
               getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
-              toString(getTimestamp()), toString(getPid()), toString(getGemFireVersion()),
-              toString(getJavaVersion()), getLogFile(), ArgumentRedactor.redact(getJvmArguments()),
+              toString(getTimestamp()), toString(getPid()), toString(getJavaVersion()),
+              getLogFile(), ArgumentRedactor.redact(getJvmArguments()),
               toString(getClasspath()));
 
         case ONLINE:
