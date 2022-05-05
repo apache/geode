@@ -40,14 +40,14 @@ class DependencyConstraints {
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.17.2")
-    deps.put("micrometer.version", "1.8.4")
+    deps.put("micrometer.version", "1.8.5")
     deps.put("shiro.version", "1.9.0")
     deps.put("slf4j-api.version", "1.7.32")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.13.2")
     deps.put("jackson.databind.version", "2.13.2.2")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.18")
+    deps.put("springframework.version", "5.3.19")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -115,7 +115,7 @@ class DependencyConstraints {
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
-        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.145')
+        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.146')
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
@@ -163,8 +163,8 @@ class DependencyConstraints {
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.4.1')
-        api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.6.RELEASE')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.4.2')
+        api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.7.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.15.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
@@ -244,7 +244,7 @@ class DependencyConstraints {
       entry('junit-vintage-engine')
     }
 
-    dependencySet(group: 'io.netty', version: '4.1.75.Final') {
+    dependencySet(group: 'io.netty', version: '4.1.76.Final') {
       entry('netty-codec-redis')
       entry('netty-handler')
     }
@@ -256,7 +256,7 @@ class DependencyConstraints {
       entry('selenium-support')
     }
 
-    dependencySet(group: 'org.springframework.security', version: '5.6.2') {
+    dependencySet(group: 'org.springframework.security', version: '5.6.3') {
       entry('spring-security-config')
       entry('spring-security-core')
       entry('spring-security-ldap')
@@ -280,7 +280,7 @@ class DependencyConstraints {
       entry('spring-webmvc')
     }
 
-    dependencySet(group: 'org.springframework.boot', version: '2.6.6') {
+    dependencySet(group: 'org.springframework.boot', version: '2.6.7') {
       entry('spring-boot-starter')
       entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')

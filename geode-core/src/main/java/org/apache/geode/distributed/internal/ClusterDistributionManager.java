@@ -91,18 +91,17 @@ import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandl
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * The <code>DistributionManager</code> uses a {@link Membership} to distribute
- * {@link DistributionMessage messages}. It also reports on who is currently in the distributed
- * system and tracks the elder member for the distributed lock service. You may also register a
- * membership listener with the DistributionManager to receive notification of changes in
- * membership.
+ * The <code>DistributionManager</code> uses a {@link Membership} to distribute {@link
+ * DistributionMessage messages}. It also reports on who is currently in the distributed system and
+ * tracks the elder member for the distributed lock service. You may also register a membership
+ * listener with the DistributionManager to receive notification of changes in membership.
  *
- * <P>
- *
+ * <p>
+ * <p>
  * Code that wishes to send a {@link DistributionMessage} must get the
  * <code>DistributionManager</code> and invoke {@link #putOutgoing}.
  *
- * <P>
+ * <p>
  *
  * @see DistributionMessage#process
  * @see IgnoredByManager
@@ -120,25 +119,33 @@ public class ClusterDistributionManager implements DistributionManager {
   private static final int MAX_STOP_ATTEMPTS = 10;
 
 
-
   private static final boolean SYNC_EVENTS = Boolean.getBoolean("DistributionManager.syncEvents");
 
 
-  /** The DM type for regular distribution managers */
+  /**
+   * The DM type for regular distribution managers
+   */
   public static final int NORMAL_DM_TYPE = MemberIdentifier.NORMAL_DM_TYPE;
 
-  /** The DM type for locator distribution managers */
+  /**
+   * The DM type for locator distribution managers
+   */
   public static final int LOCATOR_DM_TYPE = MemberIdentifier.LOCATOR_DM_TYPE;
 
-  /** The DM type for Console (admin-only) distribution managers */
+  /**
+   * The DM type for Console (admin-only) distribution managers
+   */
   public static final int ADMIN_ONLY_DM_TYPE = MemberIdentifier.ADMIN_ONLY_DM_TYPE;
 
-  /** The DM type for stand-alone members */
+  /**
+   * The DM type for stand-alone members
+   */
   public static final int LONER_DM_TYPE = MemberIdentifier.LONER_DM_TYPE;
 
 
-
-  /** Is this node running an AdminDistributedSystem? */
+  /**
+   * Is this node running an AdminDistributedSystem?
+   */
   @MakeNotStatic
   private static volatile boolean isDedicatedAdminVM = false;
 
@@ -150,7 +157,9 @@ public class ClusterDistributionManager implements DistributionManager {
   private final Stopper stopper = new Stopper(this);
 
 
-  /** The id of this distribution manager */
+  /**
+   * The id of this distribution manager
+   */
   private final InternalDistributedMember localAddress;
 
   /**
@@ -186,25 +195,37 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private final Object allMembershipListenersLock = new Object();
 
-  /** A queue of MemberEvent instances */
+  /**
+   * A queue of MemberEvent instances
+   */
   private final BlockingQueue<MemberEvent> membershipEventQueue = new LinkedBlockingQueue<>();
 
-  /** Used to invoke registered membership listeners in the background. */
+  /**
+   * Used to invoke registered membership listeners in the background.
+   */
   private Thread memberEventThread;
 
 
-  /** A brief description of this DistributionManager */
+  /**
+   * A brief description of this DistributionManager
+   */
   protected final String description;
 
-  /** Statistics about distribution */
+  /**
+   * Statistics about distribution
+   */
   protected final DistributionStats stats;
 
-  /** Did an exception occur in one of the DM threads? */
+  /**
+   * Did an exception occur in one of the DM threads?
+   */
   private boolean exceptionInThreads;
 
   private volatile boolean shutdownMsgSent = false;
 
-  /** Set to true when this manager is being shutdown */
+  /**
+   * Set to true when this manager is being shutdown
+   */
   private volatile boolean closeInProgress = false;
 
   private volatile boolean receivedStartupResponse = false;
@@ -227,9 +248,6 @@ public class ClusterDistributionManager implements DistributionManager {
   private Map<InternalDistributedMember, Collection<String>> hostedLocatorsWithSharedConfiguration =
       Collections.emptyMap();
 
-  /** a map keyed on InternalDistributedMember, to direct channels to other systems */
-  // protected final Map channelMap = CFactory.createCM();
-
   private volatile boolean readyForMessages = false;
 
   /**
@@ -239,7 +257,9 @@ public class ClusterDistributionManager implements DistributionManager {
   private volatile boolean readyToSendMsgs = false;
   private final Object readyToSendMsgsLock = new Object();
 
-  /** Is this distribution manager closed? */
+  /**
+   * Is this distribution manager closed?
+   */
   private volatile boolean closed = false;
 
   /**
@@ -247,7 +267,9 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private final InternalDistributedSystem system;
 
-  /** The remote transport configuration for this dm */
+  /**
+   * The remote transport configuration for this dm
+   */
   private final RemoteTransportConfig transport;
 
   /**
@@ -427,10 +449,10 @@ public class ClusterDistributionManager implements DistributionManager {
    * manager and executors
    *
    * @param transport The configuration for the communications transport
-   *
    */
   private ClusterDistributionManager(RemoteTransportConfig transport,
-      InternalDistributedSystem system, AlertingService alertingService,
+      InternalDistributedSystem system,
+      AlertingService alertingService,
       MembershipLocator<InternalDistributedMember> locator) {
 
     this.system = system;
@@ -939,7 +961,6 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
 
-
   /**
    * Gets the value in {@link #hostedLocatorsAll} for a member with one or more hosted locators. The
    * value is a collection of host[port] strings. If a bind-address was used for a locator then the
@@ -958,13 +979,13 @@ public class ClusterDistributionManager implements DistributionManager {
    * Returns a copy of the map of all members hosting locators. The key is the member, and the value
    * is a collection of host[port] strings. If a bind-address was used for a locator then the form
    * is bind-addr[port].
-   *
+   * <p>
    * The member is the vm that hosts one or more locator, if another locator starts up linking to
    * this locator, it will put that member in this map as well, and this member will in the map on
    * the other locato vm as well.
-   *
+   * <p>
    * The keyset of the map are the locator vms in this cluster.
-   *
+   * <p>
    * the value is a collection of strings in case one vm can have multiple locators ????
    *
    * @since GemFire 6.6.3
@@ -1060,8 +1081,12 @@ public class ClusterDistributionManager implements DistributionManager {
         handleConsoleStartup(member);
         break;
       case LOCATOR_DM_TYPE:
+        addMemberEvent(new MemberJoinedEvent(member));
+        break;
       case NORMAL_DM_TYPE:
-        handleManagerStartup(member);
+        // Note test is under membersLock
+        stats.setNodes(getNormalDistributionManagerIds().size());
+        addMemberEvent(new MemberJoinedEvent(member));
         break;
       default:
         throw new InternalGemFireError(String.format("Unknown member type: %s",
@@ -1232,7 +1257,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
   /**
    * Wait for the ancillary queues to exit. Kills them if they are still around.
-   *
    */
   private void forceThreadsToStop() {
     executors.forceThreadsToStop();
@@ -1244,10 +1268,14 @@ public class ClusterDistributionManager implements DistributionManager {
 
   private volatile boolean shutdownInProgress = false;
 
-  /** guard for membershipViewIdAcknowledged */
+  /**
+   * guard for membershipViewIdAcknowledged
+   */
   private final Object membershipViewIdGuard = new Object();
 
-  /** the latest view ID that has been processed by all membership listeners */
+  /**
+   * the latest view ID that has been processed by all membership listeners
+   */
   private long membershipViewIdAcknowledged;
 
   @Override
@@ -1417,7 +1445,6 @@ public class ClusterDistributionManager implements DistributionManager {
    * @see ClusterDistributionManager.MemberCrashedEvent
    * @see ClusterDistributionManager.MemberJoinedEvent
    * @see ClusterDistributionManager.MemberDepartedEvent
-   *
    */
   protected class MemberEventInvoker implements Runnable {
 
@@ -1663,7 +1690,6 @@ public class ClusterDistributionManager implements DistributionManager {
         }
       } // synchronized
 
-
       // Bug 35887:
       // If there are other members, we must receive at least _one_ response
       if (allOthers.size() != 0) { // there exist others
@@ -1701,7 +1727,8 @@ public class ClusterDistributionManager implements DistributionManager {
           logger.warn(
               "Forcing an elder join event since a startup response was not received from elder {}.",
               e);
-          handleManagerStartup(e);
+          // Note test is under membersLock
+          addMemberEvent(new MemberJoinedEvent(e));
         }
       } // an elder exists
     } // someone didn't reply
@@ -1797,21 +1824,6 @@ public class ClusterDistributionManager implements DistributionManager {
     return r;
   }
 
-  /**
-   * Makes note of a new distribution manager that has started up in the distributed cache. Invokes
-   * the appropriately listeners.
-   *
-   * @param theId The id of the distribution manager starting up
-   *
-   */
-  private void handleManagerStartup(InternalDistributedMember theId) {
-    // Note test is under membersLock
-    if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
-      stats.incNodes(1);
-    }
-    addMemberEvent(new MemberJoinedEvent(theId));
-  }
-
   @Override
   public boolean isCurrentMember(DistributedMember id) {
     return distribution.getView().contains((InternalDistributedMember) id);
@@ -1819,7 +1831,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
   /**
    * Makes note of a new console that has started up in the distributed cache.
-   *
    */
   private void handleConsoleStartup(InternalDistributedMember theId) {
     for (MembershipListener listener : allMembershipListeners) {
@@ -1849,7 +1860,6 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    * @param theId The id of the console shutting down
    * @param crashed only true if we detect this id to be gone from a javagroup view
-   *
    * @see AdminConsoleDisconnectMessage#process
    */
   public void handleConsoleShutdown(InternalDistributedMember theId, boolean crashed,
@@ -1894,9 +1904,6 @@ public class ClusterDistributionManager implements DistributionManager {
     removeHostedLocators(theId);
     redundancyZones.remove(theId);
 
-    if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
-      stats.incNodes(-1);
-    }
     String msg;
     if (memberCrashed && !shouldInhibitMembershipWarnings()) {
       msg =
@@ -1909,6 +1916,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
     logger.info(msg, new Object[] {theId, prettifyReason(reason)});
     executors.handleManagerDeparture(theId);
+    stats.setNodes(getNormalDistributionManagerIds().size());
   }
 
   private void handleManagerSuspect(InternalDistributedMember suspect,
@@ -2012,7 +2020,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
     return result;
   }
-
 
 
   /**
@@ -2235,7 +2242,9 @@ public class ClusterDistributionManager implements DistributionManager {
             Collectors.toSet());
   }
 
-  /** Returns count of members filling the specified role */
+  /**
+   * Returns count of members filling the specified role
+   */
   @Override
   public int getRoleCount(Role role) {
     int count = 0;
@@ -2252,7 +2261,9 @@ public class ClusterDistributionManager implements DistributionManager {
     return count;
   }
 
-  /** Returns true if at least one member is filling the specified role */
+  /**
+   * Returns true if at least one member is filling the specified role
+   */
   @Override
   public boolean isRolePresent(Role role) {
     Set<InternalDistributedMember> mbrs = getDistributionManagerIds();
@@ -2267,7 +2278,9 @@ public class ClusterDistributionManager implements DistributionManager {
     return false;
   }
 
-  /** Returns a set of all roles currently in the distributed system. */
+  /**
+   * Returns a set of all roles currently in the distributed system.
+   */
   @Override
   public Set<Role> getAllRoles() {
     Set<Role> allRoles = new HashSet<>();
@@ -2293,14 +2306,11 @@ public class ClusterDistributionManager implements DistributionManager {
     return distribution;
   }
 
-
   ////////////////////// Inner Classes //////////////////////
-
 
 
   /**
    * This is the listener implementation for responding from events from the Membership Manager.
-   *
    */
   static class DMListener implements
       org.apache.geode.distributed.internal.membership.api.MembershipListener<InternalDistributedMember> {
@@ -2372,9 +2382,8 @@ public class ClusterDistributionManager implements DistributionManager {
           message.setSender(theId);
           message.setCrashed(crashed);
           message.setAlertListenerExpected(true);
-          message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener
-                                                              // so
-          // don't issue a warning
+          // we don't know if it was a listener so don't issue a warning
+          message.setIgnoreAlertListenerRemovalFailure(true);
           message.setRecipient(dm.getDistributionManagerId());
           message.setReason(reason);
           dm.handleIncomingDMsg(message);
@@ -2474,8 +2483,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
   /**
    * This is an event reflecting that a InternalDistributedMember has joined the system.
-   *
-   *
    */
   private static class MemberJoinedEvent extends MemberEvent {
     MemberJoinedEvent(InternalDistributedMember id) {
@@ -2495,7 +2502,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
   /**
    * This is an event reflecting that a InternalDistributedMember has left the system.
-   *
    */
   private static class MemberDepartedEvent extends MemberEvent {
     String reason;
@@ -2519,8 +2525,6 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * This is an event reflecting that a InternalDistributedMember has left the system in an
    * unexpected way.
-   *
-   *
    */
   private static class MemberCrashedEvent extends MemberEvent {
     String reason;
@@ -2815,7 +2819,9 @@ public class ClusterDistributionManager implements DistributionManager {
             Collectors.toSet());
   }
 
-  /** test method to get the member IDs of all locators in the distributed system */
+  /**
+   * test method to get the member IDs of all locators in the distributed system
+   */
   public Set<InternalDistributedMember> getLocatorDistributionManagerIds() {
     return distribution.getMembersNotShuttingDown().stream()
         .filter((id) -> id.getVmKind() == LOCATOR_DM_TYPE).collect(
