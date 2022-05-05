@@ -50,17 +50,36 @@ if (project.hasProperty("staticAnalysis")) {
 //  }
 }
 
-test {
-  jacoco {
-    enabled = false
+// JaCoCo configuration
+def jacocoOff = {
+  it.configure {
+    jacoco {
+      enabled = false
+    }
+  }
+}
+def jacocoOn = {
+  it.configure {
+    jacoco {
+      enabled = true
+    }
+  } 
+}
+
+// Default is off
+project.tasks.withType(Test).each(jacocoOff)
+project.tasks.whenTaskAdded() {
+  if (it instanceof Test) {
+    it.configure(jacocoOff)
   }
 }
 
-// JaCoCo configuration
 if (project.hasProperty("codeCoverage")) {
-  test {
-    jacoco {
-      enabled = true
+  // Enable if provided
+  project.tasks.withType(Test).each(jacocoOn)
+  project.tasks.whenTaskAdded() {
+    if (it instanceof Test) {
+      it.configure(jacocoOn)
     }
   }
 
