@@ -87,6 +87,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -1507,6 +1508,57 @@ public class DiskStoreImpl implements DiskStore {
 
   public InternalCache getCache() {
     return cache;
+  }
+
+  HashMap<LocalRegion, RegionVersionVector> lockedRVVs = new HashMap<>();
+
+  public void unlockRVVForAllDiskRegions() {
+    InternalDistributedMember myId = cache.getInternalDistributedSystem().getDistributedMember();
+    Iterator<Map.Entry<LocalRegion, RegionVersionVector>> iterator =
+        lockedRVVs.entrySet().iterator();
+    boolean unlocked = false;
+    while (iterator.hasNext()) {
+      Map.Entry<LocalRegion, RegionVersionVector> entry = iterator.next();
+      LocalRegion lr = entry.getKey();
+      RegionVersionVector rvv = entry.getValue();
+      rvv.unlockForClear(myId);
+      iterator.remove();
+      if (logger.isDebugEnabled()) {
+        logger.debug("Unlocked " + lr.getFullPath() + "'s RVV:" + rvv);
+      }
+      unlocked = true;
+    }
+    if (unlocked && logger.isDebugEnabled()) {
+      logger.debug("Unlocked RVVs for all disk regions of diskstore " + getName());
+    }
+  }
+
+  public void lockRVVForAllDiskRegions() {
+    Collection<DiskRegion> diskRegions = getDiskRegions();
+    DistributionManager dm = cache.getDistributionManager();
+    InternalDistributedMember myId = cache.getInternalDistributedSystem().getDistributedMember();
+    boolean locked = false;
+    try {
+      for (DiskRegion dr : diskRegions) {
+        LocalRegion region = (LocalRegion) getCache().getRegion(dr.getName());
+        if (region != null && region.getVersionVector() != null) {
+          RegionVersionVector rvv = region.getVersionVector();
+          lockedRVVs.put(region, rvv);
+          rvv.lockForClear(dr.getName(), dm, myId);
+          if (logger.isDebugEnabled()) {
+            logger.debug("Locked " + dr.getName() + "'s RegionVersionVector");
+          }
+          locked = true;
+        }
+      }
+      if (locked && logger.isDebugEnabled()) {
+        logger.info("Locked RVVs for all disk regions of " + this.getName());
+      }
+    } catch (Exception e) {
+      unlockRVVForAllDiskRegions();
+      logger.info("lockRVVForAllDiskRegionsAndFlush failed due to ", e);
+      throw e;
+    }
   }
 
   @Override

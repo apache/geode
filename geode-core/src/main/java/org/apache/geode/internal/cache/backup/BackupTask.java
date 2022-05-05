@@ -104,8 +104,8 @@ class BackupTask {
       return new HashSet<>();
     }
 
+    Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
     try {
-      Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
       temporaryFiles = TemporaryBackupFiles.create();
       fileCopier = new BackupFileCopier(cache,
           ClassPathLoader.getLatest().getJarDeploymentService(), temporaryFiles);
@@ -124,6 +124,9 @@ class BackupTask {
       }
       return persistentIds;
     } finally {
+      for (DiskStore ds : diskStores) {
+        ((DiskStoreImpl) ds).unlockRVVForAllDiskRegions();
+      }
       cleanup();
     }
   }
@@ -272,8 +275,12 @@ class BackupTask {
           backup = new DiskStoreBackup(allOplogs);
           backupByDiskStore.put(diskStore, backup);
 
-          fileCopier.copyDiskInitFile(diskStore);
-          diskStore.getPersistentOplogSet().forceRoll(null);
+          try {
+            fileCopier.copyDiskInitFile(diskStore);
+            diskStore.getPersistentOplogSet().forceRoll(null);
+          } finally {
+            diskStore.unlockRVVForAllDiskRegions();
+          }
 
           if (logger.isDebugEnabled()) {
             logger.debug("Finished backup of disk store {}", diskStore.getName());

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 
 class FlushToDisk {
@@ -27,6 +28,9 @@ class FlushToDisk {
 
   void run() {
     if (cache != null) {
+      for (DiskStore diskStore : cache.listDiskStoresIncludingRegionOwned()) {
+        ((DiskStoreImpl) diskStore).lockRVVForAllDiskRegions();
+      }
       cache.listDiskStoresIncludingRegionOwned().forEach(DiskStore::flush);
     }
   }
