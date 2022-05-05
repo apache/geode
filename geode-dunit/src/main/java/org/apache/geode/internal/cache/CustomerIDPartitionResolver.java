@@ -23,7 +23,7 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 
-public class CustomerIDPartitionResolver implements PartitionResolver<Object, Object> {
+public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V> {
 
   private String id;
 
@@ -39,7 +39,7 @@ public class CustomerIDPartitionResolver implements PartitionResolver<Object, Ob
   }
 
   @Override
-  public Serializable getRoutingObject(EntryOperation<Object, Object> opDetails) {
+  public Serializable getRoutingObject(EntryOperation opDetails) {
 
     Serializable routingbject = null;
 

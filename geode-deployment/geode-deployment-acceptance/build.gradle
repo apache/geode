@@ -35,8 +35,6 @@ dependencies {
     exclude module: 'geode-core'
   }
   acceptanceTestImplementation(project(':geode-assembly:geode-assembly-test'))
-  acceptanceTestImplementation(project(':geode-for-redis').sourceSets.commonTest.output)
-  acceptanceTestImplementation('io.netty:netty-codec-redis')
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
@@ -45,7 +43,6 @@ dependencies {
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 
   acceptanceTestImplementation('org.springframework:spring-web')
-  acceptanceTestImplementation('io.lettuce:lettuce-core')
   acceptanceTestImplementation('net.spy:spymemcached')
 
   acceptanceTestImplementation(project(':geode-logging'))
