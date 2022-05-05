@@ -109,12 +109,12 @@ public class ResourceManagerValidator {
     }
   }
 
-  private static boolean cmsIsAvailable() {
+  private static boolean isCMSAvailable() {
     return isJavaVersionAtMost(JAVA_13);
   }
 
   private static void verifyCMSGC(GemFireCache cache, String useCMS) {
-    if (useCMS == null && cmsIsAvailable()) {
+    if (useCMS == null && isCMSAvailable()) {
       cache.getLogger().warning(
           "Using the concurrent garbage collector (configured using -XX:+UseConcMarkSweepGC) is recommended so that GemFire cache eviction is optimal");
     }
@@ -122,7 +122,7 @@ public class ResourceManagerValidator {
 
   private static void verifyCMSInitiatingOccupancyFraction(GemFireCache cache, ResourceManager rm,
       String cmsIOF) {
-    if (!cmsIsAvailable()) {
+    if (!isCMSAvailable()) {
       return;
     }
     if (cmsIOF == null) {
