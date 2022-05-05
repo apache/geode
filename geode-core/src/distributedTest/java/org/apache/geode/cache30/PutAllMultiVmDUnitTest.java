@@ -100,7 +100,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase {
       RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
       regionFactory.setScope(Scope.DISTRIBUTED_ACK);
       regionFactory.setDataPolicy(DataPolicy.REPLICATE);
-      region = regionFactory.create("mirrored");
+      mirroredRegion = regionFactory.create("mirrored");
     } catch (Exception ex) {
       ex.printStackTrace();
     }

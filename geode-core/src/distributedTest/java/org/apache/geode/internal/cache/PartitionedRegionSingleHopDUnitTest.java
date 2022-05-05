@@ -54,7 +54,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -95,6 +94,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -128,16 +128,10 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   private VM vm2;
   private VM vm3;
 
-  @BeforeClass
-  public static void setupClass() {
-    System.setProperty("log-level", "info");
-  }
-
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
-  // @Rule
-  // public DistributedRestoreSystemProperties restoreProps = new
-  // DistributedRestoreSystemProperties();
+  @Rule
+  public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
@@ -154,7 +148,6 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
     for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
       vm.invoke(() -> {
-        System.setProperty("log-level", "fine");
         CLIENT.set(DUMMY_CLIENT);
         CACHE.set(DUMMY_CACHE);
         SERVER.set(DUMMY_SERVER);
