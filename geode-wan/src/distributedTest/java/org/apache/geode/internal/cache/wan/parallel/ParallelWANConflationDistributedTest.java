@@ -631,8 +631,7 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
     public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof DeposePrimaryBucketMessage) {
         logger.info(
-            "TestDistributionMessageObserver.beforeProcessMessage about to signal received_deposePrimaryMessage gate",
-            new Exception());
+            "TestDistributionMessageObserver.beforeProcessMessage about to signal received_deposePrimaryMessage gate");
         blackboard.signalGate(DEPOSE_PRIMARY_MESSAGE_RECEIVED);
         logger.info(
             "TestDistributionMessageObserver.beforeProcessMessage done signal received_deposePrimaryMessage gate");
