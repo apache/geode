@@ -284,11 +284,6 @@ geode-assembly/**/org/apache/geode/launchers/**                   @dschneider-pi
 geode-assembly/**/resources/**                                    @boglesby @nabarunnag @jdeppe-pivotal @jinmeiliao
 
 #-----------------------------------------------------------------
-# Redis API
-#-----------------------------------------------------------------
-geode-for-redis/**                                                @jdeppe-pivotal @nonbinaryprogrammer @ringles @upthewaterspout @DonalEvans @dschneider-pivotal
-
-#-----------------------------------------------------------------
 # Build and tooling
 #-----------------------------------------------------------------
 #etc/**

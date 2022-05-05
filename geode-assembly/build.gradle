@@ -523,7 +523,6 @@ distributions {
         from { project(':extensions:geode-modules-assembly').distTcServer30 }
         from { project(':extensions:geode-modules-assembly').distTomcat }
         from { project(':extensions:geode-modules-assembly').distAppServer }
-        from { project(':geode-for-redis').distZip }
       }
     }
   }
