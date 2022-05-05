@@ -50,13 +50,12 @@ public class CreateIndexCommandDUnitTest {
 
   private static MemberVM locator;
   private static MemberVM server1;
-  private static MemberVM server2;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, locator.getPort());
-    server2 = cluster.startServerVM(2, "group2", locator.getPort());
+    cluster.startServerVM(2, "group2", locator.getPort());
     gfsh.connectAndVerify(locator);
 
     // create a region on server-2 in group 2
@@ -216,12 +215,10 @@ public class CreateIndexCommandDUnitTest {
   @Test
   public void indexCreationOnPartitionedRegionUpdateClusterConfig() {
     int serversNum = 8;
-    MemberVM serversArray[] = new MemberVM[serversNum];
-
     int initialIndex = 1;
-    for (int index = 2; index < serversArray.length; index++) {
-      serversArray[index] =
-          cluster.startServerVM(initialIndex + index, locator.getPort());
+
+    for (int index = 2; index < serversNum; index++) {
+      cluster.startServerVM(initialIndex + index, locator.getPort());
     }
 
     gfsh.executeAndAssertThat("create region --name=regionC --type=PARTITION")
@@ -231,9 +228,7 @@ public class CreateIndexCommandDUnitTest {
         "create index --name=index1 --expression=id --region=regionC")
         .statusIsSuccess()
         .hasTableSection()
-        .hasRowSize(1)
-        .hasRow(0)
-        .contains("OK", "Index successfully created");
+        .hasRowSize(8);
 
     gfsh.executeAndAssertThat("export cluster-configuration")
         .statusIsSuccess()
@@ -242,5 +237,4 @@ public class CreateIndexCommandDUnitTest {
         .contains(
             "index name=\"index1\" expression=\"id\" from-clause=\"/regionC\" key-index=\"false\" type=\"range\"");
   }
-
 }
