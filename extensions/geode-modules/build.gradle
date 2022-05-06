@@ -39,6 +39,7 @@ dependencies {
   compileOnly('javax.servlet:javax.servlet-api')
   compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
 
+  implementation('org.apache.commons:commons-lang3')
 
   // test
   testImplementation('org.apache.bcel:bcel')

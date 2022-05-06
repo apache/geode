@@ -363,9 +363,8 @@ public abstract class AbstractCache {
       }
     }
 
-    // Validate java startup parameters (done after setting the eviction and
-    // critical heap percentages so that the CMSInitiatingOccupancyFraction can
-    // be compared against them.
+    // Validate java startup parameters after setting the eviction and
+    // critical heap percentages so that they can be compared against them.
     ResourceManagerValidator.validateJavaStartupParameters(getCache());
   }
 

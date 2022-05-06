@@ -281,26 +281,17 @@ public class DirectChannel {
           directReply = false;
         }
         if (ce != null) {
-
-          if (!retry) {
-            retryInfo = ce;
+          if (failedCe != null) {
+            failedCe.getMembers().addAll(ce.getMembers());
+            failedCe.getCauses().addAll(ce.getCauses());
           } else {
-
-            if (failedCe != null) {
-              failedCe.getMembers().addAll(ce.getMembers());
-              failedCe.getCauses().addAll(ce.getCauses());
-            } else {
-              failedCe = ce;
-            }
+            failedCe = ce;
           }
           ce = null;
         }
         if (cons.isEmpty()) {
           if (failedCe != null) {
             throw failedCe;
-          }
-          if (retryInfo != null) {
-            continue;
           }
           return bytesWritten;
         }
@@ -347,12 +338,7 @@ public class DirectChannel {
         }
 
         if (ce != null) {
-          if (retryInfo != null) {
-            retryInfo.getMembers().addAll(ce.getMembers());
-            retryInfo.getCauses().addAll(ce.getCauses());
-          } else {
-            retryInfo = ce;
-          }
+          retryInfo = ce;
           ce = null;
         }
 
@@ -437,13 +423,13 @@ public class DirectChannel {
    * @param retry whether this is a retransmission
    * @param ackTimeout the ack warning timeout
    * @param ackSDTimeout the ack severe alert timeout
-   * @param connectionsList a list to hold the connections
+   * @param cons a list to hold the connections
    * @return null if everything went okay, or a ConnectExceptions object if some connections
    *         couldn't be obtained
    */
   private ConnectExceptions getConnections(Membership mgr, DistributionMessage msg,
       InternalDistributedMember[] destinations, boolean preserveOrder, boolean retry,
-      long ackTimeout, long ackSDTimeout, List<Connection> connectionsList) {
+      long ackTimeout, long ackSDTimeout, List cons) {
     ConnectExceptions ce = null;
     for (InternalDistributedMember destination : destinations) {
       if (destination == null) {
@@ -472,18 +458,12 @@ public class DirectChannel {
           if (ackTimeout > 0) {
             startTime = System.currentTimeMillis();
           }
-          final Connection connection;
-          if (!retry) {
-            connection = conduit.getFirstScanForConnection(destination, preserveOrder, startTime,
-                ackTimeout, ackSDTimeout);
-          } else {
-            connection = conduit.getConnection(destination, preserveOrder, startTime,
-                ackTimeout, ackSDTimeout);
-          }
+          Connection con = conduit.getConnection(destination, preserveOrder, retry, startTime,
+              ackTimeout, ackSDTimeout);
 
-          connection.setInUse(true, startTime, 0, 0, null); // fix for bug#37657
-          connectionsList.add(connection);
-          if (connection.isSharedResource() && msg instanceof DirectReplyMessage) {
+          con.setInUse(true, startTime, 0, 0, null); // fix for bug#37657
+          cons.add(con);
+          if (con.isSharedResource() && msg instanceof DirectReplyMessage) {
             DirectReplyMessage directMessage = (DirectReplyMessage) msg;
             directMessage.registerProcessor();
           }

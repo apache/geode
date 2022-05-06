@@ -269,7 +269,6 @@ public class ConnectionTable {
    * @param startTime the ms clock start time for the operation
    * @param ackThreshold the ms ack-wait-threshold, or zero
    * @param ackSAThreshold the ms ack-severe_alert-threshold, or zero
-   * @param doNotRetry whether we should perform reattempt to create connection
    * @return the Connection, or null if someone else already created or closed it
    * @throws IOException if unable to connect
    */
@@ -277,14 +276,13 @@ public class ConnectionTable {
       boolean sharedResource,
       boolean preserveOrder, Map<DistributedMember, Object> m, PendingConnection pc, long startTime,
       long ackThreshold,
-      long ackSAThreshold, boolean doNotRetry)
-      throws IOException, DistributedSystemDisconnectedException {
+      long ackSAThreshold) throws IOException, DistributedSystemDisconnectedException {
     // handle new pending connection
     Connection con = null;
     try {
       long senderCreateStartTime = owner.getStats().startSenderCreate();
       con = Connection.createSender(owner.getMembership(), this, preserveOrder, id,
-          sharedResource, startTime, ackThreshold, ackSAThreshold, doNotRetry);
+          sharedResource, startTime, ackThreshold, ackSAThreshold);
       owner.getStats().incSenders(sharedResource, preserveOrder, senderCreateStartTime);
     } finally {
       // our connection failed to notify anyone waiting for our pending con
@@ -352,14 +350,11 @@ public class ConnectionTable {
    * @param startTime the ms clock start time for the operation
    * @param ackTimeout the ms ack-wait-threshold, or zero
    * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
-   * @param doNotRetryWaitForConnection whether we should perform reattempt (or wait) to create
-   *        connection
    * @return the new Connection, or null if an error
    * @throws IOException if unable to create the connection
    */
   private Connection getSharedConnection(InternalDistributedMember id, boolean scheduleTimeout,
-      boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout,
-      boolean doNotRetryWaitForConnection)
+      boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
 
     final Map<DistributedMember, Object> m =
@@ -392,7 +387,7 @@ public class ConnectionTable {
         logger.debug("created PendingConnection {}", pc);
       }
       result = handleNewPendingConnection(id, true, preserveOrder, m, pc,
-          startTime, ackTimeout, ackSATimeout, doNotRetryWaitForConnection);
+          startTime, ackTimeout, ackSATimeout);
       if (!preserveOrder && scheduleTimeout) {
         scheduleIdleTimeout(result);
       }
@@ -403,10 +398,6 @@ public class ConnectionTable {
         if (AlertingAction.isThreadAlerting()) {
           // do not change the text of this exception - it is looked for in exception handlers
           throw new IOException("Cannot form connection to alert listener " + id);
-        }
-
-        if (doNotRetryWaitForConnection) {
-          return null;
         }
 
         result = ((PendingConnection) mEntry).waitForConnect(owner.getMembership(),
@@ -434,13 +425,11 @@ public class ConnectionTable {
    * @param startTime the ms clock start time for the operation
    * @param ackTimeout the ms ack-wait-threshold, or zero
    * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
-   * @param doNotRetry whether we should perform reattempt to create connection
    * @return the connection, or null if an error
    * @throws IOException if the connection could not be created
    */
   Connection getThreadOwnedConnection(InternalDistributedMember id, long startTime, long ackTimeout,
-      long ackSATimeout, boolean doNotRetry)
-      throws IOException, DistributedSystemDisconnectedException {
+      long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
     Connection result;
 
     // Look for result in the thread local
@@ -460,7 +449,7 @@ public class ConnectionTable {
     // OK, we have to create a new connection.
     long senderCreateStartTime = owner.getStats().startSenderCreate();
     result = Connection.createSender(owner.getMembership(), this, true, id, false, startTime,
-        ackTimeout, ackSATimeout, doNotRetry);
+        ackTimeout, ackSATimeout);
     owner.getStats().incSenders(false, true, senderCreateStartTime);
     if (logger.isDebugEnabled()) {
       logger.debug("ConnectionTable: created an ordered connection: {}", result);
@@ -532,12 +521,11 @@ public class ConnectionTable {
    * @param startTime the ms clock start time
    * @param ackTimeout the ms ack-wait-threshold, or zero
    * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
-   * @param doNotRetry whether we should perform reattempt to create connection
    * @return the new Connection, or null if a problem
    * @throws IOException if the connection could not be created
    */
   protected Connection get(InternalDistributedMember id, boolean preserveOrder, long startTime,
-      long ackTimeout, long ackSATimeout, boolean doNotRetry)
+      long ackTimeout, long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
     if (closed) {
       owner.getCancelCriterion().checkCancelInProgress(null);
@@ -547,9 +535,9 @@ public class ConnectionTable {
     boolean threadOwnsResources = threadOwnsResources();
     if (!preserveOrder || !threadOwnsResources) {
       result = getSharedConnection(id, threadOwnsResources, preserveOrder, startTime, ackTimeout,
-          ackSATimeout, doNotRetry);
+          ackSATimeout);
     } else {
-      result = getThreadOwnedConnection(id, startTime, ackTimeout, ackSATimeout, doNotRetry);
+      result = getThreadOwnedConnection(id, startTime, ackTimeout, ackSATimeout);
     }
     if (result != null) {
       Assert.assertTrue(result.getPreserveOrder() == preserveOrder);

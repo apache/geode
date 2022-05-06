@@ -487,26 +487,6 @@ off-heap-memory-size=120g</code></pre></td>
 <td><em>not set</em></td>
 </tr>
 <tr>
-<td>geode-for-redis-bind-address</td>
-<td>Specifies the address on which <%=vars.product_name%> for Redis is listening. If set to the empty string or this property is not
-specified, the server listens on all local addresses.
-<td>S</td>
-<td><code>""</code></td>
-</tr>
-<tr>
-<td>geode-for-redis-enabled</td>
-<td>When the default value of false, <%=vars.product_name%> for Redis is not available.  Set
-to true to enable <%=vars.product_name%> for Redis.</td>
-<td>S</td>
-<td>false</td>
-</tr>
-<tr>
-<td>geode-for-redis-port</td>
-<td>Specifies the port on which the server listens for <%=vars.product_name%> for Redis connections. A value of 0 selects a random port.</td>
-<td>S</td>
-<td>6379</td>
-</tr>
-<tr>
 <td>redundancy-zone</td>
 <td>Defines this member's redundancy zone. Used to separate member's into different groups for satisfying partitioned region redundancy. If this property is set, <%=vars.product_name%> will not put redundant copies of data in members with the same redundancy zone setting. 
 See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Configure High Availability for a Partitioned Region</a> for more details.</td>

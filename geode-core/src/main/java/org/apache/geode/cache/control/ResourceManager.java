@@ -127,8 +127,9 @@ public interface ResourceManager {
    * additional VM switches to control the behavior of the garbage collector. We suggest that you
    * investigate tuning the garbage collector when using this type of eviction controller. A
    * collector that frequently collects is needed to keep our heap usage up to date. In particular,
-   * on the Sun <A href="http://java.sun.com/docs/hotspot/gc/index.html">HotSpot</a> VM, the
-   * <code>-XX:+UseConcMarkSweepGC</code> flag needs to be set, and
+   * on the Sun <A href="http://java.sun.com/docs/hotspot/gc/index.html">HotSpot</a> VM,
+   * before Java 14,
+   * the <code>-XX:+UseConcMarkSweepGC</code> flag needs to be set, and
    * <code>-XX:CMSInitiatingOccupancyFraction=N</code> should be set with N being a percentage that
    * is less than the {@link ResourceManager} critical and eviction heap thresholds.
    *

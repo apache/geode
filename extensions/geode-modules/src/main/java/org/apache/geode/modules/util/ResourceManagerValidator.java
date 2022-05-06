@@ -14,6 +14,9 @@
  */
 package org.apache.geode.modules.util;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_13;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
@@ -106,8 +109,12 @@ public class ResourceManagerValidator {
     }
   }
 
+  private static boolean isCMSAvailable() {
+    return isJavaVersionAtMost(JAVA_13);
+  }
+
   private static void verifyCMSGC(GemFireCache cache, String useCMS) {
-    if (useCMS == null) {
+    if (useCMS == null && isCMSAvailable()) {
       cache.getLogger().warning(
           "Using the concurrent garbage collector (configured using -XX:+UseConcMarkSweepGC) is recommended so that GemFire cache eviction is optimal");
     }
@@ -115,6 +122,9 @@ public class ResourceManagerValidator {
 
   private static void verifyCMSInitiatingOccupancyFraction(GemFireCache cache, ResourceManager rm,
       String cmsIOF) {
+    if (!isCMSAvailable()) {
+      return;
+    }
     if (cmsIOF == null) {
       cache.getLogger().warning(
           "Setting the CMS initiating occupancy fraction (configured using -XX:CMSInitiatingOccupancyFraction=N) is recommended so that GemFire cache eviction is optimal");

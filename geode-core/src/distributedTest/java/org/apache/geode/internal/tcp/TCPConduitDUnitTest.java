@@ -110,7 +110,7 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
     assertThat(connectionTable.hasReceiversFor(otherMember)).isTrue();
 
     Connection sharedUnordered = connectionTable.get(otherMember, false,
-        System.currentTimeMillis(), 15000, 0, false);
+        System.currentTimeMillis(), 15000, 0);
     sharedUnordered.requestClose("for testing");
     // the sender connection has been closed so we should only have 2 senders now
     assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(2);
