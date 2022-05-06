@@ -78,7 +78,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
       CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
       CliStrings.CREATE_REGION__TOTALMAXMEMORY,
       CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
-      CliStrings.CREATE_REGION__PARTITION_RESOLVER
+      CliStrings.CREATE_REGION__PARTITION_RESOLVER,
+      CliStrings.CREATE_REGION__PARTITION_LISTENER
   };
 
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
@@ -170,6 +171,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_REGION__OFF_HEAP__HELP) Boolean offHeap,
       @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
           help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
+      @CliOption(key = CliStrings.CREATE_REGION__PARTITION_LISTENER,
+          help = CliStrings.CREATE_REGION__PARTITION_LISTENER__HELP) String partitionListener,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
@@ -291,7 +294,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
     // set partition attributes
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
     RegionAttributesType.PartitionAttributes delta =
-        RegionAttributesType.PartitionAttributes.generate(partitionResolver, null, prLocalMaxMemory,
+        RegionAttributesType.PartitionAttributes.generate(partitionResolver,
+            Collections.singletonList(partitionListener), prLocalMaxMemory,
             prRecoveryDelay, prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory,
             prTotalNumBuckets, prColocatedWith);
 
