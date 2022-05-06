@@ -78,8 +78,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
       CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
       CliStrings.CREATE_REGION__TOTALMAXMEMORY,
       CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
-      CliStrings.CREATE_REGION__PARTITION_RESOLVER,
-      CliStrings.CREATE_REGION__PARTITION_LISTENER
+      CliStrings.CREATE_REGION__PARTITION_LISTENER,
+      CliStrings.CREATE_REGION__PARTITION_RESOLVER
   };
 
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
@@ -169,10 +169,10 @@ public class CreateRegionCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP) Integer prLocalMaxMemory,
       @CliOption(key = CliStrings.CREATE_REGION__OFF_HEAP, specifiedDefaultValue = "true",
           help = CliStrings.CREATE_REGION__OFF_HEAP__HELP) Boolean offHeap,
-      @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
-          help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
       @CliOption(key = CliStrings.CREATE_REGION__PARTITION_LISTENER,
           help = CliStrings.CREATE_REGION__PARTITION_LISTENER__HELP) String partitionListener,
+      @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
+          help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
