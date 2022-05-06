@@ -45,7 +45,8 @@ import org.apache.geode.deployment.internal.modules.utils.ModuleSpecBuilderUtils
 public class ModuleSpecUtils {
 
   /**
-   * Adds resources deined by the Class-Path attribute of the manifest inside the modules resources.
+   * Adds resources defined by the Class-Path attribute of the manifest inside the modules
+   * resources.
    *
    * @param moduleSpec spec for the module to expand the classpath of.
    * @return a {@link ModuleSpec} with expanded classpath.
@@ -220,12 +221,14 @@ public class ModuleSpecUtils {
 
   /**
    * Checks if the moduleSpec is dependent on the module represented by moduleName.
-   * <p>
+   *
+   * @param moduleName - The module name of the module to be checked
+   * @param moduleSpec - The module spec of the module which is to be checked for dependency on the
+   *        module name
    *
    * @return a {@link Boolean} which is null if the ModuleSpec does does not depend on the module,
    *         true if it does depend on the module and the module is exported, and false if the
-   *         module is not
-   *         exported.
+   *         module is not exported.
    */
   public static Boolean moduleExportsModuleDependency(ModuleSpec moduleSpec, String moduleName) {
     validate(moduleSpec);
