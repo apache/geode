@@ -853,7 +853,7 @@ public class GatewaySenderEventImpl
     // If the message is an update, it may be conflatable. If it is a
     // create, destroy, invalidate or destroy-region, it is not conflatable.
     // Only updates are conflated.
-    return isUpdate();
+    return isUpdate() && !isConcurrencyConflict();
   }
 
   @Override
