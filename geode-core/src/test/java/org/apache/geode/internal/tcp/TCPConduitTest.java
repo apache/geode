@@ -281,6 +281,29 @@ public class TCPConduitTest {
         .isInstanceOf(IOException.class);
   }
 
+
+  @Test
+  public void getFirstScanForConnectionRethrows_ifCaughtIOException_whithoutMessage()
+      throws Exception {
+    TCPConduit tcpConduit =
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+            new Properties(),
+            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    Connection connection = mock(Connection.class);
+    doThrow(new IOException())
+        .doReturn(connection)
+        .when(connectionTable)
+        .get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong(), anyBoolean());
+
+    Throwable thrown = catchThrowable(() -> {
+      tcpConduit.getFirstScanForConnection(member, false, 0L, 0L, 0L);
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(IOException.class);
+  }
+
   private Runnable doNothing() {
     return () -> {
       // nothing

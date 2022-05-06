@@ -955,7 +955,8 @@ public class TCPConduit implements Runnable {
 
       if (problem != null) {
         if (problem instanceof IOException) {
-          if (problem.getMessage().startsWith("Cannot form connection to alert listener")) {
+          if (problem.getMessage() != null
+              && problem.getMessage().startsWith("Cannot form connection to alert listener")) {
             throw new AlertingIOException((IOException) problem);
           }
           throw (IOException) problem;
