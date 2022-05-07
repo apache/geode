@@ -291,11 +291,14 @@ public class CreateRegionCommand extends SingleGfshCommand {
 
     regionConfig.setName(regionPathData.getName());
 
+    List<String> partitionListeners = partitionListener == null ? Collections.emptyList()
+        : Collections.singletonList(partitionListener);
+
     // set partition attributes
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
     RegionAttributesType.PartitionAttributes delta =
         RegionAttributesType.PartitionAttributes.generate(partitionResolver,
-            Collections.singletonList(partitionListener), prLocalMaxMemory,
+            partitionListeners, prLocalMaxMemory,
             prRecoveryDelay, prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory,
             prTotalNumBuckets, prColocatedWith);
 
