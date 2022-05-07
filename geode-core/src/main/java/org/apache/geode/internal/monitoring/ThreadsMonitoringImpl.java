@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.monitoring.executor.AsyncWriterExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.GatewaySenderEventProcessorGroup;
 import org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup;
@@ -138,6 +139,9 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
         return new P2PReaderExecutorGroup();
       case ServerConnectionExecutor:
         return new ServerConnectionExecutorGroup();
+      case AsyncWriterExecutor:
+        return new AsyncWriterExecutorGroup();
+
       default:
         throw new IllegalStateException("Unhandled mode=" + mode);
     }

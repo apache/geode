@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.entries.DiskEntry.Helper.readRawValue;
+import static org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode.AsyncWriterExecutor;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -113,6 +114,8 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -1649,6 +1652,10 @@ public class DiskStoreImpl implements DiskStore {
       this.diskStore = diskStore;
     }
 
+    private ThreadsMonitoring getThreadMonitoring() {
+      return diskStore.getCache().getInternalDistributedSystem().getDM().getThreadMonitoring();
+    }
+
     private boolean waitUntilFlushIsReady() throws InterruptedException {
       if (diskStore.maxAsyncItems > 0) {
         final long time = diskStore.getTimeInterval();
@@ -1716,67 +1723,78 @@ public class DiskStoreImpl implements DiskStore {
         logger.debug("Async writer thread started");
       }
       boolean doingFlush = false;
+      final ThreadsMonitoring threadMonitoring = getThreadMonitoring();
+      final AbstractExecutor threadMonitorExecutor =
+          threadMonitoring.createAbstractExecutor(AsyncWriterExecutor);
+      threadMonitorExecutor.suspendMonitoring();
+      threadMonitoring.register(threadMonitorExecutor);
+
       try {
         while (waitUntilFlushIsReady()) {
-          int drainCount = diskStore.fillDrainList();
-          if (drainCount > 0) {
-            Iterator<Object> it = diskStore.getDrainList().iterator();
-            while (it.hasNext()) {
-              Object o = it.next();
-              if (o instanceof FlushNotifier) {
-                flushChild();
-                if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-                  if (!it.hasNext()) {
-                    doingFlush = false;
-                    CacheObserverHolder.getInstance().afterWritingBytes();
-                  }
-                }
-                ((FlushNotifier) o).doFlush();
-              } else {
-                try {
-                  AsyncDiskEntry ade = (AsyncDiskEntry) o;
-                  InternalRegion region = ade.region;
-                  VersionTag tag = ade.tag;
-                  if (ade.versionOnly) {
-                    DiskEntry.Helper.doAsyncFlush(tag, region);
-                  } else {
-                    DiskEntry entry = ade.de;
-                    // We check isPendingAsync
-                    if (entry.getDiskId().isPendingAsync()) {
-                      if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-                        if (!doingFlush) {
-                          doingFlush = true;
-                          CacheObserverHolder.getInstance().goingToFlush();
-                        }
-                      }
-                      DiskEntry.Helper.doAsyncFlush(entry, region, tag);
-                    } else {
-                      // If it is no longer pending someone called
-                      // unscheduleAsyncWrite
-                      // so we don't need to write the entry, but
-                      // if we have a version tag we need to record the
-                      // operation
-                      // to update the RVV
-                      if (tag != null) {
-                        DiskEntry.Helper.doAsyncFlush(tag, region);
-                      }
+          threadMonitorExecutor.resumeMonitoring();
+          try {
+            int drainCount = diskStore.fillDrainList();
+            if (drainCount > 0) {
+              Iterator<Object> it = diskStore.getDrainList().iterator();
+              while (it.hasNext()) {
+                Object o = it.next();
+                if (o instanceof FlushNotifier) {
+                  flushChild();
+                  if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
+                    if (!it.hasNext()) {
+                      doingFlush = false;
+                      CacheObserverHolder.getInstance().afterWritingBytes();
                     }
                   }
-                } catch (RegionDestroyedException ignore) {
-                  // Normally we flush before closing or destroying a region
-                  // but in some cases it is closed w/o flushing.
-                  // So just ignore it; see bug 41305.
+                  ((FlushNotifier) o).doFlush();
+                } else {
+                  try {
+                    AsyncDiskEntry ade = (AsyncDiskEntry) o;
+                    InternalRegion region = ade.region;
+                    VersionTag tag = ade.tag;
+                    if (ade.versionOnly) {
+                      DiskEntry.Helper.doAsyncFlush(tag, region);
+                    } else {
+                      DiskEntry entry = ade.de;
+                      // We check isPendingAsync
+                      if (entry.getDiskId().isPendingAsync()) {
+                        if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
+                          if (!doingFlush) {
+                            doingFlush = true;
+                            CacheObserverHolder.getInstance().goingToFlush();
+                          }
+                        }
+                        DiskEntry.Helper.doAsyncFlush(entry, region, tag);
+                      } else {
+                        // If it is no longer pending someone called
+                        // unscheduleAsyncWrite
+                        // so we don't need to write the entry, but
+                        // if we have a version tag we need to record the
+                        // operation
+                        // to update the RVV
+                        if (tag != null) {
+                          DiskEntry.Helper.doAsyncFlush(tag, region);
+                        }
+                      }
+                    }
+                  } catch (RegionDestroyedException ignore) {
+                    // Normally we flush before closing or destroying a region
+                    // but in some cases it is closed w/o flushing.
+                    // So just ignore it; see bug 41305.
+                  }
                 }
               }
-            }
-            flushChild();
-            if (doingFlush) {
-              doingFlush = false;
-              if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-                CacheObserverHolder.getInstance().afterWritingBytes();
+              flushChild();
+              if (doingFlush) {
+                doingFlush = false;
+                if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
+                  CacheObserverHolder.getInstance().afterWritingBytes();
+                }
               }
+              diskStore.getStats().incQueueSize(-drainCount);
             }
-            diskStore.getStats().incQueueSize(-drainCount);
+          } finally {
+            threadMonitorExecutor.suspendMonitoring();
           }
         }
       } catch (InterruptedException ie) {
@@ -1802,6 +1820,8 @@ public class DiskStoreImpl implements DiskStore {
         }
         diskStore.flusherThreadTerminated = true;
         diskStore.stopFlusher = true; // set this before calling handleDiskAccessException
+        threadMonitoring.unregister(threadMonitorExecutor);
+
         // or it will hang
         if (fatalDae != null) {
           diskStore.handleDiskAccessException(fatalDae);
