@@ -23,7 +23,6 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -83,15 +82,15 @@ public class ConnectionProxyJUnitTest {
   public void testConnectedServerCount() throws Exception {
     int port3 = getRandomAvailableTCPPort();
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(false);
-    pf.setReadTimeout(2000);
-    pf.setMinConnections(1);
-    pf.setSocketBufferSize(32768);
-    pf.setRetryAttempts(1);
-    pf.setPingInterval(500);
-    proxy = (PoolImpl) pf.create("clientPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(false);
+    poolFactory.setReadTimeout(2000);
+    poolFactory.setMinConnections(1);
+    poolFactory.setSocketBufferSize(32768);
+    poolFactory.setRetryAttempts(1);
+    poolFactory.setPingInterval(500);
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
     assertThatThrownBy(() -> proxy.acquireConnection())
         .isInstanceOf(NoAvailableServersException.class);
@@ -109,11 +108,11 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(-1);
-    proxy = (PoolImpl) pf.create("clientPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(-1);
+    proxy = (PoolImpl) poolFactory.create("clientPool");
     assertThat(proxy.getThreadIdToSequenceIdMap()).isNotNull();
   }
 
@@ -122,23 +121,23 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(-1);
-    pf.setSubscriptionMessageTrackingTimeout(4000);
-    pf.setSubscriptionAckInterval(2000);
-    proxy = (PoolImpl) pf.create("clientPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(-1);
+    poolFactory.setSubscriptionMessageTrackingTimeout(4000);
+    poolFactory.setSubscriptionAckInterval(2000);
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
-    EventID eid = new EventID(new byte[0], 1, 1);
-    assertThat(proxy.verifyIfDuplicate(eid))
-        .describedAs(" eid should not be duplicate as it is a new entry")
+    EventID eventID = new EventID(new byte[0], 1, 1);
+    assertThat(proxy.verifyIfDuplicate(eventID))
+        .describedAs(" eventID should not be duplicate as it is a new entry")
         .isFalse();
 
     verifyExpiry();
 
-    assertThat(proxy.verifyIfDuplicate(eid))
-        .describedAs(" eid should not be duplicate as it is a new entry")
+    assertThat(proxy.verifyIfDuplicate(eventID))
+        .describedAs(" eventID should not be duplicate as it is a new entry")
         .isFalse();
   }
 
@@ -148,20 +147,20 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
-    PoolFactory pf = createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(-1);
-    pf.setSubscriptionMessageTrackingTimeout(10000);
+    PoolFactory poolFactory = createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(-1);
+    poolFactory.setSubscriptionMessageTrackingTimeout(10000);
 
-    proxy = (PoolImpl) pf.create("clientPool");
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
-    final EventID eid = new EventID(new byte[0], 1, 1);
-    assertThat(proxy.verifyIfDuplicate(eid))
-        .describedAs(" eid should not be duplicate as it is a new entry")
+    final EventID eventID = new EventID(new byte[0], 1, 1);
+    assertThat(proxy.verifyIfDuplicate(eventID))
+        .describedAs(" eventID should not be duplicate as it is a new entry")
         .isFalse();
 
-    await().untilAsserted(() -> assertThat(proxy.verifyIfDuplicate(eid)).isTrue());
+    await().untilAsserted(() -> assertThat(proxy.verifyIfDuplicate(eventID)).isTrue());
   }
 
   @Test
@@ -169,28 +168,28 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(-1);
-    pf.setSubscriptionMessageTrackingTimeout(5000);
-    pf.setSubscriptionAckInterval(2000);
-    proxy = (PoolImpl) pf.create("clientPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(-1);
+    poolFactory.setSubscriptionMessageTrackingTimeout(5000);
+    poolFactory.setSubscriptionAckInterval(2000);
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
     final int EVENT_ID_COUNT = 10000; // why 10,000?
-    EventID[] eid = new EventID[EVENT_ID_COUNT];
+    EventID[] eventIds = new EventID[EVENT_ID_COUNT];
     for (int i = 0; i < EVENT_ID_COUNT; i++) {
-      eid[i] = new EventID(new byte[0], i, i);
-      assertThat(proxy.verifyIfDuplicate(eid[i]))
-          .describedAs("eid can never be duplicate, it is being created for the first time!")
+      eventIds[i] = new EventID(new byte[0], i, i);
+      assertThat(proxy.verifyIfDuplicate(eventIds[i]))
+          .describedAs("eventIds can never be duplicate, it is being created for the first time!")
           .isFalse();
     }
     verifyExpiry();
 
     for (int i = 0; i < EVENT_ID_COUNT; i++) {
-      assertThat(proxy.verifyIfDuplicate(eid[i]))
+      assertThat(proxy.verifyIfDuplicate(eventIds[i]))
           .describedAs(
-              "eid can not be found to be duplicate since the entry should have expired! " + i)
+              "eventIds can not be found to be duplicate since the entry should have expired! " + i)
           .isFalse();
     }
   }
@@ -201,28 +200,28 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(-1);
-    pf.setSubscriptionMessageTrackingTimeout(100000);
-    proxy = (PoolImpl) pf.create("clientPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(-1);
+    poolFactory.setSubscriptionMessageTrackingTimeout(100000);
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
-    EventID eid1 = new EventID(new byte[0], 1, 5);
-    assertThat(proxy.verifyIfDuplicate(eid1))
-        .describedAs("eid1 can never be duplicate, it is being created for the first time!")
+    EventID eventId1 = new EventID(new byte[0], 1, 5);
+    assertThat(proxy.verifyIfDuplicate(eventId1))
+        .describedAs("eventId1 can never be duplicate, it is being created for the first time!")
         .isFalse();
 
-    EventID eid2 = new EventID(new byte[0], 1, 2);
+    EventID eventId2 = new EventID(new byte[0], 1, 2);
 
-    assertThat(proxy.verifyIfDuplicate(eid2))
-        .describedAs("eid2 should be duplicate, seqId is less than highest (5)")
+    assertThat(proxy.verifyIfDuplicate(eventId2))
+        .describedAs("eventId2 should be duplicate, seqId is less than highest (5)")
         .isTrue();
 
-    EventID eid3 = new EventID(new byte[0], 1, 3);
+    EventID eventId3 = new EventID(new byte[0], 1, 3);
 
-    assertThat(proxy.verifyIfDuplicate(eid3))
-        .describedAs("eid3 should be duplicate, seqId is less than highest (5)")
+    assertThat(proxy.verifyIfDuplicate(eventId3))
+        .describedAs("eventId3 should be duplicate, seqId is less than highest (5)")
         .isTrue();
 
     assertThat(!proxy.getThreadIdToSequenceIdMap().isEmpty()).isTrue();
@@ -235,31 +234,32 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(-1);
-    pf.setSubscriptionMessageTrackingTimeout(100000);
-    proxy = (PoolImpl) pf.create("clientPool");
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(-1);
+    poolFactory.setSubscriptionMessageTrackingTimeout(100000);
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
-    EventID eid1 = new EventID(new byte[0], 1, 2);
+    EventID eventID1 = new EventID(new byte[0], 1, 2);
 
-    assertThat(proxy.verifyIfDuplicate(eid1))
-        .describedAs("eid can never be duplicate, it is being created for the first time!")
+    assertThat(proxy.verifyIfDuplicate(eventID1))
+        .describedAs("eventID1 can never be duplicate, it is being created for the first time!")
         .isFalse();
 
-    EventID eid2 = new EventID(new byte[0], 1, 3);
-    assertThat(proxy.verifyIfDuplicate(eid2))
-        .describedAs("eid can never be duplicate, since sequenceId is greater ")
+    EventID eventID2 = new EventID(new byte[0], 1, 3);
+    assertThat(proxy.verifyIfDuplicate(eventID2))
+        .describedAs("eventID2 can never be duplicate, since sequenceId is greater ")
         .isFalse();
 
-    assertThat(proxy.verifyIfDuplicate(eid2))
-        .describedAs("eid had to be a duplicate, since sequenceId is equal ")
+    assertThat(proxy.verifyIfDuplicate(eventID2))
+        .describedAs("eventID2 had to be a duplicate, since sequenceId is equal ")
         .isTrue();
-    EventID eid3 = new EventID(new byte[0], 1, 1);
-    if (!proxy.verifyIfDuplicate(eid3)) {
-      fail(" eid had to be a duplicate, since sequenceId is lesser ");
-    }
+
+    EventID eventID3 = new EventID(new byte[0], 1, 1);
+    assertThat(proxy.verifyIfDuplicate(eventID3))
+        .describedAs("eventId3 had to be a duplicate, since sequenceId is lesser")
+        .isTrue();
   }
 
   @Test
@@ -267,15 +267,15 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port3);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(-1);
-    pf.setSubscriptionMessageTrackingTimeout(100000);
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port3);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(-1);
+    poolFactory.setSubscriptionMessageTrackingTimeout(100000);
 
-    PoolImpl proxy1 = (PoolImpl) pf.create("clientPool1");
+    PoolImpl proxy1 = (PoolImpl) poolFactory.create("clientPool1");
     try {
-      PoolImpl proxy2 = (PoolImpl) pf.create("clientPool2");
+      PoolImpl proxy2 = (PoolImpl) poolFactory.create("clientPool2");
       try {
         Map map1 = proxy1.getThreadIdToSequenceIdMap();
         Map map2 = proxy2.getThreadIdToSequenceIdMap();
@@ -293,20 +293,20 @@ public class ConnectionProxyJUnitTest {
     int port = getRandomAvailableTCPPort();
     addCacheServer(port, null);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(1);
-    pf.setReadTimeout(20000);
-    pf.setSubscriptionMessageTrackingTimeout(15000);
-    pf.setSubscriptionAckInterval(5000);
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(1);
+    poolFactory.setReadTimeout(20000);
+    poolFactory.setSubscriptionMessageTrackingTimeout(15000);
+    poolFactory.setSubscriptionAckInterval(5000);
 
-    proxy = (PoolImpl) pf.create("clientPool");
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
-    EventID eid = new EventID(new byte[0], 1, 1);
+    EventID eventID = new EventID(new byte[0], 1, 1);
 
-    assertThat(proxy.verifyIfDuplicate(eid))
-        .describedAs("eid should not be duplicate as it is a new entry")
+    assertThat(proxy.verifyIfDuplicate(eventID))
+        .describedAs("eventID should not be duplicate as it is a new entry")
         .isFalse();
 
     seo = (SequenceIdAndExpirationObject) proxy.getThreadIdToSequenceIdMap()
@@ -319,9 +319,9 @@ public class ConnectionProxyJUnitTest {
     verifyAckSend(true);
 
     // New update on same threadId
-    eid = new EventID(new byte[0], 1, 2);
-    assertThat(proxy.verifyIfDuplicate(eid))
-        .describedAs("eid should not be duplicate as it is a new entry")
+    eventID = new EventID(new byte[0], 1, 2);
+    assertThat(proxy.verifyIfDuplicate(eventID))
+        .describedAs("eventID should not be duplicate as it is a new entry")
         .isFalse();
 
     seo = (SequenceIdAndExpirationObject) proxy.getThreadIdToSequenceIdMap()
@@ -343,19 +343,19 @@ public class ConnectionProxyJUnitTest {
     int port = getRandomAvailableTCPPort();
     addCacheServer(port, null);
 
-    PoolFactory pf = PoolManager.createFactory();
-    pf.addServer("localhost", port);
-    pf.setSubscriptionEnabled(true);
-    pf.setSubscriptionRedundancy(1);
-    pf.setReadTimeout(20000);
-    pf.setSubscriptionMessageTrackingTimeout(8000);
-    pf.setSubscriptionAckInterval(2000);
+    PoolFactory poolFactory = PoolManager.createFactory();
+    poolFactory.addServer("localhost", port);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(1);
+    poolFactory.setReadTimeout(20000);
+    poolFactory.setSubscriptionMessageTrackingTimeout(8000);
+    poolFactory.setSubscriptionAckInterval(2000);
 
-    proxy = (PoolImpl) pf.create("clientPool");
+    proxy = (PoolImpl) poolFactory.create("clientPool");
 
-    EventID eid = new EventID(new byte[0], 1, 1);
-    assertThat(proxy.verifyIfDuplicate(eid))
-        .describedAs("eid should not be duplicate as it is a new entry")
+    EventID eventID = new EventID(new byte[0], 1, 1);
+    assertThat(proxy.verifyIfDuplicate(eventID))
+        .describedAs("eventID should not be duplicate as it is a new entry")
         .isFalse();
 
     seo = (SequenceIdAndExpirationObject) proxy.getThreadIdToSequenceIdMap()
