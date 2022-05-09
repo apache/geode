@@ -178,6 +178,8 @@ public abstract class AbstractExecutor {
 
   public void resumeMonitoring() {}
 
+  public void reportProgress() {}
+
   public boolean isMonitoringSuspended() {
     return false;
   }

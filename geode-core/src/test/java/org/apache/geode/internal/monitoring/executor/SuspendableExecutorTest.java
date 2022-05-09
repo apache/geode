@@ -50,4 +50,13 @@ public class SuspendableExecutorTest {
     executor.resumeMonitoring();
     assertThat(executor.getStartTime()).isEqualTo(0);
   }
+
+  @Test
+  public void verifyReportProgressAfterResume() {
+    SuspendableExecutor executor = new FakeSuspendableExecutor();
+    executor.resumeMonitoring();
+    assertThat(executor.getStartTime()).isEqualTo(0);
+    executor.reportProgress();
+    assertThat(executor.getStartTime()).isNotEqualTo(0);
+  }
 }

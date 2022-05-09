@@ -37,6 +37,11 @@ public abstract class SuspendableExecutor extends AbstractExecutor {
   }
 
   @Override
+  public void reportProgress() {
+    setStartTime(System.currentTimeMillis());
+  }
+
+  @Override
   public boolean isMonitoringSuspended() {
     return suspended;
   }

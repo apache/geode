@@ -1737,6 +1737,7 @@ public class DiskStoreImpl implements DiskStore {
             if (drainCount > 0) {
               Iterator<Object> it = diskStore.getDrainList().iterator();
               while (it.hasNext()) {
+                threadMonitorExecutor.reportProgress();
                 Object o = it.next();
                 if (o instanceof FlushNotifier) {
                   flushChild();
