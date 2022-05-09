@@ -300,8 +300,6 @@ if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}images
   if [[ "${PUBLIC}" == "true" ]]; then
     enableFeature examples
-  fi
-  if [[ "$GEODE_BRANCH" == "develop" ]]; then
     enableFeature pr
   fi
 fi
