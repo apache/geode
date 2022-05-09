@@ -76,7 +76,7 @@ java_test_versions:
   version: 17
 
 metadata:
-  initial_version: 1.15.0-((semver-prerelease-token)).0
+  initial_version: 1.16.0-((semver-prerelease-token)).0
   mass_test_run_iterations: 100
 
 publish_artifacts:

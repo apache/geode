@@ -197,7 +197,9 @@ git diff --staged --color | cat
 
 ./gradlew updateExpectedPom
 
-git commit -a -m "roll develop to ${NEWVERSION} now that support/${VERSION_MM} has been created"
+git commit -a -m "$JIRA: Roll develop to ${NEWVERSION}
+
+Now that support/${VERSION_MM} has been created, develop advances."
 git push -u myfork
 set +x
 

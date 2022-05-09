@@ -234,6 +234,7 @@ jobs:
     - get: alpine-tools-docker-image
       passed: [build-alpine-tools-docker-image]
     - get:  github-pr-resource-dockerfile
+      trigger: true
     - put: github-pr-resource-image
       params:
         build: github-pr-resource-dockerfile
