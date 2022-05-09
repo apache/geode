@@ -84,7 +84,7 @@ get-full-version() {
 }
 
 get_geode_pr_exclusion_dirs() {
-  local exclude_dirs="ci dev-tools etc geode-book geode-docs CODEOWNERS"
+  local exclude_dirs=".github ci dev-tools etc geode-book geode-docs CODEOWNERS"
   echo "${exclude_dirs}"
 }
 
