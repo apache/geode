@@ -18,24 +18,24 @@
 import org.gradle.util.GradleVersion
 
 pluginManagement {
-  includeBuild("geode-dependencies")
-  includeBuild("geode-repeat-test") {
+  includeBuild('build-tools/geode-dependency-management')
+  includeBuild('build-tools/geode-repeat-test') {
     dependencySubstitution {
       substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test') using project(':')
     }
   }
-  includeBuild("geode-build-tools") {
+  includeBuild('build-tools/geode-build-tools') {
     dependencySubstitution {
       substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-build-tools') using project(':')
     }
   }
-  includeBuild("geode-testing-isolation") {
+  includeBuild('build-tools/geode-testing-isolation') {
     dependencySubstitution {
       substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-testing-isolation') using project(':')
     }
   }
-  includeBuild("geode-annotation-processor")
-  includeBuild('buildScripts')
+  includeBuild('build-tools/geode-annotation-processor')
+  includeBuild('build-tools/scripts')
 }
 
 rootProject.name = 'geode'

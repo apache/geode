@@ -23,7 +23,7 @@ plugins {
 //   bumpThisNumberIfACustomStepChanges
 // This has been historically easy to forget, however, and can cause failures in some rare cases.
 // To safeguard against this, we instead use the (partial) md5 of this file as that method input.
-def thisFile = file("${rootDir}/buildScripts/src/main/groovy/spotless.gradle")
+def thisFile = file("${rootDir}/build-tools/scripts/src/main/groovy/spotless.gradle")
 def thisFileMd5 = thisFile.text.md5() as String
 def thisFileMd5Piece = thisFileMd5.substring(0, 8)
 def thisFileIntegerHash = Integer.parseUnsignedInt(thisFileMd5Piece, 16)

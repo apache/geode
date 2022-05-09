@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-includeBuild("${rootDir}/../geode-dependencies")
+includeBuild("${rootDir}/../geode-dependency-management")
 
 includeBuild("${rootDir}/../geode-japicmp") {
   dependencySubstitution {
