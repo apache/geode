@@ -170,7 +170,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__OFF_HEAP, specifiedDefaultValue = "true",
           help = CliStrings.CREATE_REGION__OFF_HEAP__HELP) Boolean offHeap,
       @CliOption(key = CliStrings.CREATE_REGION__PARTITION_LISTENER,
-          help = CliStrings.CREATE_REGION__PARTITION_LISTENER__HELP) ClassName partitionListener,
+          optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = CliStrings.CREATE_REGION__PARTITION_LISTENER__HELP) ClassName[] partitionListener,
       @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
           help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
@@ -292,7 +293,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
     regionConfig.setName(regionPathData.getName());
 
     List<String> partitionListeners = partitionListener == null ? Collections.emptyList()
-        : Collections.singletonList(partitionListener.getClassName());
+        : Arrays.stream(partitionListener)
+            .map(ClassName::getClassName).collect(Collectors.toList());
 
     // set partition attributes
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
