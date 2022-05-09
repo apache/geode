@@ -300,9 +300,9 @@ if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   if [[ "${PUBLIC}" == "true" ]]; then
     exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}images
     enableFeature examples
+    enableFeature pr
   fi
   if [[ "$GEODE_BRANCH" == "develop" ]]; then
-    enableFeature pr
     enableFeature mass-test-run
   fi
 fi
