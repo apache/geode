@@ -21,11 +21,16 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_REFUSED;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -546,6 +551,18 @@ public class AcceptorImpl implements Acceptor, Runnable {
             break;
           } catch (SocketException b) {
             if (System.currentTimeMillis() > tilt) {
+              final String[] lsof = {
+                  "/bin/sh",
+                  "-c",
+                  "lsof -i -P -n | grep 40404"
+              };
+
+              String output = executeCommand(lsof);
+              logger.info("JC debug: lsof: {}", output);
+
+              output = threadDump(true, true);
+              logger.info("JC debug: thread dump: {}", output);
+
               throw b;
             }
           }
@@ -582,6 +599,19 @@ public class AcceptorImpl implements Acceptor, Runnable {
                   "BGB AcceptorImpl gave up trying to bind server socket address: {}, port: {} because of timeout {} at: {}",
                   getBindAddress(), port,
                   tilt, getStackTrace(e));
+
+              final String[] lsof = {
+                  "/bin/sh",
+                  "-c",
+                  "lsof -i -P -n | grep 40404"
+              };
+
+              String output = executeCommand(lsof);
+              logger.info("JC debug: lsof: {}", output);
+
+              output = threadDump(true, true);
+              logger.info("JC debug: thread dump: {}", output);
+
               throw e;
             } else {
               logger.info(
@@ -662,6 +692,31 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
     isPostAuthzCallbackPresent =
         postAuthzFactoryName != null && !postAuthzFactoryName.isEmpty();
+  }
+
+  private String executeCommand(final String[] command) {
+    final StringBuffer output = new StringBuffer();
+    final Process p;
+    try {
+      p = Runtime.getRuntime().exec(command);
+      final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      String line = "";
+      while ((line = reader.readLine()) != null) {
+        output.append(line + "\n");
+      }
+    } catch (Exception e) {
+      logger.info("JC debug: caught exception when executing shell command: {}", e);
+    }
+    return output.toString();
+  }
+
+  private String threadDump(boolean lockedMonitors, boolean lockedSynchronizers) {
+    StringBuffer threadDump = new StringBuffer(System.lineSeparator());
+    ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(lockedMonitors, lockedSynchronizers)) {
+      threadDump.append(threadInfo.toString());
+    }
+    return threadDump.toString();
   }
 
   private ExecutorService initializeHandshakerThreadPool() throws IOException {
