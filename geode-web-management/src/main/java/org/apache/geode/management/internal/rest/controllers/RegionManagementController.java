@@ -19,11 +19,10 @@ import static org.apache.geode.management.configuration.Index.INDEXES;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Extension;
-import io.swagger.annotations.ExtensionProperty;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,11 +50,11 @@ import org.apache.geode.security.ResourcePermission.Resource;
 @RequestMapping(URI_VERSION)
 public class RegionManagementController extends AbstractManagementController {
 
-  @ApiOperation(value = "create region")
+  @io.swagger.v3.oas.annotations.Operation(summary = "create region")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 409, message = "Region already exists."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "409", description = "Region already exists."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @PostMapping(REGION_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> createRegion(
@@ -66,7 +65,7 @@ public class RegionManagementController extends AbstractManagementController {
         HttpStatus.CREATED);
   }
 
-  @ApiOperation(value = "list regions",
+  @io.swagger.v3.oas.annotations.Operation(summary = "list regions",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .groups[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
@@ -85,7 +84,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "get region",
+  @io.swagger.v3.oas.annotations.Operation(summary = "get region",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .groups[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
@@ -98,7 +97,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
-  @ApiOperation(value = "delete region")
+  @io.swagger.v3.oas.annotations.Operation(summary = "delete region")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{id:.+}")
   public ClusterManagementResult deleteRegion(
@@ -112,7 +111,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.delete(config);
   }
 
-  @ApiOperation(value = "list region indexes",
+  @io.swagger.v3.oas.annotations.Operation(summary = "list region indexes",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .groups[] | .configuration | {name:.name,expression:.expression}")})})
@@ -130,7 +129,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "list indexes",
+  @io.swagger.v3.oas.annotations.Operation(summary = "list indexes",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .groups[] | .configuration | {name:.name,expression:.expression,regionPath:.regionPath}")})})
@@ -145,7 +144,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "get index",
+  @io.swagger.v3.oas.annotations.Operation(summary = "get index",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .groups[] | .configuration | {name:.name,expression:.expression}")})})
@@ -161,11 +160,11 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.get(filter);
   }
 
-  @ApiOperation(value = "create index")
+  @io.swagger.v3.oas.annotations.Operation(summary = "create index")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 409, message = "Index already exists."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "409", description = "Index already exists."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'QUERY')")
   @PostMapping(INDEXES)
   public ResponseEntity<ClusterManagementResult> createIndex(
@@ -176,11 +175,11 @@ public class RegionManagementController extends AbstractManagementController {
         HttpStatus.CREATED);
   }
 
-  @ApiOperation(value = "create region index")
+  @io.swagger.v3.oas.annotations.Operation(summary = "create region index")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 409, message = "Index already exists."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "409", description = "Index already exists."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'QUERY')")
   @PostMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES)
   public ResponseEntity<ClusterManagementResult> createIndexOnRegion(
@@ -197,7 +196,7 @@ public class RegionManagementController extends AbstractManagementController {
         HttpStatus.CREATED);
   }
 
-  @ApiOperation(value = "delete region index")
+  @io.swagger.v3.oas.annotations.Operation(summary = "delete region index")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'QUERY')")
   @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{indexName:.+}")
   public ClusterManagementResult deleteIndex(

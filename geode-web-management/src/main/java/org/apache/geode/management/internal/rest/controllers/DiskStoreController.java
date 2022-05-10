@@ -22,11 +22,11 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.DiskStore.DISK_STORE_CONFIG_ENDPOINT;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Extension;
-import io.swagger.annotations.ExtensionProperty;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.extensions.Extension;
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,11 +51,11 @@ import org.apache.geode.security.ResourcePermission;
 @RequestMapping(URI_VERSION)
 public class DiskStoreController extends AbstractManagementController {
 
-  @ApiOperation(value = "create disk-store")
+  @Operation(summary = "create disk-store")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 409, message = "Diskstore already exists."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "409", description = "Diskstore already exists."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @PostMapping(DISK_STORE_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> createDiskStore(
@@ -64,7 +64,7 @@ public class DiskStoreController extends AbstractManagementController {
     return new ResponseEntity<>(result, HttpStatus.CREATED);
   }
 
-  @ApiOperation(value = "list disk-stores",
+  @Operation(summary = "list disk-stores",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .groups[] | .runtimeInfo[] + .configuration | {Member:.memberName,\"Disk Store Name\":.name}")})})
@@ -83,7 +83,7 @@ public class DiskStoreController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "get disk-store",
+  @Operation(summary = "get disk-store",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .groups[] | .runtimeInfo[] + .configuration | {Member:.memberName,\"Disk Store Name\":.name}")})})
@@ -97,7 +97,7 @@ public class DiskStoreController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
-  @ApiOperation(value = "delete disk-store")
+  @Operation(summary = "delete disk-store")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @DeleteMapping(DISK_STORE_CONFIG_ENDPOINT + "/{id}")
   public ClusterManagementResult deleteDiskStore(

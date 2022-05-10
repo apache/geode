@@ -285,7 +285,7 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
 
 
-  implementation('io.swagger:swagger-annotations') {
+  implementation('io.swagger.core.v3:swagger-annotations') {
     ext.optional = true
   }
 

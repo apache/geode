@@ -119,7 +119,7 @@ class DependencyConstraints {
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.6')
+        api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.0')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
@@ -203,9 +203,8 @@ class DependencyConstraints {
       entry('junit-quickcheck-generators')
     }
 
-    dependencySet(group: 'io.springfox', version: '2.9.2') {
-      entry('springfox-swagger-ui')
-      entry('springfox-swagger2')
+    dependencySet(group: 'org.springdoc', version: '1.6.8') {
+      entry('springdoc-openapi-ui')
     }
 
     dependencySet(group: 'mx4j', version: '3.0.2') {

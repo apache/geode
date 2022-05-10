@@ -45,6 +45,7 @@ limitations under the License.
   <mvc:default-servlet-handler/>
 
   <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean"
+        autowire-candidate="false"
         p:favorPathExtension="true"
         p:favorParameter="false"
         p:ignoreAcceptHeader="false"

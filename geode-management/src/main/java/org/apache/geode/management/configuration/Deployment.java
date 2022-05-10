@@ -15,14 +15,14 @@
 
 package org.apache.geode.management.configuration;
 
-import static io.swagger.annotations.ApiModelProperty.AccessMode.READ_ONLY;
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import org.apache.geode.management.api.CommandType;
 import org.apache.geode.management.runtime.DeploymentInfo;
@@ -31,9 +31,9 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   private static final long serialVersionUID = 6992732279452865384L;
   public static final String DEPLOYMENT_ENDPOINT = "/deployments";
   private String jarFileName;
-  @ApiModelProperty(accessMode = READ_ONLY)
+  @Schema(accessMode = READ_ONLY)
   private String deployedTime;
-  @ApiModelProperty(accessMode = READ_ONLY)
+  @Schema(accessMode = READ_ONLY)
   private String deployedBy;
 
   // the file is not serialized over the wire

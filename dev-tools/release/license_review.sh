@@ -235,7 +235,7 @@ rmiio
 shiro-
 snappy
 spring-
-springfox-
+springdoc-
 swagger-annotations
 swagger-models"
   echo "$1" | egrep -q "(mx4j-remote|jaxb-api|$(echo -n "$apache" | tr '\n' '|'))"
@@ -253,7 +253,7 @@ function shortenDep() {
     -e 's/log4j-.*/log4j-*/' \
     -e 's/mx4j-.*/mx4j*/' \
     -e 's/spring-.*/spring-*/' \
-    -e 's/springfox-.*/springfox-*/'
+    -e 's/springdoc-.*/springdoc-*/'
 }
 for REPORT in report1 report2 ; do
   [ "$REPORT" = "report1" ] && topic=JAR || topic=WAR
