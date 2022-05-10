@@ -7,6 +7,7 @@ bin/gfsh.bat
 config/cache.xml
 config/gemfire.properties
 config/log4j2.xml
+config/open-all-jdk-packages-linux-openjdk-17
 javadoc/allclasses-frame.html
 javadoc/allclasses-noframe.html
 javadoc/constant-values.html
