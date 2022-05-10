@@ -707,70 +707,92 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       // LOG: changed from config to info
       logger.info("Using existing distributed system: {}", existing);
       startCache(existing);
+      return;
+    }
+
+    String thisLocator = getLocatorString(hostAddress, getPort());
+
+    Properties distributedSystemProperties = new Properties();
+    // LogWriterAppender is now shared via that class
+    // using a DistributionConfig earlier in this method
+    distributedSystemProperties.put(DistributionConfig.DS_CONFIG_NAME, distributionConfig);
+
+    logger.info("Starting distributed system");
+
+    internalDistributedSystem =
+        InternalDistributedSystem
+            .connectInternal(distributedSystemProperties, null,
+                new InternalDistributedSystemMetricsService.Builder(),
+                membershipLocator);
+
+    if (peerLocator) {
+      // We've created a peer location message handler - it needs to be connected to
+      // the membership service in order to get membership view notifications
+      membershipLocator
+          .setMembership(internalDistributedSystem.getDM()
+              .getDistribution().getMembership());
+    }
+
+    internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));
+
+    startCache(internalDistributedSystem);
+
+    logger.info("Locator started on {}", thisLocator);
+
+  }
+
+  String getLocatorString(HostAddress hostAddress, int port) throws IOException {
+    HostAddress thisLocator;
+    if (hostAddress != null && !StringUtils.isEmpty(hostAddress.getHostName())) {
+      thisLocator = hostAddress;
     } else {
+      thisLocator = new HostAddress(LocalHostUtil.getLocalHost());
+    }
 
-      StringBuilder sb = new StringBuilder(100);
-      if (hostAddress != null && !StringUtils.isEmpty(hostAddress.getHostName())) {
-        sb.append(hostAddress.getHostName());
-      } else {
-        sb.append(LocalHostUtil.getLocalHost().getCanonicalHostName());
-      }
-      sb.append('[').append(getPort()).append(']');
-      String thisLocator = sb.toString();
+    if (!peerLocator) {
+      return thisLocator.getHostName() + "[" + port + "]";
+    }
 
-      if (peerLocator) {
-        // append this locator to the locators list from the config properties
-        boolean setLocatorsProp = false;
-        String locatorsConfigValue = distributionConfig.getLocators();
-        if (StringUtils.isNotBlank(locatorsConfigValue)) {
-          if (!locatorsConfigValue.contains(thisLocator)) {
-            locatorsConfigValue = locatorsConfigValue + ',' + thisLocator;
-            setLocatorsProp = true;
-          }
-        } else {
-          locatorsConfigValue = thisLocator;
-          setLocatorsProp = true;
-        }
-        if (setLocatorsProp) {
-          Properties updateEnv = new Properties();
-          updateEnv.setProperty(LOCATORS, locatorsConfigValue);
-          distributionConfig.setApiProps(updateEnv);
-          String locatorsPropertyName = GEMFIRE_PREFIX + LOCATORS;
-          if (System.getProperty(locatorsPropertyName) != null) {
-            System.setProperty(locatorsPropertyName, locatorsConfigValue);
-          }
-        }
-        // No longer default mcast-port to zero.
-      }
+    return configurePeerLocators(thisLocator, port);
+  }
 
-      Properties distributedSystemProperties = new Properties();
-      // LogWriterAppender is now shared via that class
-      // using a DistributionConfig earlier in this method
-      distributedSystemProperties.put(DistributionConfig.DS_CONFIG_NAME, distributionConfig);
+  String configurePeerLocators(HostAddress thisLocator, int port) {
+    String thisLocatorHostnameAndPort = String.format("%s[%d]", thisLocator.getHostName(), port);
+    String locatorsConfigValue = distributionConfig.getLocators();
+    if (StringUtils.isBlank(locatorsConfigValue)) {
+      setLocatorProperties(thisLocatorHostnameAndPort);
+      return thisLocatorHostnameAndPort;
+    }
 
-      logger.info("Starting distributed system");
+    // existing locator configuration is not blank, need to check if this locator is already
+    // specified in the list or not.
+    // Note this logic will keep user's specified address if what we are trying to add resolves to
+    // be the same as what user has already specified.
+    if (locatorsConfigValue.contains(thisLocatorHostnameAndPort)) {
+      return thisLocatorHostnameAndPort;
+    }
 
-      internalDistributedSystem =
-          InternalDistributedSystem
-              .connectInternal(distributedSystemProperties, null,
-                  new InternalDistributedSystemMetricsService.Builder(),
-                  membershipLocator);
+    String thisLocatorAddressAndPort =
+        String.format("%s[%d]", thisLocator.getAddress().getHostAddress(), port);
+    if (locatorsConfigValue.contains(thisLocatorAddressAndPort)) {
+      return thisLocatorAddressAndPort;
+    }
 
-      if (peerLocator) {
-        // We've created a peer location message handler - it needs to be connected to
-        // the membership service in order to get membership view notifications
-        membershipLocator
-            .setMembership(internalDistributedSystem.getDM()
-                .getDistribution().getMembership());
-      }
+    // if not found in existing locators
+    setLocatorProperties(locatorsConfigValue + "," + thisLocatorHostnameAndPort);
+    return thisLocatorHostnameAndPort;
+  }
 
-      internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));
-
-      startCache(internalDistributedSystem);
-
-      logger.info("Locator started on {}", thisLocator);
+  private void setLocatorProperties(String locatorsConfigValue) {
+    Properties updateEnv = new Properties();
+    updateEnv.setProperty(LOCATORS, locatorsConfigValue);
+    distributionConfig.setApiProps(updateEnv);
+    String locatorsPropertyName = GEMFIRE_PREFIX + LOCATORS;
+    if (System.getProperty(locatorsPropertyName) != null) {
+      System.setProperty(locatorsPropertyName, locatorsConfigValue);
     }
   }
+
 
   private void startCache(DistributedSystem system) throws IOException {
     InternalCache internalCache = GemFireCacheImpl.getInstance();

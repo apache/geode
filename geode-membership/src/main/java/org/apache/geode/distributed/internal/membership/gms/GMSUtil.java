@@ -87,53 +87,18 @@ public class GMSUtil {
       throws MembershipConfigurationException {
     List<HostAndPort> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
-    String host;
     final boolean isLoopback = ((bindAddress != null) && bindAddress.isLoopbackAddress());
 
     StringTokenizer parts = new StringTokenizer(locatorsString, ",");
     while (parts.hasMoreTokens()) {
       String str = parts.nextToken();
 
-      final int portSpecificationStart = str.indexOf('[');
-
-      if (portSpecificationStart == -1) {
-        throw createBadPortException(str);
-      }
-
-      host = str.substring(0, portSpecificationStart);
-
-      int idx = host.lastIndexOf('@');
-      if (idx < 0) {
-        idx = host.lastIndexOf(':');
-      }
-      String start = host.substring(0, idx > -1 ? idx : host.length());
-      if (start.indexOf(':') >= 0) { // a single numeric ipv6 address
-        idx = host.lastIndexOf('@');
-      }
-      if (idx >= 0) {
-        host = host.substring(idx + 1);
-      }
-
-      int startIdx = portSpecificationStart + 1;
-      int endIdx = str.indexOf(']');
-
-      if (endIdx == -1) {
-        throw createBadPortException(str);
-      }
-
-      final int port;
-
-      try {
-        port = Integer.parseInt(str.substring(startIdx, endIdx));
-      } catch (NumberFormatException e) {
-        throw createBadPortException(str);
-      }
-
-      final InetSocketAddress isa = new InetSocketAddress(host, port);
+      HostAndPort hostAndPort = parseLocator(str);
+      String host = hostAndPort.getHostName();
+      final InetSocketAddress isa = new InetSocketAddress(host, hostAndPort.getPort());
 
       if (isLoopback) {
         final InetAddress locatorAddress = isa.getAddress();
-
         if (locatorAddress == null) {
           throw new MembershipConfigurationException("This process is attempting to use a locator" +
               " at an unknown address or FQDN: " + host);
@@ -146,8 +111,6 @@ public class GMSUtil {
                   + ").  On Unix this usually means that /etc/hosts is misconfigured.");
         }
       }
-
-      HostAndPort hostAndPort = new HostAndPort(host, port);
       if (!inetAddresses.contains(isa)) {
         inetAddresses.add(isa);
         result.add(hostAndPort);
@@ -157,12 +120,52 @@ public class GMSUtil {
     return result;
   }
 
+  public static HostAndPort parseLocator(String locatorHostAndPort)
+      throws MembershipConfigurationException {
+    final int portSpecificationStart = locatorHostAndPort.indexOf('[');
+
+    if (portSpecificationStart == -1) {
+      throw createBadPortException(locatorHostAndPort);
+    }
+
+    String host = locatorHostAndPort.substring(0, portSpecificationStart);
+
+    int idx = host.lastIndexOf('@');
+    if (idx < 0) {
+      idx = host.lastIndexOf(':');
+    }
+    String start = host.substring(0, idx > -1 ? idx : host.length());
+    if (start.indexOf(':') >= 0) { // a single numeric ipv6 address
+      idx = host.lastIndexOf('@');
+    }
+    if (idx >= 0) {
+      host = host.substring(idx + 1);
+    }
+
+    int startIdx = portSpecificationStart + 1;
+    int endIdx = locatorHostAndPort.indexOf(']');
+
+    if (endIdx == -1) {
+      throw createBadPortException(locatorHostAndPort);
+    }
+
+    final int port;
+    try {
+      port = Integer.parseInt(locatorHostAndPort.substring(startIdx, endIdx));
+    } catch (NumberFormatException e) {
+      throw createBadPortException(locatorHostAndPort);
+    }
+    return new HostAndPort(host, port);
+  }
+
   private static MembershipConfigurationException createBadPortException(final String str) {
     return new MembershipConfigurationException("This process is attempting to use a locator" +
         " with a malformed port specification: " + str);
   }
 
-  /** Parses comma-separated-roles/groups into array of groups (strings). */
+  /**
+   * Parses comma-separated-roles/groups into array of groups (strings).
+   */
   public static String[] parseGroups(String csvRoles, String csvGroups) {
     List<String> groups = new ArrayList<>();
     parseCsv(groups, csvRoles);
