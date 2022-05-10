@@ -46,6 +46,8 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
@@ -103,6 +105,9 @@ public class CreateRegionCommandDUnitTest {
     public byte[] decompress(byte[] input) {
       return new byte[0];
     }
+  }
+
+  public static class TestPartitionListener extends PartitionListenerAdapter implements Declarable {
   }
 
   @ClassRule
@@ -263,6 +268,23 @@ public class CreateRegionCommandDUnitTest {
       PartitionResolver<?, ?> resolver = region.getPartitionAttributes().getPartitionResolver();
       assertThat(resolver).isNotNull();
       assertThat(resolver.getName()).isEqualTo("TestPartitionResolver");
+    });
+  }
+
+  @Test
+  public void testCreateRegionWithPartitionListener() {
+    String regionName = testName.getMethodName();
+
+    gfsh.executeAndAssertThat("create region --name=" + regionName
+        + " --type=PARTITION --partition-listener=" + TestPartitionListener.class.getName())
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
+      PartitionListener[] listeners = region.getPartitionAttributes().getPartitionListeners();
+      assertThat(listeners).isNotNull();
+      assertThat(listeners[0].getClass().getSimpleName()).isEqualTo("TestPartitionListener");
     });
   }
 
