@@ -1076,6 +1076,10 @@ public class CliStrings {
   public static final String CREATE_REGION__OFF_HEAP__HELP =
       "Causes the values of the region to be stored in off-heap memory. The default is on heap.";
 
+  public static final String CREATE_REGION__PARTITION_LISTENER = "partition-listener";
+  public static final String CREATE_REGION__PARTITION_LISTENER__HELP =
+      "The fully-qualified class name of a partition listener";
+
   public static final String CREATE_REGION__PARTITION_RESOLVER = "partition-resolver";
   public static final String CREATE_REGION__PARTITION_RESOLVER__HELP =
       "The fully-qualified class name of the region's partition resolver";

@@ -78,6 +78,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
       CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
       CliStrings.CREATE_REGION__TOTALMAXMEMORY,
       CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
+      CliStrings.CREATE_REGION__PARTITION_LISTENER,
       CliStrings.CREATE_REGION__PARTITION_RESOLVER
   };
 
@@ -168,6 +169,9 @@ public class CreateRegionCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP) Integer prLocalMaxMemory,
       @CliOption(key = CliStrings.CREATE_REGION__OFF_HEAP, specifiedDefaultValue = "true",
           help = CliStrings.CREATE_REGION__OFF_HEAP__HELP) Boolean offHeap,
+      @CliOption(key = CliStrings.CREATE_REGION__PARTITION_LISTENER,
+          optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = CliStrings.CREATE_REGION__PARTITION_LISTENER__HELP) ClassName[] partitionListener,
       @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
           help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
@@ -288,10 +292,15 @@ public class CreateRegionCommand extends SingleGfshCommand {
 
     regionConfig.setName(regionPathData.getName());
 
+    List<String> partitionListeners = partitionListener == null ? Collections.emptyList()
+        : Arrays.stream(partitionListener)
+            .map(ClassName::getClassName).collect(Collectors.toList());
+
     // set partition attributes
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
     RegionAttributesType.PartitionAttributes delta =
-        RegionAttributesType.PartitionAttributes.generate(partitionResolver, null, prLocalMaxMemory,
+        RegionAttributesType.PartitionAttributes.generate(partitionResolver,
+            partitionListeners, prLocalMaxMemory,
             prRecoveryDelay, prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory,
             prTotalNumBuckets, prColocatedWith);
 
