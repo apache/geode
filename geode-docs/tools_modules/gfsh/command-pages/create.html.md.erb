@@ -861,8 +861,10 @@ for syntax details.
     [--recovery-delay=value] [--redundant-copies=value]
     [--startup-recovery-delay=value] [--total-max-memory=value]
     [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)?]
-    [--partition-resolver=value] [--eviction-entry-count=value] [--scope=value]
-    [--eviction-max-memory=value] [--eviction-action=value] [--eviction-object-sizer=value]
+    [--partition-listener=value(,value)*] [--partition-resolver=value]
+    [--eviction-entry-count=value] [--scope=value]
+    [--eviction-max-memory=value] [--eviction-action=value]
+    [--eviction-object-sizer=value]
 ```
 
 **Parameters, create region:**
@@ -1079,8 +1081,13 @@ If this option is specified without a value or is specified with a value of <cod
 <td>false</td>
 </tr>
 <tr>
+<td><span class="keyword parmname">&#8209;&#8209;partition-listener</span></td>
+<td>Specifies fully-qualified class names of one or more custom partition listeners.</td>
+<td></td>
+</tr>
+<tr>
 <td><span class="keyword parmname">&#8209;&#8209;partition-resolver</span></td>
-<td>Specifies the full path to a custom partition resolver. Specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code> to use the included string prefix partition resolver.</td>
+<td>Specifies the full path to a custom partition resolver. Specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code> to use the included string prefix <code class="ph codeph">PartitionResolver</code>.</td>
 <td></td>
 </tr>
 <tr>
