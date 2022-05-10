@@ -16,10 +16,10 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -57,8 +57,7 @@ import org.apache.geode.rest.internal.web.util.ValidationUtils;
  * @since GemFire 8.0
  */
 @Controller("queryController")
-@Api(value = "queries", produces = AbstractBaseController.APPLICATION_JSON_UTF8_VALUE,
-    tags = "queries")
+@Tag(name = "queries", description = "queries")
 @RequestMapping(QueryAccessController.REST_API_VERSION + "/queries")
 @SuppressWarnings("unused")
 public class QueryAccessController extends AbstractBaseController {
@@ -88,12 +87,12 @@ public class QueryAccessController extends AbstractBaseController {
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "list all parametrized queries",
-      notes = "List all parametrized queries by id/name")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 500, message = "if GemFire throws an error or exception")})
+  @Operation(summary = "list all parametrized queries",
+      description = "List all parametrized queries by id/name")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "500", description = "if GemFire throws an error or exception")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
@@ -118,13 +117,13 @@ public class QueryAccessController extends AbstractBaseController {
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.POST)
-  @ApiOperation(value = "create a parametrized Query",
-      notes = "Prepare the specified parametrized query and assign the corresponding ID for lookup")
-  @ApiResponses({@ApiResponse(code = 201, message = "Successfully created."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 409, message = "QueryId already assigned to other query."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @Operation(summary = "create a parametrized Query",
+      description = "Prepare the specified parametrized query and assign the corresponding ID for lookup")
+  @ApiResponses({@ApiResponse(responseCode = "201", description = "Successfully created."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "409", description = "QueryId already assigned to other query."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> create(@RequestParam("id") final String queryId,
       @RequestParam(value = "q", required = false) String oqlInUrl,
@@ -159,12 +158,12 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.GET, value = "/adhoc",
       produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "run an adhoc query",
-      notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
+  @Operation(summary = "run an adhoc query",
+      description = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
@@ -217,14 +216,14 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{query}",
       produces = {APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "run parametrized query",
-      notes = "run the specified named query passing in scalar values for query parameters in the GemFire cluster")
-  @ApiResponses({@ApiResponse(code = 200, message = "Query successfully executed."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 400,
-          message = "Query bind params specified as JSON document in the request body is invalid"),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
+  @Operation(summary = "run parametrized query",
+      description = "run the specified named query passing in scalar values for query parameters in the GemFire cluster")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "Query successfully executed."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "400",
+          description = "Query bind params specified as JSON document in the request body is invalid"),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
@@ -300,13 +299,13 @@ public class QueryAccessController extends AbstractBaseController {
    * @param oqlInBody OQL query string specified in a request body
    */
   @RequestMapping(method = RequestMethod.PUT, value = "/{query}")
-  @ApiOperation(value = "update parametrized query",
-      notes = "Update named, parametrized query by ID")
-  @ApiResponses({@ApiResponse(code = 200, message = "Updated successfully."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "queryId does not exist."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @Operation(summary = "update parametrized query",
+      description = "Update named, parametrized query by ID")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "Updated successfully."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "queryId does not exist."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'READ')")
   public ResponseEntity<?> update(@PathVariable("query") final String queryId,
       @RequestParam(value = "q", required = false) String oqlInUrl,
@@ -331,13 +330,13 @@ public class QueryAccessController extends AbstractBaseController {
    * @param queryId uniquely identify the query to be deleted
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{query}")
-  @ApiOperation(value = "delete parametrized query",
-      notes = "delete named, parametrized query by ID")
-  @ApiResponses({@ApiResponse(code = 200, message = "Deleted successfully."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 404, message = "queryId does not exist."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception")})
+  @Operation(summary = "delete parametrized query",
+      description = "delete named, parametrized query by ID")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "Deleted successfully."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "404", description = "queryId does not exist."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
   @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
   public ResponseEntity<?> delete(@PathVariable("query") final String queryId) {
     logger.debug("Deleting a named, parametrized Query with ID ({}).", queryId);

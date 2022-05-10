@@ -20,7 +20,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController("apiDocumentation")
 public class DocLinksController {
 
-  @ApiOperation("get documentation-links")
+  @Operation(summary = "get documentation-links")
   @GetMapping("/")
   public ResponseEntity<DocLinks> getDocumentationLinks(HttpServletRequest request) {
     DocLinks docLinks = new DocLinks();

@@ -38,7 +38,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   private GeodeAuthenticationProvider authProvider;
 
   @Override
-  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+  protected void configure(AuthenticationManagerBuilder auth) {
     auth.authenticationProvider(authProvider);
   }
 
@@ -53,8 +53,8 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/docs/**", "/swagger-ui.html",
-            Links.URI_VERSION + "/api-docs/**", "/webjars/springfox-swagger-ui/**",
+        .antMatchers("/docs/**", "/swagger-ui.html", "/swagger-ui/index.html",
+            Links.URI_VERSION + "/api-docs/**", "/webjars/springdoc-openapi-ui/**",
             "/swagger-resources/**")
         .permitAll().and().csrf().disable();
 
