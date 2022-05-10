@@ -54,7 +54,7 @@ public class DevRestSwaggerVerificationIntegrationTest {
     JsonNode json =
         assertResponse(client.get("/geode/v1/api-docs")).hasStatusCode(200)
             .getJsonObject();
-    assertThat(json.get("swagger").asText(), is("2.0"));
+    assertThat(json.get("openapi").asText(), is("3.0.1"));
 
     JsonNode info = json.get("info");
     assertThat(info.get("description").asText(),

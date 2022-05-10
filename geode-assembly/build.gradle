@@ -198,13 +198,13 @@ dependencies {
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
 
-  integrationTestRuntimeOnly('io.swagger:swagger-annotations')
+  integrationTestRuntimeOnly('io.swagger.core.v3:swagger-annotations')
   // these two modules are for testing only
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
   integrationTestRuntimeOnly('joda-time:joda-time')
 
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
-  distributedTestCompileOnly('io.swagger:swagger-annotations')
+  distributedTestCompileOnly('io.swagger.core.v3:swagger-annotations')
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation(project(':geode-membership'))
@@ -231,7 +231,7 @@ dependencies {
   }
   distributedTestImplementation('org.codehaus.cargo:cargo-core-uberjar')
 
-  distributedTestRuntimeOnly('io.swagger:swagger-annotations')
+  distributedTestRuntimeOnly('io.swagger.core.v3:swagger-annotations')
   distributedTestRuntimeOnly(project(':geode-wan'))
 
   acceptanceTestImplementation(project(':geode-server-all'))
@@ -272,7 +272,7 @@ dependencies {
   upgradeTestImplementation('org.apache.httpcomponents:httpclient')
 
   upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
-  upgradeTestCompileOnly('io.swagger:swagger-annotations')
+  upgradeTestCompileOnly('io.swagger.core.v3:swagger-annotations')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
   upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')

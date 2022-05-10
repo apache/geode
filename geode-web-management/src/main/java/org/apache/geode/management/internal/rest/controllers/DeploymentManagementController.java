@@ -21,10 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ public class DeploymentManagementController extends AbstractManagementController
 
   private static final Logger logger = LogService.getLogger();
 
-  @ApiOperation(value = "list deployed")
+  @Operation(summary = "list deployed")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(Deployment.DEPLOYMENT_ENDPOINT)
   public ClusterManagementListResult<Deployment, DeploymentInfo> list(
@@ -75,7 +75,7 @@ public class DeploymentManagementController extends AbstractManagementController
     return clusterManagementService.list(deployment);
   }
 
-  @ApiOperation(value = "get deployed")
+  @Operation(summary = "get deployed")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(Deployment.DEPLOYMENT_ENDPOINT + "/{id:.+}")
   public ClusterManagementGetResult<Deployment, DeploymentInfo> getDeployed(
@@ -87,17 +87,18 @@ public class DeploymentManagementController extends AbstractManagementController
     return clusterManagementService.get(deployment);
   }
 
-  @ApiOperation(value = "deploy")
+  @Operation(summary = "deploy")
   @ApiResponses({
-      @ApiResponse(code = 400, message = "Bad request."),
-      @ApiResponse(code = 500, message = "Internal error.")})
+      @ApiResponse(responseCode = "400", description = "Bad request."),
+      @ApiResponse(responseCode = "500", description = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'DEPLOY')")
   @PutMapping(value = Deployment.DEPLOYMENT_ENDPOINT,
       consumes = {"multipart/form-data"})
   public ResponseEntity<ClusterManagementResult> deploy(
-      @ApiParam(value = "filePath",
+      @Parameter(name = "filePath",
           required = true) @RequestParam(HasFile.FILE_PARAM) MultipartFile file,
-      @ApiParam("deployment json configuration") @RequestParam(value = HasFile.CONFIG_PARAM,
+      @Parameter(description = "deployment json configuration") @RequestParam(
+          value = HasFile.CONFIG_PARAM,
           required = false) String json)
       throws IOException {
     // save the file to the staging area

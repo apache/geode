@@ -26,7 +26,7 @@ if [ "$2" = "-l" ] ; then
   find . | grep build/dependencyUpdates/report.txt | xargs rm -f
   ./gradlew dependencyUpdates -Drevision=release
   find . | grep build/dependencyUpdates/report.txt | xargs cat \
-   | grep ' -> ' | egrep -v '(Gradle|antlr|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|springfox|derby|selenium|jgroups|jmh|\[6.0.37|commons-collections|jaxb|testcontainers|gradle-tooling-api|slf4j|archunit)' \
+   | grep ' -> ' | egrep -v '(Gradle|antlr|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|derby|selenium|jgroups|jmh|\[6.0.37|commons-collections|jaxb|testcontainers|gradle-tooling-api|slf4j|archunit)' \
    | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0 $1"' #'
   echo "cd .. ; geode/dev-tools/release/license_review.sh -v HEAD && echo ':)' || echo 'ERROR(S) WERE FOUND, SEE ABOVE' ; cd $(pwd)"
   echo "#Also: manually check for newer version of plugins listed in build.gradle (search on https://plugins.gradle.org/)"
