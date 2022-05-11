@@ -15,7 +15,10 @@
 package org.apache.geode.internal.cache.execute;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -29,6 +32,9 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class DistributedRegionFunctionResultSender implements InternalResultSender {
 
   private static final Logger logger = LogService.getLogger();
+  @Immutable
+  private static final Marker functionExceptionMarker =
+      MarkerManager.getMarker("FUNCTION_EXCEPTION_MARKER");
 
   DistributedRegionFunctionStreamingMessage msg = null;
 
@@ -224,7 +230,8 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
     } else {
       ((LocalResultCollector) rc).setException(exception);
       // this.lastResult(exception);
-      logger.info("Unexpected exception during function execution on local node Distributed Region",
+      logger.info(exception instanceof FunctionException ? functionExceptionMarker : null,
+          "Unexpected exception during function execution on local node Distributed Region",
           exception);
     }
     rc.endResults();

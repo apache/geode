@@ -220,9 +220,9 @@ public class ExecuteRegionFunction66 extends BaseCommand {
         resultSender.setException(fe);
       } else {
         if (setLastResultReceived(resultSender)) {
-          logger.warn(String.format("Exception on server while executing function : %s",
-              function),
-              fe);
+          logger.warn(functionExceptionMarker,
+              "Exception on server while executing function : {}",
+              function, fe);
           sendException(hasResult, clientMessage, message, serverConnection, fe);
         }
       }

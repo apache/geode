@@ -28,13 +28,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import org.apache.shiro.subject.Subject;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.RegionNotFoundException;
@@ -55,6 +59,10 @@ import org.apache.geode.security.ResourcePermission;
 public class UserFunctionExecution implements InternalFunction<Object[]> {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
+  @Immutable
+  private static final Marker functionExceptionMarker =
+      MarkerManager.getMarker("FUNCTION_EXCEPTION_MARKER");
+
   protected static final String ID =
       "org.apache.geode.management.internal.cli.functions.UserFunctionExecution";
 
@@ -244,6 +252,10 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
               CliStrings.format(
                   CliStrings.EXECUTE_FUNCTION__MSG__RESULT_COLLECTOR_0_NOT_FOUND_ERROR_1,
                   resultCollectorName, e.getMessage())));
+    } catch (FunctionException e) {
+      logger.error(functionExceptionMarker, "error executing function {}", functionId, e);
+      context.getResultSender().lastResult(
+          new CliFunctionResult(context.getMemberName(), ERROR, "Exception: " + e.getMessage()));
     } catch (Exception e) {
       logger.error("error executing function " + functionId, e);
       context.getResultSender().lastResult(

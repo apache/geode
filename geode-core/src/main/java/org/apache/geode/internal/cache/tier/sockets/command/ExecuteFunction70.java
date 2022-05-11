@@ -431,6 +431,10 @@ public class ExecuteFunction70 extends BaseCommand {
           if (logger.isDebugEnabled()) {
             logger.debug("Exception on server while executing function: {}", fn, e);
           }
+        } catch (FunctionException e) {
+          stats.endFunctionExecutionWithException(startExecution, fn.hasResult());
+          logger.warn(functionExceptionMarker, "Exception on server while executing function: {}",
+              fn, e);
         } catch (Exception e) {
           stats.endFunctionExecutionWithException(startExecution, fn.hasResult());
           logger.warn("Exception on server while executing function: {}", fn, e);

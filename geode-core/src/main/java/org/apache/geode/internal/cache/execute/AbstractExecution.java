@@ -22,9 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.TransactionException;
@@ -55,6 +58,9 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public abstract class AbstractExecution implements InternalExecution {
   private static final Logger logger = LogService.getLogger();
+  @Immutable
+  private static final Marker functionExceptionMarker =
+      MarkerManager.getMarker("FUNCTION_EXCEPTION_MARKER");
 
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
@@ -504,7 +510,8 @@ public abstract class AbstractExecution implements InternalExecution {
         ((InternalResultSender) sender).setException(functionException);
       }
     } else {
-      logger.warn("Exception occurred on local node while executing Function:",
+      logger.warn(functionException instanceof FunctionException ? functionExceptionMarker : null,
+          "Exception occurred on local node while executing Function:",
           functionException);
     }
   }

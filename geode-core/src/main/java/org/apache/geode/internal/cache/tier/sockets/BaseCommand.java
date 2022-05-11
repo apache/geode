@@ -34,6 +34,8 @@ import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -88,6 +90,9 @@ import org.apache.geode.util.internal.GeodeGlossary;
 
 public abstract class BaseCommand implements Command {
   protected static final Logger logger = LogService.getLogger();
+  @Immutable
+  protected static final Marker functionExceptionMarker =
+      MarkerManager.getMarker("FUNCTION_EXCEPTION_MARKER");
 
   @Immutable
   private static final byte[] OK_BYTES = new byte[] {0};
