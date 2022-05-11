@@ -104,9 +104,9 @@ GRADLE_ARGS=" \
     -PcompileJVMVer=${JAVA_BUILD_VERSION} \
     -PtestJVM=${JAVA_TEST_PATH} \
     -PtestJVMVer=${JAVA_TEST_VERSION} \
-    -PtestJava8Home${TEST_JAVA_8_HOME} \
-    -PtestJava11Home${TEST_JAVA_11_HOME} \
-    -PtestJava17Home${TEST_JAVA_17_HOME} \
+    -PtestJava8Home=${TEST_JAVA_8_HOME} \
+    -PtestJava11Home=${TEST_JAVA_11_HOME} \
+    -PtestJava17Home=${TEST_JAVA_17_HOME} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
