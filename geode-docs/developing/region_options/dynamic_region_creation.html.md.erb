@@ -38,58 +38,49 @@ In the following example, the `CreateRegionFunction` class defines a function in
 #CreateRegionFunction.java
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
+
+import org.apache.geode.cache.configuration.RegionConfig;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 
 import java.util.Properties;
 
-public class CreateRegionFunction implements Function, Declarable {
+public class CreateRegionFunction implements Function<RegionConfig>, Declarable {
 
-  private final Cache cache;
-  
-  private final Region<String,RegionAttributes> regionAttributesMetadataRegion;
+  private Region<String,RegionConfig> regionAttributesMetadataRegion;
 
   private static final String REGION_ATTRIBUTES_METADATA_REGION = 
-                                     "_regionAttributesMetadata";
+                                                     "_regionAttributesMetadata";
   
-  public enum Status {SUCCESSFUL, UNSUCCESSFUL, ALREADY_EXISTS};
+  public enum Status {SUCCESSFUL, UNSUCCESSFUL, ALREADY_EXISTS}
 
-  public CreateRegionFunction() {
-    this.cache = CacheFactory.getAnyInstance();
-    this.regionAttributesMetadataRegion = createRegionAttributesMetadataRegion();
-  }
-
-  public void execute(FunctionContext context) {
-    Object[] arguments = (Object[]) context.getArguments();
-    String regionName = (String) arguments[0];
-    RegionAttributes attributes = (RegionAttributes) arguments[1];
+  public void execute(FunctionContext<RegionConfig> context) {
+    RegionConfig regionConfig = context.getArguments();
 
     // Create or retrieve region
-    Status status = createOrRetrieveRegion(regionName, attributes);
+    Status status = createOrRetrieveRegion(context.getCache(), regionConfig);
 
     // Return status
     context.getResultSender().lastResult(status);
   }
-  
-  private Status createOrRetrieveRegion(String regionName, 
-                                        RegionAttributes attributes) {
+
+  private Status createOrRetrieveRegion(Cache cache, RegionConfig regionConfig) {
     Status status = Status.SUCCESSFUL;
-    Region region = this.cache.getRegion(regionName);
+    String regionName = regionConfig.getName();
+    Region<Object, Object> region = cache.getRegion(regionName);
     if (region == null) {
-      // Put the attributes into the metadata region. The afterCreate call will
-      // actually create the region.
-      this.regionAttributesMetadataRegion.put(regionName, attributes);
+      // Put the attributes into the metadata region. The afterCreate call
+      // creates the region.
+      this.regionAttributesMetadataRegion.put(regionName, regionConfig);
       
       // Retrieve the region after creating it
-      region = this.cache.getRegion(regionName);
+      region = cache.getRegion(regionName);
       if (region == null) {
         status = Status.UNSUCCESSFUL;
       }
@@ -99,38 +90,25 @@ public class CreateRegionFunction implements Function, Declarable {
     return status;
   }
   
-  private Region<String,RegionAttributes> 
-  createRegionAttributesMetadataRegion() {
-    Region<String, RegionAttributes> metaRegion = 
-                         this.cache.getRegion(REGION_ATTRIBUTES_METADATA_REGION);
-    if (metaRegion == null) {
-      RegionFactory<String, RegionAttributes> factory =
-                              this.cache.createRegionFactory();
+  private void initializeRegionAttributesMetadataRegion(Cache cache) {
+    this.regionAttributesMetadataRegion = 
+                              cache.getRegion(REGION_ATTRIBUTES_METADATA_REGION);
+    if (this.regionAttributesMetadataRegion == null) {
+      RegionFactory<String, RegionConfig> factory = cache.createRegionFactory();
       factory.setDataPolicy(DataPolicy.REPLICATE);
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.addCacheListener(new CreateRegionCacheListener());
-      metaRegion = factory.create(REGION_ATTRIBUTES_METADATA_REGION);
+      this.regionAttributesMetadataRegion = 
+                               factory.create(REGION_ATTRIBUTES_METADATA_REGION);
     }
-    return metaRegion;
   }
 
   public String getId() {
     return getClass().getSimpleName();
   }
 
-  public boolean optimizeForWrite() {
-    return false;
-  }
-
-  public boolean isHA() {
-    return true;
-  }
-
-  public boolean hasResult() {
-    return true;
-  }
-
-  public void init(Properties properties) {
+  public void initialize(Cache cache, Properties properties) {
+    initializeRegionAttributesMetadataRegion(cache);
   }
 }
 ```
@@ -141,58 +119,47 @@ The `CreateRegionCacheListener` class is a cache listener that implements two me
 #CreateRegionCacheListener.java
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionExistsException;
+
+import org.apache.geode.cache.configuration.RegionConfig;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 
 import java.util.Map;
-import java.util.Properties;
 
-public class CreateRegionCacheListener 
-             extends CacheListenerAdapter<String,RegionAttributes>
-             implements Declarable {
+public class CreateRegionCacheListener extends CacheListenerAdapter<String,RegionConfig> implements Declarable {
 
-  private Cache cache;
-  
-  public CreateRegionCacheListener() {
-    this.cache = CacheFactory.getAnyInstance();
+  public void afterCreate(EntryEvent<String,RegionConfig> event) {
+    createRegion(event.getRegion().getCache(), event.getKey(), event.getNewValue());
   }
 
-  public void afterCreate(EntryEvent<String,RegionAttributes> event) {
-    createRegion(event.getKey(), event.getNewValue());
-  }
-  
-  public void afterRegionCreate(RegionEvent<String,RegionAttributes> event) {
-    Region<String,RegionAttributes> region = event.getRegion();
-    for (Map.Entry<String,RegionAttributes> entry : region.entrySet()) {
-      createRegion(entry.getKey(), entry.getValue());
+  public void afterRegionCreate(RegionEvent<String,RegionConfig> event) {
+    Cache cache = event.getRegion().getCache();
+    Region<String,RegionConfig> region = event.getRegion();
+    for (Map.Entry<String,RegionConfig> entry : region.entrySet()) {
+      createRegion(cache, entry.getKey(), entry.getValue());
     }
   }
-  
-  private void createRegion(String regionName, RegionAttributes attributes) {
-    if (this.cache.getLogger().fineEnabled()) {
-      this.cache.getLogger().fine(
-                             "CreateRegionCacheListener creating region named: "
-                             + regionName + " with attributes: " + attributes);
+
+  private void createRegion(Cache cache, String regionName, RegionConfig regionConfig) {
+    if (cache.getLogger().fineEnabled()) {
+      cache.getLogger().fine("CreateRegionCacheListener creating region named=" + regionName + "; config: " + regionConfig);
     }
-    try {
-      Region region = this.cache.createRegionFactory(attributes)
-        .create(regionName);
-      if (this.cache.getLogger().fineEnabled()) {
-        this.cache.getLogger().fine("CreateRegionCacheListener created: "
-                               + region);
+    Region<Object, Object> region = cache.getRegion(regionConfig.getName());
+    if (region == null) {
+      try {
+        region = cache.createRegionFactory(regionConfig.getType()).create(regionConfig.getName());
+        cache.getLogger().info("CreateRegionCacheListener created region=" + region);
+      } catch (RegionExistsException e) {
+        cache.getLogger().info("CreateRegionCacheListener region already exists region=" + region);
       }
-      System.out.println("CreateRegionCacheListener created: " + region);
-    } catch (RegionExistsException e) {/* ignore */}
-  }
-
-  public void init(Properties p) {
+    } else {
+      cache.getLogger().info("CreateRegionCacheListener region already exists region=" + region);
+    }
   }
 }
 ```
