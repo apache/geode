@@ -27,9 +27,7 @@ dependencies {
   compileOnly(project(':geode-deployment:geode-jboss-extensions'))
   implementation(project(':geode-core'))
   implementation(project(':geode-common'))
-  compileOnly('io.swagger:swagger-annotations'){
-    ext.embed = true
-  }
+  compileOnly('io.swagger.core.v3:swagger-annotations')
 
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
   compileOnly('org.jboss.modules:jboss-modules')
