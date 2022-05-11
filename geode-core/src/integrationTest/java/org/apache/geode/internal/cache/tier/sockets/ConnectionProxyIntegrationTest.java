@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
  * Tests the functionality of operations of AbstractConnectionProxy & its derived classes.
  */
 @Category({ClientSubscriptionTest.class})
-public class ConnectionProxyJUnitTest {
+public class ConnectionProxyIntegrationTest {
   DistributedSystem system;
   Cache cache;
   PoolImpl proxy = null;
@@ -79,7 +79,7 @@ public class ConnectionProxyJUnitTest {
   }
 
   @Test
-  public void testConnectedServerCount() throws Exception {
+  public void connectedServerCount() throws Exception {
     int port3 = getRandomAvailableTCPPort();
 
     PoolFactory poolFactory = PoolManager.createFactory();
@@ -104,7 +104,7 @@ public class ConnectionProxyJUnitTest {
   }
 
   @Test
-  public void testThreadIdToSequenceIdMapCreation() throws Exception {
+  public void threadIdToSequenceIdMapCreation() throws Exception {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
@@ -117,7 +117,7 @@ public class ConnectionProxyJUnitTest {
   }
 
   @Test
-  public void testThreadIdToSequenceIdMapExpiryPositive() throws Exception {
+  public void threadIdToSequenceIdMapExpiryPositive() throws Exception {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
@@ -143,7 +143,7 @@ public class ConnectionProxyJUnitTest {
 
 
   @Test
-  public void testThreadIdToSequenceIdMapExpiryNegative() throws Exception {
+  public void threadIdToSequenceIdMapExpiryNegative() throws Exception {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
@@ -164,7 +164,7 @@ public class ConnectionProxyJUnitTest {
   }
 
   @Test
-  public void testThreadIdToSequenceIdMapConcurrency() throws Exception {
+  public void threadIdToSequenceIdMapConcurrency() throws Exception {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
@@ -196,7 +196,7 @@ public class ConnectionProxyJUnitTest {
 
 
   @Test
-  public void testDuplicateSeqIdLesserThanCurrentSeqIdBeingIgnored() throws Exception {
+  public void duplicateSeqIdLesserThanCurrentSeqIdBeingIgnored() throws Exception {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
@@ -230,7 +230,7 @@ public class ConnectionProxyJUnitTest {
 
 
   @Test
-  public void testCleanCloseOfThreadIdToSeqId() throws Exception {
+  public void cleanCloseOfThreadIdToSeqId() throws Exception {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
@@ -263,7 +263,7 @@ public class ConnectionProxyJUnitTest {
   }
 
   @Test
-  public void testTwoClientsHavingDifferentThreadIdMaps() throws Exception {
+  public void twoClientsHavingDifferentThreadIdMaps() throws Exception {
     int port3 = getRandomAvailableTCPPort();
     addCacheServer(port3, 10000);
 
@@ -289,7 +289,7 @@ public class ConnectionProxyJUnitTest {
   }
 
   @Test
-  public void testPeriodicAckSendByClient() throws Exception {
+  public void periodicAckSendByClient() throws Exception {
     int port = getRandomAvailableTCPPort();
     addCacheServer(port, null);
 
@@ -339,7 +339,7 @@ public class ConnectionProxyJUnitTest {
 
   // No ack will be send if Redundancy level = 0
   @Test
-  public void testNoAckSendByClient() throws Exception {
+  public void noAckSendByClient() throws Exception {
     int port = getRandomAvailableTCPPort();
     addCacheServer(port, null);
 
