@@ -1066,9 +1066,10 @@ public class InitialImageOperation {
     Set<VersionSource> foundIds = new HashSet<>();
     foundIds.add(region.getVersionMember());
     HashSet<Object> keys = new HashSet<>();
+    Set<VersionSource> departedMemberSet = receivedRVV.getDepartedMembersSet();
     boolean isPersistentRegion = region.getDataPolicy().withPersistence();
     if ((isPersistentRegion && localRVV.isNewerThanOrCanFillExceptionsFor(remoteRVV))
-        || !remoteRVV.getDepartedMembersSet().isEmpty()) {
+        || !departedMemberSet.isEmpty()) {
       // only search for unfinished keys when localRVV has something newer
       // and the region is persistent region
       Iterator<RegionEntry> it = region.getBestIterator(false);
@@ -1105,11 +1106,12 @@ public class InitialImageOperation {
         }
       }
     }
-    if (foundIds.size() > 0) {
+    if (!departedMemberSet.isEmpty() && foundIds.size() > 0) {
       if (localRVV != null) {
         localRVV.removeOldMembers(foundIds);
       }
       receivedRVV.removeOldMembers(foundIds);
+      remoteRVV.removeOldMembers(foundIds);
     }
     return keys;
   }
