@@ -29,16 +29,21 @@ plugins {
   id "org.ajoberstar.grgit" version "4.1.1" apply false
   id "org.nosphere.apache.rat" version "0.7.1" apply false
   id "org.sonarqube" version "3.3" apply false
-  id "me.champeau.gradle.japicmp" apply false // Version defined in buildSrc/build.gradle
   id 'me.champeau.gradle.jmh' version '0.5.3' apply false
   id "de.undercouch.download" version "5.0.1" apply false
+  id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
+  id 'geode-publish-artifacts' apply false
+  id 'geode-publish-common' apply false
+  id 'geode-publish-java' apply false
+  id 'geode-publish-war' apply false
+//  id 'lint'
+  id 'resolve-dependencies'
+  id 'geode-sonar'
+  id 'geode-rat'
 }
 
+import org.apache.geode.gradle.plugins.PasswordDialog
 
-apply from: "${scriptDir}/lint.gradle"
-apply from: "${scriptDir}/resolve-dependencies.gradle"
-apply from: "${scriptDir}/sonar.gradle"
-apply from: "${scriptDir}/rat.gradle"
 
 wrapper {
   gradleVersion = minimumGradleVersion

@@ -21,12 +21,14 @@ import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.Description;
+
+import org.apache.geode.util.FilterSerializables;
 
 
 /**
@@ -37,7 +39,9 @@ public class SerializableTestNameTest {
   @Test
   public void hasOneFields() throws Exception {
     Field[] fields = TestName.class.getDeclaredFields();
-    assertThat(fields.length).as("Fields: " + Arrays.asList(fields)).isEqualTo(1);
+    Collection genuineFields = FilterSerializables.getNonSyntheticFields(fields);
+    assertThat(genuineFields.size()).as("Fields: " + genuineFields).isEqualTo(1);
+    assertThat(genuineFields).hasSize(1);
   }
 
   @Test

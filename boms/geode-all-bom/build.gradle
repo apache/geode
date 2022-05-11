@@ -17,10 +17,11 @@
 
 plugins {
   id 'java-platform'
-  id 'geode-dependency-constraints'
+  id 'org.apache.geode.gradle.geode-dependency-constraints'
+  id 'geode-publish-common'
 }
 
-apply from: "${rootDir}/gradle/publish-common.gradle"
+DependencyConstraints.apply(project)
 
 publishing {
   publications {

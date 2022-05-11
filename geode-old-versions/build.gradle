@@ -17,12 +17,14 @@ import java.nio.file.Paths
  * limitations under the License.
  */
 
-apply from: "${rootProject.rootDir}/gradle/java.gradle"
+plugins {
+  id 'geode-java'
+}
 
 project.ext.installs = new Properties()
 
 subprojects {
-  apply plugin: 'base'
+  it.apply plugin: 'base'
 
   def oldGeodeVersion = project.name
 

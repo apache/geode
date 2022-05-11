@@ -18,11 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
+
+import org.apache.geode.util.FilterSerializables;
 
 
 /**
@@ -33,7 +35,9 @@ public class SerializableExternalResourceTest {
   @Test
   public void hasZeroFields() throws Exception {
     Field[] fields = ExternalResource.class.getDeclaredFields();
-    assertThat(fields.length).as("Fields: " + Arrays.asList(fields)).isEqualTo(0);
+    Collection<Field> genuineFields = FilterSerializables.getNonSyntheticFields(fields);
+    assertThat(genuineFields.size()).as("Fields: " + genuineFields).isEqualTo(0);
+    assertThat(genuineFields).hasSize(0);
   }
 
   @Test
