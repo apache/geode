@@ -460,6 +460,16 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     }
 
     RuntimeException firstException = null;
+    try {
+      if (acceptor != null) {
+        acceptor.close();
+      }
+    } catch (RuntimeException e) {
+      logger.warn("CacheServer - Error closing acceptor monitor", e);
+      if (firstException != null) {
+        firstException = e;
+      }
+    }
 
     try {
       if (loadMonitor != null) {
@@ -479,16 +489,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       firstException = e;
     }
 
-    try {
-      if (acceptor != null) {
-        acceptor.close();
-      }
-    } catch (RuntimeException e) {
-      logger.warn("CacheServer - Error closing acceptor monitor", e);
-      if (firstException != null) {
-        firstException = e;
-      }
-    }
+
 
     if (firstException != null) {
       throw firstException;
