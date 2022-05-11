@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -36,6 +37,8 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VMRegionVersionVector;
@@ -132,7 +135,7 @@ public class InitialImageOperationTest {
   }
 
   @Test
-  public void processReceivedRVVShouldRemoveDepartedMembersFromRVV() {
+  public void shouldRemoveDepartedMembersFromRVVForNonPersistentRegion() {
     InternalDistributedMember server1 = new InternalDistributedMember("host1", 101);
     InternalDistributedMember server2 = new InternalDistributedMember("host2", 102);
     InternalDistributedMember server3 = new InternalDistributedMember("host3", 103);
@@ -194,10 +197,6 @@ public class InitialImageOperationTest {
     assertThat(receivedRVV.getMemberToGCVersion().size()).isEqualTo(3);
 
     RegionVersionVector remoteRVV = receivedRVV.getCloneForTransmission();
-    System.out
-        .println(recoveredRVV.getMemberToVersion() + ":" + recoveredRVV.getMemberToGCVersion());
-    System.out.println(receivedRVV.getMemberToVersion() + ":" + receivedRVV.getMemberToGCVersion());
-    System.out.println(remoteRVV.getMemberToVersion() + ":" + remoteRVV.getMemberToGCVersion());
 
     operation.processReceivedRVV(remoteRVV, recoveredRVV, receivedRVV);
     assertThat(receivedRVV.getMemberToVersion().size()).isEqualTo(3);
@@ -214,5 +213,79 @@ public class InitialImageOperationTest {
     assertThat(receivedRVV.getMemberToVersion().containsKey(server4)).isFalse();
     assertThat(receivedRVV.getMemberToGCVersion().containsKey(server3)).isTrue();
     assertThat(receivedRVV.getMemberToGCVersion().containsKey(server4)).isFalse();
+  }
+
+  @Test
+  public void shouldNotRemoveDepartedMembersFromRVVForPersistentRegion() {
+    InternalDistributedMember idm = new InternalDistributedMember("host1", 101);
+    DiskStoreID server1 = new DiskStoreID(0, 0);
+    DiskStoreID server2 = new DiskStoreID(0, 1);
+    DiskStoreID server3 = new DiskStoreID(0, 2);
+    DiskStoreID server4 = new DiskStoreID(0, 3);
+    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(distributedRegion.getVersionMember()).thenReturn(server1);
+
+    RegionEntry re1 = mock(RegionEntry.class);
+    RegionEntry re2 = mock(RegionEntry.class);
+    RegionEntry re3 = mock(RegionEntry.class);
+    ArrayList<RegionEntry> entries = new ArrayList<>();
+    entries.add(re1);
+    entries.add(re2);
+    entries.add(re3);
+    Iterator<RegionEntry> iterator = entries.iterator();
+    when(distributedRegion.getBestIterator(false)).thenReturn(iterator);
+    VersionStamp stamp1 = mock(VersionStamp.class);
+    VersionStamp stamp2 = mock(VersionStamp.class);
+    VersionStamp stamp3 = mock(VersionStamp.class);
+    when(re1.getVersionStamp()).thenReturn(stamp1);
+    when(re2.getVersionStamp()).thenReturn(stamp2);
+    when(re3.getVersionStamp()).thenReturn(stamp3);
+    when(stamp1.getMemberID()).thenReturn(server1);
+    when(stamp2.getMemberID()).thenReturn(server2);
+    when(stamp3.getMemberID()).thenReturn(server3);
+
+    RegionMap regionMap = mock(RegionMap.class);
+    InitialImageOperation operation = spy(new InitialImageOperation(distributedRegion, regionMap));
+
+    RegionVersionVector recoveredRVV = new DiskRegionVersionVector(server1);
+    recoveredRVV.recordVersion(server1, 1);
+    recoveredRVV.recordVersion(server2, 1);
+    recoveredRVV.recordVersion(server3, 1);
+    recoveredRVV.recordVersion(server4, 1);
+    recoveredRVV.recordGCVersion(server2, 1);
+    recoveredRVV.recordGCVersion(server3, 1);
+    recoveredRVV.recordGCVersion(server4, 1);
+    recoveredRVV.memberDeparted(null, idm, true);
+    assertThat(recoveredRVV.getMemberToVersion().size()).isEqualTo(4);
+    assertThat(recoveredRVV.getMemberToGCVersion().size()).isEqualTo(3);
+
+    RegionVersionVector receivedRVV = new DiskRegionVersionVector(server2);
+    receivedRVV.recordVersion(server1, 1);
+    receivedRVV.recordVersion(server2, 1);
+    receivedRVV.recordVersion(server2, 2);
+    receivedRVV.recordVersion(server3, 1);
+    receivedRVV.recordVersion(server4, 1);
+    receivedRVV.recordGCVersion(server2, 1);
+    receivedRVV.recordGCVersion(server3, 1);
+    receivedRVV.recordGCVersion(server4, 1);
+    receivedRVV.memberDeparted(null, idm, true);
+    assertThat(receivedRVV.getMemberToVersion().size()).isEqualTo(4);
+    assertThat(receivedRVV.getMemberToGCVersion().size()).isEqualTo(3);
+
+    RegionVersionVector remoteRVV = receivedRVV.getCloneForTransmission();
+    receivedRVV = spy(receivedRVV);
+    recoveredRVV = spy(recoveredRVV);
+    remoteRVV = spy(remoteRVV);
+
+    operation.processReceivedRVV(remoteRVV, recoveredRVV, receivedRVV);
+    assertThat(receivedRVV.getMemberToVersion().size()).isEqualTo(4);
+    assertThat(receivedRVV.getMemberToGCVersion().size()).isEqualTo(3);
+    assertThat(recoveredRVV.getMemberToVersion().size()).isEqualTo(4);
+    assertThat(recoveredRVV.getMemberToGCVersion().size()).isEqualTo(3);
+    assertThat(remoteRVV.getMemberToVersion().size()).isEqualTo(4);
+    assertThat(remoteRVV.getMemberToGCVersion().size()).isEqualTo(3);
+    verify(receivedRVV, never()).removeOldMembers(any());
+    verify(recoveredRVV, never()).removeOldMembers(any());
+    verify(remoteRVV, never()).removeOldMembers(any());
   }
 }

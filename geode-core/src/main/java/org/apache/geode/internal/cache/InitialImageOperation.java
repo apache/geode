@@ -1064,7 +1064,6 @@ public class InitialImageOperation {
     }
     // calculate keys for unfinished ops
     Set<VersionSource> foundIds = new HashSet<>();
-    foundIds.add(region.getVersionMember());
     HashSet<Object> keys = new HashSet<>();
     Set<VersionSource> departedMemberSet = receivedRVV.getDepartedMembersSet();
     boolean isPersistentRegion = region.getDataPolicy().withPersistence();
@@ -1082,7 +1081,9 @@ public class InitialImageOperation {
         if (id == null) {
           id = myId;
         }
-        foundIds.add(id);
+        if (!isPersistentRegion) {
+          foundIds.add(id);
+        }
         if (isPersistentRegion && !remoteRVV.contains(id, stamp.getRegionVersion())) {
           // found an unfinished operation
           keys.add(mapEntry.getKey());
