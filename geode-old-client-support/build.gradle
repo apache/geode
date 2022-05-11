@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-
+plugins {
+  id 'standard-subproject-configuration'
+  id 'geode-publish-java'
+}
 
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))

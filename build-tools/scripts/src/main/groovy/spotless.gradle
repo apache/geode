@@ -1,0 +1,175 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+  id 'com.diffplug.spotless'
+}
+
+// When a custom step changes, we need to bump the value passed to the method
+//   bumpThisNumberIfACustomStepChanges
+// This has been historically easy to forget, however, and can cause failures in some rare cases.
+// To safeguard against this, we instead use the (partial) md5 of this file as that method input.
+def thisFile = file("${rootDir}/build-tools/scripts/src/main/groovy/spotless.gradle")
+def thisFileMd5 = thisFile.text.md5() as String
+def thisFileMd5Piece = thisFileMd5.substring(0, 8)
+def thisFileIntegerHash = Integer.parseUnsignedInt(thisFileMd5Piece, 16)
+logger.debug("Using partial md5 (${thisFileIntegerHash}) of file ${thisFile} as spotless bump.")
+
+project.ext.set("spotless-file-hash", thisFileIntegerHash)
+
+
+spotless {
+  lineEndings = 'unix'
+  java {
+    target project.fileTree(project.projectDir) {
+      include '**/*.java'
+      exclude '**/generated-src/**'
+      exclude '**/build/**'
+    }
+
+    // As the method name suggests, bump this number if any of the below "custom" rules change.
+    // Spotless will not run on unchanged files unless this number changes.
+    bumpThisNumberIfACustomStepChanges(project.ext.'spotless-file-hash')
+
+    removeUnusedImports()
+
+    custom 'Remove commented-out import statements', {
+      it.replaceAll(/\n\/\/ import .*?;.*/, '')
+    }
+    custom 'Refuse wildcard imports', {
+      // Wildcard imports can't be resolved by spotless itself.
+      // This will require the developer themselves to adhere to best practices.
+      if (it =~ /\nimport .*\*;/) {
+        throw new AssertionError("Do not use wildcard imports.  'spotlessApply' cannot resolve this issue.")
+      }
+    }
+    custom 'Refuse Awaitility import', {
+      if (it =~ /import\s+(static\s+)?org.awaitility.Awaitility.*/) {
+        throw new AssertionError("Do not use Awaitility.await(). Use GeodeAwaitility.await() instead. 'spotlessApply' cannot resolve this issue.")
+      }
+    }
+    importOrderFile "${rootDir}/${scriptDir}/../etc/eclipseOrganizeImports.importorder"
+
+    custom 'Remove unhelpful javadoc stubs', {
+      // e.g., remove the following lines:
+      // "* @param paramName"
+      // "* @throws ExceptionType"
+      // "* @return returnType"'
+      // Multiline to allow anchors on newlines
+      it.replaceAll(/(?m)^ *\* *@(?:param|throws|return) *\w* *\n/, '')
+    }
+    custom 'Remove any empty Javadocs and block comments', {
+      // Matches any /** [...] */ or /* [...] */ that contains:
+      // (a) only whitespace
+      // (b) trivial information, such as "@param paramName" or @throws ExceptionType
+      //     without any additional information.  This information is implicit in the signature.
+      it.replaceAll(/\/\*+\s*\n(\s*\*\s*\n)*\s*\*+\/\s*\n/, '')
+    }
+
+    // Enforce style modifier order
+    custom 'Modifier ordering', {
+      def modifierRanking = [
+          "public"      : 1,
+          "protected"   : 2,
+          "private"     : 3,
+          "abstract"    : 4,
+          "default"     : 5,
+          "static"      : 6,
+          "final"       : 7,
+          "transient"   : 8,
+          "volatile"    : 9,
+          "synchronized": 10,
+          "native"      : 11,
+          "strictfp"    : 12]
+      // Find any instance of multiple modifiers. Lead with a non-word character to avoid
+      // accidental matching against for instance, "an alternative default value"
+      it.replaceAll(/\W(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+        // Do not replace the leading non-word character.  Identify the modifiers
+        it.replaceAll(/(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+          // Sort the modifiers according to the ranking above
+          it.split().sort({ modifierRanking[it] }).join(' ') + ' '
+        }
+        )
+      }
+      )
+    }
+
+
+    // Notes on eclipse formatter version:
+    // 4.6.3 is consistent with existing / previous behavior.
+    // 4.7.1 works, but had different default whitespace rules, notably with mid-ternary linebreak.
+    // 4.7.2 exists but is currently incompatible with our style file, raising NPEs.
+
+    // The format file is relative to geode-core and not the root project as the root project would change
+    // if Geode and submodules are included as part of a different gradle project.
+    eclipse('4.6.3').configFile "${rootDir}/${scriptDir}/../etc/eclipse-java-google-style.xml"
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+
+
+  groovyGradle {
+    target project.fileTree(project.projectDir) {
+      include '**/*.gradle'
+      exclude '**/generated-src/**'
+      exclude '**/build/**'
+    }
+
+    // As the method name suggests, bump this number if any of the below "custom" rules change.
+    // Spotless will not run on unchanged files unless this number changes.
+    bumpThisNumberIfACustomStepChanges(project.ext.'spotless-file-hash')
+    toggleOffOn()
+    greclipse()
+
+    custom 'Use single-quote in project directives.', {
+      it.replaceAll(/project\(":([^"]*)"\)$/, 'project(\':$1\')')
+    }
+
+    custom 'Use parenthesis in single-line gradle dependency declarations.', {
+      it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) (?!\()([^{\n]*)\n/, { original, declaration, dep ->
+        "\n${declaration}(${dep})\n"
+      })
+    }
+
+    replaceRegex('Do not pad spaces before parenthesis in gradle dependency declaration.',
+      /\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) +\(/,
+      '\n$1(')
+
+    custom 'Drop version portion of dependency', {
+      def match
+      if ((match = it =~ /(\s*\S*(?:api|[cC]ompileOnly|[rR]untimeOnly|[iI]mplementation|[tT]est))\('([\w.-]+):([\w.-]+):([\w.-]+)'\)/)) {
+        throw new AssertionError("Error in: ${target} ${match.group(0)}.\nDo not declare raw dependency versions in project Gradle files. 'spotlessApply' cannot resolve this issue.\n")
+      }
+    }
+
+    indentWithSpaces(2)
+    endWithNewline()
+  }
+}
+
+// If we add more languages to Spotless, add them to 'compileXYZ' trigger below
+afterEvaluate {
+  // Not all projects are java projects.  findByName could return null, so use the null-safe ?. operator
+  project.tasks.findByName('compileJava')?.mustRunAfter(spotlessCheck)
+  project.tasks.findByName('compileJava')?.mustRunAfter(spotlessApply)
+
+  // Within the configure block, 'project' refers to the task-owning project, in this case rootProject
+  def thisProjectScoped = project
+  rootProject.tasks.named('devBuild').configure {
+    dependsOn thisProjectScoped.tasks.named('spotlessApply')
+  }
+}

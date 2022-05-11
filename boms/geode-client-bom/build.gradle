@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+  id 'io.spring.dependency-management'
+  id 'geode-publish-common'
+}
 
-apply plugin: "io.spring.dependency-management"
-apply from: "${project.projectDir}/../../gradle/publish-common.gradle"
 
 jar.enabled = false
 
