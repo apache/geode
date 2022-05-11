@@ -377,6 +377,37 @@ public class GatewaySenderEventImplTest {
     assertThat(event.getAction()).isEqualTo(action);
   }
 
+  @Test
+  public void testShouldNotBeConflatedCreate() throws IOException {
+    final EntryEventImpl cacheEvent = mockEntryEventImpl(mock(TransactionId.class));
+
+    final GatewaySenderEventImpl gatewaySenderEvent =
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, cacheEvent, null, INCLUDE);
+
+    assertThat(gatewaySenderEvent.shouldBeConflated()).isFalse();
+  }
+
+  @Test
+  public void testShouldBeConflatedUpdate() throws IOException {
+    final EntryEventImpl cacheEvent = mockEntryEventImpl(mock(TransactionId.class));
+
+    final GatewaySenderEventImpl gatewaySenderEvent =
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, cacheEvent, null, INCLUDE);
+
+    assertThat(gatewaySenderEvent.shouldBeConflated()).isTrue();
+  }
+
+  @Test
+  public void testShouldNotBeConflatedUpdateConcurrentConflict() throws IOException {
+    final EntryEventImpl cacheEvent = mockEntryEventImpl(mock(TransactionId.class));
+    when(cacheEvent.isConcurrencyConflict()).thenReturn(true);
+
+    final GatewaySenderEventImpl gatewaySenderEvent =
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, cacheEvent, null, INCLUDE);
+
+    assertThat(gatewaySenderEvent.shouldBeConflated()).isFalse();
+  }
+
   public static class VersionAndExpectedInvocations {
 
     private final KnownVersion version;

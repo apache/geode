@@ -12,11 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal;
+package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
-import static org.apache.geode.management.MXBeanAwaitility.awaitGatewaySenderMXBeanProxy;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewaySenderMXBeanProxy;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -39,10 +40,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -77,6 +76,8 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
   private static final String DISTRIBUTED_SYSTEM_ID_SITE1 = "1";
   private static final String DISTRIBUTED_SYSTEM_ID_SITE2 = "2";
   private static final String REGION_NAME = "test1";
+
+  private static final String GATEWAY_SENDER_ID = "ln";
 
   private final Map.Entry<Integer, Integer> ENTRY_INITIAL = new AbstractMap.SimpleEntry<>(1, 0);
   private final Map.Entry<Integer, Integer> ENTRY_CONFLICT_RESOLUTION_WINNER =
@@ -132,7 +133,7 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     connectGfshToSite(locator1Site2);
     String command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER)
         .addOption(CliStrings.MEMBERS, server2Site2.getName())
-        .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, GATEWAY_SENDER_ID)
         .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "1")
         .addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "false")
         .addOption(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION, "true")
@@ -147,7 +148,7 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     regionCmd = new CommandStringBuilder(CliStrings.CREATE_REGION);
     regionCmd.addOption(CliStrings.CREATE_REGION__REGION, REGION_NAME);
     regionCmd.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
-    regionCmd.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, "ln");
+    regionCmd.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, GATEWAY_SENDER_ID);
     gfsh.executeAndAssertThat(regionCmd.toString()).statusIsSuccess();
   }
 
@@ -182,7 +183,7 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     checkEventIsConsistentlyReplicatedAcrossServers(ENTRY_CONFLICT_RESOLUTION_WINNER, server1Site2,
         server2Site2);
 
-    server2Site2.invoke(() -> checkQueueSize("ln", 3));
+    server2Site2.invoke(() -> checkQueueSize(GATEWAY_SENDER_ID, 3));
     executeGatewaySenderActionCommandSite2(CliStrings.RESUME_GATEWAYSENDER);
 
     // check that expected event is replicated to the remote cluster
@@ -206,7 +207,7 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     connectGfshToSite(locator1Site2);
     CommandStringBuilder regionCmd = new CommandStringBuilder(action);
     regionCmd.addOption(CliStrings.MEMBERS, server2Site2.getName());
-    regionCmd.addOption(CliStrings.PAUSE_GATEWAYSENDER__ID, "ln");
+    regionCmd.addOption(CliStrings.PAUSE_GATEWAYSENDER__ID, GATEWAY_SENDER_ID);
     gfsh.executeAndAssertThat(regionCmd.toString()).statusIsSuccess();
 
     verifyGatewaySenderState(server2Site2, CliStrings.PAUSE_GATEWAYSENDER.equals(action));
@@ -240,35 +241,10 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     }
   }
 
-  static void validateGatewaySenderMXBeanProxy(final InternalDistributedMember member,
-      final boolean isPaused) {
-    GatewaySenderMXBean gatewaySenderMXBean = awaitGatewaySenderMXBeanProxy(member, "ln");
-    GeodeAwaitility.await(
-        "Awaiting GatewaySenderMXBean.isRunning(" + true + ").isPaused(" + isPaused + ")")
-        .untilAsserted(() -> {
-          assertThat(gatewaySenderMXBean.isRunning()).isEqualTo(true);
-          assertThat(gatewaySenderMXBean.isPaused()).isEqualTo(isPaused);
-        });
-    assertThat(gatewaySenderMXBean).isNotNull();
-  }
-
-  static void verifySenderState(boolean isPaused) {
-    GatewaySender sender = ClusterStartupRule.getCache().getGatewaySenders().stream()
-        .filter(x -> "ln".equals(x.getId())).findFirst().orElse(null);
-    await().untilAsserted(() -> {
-      assert sender != null;
-      assertThat(sender.isRunning()).isEqualTo(true);
-    });
-    await().untilAsserted(() -> {
-      assert sender != null;
-      assertThat(sender.isPaused()).isEqualTo(isPaused);
-    });
-  }
-
   void verifyGatewaySenderState(MemberVM memberVM, boolean isPaused) {
-    memberVM.invoke(() -> verifySenderState(isPaused));
+    memberVM.invoke(() -> verifySenderState(GATEWAY_SENDER_ID, true, isPaused));
     locator1Site2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(memberVM.getVM()),
+        () -> validateGatewaySenderMXBeanProxy(getMember(memberVM.getVM()), GATEWAY_SENDER_ID, true,
             isPaused));
   }
 

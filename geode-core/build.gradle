@@ -375,7 +375,6 @@ dependencies {
 
 
   distributedTestImplementation(project(':geode-gfsh'))
-  distributedTestImplementation(project(':geode-wan'))
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
