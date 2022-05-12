@@ -615,7 +615,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
           sb.append("  ").append(key).append(" = ").append(possiblyRedactedValue).append("\n");
         }
       }
-      logger.debug(sb.toString());
+      logger.info(sb.toString());
     }
   }
 

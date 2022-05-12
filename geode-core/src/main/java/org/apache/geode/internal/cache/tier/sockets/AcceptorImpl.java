@@ -1281,12 +1281,18 @@ public class AcceptorImpl implements Acceptor, Runnable {
       accept();
     } catch (CancelException e) { // bug 39462
       // ignore
+      logger.info("JC debug: caught CancelException {} in AcceptorImpl.run()", e);
     } finally {
       try {
         if (serverSock != null) {
           serverSock.close();
         }
       } catch (IOException ignore) {
+        logger.info(
+            "JC debug: AcceptorImpl.run() got exception closing socket bound to address: {}, port: {}",
+            serverSock.getInetAddress(),
+            serverSock.getLocalPort(),
+            ignore);
       }
       if (stats != null) {
         stats.close();
@@ -1327,7 +1333,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
           try {
             s.close();
           } catch (IOException e) {
-            // don't care
+            logger.info(
+                "JC debug: AcceptorImpl.accept() system failure failed to close server socket {}, port: {} ",
+                s.getInetAddress(), s.getLocalPort(),
+                e);
           }
         }
         SystemFailure.checkFailure(); // throws
@@ -1368,13 +1377,16 @@ public class AcceptorImpl implements Acceptor, Runnable {
         handOffNewClientConnection(socket);
       } catch (InterruptedIOException e) { // Solaris only
         closeSocket(socket);
-        if (isRunning()) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Aborted due to interrupt: {}", e);
-          }
-        }
+        // if (isRunning()) {
+        // if (logger.isDebugEnabled()) {
+        logger.info("AcceptorImpl.accept() Aborted due to interrupt: {}", e);
+        // }
+        // }
       } catch (IOException e) {
         closeSocket(socket);
+        logger.info("JC debug: AcceptorImpl.accept() failed. server socket {}, port: {} ",
+            serverSock.getInetAddress(), serverSock.getLocalPort(),
+            e);
         if (isRunning()) {
           if (!loggedAcceptError) {
             loggedAcceptError = true;
@@ -1388,6 +1400,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         throw e;
       } catch (Exception e) {
         closeSocket(socket);
+        logger.info("JC debug: AcceptorImpl.accept() Cache server: Unexpected Exception", e);
         if (isRunning()) {
           logger.fatal("Cache server: Unexpected Exception", e);
         }
