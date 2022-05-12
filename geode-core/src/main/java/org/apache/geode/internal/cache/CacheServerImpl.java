@@ -379,7 +379,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     acceptor.start();
     advisor.handshake();
     loadMonitor.start(new ServerLocation(getExternalAddress(), getPort()),
-        acceptor.getStats());
+        acceptor.getStats(), acceptor.isGatewayReceiver());
 
     // TODO : Need to provide facility to enable/disable client health monitoring.
     // Creating ClientHealthMonitoring region.
