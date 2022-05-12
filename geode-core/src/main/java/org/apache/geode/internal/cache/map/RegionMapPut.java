@@ -409,7 +409,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
             event.isPossibleDuplicate()) {
           Object retainedValue = getRegionEntry().getValueRetain(getOwner());
           try {
-            if (isSomeValueAlreadyInCacheForPutIfAbsent(retainedValue)) {
+            if (isSameValueAlreadyInCacheForPutIfAbsent(retainedValue)) {
               if (logger.isDebugEnabled()) {
                 logger.debug("retried putIfAbsent found same value already in cache "
                     + "- allowing the operation.  entry={}; event={}", getRegionEntry(),
@@ -428,7 +428,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     return true;
   }
 
-  private boolean isSomeValueAlreadyInCacheForPutIfAbsent(Object retainedValue) {
+  private boolean isSameValueAlreadyInCacheForPutIfAbsent(Object retainedValue) {
     if (Token.isInvalid(retainedValue)) {
       return getEvent().getRawNewValue() == null || Token.isInvalid(getEvent().getRawNewValue());
     }
