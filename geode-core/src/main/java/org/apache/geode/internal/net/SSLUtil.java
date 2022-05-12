@@ -35,15 +35,15 @@ import org.jetbrains.annotations.Nullable;
 
 public class SSLUtil {
   /**
-   * This is a list of the algorithms that are tried, in order, to create an SSLContext. Update
-   * this list as new algorithms become available and are supported by Geode. Remove old,
-   * no-longer trusted algorithms.
+   * This is a list of the protocols that are tried, in order, to create an SSLContext. Update
+   * this list as new protocols become available and are supported by Geode. Remove old,
+   * no-longer trusted protocols.
    */
-  static final String[] DEFAULT_ALGORITHMS = {"TLSv1.3", "TLSv1.2"};
+  static final String[] SUPPORTED_CONTEXTS = {"TLSv1.3", "TLSv1.2"};
 
   public static @NotNull SSLContext getSSLContextInstance()
       throws NoSuchAlgorithmException {
-    for (String protocol : DEFAULT_ALGORITHMS) {
+    for (String protocol : SUPPORTED_CONTEXTS) {
       try {
         return SSLContext.getInstance(protocol);
       } catch (NoSuchAlgorithmException e) {

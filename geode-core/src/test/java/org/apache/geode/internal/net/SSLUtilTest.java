@@ -15,11 +15,12 @@
 
 package org.apache.geode.internal.net;
 
-import static org.apache.geode.internal.net.SSLUtil.DEFAULT_ALGORITHMS;
+import static org.apache.geode.internal.net.SSLUtil.SUPPORTED_CONTEXTS;
 import static org.apache.geode.internal.net.SSLUtil.split;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -30,9 +31,10 @@ import org.junit.jupiter.api.Test;
 public class SSLUtilTest {
 
   @Test
-  public void getSSLContextInstanceUsesFirstSupportedDefaultAlgorithm()
+  public void getSSLContextInstanceUsesFirstSupportedContext()
       throws NoSuchAlgorithmException {
-    assertThat(SSLUtil.getSSLContextInstance().getProtocol()).isIn(DEFAULT_ALGORITHMS);
+    assertThat(SSLUtil.getSSLContextInstance().getProtocol())
+        .isIn(Arrays.asList(SUPPORTED_CONTEXTS));
   }
 
   @Test
