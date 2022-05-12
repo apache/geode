@@ -949,7 +949,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
       try {
         ss.close();
       } catch (IOException e) {
-        // ignore
+        logger.info("JC debug: Caught IOException {} in AcceptorImpl.emergencyClose() " +
+            "ServerSocket bind address {} port {} isClose {} isBound {}",
+            e, ss.getInetAddress(), ss.getLocalPort(), ss.isClosed(), ss.isBound());
       }
     }
     // this.selector.close(); might NOT be safe
@@ -1287,12 +1289,14 @@ public class AcceptorImpl implements Acceptor, Runnable {
         if (serverSock != null) {
           serverSock.close();
         }
-      } catch (IOException ignore) {
+      } catch (IOException ioException) {
         logger.info(
-            "JC debug: AcceptorImpl.run() got exception closing socket bound to address: {}, port: {}",
+            "JC debug: AcceptorImpl.run() got exception closing socket bound to address: {}, port: {} isClosed {} isBound {}",
             serverSock.getInetAddress(),
             serverSock.getLocalPort(),
-            ignore);
+            serverSock.isClosed(),
+            serverSock.isBound(),
+            ioException);
       }
       if (stats != null) {
         stats.close();
@@ -1314,7 +1318,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
     if (s != null) {
       try {
         s.close();
-      } catch (IOException ignore) {
+      } catch (IOException ioException) {
+        logger.info(
+            "JC debug: Caught IOException in AcceptorImpl.closeSocket() Socket bind address {} port {} isClosed {} isBound {}",
+            s.getLocalAddress(), s.getLocalPort(), s.isClosed(), s.isBound(), ioException);
       }
     }
   }
@@ -1334,8 +1341,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
             s.close();
           } catch (IOException e) {
             logger.info(
-                "JC debug: AcceptorImpl.accept() system failure failed to close server socket {}, port: {} ",
-                s.getInetAddress(), s.getLocalPort(),
+                "JC debug: AcceptorImpl.accept() system failure failed to close server socket {}, port: {} isClosed {} isBound {}",
+                s.getInetAddress(), s.getLocalPort(), s.isClosed(), s.isBound(),
                 e);
           }
         }
@@ -1691,15 +1698,19 @@ public class AcceptorImpl implements Acceptor, Runnable {
         try {
           serverSock.close();
           logger.info(
-              "BGB AcceptorImpl closed server socket bound to address: {}, port: {} at: {}",
+              "BGB AcceptorImpl closed server socket bound to address: {}, port: {} at: {} isClosed: {}, isBound: {} ",
               serverSock.getInetAddress(),
               serverSock.getLocalPort(),
+              serverSock.isClosed(),
+              serverSock.isBound(),
               getStackTrace(new Throwable()));
         } catch (IOException e) {
           logger.info(
-              "BGB: AcceptorImpl got exception closing socket bound to address: {}, port: {}",
+              "BGB: AcceptorImpl got exception closing socket bound to address: {}, port: {} isClosed: {}, isBound: {}",
               serverSock.getInetAddress(),
               serverSock.getLocalPort(),
+              serverSock.isClosed(),
+              serverSock.isBound(),
               e);
         }
 
