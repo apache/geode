@@ -308,7 +308,7 @@ public abstract class AbstractOp implements Op {
    */
   protected void processErrorResponse(final @NotNull Message message, final @NotNull String opName)
       throws IOException, ClassNotFoundException {
-    final Part part = msg.getPart(0);
+    final Part part = message.getPart(0);
     final int messageType = message.getMessageType();
     if (messageType == MessageType.EXCEPTION) {
       String s = "While performing a remote " + opName;

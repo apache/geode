@@ -135,7 +135,7 @@ public class GetOp {
       this.clientEvent = clientEvent;
 
       final Message message = getMessage();
-      message.addStringPart(region.getName(), true);
+      message.addStringPart(region.getFullPath(), true);
       message.addObjPart(key);
     }
 

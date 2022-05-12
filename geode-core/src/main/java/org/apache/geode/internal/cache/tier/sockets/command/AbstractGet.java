@@ -262,7 +262,7 @@ public abstract class AbstractGet extends Get70 {
       }
     } else if (data == null && isObject) {
       response.setMessageType(GET_RESPONSE_INVALID);
-      response.setNumberOfParts(0);
+      response.setNumberOfParts(1);
       response.addObjPart(versionTag);
     } else {
       response.setMessageType(GET_RESPONSE);
