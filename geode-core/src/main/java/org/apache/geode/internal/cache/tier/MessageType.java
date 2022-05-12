@@ -385,19 +385,31 @@ public class MessageType {
    * @since Geode 1.15
    */
   public static final int CLIENT_RE_AUTHENTICATE = 110;
+
+  public static final int GET = 111;
+
+  public static final int GET_WITH_CALLBACK = 112;
+
+  public static final int GET_RESPONSE = 113;
+
+  public static final int GET_RESPONSE_NOT_FOUND = 114;
+
+  public static final int GET_RESPONSE_INVALID = 115;
+
+  public static final int GET_RESPONSE_TOMBSTONE = 116;
+
+
   /**
    * Must be equal to last valid message id.
    */
-  private static final int LAST_VALID_MESSAGE_ID = CLIENT_RE_AUTHENTICATE;
+  private static final int LAST_VALID_MESSAGE_ID = GET_RESPONSE_TOMBSTONE;
 
 
   public static boolean validate(int messageType) {
     if (messageType == -1 || messageType == 4) {
       return false;
     }
-    boolean valid = (messageType >= 0 && messageType <= LAST_VALID_MESSAGE_ID);
-    // logger.warning("Message type is valid: " + valid);
-    return valid;
+    return (messageType >= 0 && messageType <= LAST_VALID_MESSAGE_ID);
   }
 
   public static String getString(int type) {

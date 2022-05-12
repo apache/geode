@@ -54,6 +54,8 @@ import org.apache.geode.internal.cache.tier.sockets.command.GetPDXIdForType;
 import org.apache.geode.internal.cache.tier.sockets.command.GetPDXTypeById;
 import org.apache.geode.internal.cache.tier.sockets.command.GetPdxEnums70;
 import org.apache.geode.internal.cache.tier.sockets.command.GetPdxTypes70;
+import org.apache.geode.internal.cache.tier.sockets.command.GetWithCallback;
+import org.apache.geode.internal.cache.tier.sockets.command.GetWithoutCallback;
 import org.apache.geode.internal.cache.tier.sockets.command.Invalid;
 import org.apache.geode.internal.cache.tier.sockets.command.Invalidate70;
 import org.apache.geode.internal.cache.tier.sockets.command.KeySet;
@@ -210,7 +212,21 @@ public class CommandInitializer implements CommandRegistry {
     // as of GEODE_1_15_0 we only create new command sets when the
     // client/server protocol changes
 
+    final ConcurrentMap<Integer, Command> immutableCommands =
+        buildImmutableCommands(allCommands.get(KnownVersion.GEODE_1_15_0));
+    allCommands.put(KnownVersion.GEODE_1_16_0, immutableCommands);
+
     return allCommands;
+  }
+
+  private static ConcurrentMap<Integer, Command> buildImmutableCommands(
+      final Map<Integer, Command> baseCommands) {
+    final ConcurrentMap<Integer, Command> commands = new ConcurrentHashMap<>(baseCommands);
+
+    commands.put(MessageType.GET, GetWithoutCallback.getCommand());
+    commands.put(MessageType.GET_WITH_CALLBACK, GetWithCallback.getCommand());
+
+    return commands;
   }
 
   private static ConcurrentMap<Integer, Command> buildGeode18Commands(

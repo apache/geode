@@ -281,28 +281,45 @@ public abstract class AbstractOp implements Op {
   /**
    * Process a response that contains a single Object result.
    *
-   * @param msg the message containing the response
+   * @param message the message containing the response
    * @param opName text describing this op
    * @return the result of the response
-   * @throws Exception if response could not be processed or we received a response with a server
-   *         exception.
+   * @throws ServerOperationException if response could not be processed or we received a response
+   *         with a server exception.
+   * @throws InternalGemFireError if message type is unexpected.
    */
-  protected Object processObjResponse(Message msg, String opName) throws Exception {
-    Part part = msg.getPart(0);
-    final int msgType = msg.getMessageType();
-    if (msgType == MessageType.RESPONSE) {
-      return part.getObject();
+  protected Object processObjResponse(final @NotNull Message message, final @NotNull String opName)
+      throws Exception {
+    if (message.getMessageType() != MessageType.RESPONSE) {
+      processErrorResponse(message, opName);
+    }
+
+    return message.getPart(0).getObject();
+  }
+
+  /**
+   * Process a response that contains an error or unknown message type.
+   *
+   * @param message the message containing the response
+   * @param opName text describing this op
+   * @throws ServerOperationException if response could not be processed or we received a response
+   *         with a server exception.
+   * @throws InternalGemFireError if message type is unexpected.
+   */
+  protected void processErrorResponse(final @NotNull Message message, final @NotNull String opName)
+      throws IOException, ClassNotFoundException {
+    final Part part = msg.getPart(0);
+    final int messageType = message.getMessageType();
+    if (messageType == MessageType.EXCEPTION) {
+      String s = "While performing a remote " + opName;
+      throw new ServerOperationException(s, (Throwable) part.getObject());
+      // Get the exception toString part.
+      // This was added for c++ thin client and not used in java
+    } else if (isErrorResponse(messageType)) {
+      throw new ServerOperationException(part.getString());
     } else {
-      if (msgType == MessageType.EXCEPTION) {
-        String s = "While performing a remote " + opName;
-        throw new ServerOperationException(s, (Throwable) part.getObject());
-        // Get the exception toString part.
-        // This was added for c++ thin client and not used in java
-      } else if (isErrorResponse(msgType)) {
-        throw new ServerOperationException(part.getString());
-      } else {
-        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
-      }
+      throw new InternalGemFireError(
+          "Unexpected message type " + MessageType.getString(messageType));
     }
   }
 
@@ -412,11 +429,11 @@ public abstract class AbstractOp implements Op {
     return timedOut;
   }
 
-  protected abstract long startAttempt(ConnectionStats stats);
+  protected abstract long startAttempt(@NotNull ConnectionStats stats);
 
-  protected abstract void endSendAttempt(ConnectionStats stats, long start);
+  protected abstract void endSendAttempt(@NotNull ConnectionStats stats, long start);
 
-  protected abstract void endAttempt(ConnectionStats stats, long start);
+  protected abstract void endAttempt(@NotNull ConnectionStats stats, long start);
 
   /**
    * Subclasses for AbstractOp should override this method to return false in this message should

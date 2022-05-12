@@ -214,7 +214,7 @@ public class KnownVersion extends AbstractVersion {
   @Immutable
   public static final KnownVersion GEODE_1_16_0 =
       new KnownVersion("GEODE", "1.16.0", (byte) 1, (byte) 16, (byte) 0, (byte) 0,
-          GEODE_1_16_0_ORDINAL);
+          GEODE_1_16_0_ORDINAL, true);
 
   /* NOTE: when adding a new version bump the ordinal by 10. Ordinals can be short ints */
 

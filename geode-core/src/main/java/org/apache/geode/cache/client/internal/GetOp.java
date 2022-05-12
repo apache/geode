@@ -14,8 +14,18 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.MessageType.GET;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_INVALID;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_NOT_FOUND;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_TOMBSTONE;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_WITH_CALLBACK;
+
+import java.io.IOException;
+
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoaderException;
@@ -58,15 +68,25 @@ public class GetOp {
    * @param clientEvent holder for returning version information
    * @return the entry value found by the get if any
    */
-  public static Object execute(ExecutablePool pool, LocalRegion region, Object key,
-      Object callbackArg, boolean prSingleHopEnabled, EntryEventImpl clientEvent) {
-    ClientMetadataService cms = region.getCache().getClientMetadataService();
-    GetOpImpl op = new GetOpImpl(region, key, callbackArg, prSingleHopEnabled, clientEvent);
+  public static Object execute(final @NotNull ExecutablePool pool,
+      final @NotNull LocalRegion region, @NotNull Object key,
+      final @Nullable Object callbackArg, final boolean prSingleHopEnabled,
+      final @NotNull EntryEventImpl clientEvent) {
+    final AbstractOp op;
+    if (null == callbackArg) {
+      op = new GetWithoutCallbackOp(region, key, prSingleHopEnabled, clientEvent);
+    } else {
+      op = new GetWithCallbackOp(region, key, callbackArg, prSingleHopEnabled, clientEvent);
+    }
+
+    logger.info("XXX: Using the new GET: {}", op);
 
     if (logger.isDebugEnabled()) {
       logger.debug("GetOp invoked for key {}", key);
     }
+
     if (prSingleHopEnabled) {
+      final ClientMetadataService cms = region.getCache().getClientMetadataService();
       ServerLocation server =
           cms.getBucketServerLocation(region, Operation.GET, key, null, callbackArg);
       if (server != null) {
@@ -80,7 +100,7 @@ public class GetOp {
         } catch (AllConnectionsInUseException ignored) {
         } catch (ServerConnectivityException e) {
           if (e instanceof ServerOperationException) {
-            throw e; // fixed 44656
+            throw e;
           }
           cms.removeBucketServerLocation(server);
         } catch (CacheLoaderException e) {
@@ -96,6 +116,160 @@ public class GetOp {
 
   private GetOp() {
     // no instances allowed
+  }
+
+  abstract static class AbstractGetOp extends AbstractOp {
+
+    private final LocalRegion region;
+    private final boolean prSingleHopEnabled;
+    protected final Object key;
+    protected final EntryEventImpl clientEvent;
+
+    protected AbstractGetOp(final int msgType, final int msgParts,
+        final @NotNull LocalRegion region, final @NotNull Object key,
+        final boolean prSingleHopEnabled, final @NotNull EntryEventImpl clientEvent) {
+      super(msgType, msgParts);
+      this.region = region;
+      this.key = key;
+      this.prSingleHopEnabled = prSingleHopEnabled;
+      this.clientEvent = clientEvent;
+
+      final Message message = getMessage();
+      message.addStringPart(region.getName(), true);
+      message.addObjPart(key);
+    }
+
+    @Override
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
+      throw new UnsupportedOperationException("version tag processing requires the connection");
+    }
+
+    @Override
+    protected Object processResponse(final @NotNull Message message,
+        final @NotNull Connection connection)
+        throws IOException, ClassNotFoundException {
+      final int messageType = message.getMessageType();
+      if (messageType == GET_RESPONSE) {
+        return processGetResponse(message, connection);
+      } else if (messageType == GET_RESPONSE_NOT_FOUND) {
+        return processGetResponseNotFound(message);
+      } else if (messageType == GET_RESPONSE_INVALID) {
+        return processGetResponseInvalid(message, connection);
+      } else if (messageType == GET_RESPONSE_TOMBSTONE) {
+        return processGetResponseTombstone(message, connection);
+      }
+
+      processErrorResponse(message, MessageType.getString(GET));
+      return null;
+    }
+
+    private Object processGetResponse(final @NotNull Message message,
+        final @NotNull Connection connection)
+        throws IOException, ClassNotFoundException {
+      final Object value = message.getPart(0).getObject();
+      updateClientEventWithVersionTag(() -> message.getPart(1).getObject(), connection);
+      return value;
+    }
+
+    private Object processGetResponseNotFound(final @NotNull Message message) {
+      return null;
+    }
+
+    private Object processGetResponseInvalid(final @NotNull Message message,
+        final @NotNull Connection connection) throws IOException, ClassNotFoundException {
+      updateClientEventWithVersionTag(() -> message.getPart(0).getObject(), connection);
+      return Token.INVALID;
+    }
+
+    private Object processGetResponseTombstone(final @NotNull Message message,
+        final @NotNull Connection connection)
+        throws IOException, ClassNotFoundException {
+      updateClientEventWithVersionTag(() -> message.getPart(0).getObject(), connection);
+      return Token.TOMBSTONE;
+    }
+
+    @Override
+    protected boolean isErrorResponse(final int msgType) {
+      return msgType == MessageType.REQUESTDATAERROR;
+    }
+
+    @Override
+    protected long startAttempt(final @NotNull ConnectionStats stats) {
+      return stats.startGet();
+    }
+
+    @Override
+    protected void endSendAttempt(final @NotNull ConnectionStats stats, final long start) {
+      stats.endGetSend(start, hasFailed());
+    }
+
+    @Override
+    protected void endAttempt(final @NotNull ConnectionStats stats, final long start) {
+      stats.endGet(start, hasTimedOut(), hasFailed());
+    }
+
+    @FunctionalInterface
+    interface PartObjectSupplier<T> {
+      Object getObject() throws IOException, ClassNotFoundException;
+
+      @SuppressWarnings("unchecked")
+      default T get() throws IOException, ClassNotFoundException {
+        return (T) getObject();
+      }
+    }
+
+    protected void updateClientEventWithVersionTag(
+        final @NotNull PartObjectSupplier<VersionTag<?>> versionTagSupplier,
+        final @NotNull Connection connection)
+        throws IOException, ClassNotFoundException {
+      if (clientEvent != null) {
+        final VersionTag<?> versionTag = versionTagSupplier.get();
+        if (null != versionTag) {
+          versionTag.replaceNullIDs(
+              (InternalDistributedMember) connection.getEndpoint().getMemberId());
+          clientEvent.setVersionTag(versionTag);
+        }
+      }
+    }
+
+  }
+
+  static class GetWithoutCallbackOp extends AbstractGetOp {
+
+    public GetWithoutCallbackOp(final @NotNull LocalRegion region, final @NotNull Object key,
+        final boolean prSingleHopEnabled, final @NotNull EntryEventImpl clientEvent) {
+      super(GET, 2, region, key, prSingleHopEnabled, clientEvent);
+    }
+
+    @Override
+    public String toString() {
+      return "GetWithoutCallbackOp{" +
+          "key=" + key +
+          '}';
+    }
+  }
+
+  static class GetWithCallbackOp extends AbstractGetOp {
+
+    private final Object callbackArg;
+
+    public GetWithCallbackOp(final @NotNull LocalRegion region, final @NotNull Object key,
+        final @NotNull Object callbackArg, final boolean prSingleHopEnabled,
+        final @NotNull EntryEventImpl clientEvent) {
+      super(GET_WITH_CALLBACK, 3, region, key, prSingleHopEnabled, clientEvent);
+      this.callbackArg = callbackArg;
+
+      final Message message = getMessage();
+      message.addObjPart(callbackArg);
+    }
+
+    @Override
+    public String toString() {
+      return "GetWithCallbackOp{" +
+          "key=" + key +
+          ", callbackArg=" + callbackArg +
+          '}';
+    }
   }
 
   static class GetOpImpl extends AbstractOp {

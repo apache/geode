@@ -103,12 +103,6 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#get(java.lang.Object,
-   * java.lang.Object)
-   */
   @Override
   public Object get(Object key, Object callbackArg, EntryEventImpl clientEvent) {
     recordTXOperation(ServerRegionOperation.GET, key, callbackArg);
