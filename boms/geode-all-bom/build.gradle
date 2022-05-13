@@ -17,7 +17,7 @@
 
 plugins {
   id 'java-platform'
-  id 'org.apache.geode.gradle.geode-dependency-constraints'
+  id 'geode-dependency-constraints'
   id 'geode-publish-common'
 }
 

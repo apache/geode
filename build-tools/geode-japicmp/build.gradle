@@ -45,7 +45,7 @@ group = 'org.apache.geode.gradle'
 version = 1.0
 gradlePlugin {
   plugins.register('geode-japicmp') {
-    id = 'org.apache.geode.gradle.geode-japicmp'
+    id = 'geode-japicmp'
     implementationClass = 'org.apache.geode.gradle.japicmp.JapicmpPlugin'
   }
 }

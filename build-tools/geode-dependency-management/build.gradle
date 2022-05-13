@@ -43,7 +43,7 @@ sourceSets {
 
 gradlePlugin {
   plugins.register('geode-dependency-constraints') {
-    id = 'org.apache.geode.gradle.geode-dependency-constraints'
+    id = 'geode-dependency-constraints'
     implementationClass = 'org.apache.geode.gradle.plugins.DependencyConstraintsPlugin'
   }
 }

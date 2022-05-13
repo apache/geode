@@ -19,11 +19,8 @@
 plugins {
   id 'java'
   id "com.github.johnrengelman.shadow" version "5.2.0"
+  id 'standard-subproject-configuration'
 }
-
-apply plugin: 'com.github.johnrengelman.shadow'
-
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 group 'test.org.apache.geode'
 version '1.0.0'

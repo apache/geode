@@ -24,16 +24,16 @@ includeBuild("${rootDir}/../geode-japicmp") {
 }
 includeBuild("${rootDir}/../geode-repeat-test") {
   dependencySubstitution {
-    substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test') using project(':')
+    substitute module('org.apache.geode.gradle:geode-repeat-test') using project(':')
   }
 }
 includeBuild("${rootDir}/../geode-build-tools") {
   dependencySubstitution {
-    substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-build-tools') using project(':')
+    substitute module('org.apache.geode.gradle:geode-build-tools') using project(':')
   }
 }
 includeBuild("${rootDir}/../geode-testing-isolation") {
   dependencySubstitution {
-    substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-testing-isolation') using project(':')
+    substitute module('org.apache.geode.gradle:geode-testing-isolation') using project(':')
   }
 }

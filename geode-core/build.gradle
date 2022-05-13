@@ -22,9 +22,10 @@ plugins {
   id 'geode-pmd'
   id 'jmh'
   id 'javaVersions'
+  id 'geode-jboss-module-plugin'
 }
 
-apply plugin: 'geode.jboss-modules-plugin'
+//apply plugin: 'geode.jboss-modules-plugin'
 
 sourceSets {
   jca {

@@ -21,6 +21,7 @@ plugins {
   id 'distribution'
   id 'com.palantir.docker'
   id 'geode-publish-common'
+  id 'geode-jboss-module-plugin'
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os

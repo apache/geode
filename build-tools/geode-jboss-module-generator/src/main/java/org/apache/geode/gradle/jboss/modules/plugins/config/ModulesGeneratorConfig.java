@@ -16,10 +16,10 @@
 */
 package org.apache.geode.gradle.jboss.modules.plugins.config;
 
-import org.gradle.api.Project;
-
 import java.nio.file.Path;
 import java.util.List;
+
+import org.gradle.api.Project;
 
 public class ModulesGeneratorConfig {
     public String mainClass;

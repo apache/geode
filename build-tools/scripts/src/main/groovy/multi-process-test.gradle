@@ -34,7 +34,7 @@
  */
 
 plugins {
-  id 'org.apache.geode.gradle.geode-testing-isolation'
+  id 'geode-testing-isolation'
 }
 import org.apache.geode.gradle.testing.Executers
 import org.apache.geode.gradle.testing.isolation.WorkingDirectoryIsolator

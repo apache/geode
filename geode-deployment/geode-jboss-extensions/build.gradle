@@ -17,9 +17,11 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+  id 'geode-publish-java'
+}
 
-apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

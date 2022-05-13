@@ -30,8 +30,9 @@ dependencies {
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3")
   implementation('me.champeau.gradle:japicmp-gradle-plugin:0.3.0')
 
-  implementation('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test:1.0')
+  implementation('org.apache.geode.gradle:geode-build-tools:1.0')
   implementation('org.apache.geode.gradle:geode-japicmp:1.0')
-  implementation('org.apache.geode.gradle:org.apache.geode.gradle.geode-build-tools:1.0')
-  implementation('org.apache.geode.gradle:org.apache.geode.gradle.geode-testing-isolation:1.0')
+  implementation('org.apache.geode.gradle:geode-repeat-test:1.0')
+  implementation('org.apache.geode.gradle:geode-testing-isolation:1.0')
+
 }

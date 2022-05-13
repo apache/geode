@@ -18,9 +18,12 @@ import org.apache.tools.ant.taskdefs.condition.Os
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/warnings.gradle"
-apply plugin: 'com.palantir.docker'
+plugins {
+  id 'standard-subproject-configuration'
+  id 'com.palantir.docker'
+  id 'warnings'
+}
+
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

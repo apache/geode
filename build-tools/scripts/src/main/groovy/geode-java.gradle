@@ -17,7 +17,7 @@
 
 plugins {
   id 'java-library'
-  id 'org.apache.geode.gradle.geode-dependency-constraints'
+  id 'geode-dependency-constraints'
 }
 
 sourceCompatibility = 1.8

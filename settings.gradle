@@ -18,19 +18,20 @@ import org.gradle.util.GradleVersion
 
 pluginManagement {
   includeBuild('build-tools/geode-dependency-management')
+  includeBuild('build-tools/geode-jboss-module-generator')
   includeBuild('build-tools/geode-repeat-test') {
     dependencySubstitution {
-      substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test') using project(':')
+      substitute module('org.apache.geode.gradle:geode-repeat-test') using project(':')
     }
   }
   includeBuild('build-tools/geode-build-tools') {
     dependencySubstitution {
-      substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-build-tools') using project(':')
+      substitute module('org.apache.geode.gradle:geode-build-tools') using project(':')
     }
   }
   includeBuild('build-tools/geode-testing-isolation') {
     dependencySubstitution {
-      substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-testing-isolation') using project(':')
+      substitute module('org.apache.geode.gradle:geode-testing-isolation') using project(':')
     }
   }
   includeBuild('build-tools/geode-annotation-processor')

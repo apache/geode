@@ -46,7 +46,7 @@ version = 1.0
 
 gradlePlugin {
   plugins.register('geodeRepeatTest') {
-    id = 'org.apache.geode.gradle.geode-repeat-test'
+    id = 'geode-repeat-test'
     implementationClass = 'org.apache.geode.gradle.testing.repeat.RepeatTestPlugin'
   }
 }

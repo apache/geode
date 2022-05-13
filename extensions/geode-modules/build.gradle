@@ -20,9 +20,9 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 plugins {
   id 'standard-subproject-configuration'
   id 'geode-publish-java'
+  id 'geode-jboss-module-plugin'
 }
 
-apply plugin: 'geode.jboss-modules-plugin'
 
 evaluationDependsOn(":geode-core")
 

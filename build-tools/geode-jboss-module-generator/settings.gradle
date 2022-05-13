@@ -13,36 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-plugins {
-  id 'java'
-  id 'java-gradle-plugin'
-  id 'groovy-gradle-plugin'
-  id 'maven-publish'
-  id 'com.gradle.plugin-publish' version '0.18.0'
-}
-
-group = 'org.apache.geode.gradle'
-version = 1.0
-
-repositories {
-  mavenCentral()
-}
-
-dependencies {
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
-
-test {
-  useJUnitPlatform()
-}
-
-gradlePlugin {
-  plugins.register('geodeTestingIsolation') {
-    id = 'geode-testing-isolation'
-    implementationClass = 'org.apache.geode.gradle.testing.isolation.IsolatedTestPlugin'
-  }
-}
+rootProject.name = 'geode-jboss-module-generator'

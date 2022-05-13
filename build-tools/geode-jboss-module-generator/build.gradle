@@ -24,14 +24,15 @@ plugins {
   id 'com.gradle.plugin-publish' version '0.18.0'
 }
 
-group = 'org.apache.geode.gradle'
-version = 1.0
-
 repositories {
   mavenCentral()
+  gradlePluginPortal()
 }
 
 dependencies {
+  implementation(gradleApi())
+  implementation('org.apache.commons:commons-lang3:3.12.0')
+
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
@@ -40,9 +41,12 @@ test {
   useJUnitPlatform()
 }
 
+group = 'org.apache.geode.gradle'
+version = 1.0
+
 gradlePlugin {
-  plugins.register('geodeTestingIsolation') {
-    id = 'geode-testing-isolation'
-    implementationClass = 'org.apache.geode.gradle.testing.isolation.IsolatedTestPlugin'
+  plugins.register('geode-jboss-module-plugin') {
+    id = 'geode-jboss-module-plugin'
+    implementationClass = 'org.apache.geode.gradle.jboss.modules.plugins.GeodeJBossModulesGeneratorPlugin'
   }
 }

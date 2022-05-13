@@ -19,9 +19,9 @@ plugins {
   id 'standard-subproject-configuration'
   id 'geode-publish-java'
   id 'warnings'
+  id 'geode-jboss-module-plugin'
 }
 
-apply plugin: 'geode.jboss-modules-plugin'
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

@@ -20,9 +20,9 @@ plugins {
   id 'war'
   id 'geode-publish-war'
   id 'warnings'
+  id 'geode-jboss-module-plugin'
 }
 
-apply plugin: 'geode.jboss-modules-plugin'
 
 jar.enabled = false
 
