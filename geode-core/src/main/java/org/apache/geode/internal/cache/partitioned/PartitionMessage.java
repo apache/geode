@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
@@ -67,6 +68,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The base PartitionedRegion message type upon which other messages should be based.
@@ -84,6 +86,10 @@ public abstract class PartitionMessage extends DistributionMessage
           "Unknown exception")
               .fillInStackTrace();
 
+
+  private static final boolean disableReatemptOnCacheClose =
+      Boolean.getBoolean(
+          GeodeGlossary.GEMFIRE_PREFIX + "PartitionMessage.DISABLE_REATTEMPT_ON_CACHE_CLOSE");
   int regionId;
 
   int processorId;
@@ -838,6 +844,14 @@ public abstract class PartitionMessage extends DistributionMessage
           throw new PrimaryBucketException(
               "Peer failed primary test", t);
         } else if (t instanceof CancelException) {
+          if (disableReatemptOnCacheClose) {
+            logger.debug(
+                "PartitionResponse got CacheClosedException from {}, throwing InternalGemFireException",
+                e.getSender(), t);
+            throw new InternalGemFireException(
+                "No retry after CacheClosedException from " + e.getSender());
+          }
+
           logger.debug(
               "PartitionResponse got CacheClosedException from {}, throwing ForceReattemptException",
               e.getSender(), t);
