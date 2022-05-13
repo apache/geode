@@ -72,6 +72,9 @@ case $ARTIFACT_SLUG in
     echo "Making environment adjustments for windows."
     JAVA_BUILD_PATH=C:/java${JAVA_BUILD_VERSION}
     JAVA_TEST_PATH=C:/java${JAVA_TEST_VERSION}
+    TEST_JAVA_8_HOME=C:/java8
+    TEST_JAVA_11_HOME=C:/java11
+    TEST_JAVA_17_HOME=C:/java17
     GRADLE_SKIP_TASK_OPTIONS="${GRADLE_SKIP_TASK_OPTIONS} -x docker"
     SEP=";"
     OPTIONAL_KILL_ALL_CMD="${SEP} \
@@ -83,6 +86,9 @@ case $ARTIFACT_SLUG in
   *)
     JAVA_BUILD_PATH=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64
     JAVA_TEST_PATH=/usr/lib/jvm/bellsoft-java${JAVA_TEST_VERSION}-amd64
+    TEST_JAVA_8_HOME=/usr/lib/jvm/bellsoft-java8-amd64
+    TEST_JAVA_11_HOME=/usr/lib/jvm/bellsoft-java11-amd64
+    TEST_JAVA_17_HOME=/usr/lib/jvm/bellsoft-java17-amd64
     SEP="&&"
     ;;
 esac
@@ -98,6 +104,9 @@ GRADLE_ARGS=" \
     -PcompileJVMVer=${JAVA_BUILD_VERSION} \
     -PtestJVM=${JAVA_TEST_PATH} \
     -PtestJVMVer=${JAVA_TEST_VERSION} \
+    -PtestJava8Home=${TEST_JAVA_8_HOME} \
+    -PtestJava11Home=${TEST_JAVA_11_HOME} \
+    -PtestJava17Home=${TEST_JAVA_17_HOME} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
