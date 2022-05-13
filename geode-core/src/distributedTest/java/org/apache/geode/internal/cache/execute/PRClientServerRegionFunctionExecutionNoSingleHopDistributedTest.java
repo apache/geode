@@ -234,7 +234,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
   }
 
   @Test
-  public void testserverMultiKeyExecution_SocektTimeOut() {
+  public void testserverMultiKeyExecution_SocketTimeOut() {
     createScenario();
     Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     registerFunctionAtServer(function);
@@ -543,7 +543,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
         ArrayList<?> resultListForMember = (ArrayList<?>) o.getValue();
 
         for (Object result : resultListForMember) {
-          assertThat(result).isEqualTo(Boolean.TRUE);
+          assertThat(result).isEqualTo(true);
         }
       }
     } catch (Exception e) {
@@ -636,7 +636,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     assertThat(resultList).hasSize(3);
 
     for (Object result : resultList) {
-      assertThat(result).isEqualTo(Boolean.TRUE);
+      assertThat(result).isEqualTo(true);
     }
     ResultCollector<?, ?> rc2 = executeOnAll(dataSet, testKeysSet, function, isByName);
     List<?> l2 = (List<?>) rc2.getResult();
@@ -669,9 +669,8 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     }
     Map<String, Integer> resultMap = region.getAll(testKeysList);
     assertThat(resultMap).containsExactlyInAnyOrderEntriesOf(origVals);
-    Wait.pause(2000);
-    Map<String, Integer> secondResultMap = region.getAll(testKeysList);
-    assertThat(secondResultMap).containsExactlyInAnyOrderEntriesOf(origVals);
+    await().untilAsserted(
+        () -> assertThat(region.getAll(testKeysList)).containsExactlyInAnyOrderEntriesOf(origVals));
   }
 
   public static void putAll() {
@@ -691,9 +690,8 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     }
     Map<String, Integer> resultMap = region.getAll(testKeysList);
     assertThat(resultMap).containsExactlyInAnyOrderEntriesOf(origVals);
-    Wait.pause(2000);
-    Map<String, Integer> secondResultMap = region.getAll(testKeysList);
-    assertThat(secondResultMap).containsExactlyInAnyOrderEntriesOf(origVals);
+    await().untilAsserted(
+        () -> assertThat(region.getAll(testKeysList)).containsExactlyInAnyOrderEntriesOf(origVals));
   }
 
   private static void serverMultiKeyExecutionOnASingleBucket(Boolean isByName) {
@@ -709,21 +707,21 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
       region.put(value, val);
     }
     DistributedSystem.setThreadsSocketPolicy(false);
-    for (String o : testKeysSet) {
-      Set<String> singleKeySet = Collections.singleton(o);
+    for (String key : testKeysSet) {
+      Set<String> singleKeySet = Collections.singleton(key);
       Function<Object> function = new TestFunction<>(true, TEST_FUNCTION2);
       FunctionService.registerFunction(function);
       Execution dataSet = FunctionService.onRegion(region);
       ResultCollector<?, ?> rc1 = execute(dataSet, singleKeySet, Boolean.TRUE, function, isByName);
-      List<?> l = (List<?>) rc1.getResult();
-      assertThat(l).hasSize(1);
+      List<?> list1 = (List<?>) rc1.getResult();
+      assertThat(list1).hasSize(1);
 
       ResultCollector<?, ?> rc2 =
           execute(dataSet, singleKeySet, new HashSet<>(singleKeySet), function, isByName);
-      List<?> l2 = (List<?>) rc2.getResult();
+      List<?> list2 = (List<?>) rc2.getResult();
 
-      assertThat(l2).hasSize(1);
-      List<Integer> subList = (List<Integer>) l2.iterator().next();
+      assertThat(list2).hasSize(1);
+      List<Integer> subList = (List<Integer>) list2.iterator().next();
       assertThat(subList).hasSize(1);
       assertThat(subList).containsOnly(region.get(singleKeySet.iterator().next()));
     }
@@ -752,7 +750,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     List<?> l = (List<?>) rc1.getResult();
     assertThat(l).hasSize(3);
     for (Object item : l) {
-      assertThat(item).isEqualTo(Boolean.TRUE);
+      assertThat(item).isEqualTo(true);
     }
 
     ResultCollector<?, ?> rc2 = execute(dataSet, testKeysSet, testKeysSet, function, isByName);
@@ -792,7 +790,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     logger.info("Result size : " + l.size());
     assertThat(l).hasSize(3);
     for (Object o : l) {
-      assertThat(o).isEqualTo(Boolean.TRUE);
+      assertThat(o).isEqualTo(true);
     }
   }
 
@@ -811,7 +809,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     region.put(testKey, 1);
 
     ResultCollector<?, ?> rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-    assertThat(((List<?>) rs.getResult()).get(0)).isEqualTo(Boolean.TRUE);
+    assertThat(((List<?>) rs.getResult()).get(0)).isEqualTo(true);
 
     ResultCollector<?, ?> rs2 = execute(dataSet, testKeysSet, testKey, function, isByName);
     assertThat(((List<?>) rs2.getResult()).get(0)).isEqualTo(testKey);
@@ -855,11 +853,11 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
             return true;
           }
         });
-    List<?> l = (List<?>) rc1.getResult();
-    logger.info("Result size : " + l.size());
-    assertThat(l).hasSize(3);
-    for (Object o : l) {
-      assertThat(o).isEqualTo(Boolean.TRUE);
+    List<?> list = (List<?>) rc1.getResult();
+    logger.info("Result size : " + list.size());
+    assertThat(list).hasSize(3);
+    for (Object item : list) {
+      assertThat(item).isEqualTo(true);
     }
   }
 
@@ -952,7 +950,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     region.put(testKey, 1);
 
     ResultCollector<?, ?> rs = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
-    assertThat(((List<?>) rs.getResult()).get(0)).isEqualTo(Boolean.TRUE);
+    assertThat(((List<?>) rs.getResult()).get(0)).isEqualTo(true);
 
     ResultCollector<?, ?> rs2 = execute(dataSet, testKeysSet, testKey, function, isByName);
     assertThat(((List<?>) rs2.getResult()).get(0)).isEqualTo(1);
@@ -962,7 +960,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     putData.put(testKey + "2", 3);
 
     ResultCollector<?, ?> rs1 = execute(dataSet, testKeysSet, putData, function, isByName);
-    assertThat(((List<?>) rs1.getResult()).get(0)).isEqualTo(Boolean.TRUE);
+    assertThat(((List<?>) rs1.getResult()).get(0)).isEqualTo(true);
 
     assertThat(region.get(testKey + "1")).isEqualTo(2);
     assertThat(region.get(testKey + "2")).isEqualTo(3);
