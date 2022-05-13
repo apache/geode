@@ -34,11 +34,44 @@ For example:
 security-manager = com.example.security.MySecurityManager
 ```
 
+### Apply security-manager to All Members
+
 To ensure that the `security-manager` property is applied consistently across a cluster, follow these guidelines:
 
 - Specify the `security-manager` property in a properties file, such as `gemfire.properties`, **not** in a cluster configuration file (such as `cluster.properties`).
-- Specify the properties file when you start the first locator for the cluster. The locator will propagate the value to all members (locators and servers) that follow.
-- If you must specify the `security-manager` property for servers (neither necessary nor recommended) make sure its value is exactly identical to that specified for the first locator.
+
+- Specify the properties file when you start the first locator for the cluster.
+
+### Is Cluster Management Enabled?
+
+The next steps in applying the `security-manager` property across the cluster depend on whether
+cluster management is enabled. Cluster management is enabled when two conditions are met:
+
+- Every locator in the cluster sets `--enable-cluster-configuration=true`.
+
+- Every server in the cluster sets `--use-cluster-configuration=true`.
+
+These are the default settings, so unless you have changed them, cluster management is probably
+enabled for your system, but be sure and confirm before proceeding. Some systems that implement
+cluster management for most members might include a few servers that do not participate (for which
+`--use-cluster-configuration=false`). See [Using the Cluster Configuration
+Service](../../configuring/cluster_config/gfsh_persist.html#using-the-cluster-config-svc) for
+details.
+
+### Apply security-manager to Non-participating Servers
+
+- **If cluster management is enabled (the default),** the locator will propagate the
+    `security-manager` setting to all members (locators and servers) that are subsequently started.
+
+- **If cluster management is enabled but some servers do not participate in cluster
+  management** (that is, servers for which `--use-cluster-configuration=false`), you
+  must specify the `security-manager` property for those non-participating servers. Make sure its
+  value is exactly identical to that specified for the first locator.
+
+- **If cluster management is not enabled,** you must specify the `security-manager` property for
+    all servers. Make sure its value is exactly identical to that specified for the first locator.
+
+### Callbacks
 
 All components of the system invoke the same callbacks.
 Here are descriptions of the components and the connections that they
