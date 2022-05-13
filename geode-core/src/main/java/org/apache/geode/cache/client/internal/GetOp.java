@@ -17,8 +17,12 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.internal.cache.tier.MessageType.GET;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_INVALID;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_INVALID_WITH_METADATA_REFRESH;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_NOT_FOUND;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_NOT_FOUND_WITH_METADATA_REFRESH;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_TOMBSTONE;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_TOMBSTONE_WITH_METADATA_REFRESH;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_WITH_METADATA_REFRESH;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_WITH_CALLBACK;
 
 import java.io.IOException;
@@ -79,8 +83,6 @@ public class GetOp {
       op = new GetWithCallbackOp(region, key, callbackArg, prSingleHopEnabled, clientEvent);
     }
 
-    logger.info("XXX: Using the new GET: {}", op);
-
     if (logger.isDebugEnabled()) {
       logger.debug("GetOp invoked for key {}", key);
     }
@@ -121,22 +123,26 @@ public class GetOp {
   abstract static class AbstractGetOp extends AbstractOp {
 
     private final LocalRegion region;
-    private final boolean prSingleHopEnabled;
+    private final boolean singleHopEnabled;
     protected final Object key;
     protected final EntryEventImpl clientEvent;
 
     protected AbstractGetOp(final int msgType, final int msgParts,
         final @NotNull LocalRegion region, final @NotNull Object key,
-        final boolean prSingleHopEnabled, final @NotNull EntryEventImpl clientEvent) {
+        final boolean singleHopEnabled, final @NotNull EntryEventImpl clientEvent) {
       super(msgType, msgParts);
       this.region = region;
       this.key = key;
-      this.prSingleHopEnabled = prSingleHopEnabled;
+      this.singleHopEnabled = singleHopEnabled;
       this.clientEvent = clientEvent;
 
       final Message message = getMessage();
       message.addStringPart(region.getFullPath(), true);
       message.addObjPart(key);
+    }
+
+    protected @Nullable Object getCallbackArg() {
+      return null;
     }
 
     @Override
@@ -149,14 +155,23 @@ public class GetOp {
         final @NotNull Connection connection)
         throws IOException, ClassNotFoundException {
       final int messageType = message.getMessageType();
-      if (messageType == GET_RESPONSE) {
-        return processGetResponse(message, connection);
-      } else if (messageType == GET_RESPONSE_NOT_FOUND) {
-        return processGetResponseNotFound(message);
-      } else if (messageType == GET_RESPONSE_INVALID) {
-        return processGetResponseInvalid(message, connection);
-      } else if (messageType == GET_RESPONSE_TOMBSTONE) {
-        return processGetResponseTombstone(message, connection);
+      switch (messageType) {
+        case GET_RESPONSE:
+          return processGetResponse(message, connection);
+        case GET_RESPONSE_NOT_FOUND:
+          return processGetResponseNotFound(message);
+        case GET_RESPONSE_INVALID:
+          return processGetResponseInvalid(message, connection);
+        case GET_RESPONSE_TOMBSTONE:
+          return processGetResponseTombstone(message, connection);
+        case GET_RESPONSE_WITH_METADATA_REFRESH:
+          return processGetResponseWithMetadataRefresh(message, connection);
+        case GET_RESPONSE_NOT_FOUND_WITH_METADATA_REFRESH:
+          return processGetResponseNotFoundWithMetadataRefresh(message);
+        case GET_RESPONSE_INVALID_WITH_METADATA_REFRESH:
+          return processGetResponseInvalidWithMetadataRefresh(message, connection);
+        case GET_RESPONSE_TOMBSTONE_WITH_METADATA_REFRESH:
+          return processGetResponseTombstoneWithMetadataRefresh(message, connection);
       }
 
       processErrorResponse(message, MessageType.getString(GET));
@@ -171,7 +186,21 @@ public class GetOp {
       return value;
     }
 
+    private Object processGetResponseWithMetadataRefresh(final @NotNull Message message,
+        final @NotNull Connection connection)
+        throws IOException, ClassNotFoundException {
+      final Object value = message.getPart(0).getObject();
+      updateClientEventWithVersionTag(() -> message.getPart(1).getObject(), connection);
+      processMetadataRefresh(() -> message.getPart(2));
+      return value;
+    }
+
     private Object processGetResponseNotFound(final @NotNull Message message) {
+      return null;
+    }
+
+    private Object processGetResponseNotFoundWithMetadataRefresh(final @NotNull Message message) {
+      processMetadataRefresh(() -> message.getPart(0));
       return null;
     }
 
@@ -181,11 +210,41 @@ public class GetOp {
       return Token.INVALID;
     }
 
+    private Object processGetResponseInvalidWithMetadataRefresh(final @NotNull Message message,
+        final @NotNull Connection connection) throws IOException, ClassNotFoundException {
+      updateClientEventWithVersionTag(() -> message.getPart(0).getObject(), connection);
+      processMetadataRefresh(() -> message.getPart(1));
+      return Token.INVALID;
+    }
+
     private Object processGetResponseTombstone(final @NotNull Message message,
         final @NotNull Connection connection)
         throws IOException, ClassNotFoundException {
       updateClientEventWithVersionTag(() -> message.getPart(0).getObject(), connection);
       return Token.TOMBSTONE;
+    }
+
+    private Object processGetResponseTombstoneWithMetadataRefresh(final @NotNull Message message,
+        final @NotNull Connection connection)
+        throws IOException, ClassNotFoundException {
+      updateClientEventWithVersionTag(() -> message.getPart(0).getObject(), connection);
+      processMetadataRefresh(() -> message.getPart(1));
+      return Token.TOMBSTONE;
+    }
+
+    private void processMetadataRefresh(final @NotNull PartSupplier partSupplier) {
+      if (singleHopEnabled) {
+        final byte[] bytesReceived = partSupplier.get().getSerializedForm();
+        final byte remoteVersion = bytesReceived[0];
+        final byte networkHopType = bytesReceived[1];
+
+        final ClientMetadataService cms = region.getCache().getClientMetadataService();
+        final byte localVersion =
+            cms.getMetaDataVersion(region, Operation.UPDATE, key, null, getCallbackArg());
+        if (remoteVersion != localVersion) {
+          cms.scheduleGetPRMetaData(region, false, networkHopType);
+        }
+      }
     }
 
     @Override
@@ -206,6 +265,12 @@ public class GetOp {
     @Override
     protected void endAttempt(final @NotNull ConnectionStats stats, final long start) {
       stats.endGet(start, hasTimedOut(), hasFailed());
+    }
+
+    @FunctionalInterface
+    interface PartSupplier {
+      @NotNull
+      Part get();
     }
 
     @FunctionalInterface
@@ -261,6 +326,11 @@ public class GetOp {
 
       final Message message = getMessage();
       message.addObjPart(callbackArg);
+    }
+
+    @Override
+    protected @NotNull Object getCallbackArg() {
+      return callbackArg;
     }
 
     @Override
@@ -386,6 +456,26 @@ public class GetOp {
         }
       }
       return object;
+    }
+
+    private boolean processMetadataRefresh(final Part part) {
+      byte version;
+      byte[] bytesReceived = part.getSerializedForm();
+      if (region != null
+          && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
+        ClientMetadataService cms;
+        try {
+          cms = region.getCache().getClientMetadataService();
+          version =
+              cms.getMetaDataVersion(region, Operation.UPDATE, key, null, callbackArg);
+        } catch (CacheClosedException e) {
+          return true;
+        }
+        if (bytesReceived[0] != version) {
+          cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
+        }
+      }
+      return false;
     }
 
     @Override

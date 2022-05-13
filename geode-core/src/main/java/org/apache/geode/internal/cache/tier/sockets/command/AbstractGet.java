@@ -17,8 +17,12 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_INVALID;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_INVALID_WITH_METADATA_REFRESH;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_NOT_FOUND;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_NOT_FOUND_WITH_METADATA_REFRESH;
 import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_TOMBSTONE;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_TOMBSTONE_WITH_METADATA_REFRESH;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_RESPONSE_WITH_METADATA_REFRESH;
 
 import java.io.IOException;
 
@@ -31,6 +35,7 @@ import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -225,8 +230,12 @@ public abstract class AbstractGet extends Get70 {
     response.setTransactionId(request.getTransactionId());
 
     // TODO jbarrett - PR metadata
-    processResponse(response, keyNotPresent, data, isObject, versionTag);
-    logger.info("XXX: Using the new GET_RESPONSE: {}", response.getMessageType());
+    if (region instanceof PartitionedRegion) {
+      processResponse(response, keyNotPresent, data, isObject, versionTag,
+          (PartitionedRegion) region);
+    } else {
+      processResponse(response, keyNotPresent, data, isObject, versionTag);
+    }
 
     serverConnection.getCache().getCancelCriterion().checkCancelInProgress(null);
     response.send(serverConnection);
@@ -245,6 +254,40 @@ public abstract class AbstractGet extends Get70 {
     start = DistributionStats.getStatTime();
     stats.incReadGetRequestTime(start - oldStart);
     return start;
+  }
+
+  private void processResponse(final @NotNull Message response, final boolean keyNotPresent,
+      final @Nullable Object data, final boolean isObject, final @Nullable VersionTag<?> versionTag,
+      final @NotNull PartitionedRegion region) {
+    final byte networkHopType = region.getNetworkHopType();
+    if (networkHopType == PartitionedRegion.NETWORK_HOP_NONE) {
+      processResponse(response, keyNotPresent, data, isObject, versionTag);
+      return;
+    }
+
+    if (keyNotPresent) {
+      if (null == versionTag) {
+        response.setMessageType(GET_RESPONSE_NOT_FOUND_WITH_METADATA_REFRESH);
+        response.setNumberOfParts(1);
+      } else {
+        response.setMessageType(GET_RESPONSE_TOMBSTONE_WITH_METADATA_REFRESH);
+        response.setNumberOfParts(2);
+        response.addObjPart(versionTag);
+      }
+    } else if (data == null && isObject) {
+      response.setMessageType(GET_RESPONSE_INVALID_WITH_METADATA_REFRESH);
+      response.setNumberOfParts(2);
+      response.addObjPart(versionTag);
+    } else {
+      response.setMessageType(GET_RESPONSE_WITH_METADATA_REFRESH);
+      response.setNumberOfParts(3);
+      response.addPartInAnyForm(data, isObject);
+      response.addObjPart(versionTag);
+    }
+
+    response.addBytesPart(new byte[] {region.getMetadataVersion(), networkHopType});
+
+    region.clearNetworkHopData();
   }
 
   protected void processResponse(final @NotNull Message response, final boolean keyNotPresent,
@@ -268,7 +311,6 @@ public abstract class AbstractGet extends Get70 {
       response.setMessageType(GET_RESPONSE);
       response.setNumberOfParts(2);
       response.addPartInAnyForm(data, isObject);
-      // TODO jbarrett - when is version tag options, original had flag.
       response.addObjPart(versionTag);
     }
   }

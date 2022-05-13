@@ -218,9 +218,6 @@ public class Message {
    * Sets and builds the {@link Part}s that are sent in the payload of the Message
    */
   public void setNumberOfParts(int numberOfParts) {
-    // hitesh: need to add security header here from server
-    // need to insure it is not chunked message
-    // should we look message type to avoid internal message like ping
     messageModified = true;
     currentPart = 0;
     this.numberOfParts = numberOfParts;

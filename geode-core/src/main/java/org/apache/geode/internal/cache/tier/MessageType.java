@@ -398,11 +398,19 @@ public class MessageType {
 
   public static final int GET_RESPONSE_TOMBSTONE = 116;
 
+  public static final int GET_RESPONSE_WITH_METADATA_REFRESH = 117;
+
+  public static final int GET_RESPONSE_NOT_FOUND_WITH_METADATA_REFRESH = 118;
+
+  public static final int GET_RESPONSE_INVALID_WITH_METADATA_REFRESH = 119;
+
+  public static final int GET_RESPONSE_TOMBSTONE_WITH_METADATA_REFRESH = 120;
+
 
   /**
    * Must be equal to last valid message id.
    */
-  private static final int LAST_VALID_MESSAGE_ID = GET_RESPONSE_TOMBSTONE;
+  private static final int LAST_VALID_MESSAGE_ID = GET_RESPONSE_TOMBSTONE_WITH_METADATA_REFRESH;
 
 
   public static boolean validate(int messageType) {
