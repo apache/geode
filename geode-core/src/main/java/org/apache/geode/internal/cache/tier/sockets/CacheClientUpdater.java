@@ -14,6 +14,14 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+;
+
+import static org.apache.geode.internal.cache.tier.MessageType.LOCAL_CREATE;
+import static org.apache.geode.internal.cache.tier.MessageType.LOCAL_UPDATE;
+import static org.apache.geode.internal.cache.tier.MessageType.REGISTER_DATASERIALIZERS;
+import static org.apache.geode.internal.cache.tier.MessageType.REGISTER_INSTANTIATORS;
+import static org.apache.geode.internal.cache.tier.MessageType.SERVER_TO_CLIENT_PING;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -648,7 +656,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       // object, it will be stored as a CachedDeserializable and
       // deserialized only when requested.
 
-      boolean isCreate = clientMessage.getMessageType() == MessageType.LOCAL_CREATE;
+      boolean isCreate = clientMessage.getMessageType() == LOCAL_CREATE;
 
       if (isDebugEnabled) {
         logger.debug(
@@ -697,7 +705,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         try {
           // Create an event and put the entry
           newEvent = EntryEventImpl.create(region,
-              clientMessage.getMessageType() == MessageType.LOCAL_CREATE ? Operation.CREATE
+              clientMessage.getMessageType() == LOCAL_CREATE ? Operation.CREATE
                   : Operation.UPDATE,
               key, null /* newValue */, callbackArgument /* callbackArg */, true /* originRemote */,
               eventId.getDistributedMember());
@@ -708,7 +716,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           region.basicBridgeClientUpdate(eventId.getDistributedMember(), key, objectValue,
               deltaBytes,
               isValueObject, callbackArgument,
-              clientMessage.getMessageType() == MessageType.LOCAL_CREATE,
+              clientMessage.getMessageType() == LOCAL_CREATE,
               qManager.getState().getProcessedMarker() || !isDurableClient, newEvent,
               eventId);
 
@@ -727,7 +735,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
           region.basicBridgeClientUpdate(eventId.getDistributedMember(), key, objectValue, null,
               isValueObject, callbackArgument,
-              clientMessage.getMessageType() == MessageType.LOCAL_CREATE,
+              clientMessage.getMessageType() == LOCAL_CREATE,
               qManager.getState().getProcessedMarker() || !isDurableClient, newEvent,
               eventId);
 
@@ -879,7 +887,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           logger.debug("Received message has CQ Event. Number of cqs interested in the event : {}",
               numCqsPart.getInt() / 2);
         }
-        processCqs(clientMessage, partCnt, numCqsPart.getInt(), regionOpType.getInt(),
+        processCqs(clientMessage, partCnt, numCqsPart.getInt(), MessageType.valueOf(regionOpType.getInt()),
             key, null);
         isOpCompleted = true;
       }
@@ -1273,14 +1281,14 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    * Processes message to invoke CQ listeners.
    */
   private int processCqs(Message clientMessage, int startMessagePart, int numCqParts,
-      int messageType, Object key, Object value) {
+      MessageType messageType, Object key, Object value) {
     return processCqs(clientMessage, startMessagePart, numCqParts, messageType, key, value, null,
         null);
   }
 
   private int processCqs(Message clientMessage, int startMessagePart, int numCqParts,
-      int messageType, Object key, Object value, byte[] delta, EventID eventId) {
-    HashMap cqs = new HashMap();
+      MessageType messageType, Object key, Object value, byte[] delta, EventID eventId) {
+    HashMap<String, MessageType> cqs = new HashMap<>();
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     for (int cqCnt = 0; cqCnt < numCqParts;) {
@@ -1294,10 +1302,12 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         Part cqNamePart = clientMessage.getPart(startMessagePart + cqCnt++);
         // Get CQ Op.
         Part cqOpPart = clientMessage.getPart(startMessagePart + cqCnt++);
-        cqs.put(cqNamePart.getString(), cqOpPart.getInt());
+        final String cqName = cqNamePart.getString();
+        final MessageType cqOp = MessageType.valueOf(cqOpPart.getInt());
+        cqs.put(cqName, cqOp);
 
         if (sb != null) {
-          sb.append(cqNamePart.getString()).append(" op=").append(cqOpPart.getInt()).append("  ");
+          sb.append(cqName).append(" op=").append(cqOp).append("  ");
         }
       } catch (Exception ignore) {
         logger.warn(
@@ -1606,7 +1616,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           }
 
           // If the message is a ping, ignore it
-          if (clientMessage.getMessageType() == MessageType.SERVER_TO_CLIENT_PING) {
+          if (clientMessage.getMessageType() == SERVER_TO_CLIENT_PING) {
             if (isDebugEnabled) {
               logger.debug("{}: Received ping", this);
             }
@@ -1614,8 +1624,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           }
 
           boolean isDeltaSent = false;
-          boolean isCreateOrUpdate = clientMessage.getMessageType() == MessageType.LOCAL_CREATE
-              || clientMessage.getMessageType() == MessageType.LOCAL_UPDATE;
+          boolean isCreateOrUpdate = clientMessage.getMessageType() == LOCAL_CREATE
+              || clientMessage.getMessageType() == LOCAL_UPDATE;
           if (isCreateOrUpdate) {
             isDeltaSent = (Boolean) clientMessage.getPart(2).getObject();
           }
@@ -1630,8 +1640,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           EventID eventId = (EventID) eid.getObject();
 
           // no need to verify if the instantiator msg is duplicate or not
-          if (clientMessage.getMessageType() != MessageType.REGISTER_INSTANTIATORS
-              && clientMessage.getMessageType() != MessageType.REGISTER_DATASERIALIZERS) {
+          if (clientMessage.getMessageType() != REGISTER_INSTANTIATORS
+              && clientMessage.getMessageType() != REGISTER_DATASERIALIZERS) {
             if (qManager.getState().verifyIfDuplicate(eventId,
                 !(isDurableClient || isDeltaSent))) {
               continue;
@@ -1647,49 +1657,49 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
           // Process the message
           switch (clientMessage.getMessageType()) {
-            case MessageType.LOCAL_CREATE:
-            case MessageType.LOCAL_UPDATE:
+            case LOCAL_CREATE:
+            case LOCAL_UPDATE:
               handleUpdate(clientMessage);
               break;
-            case MessageType.LOCAL_INVALIDATE:
+            case LOCAL_INVALIDATE:
               handleInvalidate(clientMessage);
               break;
-            case MessageType.LOCAL_DESTROY:
+            case LOCAL_DESTROY:
               handleDestroy(clientMessage);
               break;
-            case MessageType.CLIENT_RE_AUTHENTICATE:
+            case CLIENT_RE_AUTHENTICATE:
               handleAuthenticate();
               break;
-            case MessageType.LOCAL_DESTROY_REGION:
+            case LOCAL_DESTROY_REGION:
               handleDestroyRegion(clientMessage);
               break;
-            case MessageType.CLEAR_REGION:
+            case CLEAR_REGION:
               handleClearRegion(clientMessage);
               break;
-            case MessageType.REGISTER_INSTANTIATORS:
+            case REGISTER_INSTANTIATORS:
               handleRegisterInstantiator(clientMessage, eventId);
               break;
-            case MessageType.REGISTER_DATASERIALIZERS:
+            case REGISTER_DATASERIALIZERS:
               handleRegisterDataSerializer(clientMessage, eventId);
               break;
-            case MessageType.CLIENT_MARKER:
+            case CLIENT_MARKER:
               handleMarker(clientMessage);
               break;
-            case MessageType.INVALIDATE_REGION:
+            case INVALIDATE_REGION:
               handleInvalidateRegion(clientMessage);
               break;
-            case MessageType.CLIENT_REGISTER_INTEREST:
+            case CLIENT_REGISTER_INTEREST:
               handleRegisterInterest(clientMessage);
               break;
-            case MessageType.CLIENT_UNREGISTER_INTEREST:
+            case CLIENT_UNREGISTER_INTEREST:
               handleUnregisterInterest(clientMessage);
               break;
-            case MessageType.TOMBSTONE_OPERATION:
+            case TOMBSTONE_OPERATION:
               handleTombstoneOperation(clientMessage);
               break;
             default:
               logger.warn("{}: Received an unsupported message (type={})",
-                  new Object[] {this, MessageType.getString(clientMessage.getMessageType())});
+                  new Object[] {this, clientMessage.getMessageType()});
               break;
           }
 

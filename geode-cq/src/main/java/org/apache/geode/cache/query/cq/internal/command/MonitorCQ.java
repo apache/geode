@@ -55,7 +55,7 @@ public class MonitorCQ extends BaseCQCommand {
       // This should have been taken care at the client - remove?
       String err = String.format("%s: The MonitorCq operation is invalid.",
           serverConnection.getName());
-      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(), null,
+      sendCqResponse(MessageType.CQDATAERROR, err, clientMessage.getTransactionId(), null,
           serverConnection);
       return;
     }
@@ -69,7 +69,7 @@ public class MonitorCQ extends BaseCQCommand {
         String err =
             String.format("%s: A null Region name was passed for MonitorCq operation.",
                 serverConnection.getName());
-        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(),
+        sendCqResponse(MessageType.CQDATAERROR, err, clientMessage.getTransactionId(),
             null, serverConnection);
         return;
       }

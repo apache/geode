@@ -300,23 +300,22 @@ public class CqQueryVsdStats {
    *
    * @param cqEvent object the type of CQ event
    */
-  public void updateStats(Integer cqEvent) {
+  public void updateStats(MessageType cqEvent) {
     if (cqEvent == null) {
       return;
     }
     incNumEvents();
     switch (cqEvent) {
-      case MessageType.LOCAL_CREATE:
+      case LOCAL_CREATE:
         incNumInserts();
         return;
-      case MessageType.LOCAL_UPDATE:
+      case LOCAL_UPDATE:
         incNumUpdates();
         return;
-      case MessageType.LOCAL_DESTROY:
+      case LOCAL_DESTROY:
         incNumDeletes();
         return;
       default:
-        return;
     }
   }
 }

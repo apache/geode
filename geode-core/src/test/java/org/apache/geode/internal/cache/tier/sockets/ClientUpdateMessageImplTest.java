@@ -37,6 +37,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
@@ -53,11 +54,11 @@ public class ClientUpdateMessageImplTest implements Serializable {
   void beforeEach() {
     ClientUpdateMessageImpl.CqNameToOpHashMap cqs1 =
         new ClientUpdateMessageImpl.CqNameToOpHashMap(2);
-    cqs1.add("cqName1", 1);
-    cqs1.add("cqName2", 2);
+    cqs1.add("cqName1", MessageType.RESPONSE);
+    cqs1.add("cqName2", MessageType.EXCEPTION);
     clientCqs.put(client1, cqs1);
     CqNameToOpSingleEntry cqs2 =
-        new CqNameToOpSingleEntry("cqName3", 3);
+        new CqNameToOpSingleEntry("cqName3", MessageType.REQUESTDATAERROR);
     clientCqs.put(client2, cqs2);
   }
 
@@ -147,7 +148,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
     ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
 
     int numOfEvents = 4;
-    int[] cqEvents = new int[numOfEvents];
+    MessageType[] cqEvents = new MessageType[numOfEvents];
     String[] cqNames = new String[numOfEvents];
     ClientProxyMembershipID[] clients = new ClientProxyMembershipID[numOfEvents];
     prepareCqInfo(numOfEvents, cqEvents, cqNames, clients);
@@ -161,7 +162,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
         (ClientUpdateMessageImpl.CqNameToOpHashMap) clientUpdateMessageImpl.getClientCqs()
             .get(client1);
     for (int i = 0; i < 3; i++) {
-      assertThat(client1Cqs.get("cqName" + i)).isEqualTo(i);
+      assertThat(client1Cqs.get("cqName" + i)).isEqualTo(MessageType.valueOf(i));
     }
 
     assertThat(clientUpdateMessageImpl.getClientCqs().get(client2)).isInstanceOf(
@@ -172,10 +173,10 @@ public class ClientUpdateMessageImplTest implements Serializable {
     assertThat(client2Cqs.isEmpty()).isFalse();
   }
 
-  private void prepareCqInfo(int numOfEvents, int[] cqEvents, String[] cqNames,
+  private void prepareCqInfo(int numOfEvents, MessageType[] cqEvents, String[] cqNames,
       ClientProxyMembershipID[] clients) {
     for (int i = 0; i < numOfEvents; i++) {
-      cqEvents[i] = i;
+      cqEvents[i] = MessageType.valueOf(i);
       cqNames[i] = "cqName" + i;
       if (i < 3) {
         clients[i] = client1;
@@ -186,13 +187,13 @@ public class ClientUpdateMessageImplTest implements Serializable {
   }
 
   private void addClientCqConcurrently(ClientUpdateMessageImpl clientUpdateMessageImpl,
-      int numOfEvents, int[] cqEvents, String[] cqNames, ClientProxyMembershipID[] clients)
+      int numOfEvents, MessageType[] cqEvents, String[] cqNames, ClientProxyMembershipID[] clients)
       throws InterruptedException, java.util.concurrent.ExecutionException {
     List<Future<?>> futures = new ArrayList<>(numOfEvents);
     for (int i = 0; i < numOfEvents; i++) {
       ClientProxyMembershipID client = clients[i];
       String cqName = cqNames[i];
-      int cqEvent = cqEvents[i];
+      MessageType cqEvent = cqEvents[i];
       futures.add(executorService
           .submit(() -> clientUpdateMessageImpl.addClientCq(client, cqName, cqEvent)));
     }
@@ -214,7 +215,8 @@ public class ClientUpdateMessageImplTest implements Serializable {
   void addOrSetClientCqsCanAddCqsIfCqsMapNotNull() {
     ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
-    clientUpdateMessageImpl.addClientCq(clientProxyMembershipID, "cqName", 10);
+    clientUpdateMessageImpl.addClientCq(clientProxyMembershipID, "cqName",
+        MessageType.DESTROY_DATA_ERROR);
 
     clientUpdateMessageImpl.addOrSetClientCqs(client1, clientCqs);
 
@@ -224,8 +226,8 @@ public class ClientUpdateMessageImplTest implements Serializable {
     ClientUpdateMessageImpl.CqNameToOpHashMap client1Cqs =
         (ClientUpdateMessageImpl.CqNameToOpHashMap) clientUpdateMessageImpl.getClientCqs()
             .get(client1);
-    assertThat(client1Cqs.get("cqName1")).isEqualTo(1);
-    assertThat(client1Cqs.get("cqName2")).isEqualTo(2);
+    assertThat(client1Cqs.get("cqName1")).isEqualTo(MessageType.RESPONSE);
+    assertThat(client1Cqs.get("cqName2")).isEqualTo(MessageType.EXCEPTION);
 
     assertThat(clientUpdateMessageImpl.getClientCqs().get(clientProxyMembershipID)).isInstanceOf(
         CqNameToOpSingleEntry.class);
@@ -257,7 +259,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
     @Test
     void canAddWhenConstructedEmpty() {
       final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry();
-      cqNameToOpSingleEntry.add("something", 1);
+      cqNameToOpSingleEntry.add("something", MessageType.REQUEST);
       assertThat(cqNameToOpSingleEntry.isEmpty()).isFalse();
       assertThat(cqNameToOpSingleEntry.size()).isOne();
       assertThat(cqNameToOpSingleEntry.isFull()).isTrue();
@@ -276,23 +278,24 @@ public class ClientUpdateMessageImplTest implements Serializable {
 
     @Test
     void isEmptyIsFalseWhenConstructedWithName() {
-      assertThat(new CqNameToOpSingleEntry("something", 0).isEmpty()).isFalse();
+      assertThat(new CqNameToOpSingleEntry("something", MessageType.REQUEST).isEmpty()).isFalse();
     }
 
     @Test
     void sizeIsOneWhenConstructedWithName() {
-      assertThat(new CqNameToOpSingleEntry("something", 0).size()).isOne();
+      assertThat(new CqNameToOpSingleEntry("something", MessageType.REQUEST).size()).isOne();
     }
 
     @Test
     void isFullIsTrueWhenConstructedWithName() {
-      assertThat(new CqNameToOpSingleEntry("something", 0).isFull()).isTrue();
+      assertThat(new CqNameToOpSingleEntry("something", MessageType.REQUEST).isFull()).isTrue();
     }
 
     @Test
     void canAddWithSameNameWhenConstructedWithName() {
-      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry("something", 0);
-      cqNameToOpSingleEntry.add("something", 1);
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry =
+          new CqNameToOpSingleEntry("something", MessageType.REQUEST);
+      cqNameToOpSingleEntry.add("something", MessageType.RESPONSE);
       assertThat(cqNameToOpSingleEntry.isEmpty()).isFalse();
       assertThat(cqNameToOpSingleEntry.size()).isOne();
       assertThat(cqNameToOpSingleEntry.isFull()).isTrue();
@@ -301,14 +304,16 @@ public class ClientUpdateMessageImplTest implements Serializable {
 
     @Test
     void canNotAddWithDifferentNameWhenConstructedWithName() {
-      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry("something", 0);
-      assertThatThrownBy(() -> cqNameToOpSingleEntry.add("other", 1))
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry =
+          new CqNameToOpSingleEntry("something", MessageType.REQUEST);
+      assertThatThrownBy(() -> cqNameToOpSingleEntry.add("other", MessageType.RESPONSE))
           .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void canDeleteSameNameWhenConstructedWithName() {
-      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry("something", 0);
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry =
+          new CqNameToOpSingleEntry("something", MessageType.REQUEST);
       cqNameToOpSingleEntry.delete("something");
       assertThat(cqNameToOpSingleEntry.isEmpty()).isTrue();
       assertThat(cqNameToOpSingleEntry.size()).isZero();

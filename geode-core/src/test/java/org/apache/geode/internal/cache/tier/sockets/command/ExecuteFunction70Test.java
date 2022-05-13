@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
@@ -162,7 +161,7 @@ public class ExecuteFunction70Test {
     when(serverConnection.getHandshake()).thenReturn(mock(ServerSideHandshake.class));
     when(serverConnection.getReplyMessage()).thenReturn(replyMessage);
 
-    when(serverToClientFunctionResultSender65Factory.create(any(), anyInt(), any(), any(), any()))
+    when(serverToClientFunctionResultSender65Factory.create(any(), any(), any(), any(), any()))
         .thenReturn(
             serverToClientFunctionResultSender65);
 
@@ -178,7 +177,7 @@ public class ExecuteFunction70Test {
     executeFunction.cmdExecute(message, serverConnection, securityService, 0);
 
     verify(serverToClientFunctionResultSender65Factory).create(eq(functionResponseMessage),
-        anyInt(), any(), any(), any());
+        any(), any(), any(), any());
   }
 
   @Test
@@ -191,7 +190,7 @@ public class ExecuteFunction70Test {
 
     verify(securityService).authorize(ResourcePermissions.DATA_WRITE);
     verify(serverToClientFunctionResultSender65Factory).create(eq(functionResponseMessage),
-        anyInt(), any(), any(), any());
+        any(), any(), any(), any());
   }
 
   @Test
@@ -220,7 +219,7 @@ public class ExecuteFunction70Test {
     verify(authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
     verify(serverToClientFunctionResultSender65Factory).create(eq(functionResponseMessage),
-        anyInt(), any(), any(), any());
+        any(), any(), any(), any());
   }
 
   @Test

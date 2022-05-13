@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.VersionedDataSerializable;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -62,7 +63,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    *
    * @param cqInfo map of server side CQ Name to CQ event type.
    */
-  public void setLocalCqInfo(HashMap<Long, Integer> cqInfo) {
+  public void setLocalCqInfo(HashMap<Long, MessageType> cqInfo) {
     if (localFilterInfo == null) {
       localFilterInfo = new FilterInfo();
     }
@@ -100,7 +101,8 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @param member for which CQs are satisfied.
    * @param cqInfo map of server side CQ Name to CQ event type.
    */
-  public void setCqRoutingInfo(InternalDistributedMember member, HashMap<Long, Integer> cqInfo) {
+  public void setCqRoutingInfo(InternalDistributedMember member,
+      HashMap<Long, MessageType> cqInfo) {
     FilterInfo fInfo = new FilterInfo();
     fInfo.setCQs(cqInfo);
     serverFilterInfo.put(member, fInfo);
@@ -251,7 +253,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     private static final long serialVersionUID = 0;
 
     /** Map holding Cq filterID and CqEvent Type */
-    private HashMap<Long, Integer> cqs;
+    private HashMap<Long, MessageType> cqs;
 
     /**
      * serialized routing data. This is only deserialized when requested so that routing information
@@ -275,9 +277,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
         if (cqs == null) {
           cqs = new HashMap<>();
         }
-        for (Map.Entry<Long, Integer> entry : other.cqs.entrySet()) {
-          cqs.put(entry.getKey(), entry.getValue());
-        }
+        cqs.putAll(other.cqs);
       }
       if (other.interestedClients != null) {
         if (interestedClients == null) {
@@ -327,11 +327,11 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       } else {
         hdos.writeBoolean(true);
         InternalDataSerializer.writeArrayLength(cqs.size(), hdos);
-        for (final Map.Entry<Long, Integer> longIntegerEntry : cqs.entrySet()) {
+        for (final Map.Entry<Long, MessageType> longIntegerEntry : cqs.entrySet()) {
           // most cq IDs and all event types are small ints, so we use an optimized
           // write that serializes 7 bits at a time in a compact form
           InternalDataSerializer.writeUnsignedVL(longIntegerEntry.getKey(), hdos);
-          InternalDataSerializer.writeUnsignedVL(longIntegerEntry.getValue(), hdos);
+          InternalDataSerializer.writeUnsignedVL(longIntegerEntry.getValue().id, hdos);
         }
       }
       InternalDataSerializer.writeSetOfLongs(interestedClients, longIDs, hdos);
@@ -340,14 +340,14 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       DataSerializer.writeByteArray(myData, hdos.size(), out);
     }
 
-    public HashMap<Long, Integer> getCQs() {
+    public HashMap<Long, MessageType> getCQs() {
       if (cqs == null && myData != null) {
         deserialize();
       }
       return cqs;
     }
 
-    public void setCQs(HashMap<Long, Integer> cqs) {
+    public void setCQs(HashMap<Long, MessageType> cqs) {
       this.cqs = cqs;
     }
 
@@ -386,7 +386,8 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
           cqs = new HashMap<>(numEntries);
           for (int i = 0; i < numEntries; i++) {
             Long key = InternalDataSerializer.readUnsignedVL(dis);
-            Integer value = (int) InternalDataSerializer.readUnsignedVL(dis);
+            MessageType value =
+                MessageType.valueOf((int) InternalDataSerializer.readUnsignedVL(dis));
             cqs.put(key, value);
           }
         }

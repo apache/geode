@@ -28,6 +28,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -41,7 +42,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class ServerToClientFunctionResultSender65 extends ServerToClientFunctionResultSender {
   private static final Logger logger = LogService.getLogger();
 
-  public ServerToClientFunctionResultSender65(ChunkedMessage msg, int messageType,
+  public ServerToClientFunctionResultSender65(ChunkedMessage msg, MessageType messageType,
       ServerConnection sc, Function function, ExecuteFunctionOperationContext authzContext) {
     super(msg, messageType, sc, function, authzContext);
   }

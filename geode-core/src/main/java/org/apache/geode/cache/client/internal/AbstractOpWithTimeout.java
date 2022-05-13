@@ -17,6 +17,8 @@ package org.apache.geode.cache.client.internal;
 
 import java.net.Socket;
 
+import org.apache.geode.internal.cache.tier.MessageType;
+
 /**
  * Derivatives of this class can have an alternative socket timeout from the default connection
  * timeout.
@@ -25,7 +27,7 @@ public abstract class AbstractOpWithTimeout extends AbstractOp {
 
   private final int timeoutMs;
 
-  AbstractOpWithTimeout(int msgType, int msgParts, int timeoutMs) {
+  AbstractOpWithTimeout(MessageType msgType, int msgParts, int timeoutMs) {
     super(msgType, msgParts);
 
     this.timeoutMs = timeoutMs;

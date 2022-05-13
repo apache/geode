@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.tier.MessageType;
 
 public class CqNameToOpHashMapIntegrationTest {
   /**
@@ -57,13 +58,13 @@ public class CqNameToOpHashMapIntegrationTest {
         new ClientUpdateMessageImpl.CqNameToOpHashMap(numEntries);
 
     for (int i = 0; i < numEntries; ++i) {
-      originalCqNameToOpHashMap.add(String.valueOf(i), i);
-      modifiedCqNameToOpHashMap.add(String.valueOf(i), i);
+      originalCqNameToOpHashMap.add(String.valueOf(i), MessageType.REQUEST);
+      modifiedCqNameToOpHashMap.add(String.valueOf(i), MessageType.REQUEST);
     }
 
     CompletableFuture<Void> removeFromHashMapTask = CompletableFuture.runAsync(() -> {
       for (int i = 0; i < numEntries; ++i) {
-        modifiedCqNameToOpHashMap.remove(String.valueOf(i), i);
+        modifiedCqNameToOpHashMap.remove(String.valueOf(i), MessageType.REQUEST);
       }
     });
 
@@ -87,18 +88,15 @@ public class CqNameToOpHashMapIntegrationTest {
 
         for (int j = 0; j < cqNamesSize; j++) {
           String cqNamesKey = DataSerializer.readObject(inputStream);
-          Integer cqNamesValue = DataSerializer.<Integer>readObject(inputStream);
-          reconstructedCqNameToOpHashMap.add(cqNamesKey, cqNamesValue);
+          Integer cqNamesValue = DataSerializer.readObject(inputStream);
+          reconstructedCqNameToOpHashMap.add(cqNamesKey, MessageType.valueOf(cqNamesValue));
         }
 
         // The reconstructed map should have some subset of the entries in the cqNameToOpHashMap,
         // but the specific contents will depend on timing with the removeFromHashMap task.
-        MapDifference<String, Integer> reconstructedVersusOriginalHashMapDifference =
+        MapDifference<String, MessageType> reconstructedVersusOriginalHashMapDifference =
             Maps.difference(reconstructedCqNameToOpHashMap, originalCqNameToOpHashMap);
-        assertThat(reconstructedVersusOriginalHashMapDifference.entriesInCommon().size() >= 0)
-            .isTrue();
-        assertThat(reconstructedVersusOriginalHashMapDifference.entriesDiffering().size() == 0)
-            .isTrue();
+        assertThat(reconstructedVersusOriginalHashMapDifference.entriesDiffering()).hasSize(0);
       } catch (Exception ex) {
         throw new RuntimeException("Failed to serialize/deserialize the CqNameToOpHashMap", ex);
       }

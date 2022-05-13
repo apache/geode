@@ -40,6 +40,7 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
@@ -132,9 +133,9 @@ public class MissingCqService implements CqService {
   }
 
   @Override
-  public void dispatchCqListeners(HashMap<String, Integer> cqs, int messageType, Object key,
-      Object value,
-      byte[] delta, QueueManager qManager, EventID eventId) {
+  public void dispatchCqListeners(HashMap<String, MessageType> cqs, MessageType messageType,
+      Object key,
+      Object value, byte[] delta, QueueManager qManager, EventID eventId) {
     throw new IllegalStateException("CqService is not available.");
   }
 

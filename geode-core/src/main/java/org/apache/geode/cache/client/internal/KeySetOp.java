@@ -72,7 +72,7 @@ public class KeySetOp {
       final Exception[] exceptionRef = new Exception[1];
 
       keySetResponseMessage.readHeader();
-      final int msgType = keySetResponseMessage.getMessageType();
+      final MessageType msgType = keySetResponseMessage.getMessageType();
       if (msgType == MessageType.RESPONSE) {
         do {
           keySetResponseMessage.receiveChunk();
@@ -99,7 +99,7 @@ public class KeySetOp {
           throw new ServerOperationException(part.getString());
         } else {
           throw new InternalGemFireError(
-              "Unexpected message type " + MessageType.getString(msgType));
+              "Unexpected message type " + msgType);
         }
       }
 
@@ -111,7 +111,7 @@ public class KeySetOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.KEY_SET_DATA_ERROR;
     }
 

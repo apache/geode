@@ -16,6 +16,8 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_REGION_FUNCTION;
+import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_REGION_FUNCTION_ERROR;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -193,7 +195,7 @@ public class ExecuteRegionFunctionOp {
     ExecuteRegionFunctionOpImpl(String region, Function function,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc,
         final int timeoutMs) {
-      super(MessageType.EXECUTE_REGION_FUNCTION,
+      super(EXECUTE_REGION_FUNCTION,
           getMessagePartCount(serverRegionExecutor.getFilter().size(), 0), timeoutMs);
       executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
@@ -214,7 +216,7 @@ public class ExecuteRegionFunctionOp {
 
     // For testing only
     ExecuteRegionFunctionOpImpl() {
-      super(MessageType.EXECUTE_REGION_FUNCTION, 0, DEFAULT_CLIENT_FUNCTION_TIMEOUT);
+      super(EXECUTE_REGION_FUNCTION, 0, DEFAULT_CLIENT_FUNCTION_TIMEOUT);
       resultCollector = null;
       function = null;
       isReExecute = (byte) 0;
@@ -231,7 +233,7 @@ public class ExecuteRegionFunctionOp {
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
         boolean isHA, boolean optimizeForWrite,
         boolean calculateFnState, final int timeoutMs) {
-      super(MessageType.EXECUTE_REGION_FUNCTION,
+      super(EXECUTE_REGION_FUNCTION,
           getMessagePartCount(serverRegionExecutor.getFilter().size(), 0), timeoutMs);
 
       byte functionState = hasResult;
@@ -263,7 +265,7 @@ public class ExecuteRegionFunctionOp {
 
     ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionOpImpl op, byte isReExecute,
         Set<String> removedNodes) {
-      super(MessageType.EXECUTE_REGION_FUNCTION,
+      super(EXECUTE_REGION_FUNCTION,
           getMessagePartCount(op.executor.getFilter().size(), removedNodes.size()),
           op.getTimeoutMs());
       this.isReExecute = isReExecute;
@@ -305,7 +307,7 @@ public class ExecuteRegionFunctionOp {
       try {
         executeFunctionResponseMsg.readHeader();
         switch (executeFunctionResponseMsg.getMessageType()) {
-          case MessageType.EXECUTE_REGION_FUNCTION_RESULT:
+          case EXECUTE_REGION_FUNCTION_RESULT:
             final boolean isDebugEnabled = logger.isDebugEnabled();
             if (isDebugEnabled) {
               logger.debug(
@@ -412,7 +414,7 @@ public class ExecuteRegionFunctionOp {
             resultCollector.endResults();
             return null;
 
-          case MessageType.EXCEPTION:
+          case EXCEPTION:
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "ExecuteRegionFunctionOpImpl#processResponse: received message of type EXCEPTION. The number of parts are : {}",
@@ -438,7 +440,7 @@ public class ExecuteRegionFunctionOp {
               throw new ServerOperationException(s, (Throwable) obj);
             }
             break;
-          case MessageType.EXECUTE_REGION_FUNCTION_ERROR:
+          case EXECUTE_REGION_FUNCTION_ERROR:
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "ExecuteRegionFunctionOpImpl#processResponse: received message of type EXECUTE_REGION_FUNCTION_ERROR");
@@ -481,8 +483,8 @@ public class ExecuteRegionFunctionOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
-      return msgType == MessageType.EXECUTE_REGION_FUNCTION_ERROR;
+    protected boolean isErrorResponse(MessageType msgType) {
+      return msgType == EXECUTE_REGION_FUNCTION_ERROR;
     }
 
     @Override

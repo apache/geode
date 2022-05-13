@@ -41,19 +41,19 @@ public class CqServiceFactoryImpl implements CqServiceFactory {
 
   @Override
   public CqService create(InternalCache cache, CommandRegistry commandRegistry) {
-    commandRegistry.register(MessageType.EXECUTECQ_MSG_TYPE,
+    commandRegistry.register(MessageType.EXECUTECQ,
         singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    commandRegistry.register(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
+    commandRegistry.register(MessageType.EXECUTECQ_WITH_IR,
         singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    commandRegistry.register(MessageType.GETCQSTATS_MSG_TYPE,
+    commandRegistry.register(MessageType.GETCQSTATS,
         singletonMap(KnownVersion.OLDEST, GetCQStats.getCommand()));
-    commandRegistry.register(MessageType.MONITORCQ_MSG_TYPE,
+    commandRegistry.register(MessageType.MONITORCQ,
         singletonMap(KnownVersion.OLDEST, MonitorCQ.getCommand()));
-    commandRegistry.register(MessageType.STOPCQ_MSG_TYPE,
+    commandRegistry.register(MessageType.STOPCQ,
         singletonMap(KnownVersion.OLDEST, StopCQ.getCommand()));
-    commandRegistry.register(MessageType.CLOSECQ_MSG_TYPE,
+    commandRegistry.register(MessageType.CLOSECQ,
         singletonMap(KnownVersion.OLDEST, CloseCQ.getCommand()));
-    commandRegistry.register(MessageType.GETDURABLECQS_MSG_TYPE,
+    commandRegistry.register(MessageType.GETDURABLECQS,
         singletonMap(KnownVersion.OLDEST, GetDurableCQs.getCommand()));
 
     return new CqServiceImpl(cache);

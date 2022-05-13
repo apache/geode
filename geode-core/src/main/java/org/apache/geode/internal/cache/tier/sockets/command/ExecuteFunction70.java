@@ -476,7 +476,7 @@ public class ExecuteFunction70 extends BaseCommand {
   }
 
   interface ServerToClientFunctionResultSender65Factory {
-    ServerToClientFunctionResultSender65 create(ChunkedMessage msg, int messageType,
+    ServerToClientFunctionResultSender65 create(ChunkedMessage msg, MessageType messageType,
         ServerConnection sc, Function function, ExecuteFunctionOperationContext authzContext);
   }
 
@@ -488,7 +488,7 @@ public class ExecuteFunction70 extends BaseCommand {
   private static class DefaultServerToClientFunctionResultSender65Factory
       implements ServerToClientFunctionResultSender65Factory {
     @Override
-    public ServerToClientFunctionResultSender65 create(ChunkedMessage msg, int messageType,
+    public ServerToClientFunctionResultSender65 create(ChunkedMessage msg, MessageType messageType,
         ServerConnection sc, Function function, ExecuteFunctionOperationContext authzContext) {
       return new ServerToClientFunctionResultSender65(msg, messageType, sc, function, authzContext);
     }

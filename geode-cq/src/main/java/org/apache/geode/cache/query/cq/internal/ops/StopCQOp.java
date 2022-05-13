@@ -47,7 +47,7 @@ public class StopCQOp {
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     public StopCQOpImpl(String cqName) {
-      super(MessageType.STOPCQ_MSG_TYPE, 1);
+      super(MessageType.STOPCQ, 1);
       getMessage().addStringPart(cqName);
     }
 

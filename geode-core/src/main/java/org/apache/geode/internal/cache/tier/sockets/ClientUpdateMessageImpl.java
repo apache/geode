@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -446,7 +448,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       if (clientHasCq) {
         if (message.getMessageType() == MessageType.LOCAL_INVALIDATE) {
           // in case of invalidate, set the region operation type.
-          message.addIntPart(isCreate() ? MessageType.LOCAL_CREATE : MessageType.LOCAL_UPDATE);
+          message
+              .addIntPart(isCreate() ? MessageType.LOCAL_CREATE.id : MessageType.LOCAL_UPDATE.id);
         }
         addCqsToMessage(proxyId, message);
       }
@@ -472,7 +475,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         if (isInvalidate()) {
           // This is to take care when invalidate message is getting sent
           // to the Client. See the code for create/update operation.
-          message.addIntPart(MessageType.LOCAL_INVALIDATE);
+          message.addIntPart(MessageType.LOCAL_INVALIDATE.id);
         }
         addCqsToMessage(proxyId, message);
       }
@@ -598,7 +601,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
   }
 
-  synchronized void addClientCq(ClientProxyMembershipID clientId, String cqName, Integer cqEvent) {
+  synchronized void addClientCq(ClientProxyMembershipID clientId, String cqName,
+      MessageType cqEvent) {
     if (_clientCqs == null) {
       _clientCqs = new ClientCqConcurrentMap();
       _hasCqs = true;
@@ -974,15 +978,16 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
      */
     boolean isFull();
 
-    void addToMessage(Message message);
+    void addToMessage(@NotNull Message message);
 
     int size();
 
+    @NotNull
     String[] getNames();
 
-    void add(String name, Integer op);
+    void add(@NotNull String name, @NotNull MessageType op);
 
-    void delete(String name);
+    void delete(@NotNull String name);
   }
 
   /**
@@ -991,7 +996,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    */
   public static class CqNameToOpSingleEntry implements CqNameToOp {
     private String[] name;
-    private int op;
+    private MessageType op;
 
     private static final String[] EMPTY_NAMES_ARRAY = new String[0];
 
@@ -999,13 +1004,11 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
      * Construct empty tuple.
      */
     CqNameToOpSingleEntry() {
-      name = EMPTY_NAMES_ARRAY;
-      this.op = 0;
+      setEmpty();
     }
 
-    CqNameToOpSingleEntry(final @NotNull String name, final int op) {
-      this.name = new String[] {name};
-      this.op = op;
+    CqNameToOpSingleEntry(final @NotNull String name, final @NotNull MessageType op) {
+      setOne(name, op);
     }
 
     @Override
@@ -1016,7 +1019,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       InternalDataSerializer.writeArrayLength(size, out);
       if (size > 0) {
         DataSerializer.writeObject(name[0], out);
-        DataSerializer.writeObject(op, out);
+        DataSerializer.writeObject(op.id, out);
       }
     }
 
@@ -1026,10 +1029,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
 
     @Override
-    public void addToMessage(Message message) {
+    public void addToMessage(@NotNull Message message) {
       if (!isEmpty()) {
         message.addStringPart(name[0], true);
-        message.addIntPart(op);
+        message.addIntPart(op.id);
       }
     }
 
@@ -1039,15 +1042,14 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
 
     @Override
-    public String[] getNames() {
+    public @NotNull String @NotNull [] getNames() {
       return name;
     }
 
     @Override
-    public void add(final @NotNull String name, final @NotNull Integer op) {
+    public void add(final @NotNull String name, final @NotNull MessageType op) {
       if (isEmpty()) {
-        this.name = new String[] {name};
-        this.op = op;
+        setOne(name, op);
       } else if (this.name[0].equals(name)) {
         this.op = op;
       } else {
@@ -1056,9 +1058,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
 
     @Override
-    public void delete(String name) {
+    public void delete(@NotNull String name) {
       if (!isEmpty() && name.equals(this.name[0])) {
-        this.name = EMPTY_NAMES_ARRAY;
+        setEmpty();
       }
     }
 
@@ -1066,13 +1068,24 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public boolean isFull() {
       return !isEmpty();
     }
+
+    private void setEmpty() {
+      name = EMPTY_NAMES_ARRAY;
+      this.op = null;
+    }
+
+    private void setOne(final @NotNull String name, final @NotNull MessageType op) {
+      this.name = new String[] {name};
+      this.op = op;
+    }
+
   }
 
   /**
    * Basically just a ConcurrentHashMap<String, Integer> but limits itself to the CqNameToOp
    * interface.
    */
-  public static class CqNameToOpHashMap extends ConcurrentHashMap<String, Integer>
+  public static class CqNameToOpHashMap extends ConcurrentHashMap<String, MessageType>
       implements CqNameToOp {
     public CqNameToOpHashMap(int initialCapacity) {
       super(initialCapacity, 1.0f);
@@ -1087,35 +1100,41 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
       out.writeByte(DSCODE.HASH_MAP.toByte());
-      DataSerializer.writeConcurrentHashMap(this, out);
+      Collection<Entry<String, MessageType>> entrySnapshot = new ArrayList<>(this.entrySet());
+      InternalDataSerializer.writeArrayLength(entrySnapshot.size(), out);
+      for (Map.Entry<String, MessageType> entry : entrySnapshot) {
+        DataSerializer.writeObject(entry.getKey(), out);
+        DataSerializer.writeObject(entry.getValue().id, out);
+      }
+
     }
 
     @Override
-    public String[] getNames() {
+    public @NotNull String @NotNull [] getNames() {
       String[] cqNames = new String[size()];
       cqNames = keySet().toArray(cqNames);
       return cqNames;
     }
 
     @Override
-    public void addToMessage(Message message) {
-      for (Entry<String, Integer> entry : entrySet()) {
+    public void addToMessage(@NotNull Message message) {
+      for (Entry<String, MessageType> entry : entrySet()) {
         // Add CQ Name.
         String cq = entry.getKey();
         message.addStringPart(cq, true);
         // Add CQ Op.
-        int op = entry.getValue();
-        message.addIntPart(op);
+        MessageType op = entry.getValue();
+        message.addIntPart(op.id);
       }
     }
 
     @Override
-    public void add(String name, Integer op) {
+    public void add(@NotNull String name, @NotNull MessageType op) {
       put(name, op);
     }
 
     @Override
-    public void delete(String name) {
+    public void delete(@NotNull String name) {
       remove(name);
     }
 

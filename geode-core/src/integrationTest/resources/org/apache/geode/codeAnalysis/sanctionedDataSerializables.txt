@@ -1742,7 +1742,7 @@ fromData,175
 toData,198
 
 org/apache/geode/internal/cache/tier/sockets/HAEventWrapper,2
-fromData,460
+fromData,469
 toData,106
 
 org/apache/geode/internal/cache/tier/sockets/InterestResultPolicyImpl,2

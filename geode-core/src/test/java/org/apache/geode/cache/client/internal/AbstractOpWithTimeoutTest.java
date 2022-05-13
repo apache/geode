@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.MessageType.REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -27,11 +28,13 @@ import java.net.Socket;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.cache.tier.MessageType;
+
 
 public class AbstractOpWithTimeoutTest {
 
   private abstract static class AbstractTestOpWithTimeout extends AbstractOpWithTimeout {
-    public AbstractTestOpWithTimeout(int msgType, int msgParts, int timeoutMs) {
+    public AbstractTestOpWithTimeout(MessageType msgType, int msgParts, int timeoutMs) {
       super(msgType, msgParts, timeoutMs);
     }
 
@@ -47,7 +50,7 @@ public class AbstractOpWithTimeoutTest {
   @Test
   public void attemptWillSetAndResetSoTimeout() throws Exception {
     final AbstractOpWithTimeout mockOp = mock(AbstractTestOpWithTimeout.class,
-        withSettings().useConstructor(0, 0, 123).defaultAnswer(CALLS_REAL_METHODS));
+        withSettings().useConstructor(REQUEST, 0, 123).defaultAnswer(CALLS_REAL_METHODS));
 
     final Socket socket = mock(Socket.class);
     when(socket.getSoTimeout()).thenReturn(456);
@@ -66,7 +69,7 @@ public class AbstractOpWithTimeoutTest {
   @Test
   public void attemptWontSetAndResetSoTimeout() throws Exception {
     final AbstractOpWithTimeout mockOp = mock(AbstractTestOpWithTimeout.class,
-        withSettings().useConstructor(0, 0, 123).defaultAnswer(CALLS_REAL_METHODS));
+        withSettings().useConstructor(REQUEST, 0, 123).defaultAnswer(CALLS_REAL_METHODS));
 
     final Socket socket = mock(Socket.class);
     when(socket.getSoTimeout()).thenReturn(123);
@@ -83,7 +86,7 @@ public class AbstractOpWithTimeoutTest {
   @Test
   public void getTimeoutMs() {
     final AbstractOpWithTimeout mockOp = mock(AbstractOpWithTimeout.class,
-        withSettings().useConstructor(0, 0, 123).defaultAnswer(CALLS_REAL_METHODS));
+        withSettings().useConstructor(REQUEST, 0, 123).defaultAnswer(CALLS_REAL_METHODS));
 
     assertThat(mockOp.getTimeoutMs()).isEqualTo(123);
   }

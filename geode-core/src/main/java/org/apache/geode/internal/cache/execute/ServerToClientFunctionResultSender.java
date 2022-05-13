@@ -29,6 +29,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -38,11 +39,11 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class ServerToClientFunctionResultSender implements ResultSender {
   private static final Logger logger = LogService.getLogger();
 
-  protected ChunkedMessage msg = null;
+  protected ChunkedMessage msg;
 
-  protected ServerConnection sc = null;
+  protected ServerConnection sc;
 
-  protected int messageType = -1;
+  protected MessageType messageType;
 
   protected volatile boolean headerSent = false;
 
@@ -68,7 +69,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     return lastResultReceived;
   }
 
-  public ServerToClientFunctionResultSender(ChunkedMessage msg, int messageType,
+  public ServerToClientFunctionResultSender(ChunkedMessage msg, MessageType messageType,
       ServerConnection sc, Function function, ExecuteFunctionOperationContext authzContext) {
     this.msg = msg;
     this.msg.setVersion(sc.getClientVersion());

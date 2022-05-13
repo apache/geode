@@ -64,7 +64,7 @@ public class GetDurableCQs extends BaseCQCommand {
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received {} request from {}", serverConnection.getName(),
-          MessageType.getString(clientMessage.getMessageType()),
+          clientMessage.getMessageType(),
           serverConnection.getSocketString());
     }
 

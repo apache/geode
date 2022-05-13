@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+;
+
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
@@ -75,7 +77,7 @@ public class ServerResponseMatrix {
   }
 
   public static boolean checkForValidStateAfterNotification(LocalRegion region, Object key,
-      int operation) {
+      MessageType operation) {
 
     // 4 nonexistent/destroyed , valid , invalid,local-invalid ,
     // 4 create , update , invalidate, destroy
@@ -107,16 +109,16 @@ public class ServerResponseMatrix {
 
     int notificationState = -1;
     switch (operation) {
-      case MessageType.LOCAL_CREATE:
+      case LOCAL_CREATE:
         notificationState = 0;
         break;
-      case MessageType.LOCAL_UPDATE:
+      case LOCAL_UPDATE:
         notificationState = 1;
         break;
-      case MessageType.LOCAL_INVALIDATE:
+      case LOCAL_INVALIDATE:
         notificationState = 2;
         break;
-      case MessageType.LOCAL_DESTROY:
+      case LOCAL_DESTROY:
         notificationState = 3;
         break;
     }

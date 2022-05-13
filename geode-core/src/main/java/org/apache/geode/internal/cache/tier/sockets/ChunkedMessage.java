@@ -190,7 +190,7 @@ public class ChunkedMessage extends Message {
         // Set the header and payload fields only after receiving all the
         // socket data, providing better message consistency in the face
         // of exceptional conditions (e.g. IO problems, timeouts etc.)
-        messageType = type;
+        messageType = MessageType.valueOf(type);
         numberOfParts = numParts; // Already set in setPayloadFields via setNumberOfParts
         transactionId = txid;
       }
@@ -338,7 +338,7 @@ public class ChunkedMessage extends Message {
   protected void getDSCODEsForWrite() {
     final ByteBuffer cb = getCommBuffer();
     cb.clear();
-    cb.putInt(messageType);
+    cb.putInt(messageType.id);
     cb.putInt(numberOfParts);
 
     cb.putInt(transactionId);

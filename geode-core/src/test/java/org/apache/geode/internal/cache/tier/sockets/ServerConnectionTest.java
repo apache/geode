@@ -55,6 +55,7 @@ import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
@@ -195,6 +196,7 @@ public class ServerConnectionTest {
   @Test
   public void bindSubject() {
     ServerConnection connection = spy(serverConnection);
+    connection.getRequestMessage().setMessageType(MessageType.REQUEST);
     initializeClientUserAuth(connection);
 
     when(acceptor.getCacheClientNotifier()).thenReturn(notifier);
