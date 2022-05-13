@@ -21,7 +21,7 @@ limitations under the License.
 
 The <%=vars.product_name_long%> cluster configuration service persists cluster configurations created by `gfsh` commands to the locators in a cluster and distributes the configurations to members of the cluster.
 
-## Why Use the Cluster Configuration Service
+## <a id="why-use-the-cluster-config-svc" class="no-quick-link"></a>Why Use the Cluster Configuration Service
 
 We highly recommend that you use the `gfsh` command line 
 and the cluster configuration service as the primary mechanism
@@ -38,7 +38,7 @@ You can use the cluster configuration service to:
 -   Start additional servers without having to configure each server separately.
 -   Configure some servers to host certain regions and other servers to host different regions, and configure all servers to host a set of common regions.
 
-## Using the Cluster Configuration Service
+## <a id="using-the-cluster-config-svc" class="no-quick-link"></a>Using the Cluster Configuration Service
 
 To use the cluster configuration service in <%=vars.product_name%>, you must use dedicated, standalone locators in your deployment. You cannot use the cluster configuration service with co-located locators (locators running in another process such as a server) or in multicast environments.
 
@@ -54,7 +54,7 @@ command after starting up a locator.
 
 Subsequently, any servers that you start with `gfsh` that have `--use-cluster-configuration` set to `true` will pick up the cluster configuration from the locator as well as any appropriate group-level configurations (for member groups they belong to). To disable the cluster configuration service on a server, you must start the server with the `--use-cluster-configuration` parameter set to `false`. By default, the parameter is set to true.
 
-## How the Cluster Configuration Service Works
+## <a id="how-the-cluster-config-svc-works" class="no-quick-link"></a>How the Cluster Configuration Service Works
 
 When you use `gfsh` commands to create <%=vars.product_name_long%> regions, disk-stores, and other objects, the cluster configuration service saves the configurations on each locator in the cluster. If you specify a group when issuing these commands, a separate configuration is saved containing only configurations that apply to the group.
 
@@ -62,7 +62,7 @@ When you use `gfsh` to start new <%=vars.product_name_long%> servers, the locato
 
 <img src="../../images_svg/cluster_config_overview.svg" id="concept_r22_hyw_bl__image_jjc_vhb_y4" class="image" />
 
-## gfsh Commands that Create Cluster Configurations
+## <a id="gfsh-commands-that-create-cluster-configs" class="no-quick-link"></a>gfsh Commands that Create Cluster Configurations
 
 The following `gfsh` commands cause the configuration to be written to all locators in the cluster (the locators write the configuration to disk):
 
