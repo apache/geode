@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.TestOnly;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
@@ -1161,11 +1162,19 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
   @Override
   public void close() {
-    isClosed = true;
-    persistentMemberManager.removeRevocationListener(profileChangeListener);
-    cacheDistributionAdvisor.removeProfileChangeListener(profileChangeListener);
-    persistentStateListeners = Collections.emptySet();
-    releaseTieLock();
+    try {
+      synchronized (this) {
+        isClosed = true;
+        persistentMemberManager.removeRevocationListener(profileChangeListener);
+        cacheDistributionAdvisor.removeProfileChangeListener(profileChangeListener);
+        persistentStateListeners = Collections.emptySet();
+        releaseTieLock();
+      }
+    } catch (CancelException e) {
+      logger.debug("persistence advisor close abridged due to shutdown", e);
+    } catch (Exception ex) {
+      logger.warn("persistence advisor close has failed.", ex);
+    }
   }
 
   /**
