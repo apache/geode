@@ -177,17 +177,17 @@ tests:
   RAM: '8'
   name: windows-acceptance
 - ARTIFACT_SLUG: windows-gfshdistributedtest
-  CPUS: '6'
+  CPUS: '16'
   DISK: '200GB'
-  DUNIT_PARALLEL_FORKS: '0'
+  DUNIT_PARALLEL_FORKS: '8'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: distributedTest
   GRADLE_TASK_OPTIONS: -PtestCategory=org.apache.geode.test.junit.categories.GfshTest
   MAX_IN_FLIGHT: 3
-  PARALLEL_DUNIT: 'false'
-  PARALLEL_GRADLE: 'false'
+  PARALLEL_DUNIT: 'true'
+  PARALLEL_GRADLE: 'true'
   PLATFORM: windows
-  RAM: '12'
+  RAM: '32'
   name: windows-gfsh-distributed
 - ARTIFACT_SLUG: windows-integrationtestfiles
   CPUS: '6'
