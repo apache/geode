@@ -56,8 +56,7 @@ public class GetDefaultDiskStoreNameDistributedTest extends DistributedTestCase 
 
   private String createDefaultDiskStoreName(final int hostIndex, final int vmIndex,
       final String methodName) {
-    return "DiskStore-" + hostIndex + "-" + vmIndex + "-" + getClass().getCanonicalName() + "."
-        + methodName;
+    return "DiskStore-" + hostIndex + '-' + vmIndex + '-' + methodName;
   }
 
   private String getDefaultDiskStoreName() {

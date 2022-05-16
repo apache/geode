@@ -40,10 +40,10 @@ public class RollingUpgradeOplogMagicSeqBackwardCompactibility
 
 
     final Host host = Host.getHost(0);
-    VM server1 = host.getVM(oldVersion, 0);
-    VM server2 = host.getVM(oldVersion, 1);
-    VM server3 = host.getVM(oldVersion, 2);
-    VM locator = host.getVM(oldVersion, 3);
+    VM server1 = host.getVM(sourceConfiguration, 0);
+    VM server2 = host.getVM(sourceConfiguration, 1);
+    VM server3 = host.getVM(sourceConfiguration, 2);
+    VM locator = host.getVM(sourceConfiguration, 3);
 
     String regionName = "aRegion";
     RegionShortcut shortcut = RegionShortcut.REPLICATE_PERSISTENT;

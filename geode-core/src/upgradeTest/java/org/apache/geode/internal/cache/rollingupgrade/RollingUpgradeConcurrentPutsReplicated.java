@@ -26,7 +26,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
@@ -41,10 +40,9 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
    */
   @Test
   public void testConcurrentPutsReplicated() {
-    Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 1);
-    VM server1 = host.getVM(oldVersion, 2);
-    VM server2 = host.getVM(oldVersion, 3);
+    VM locator = VM.getVM(sourceConfiguration, 1);
+    VM server1 = VM.getVM(sourceConfiguration, 2);
+    VM server2 = VM.getVM(sourceConfiguration, 3);
 
     final String objectType = "strings";
     final String regionName = "aRegion";

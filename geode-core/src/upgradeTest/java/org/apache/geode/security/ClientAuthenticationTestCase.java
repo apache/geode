@@ -67,6 +67,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
 
 public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTestCase {
 
@@ -84,6 +85,10 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
   private static final String[] clientIgnoredExceptions =
       {AuthenticationRequiredException.class.getName(),
           AuthenticationFailedException.class.getName(), SSLHandshakeException.class.getName()};
+
+  public ClientAuthenticationTestCase(VmConfiguration clientVmConfiguration) {
+    this.clientVmConfiguration = clientVmConfiguration;
+  }
 
 
   public enum Color {
@@ -115,7 +120,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     }
   }
 
-  public String clientVersion = VersionManager.CURRENT_VERSION;
+  protected final VmConfiguration clientVmConfiguration;
+
 
   @Override
   public final void postSetUp() throws Exception {
@@ -124,13 +130,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     server2 = host.getVM(VersionManager.CURRENT_VERSION, 1);
     server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
     server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
-    if (VersionManager.isCurrentVersion(clientVersion)) {
-      client1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-      client2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
-    } else {
-      client1 = host.getVM(clientVersion, 2);
-      client2 = host.getVM(clientVersion, 3);
-    }
+    client1 = host.getVM(clientVmConfiguration, 2);
+    client2 = host.getVM(clientVmConfiguration, 3);
 
     addIgnoredException("Connection refused: connect");
 

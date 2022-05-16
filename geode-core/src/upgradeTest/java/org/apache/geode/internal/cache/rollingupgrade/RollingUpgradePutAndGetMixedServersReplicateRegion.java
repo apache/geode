@@ -22,7 +22,7 @@ public class RollingUpgradePutAndGetMixedServersReplicateRegion
 
   @Test
   public void testPutAndGetMixedServersReplicateRegion() throws Exception {
-    doTestPutAndGetMixedServers("dataserializable", false, oldVersion);
+    doTestPutAndGetMixedServers("dataserializable", false, sourceConfiguration);
   }
 
 }

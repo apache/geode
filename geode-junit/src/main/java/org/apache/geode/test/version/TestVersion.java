@@ -41,6 +41,10 @@ public class TestVersion implements Comparable<TestVersion>, Serializable {
     release = Integer.parseInt(split[2]);
   }
 
+  public String majorMinor() {
+    return "" + major + '.' + minor;
+  }
+
   /*
    * Perform a comparison of the major, minor and patch versions of the two version strings.
    * The version strings should be in dot notation.
@@ -53,7 +57,6 @@ public class TestVersion implements Comparable<TestVersion>, Serializable {
   public String toString() {
     return "" + major + "." + minor + "." + release;
   }
-
 
   @Override
   public boolean equals(Object o) {

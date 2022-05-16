@@ -15,11 +15,16 @@
 package org.apache.geode.cache.lucene;
 
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,7 +37,8 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
@@ -40,9 +46,9 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit
     extends LuceneSearchWithRollingUpgradeTestBase {
 
 
-  @Parameterized.Parameters(name = "from_v{0}, with reindex={1}, singleHopEnabled={2}")
+  @Parameterized.Parameters(name = "from {0}, with reindex={1}, singleHopEnabled={2}")
   public static Collection<Object[]> data() {
-    Collection<String> luceneVersions = getLuceneVersions();
+    Collection<VmConfiguration> luceneVersions = getLuceneVersions();
     Collection<Object[]> rval = new ArrayList<>();
     luceneVersions.forEach(v -> {
       rval.add(new Object[] {v, true, true});
@@ -51,26 +57,29 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit
     return rval;
   }
 
-  private static Collection<String> getLuceneVersions() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+  private static Collection<VmConfiguration> getLuceneVersions() {
+    Predicate<TestVersion> isLuceneCompatible = geodeVersion ->
     // Lucene Compatibility checks start with Apache Geode v1.2.0
     // Removing the versions older than v1.2.0
-    result.removeIf(s -> TestVersion.compare(s, "1.2.0") < 0);
+    geodeVersion.greaterThanOrEqualTo(TestVersion.valueOf("1.2.0"))
+        // The changes relating to GEODE-7258 is not applied on 1.10.0, skipping rolling
+        // upgrade for 1.10.0. The change was verified by rolling from develop to develop.
+        && !geodeVersion.equals(TestVersion.valueOf("1.10.0"));
 
-    // The changes relating to GEODE-7258 is not applied on 1.10.0, skipping rolling
-    // upgrade for 1.10.0. The change was verified by rolling from develop to develop.
-    result.removeIf(s -> TestVersion.compare(s, "1.10.0") == 0);
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
-    }
-    return result;
+    List<VmConfiguration> luceneCompatibleConfigurations = VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(isLuceneCompatible))
+        .collect(toList());
+    assertThat(luceneCompatibleConfigurations)
+        .as("configurations compatible with Lucene")
+        .isNotEmpty();
+
+    System.out.println("running against these configurations: " + luceneCompatibleConfigurations);
+    return luceneCompatibleConfigurations;
   }
 
-  // the old version of Geode we're testing against
+  // the Java version and Geode version we're upgrading from
   @Parameterized.Parameter()
-  public String oldVersion;
+  public VmConfiguration sourceConfiguration;
 
   @Parameterized.Parameter(1)
   public Boolean reindex;
@@ -81,14 +90,14 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit
   // We start an "old" locator and old servers
   // We roll the locator
   // Now we roll all the servers from old to new
-  void executeLuceneQueryWithServerRollOvers(String regionType, String startingVersion)
+  void executeLuceneQueryWithServerRollOvers(String regionType,
+      VmConfiguration startingConfiguration)
       throws Exception {
     final Host host = Host.getHost(0);
-    VM server1 = host.getVM(startingVersion, 0);
-    VM server2 = host.getVM(startingVersion, 1);
-    VM server3 = host.getVM(startingVersion, 2);
-    VM locator = host.getVM(startingVersion, 3);
-
+    VM server1 = host.getVM(startingConfiguration, 0);
+    VM server2 = host.getVM(startingConfiguration, 1);
+    VM server3 = host.getVM(startingConfiguration, 2);
+    VM locator = host.getVM(startingConfiguration, 3);
 
     String regionName = "aRegion";
     String shortcutName = null;
