@@ -60,25 +60,25 @@ import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @Category({ClientServerTest.class, BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
   @Parameterized.Parameters
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
-    }
-    return result;
+  public static Collection<VmConfiguration> data() {
+    List<VmConfiguration> upgradeConfigurations = VmConfigurations.upgrades();
+    assertThat(upgradeConfigurations)
+        .as("configurations to upgrade from")
+        .isNotEmpty();
+    System.out.println("upgrading from configurations: " + upgradeConfigurations);
+    return upgradeConfigurations;
   }
 
-  public ClientServerMiscBCDUnitTest(String version) {
-    super();
-    testVersion = version;
+  public ClientServerMiscBCDUnitTest(VmConfiguration clientVmConfiguration) {
+    super(clientVmConfiguration);
   }
 
   @Override
@@ -100,7 +100,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
   @Test
   public void testClientProtocolVersion() {
     int serverPort = initServerCache(true);
-    VM client1 = Host.getHost(0).getVM(testVersion, 1);
+    VM client1 = Host.getHost(0).getVM(clientVmConfiguration, 1);
     String hostname = NetworkUtils.getServerHostName();
     short ordinal = client1.invoke("create client1 cache", () -> {
       createClientCache(hostname, serverPort);
@@ -134,8 +134,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
   public void testSubscriptionWithCurrentServerAndOldClients() throws Exception {
     // start server first
     int serverPort = initServerCache(true);
-    VM client1 = Host.getHost(0).getVM(testVersion, 1);
-    VM client2 = Host.getHost(0).getVM(testVersion, 3);
+    VM client1 = Host.getHost(0).getVM(clientVmConfiguration, 1);
+    VM client2 = Host.getHost(0).getVM(clientVmConfiguration, 3);
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client1.invoke("create client1 cache", () -> {
       createClientCache(hostname, serverPort);
@@ -165,26 +165,26 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
   @Test
   public void testSubscriptionWithMixedServersAndNewPeerFeed() throws Exception {
-    doTestSubscriptionWithMixedServersAndPeerFeed(VersionManager.CURRENT_VERSION, true);
+    doTestSubscriptionWithMixedServersAndPeerFeed(VmConfiguration.current(), true);
   }
 
   @Test
   public void testSubscriptionWithMixedServersAndOldPeerFeed() throws Exception {
-    doTestSubscriptionWithMixedServersAndPeerFeed(testVersion, true);
+    doTestSubscriptionWithMixedServersAndPeerFeed(clientVmConfiguration, true);
   }
 
   @Test
   public void testSubscriptionWithMixedServersAndOldClientFeed() throws Exception {
-    doTestSubscriptionWithMixedServersAndPeerFeed(testVersion, false);
+    doTestSubscriptionWithMixedServersAndPeerFeed(clientVmConfiguration, false);
   }
 
-  private void doTestSubscriptionWithMixedServersAndPeerFeed(String version,
+  private void doTestSubscriptionWithMixedServersAndPeerFeed(VmConfiguration feederVmConfiguration,
       boolean usePeerForFeed) {
-    server1 = Host.getHost(0).getVM(testVersion, 2);
+    server1 = Host.getHost(0).getVM(clientVmConfiguration, 2);
     server2 = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 3);
     VM server3 = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 4);
-    VM interestClient = Host.getHost(0).getVM(testVersion, 0);
-    VM feeder = Host.getHost(0).getVM(version, 1);
+    VM interestClient = Host.getHost(0).getVM(clientVmConfiguration, 0);
+    VM feeder = Host.getHost(0).getVM(feederVmConfiguration, 1);
 
     // start servers first
     int server1Port = initServerCache(true);
@@ -270,23 +270,23 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
   @Test
   public void giiEventQueueFromOldToCurrentMemberShouldSucceed() {
-    giiEventQueueShouldSucceedWithMixedVersions(testVersion, VersionManager.CURRENT_VERSION);
+    giiEventQueueShouldSucceedWithMixedVersions(clientVmConfiguration, VmConfiguration.current());
   }
 
   @Test
   public void giiEventQueueFromCurrentToOldMemberShouldSucceed() {
     final IgnoredException expectedEx =
         IgnoredException.addIgnoredException(ConnectException.class.getName());
-    giiEventQueueShouldSucceedWithMixedVersions(VersionManager.CURRENT_VERSION, testVersion);
+    giiEventQueueShouldSucceedWithMixedVersions(VmConfiguration.current(), clientVmConfiguration);
     expectedEx.remove();
   }
 
-  public void giiEventQueueShouldSucceedWithMixedVersions(String server1Version,
-      String server2Version) {
-    VM interestClient = Host.getHost(0).getVM(testVersion, 0);
+  public void giiEventQueueShouldSucceedWithMixedVersions(VmConfiguration server1VmConfiguration,
+      VmConfiguration server2VmConfiguration) {
+    VM interestClient = Host.getHost(0).getVM(clientVmConfiguration, 0);
     VM feeder = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 1);
-    server1 = Host.getHost(0).getVM(server1Version, 2);
-    server2 = Host.getHost(0).getVM(server2Version, 3);
+    server1 = Host.getHost(0).getVM(server1VmConfiguration, 2);
+    server2 = Host.getHost(0).getVM(server2VmConfiguration, 3);
 
     // start servers first
     int server1Port = initServerCache(true, server1, true);
@@ -360,7 +360,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     int serverPort = initServerCache(true);
 
     // Start old version client and do puts
-    VM client = Host.getHost(0).getVM(testVersion, 1);
+    VM client = Host.getHost(0).getVM(clientVmConfiguration, 1);
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client.invoke("create client cache", () -> {
       createClientCache(hostname, serverPort);

@@ -37,10 +37,10 @@ public class WANRollingUpgradeEventProcessingOldSiteOneCurrentSiteTwo
     final Host host = Host.getHost(0);
 
     // Get old site members
-    VM site1Locator = host.getVM(oldVersion, 0);
-    VM site1Server1 = host.getVM(oldVersion, 1);
-    VM site1Server2 = host.getVM(oldVersion, 2);
-    VM site1Client = host.getVM(oldVersion, 3);
+    VM site1Locator = host.getVM(sourceVmConfiguration, 0);
+    VM site1Server1 = host.getVM(sourceVmConfiguration, 1);
+    VM site1Server2 = host.getVM(sourceVmConfiguration, 2);
+    VM site1Client = host.getVM(sourceVmConfiguration, 3);
 
     // Get current site members
     VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
@@ -80,13 +80,14 @@ public class WANRollingUpgradeEventProcessingOldSiteOneCurrentSiteTwo
         site2Locators, site1Locators));
 
     // Start and configure old site servers
-    String regionName = getName() + "_region";
-    String site1SenderId = getName() + "_gatewaysender_" + site2DistributedSystemId;
+    String sanitizedTestName = getSanitizedTestName();
+    String regionName = sanitizedTestName + "_region";
+    String site1SenderId = sanitizedTestName + "_gatewaysender_" + site2DistributedSystemId;
     startAndConfigureServers(site1Server1, site1Server2, site1Locators, site2DistributedSystemId,
         regionName, site1SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
     // Start and configure current site servers
-    String site2SenderId = getName() + "_gatewaysender_" + site1DistributedSystemId;
+    String site2SenderId = sanitizedTestName + "_gatewaysender_" + site1DistributedSystemId;
     startAndConfigureServers(site2Server1, site2Server2, site2Locators, site1DistributedSystemId,
         regionName, site2SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 

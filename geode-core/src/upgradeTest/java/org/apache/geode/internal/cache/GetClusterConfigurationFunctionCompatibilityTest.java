@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
+
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Rule;
@@ -31,25 +34,25 @@ import org.apache.geode.management.internal.configuration.functions.GetClusterCo
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.TestVersions;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @RunWith(Parameterized.class)
 public class GetClusterConfigurationFunctionCompatibilityTest {
 
-  private final String oldVersion;
+  private final VmConfiguration sourceConfiguration;
 
-  @Parameterized.Parameters(name = "Version: {0}")
-  public static Collection<String> data() {
-    final TestVersion OLDEST_VERSION_SUPPORTING_GET_CLUSTER_CONFIGURATION_FUNCTION =
-        TestVersion.valueOf("1.12.0");
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.valueOf(s)
-        .lessThan(OLDEST_VERSION_SUPPORTING_GET_CLUSTER_CONFIGURATION_FUNCTION));
-    return result;
+  @Parameterized.Parameters(name = "From {0}")
+  public static Collection<VmConfiguration> data() {
+    TestVersion minimumGeodeVersion = TestVersion.valueOf("1.12.0");
+    return VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(TestVersions.atLeast(minimumGeodeVersion)))
+        .collect(toList());
   }
 
-  public GetClusterConfigurationFunctionCompatibilityTest(String oldVersion) {
-    this.oldVersion = oldVersion;
+  public GetClusterConfigurationFunctionCompatibilityTest(VmConfiguration sourceConfiguration) {
+    this.sourceConfiguration = sourceConfiguration;
   }
 
   @Rule
@@ -64,11 +67,11 @@ public class GetClusterConfigurationFunctionCompatibilityTest {
   @Test
   public void newLocatorCanGetClusterConfigurationFromOldLocator() {
     // Start locators in old version
-    MemberVM locator1 = clusterStartupRule.startLocatorVM(0, oldVersion);
+    MemberVM locator1 = clusterStartupRule.startLocatorVM(0, sourceConfiguration);
     int locator1Port = locator1.getPort();
     MemberVM locator2 =
         clusterStartupRule.startLocatorVM(1, AvailablePortHelper.getRandomAvailableTCPPort(),
-            oldVersion, l -> l.withConnectionToLocator(locator1Port));
+            sourceConfiguration, l -> l.withConnectionToLocator(locator1Port));
     // Roll one locator to the new version
     locator2.stop(false);
     locator2 = clusterStartupRule.startLocatorVM(1, l -> l.withConnectionToLocator(locator1Port));

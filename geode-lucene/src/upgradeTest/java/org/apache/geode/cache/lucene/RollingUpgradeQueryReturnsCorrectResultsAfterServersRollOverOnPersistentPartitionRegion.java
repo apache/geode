@@ -22,7 +22,7 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterServersRollOverOnPersi
   @Test
   public void luceneQueryReturnsCorrectResultsAfterServersRollOverOnPersistentPartitionRegion()
       throws Exception {
-    executeLuceneQueryWithServerRollOvers("persistentPartitioned", oldVersion);
+    executeLuceneQueryWithServerRollOvers("persistentPartitioned", sourceConfiguration);
   }
 
 }

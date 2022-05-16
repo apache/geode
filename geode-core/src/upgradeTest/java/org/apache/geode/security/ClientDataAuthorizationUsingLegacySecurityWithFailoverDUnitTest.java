@@ -58,7 +58,8 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * This test class reproduces the tests present in
@@ -122,17 +123,17 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
 
   // Test against every client version
   @Parameterized.Parameter
-  public String clientVersion;
+  public VmConfiguration clientVmConfiguration;
 
-  @Parameterized.Parameters(name = "clientVersion={0}")
-  public static Collection<String> data() {
-    return VersionManager.getInstance().getVersions();
+  @Parameterized.Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.upgrades();
   }
 
   @Before
   public void setup() throws Exception {
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
-    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
@@ -317,7 +318,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Test
   public void dataWriterCannotRegisterInterestAcrossFailover() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
-    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
@@ -325,9 +326,11 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
 
-    ClientVM client1 = csRule.startClientVM(3, clientVersion, props, cf -> cf
-        .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2));
+    ClientVM client1 = csRule.startClientVM(3, clientVmConfiguration, props,
+        cf -> cf.addPoolServer("localhost", server1Port)
+            .addPoolServer("localhost", server2Port)
+            .setPoolSubscriptionEnabled(true)
+            .setPoolSubscriptionRedundancy(2));
 
     // Initialize cache
     client1.invoke(() -> {
@@ -377,14 +380,16 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
 
     Properties props = getVMPropertiesWithPermission(withPermission);
 
-    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    ClientVM client = csRule.startClientVM(3, clientVersion, props, cf -> cf
-        .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2));
+    ClientVM client = csRule.startClientVM(3, clientVmConfiguration, props,
+        cf -> cf.addPoolServer("localhost", server1Port)
+            .addPoolServer("localhost", server2Port)
+            .setPoolSubscriptionEnabled(true)
+            .setPoolSubscriptionRedundancy(2));
 
     // Initialize cache
     client.invoke(() -> {
@@ -395,6 +400,13 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     });
 
     return client;
+  }
+
+  private boolean shouldSetObjectFilterProperty(VmConfiguration configuration) {
+    // We can't set the object filter property versions before 1.4.0 because
+    // it's not a valid property, but we must set it in 140 and above to allow
+    // serialization of UsernamePrincipal
+    return configuration.geodeVersion().greaterThanOrEqualTo(TestVersion.valueOf("1.4.0"));
   }
 
   private MemberVM determinePrimaryServer(ClientVM client) {
@@ -423,10 +435,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     props.setProperty(UserPasswordAuthInit.PASSWORD, permission);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT,
         UserPasswordAuthInit.class.getCanonicalName() + ".create");
-    // We can't sent the object filter property versions before 1.4.0 because
-    // it's not a valid property, but we must set it in 140 and above to allow
-    // serialization of UsernamePrincipal
-    if (clientVersion.compareTo("1.4.0") >= 0) {
+    if (shouldSetObjectFilterProperty(clientVmConfiguration)) {
       props.setProperty(SERIALIZABLE_OBJECT_FILTER, UsernamePrincipal.class.getCanonicalName());
     }
     return props;

@@ -34,8 +34,8 @@ public class WANRollingUpgradeVerifyGatewayReceiverDoesNotSendRemoveCacheServerP
   @Test
   public void VerifyGatewayReceiverDoesNotSendRemoveCacheServerProfileToMembersOlderThan1dot5() {
     final Host host = Host.getHost(0);
-    VM oldLocator = host.getVM(oldVersion, 0);
-    VM oldServer = host.getVM(oldVersion, 1);
+    VM oldLocator = host.getVM(sourceVmConfiguration, 0);
+    VM oldServer = host.getVM(sourceVmConfiguration, 1);
     VM currentServer = host.getVM(VersionManager.CURRENT_VERSION, 2);
 
     // Start locator

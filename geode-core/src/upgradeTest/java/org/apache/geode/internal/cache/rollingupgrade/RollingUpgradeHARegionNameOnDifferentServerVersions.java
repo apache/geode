@@ -34,10 +34,10 @@ public class RollingUpgradeHARegionNameOnDifferentServerVersions
   @Test
   public void testHARegionNameOnDifferentServerVersions() {
     final Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 0);
-    VM server1 = host.getVM(oldVersion, 1);
+    VM locator = host.getVM(sourceConfiguration, 0);
+    VM server1 = host.getVM(sourceConfiguration, 1);
     VM server2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM client = host.getVM(oldVersion, 3);
+    VM client = host.getVM(sourceConfiguration, 3);
 
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     int[] locatorPorts = new int[] {ports[0]};

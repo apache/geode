@@ -16,7 +16,9 @@
 
 package org.apache.geode.security;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -50,22 +52,26 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.TestVersions;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationTransactionUpgradeTest {
   // only test versions greater than or equal to 1.14.0
-  private static final String test_start_version = "1.14.0";
+  private static final TestVersion test_start_version = TestVersion.valueOf("1.14.0");
   private static final String feature_start_version = "1.15.0";
 
   @Parameterized.Parameter
-  public String clientVersion;
+  public VmConfiguration clientVmConfiguration;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    return VersionManager.getInstance().getVersionsLaterThanAndEqualTo(test_start_version);
+  @Parameterized.Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.all().stream()
+        .filter(hasGeodeVersion(TestVersions.atLeast(test_start_version)))
+        .collect(toList());
   }
 
   @Rule
@@ -84,7 +90,7 @@ public class AuthExpirationTransactionUpgradeTest {
   @Before
   public void init() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -130,7 +136,7 @@ public class AuthExpirationTransactionUpgradeTest {
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
-    String client_version = clientVersion;
+    String client_version = clientVmConfiguration.geodeVersion().toString();
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
@@ -173,7 +179,7 @@ public class AuthExpirationTransactionUpgradeTest {
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
-    String client_version = clientVersion;
+    String client_version = clientVmConfiguration.geodeVersion().toString();
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();

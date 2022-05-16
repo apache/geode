@@ -36,8 +36,8 @@ public class RollingUpgradeVerifyXmlEntity extends RollingUpgrade2DUnitTestBase 
   // previous versions and vice versa.
   public void testVerifyXmlEntity() {
     final Host host = Host.getHost(0);
-    VM oldLocator = host.getVM(oldVersion, 0);
-    VM oldServer = host.getVM(oldVersion, 1);
+    VM oldLocator = host.getVM(sourceConfiguration, 0);
+    VM oldServer = host.getVM(sourceConfiguration, 1);
     VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
     VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
 
