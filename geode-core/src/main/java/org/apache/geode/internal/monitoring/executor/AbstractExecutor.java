@@ -178,7 +178,9 @@ public abstract class AbstractExecutor {
 
   public void resumeMonitoring() {}
 
-  public void reportProgress() {}
+  public void reportProgress() {
+    setStartTime(System.currentTimeMillis());
+  }
 
   public boolean isMonitoringSuspended() {
     return false;

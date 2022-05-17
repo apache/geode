@@ -38,7 +38,11 @@ public abstract class SuspendableExecutor extends AbstractExecutor {
 
   @Override
   public void reportProgress() {
-    setStartTime(System.currentTimeMillis());
+    setStartTime(0);
+    // The ThreadMonitoringProcess will set the
+    // startTime once it sees it set to 0.
+    // This prevents the monitored thread from
+    // constantly calling System.currentTimeMillis.
   }
 
   @Override
