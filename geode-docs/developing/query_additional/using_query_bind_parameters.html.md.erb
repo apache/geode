@@ -27,7 +27,7 @@ The use of query bind parameters is now supported in Client-to-Server queries.
 
 The query parameters are identified by a dollar sign, $, followed by a digit that represents the parameter's position in the parameter array passed to the execute method. Counting begins at 1, so $1 references the first bound attribute, $2 the second attribute, and so on.
 
-The Query interface provides an overloaded execute method that accepts parameters inside an Object array. See the [Query.execute](/releases/latest/javadoc/org/apache/geode/cache/query/Query.html) JavaDocs for more details.
+The Query interface provides an overloaded execute method that accepts parameters inside an Object array. See the [Query.execute](<%=vars.javadocs%>/org/apache/geode/cache/query/Query.html) JavaDocs for more details.
 
 The 0th element of the Object array is used for the first query parameter, and so on. If the parameter count or parameter types do not match the query specification, the execute method throws an exception. Specifically, if you pass in the wrong number of parameters, the method call throws a `QueryParameterCountInvalidException`. If a parameter object type is not compatible with what is expected, the method call throws a `TypeMismatchException`.
 
