@@ -244,6 +244,7 @@ dependencies {
   // don't have it be the same version as the outer gradle version.
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:' + DependencyConstraints.get('gradle-tooling-api.version'))
 
+  acceptanceTestImplementation('org.junit.jupiter:junit-jupiter-migrationsupport')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 
   uiTestImplementation(project(':geode-core'))
