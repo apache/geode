@@ -36,11 +36,11 @@ public class HttpServiceIntegrationTest {
   public void withDevRestAndJmxManager() throws Exception {
     server.withRestService().withJMXManager().startServer();
     client =
-        new GeodeDevRestClient("/geode/v1", "localhost", server.getHttpPort(), false);
+        new GeodeDevRestClient("/geode/v3", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/servers").hasStatusCode(200);
 
     client =
-        new GeodeDevRestClient("/geode-mgmt/v1", "localhost", server.getHttpPort(), false);
+        new GeodeDevRestClient("/geode-mgmt/v3", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/version").hasStatusCode(200);
 
     client =
@@ -53,11 +53,11 @@ public class HttpServiceIntegrationTest {
   public void withDevRestOnly() throws Exception {
     server.withRestService().startServer();
     client =
-        new GeodeDevRestClient("/geode/v1", "localhost", server.getHttpPort(), false);
+        new GeodeDevRestClient("/geode/v3", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/servers").hasStatusCode(200);
 
     client =
-        new GeodeDevRestClient("/geode-mgmt/v1", "localhost", server.getHttpPort(), false);
+        new GeodeDevRestClient("/geode-mgmt/v3", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/version").hasStatusCode(404);
 
     client =
@@ -69,11 +69,11 @@ public class HttpServiceIntegrationTest {
   public void withAdminRestOnly() throws Exception {
     server.withJMXManager().withHttpService().startServer();
     client =
-        new GeodeDevRestClient("/geode/v1", "localhost", server.getHttpPort(), false);
+        new GeodeDevRestClient("/geode/v3", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/servers").hasStatusCode(404);
 
     client =
-        new GeodeDevRestClient("/geode-mgmt/v1", "localhost", server.getHttpPort(), false);
+        new GeodeDevRestClient("/geode-mgmt/v3", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/version").hasStatusCode(200);
 
     client =

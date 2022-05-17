@@ -157,7 +157,7 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void noMatchWithFilter() throws Exception {
-    webContext.perform(get("/v1/members?id=server"))
+    webContext.perform(get("/v3/members?id=server"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statusCode", is("OK")));
   }
@@ -165,7 +165,7 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void noMatchWithUriVariable() throws Exception {
-    webContext.perform(get("/v1/members/server"))
+    webContext.perform(get("/v3/members/server"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",

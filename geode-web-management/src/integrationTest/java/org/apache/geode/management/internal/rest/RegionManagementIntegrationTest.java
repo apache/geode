@@ -117,7 +117,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void ping() throws Exception {
-    context.perform(get("/v1/ping"))
+    context.perform(get("/v3/ping"))
         .andExpect(content().string("pong"));
   }
 
@@ -127,7 +127,7 @@ public class RegionManagementIntegrationTest {
     index.setRegionPath("regionA");
     index.setExpression("id");
     String postUrl = index.getLinks().getList();
-    context.perform(post("/v1" + postUrl).content(mapper.writeValueAsString(index)))
+    context.perform(post("/v3" + postUrl).content(mapper.writeValueAsString(index)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
@@ -142,7 +142,7 @@ public class RegionManagementIntegrationTest {
 
     // trying to create a duplicate index, reusing existing
     String postUrl = index.getLinks().getList();
-    context.perform(post("/v1" + postUrl).content(mapper.writeValueAsString(index)))
+    context.perform(post("/v3" + postUrl).content(mapper.writeValueAsString(index)))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_EXISTS")))
         .andExpect(jsonPath("$.statusMessage",
@@ -152,7 +152,7 @@ public class RegionManagementIntegrationTest {
     index.setName("index2");
     index.setRegionPath("region1");
     index.setExpression("key");
-    context.perform(post("/v1/regions/region1/indexes").content(mapper.writeValueAsString(index)))
+    context.perform(post("/v3/regions/region1/indexes").content(mapper.writeValueAsString(index)))
         .andExpect(status().isCreated());
 
     assertManagementResult(client.delete(region))
@@ -164,7 +164,7 @@ public class RegionManagementIntegrationTest {
     index.setName("index");
     index.setRegionPath(SEPARATOR + "customers");
     index.setExpression("id");
-    context.perform(post("/v1/regions/products/indexes").content(mapper.writeValueAsString(index)))
+    context.perform(post("/v3/regions/products/indexes").content(mapper.writeValueAsString(index)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ILLEGAL_ARGUMENT")))
         .andExpect(jsonPath("$.statusMessage",
@@ -172,7 +172,7 @@ public class RegionManagementIntegrationTest {
                 .containsString("Region name in path must match Region name in configuration.")));
 
     index.setRegionPath(null);
-    context.perform(post("/v1/regions/products/indexes").content(mapper.writeValueAsString(index)))
+    context.perform(post("/v3/regions/products/indexes").content(mapper.writeValueAsString(index)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
@@ -196,7 +196,7 @@ public class RegionManagementIntegrationTest {
     index.setName("itworks");
 
     context.perform(
-        post("/v1/regions/region1/indexes").content(mapper.writeValueAsString(index)))
+        post("/v3/regions/region1/indexes").content(mapper.writeValueAsString(index)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
@@ -212,7 +212,7 @@ public class RegionManagementIntegrationTest {
 
     createClusterIndex();
 
-    context.perform(delete("/v1/regions/region1/indexes/index1"))
+    context.perform(delete("/v3/regions/region1/indexes/index1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
@@ -228,7 +228,7 @@ public class RegionManagementIntegrationTest {
 
     createGroupIndex();
 
-    context.perform(delete("/v1/regions/region1/indexes/index1").param("group", "group1"))
+    context.perform(delete("/v3/regions/region1/indexes/index1").param("group", "group1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
@@ -245,7 +245,7 @@ public class RegionManagementIntegrationTest {
 
     createClusterIndex();
 
-    context.perform(delete("/v1/regions/region1/indexes/index1"))
+    context.perform(delete("/v3/regions/region1/indexes/index1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
@@ -261,7 +261,7 @@ public class RegionManagementIntegrationTest {
 
     createGroupIndex();
 
-    context.perform(delete("/v1/regions/region1/indexes/index1"))
+    context.perform(delete("/v3/regions/region1/indexes/index1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
@@ -275,7 +275,7 @@ public class RegionManagementIntegrationTest {
   public void deleteIndex_fails_index_not_found() throws Exception {
     createClusterRegion();
 
-    context.perform(delete("/v1/regions/region1/indexes/index1"))
+    context.perform(delete("/v3/regions/region1/indexes/index1"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
@@ -289,7 +289,7 @@ public class RegionManagementIntegrationTest {
   public void deleteIndex_fails_index_not_found_with_group() throws Exception {
     createGroupRegion();
 
-    context.perform(delete("/v1/regions/region1/indexes/index1").param("group", "group1"))
+    context.perform(delete("/v3/regions/region1/indexes/index1").param("group", "group1"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",

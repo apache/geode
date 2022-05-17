@@ -58,7 +58,7 @@ public class GeneralManagementServiceRestIntegrationTest {
 
   @Test
   public void noResultsShowsEmptyResultsListAndNoStatuses() throws Exception {
-    webContext.perform(get("/v1/regions"))
+    webContext.perform(get("/v3/regions"))
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.result").isArray())

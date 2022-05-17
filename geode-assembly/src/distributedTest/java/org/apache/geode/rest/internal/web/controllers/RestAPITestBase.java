@@ -105,7 +105,7 @@ public class RestAPITestBase implements Serializable {
 
     cacheRule.createCache(props);
 
-    return "http://" + hostName + ":" + servicePort + context + "/v1";
+    return "http://" + hostName + ":" + servicePort + context + "/v3";
   }
 
   private int getInvocationCount(String functionID) {

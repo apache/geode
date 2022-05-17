@@ -68,7 +68,7 @@ public class PdxIntegrationTest {
     pdx.setDiskStoreName("diskStoreName");
     pdx.setPdxSerializer(new ClassName("className"));
 
-    context.perform(post("/v1/configurations/pdx")
+    context.perform(post("/v3/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx)))
         .andExpect(status().isCreated())
@@ -78,11 +78,11 @@ public class PdxIntegrationTest {
                 containsString("Successfully updated configuration for cluster.")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(
-            jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
+            jsonPath("$.links.self", is("http://localhost/v3/configurations/pdx")));
 
     // Clean Up
     context
-        .perform(delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .perform(delete("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isOk());
   }
 
@@ -94,7 +94,7 @@ public class PdxIntegrationTest {
     pdx.setDiskStoreName("diskStoreName");
     pdx.setAutoSerializer(new AutoSerializer("pat1", "pat2"));
 
-    context.perform(post("/v1/configurations/pdx")
+    context.perform(post("/v3/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx)))
         .andExpect(status().isCreated())
@@ -104,11 +104,11 @@ public class PdxIntegrationTest {
                 containsString("Successfully updated configuration for cluster.")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(
-            jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
+            jsonPath("$.links.self", is("http://localhost/v3/configurations/pdx")));
 
     // Clean Up
     context
-        .perform(delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .perform(delete("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isOk());
   }
 
@@ -120,9 +120,9 @@ public class PdxIntegrationTest {
     pdx.setAutoSerializer(new AutoSerializer("org.company.Class1#identity=myValue"));
 
     // Create
-    context.perform(post("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
+    context.perform(post("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx))).andExpect(status().isCreated());
-    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+    context.perform(get("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.result.groups[0].configuration.readSerialized", is(true)))
         .andExpect(jsonPath("$.result.groups[0].configuration.ignoreUnreadFields", is(true)))
@@ -134,9 +134,9 @@ public class PdxIntegrationTest {
     pdx.setIgnoreUnreadFields(false);
     pdx.setAutoSerializer(
         new AutoSerializer("org.company.MyClass2", "org.company.Class1#identity=myValue"));
-    context.perform(put("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
+    context.perform(put("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx))).andExpect(status().isCreated());
-    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+    context.perform(get("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.result.groups[0].configuration.readSerialized", is(false)))
         .andExpect(jsonPath("$.result.groups[0].configuration.ignoreUnreadFields", is(false)))
@@ -147,9 +147,9 @@ public class PdxIntegrationTest {
 
     // Clean Up
     context.perform(
-        delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        delete("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isOk());
-    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+    context.perform(get("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isNotFound());
   }
 
@@ -160,18 +160,18 @@ public class PdxIntegrationTest {
     pdx.setIgnoreUnreadFields(true);
 
     // Create
-    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+    context.perform(get("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isNotFound());
-    context.perform(post("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
+    context.perform(post("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx))).andExpect(status().isCreated());
-    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+    context.perform(get("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isOk());
 
     // Delete
     context.perform(
-        delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        delete("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isOk());
-    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+    context.perform(get("/v3/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
         .andExpect(status().isNotFound());
   }
 
@@ -179,7 +179,7 @@ public class PdxIntegrationTest {
   public void invalidClassName() throws Exception {
     String json = "{\"readSerialized\":true,\"pdxSerializer\":{\"className\":\"class name\"}}";
 
-    context.perform(post("/v1/configurations/pdx")
+    context.perform(post("/v3/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(json))
         .andExpect(status().isBadRequest())
@@ -191,7 +191,7 @@ public class PdxIntegrationTest {
   public void pdxDoesNotAllowAutoSerializerWithNoPatterns() throws Exception {
     String json = "{\"readSerialized\":true,\"autoSerializer\":{\"portable\":true}}";
 
-    context.perform(post("/v1/configurations/pdx")
+    context.perform(post("/v3/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(json))
         .andExpect(status().isBadRequest())
@@ -205,7 +205,7 @@ public class PdxIntegrationTest {
     String json =
         "{\"readSerialized\":true,\"autoSerializer\":{\"portable\":true,\"patterns\":[\"pat1\"]},\"pdxSerializer\":{\"className\":\"className\"}}";
 
-    context.perform(post("/v1/configurations/pdx")
+    context.perform(post("/v3/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(json))
         .andExpect(status().isBadRequest())

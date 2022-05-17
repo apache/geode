@@ -63,10 +63,10 @@ public class PdxBasedCrudControllerIntegrationTest {
 
   protected static int DEFAULT_HTTP_SERVICE_PORT = 8189;
 
-  protected static final String PORT_AND_ONE_STRING_FORMAT = "http://localhost:%1$d/geode/v1/%2$s";
+  protected static final String PORT_AND_ONE_STRING_FORMAT = "http://localhost:%1$d/geode/v3/%2$s";
 
   protected static final String PORT_AND_TWO_STRINGS_FORMAT =
-      "http://localhost:%1$d/geode/v1/%2$s/%3$s";
+      "http://localhost:%1$d/geode/v3/%2$s/%3$s";
 
   int port = 0;
 

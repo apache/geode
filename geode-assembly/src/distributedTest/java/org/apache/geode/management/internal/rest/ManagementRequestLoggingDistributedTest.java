@@ -129,7 +129,7 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
       assertThat(logContents)
           .containsSubsequence(
               "Management Request:",
-              " POST[url=/management/v1/regions];",
+              " POST[url=/management/v3/regions];",
               " user=null;",
               " payload={")
           .containsSubsequence(

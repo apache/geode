@@ -180,7 +180,7 @@ public class RestAPIsWithSSLDUnitTest {
 
       clientCache.getLogger().info("Gemfire Cache Client: Puts successfully done");
     });
-    restEndpoint = "https://localhost:" + server.getHttpPort() + urlContext + "/v1";
+    restEndpoint = "https://localhost:" + server.getHttpPort() + urlContext + "/v3";
   }
 
   private static CloseableHttpClient getSSLBasedHTTPClient(Properties properties) throws Exception {

@@ -50,7 +50,7 @@ import org.apache.http.impl.client.HttpClients;
  * entire test.
  */
 public class GeodeDevRestClient {
-  public static final String CONTEXT = "/geode/v1";
+  public static final String CONTEXT = "/geode/v3";
 
   private final String context;
   private final String bindAddress;

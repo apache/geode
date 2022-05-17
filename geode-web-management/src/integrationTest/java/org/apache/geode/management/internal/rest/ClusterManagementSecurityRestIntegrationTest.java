@@ -72,53 +72,53 @@ public class ClusterManagementSecurityRestIntegrationTest {
     regionConfig.setName(REGION);
     regionConfig.setType(RegionType.REPLICATE);
 
-    testContexts.add(new TestContext(post("/v1/regions"), "DATA:MANAGE")
+    testContexts.add(new TestContext(post("/v3/regions"), "DATA:MANAGE")
         .setContent(mapper.writeValueAsString(regionConfig)));
 
     // additional credentials needed to create persistent regions
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
-    testContexts.add(new TestContext(post("/v1/regions"), "CLUSTER:WRITE:DISK")
+    testContexts.add(new TestContext(post("/v3/regions"), "CLUSTER:WRITE:DISK")
         .setCredentials("dataManage", "dataManage")
         .setContent(mapper.writeValueAsString(regionConfig)));
 
-    testContexts.add(new TestContext(get("/v1/regions"), "CLUSTER:READ"));
-    testContexts.add(new TestContext(get("/v1/regions/regionA"), "CLUSTER:READ:regionA"));
-    testContexts.add(new TestContext(delete("/v1/regions/regionA"), "DATA:MANAGE"));
+    testContexts.add(new TestContext(get("/v3/regions"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/v3/regions/regionA"), "CLUSTER:READ:regionA"));
+    testContexts.add(new TestContext(delete("/v3/regions/regionA"), "DATA:MANAGE"));
     testContexts
-        .add(new TestContext(get("/v1/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
+        .add(new TestContext(get("/v3/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
     testContexts
-        .add(new TestContext(get("/v1/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
+        .add(new TestContext(get("/v3/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
     testContexts
-        .add(new TestContext(get("/v1/regions/regionA/indexes/index1"),
+        .add(new TestContext(get("/v3/regions/regionA/indexes/index1"),
             "CLUSTER:READ:QUERY"));
     testContexts
-        .add(new TestContext(post("/v1/regions/regionA/indexes/"),
+        .add(new TestContext(post("/v3/regions/regionA/indexes/"),
             "CLUSTER:MANAGE:QUERY").setContent(mapper.writeValueAsString(new Index())));
     testContexts
-        .add(new TestContext(delete("/v1/regions/regionA/indexes/index1"),
+        .add(new TestContext(delete("/v3/regions/regionA/indexes/index1"),
             "CLUSTER:MANAGE:QUERY"));
 
-    testContexts.add(new TestContext(get("/v1/gateways/receivers"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/v3/gateways/receivers"), "CLUSTER:READ"));
     testContexts
-        .add(new TestContext(get("/v1/gateways/receivers/receiver1"), "CLUSTER:READ"));
-    testContexts.add(new TestContext(post("/v1/gateways/receivers"), "CLUSTER:MANAGE")
+        .add(new TestContext(get("/v3/gateways/receivers/receiver1"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(post("/v3/gateways/receivers"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new GatewayReceiverConfig())));
 
-    testContexts.add(new TestContext(get("/v1/members"), "CLUSTER:READ"));
-    testContexts.add(new TestContext(get("/v1/members/server1"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/v3/members"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/v3/members/server1"), "CLUSTER:READ"));
 
-    testContexts.add(new TestContext(post("/v1/configurations/pdx"), "CLUSTER:MANAGE")
+    testContexts.add(new TestContext(post("/v3/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
-    testContexts.add(new TestContext(put("/v1/configurations/pdx"), "CLUSTER:MANAGE")
+    testContexts.add(new TestContext(put("/v3/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
-    testContexts.add(new TestContext(delete("/v1/configurations/pdx"), "CLUSTER:MANAGE")
+    testContexts.add(new TestContext(delete("/v3/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
-    testContexts.add(new TestContext(get("/v1/configurations/pdx"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/v3/configurations/pdx"), "CLUSTER:READ"));
 
-    testContexts.add(new TestContext(post("/v1/operations/rebalances"), "DATA:MANAGE")
+    testContexts.add(new TestContext(post("/v3/operations/rebalances"), "DATA:MANAGE")
         .setContent(mapper.writeValueAsString(new RebalanceOperation())));
     testContexts
-        .add(new TestContext(get("/v1/operations/rebalances/123"), "DATA:MANAGE"));
+        .add(new TestContext(get("/v3/operations/rebalances/123"), "DATA:MANAGE"));
   }
 
   @Before
@@ -150,7 +150,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
 
   @Test
   public void noCredentials() throws Exception {
-    context.perform(post("/v1/regions"))
+    context.perform(post("/v3/regions"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
         .andExpect(jsonPath("$.statusMessage",
@@ -159,7 +159,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
 
   @Test
   public void wrongCredentials() throws Exception {
-    context.perform(post("/v1/regions")
+    context.perform(post("/v3/regions")
         .with(httpBasic("user", "wrong_password")))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
@@ -172,7 +172,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName(REGION);
     regionConfig.setType(RegionType.REPLICATE);
-    context.perform(post("/v1/regions")
+    context.perform(post("/v3/regions")
         .with(httpBasic("dataManage", "dataManage"))
         .content(mapper.writeValueAsString(regionConfig)))
         .andExpect(status().isCreated())
@@ -180,7 +180,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
         .andExpect(jsonPath("$.statusMessage",
             is("Successfully updated configuration for cluster.")));
     // cleanup in order to pass stressNew
-    context.perform(delete("/v1/regions/" + REGION)
+    context.perform(delete("/v3/regions/" + REGION)
         .with(httpBasic("dataManage", "dataManage")))
         .andExpect(status().is2xxSuccessful());
   }

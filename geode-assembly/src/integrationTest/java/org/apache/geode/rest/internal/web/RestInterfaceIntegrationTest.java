@@ -102,7 +102,7 @@ public class RestInterfaceIntegrationTest {
   protected static int DEFAULT_HTTP_SERVICE_PORT = 8189;
 
   protected static final String REST_API_SERVICE_ENDPOINT =
-      "http://localhost:%1$d/gemfire-api/v1/%2$s/%3$s";
+      "http://localhost:%1$d/gemfire-api/v3/%2$s/%3$s";
 
   @Autowired
   private Cache gemfireCache;

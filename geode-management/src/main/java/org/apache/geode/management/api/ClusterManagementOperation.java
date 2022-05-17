@@ -38,7 +38,7 @@ public interface ClusterManagementOperation<V extends OperationResult>
   /**
    * must match the REST controller's RequestMapping
    *
-   * @return the portion after /management/v1, e.g. /operations/name
+   * @return the portion after /management/v3, e.g. /operations/name
    */
   @JsonIgnore
   String getEndpoint();

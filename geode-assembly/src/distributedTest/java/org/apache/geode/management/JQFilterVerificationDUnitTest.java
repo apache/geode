@@ -96,7 +96,7 @@ public class JQFilterVerificationDUnitTest {
 
     client = new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
     JsonNode jsonObject =
-        client.doGetAndAssert("/v1/api-docs").getJsonObject().get("paths");
+        client.doGetAndAssert("/v3/api-docs").getJsonObject().get("paths");
     Iterator<Map.Entry<String, JsonNode>> urls = jsonObject.fields();
     while (urls.hasNext()) {
       Map.Entry<String, JsonNode> url = urls.next();
@@ -121,7 +121,7 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getMembers() throws IOException {
-    String uri = "/v1/members";
+    String uri = "/v3/members";
     JqResponse response =
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
@@ -131,9 +131,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getMember() throws Exception {
-    String uri = "/v1/members/locator-0";
+    String uri = "/v3/members/locator-0";
     JqResponse response = getJqResponse(uri,
-        apiWithJQFilters.remove("/v1/members/{id}").get("x-jqFilter").textValue());
+        apiWithJQFilters.remove("/v3/members/{id}").get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\":\"locator-0\"");
@@ -141,7 +141,7 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void listRegions() throws Exception {
-    String uri = "/v1/regions";
+    String uri = "/v3/regions";
     JqResponse response =
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
@@ -158,9 +158,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getRegion() throws Exception {
-    String uri = "/v1/regions/regionA";
+    String uri = "/v3/regions/regionA";
     JqResponse response = getJqResponse(uri,
-        apiWithJQFilters.remove("/v1/regions/{id}").get("x-jqFilter").textValue());
+        apiWithJQFilters.remove("/v3/regions/{id}").get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\":\"regionA\"");
@@ -168,7 +168,7 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void listIndex() throws Exception {
-    String uri = "/v1/indexes";
+    String uri = "/v3/indexes";
     JqResponse response =
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
@@ -178,9 +178,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void listRegionIndex() throws Exception {
-    String uri = "/v1/regions/regionA/indexes";
+    String uri = "/v3/regions/regionA/indexes";
     JqResponse response = getJqResponse(uri, apiWithJQFilters
-        .remove("/v1/regions/{regionName}/indexes").get("x-jqFilter").textValue());
+        .remove("/v3/regions/{regionName}/indexes").get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\":\"index1\"");
@@ -188,9 +188,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getIndex() throws Exception {
-    String uri = "/v1/regions/regionA/indexes/index1";
+    String uri = "/v3/regions/regionA/indexes/index1";
     JqResponse response = getJqResponse(uri, apiWithJQFilters
-        .remove("/v1/regions/{regionName}/indexes/{id}").get("x-jqFilter").textValue());
+        .remove("/v3/regions/{regionName}/indexes/{id}").get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\":\"index1\"");
@@ -198,7 +198,7 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void listDiskStores() throws Exception {
-    String uri = "/v1/diskstores";
+    String uri = "/v3/diskstores";
     JqResponse response =
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("x-jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
@@ -209,10 +209,10 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getDiskStore() throws Exception {
-    String uri = "/v1/diskstores/diskstore1";
+    String uri = "/v3/diskstores/diskstore1";
     JqResponse response =
         getJqResponse(uri,
-            apiWithJQFilters.remove("/v1/diskstores/{id}").get("x-jqFilter").textValue());
+            apiWithJQFilters.remove("/v3/diskstores/{id}").get("x-jqFilter").textValue());
     response.getErrors().forEach(System.out::println);
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());

@@ -595,7 +595,7 @@ public class CliStrings {
       "Network address of the Locator in the form: host[port].";
   public static final String CONNECT__URL = "url";
   public static final String CONNECT__URL__HELP =
-      "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/geode-mgmt/v1'";
+      "Indicates the base URL to the Manager's HTTP service.  For example: 'http://<host>:<port>/geode-mgmt/v3'";
   public static final String CONNECT__USE_HTTP = "use-http";
   public static final String CONNECT__USE_HTTP__HELP =
       "[Deprecated: inferred by the presence of --url]. Connects to Manager by sending HTTP requests to HTTP service hosting the Management REST API. You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";

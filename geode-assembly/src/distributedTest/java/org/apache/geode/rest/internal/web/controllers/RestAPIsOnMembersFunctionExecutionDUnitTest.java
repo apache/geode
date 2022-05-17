@@ -62,7 +62,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     FunctionService.registerFunction(new OnMembersFunction());
     FunctionService.registerFunction(new FullyQualifiedFunction());
 
-    return "http://" + hostName + ":" + servicePort + urlContext + "/v1";
+    return "http://" + hostName + ":" + servicePort + urlContext + "/v3";
 
   }
 

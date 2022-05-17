@@ -53,7 +53,7 @@ public class RequestWithAuthTokenTest {
 
   @Test
   public void pingWithValidToken() throws Exception {
-    context.perform(get("/v1/ping")
+    context.perform(get("/v3/ping")
         .header("Authorization", "Bearer " + SimpleSecurityManager.VALID_TOKEN))
         .andExpect(status().isOk())
         .andExpect(content().string("pong"));
@@ -61,7 +61,7 @@ public class RequestWithAuthTokenTest {
 
   @Test
   public void pingWithInvalidToken() throws Exception {
-    context.perform(get("/v1/ping")
+    context.perform(get("/v3/ping")
         .header("Authorization", "Bearer invalidToken"))
         .andExpect(status().isUnauthorized());
   }

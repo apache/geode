@@ -78,12 +78,12 @@ public class RebalanceIntegrationTest {
   @Test
   public void start() throws Exception {
     String json = "{}";
-    context.perform(post("/v1/operations/rebalances").content(json))
+    context.perform(post("/v3/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
             jsonPath("$.links.self",
-                Matchers.containsString("/v1/operations/rebalances/")))
+                Matchers.containsString("/v3/operations/rebalances/")))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
   }
 
@@ -91,7 +91,7 @@ public class RebalanceIntegrationTest {
   public void getStatus() throws Exception {
     String json = "{}";
     CompletableFuture<String> futureUri = new CompletableFuture<>();
-    context.perform(post("/v1/operations/rebalances").content(json))
+    context.perform(post("/v3/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(new ResponseBodyMatchers().containsObjectAsJson(futureUri))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
@@ -125,7 +125,7 @@ public class RebalanceIntegrationTest {
 
   @Test
   public void checkStatusOperationDoesNotExist() throws Exception {
-    context.perform(get("/v1/operations/rebalances/abc"))
+    context.perform(get("/v3/operations/rebalances/abc"))
         .andExpect(status().isNotFound())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
@@ -137,8 +137,8 @@ public class RebalanceIntegrationTest {
   @Test
   public void list() throws Exception {
     String json = "{}";
-    context.perform(post("/v1/operations/rebalances").content(json));
-    context.perform(get("/v1/operations/rebalances"))
+    context.perform(post("/v3/operations/rebalances").content(json));
+    context.perform(get("/v3/operations/rebalances"))
         .andExpect(status().isOk())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(

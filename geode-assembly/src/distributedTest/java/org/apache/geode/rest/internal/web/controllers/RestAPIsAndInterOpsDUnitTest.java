@@ -207,7 +207,7 @@ public class RestAPIsAndInterOpsDUnitTest
     remoteObjects.put(CACHE_KEY, cache);
     server.getPort();
 
-    return "http://" + hostName + ":" + serverPort + urlContext + "/v1";
+    return "http://" + hostName + ":" + serverPort + urlContext + "/v3";
   }
 
   private void doPutsInClientCache() {

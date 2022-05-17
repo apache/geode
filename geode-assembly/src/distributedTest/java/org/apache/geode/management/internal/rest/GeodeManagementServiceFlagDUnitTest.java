@@ -37,7 +37,7 @@ public class GeodeManagementServiceFlagDUnitTest {
         l -> l.withoutManagementRestService()
             .withHttpService());
     restClient =
-        new GeodeDevRestClient("/management/v1", "localhost", locator.getHttpPort(),
+        new GeodeDevRestClient("/management/v3", "localhost", locator.getHttpPort(),
             false);
     restClient.doGetAndAssert("/ping").hasStatusCode(404);
   }
@@ -46,7 +46,7 @@ public class GeodeManagementServiceFlagDUnitTest {
   public void withServiceByDefault() throws Exception {
     locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     restClient =
-        new GeodeDevRestClient("/management/v1", "localhost", locator.getHttpPort(),
+        new GeodeDevRestClient("/management/v3", "localhost", locator.getHttpPort(),
             false);
     restClient.doGetAndAssert("/ping").hasStatusCode(200).hasResponseBody().isEqualTo("pong");
   }

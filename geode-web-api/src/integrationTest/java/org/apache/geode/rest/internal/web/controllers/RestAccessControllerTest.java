@@ -91,7 +91,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @WebAppConfiguration
 public class RestAccessControllerTest {
 
-  private static final String BASE_URL = "http://localhost/v1";
+  private static final String BASE_URL = "http://localhost/v3";
 
   private static final String ORDER1_JSON = "order1.json";
   private static final String ORDER1_ARRAY_JSON = "order1-array.json";
@@ -198,14 +198,14 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void postEntry() throws Exception {
-    mockMvc.perform(post("/v1/orders?key=1")
+    mockMvc.perform(post("/v3/orders?key=1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders/1"));
 
-    mockMvc.perform(post("/v1/orders?key=1")
+    mockMvc.perform(post("/v3/orders?key=1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isConflict())
@@ -220,14 +220,14 @@ public class RestAccessControllerTest {
   public void postEntryWithSlashKey() throws Exception {
     String decodedKey = createKey(1);
     String encodedKey = encodeKey(decodedKey);
-    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+    mockMvc.perform(put("/v3/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
-    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+    mockMvc.perform(put("/v3/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isConflict())
@@ -241,14 +241,14 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void postEntryWithJsonArrayOfOrders() throws Exception {
-    mockMvc.perform(post("/v1/orders?key=1")
+    mockMvc.perform(post("/v3/orders?key=1")
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders/1"));
 
-    mockMvc.perform(post("/v1/orders?key=1")
+    mockMvc.perform(post("/v3/orders?key=1")
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isConflict())
@@ -265,14 +265,14 @@ public class RestAccessControllerTest {
   public void createEntryWithJsonArrayOfOrdersWithEncodedKey() throws Exception {
     String decodedKey = createKey(1);
     String encodedKey = encodeKey(decodedKey);
-    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+    mockMvc.perform(put("/v3/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(content().string(""))
         .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
-    mockMvc.perform(put("/v1/orders?op=CREATE&keys=" + encodedKey)
+    mockMvc.perform(put("/v3/orders?op=CREATE&keys=" + encodedKey)
         .content(jsonResources.get(ORDER1_ARRAY_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isConflict())
@@ -288,7 +288,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPostEntryWithInvalidJson() throws Exception {
-    mockMvc.perform(post("/v1/orders?key=1")
+    mockMvc.perform(post("/v3/orders?key=1")
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
@@ -299,7 +299,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPostEntryWithInvalidRegion() throws Exception {
-    mockMvc.perform(post("/v1/unknown?key=1")
+    mockMvc.perform(post("/v3/unknown?key=1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isNotFound())
@@ -310,7 +310,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPostEntryOnRegionWithDataPolicyEmpty() throws Exception {
-    mockMvc.perform(post("/v1/empty?key=1")
+    mockMvc.perform(post("/v3/empty?key=1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isInternalServerError())
@@ -322,7 +322,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failGettingEntryFromUnknownRegion() throws Exception {
-    mockMvc.perform(get("/v1/unknown/10")
+    mockMvc.perform(get("/v3/unknown/10")
         .with(POST_PROCESSOR))
         .andExpect(status().isNotFound())
         .andExpect(
@@ -332,7 +332,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failGettingEntryWhenCacheLoaderFails() throws Exception {
-    mockMvc.perform(get("/v1/empty/10")
+    mockMvc.perform(get("/v3/empty/10")
         .with(POST_PROCESSOR))
         .andExpect(status().isInternalServerError())
         .andExpect(
@@ -343,14 +343,14 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void putEntry() throws Exception {
-    putAndVerifyCustomer("/v1/orders/2", ORDER2_JSON, "/orders/2");
-    putAndVerifyCustomer("/v1/orders/2", ORDER2_JSON, "/orders/2");
+    putAndVerifyCustomer("/v3/orders/2", ORDER2_JSON, "/orders/2");
+    putAndVerifyCustomer("/v3/orders/2", ORDER2_JSON, "/orders/2");
   }
 
   @Test
   @WithMockUser
   public void failPutEntryWithInvalidJson() throws Exception {
-    mockMvc.perform(put("/v1/orders/1")
+    mockMvc.perform(put("/v3/orders/1")
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
@@ -361,7 +361,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutEntryWithInvalidRegion() throws Exception {
-    mockMvc.perform(put("/v1/unknown/1")
+    mockMvc.perform(put("/v3/unknown/1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isNotFound())
@@ -372,7 +372,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutEntryOnRegionWhenCacheWriterFails() throws Exception {
-    mockMvc.perform(put("/v1/empty/1")
+    mockMvc.perform(put("/v3/empty/1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isInternalServerError())
@@ -391,7 +391,7 @@ public class RestAccessControllerTest {
     keysBuilder.append(60);
     String keys = keysBuilder.toString();
     mockMvc.perform(
-        put("/v1/customers/" + keys)
+        put("/v3/customers/" + keys)
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
@@ -414,7 +414,7 @@ public class RestAccessControllerTest {
     keysBuilder.append(60);
     String keys = keysBuilder.toString();
     mockMvc.perform(
-        put("/v1/customers?keys=" + keys)
+        put("/v3/customers?keys=" + keys)
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
@@ -437,7 +437,7 @@ public class RestAccessControllerTest {
     keysBuilder.append(createEncodedKey(60));
     String keys = keysBuilder.toString();
     mockMvc.perform(
-        put("/v1/customers?keys=" + keys)
+        put("/v3/customers?keys=" + keys)
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
@@ -457,7 +457,7 @@ public class RestAccessControllerTest {
     String encodedKey = encodeKey(decodedKey);
 
     mockMvc.perform(
-        put("/v1/orders?keys=" + encodedKey)
+        put("/v3/orders?keys=" + encodedKey)
             .content(jsonResources.get(ORDER2_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isOk())
@@ -473,7 +473,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutAllWithInvalidJson() throws Exception {
-    mockMvc.perform(put("/v1/customers/1,2,3,4")
+    mockMvc.perform(put("/v3/customers/1,2,3,4")
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
@@ -483,7 +483,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithInvalidOp() throws Exception {
-    mockMvc.perform(put("/v1/orders/1?op=BOGUS")
+    mockMvc.perform(put("/v3/orders/1?op=BOGUS")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
@@ -495,7 +495,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithKeyParamWithInvalidOp() throws Exception {
-    mockMvc.perform(put("/v1/orders?op=BOGUS&keys=1")
+    mockMvc.perform(put("/v3/orders?op=BOGUS&keys=1")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
@@ -508,7 +508,7 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void failPutAllWithInvalidRegion() throws Exception {
     mockMvc.perform(
-        put("/v1/unknown/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60")
+        put("/v3/unknown/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60")
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isNotFound())
@@ -520,7 +520,7 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void failPutAllWhenCacheWriterFails() throws Exception {
     mockMvc.perform(
-        put("/v1/empty/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60")
+        put("/v3/empty/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60")
             .content(jsonResources.get(CUSTOMER_LIST_JSON))
             .with(POST_PROCESSOR))
         .andExpect(status().isInternalServerError())
@@ -532,19 +532,19 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void putWithReplace() throws Exception {
     // First time through the key does not exist and we get a 404
-    mockMvc.perform(put("/v1/orders/2?op=REPLACE")
+    mockMvc.perform(put("/v3/orders/2?op=REPLACE")
         .content(jsonResources.get(ORDER2_UPDATED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isNotFound());
 
     // Create an entry that we can subsequently update
-    putAndVerifyCustomer("/v1/orders/2", ORDER2_JSON, "/orders/2");
+    putAndVerifyCustomer("/v3/orders/2", ORDER2_JSON, "/orders/2");
 
     // Do the actual update
-    putAndVerifyCustomer("/v1/orders/2?op=REPLACE", ORDER2_UPDATED_JSON, "/orders/2");
+    putAndVerifyCustomer("/v3/orders/2?op=REPLACE", ORDER2_UPDATED_JSON, "/orders/2");
 
     // Check the updated value
-    mockMvc.perform(get("/v1/orders/2")
+    mockMvc.perform(get("/v3/orders/2")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonResources.get(ORDER2_UPDATED_JSON)));
@@ -553,7 +553,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithReplaceWithInvalidJson() throws Exception {
-    mockMvc.perform(put("/v1/orders/1?op=REPLACE")
+    mockMvc.perform(put("/v3/orders/1?op=REPLACE")
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
@@ -564,7 +564,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithReplaceWithInvalidRegion() throws Exception {
-    mockMvc.perform(put("/v1/unknown/1?op=REPLACE")
+    mockMvc.perform(put("/v3/unknown/1?op=REPLACE")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isNotFound())
@@ -575,7 +575,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithReplaceFailsOnEmptyRegion() throws Exception {
-    mockMvc.perform(put("/v1/empty/10?op=REPLACE")
+    mockMvc.perform(put("/v3/empty/10?op=REPLACE")
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isInternalServerError())
@@ -588,19 +588,19 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void putWithCas() throws Exception {
     // First time through the key does not exist and we get a 404
-    putAndVerifyCustomer("/v1/orders/3?op=CAS", ORDER_CAS_JSON, "/orders/3");
+    putAndVerifyCustomer("/v3/orders/3?op=CAS", ORDER_CAS_JSON, "/orders/3");
 
     // Create an entry that we can subsequently update
-    putAndVerifyCustomer("/v1/orders/3", ORDER_CAS_OLD_JSON, "/orders/3");
+    putAndVerifyCustomer("/v3/orders/3", ORDER_CAS_OLD_JSON, "/orders/3");
 
     // Check the value
-    mockMvc.perform(get("/v1/orders/3")
+    mockMvc.perform(get("/v3/orders/3")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonResources.get(ORDER_CAS_OLD_JSON)));
 
     // Try and update with an incorrect old value
-    mockMvc.perform(put("/v1/orders/3?op=CAS")
+    mockMvc.perform(put("/v3/orders/3?op=CAS")
         .content(jsonResources.get(ORDER_CAS_WRONG_OLD_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isConflict())
@@ -609,16 +609,16 @@ public class RestAccessControllerTest {
         .andExpect(content().json(jsonResources.get(ORDER_CAS_OLD_JSON)));
 
     // Check that the value has not changed
-    mockMvc.perform(get("/v1/orders/3")
+    mockMvc.perform(get("/v3/orders/3")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonResources.get(ORDER_CAS_OLD_JSON)));
 
     // Do the actual update
-    putAndVerifyCustomer("/v1/orders/3?op=CAS", ORDER_CAS_JSON, "/orders/3");
+    putAndVerifyCustomer("/v3/orders/3?op=CAS", ORDER_CAS_JSON, "/orders/3");
 
     // Check the updated value
-    mockMvc.perform(get("/v1/orders/3")
+    mockMvc.perform(get("/v3/orders/3")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(content().json(jsonResources.get(ORDER_CAS_NEW_JSON)));
@@ -627,7 +627,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithCasWithInvalidJson() throws Exception {
-    mockMvc.perform(put("/v1/orders/1?op=CAS")
+    mockMvc.perform(put("/v3/orders/1?op=CAS")
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
@@ -638,7 +638,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithCasWithInvalidRegion() throws Exception {
-    mockMvc.perform(put("/v1/unknown/10?op=CAS")
+    mockMvc.perform(put("/v3/unknown/10?op=CAS")
         .content(jsonResources.get(ORDER_CAS_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isNotFound())
@@ -649,7 +649,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void failPutWithCasFailsOnEmptyRegion() throws Exception {
-    mockMvc.perform(put("/v1/empty/10?op=CAS")
+    mockMvc.perform(put("/v3/empty/10?op=CAS")
         .content(jsonResources.get(ORDER_CAS_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isInternalServerError())
@@ -661,7 +661,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void getRegions() throws Exception {
-    mockMvc.perform(get("/v1")
+    mockMvc.perform(get("/v3")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(
@@ -673,7 +673,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void postRegions() throws Exception {
-    mockMvc.perform(post("/v1")
+    mockMvc.perform(post("/v3")
         .with(POST_PROCESSOR))
         .andExpect(status().isMethodNotAllowed())
         .andExpect(jsonPath("$.cause", is("Request method 'POST' not supported")));
@@ -684,7 +684,7 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void getAllCustomers() throws Exception {
     putAll();
-    mockMvc.perform(get("/v1/customers?limit=ALL")
+    mockMvc.perform(get("/v3/customers?limit=ALL")
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(header().string("Content-Location", startsWith(BASE_URL + "/customers/")))

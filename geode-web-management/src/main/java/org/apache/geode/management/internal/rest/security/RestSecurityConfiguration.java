@@ -88,8 +88,10 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/docs/**", "/swagger-ui.html", "/swagger-ui/index.html", "/",
+        .antMatchers("/docs/**", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-ui/**",
+            "/",
             Links.URI_VERSION + "/api-docs/**", "/webjars/springdoc-openapi-ui/**",
+            "/v3/api-docs/**",
             "/swagger-resources/**")
         .permitAll()
         .and().csrf().disable();
