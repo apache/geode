@@ -51,7 +51,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -86,13 +85,11 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.util.TypedFunctionService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.UniversalMembershipListenerAdapter;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -101,7 +98,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 
 @Category(ClientServerTest.class)
 public class PartitionedRegionSingleHopDUnitTest implements Serializable {
-  protected static Logger logger = LogService.getLogger();
   private static final String PARTITIONED_REGION_NAME = "single_hop_pr";
   private static final String ORDER_REGION_NAME = "ORDER";
   private static final String CUSTOMER_REGION_NAME = "CUSTOMER";
@@ -897,10 +893,10 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
     int locatorPort = DUnitEnv.get().getLocatorPort();
 
-    vm0.invoke((SerializableCallableIF<Integer>) this::createServer);
-    vm1.invoke((SerializableCallableIF<Integer>) this::createServer);
-    vm2.invoke((SerializableCallableIF<Integer>) this::createServer);
-    vm3.invoke((SerializableCallableIF<Integer>) this::createServer);
+    vm0.invoke(() -> createServer());
+    vm1.invoke(() -> createServer());
+    vm2.invoke(() -> createServer());
+    vm3.invoke(() -> createServer());
 
     vm3.invoke(this::putIntoPartitionedRegions);
 
@@ -937,14 +933,10 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
     assertThat(LATCH.get().await(getTimeout().toMillis(), MILLISECONDS))
         .as("Waiting for the latch").isTrue();
-    AsyncInvocation<Integer> createServerOnVM3 =
-        vm3.invokeAsync((SerializableCallableIF<Integer>) this::createServer);
-    AsyncInvocation<Integer> createServerOnVM2 =
-        vm2.invokeAsync((SerializableCallableIF<Integer>) this::createServer);
-    AsyncInvocation<Integer> createServerOnVM1 =
-        vm1.invokeAsync((SerializableCallableIF<Integer>) this::createServer);
-    AsyncInvocation<Integer> createServerOnVM0 =
-        vm0.invokeAsync((SerializableCallableIF<Integer>) this::createServer);
+    AsyncInvocation<Integer> createServerOnVM3 = vm3.invokeAsync(() -> this.createServer());
+    AsyncInvocation<Integer> createServerOnVM2 = vm2.invokeAsync(() -> this.createServer());
+    AsyncInvocation<Integer> createServerOnVM1 = vm1.invokeAsync(() -> this.createServer());
+    AsyncInvocation<Integer> createServerOnVM0 = vm0.invokeAsync(() -> this.createServer());
 
     createServerOnVM3.await();
     createServerOnVM2.await();
@@ -1325,21 +1317,21 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
   private void executeFunctions(Region<Object, Object> region) {
     TypedFunctionService.onRegion(region)
         .withFilter(filter(0))
-        .execute(new PutFunction())
+        .execute(new PutFunction<>())
         .getResult();
 
     TypedFunctionService.onRegion(region)
         .withFilter(filter(0, 1))
-        .execute(new PutFunction())
+        .execute(new PutFunction<>())
         .getResult();
 
     TypedFunctionService.onRegion(region)
         .withFilter(filter(0, 1, 2, 3))
-        .execute(new PutFunction())
+        .execute(new PutFunction<>())
         .getResult();
 
     TypedFunctionService.onRegion(region)
-        .execute(new PutFunction())
+        .execute(new PutFunction<>())
         .getResult();
   }
 
@@ -1485,7 +1477,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     public void execute(FunctionContext<T> context) {
       RegionFunctionContext rc = (RegionFunctionContext) context;
       Region<Object, Object> r = rc.getDataSet();
-      Set<Object> filter = (Set<Object>) rc.getFilter();
+      Set<?> filter = rc.getFilter();
       if (filter == null) {
         for (int i = 0; i < 200; i++) {
           r.put(i, i);

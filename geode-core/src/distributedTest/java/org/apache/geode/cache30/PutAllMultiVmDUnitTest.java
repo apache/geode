@@ -22,6 +22,7 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.util.HashMap;
@@ -436,12 +437,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
-        try {
-          region.putAll(m);
-          fail("Expect NullPointerException");
-        } catch (NullPointerException ex) {
-          // do nothing
-        }
+        assertThatThrownBy(() -> region.putAll(m)).isInstanceOf(NullPointerException.class);
 
         assertThat(region).hasSize(5);
         assertThat(region).doesNotContainKey(10);
