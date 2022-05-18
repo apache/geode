@@ -227,8 +227,8 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
       new HashSet<>(meterRegistry.getRegistries())
           .forEach(meterRegistry::remove);
 
-      meterRegistry.clear();
       meterRegistry.close();
+      meterRegistry.clear();
     }
   }
 
