@@ -24,30 +24,37 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.security.GeneralSecurityException;
 import java.util.Properties;
+import java.util.stream.IntStream;
 
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.version.VersionManager;
 
 /*
  * This test creates a three member cluster. One member resides in the test JVM so only
@@ -60,37 +67,44 @@ import org.apache.geode.test.version.VersionManager;
  * between forced-disconnect closing the server socket, and the newly-created
  * CacheServer binding to the same port.
  */
-public class ReconnectWithTlsAndClientsCacheServerDistributedTest {
+public class ReconnectWithTlsAndClientsCacheServerDistributedTest implements Serializable {
   @Rule
-  public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(2);
+  public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
+  @Rule
+  public DistributedBlackboard blackboard = new DistributedBlackboard();
   private CacheFactory cacheFactory;
   private Properties geodeConfigurationProperties;
   private int clientsCachePort;
 
-  @Before
-  public void before() throws GeneralSecurityException, IOException {
-    final Properties geodeConfig = geodeConfigurationProperties();
+  private static final Logger logger = LogService.getLogger();
+  // private MemberVM server;
+  // private int locatorPort;
 
-    final MemberVM locator =
-        clusterStartupRule.startLocatorVM(0, 0, VersionManager.CURRENT_VERSION,
-            x -> x.withConnectionToLocator().withProperties(geodeConfig)
-                .withoutClusterConfigurationService().withoutManagementRestService());
+  // @Before
+  // public void before() throws GeneralSecurityException, IOException {
+  // final Properties geodeConfig = geodeConfigurationProperties();
+  //
+  // final MemberVM locator =
+  // clusterStartupRule.startLocatorVM(0,
+  // x -> x.withConnectionToLocator().withProperties(geodeConfig)
+  // .withoutClusterConfigurationService().withoutManagementRestService());
+  //
+  // locatorPort = locator.getPort();
+  // /*
+  // * The only purpose of this extra member is to prevent quorum loss when we force-
+  // * disconnect the local (test) member. Having this member gives us an initial
+  // * cluster size of 3.
+  // */
+  // server = clusterStartupRule.startServerVM(1, geodeConfig, locator.getPort());
+  //
+  // // now make the test JVM a cluster member too
+  //// geodeConfig.setProperty("locators", "localhost[" + locator.getPort() + "]");
+  //// cacheFactory = new CacheFactory(geodeConfig);
+  ////
+  //// clientsCachePort = AvailablePortHelper.getRandomAvailableTCPPort();
+  // }
 
-    /*
-     * The only purpose of this extra member is to prevent quorum loss when we force-
-     * disconnect the local (test) member. Having this member gives us an initial
-     * cluster size of 3.
-     */
-    clusterStartupRule.startServerVM(1, geodeConfig, locator.getPort());
 
-    // now make the test JVM a cluster member too
-    geodeConfig.setProperty("locators", "localhost[" + locator.getPort() + "]");
-    cacheFactory = new CacheFactory(geodeConfig);
-
-    clientsCachePort = AvailablePortHelper.getRandomAvailableTCPPort();
-  }
-
-  @Test
   public void disconnectAndReconnectTest() throws IOException {
     for (int i = 0; i < 5; ++i) {
       cycle(clientsCachePort);
@@ -101,7 +115,7 @@ public class ReconnectWithTlsAndClientsCacheServerDistributedTest {
    * Experiment to see what happens if I bind port ahead of CacheServer.
    * Doing this before addCacheServer() causes an exception
    */
-  @Test
+
   public void preBindToClientsCacheServerPortTest() throws IOException {
     final ServerSocket serverSocket = new ServerSocket();
     serverSocket.setReuseAddress(true);
@@ -109,6 +123,72 @@ public class ReconnectWithTlsAndClientsCacheServerDistributedTest {
 
     // AcceptorImpl constructor will keep trying to bind for two minutes and then it'll give up
     assertThatThrownBy(() -> cycle(clientsCachePort)).isInstanceOf(BindException.class);
+  }
+
+  @Test
+  public void testBindingSocket() throws Exception {
+    blackboard.initBlackboard();
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    MemberVM server = clusterStartupRule.startServerVM(1, locator.getPort());
+
+    server.invoke(() -> {
+      ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.REPLICATE)
+          .create("testRegion");
+    });
+    logger.info("JC debug: locator port: {} server port: {}", locator.getPort(), server.getPort());
+    ClientVM client =
+        clusterStartupRule.startClientVM(2, c -> c.withServerConnection(server.getPort()));
+
+    client.invokeAsync(() -> {
+      Region<Integer, Integer> region =
+          ClusterStartupRule.clientCacheRule.createProxyRegion("testRegion");
+      for (int j = 0; j < 1000; j++) {
+        if (j == 1) {
+          blackboard.signalGate("gate");
+        }
+        IntStream.range(0, 100_000).forEach(i -> region.put(i, i));
+      }
+    });
+
+    final String[] lsof = {
+        "/bin/sh",
+        "-c",
+        "lsof -i -P -n | grep 2000"
+    };
+
+    blackboard.waitForGate("gate");
+    String output = executeCommand(lsof);
+    logger.info("JC debug: lsof 1: \n" + output);
+
+    server.invoke(() -> {
+      ClusterStartupRule.getServer().stop();
+    });
+
+    output = executeCommand(lsof);
+    logger.info("JC debug: lsof 2: \n" + output);
+
+    server.invoke(() -> {
+      ClusterStartupRule.getServer().start();
+    });
+
+    output = executeCommand(lsof);
+    logger.info("JC debug: lsof 3: \n" + output);
+  }
+
+  private String executeCommand(final String[] command) {
+    final StringBuffer output = new StringBuffer();
+    final Process p;
+    try {
+      p = Runtime.getRuntime().exec(command);
+      final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      String line = "";
+      while ((line = reader.readLine()) != null) {
+        output.append(line + "\n");
+      }
+    } catch (Exception e) {
+      logger.info("JC debug: caught exception when executing shell command: {}", e);
+    }
+    return output.toString();
   }
 
   private void cycle(final int clientsCachePort) throws IOException {
