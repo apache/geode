@@ -137,20 +137,9 @@ public class RegionMapPutTest {
   public void doesNotSetEventOldValueIfRetriedPutIfAbsentOperation() {
     final byte[] bytes = new byte[] {1, 2, 3, 4, 5};
     givenExistingRegionEntry();
-    when(existingRegionEntry.getValueRetain(internalRegion)).thenReturn(bytes);
+    when(existingRegionEntry.getValue()).thenReturn(bytes);
     when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     givenPutIfAbsentOperation(bytes); // duplicate operation
-    doPut();
-    verify(event).setOldValue(null, true);
-    assertThat(instance.isOverwritePutIfAbsent()).isTrue();
-  }
-
-  @Test
-  public void doesNotSetEventOldValueIfRetriedPutIfAbsentOperationOfNull() {
-    givenExistingRegionEntry();
-    when(existingRegionEntry.getValueRetain(internalRegion)).thenReturn(Token.INVALID);
-    when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
-    givenPutIfAbsentOperation(null); // duplicate operation
     doPut();
     verify(event).setOldValue(null, true);
     assertThat(instance.isOverwritePutIfAbsent()).isTrue();
@@ -160,7 +149,7 @@ public class RegionMapPutTest {
   public void overWritePutIfAbsentIsTrueIfRetriedPutIfAbsentOperationHavingValidVersionTag() {
     final byte[] bytes = new byte[] {1, 2, 3, 4, 5};
     givenExistingRegionEntry();
-    when(existingRegionEntry.getValueRetain(internalRegion)).thenReturn(bytes);
+    when(existingRegionEntry.getValue()).thenReturn(bytes);
     when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     givenPutIfAbsentOperation(bytes); // duplicate operation
     when(event.hasValidVersionTag()).thenReturn(true);
@@ -173,7 +162,7 @@ public class RegionMapPutTest {
 
   private void givenPutIfAbsentOperation(byte[] bytes) {
     when(event.isPossibleDuplicate()).thenReturn(true);
-    when(event.getRawNewValue()).thenReturn(bytes);
+    when(event.basicGetNewValue()).thenReturn(bytes);
     when(event.getOperation()).thenReturn(Operation.PUT_IF_ABSENT);
     when(event.hasValidVersionTag()).thenReturn(false);
     ifNew = true;
