@@ -207,6 +207,8 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       sb.append(exceptions);
     }
     sb.append("}");
+    sb.append("id=" + id);
+    sb.append(",departed?" + isDepartedMember);
     return sb.toString();
   }
 

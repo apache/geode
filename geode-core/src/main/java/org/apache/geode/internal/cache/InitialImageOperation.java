@@ -1107,7 +1107,7 @@ public class InitialImageOperation {
         }
       }
     }
-    if (!departedMemberSet.isEmpty() && foundIds.size() > 0) {
+    if (!departedMemberSet.isEmpty()) {
       if (localRVV != null) {
         localRVV.removeOldMembers(foundIds);
       }
@@ -2056,11 +2056,9 @@ public class InitialImageOperation {
           // if this region is destroyed while we are sending data, then abort.
         } while (keepGoing && it.hasNext());
 
-        if (foundIds.size() > 0) {
-          RegionVersionVector vv = rgn.getVersionVector();
-          if (vv != null) {
-            vv.removeOldMembers(foundIds);
-          }
+        RegionVersionVector vv = rgn.getVersionVector();
+        if (vv != null) {
+          vv.removeOldMembers(foundIds);
         }
         // return false if we were told to abort
         return sentLastChunk;
