@@ -1089,7 +1089,7 @@ public class InitialImageOperation {
         }
         if (!isPersistentRegion) {
           foundIds.add(id);
-        } else if (isPersistentRegion && !remoteRVV.contains(id, stamp.getRegionVersion())) {
+        } else if (!remoteRVV.contains(id, stamp.getRegionVersion())) {
           // found an unfinished operation
           keys.add(mapEntry.getKey());
           remoteRVV.recordVersion(id, stamp.getRegionVersion());
