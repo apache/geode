@@ -43,7 +43,6 @@ public interface SecurityManager {
    *
    * @param securityProps the security properties obtained using a call to
    *        {@link DistributedSystem#getSecurityProperties}
-   * @throws AuthenticationFailedException if some exception occurs during the initialization
    */
   default void init(Properties securityProps) {}
 
