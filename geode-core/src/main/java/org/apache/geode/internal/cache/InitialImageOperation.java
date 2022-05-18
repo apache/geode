@@ -1063,14 +1063,15 @@ public class InitialImageOperation {
       return null;
     }
     // calculate keys for unfinished ops
-    Set<VersionSource> foundIds = new HashSet<>();
+    Set<VersionSource> foundIds = Collections.emptySet();
     HashSet<Object> keys = new HashSet<>();
     Set<VersionSource> departedMemberSet = receivedRVV.getDepartedMembersSet();
     boolean isPersistentRegion = region.getDataPolicy().withPersistence();
     if ((isPersistentRegion && localRVV.isNewerThanOrCanFillExceptionsFor(remoteRVV))
         || !departedMemberSet.isEmpty()) {
-      // only search for unfinished keys when localRVV has something newer
-      // and the region is persistent region
+      // Only search for unfinished keys when localRVV has something newer
+      // and the region is persistent region.
+      // Search for departed members if region is not persistent region
       Iterator<RegionEntry> it = region.getBestIterator(false);
       int count = 0;
       VersionSource<?> myId = region.getVersionMember();
@@ -1083,8 +1084,7 @@ public class InitialImageOperation {
         }
         if (!isPersistentRegion) {
           foundIds.add(id);
-        }
-        if (isPersistentRegion && !remoteRVV.contains(id, stamp.getRegionVersion())) {
+        } else if (isPersistentRegion && !remoteRVV.contains(id, stamp.getRegionVersion())) {
           // found an unfinished operation
           keys.add(mapEntry.getKey());
           remoteRVV.recordVersion(id, stamp.getRegionVersion());
