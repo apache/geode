@@ -1063,10 +1063,15 @@ public class InitialImageOperation {
       return null;
     }
     // calculate keys for unfinished ops
-    Set<VersionSource> foundIds = Collections.emptySet();
     HashSet<Object> keys = new HashSet<>();
     Set<VersionSource> departedMemberSet = receivedRVV.getDepartedMembersSet();
     boolean isPersistentRegion = region.getDataPolicy().withPersistence();
+    Set<VersionSource> foundIds;
+    if (!isPersistentRegion) {
+      foundIds = new HashSet<>();
+    } else {
+      foundIds = Collections.emptySet();
+    }
     if ((isPersistentRegion && localRVV.isNewerThanOrCanFillExceptionsFor(remoteRVV))
         || !departedMemberSet.isEmpty()) {
       // Only search for unfinished keys when localRVV has something newer
