@@ -366,7 +366,7 @@ public class InitialImageOperation {
         // remote_rvv will be filled with the versions of unfinished keys
         // then if recoveredRVV is still newer than the filled remote_rvv, do fullGII
         remote_rvv = received_rvv.getCloneForTransmission();
-        keysOfUnfinishedOps = processReceivedRVV(remote_rvv, recoveredRVV);
+        keysOfUnfinishedOps = processReceivedRVV(remote_rvv, recoveredRVV, received_rvv);
         if (internalAfterCalculatedUnfinishedOps != null
             && internalAfterCalculatedUnfinishedOps.getRegionName().equals(this.region.getName())) {
           internalAfterCalculatedUnfinishedOps.run();
@@ -1057,21 +1057,32 @@ public class InitialImageOperation {
   /**
    * Compare the received RVV with local RVV and return a set of keys for unfinished operations.
    *
-   * @param remoteRVV RVV from provider
+   * @param remoteRVV RVV from provider to be filled with unfinished operations
    * @param localRVV RVV recovered from disk
+   * @param receivedRVV original RVV from provider to remove departed members
    * @return set for keys of unfinished operations.
    */
-  protected Set processReceivedRVV(RegionVersionVector remoteRVV, RegionVersionVector localRVV) {
+  protected Set<Object> processReceivedRVV(RegionVersionVector remoteRVV,
+      RegionVersionVector localRVV, RegionVersionVector receivedRVV) {
     if (remoteRVV == null) {
       return null;
     }
     // calculate keys for unfinished ops
-    HashSet keys = new HashSet();
-    if (this.region.getDataPolicy().withPersistence()
-        && localRVV.isNewerThanOrCanFillExceptionsFor(remoteRVV)) {
-      // only search for unfinished keys when localRVV has something newer
-      // and the region is persistent region
-      Iterator it = this.region.getBestIterator(false);
+    HashSet<Object> keys = new HashSet<>();
+    Set<VersionSource> departedMemberSet = receivedRVV.getDepartedMembersSet();
+    boolean isPersistentRegion = region.getDataPolicy().withPersistence();
+    Set<VersionSource> foundIds;
+    if (!isPersistentRegion) {
+      foundIds = new HashSet<>();
+    } else {
+      foundIds = Collections.emptySet();
+    }
+    if ((isPersistentRegion && localRVV.isNewerThanOrCanFillExceptionsFor(remoteRVV))
+        || !departedMemberSet.isEmpty()) {
+      // Only search for unfinished keys when localRVV has something newer
+      // and the region is persistent region.
+      // Search for departed members if region is not persistent region
+      Iterator<RegionEntry> it = region.getBestIterator(false);
       int count = 0;
       VersionSource<?> myId = this.region.getVersionMember();
       while (it.hasNext()) {
@@ -1081,7 +1092,9 @@ public class InitialImageOperation {
         if (id == null) {
           id = myId;
         }
-        if (!remoteRVV.contains(id, stamp.getRegionVersion())) {
+        if (!isPersistentRegion) {
+          foundIds.add(id);
+        } else if (!remoteRVV.contains(id, stamp.getRegionVersion())) {
           // found an unfinished operation
           keys.add(mapEntry.getKey());
           remoteRVV.recordVersion(id, stamp.getRegionVersion());
@@ -1103,6 +1116,13 @@ public class InitialImageOperation {
               region.getFullPath(), keys.size());
         }
       }
+    }
+    if (!departedMemberSet.isEmpty()) {
+      if (localRVV != null) {
+        localRVV.removeOldMembers(foundIds);
+      }
+      receivedRVV.removeOldMembers(foundIds);
+      remoteRVV.removeOldMembers(foundIds);
     }
     return keys;
   }
@@ -2074,11 +2094,9 @@ public class InitialImageOperation {
           // if this region is destroyed while we are sending data, then abort.
         } while (keepGoing && it.hasNext());
 
-        if (foundIds.size() > 0) {
-          RegionVersionVector vv = rgn.getVersionVector();
-          if (vv != null) {
-            vv.removeOldMembers(foundIds);
-          }
+        RegionVersionVector vv = rgn.getVersionVector();
+        if (vv != null) {
+          vv.removeOldMembers(foundIds);
         }
         // return false if we were told to abort
         return sentLastChunk;

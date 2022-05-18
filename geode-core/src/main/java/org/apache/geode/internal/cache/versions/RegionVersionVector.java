@@ -192,11 +192,12 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   @VisibleForTesting
   RegionVersionVector(T ownerId, LocalRegion owner, long version) {
-    this.myId = ownerId;
-    this.isLiveVector = true;
-    this.region = owner;
-    this.localExceptions = new RegionVersionHolder<T>(0);
-    this.memberToVersion =
+    myId = ownerId;
+    isLiveVector = true;
+    region = owner;
+    localExceptions = new RegionVersionHolder<>(0);
+    localExceptions.id = myId;
+    memberToVersion =
         new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
     this.memberToGCVersion =
         new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
@@ -609,7 +610,10 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       if (!mbr.equals(this.myId)) {
         h = otherHolder.clone();
         h.makeReadyForRecording();
-        this.memberToVersion.put(mbr, h);
+        if (h.id == null) {
+          h.id = mbr;
+        }
+        memberToVersion.put(mbr, h);
       } else {
         RegionVersionHolder<T> vh = otherHolder;
         long version = vh.version;
