@@ -713,7 +713,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       if (hostAddress != null && !StringUtils.isEmpty(hostAddress.getHostName())) {
         sb.append(hostAddress.getHostName());
       } else {
-        sb.append(LocalHostUtil.getLocalHost().getCanonicalHostName());
+        sb.append(LocalHostUtil.getLocalHost().getHostAddress());
       }
       sb.append('[').append(getPort()).append(']');
       String thisLocator = sb.toString();
