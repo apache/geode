@@ -48,12 +48,6 @@ public class MemberJvmOptions {
    * open needed by {@link UnsafeThreadLocal}
    */
   private static final String JAVA_LANG_OPEN = "--add-opens=java.base/java.lang=ALL-UNNAMED";
-
-  /**
-   * open needed by {@link VMStats50}
-   */
-  private static final String SUN_MANAGEMENT_OPEN =
-      "--add-opens=java.management/sun.management=ALL-UNNAMED";
   /**
    * open needed by {@link AddressableMemoryManager}
    */
@@ -69,8 +63,7 @@ public class MemberJvmOptions {
       SUN_NIO_CH_EXPORT,
       COM_SUN_MANAGEMENT_INTERNAL_OPEN,
       JAVA_LANG_OPEN,
-      JAVA_NIO_OPEN,
-      SUN_MANAGEMENT_OPEN);
+      JAVA_NIO_OPEN);
 
   public static List<String> getMemberJvmOptions() {
     if (isJavaVersionAtLeast(JAVA_11)) {
