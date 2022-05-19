@@ -17,7 +17,6 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Rule;
@@ -39,7 +38,9 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.TestVersion;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
@@ -47,11 +48,11 @@ import org.apache.geode.test.version.VersionManager;
 public class ClientAuthDUnitTest {
 
   @Parameterized.Parameter
-  public String clientVersion;
+  public VmConfiguration clientVmConfiguration;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    return VersionManager.getInstance().getVersions();
+  @Parameterized.Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.all();
   }
 
   @Rule
@@ -65,7 +66,7 @@ public class ClientAuthDUnitTest {
   @Test
   public void authWithCorrectPasswordShouldPass() throws Exception {
     int serverPort = server.getPort();
-    ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
+    ClientVM clientVM = lsRule.startClientVM(0, clientVmConfiguration,
         c -> c.withCredential("data", "data")
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -86,10 +87,9 @@ public class ClientAuthDUnitTest {
 
     // for older version of client when we did not implement lazy initialization of the pool, the
     // authentication error will happen at this step.
-    if (Arrays.asList("1.0.0-incubating", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0")
-        .contains(clientVersion)) {
+    if (clientVmConfiguration.geodeVersion().lessThanOrEqualTo(TestVersion.valueOf("1.4.0"))) {
       assertThatThrownBy(
-          () -> lsRule.startClientVM(0, clientVersion,
+          () -> lsRule.startClientVM(0, clientVmConfiguration,
               c -> c.withCredential("test", "invalidPassword")
                   .withPoolSubscription(true)
                   .withServerConnection(serverPort)))
@@ -98,9 +98,10 @@ public class ClientAuthDUnitTest {
     }
 
     ClientVM clientVM =
-        lsRule.startClientVM(0, clientVersion, c -> c.withCredential("test", "invalidPassword")
-            .withPoolSubscription(true)
-            .withServerConnection(serverPort));
+        lsRule.startClientVM(0, clientVmConfiguration,
+            c -> c.withCredential("test", "invalidPassword")
+                .withPoolSubscription(true)
+                .withServerConnection(serverPort));
 
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
@@ -115,8 +116,8 @@ public class ClientAuthDUnitTest {
   public void authWithIncorrectPasswordWithSubscriptionNotEnabled() throws Exception {
     int serverPort = server.getPort();
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
-    ClientVM clientVM =
-        lsRule.startClientVM(0, clientVersion, c -> c.withCredential("test", "invalidPassword")
+    ClientVM clientVM = lsRule.startClientVM(0, clientVmConfiguration,
+        c -> c.withCredential("test", "invalidPassword")
             .withPoolSubscription(false)
             .withServerConnection(serverPort));
 

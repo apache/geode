@@ -35,10 +35,10 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
   public void luceneQueryReturnsCorrectResultsAfterClientAndServersAreRolledOver()
       throws Exception {
     final Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 0);
-    VM server2 = host.getVM(oldVersion, 1);
-    VM server3 = host.getVM(oldVersion, 2);
-    VM client = host.getVM(oldVersion, 3);
+    VM locator = host.getVM(sourceConfiguration, 0);
+    VM server2 = host.getVM(sourceConfiguration, 1);
+    VM server3 = host.getVM(sourceConfiguration, 2);
+    VM client = host.getVM(sourceConfiguration, 3);
 
     final String regionName = "aRegion";
     String regionType = "partitionedRedundant";

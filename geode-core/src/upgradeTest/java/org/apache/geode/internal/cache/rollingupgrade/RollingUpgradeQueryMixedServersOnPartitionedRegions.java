@@ -22,7 +22,7 @@ public class RollingUpgradeQueryMixedServersOnPartitionedRegions
 
   @Test
   public void testQueryMixedServersOnPartitionedRegions() throws Exception {
-    doTestQueryMixedServers(true, oldVersion);
+    doTestQueryMixedServers(true, sourceConfiguration);
   }
 
 }

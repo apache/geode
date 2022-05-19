@@ -92,6 +92,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -138,11 +139,15 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
   private final int putRange_2End = 10;
 
 
-  String testVersion; // version for client caches for backward-compatibility
-                      // testing
+  // configuration for client caches for backward-compatibility testing
+  final VmConfiguration clientVmConfiguration;
 
   public ClientServerMiscDUnitTestBase() {
-    testVersion = VersionManager.CURRENT_VERSION;
+    this(VmConfiguration.current());
+  }
+
+  public ClientServerMiscDUnitTestBase(VmConfiguration clientVmConfiguration) {
+    this.clientVmConfiguration = clientVmConfiguration;
   }
 
   @Override
@@ -178,15 +183,15 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     int port1 = initServerCache(true); // vm0
     int port2 = initServerCache2(); // vm1
     String serverName = NetworkUtils.getServerHostName();
-    host.getVM(testVersion, 0).invoke(() -> createClientCacheV(serverName, port1));
-    host.getVM(testVersion, 1).invoke(() -> createClientCacheV(serverName, port2));
+    host.getVM(clientVmConfiguration, 0).invoke(() -> createClientCacheV(serverName, port1));
+    host.getVM(clientVmConfiguration, 1).invoke(() -> createClientCacheV(serverName, port2));
     LogService.getLogger()
         .info("Testing concurrent map operations from a client with a distributed region");
-    concurrentMapTest(host.getVM(testVersion, 0), SEPARATOR + REGION_NAME1);
+    concurrentMapTest(host.getVM(clientVmConfiguration, 0), SEPARATOR + REGION_NAME1);
     // TODO add verification in vm1
     LogService.getLogger()
         .info("Testing concurrent map operations from a client with a partitioned region");
-    concurrentMapTest(host.getVM(testVersion, 0), SEPARATOR + PR_REGION_NAME);
+    concurrentMapTest(host.getVM(clientVmConfiguration, 0), SEPARATOR + PR_REGION_NAME);
     // TODO add verification in vm1
   }
 
@@ -197,7 +202,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
    */
   @Test
   public void testClientReceivesPingIntervalSetting() {
-    VM clientVM = Host.getHost(0).getVM(testVersion, 0);
+    VM clientVM = Host.getHost(0).getVM(clientVmConfiguration, 0);
 
     final int port = initServerCache(true);
     final String host = NetworkUtils.getServerHostName();
@@ -242,15 +247,15 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     int port1 = initServerCache(true); // vm0
     int port2 = initServerCache2(); // vm1
     String serverName = NetworkUtils.getServerHostName();
-    host.getVM(testVersion, 0).invoke(() -> createEmptyClientCache(serverName, port1));
-    host.getVM(testVersion, 1).invoke(() -> createClientCacheV(serverName, port2));
+    host.getVM(clientVmConfiguration, 0).invoke(() -> createEmptyClientCache(serverName, port1));
+    host.getVM(clientVmConfiguration, 1).invoke(() -> createClientCacheV(serverName, port2));
     LogService.getLogger()
         .info("Testing concurrent map operations from a client with a distributed region");
-    concurrentMapTest(host.getVM(testVersion, 0), SEPARATOR + REGION_NAME1);
+    concurrentMapTest(host.getVM(clientVmConfiguration, 0), SEPARATOR + REGION_NAME1);
     // TODO add verification in vm1
     LogService.getLogger()
         .info("Testing concurrent map operations from a client with a partitioned region");
-    concurrentMapTest(host.getVM(testVersion, 0), SEPARATOR + PR_REGION_NAME);
+    concurrentMapTest(host.getVM(clientVmConfiguration, 0), SEPARATOR + PR_REGION_NAME);
     // TODO add verification in vm1
   }
 
@@ -462,7 +467,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     // start server first
     PORT1 = initServerCache(true);
     int serverPort = PORT1;
-    VM client1 = Host.getHost(0).getVM(testVersion, 1);
+    VM client1 = Host.getHost(0).getVM(clientVmConfiguration, 1);
     String hostname = NetworkUtils.getServerHostName();
     client1.invoke("create client1 cache", () -> {
       createClientCache(hostname, serverPort);

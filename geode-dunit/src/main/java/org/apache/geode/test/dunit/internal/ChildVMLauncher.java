@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
+import org.apache.geode.test.version.VmConfiguration;
+
 public interface ChildVMLauncher {
 
-  ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM, int remoteStubPort)
-      throws IOException;
+  ProcessHolder launchVM(VmConfiguration configuration, int vmNum, boolean bouncedVM,
+      int remoteStubPort) throws IOException;
 
   RemoteDUnitVMIF getStub(int i) throws RemoteException, NotBoundException, InterruptedException;
 }

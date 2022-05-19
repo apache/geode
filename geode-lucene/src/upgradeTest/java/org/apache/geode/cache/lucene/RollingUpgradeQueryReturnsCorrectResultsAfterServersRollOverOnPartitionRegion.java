@@ -21,7 +21,7 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterServersRollOverOnParti
   @Test
   public void luceneQueryReturnsCorrectResultsAfterServersRollOverOnPartitionRegion()
       throws Exception {
-    executeLuceneQueryWithServerRollOvers("partitionedRedundant", oldVersion);
+    executeLuceneQueryWithServerRollOvers("partitionedRedundant", sourceConfiguration);
   }
 
 }

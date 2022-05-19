@@ -14,11 +14,13 @@
  */
 package org.apache.geode.security;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.geode.cache.query.dunit.SecurityTestUtils.createAndExecuteCQ;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -58,24 +60,28 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.TestVersions;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
-  private static final String test_start_version = "1.14.0";
-  private static final String feature_start_version = "1.15.0";
+  // only test versions greater than or equal to 1.14.0
+  private static final TestVersion test_start_version = TestVersion.valueOf("1.14.0");
+  private static final TestVersion feature_start_version = TestVersion.valueOf("1.15.0");
   private static RegionService user0Service;
   private static RegionService user1Service;
 
   @Parameterized.Parameter
-  public String clientVersion;
+  public VmConfiguration clientVmConfiguration;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    // only test versions greater than or equal to 1.14.0
-    return VersionManager.getInstance().getVersionsLaterThanAndEqualTo(test_start_version);
+  @Parameterized.Parameters(name = "Client {0}")
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.all().stream()
+        .filter(hasGeodeVersion(TestVersions.atLeast(test_start_version)))
+        .collect(toList());
   }
 
   @Rule
@@ -102,7 +108,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void clientWithNoUserRefreshWillNotSucceed() throws Exception {
     int serverPort = server.getPort();
-    ClientVM clientVM = cluster.startClientVM(0, clientVersion,
+    ClientVM clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -151,7 +157,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   public void singleUserModeShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
       throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -195,7 +201,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   public void multiUserModeShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
       throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withMultiUser(true)
             .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
@@ -261,7 +267,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void cqOlderClientWillNotReAuthenticateAutomatically() throws Exception {
     // this test should only test the older client
-    if (TestVersion.compare(clientVersion, feature_start_version) >= 0) {
+    if (clientVmConfiguration.geodeVersion().greaterThanOrEqualTo(feature_start_version)) {
       return;
     }
 
@@ -316,7 +322,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   // the client will be terminated by the CacheClientUpdater
   public void multiUserCq() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withMultiUser(true)
             .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
@@ -369,7 +375,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void createCQWillReAuth() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -402,7 +408,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void stopCQ() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -435,7 +441,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void closeCQ() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -468,7 +474,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void registeredInterestForDefaultInterestPolicy() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withCacheSetup(
                 ccf -> ccf.setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(0))
@@ -514,7 +520,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void registeredInterest_PolicyNone_non_durableClient() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -542,7 +548,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     // for old client, server close the proxy, client have reconnect mechanism which
     // also triggers re-auth, clients re-register interest, but with InterestResultPolicy.NONE
     // there would be message loss
-    if (TestVersion.compare(clientVersion, feature_start_version) < 0) {
+    if (clientVmConfiguration.geodeVersion().lessThan(feature_start_version)) {
       clientVM.invoke(() -> {
         Region<Object, Object> clientRegion =
             ClusterStartupRule.getClientCache().getRegion("region");
@@ -571,7 +577,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void registeredInterestForInterestPolicyNone_durableClient() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withProperty(DURABLE_CLIENT_ID, "123456")
@@ -616,7 +622,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void registeredInterest_FailedReAuth_non_durableClient() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
@@ -650,7 +656,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void registeredInterest_FailedReAuth_durableClient() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withProperty(DURABLE_CLIENT_ID, "123456")
             .withProperty(DURABLE_CLIENT_TIMEOUT, "10")
@@ -689,7 +695,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
   private void startClientWithCQ() throws Exception {
     int serverPort = server.getPort();
-    clientVM = cluster.startClientVM(0, clientVersion,
+    clientVM = cluster.startClientVM(0, clientVmConfiguration,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withCacheSetup(
                 ccf -> ccf.setPoolSubscriptionRedundancy(2).setPoolSubscriptionEnabled(true))
