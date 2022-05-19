@@ -76,7 +76,7 @@ public class SSLConfig {
   private SSLConfig(final boolean endpointIdentification,
       final boolean useDefaultSSLContext,
       final boolean enabled,
-      final String protocols,
+      final @NotNull String protocols,
       final @Nullable String clientProtocols,
       final @Nullable String serverProtocols,
       final String ciphers,

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
+import static org.apache.geode.distributed.internal.membership.api.GMSUtil.replaceStrings;
 import static org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage.ALL_RECIPIENTS;
-import static org.apache.geode.internal.membership.utils.GMSUtil.replaceStrings;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
@@ -69,6 +69,7 @@ import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.distributed.internal.membership.api.CacheOperationMessageMarker;
+import org.apache.geode.distributed.internal.membership.api.GMSUtil;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberShunnedException;
@@ -90,7 +91,6 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.membership.utils.GMSUtil;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;

@@ -14,7 +14,7 @@
  * the License.
  *
  */
-package org.apache.geode.internal.membership.utils;
+package org.apache.geode.distributed.internal.membership.api;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;

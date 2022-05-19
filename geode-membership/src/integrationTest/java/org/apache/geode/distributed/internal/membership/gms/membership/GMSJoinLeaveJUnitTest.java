@@ -57,6 +57,7 @@ import org.mockito.internal.verification.Times;
 import org.mockito.verification.Timeout;
 
 import org.apache.geode.distributed.internal.membership.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.api.GMSUtil;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
@@ -86,7 +87,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMess
 import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.membership.utils.GMSUtil;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.junit.categories.MembershipTest;
 

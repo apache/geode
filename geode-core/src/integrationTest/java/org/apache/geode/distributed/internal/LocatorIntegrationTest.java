@@ -33,7 +33,7 @@ public class LocatorIntegrationTest {
   public LocatorStarterRule locator = new LocatorStarterRule();
 
   @Test
-  public void locatorConfigurationShouldNotBeModified() throws UnknownHostException {
+  public void locatorConfigurationShouldNotBeModifiedIfExists() throws UnknownHostException {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     locator.withPort(port);
     String hostAddress = LocalHostUtil.getLocalHost().getHostAddress();
@@ -43,6 +43,18 @@ public class LocatorIntegrationTest {
 
     String locators = locator.getLocator().getConfig().getLocators();
     assertThat(locators).isEqualTo(originalLocators);
+  }
+
+  @Test
+  public void locatorConfigurationWillBeModifiedToIncludeItselfWithHostName()
+      throws UnknownHostException {
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    locator.withPort(port);
+    locator.startLocator();
+
+    String locators = locator.getLocator().getConfig().getLocators();
+    String hostAddress = LocalHostUtil.getLocalHost().getCanonicalHostName();
+    assertThat(locators).isEqualTo(hostAddress + "[" + port + "]");
   }
 
 
