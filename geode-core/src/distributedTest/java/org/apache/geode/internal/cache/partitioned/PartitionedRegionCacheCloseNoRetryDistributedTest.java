@@ -121,7 +121,7 @@ public class PartitionedRegionCacheCloseNoRetryDistributedTest implements Serial
 
     int endData = 10000;
 
-    AsyncInvocation<Object> createRegionDataAsync = vm0.invokeAsync(
+    AsyncInvocation createRegionDataAsync = vm0.invokeAsync(
         () -> {
           Exception exc = null;
           try {
@@ -135,7 +135,7 @@ public class PartitionedRegionCacheCloseNoRetryDistributedTest implements Serial
 
         });
 
-    AsyncInvocation<Object> closeCacheAsync = vm1.invokeAsync(
+    AsyncInvocation closeCacheAsync = vm1.invokeAsync(
         () -> {
           getCache().close();
         });
@@ -167,7 +167,7 @@ public class PartitionedRegionCacheCloseNoRetryDistributedTest implements Serial
     // Need to invoke this async because vm1 will wait for vm0 to come back online
     // unless we explicitly revoke it.
 
-    AsyncInvocation<Object> invalidateRegionDataAsync = vm0.invokeAsync(
+    AsyncInvocation invalidateRegionDataAsync = vm0.invokeAsync(
         () -> {
           Exception exc = null;
           try {
@@ -181,7 +181,7 @@ public class PartitionedRegionCacheCloseNoRetryDistributedTest implements Serial
 
         });
 
-    AsyncInvocation<Object> closeCacheAsync = vm1.invokeAsync(
+    AsyncInvocation closeCacheAsync = vm1.invokeAsync(
         () -> {
           getCache().close();
         });
