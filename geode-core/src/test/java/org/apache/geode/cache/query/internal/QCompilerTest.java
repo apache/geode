@@ -155,7 +155,7 @@ public class QCompilerTest {
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
     cc = cl.getRangeIfSargable(context, cid, pattern);
-    assertThat(cc.length).isEqualTo(2);
+    assertThat(cc.length).isEqualTo(1);
 
     cv = (ArrayList) cc[0].getChildren();
     assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
@@ -164,18 +164,11 @@ public class QCompilerTest {
     assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("ab");
     assertThat(cc[0].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_GE);
 
-    cv = (ArrayList) cc[1].getChildren();
-    assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
-    assertThat(((CompiledID) cv.get(0)).getId()).isEqualTo("val");
-    assertThat(cv.get(1)).isInstanceOf(CompiledLiteral.class);
-    assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("ac");
-    assertThat(cc[1].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_LT);
-
     pattern = "a%c";
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
     cc = cl.getRangeIfSargable(context, cid, pattern);
-    assertThat(cc.length).isEqualTo(3);
+    assertThat(cc.length).isEqualTo(2);
 
     cv = (ArrayList) cc[0].getChildren();
     assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
@@ -184,14 +177,7 @@ public class QCompilerTest {
     assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("a");
     assertThat(cc[0].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_GE);
 
-    cv = (ArrayList) cc[1].getChildren();
-    assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
-    assertThat(((CompiledID) cv.get(0)).getId()).isEqualTo("val");
-    assertThat(cv.get(1)).isInstanceOf(CompiledLiteral.class);
-    assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("b");
-    assertThat(cc[1].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_LT);
-
-    assertThat(cc[2]).isEqualTo(cl);
+    assertThat(cc[1]).isEqualTo(cl);
 
     pattern = "%bc";
     literal = new CompiledLiteral(pattern);
@@ -212,7 +198,7 @@ public class QCompilerTest {
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
     cc = cl.getRangeIfSargable(context, cid, pattern);
-    assertThat(cc.length).isEqualTo(3);
+    assertThat(cc.length).isEqualTo(2);
 
     cv = (ArrayList) cc[0].getChildren();
     assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
@@ -221,14 +207,7 @@ public class QCompilerTest {
     assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("ab");
     assertThat(cc[0].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_GE);
 
-    cv = (ArrayList) cc[1].getChildren();
-    assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
-    assertThat(((CompiledID) cv.get(0)).getId()).isEqualTo("val");
-    assertThat(cv.get(1)).isInstanceOf(CompiledLiteral.class);
-    assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("ac");
-    assertThat(cc[1].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_LT);
-
-    assertThat(cc[2]).isEqualTo(cl);
+    assertThat(cc[1]).isEqualTo(cl);
 
     pattern = "_bc";
     literal = new CompiledLiteral(pattern);
@@ -249,7 +228,7 @@ public class QCompilerTest {
     literal = new CompiledLiteral(pattern);
     cl = new CompiledLike(cid, literal);
     cc = cl.getRangeIfSargable(context, cid, pattern);
-    assertThat(cc.length).isEqualTo(3);
+    assertThat(cc.length).isEqualTo(2);
 
     cv = (ArrayList) cc[0].getChildren();
     assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
@@ -258,14 +237,7 @@ public class QCompilerTest {
     assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("a");
     assertThat(cc[0].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_GE);
 
-    cv = (ArrayList) cc[1].getChildren();
-    assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
-    assertThat(((CompiledID) cv.get(0)).getId()).isEqualTo("val");
-    assertThat(cv.get(1)).isInstanceOf(CompiledLiteral.class);
-    assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("b");
-    assertThat(cc[1].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_LT);
-
-    assertThat(cc[2]).isEqualTo(cl);
+    assertThat(cc[1]).isEqualTo(cl);
 
     pattern = "_b%";
     literal = new CompiledLiteral(pattern);
@@ -300,7 +272,7 @@ public class QCompilerTest {
     cl = new CompiledLike(cid, literal);
     cl.negate();
     cc = cl.getRangeIfSargable(context, cid, pattern);
-    assertThat(cc.length).isEqualTo(2);
+    assertThat(cc.length).isEqualTo(1);
 
     cv = (ArrayList) cc[0].getChildren();
     assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
@@ -308,13 +280,6 @@ public class QCompilerTest {
     assertThat(cv.get(1)).isInstanceOf(CompiledLiteral.class);
     assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("ab");
     assertThat(cc[0].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_GE);
-
-    cv = (ArrayList) cc[1].getChildren();
-    assertThat(cv.get(0)).isInstanceOf(CompiledID.class);
-    assertThat(((CompiledID) cv.get(0)).getId()).isEqualTo("val");
-    assertThat(cv.get(1)).isInstanceOf(CompiledLiteral.class);
-    assertThat(((CompiledLiteral) cv.get(1))._obj).isEqualTo("ac");
-    assertThat(cc[1].getOperator()).isEqualTo(OQLLexerTokenTypes.TOK_LT);
 
     pattern = "a%c";
     literal = new CompiledLiteral(pattern);

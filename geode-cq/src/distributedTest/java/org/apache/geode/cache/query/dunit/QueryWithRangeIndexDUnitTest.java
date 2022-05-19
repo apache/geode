@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
@@ -63,6 +62,14 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
   private static final String locatorName = "locator";
   private static final String serverName = "server";
+  private String query = "query --query=\"<trace> select e.key, e.value from " +
+      SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'somethin%'\"";
+
+  private String query1 = "query --query=\"<trace> select e.key, e.value from " +
+      SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'some%ng'\"";
+
+  private String query2 = "query --query=\"<trace> select e.key, e.value from " +
+      SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'some_hing'\"";
 
   private File locatorDir;
   private File serverDir;
@@ -116,7 +123,7 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
         Portfolio p1 = new Portfolio(i, i);
         p1.positions = new HashMap<>();
         p1.positions.put("IBM", "something");
-        if (i == 1) {
+        if (i == 200) {
           p1.positions.put("SUN", "something");
         } else {
           p1.positions.put("SUN", "some");
@@ -125,12 +132,18 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
       }
     });
 
-    String query = "query --query=\"<trace> select e.key, e.value from " +
-        SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'somethin%'\"";
 
     String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
     assertThat(cmdResult).contains("\"Rows\":\"1\"");
-    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 10000)");
+    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 1)");
+
+    String cmdResult1 = String.valueOf(gfsh.executeAndAssertThat(query1).getResultModel());
+    assertThat(cmdResult1).contains("\"Rows\":\"1\"");
+    assertThat(cmdResult1).contains("indexesUsed(1):IdIndex(Results: 1)");
+
+    String cmdResult2 = String.valueOf(gfsh.executeAndAssertThat(query2).getResultModel());
+    assertThat(cmdResult2).contains("\"Rows\":\"1\"");
+    assertThat(cmdResult2).contains("indexesUsed(1):IdIndex(Results: 1)");
   }
 
   @Test
@@ -165,7 +178,7 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
     String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
     assertThat(cmdResult).contains("\"Rows\":\"5\"");
-    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 10000)");
+    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 100)");
   }
 
   private static void startLocator(File workingDirectory, int locatorPort,
@@ -191,7 +204,6 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
   private static void startServer(File workingDirectory, int serverPort,
       String locators) {
-    System.setProperty(GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE", "10000");
     ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setDeletePidFileOnStop(Boolean.TRUE)
         .setMemberName(serverName)

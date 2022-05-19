@@ -214,7 +214,6 @@ public class CompiledLike extends CompiledComparison {
         // change the like predicate to >= "" and like
         cv = new CompiledComparison[] {new CompiledComparison(var,
             new CompiledLiteral(LOWEST_STRING), OQLLexerTokenTypes.TOK_GE), this};
-
       } else {
         // the wildcard is not the first char
         // delete all chars after the wildchar
@@ -240,8 +239,6 @@ public class CompiledLike extends CompiledComparison {
         String upperBound = buffer.toString();
         CompiledComparison c1 =
             new CompiledComparison(var, new CompiledLiteral(lowerBound), OQLLexerTokenTypes.TOK_GE);
-        CompiledComparison c2 =
-            new CompiledComparison(var, new CompiledLiteral(upperBound), OQLLexerTokenTypes.TOK_LT);
 
         // if % is not the last char in the string.
         // or the wildchar is _ which could be anywhere
@@ -252,14 +249,13 @@ public class CompiledLike extends CompiledComparison {
             cv = new CompiledComparison[] {new CompiledComparison(var,
                 new CompiledLiteral(LOWEST_STRING), OQLLexerTokenTypes.TOK_GE), this};
           } else {
-            // the like predicate is broken into 3 compiled comparisons
-            cv = new CompiledComparison[] {c1, c2, this};
+            // the like predicate is broken into 2 compiled comparisons
+            cv = new CompiledComparison[] {c1, this};
           }
-
         } else {
           // % is at the end of the string
-          // the like predicate is broken down to 2 compile comparisons
-          cv = new CompiledComparison[] {c1, c2};
+          // Change the like predicate to greater than or equal to
+          cv = new CompiledComparison[] {c1};
         }
       }
     } else {
