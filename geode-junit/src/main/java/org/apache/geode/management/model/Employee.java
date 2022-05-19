@@ -20,6 +20,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.joda.time.DateTime;
 
 /**
  * a domain object that has various date objects and json annotations.
@@ -33,6 +34,7 @@ public class Employee {
   private Date startDate;
   private java.sql.Date endDate;
   private LocalDate birthday;
+  private DateTime anniversary;
 
   @JsonIgnore
   public int getId() {
@@ -90,5 +92,13 @@ public class Employee {
 
   public void setBirthday(LocalDate birthday) {
     this.birthday = birthday;
+  }
+
+  public DateTime getAnniversary() {
+    return anniversary;
+  }
+
+  public void setAnniversary(DateTime anniversary) {
+    this.anniversary = anniversary;
   }
 }

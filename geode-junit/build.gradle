@@ -47,6 +47,7 @@ dependencies {
   api('io.github.classgraph:classgraph')
   api('com.fasterxml.jackson.core:jackson-annotations')
   api('com.fasterxml.jackson.core:jackson-databind')
+  api('joda-time:joda-time')
   api('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }

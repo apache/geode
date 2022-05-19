@@ -27,10 +27,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.data.CollectionHolder;
@@ -138,6 +140,12 @@ public class QueryResultFormatterTest {
         new QueryResultFormatter(100).add(RESULT, sqlDate);
     checkResult(sqlDateResult,
         "{\"result\":[[\"java.sql.Date\",\"" + expectedString + "\"]]}");
+
+    DateTime jodaTime = new DateTime(time);
+    QueryResultFormatter jodaTimeResult =
+        new QueryResultFormatter(100).add(RESULT, jodaTime);
+    String jsonString = jodaTimeResult.toString();
+    assertThat(jsonString).contains("{\"result\":[[\"org.joda.time.DateTime\",\"");
   }
 
   @Test

@@ -24,6 +24,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -100,7 +101,11 @@ public class GetCommandIntegrationTest {
 
   @Test
   public void get() throws Exception {
-    gfsh.executeAndAssertThat("get --region=Users --key=jonbloom").statusIsSuccess();
+    gfsh.executeAndAssertThat("get --region=Users --key=jonbloom")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .hasEntrySatisfying("Value", v->v.contains("\"startTime\":1653595626520"));
   }
 
   @Test
@@ -205,14 +210,26 @@ public class GetCommandIntegrationTest {
 
   private static class User implements Serializable {
     private final String username;
+    private final DateTime startTime;
 
     public User(final String username) {
       assert username != null : "The username cannot be null!";
       this.username = username;
+      this.startTime = new DateTime();
+    }
+
+    public User(final String username, DateTime startTime) {
+      assert username != null : "The username cannot be null!";
+      this.username = username;
+      this.startTime = startTime;
     }
 
     public String getUsername() {
       return username;
+    }
+
+    public DateTime getStartTime() {
+      return startTime;
     }
 
     public String getHashcode() {

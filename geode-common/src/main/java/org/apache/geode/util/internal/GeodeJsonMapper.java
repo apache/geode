@@ -22,6 +22,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * helper class for creating various json mappers used by Geode Project
@@ -34,10 +36,18 @@ public class GeodeJsonMapper {
    */
   public static ObjectMapper getMapper() {
     ObjectMapper mapper = JsonMapper.builder()
+        .addModule(new JavaTimeModule())
+        .addModule(new JodaModule())
         .enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES)
         .enable(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL)
         .build();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    return mapper;
+  }
+
+  public static ObjectMapper getMapperWithAlwaysInclusion() {
+    ObjectMapper mapper = getMapper();
+    mapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
     return mapper;
   }
 
