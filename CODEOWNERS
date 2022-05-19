@@ -276,7 +276,7 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 #geode-concurrency-test/**
 geode-dunit/**                                                    @mhansonp @kirklund
 geode-junit/**                                                    @mhansonp @kirklund
-geode-jmh/**                                                      @pivotal-jbarrett
+geode-jmh/**                                                      @pivotal-jbarrett @kirklund
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @kirklund
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
 geode-assembly/**/org/apache/geode/rules/**                       @jdeppe-pivotal @jinmeiliao
@@ -287,23 +287,23 @@ geode-assembly/**/resources/**                                    @boglesby @nab
 # Build and tooling
 #-----------------------------------------------------------------
 #etc/**
-*gradle*                                                          @rhoughton-pivot
-buildSrc/**                                                       @rhoughton-pivot @jdeppe-pivotal
-buildSrc/**/DependencyConstraints.groovy                          @dickcav @rhoughton-pivot
+*gradle*                                                          @rhoughton-pivot @upthewaterspout
+build-tools/**                                                    @rhoughton-pivot @jdeppe-pivotal
+DependencyConstraints.groovy                                      @dickcav @rhoughton-pivot
 ci/**                                                             @dickcav @rhoughton-pivot @smgoller
 ci/scripts/**                                                     @dickcav @rhoughton-pivot @smgoller
 ci/scripts/repeat-new-tests.sh                                    @dickcav @rhoughton-pivot @smgoller @upthewaterspout @jdeppe-pivotal
-dev-tools/dependencies/**                                         @dickcav
-dev-tools/release/**                                              @dickcav
+dev-tools/dependencies/**                                         @dickcav @onichols-pivotal
+dev-tools/release/**                                              @dickcav @onichols-pivotal
 docker/**                                                         @dickcav @smgoller
-geode-management/src/test/script/update-management-wiki.sh        @dickcav
+geode-management/src/test/script/update-management-wiki.sh        @dickcav @onichols-pivotal
 #boms/**
-static-analysis/**                                                @rhoughton-pivot
-geode-old-versions/**                                             @dickcav
-KEYS                                                              @dickcav
-assembly_content.txt                                              @rhoughton-pivot
-dependency_classpath.txt                                          @rhoughton-pivot
-expected-pom.xml                                                  @rhoughton-pivot
+static-analysis/**                                                @rhoughton-pivot @upthewaterspout
+geode-old-versions/**                                             @dickcav @rhoughton-pivot
+KEYS                                                              @dickcav @upthewaterspout @pivotal-amurmann
+assembly_content.txt                                              @dickcav @rhoughton-pivot
+dependency_classpath.txt                                          @dickcav @rhoughton-pivot
+expected-pom.xml                                                  @dickcav @rhoughton-pivot
 
 #-----------------------------------------------------------------
 # Documentation
@@ -311,7 +311,7 @@ expected-pom.xml                                                  @rhoughton-piv
 apache-copyright-notice.txt                                       @upthewaterspout @pivotal-amurmann
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer
-LICENSE                                                           @dickcav
-NOTICE                                                            @dickcav
+LICENSE                                                           @dickcav @onichols-pivotal
+NOTICE                                                            @dickcav @onichols-pivotal
 /README.md                                                        @upthewaterspout @pivotal-amurmann @kirklund
 #TESTING.md
