@@ -228,6 +228,7 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
           .forEach(meterRegistry::remove);
 
       meterRegistry.close();
+      meterRegistry.clear();
     }
   }
 
