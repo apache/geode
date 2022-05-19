@@ -64,7 +64,6 @@ import org.apache.geode.distributed.internal.membership.api.MemberStartupExcepti
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
@@ -87,6 +86,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMess
 import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.membership.utils.GMSUtil;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.test.junit.categories.MembershipTest;
 

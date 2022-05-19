@@ -24,6 +24,7 @@ import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -31,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -71,6 +73,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.tcpserver.HostAddress;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -89,6 +92,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.membership.utils.GMSUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsConfig;
@@ -710,7 +714,14 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       return;
     }
 
-    String thisLocator = getLocatorString(hostAddress, getPort());
+    HostAddress thisLocator = getHostAddress(hostAddress);
+    if (peerLocator) {
+      String existingLocators = distributionConfig.getLocators();
+      String newLocators = addLocatorIfMissing(existingLocators, thisLocator, getPort());
+      if (!newLocators.equals(existingLocators)) {
+        setLocatorProperties(newLocators);
+      }
+    }
 
     Properties distributedSystemProperties = new Properties();
     // LogWriterAppender is now shared via that class
@@ -737,50 +748,52 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     startCache(internalDistributedSystem);
 
-    logger.info("Locator started on {}", thisLocator);
+    logger.info("Locator started on {}[{}]", thisLocator, getPort());
 
   }
 
-  String getLocatorString(HostAddress hostAddress, int port) throws IOException {
+  HostAddress getHostAddress(HostAddress hostAddress) throws UnknownHostException {
     HostAddress thisLocator;
     if (hostAddress != null && !StringUtils.isEmpty(hostAddress.getHostName())) {
       thisLocator = hostAddress;
     } else {
       thisLocator = new HostAddress(LocalHostUtil.getLocalHost());
     }
-
-    if (!peerLocator) {
-      return thisLocator.getHostName() + "[" + port + "]";
-    }
-
-    return configurePeerLocators(thisLocator, port);
+    return thisLocator;
   }
 
-  String configurePeerLocators(HostAddress thisLocator, int port) {
+  /**
+   * add this locator to the locators list if not already in, note the locator's
+   * hostname is used, but if it resoves to be the same as what's already in the
+   * list, what's specified by the user is preserved
+   *
+   * @param existingLocators the existing configured locators
+   * @param thisLocator this locator's address
+   * @param port this locator's port
+   * @return the comma separated list of locators with this locator added
+   *         if this locator is not already in the list
+   */
+  String addLocatorIfMissing(String existingLocators, HostAddress thisLocator, int port)
+      throws IOException {
     String thisLocatorHostnameAndPort = String.format("%s[%d]", thisLocator.getHostName(), port);
-    String locatorsConfigValue = distributionConfig.getLocators();
-    if (StringUtils.isBlank(locatorsConfigValue)) {
-      setLocatorProperties(thisLocatorHostnameAndPort);
+    if (StringUtils.isBlank(existingLocators)) {
       return thisLocatorHostnameAndPort;
     }
 
-    // existing locator configuration is not blank, need to check if this locator is already
-    // specified in the list or not.
-    // Note this logic will keep user's specified address if what we are trying to add resolves to
-    // be the same as what user has already specified.
-    if (locatorsConfigValue.contains(thisLocatorHostnameAndPort)) {
-      return thisLocatorHostnameAndPort;
+    List<HostAndPort> hostAndPorts;
+    try {
+      hostAndPorts = GMSUtil.parseLocators(existingLocators, (InetAddress) null);
+    } catch (MembershipConfigurationException e) {
+      throw new IOException(e.getMessage(), e);
     }
 
-    String thisLocatorAddressAndPort =
-        String.format("%s[%d]", thisLocator.getAddress().getHostAddress(), port);
-    if (locatorsConfigValue.contains(thisLocatorAddressAndPort)) {
-      return thisLocatorAddressAndPort;
+    if (hostAndPorts.stream().anyMatch(
+        (hp) -> thisLocator.getAddress().equals(hp.getAddress())
+            && port == hp.getPort())) {
+      return existingLocators;
     }
-
     // if not found in existing locators
-    setLocatorProperties(locatorsConfigValue + "," + thisLocatorHostnameAndPort);
-    return thisLocatorHostnameAndPort;
+    return existingLocators + "," + thisLocatorHostnameAndPort;
   }
 
   private void setLocatorProperties(String locatorsConfigValue) {

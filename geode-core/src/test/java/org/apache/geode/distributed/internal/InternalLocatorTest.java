@@ -27,12 +27,10 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.internal.HttpService;
@@ -139,50 +137,51 @@ public class InternalLocatorTest {
   }
 
   @Test
-  public void getLocatorString() throws Exception {
-    String localHostname = LocalHostUtil.getCanonicalLocalHostName();
-    // use local host name if no bindAddress
-    String locator = internalLocator.getLocatorString(null, 1234);
-    assertThat(locator).isEqualTo(localHostname + "[1234]");
+  public void getHostAddress() throws Exception {
+    // use localhost if no bindAddress
+    HostAddress locator = internalLocator.getHostAddress(null);
+    assertThat(locator.getAddress()).isEqualTo(LocalHostUtil.getLocalHost());
 
     // use bindAddress name
     HostAddress bindAddress = new HostAddress("test");
-    locator = internalLocator.getLocatorString(bindAddress, 1234);
-    assertThat(locator).isEqualTo("test[1234]");
+    locator = internalLocator.getHostAddress(bindAddress);
+    assertThat(locator).isEqualTo(bindAddress);
   }
 
   @Test
-  public void configurePeerLocatorWithBlankLocatorList() throws Exception {
+  public void addLocatorToBlankConfig() throws Exception {
     String localHostname = LocalHostUtil.getCanonicalLocalHostName();
     HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
-    String locator = internalLocator.configurePeerLocators(localhost, 1234);
+    String locator = internalLocator.addLocatorIfMissing(null, localhost, 1234);
     assertThat(locator).isEqualTo(localHostname + "[1234]");
-    ArgumentCaptor<Properties> captor = ArgumentCaptor.forClass(Properties.class);
-    verify(distributionConfig).setApiProps(captor.capture());
-    assertThat(captor.getValue().get("locators")).isEqualTo(localHostname + "[1234]");
   }
 
   @Test
   public void configurePeerLocatorWithNoMatchLocatorList() throws Exception {
     String localHostname = LocalHostUtil.getCanonicalLocalHostName();
     HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
-    when(distributionConfig.getLocators()).thenReturn("10.10.10.10[12345]");
-    String locator = internalLocator.configurePeerLocators(localhost, 1234);
-    assertThat(locator).isEqualTo(localHostname + "[1234]");
-    ArgumentCaptor<Properties> captor = ArgumentCaptor.forClass(Properties.class);
-    verify(distributionConfig).setApiProps(captor.capture());
-    assertThat(captor.getValue().get("locators"))
-        .isEqualTo("10.10.10.10[12345]," + localHostname + "[1234]");
+    String existing = "10.10.10.10[12345]";
+    String locator = internalLocator.addLocatorIfMissing(existing, localhost, 1234);
+    assertThat(locator).isEqualTo(existing + "," + localHostname + "[1234]");
   }
 
   @Test
   public void configurePeerLocatorWithMatchingLocatorList() throws Exception {
     HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
     String localAddress = LocalHostUtil.getLocalHost().getHostAddress();
-    when(distributionConfig.getLocators()).thenReturn(localAddress + "[12345]");
-    String locator = internalLocator.configurePeerLocators(localhost, 12345);
+    String existing = localAddress + "[12345]";
+    String locator = internalLocator.addLocatorIfMissing(existing, localhost, 12345);
     // what's returned is what's specified in the original configuration
-    assertThat(locator).isEqualTo(localAddress + "[12345]");
-    verify(distributionConfig, never()).setApiProps(any());
+    assertThat(locator).isEqualTo(existing);
+  }
+
+  @Test
+  public void configurePeerLocatorWithMatchingAddressButNoMatchingPort() throws Exception {
+    HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
+    String localAddress = LocalHostUtil.getLocalHost().getHostAddress();
+    String existing = localAddress + "[11110]";
+    String locator = internalLocator.addLocatorIfMissing(existing, localhost, 12345);
+    // what's returned is what's specified in the original configuration
+    assertThat(locator).isEqualTo(existing + "," + localhost.getHostName() + "[12345]");
   }
 }
