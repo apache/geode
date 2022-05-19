@@ -96,9 +96,8 @@ public class CreateIndexCommand extends GfshCommand {
             .createError("Region " + regionName + " does not exist in some of the groups.");
       }
       if (groups == null) {
-        // the calculatedGroups will have "cluster" value to indicate the "cluster" level, in this
-        // case
-        // we want the groups to an empty array
+        // the calculatedGroups will have "cluster" value to indicate the "cluster" level,
+        // in this case we want the groups to an empty array
         groups = calculatedGroups.stream().filter(s -> !AbstractConfiguration.CLUSTER.equals(s))
             .toArray(String[]::new);
       }
