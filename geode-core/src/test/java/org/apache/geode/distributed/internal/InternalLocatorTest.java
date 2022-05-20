@@ -70,6 +70,8 @@ public class InternalLocatorTest {
     when(distributionConfig.getSecurableCommunicationChannels())
         .thenReturn(new SecurableCommunicationChannel[] {});
     when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
+    when(distributionConfig.getSSLProtocols()).thenReturn("any");
+    when(distributionConfig.getClusterSSLProtocols()).thenReturn("any");
     when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
     when(cache.getOptionalService(HttpService.class))
         .thenReturn(Optional.of(httpService));
