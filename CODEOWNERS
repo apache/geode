@@ -84,9 +84,9 @@ geode-core/**/org/apache/geode/internal/cache/*                   @nabarunnag @D
 #-----------------------------------------------------------------
 # Region entry management
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/entries/**          @dschneider-pivotal @upthewaterspout @mhansonp
-geode-core/**/org/apache/geode/internal/cache/region/entry/**     @dschneider-pivotal @upthewaterspout @mhansonp
-geode-core/**/org/apache/geode/internal/cache/map/**              @dschneider-pivotal @upthewaterspout @mhansonp
+geode-core/**/org/apache/geode/internal/cache/entries/**          @dschneider-pivotal @upthewaterspout
+geode-core/**/org/apache/geode/internal/cache/region/entry/**     @dschneider-pivotal @upthewaterspout
+geode-core/**/org/apache/geode/internal/cache/map/**              @dschneider-pivotal @upthewaterspout
 geode-core/**/org/apache/geode/compression/**                     @dschneider-pivotal @kirklund
 geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pivotal @kirklund
 
@@ -94,8 +94,8 @@ geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pi
 # Partitioned Regions
 #-----------------------------------------------------------------
 geode-rebalancer/**                                               @boglesby @BenjaminPerryRoss @nabarunnag
-geode-core/**/org/apache/geode/internal/cache/partitioned/**      @boglesby @BenjaminPerryRoss @mhansonp @nabarunnag
-geode-core/**/org/apache/geode/cache/partition/**                 @boglesby @BenjaminPerryRoss @mhansonp @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/partitioned/**      @boglesby @BenjaminPerryRoss @nabarunnag
+geode-core/**/org/apache/geode/cache/partition/**                 @boglesby @BenjaminPerryRoss @nabarunnag
 
 #-----------------------------------------------------------------
 # Event tracking
@@ -105,7 +105,7 @@ geode-core/**/org/apache/geode/internal/cache/event/**            @agingade @nab
 #-----------------------------------------------------------------
 # Eviction
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/eviction/**         @agingade @dschneider-pivotal @mhansonp
+geode-core/**/org/apache/geode/internal/cache/eviction/**         @agingade @dschneider-pivotal
 geode-core/**/org/apache/geode/internal/size/**                   @agingade @dschneider-pivotal @kirklund
 
 #-----------------------------------------------------------------
@@ -204,9 +204,9 @@ geode-management/**                                               @jdeppe-pivota
 geode-assembly/**/org/apache/geode/management/**                  @jdeppe-pivotal @jinmeiliao
 geode-assembly/**/org/apache/geode/tools/pulse/**                 @jdeppe-pivotal @jinmeiliao
 geode-web-management/**                                           @jdeppe-pivotal @jinmeiliao
-geode-gfsh/**                                                     @jdeppe-pivotal @jinmeiliao @mhansonp
-geode-assembly/**/bin/**                                          @jdeppe-pivotal @jinmeiliao @mhansonp @kirklund
-geode-pulse/**                                                    @jdeppe-pivotal @jinmeiliao @mhansonp
+geode-gfsh/**                                                     @jdeppe-pivotal @jinmeiliao
+geode-assembly/**/bin/**                                          @jdeppe-pivotal @jinmeiliao @kirklund
+geode-pulse/**                                                    @jdeppe-pivotal @jinmeiliao
 geode-http-service/**                                             @jdeppe-pivotal @jinmeiliao
 geode-web/**                                                      @jdeppe-pivotal @jinmeiliao
 geode-core/**/org/apache/geode/admin/**                           @jdeppe-pivotal @jinmeiliao @kirklund
@@ -223,7 +223,7 @@ geode-core/**/org/apache/geode/cache/internal/*                   @jdeppe-pivota
 #-----------------------------------------------------------------
 # Security
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/examples/**                        @jdeppe-pivotal @jinmeiliao @mhansonp @pivotal-jbarrett
+geode-core/**/org/apache/geode/examples/**                        @jdeppe-pivotal @jinmeiliao @pivotal-jbarrett
 geode-core/**/org/apache/geode/examples/security/**               @jdeppe-pivotal @jinmeiliao @pivotal-jbarrett
 geode-core/**/org/apache/geode/security/**                        @jdeppe-pivotal @jinmeiliao @kirklund @pivotal-jbarrett
 geode-core/**/org/apache/geode/internal/security/**               @jdeppe-pivotal @jinmeiliao @kirklund @pivotal-jbarrett
@@ -234,10 +234,10 @@ geode-assembly/**/apache/geode/ssl/**                             @jdeppe-pivota
 #-----------------------------------------------------------------
 # Logging
 #-----------------------------------------------------------------
-geode-log4j/**                                                    @mhansonp @kirklund
-geode-logging/**                                                  @mhansonp @kirklund
-geode-core/**/org/apache/geode/logging/**                         @mhansonp @kirklund
-geode-core/**/org/apache/geode/internal/logging/**                @mhansonp @kirklund
+geode-log4j/**                                                    @kirklund
+geode-logging/**                                                  @kirklund
+geode-core/**/org/apache/geode/logging/**                         @kirklund
+geode-core/**/org/apache/geode/internal/logging/**                @kirklund
 geode-core/**/org/apache/geode/i18n/**                            @agingade @kirklund
 geode-core/**/org/apache/geode/internal/i18n/**                   @agingade @kirklund
 geode-core/**/org/apache/geode/internal/io/**                     @agingade @kirklund
@@ -246,10 +246,10 @@ geode-assembly/**/org/apache/geode/logging/**                     @agingade @kir
 #-----------------------------------------------------------------
 # Metrics & Statistics
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/statistics/**             @mhansonp @kirklund @pivotal-jbarrett
-geode-core/**/org/apache/geode/internal/stats50/**                @mhansonp @kirklund @pivotal-jbarrett
-geode-core/**/org/apache/geode/metrics/**                         @mhansonp @kirklund @pivotal-jbarrett
-geode-assembly/**/org/apache/geode/metrics/**                     @mhansonp @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/statistics/**             @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/stats50/**                @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/metrics/**                         @kirklund @pivotal-jbarrett
+geode-assembly/**/org/apache/geode/metrics/**                     @kirklund @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Region Snapshots
@@ -274,9 +274,9 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 # Testing utilities
 #-----------------------------------------------------------------
 #geode-concurrency-test/**
-geode-dunit/**                                                    @mhansonp @kirklund
-geode-junit/**                                                    @mhansonp @kirklund
-geode-jmh/**                                                      @pivotal-jbarrett @kirklund
+geode-dunit/**                                                    @kirklund @demery-pivotal
+geode-junit/**                                                    @kirklund @demery-pivotal
+geode-jmh/**                                                      @pivotal-jbarrett
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @kirklund
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
 geode-assembly/**/org/apache/geode/rules/**                       @jdeppe-pivotal @jinmeiliao
