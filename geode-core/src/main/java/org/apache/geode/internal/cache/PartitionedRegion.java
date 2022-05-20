@@ -7690,6 +7690,7 @@ public class PartitionedRegion extends LocalRegion
             if (dsi != null && dsi.getOwnedByRegion()) {
               cache.addDiskStore(dsi);
             }
+            closeDataStoreStats();
           }
 
           // Majority of cache close operations handled by
@@ -7765,6 +7766,16 @@ public class PartitionedRegion extends LocalRegion
 
     RegionLogger.logDestroy(getName(),
         cache.getInternalDistributedSystem().getDistributedMember(), null, op.isClose());
+  }
+
+  private void closeDataStoreStats() {
+    PartitionedRegionDataStore localDataStore = dataStore;
+    if (localDataStore != null) {
+      CachePerfStats dataStoreStats = localDataStore.getCachePerfStats();
+      if (dataStoreStats != null) {
+        dataStoreStats.close();
+      }
+    }
   }
 
   /**
