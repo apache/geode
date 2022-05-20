@@ -15,7 +15,7 @@
  *
  */
 
-package org.apache.geode.distributed.internal.membership.api;
+package org.apache.geode.distributed.internal.membership.gms;
 
 import static org.apache.geode.distributed.internal.membership.api.GMSUtil.parseLocators;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +28,7 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
