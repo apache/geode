@@ -73,7 +73,7 @@ public class RollingUpgradeWithGfshDUnitTest {
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule();
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   public RollingUpgradeWithGfshDUnitTest(VmConfiguration sourceVmConfiguration) {
     this.sourceVmConfiguration = sourceVmConfiguration;
@@ -81,11 +81,8 @@ public class RollingUpgradeWithGfshDUnitTest {
 
   @Before
   public void setUp() {
-    currentGfsh = gfshRule.executor()
-        .build(folderRule.getFolder().toPath());
-    oldGfsh = gfshRule.executor()
-        .withVmConfiguration(sourceVmConfiguration)
-        .build(folderRule.getFolder().toPath());
+    currentGfsh = gfshRule.executor().build();
+    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build();
   }
 
   @Test

@@ -94,7 +94,7 @@ public class RollingUpgradeWithSslDUnitTest {
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule();
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   public RollingUpgradeWithSslDUnitTest(VmConfiguration vmConfiguration) {
     sourceVmConfiguration = vmConfiguration;
@@ -102,12 +102,13 @@ public class RollingUpgradeWithSslDUnitTest {
 
   @Before
   public void setUp() throws IOException, GeneralSecurityException {
-    tempFolder = folderRule.getFolder().toPath();
-    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build(tempFolder);
-    currentGfsh = gfshRule.executor().build(tempFolder);
+    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build();
+    currentGfsh = gfshRule.executor().build();
     hostName = InetAddress.getLocalHost().getCanonicalHostName();
     keyStoreFileName = hostName + "-keystore.jks";
     trustStoreFileName = hostName + "-truststore.jks";
+
+    tempFolder = folderRule.getFolder().toPath();
 
     generateStores();
     /*

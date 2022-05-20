@@ -88,9 +88,9 @@ public class SocketCreatorUpgradeTest {
   private String stopLocator2;
 
   @Rule(order = 0)
-  public final FolderRule tempFolder = new FolderRule();
+  public final FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public final GfshRule gfshRule = new GfshRule();
+  public final GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   private GfshExecutor gfshOldGeodeOldJava;
   private GfshExecutor gfshOldGeodeNewJava;
@@ -124,28 +124,28 @@ public class SocketCreatorUpgradeTest {
     final Path oldJavaHome = Paths.get(getenv("JAVA_HOME_8u265"));
     final Path newJavaHome = Paths.get(getenv("JAVA_HOME_8u272"));
 
-    root = tempFolder.getFolder().toPath();
-
     gfshOldGeodeOldJava = gfshRule.executor()
         .withGeodeVersion(version)
         .withJavaHome(oldJavaHome)
-        .build(root);
+        .build();
     gfshOldGeodeNewJava = gfshRule.executor()
         .withGeodeVersion(version)
         .withJavaHome(newJavaHome)
-        .build(root);
+        .build();
     gfshNewGeodeOldJava = gfshRule.executor()
         .withJavaHome(oldJavaHome)
-        .build(root);
+        .build();
     gfshNewGeodeNewJava = gfshRule.executor()
         .withJavaHome(newJavaHome)
-        .build(root);
+        .build();
 
     final UniquePortSupplier portSupplier = new UniquePortSupplier();
     final int locator1Port = portSupplier.getAvailablePort();
     final int locator1JmxPort = portSupplier.getAvailablePort();
     final int locator2Port = portSupplier.getAvailablePort();
     final int locator2JmxPort = portSupplier.getAvailablePort();
+
+    root = folderRule.getFolder().toPath();
 
     keyStoreFile = Files.createFile(root.resolve("keyStoreFile")).toFile();
     trustStoreFile = Files.createFile(root.resolve("trustStoreFile")).toFile();

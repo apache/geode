@@ -68,7 +68,7 @@ public class GfshContext implements GfshExecutor {
   private GfshContext(Builder builder) {
     thrown = builder.thrown;
     javaHome = builder.javaHome;
-    gfshPath = builder.gfshPath;
+    gfshPath = findGfsh(builder.geodeVersion);
     dir = builder.dir;
     processKiller = builder.processKiller;
     jvmOptions = new ArrayList<>(builder.jvmOptions);
@@ -244,21 +244,36 @@ public class GfshContext implements GfshExecutor {
     }
   }
 
+  private static Path findGfsh(String version) {
+    Path geodeHome;
+    if (version == null || VersionManager.isCurrentVersion(version)) {
+      geodeHome = new RequiresGeodeHome().getGeodeHome().toPath();
+    } else {
+      geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
+    }
+
+    if (isWindows()) {
+      return geodeHome.resolve("bin").resolve("gfsh.bat");
+    }
+    return geodeHome.resolve("bin").resolve("gfsh");
+  }
+
   public static class Builder {
 
     private static final ProcessUtilsProvider processUtils = NativeProcessUtils.create();
 
     private final List<String> jvmOptions = new ArrayList<>();
     private final Consumer<GfshContext> contextCreated;
-    private final Consumer<Throwable> thrown;
     private final IntConsumer processKiller = processUtils::killProcess;
+    private final Consumer<Throwable> thrown;
+    private final Path dir;
+    private String geodeVersion;
     private Path javaHome;
-    private Path gfshPath = findGfsh(null);
-    private Path dir;
 
-    Builder(Consumer<GfshContext> contextCreated, Consumer<Throwable> thrown) {
+    Builder(Consumer<GfshContext> contextCreated, Consumer<Throwable> thrown, Path dir) {
       this.contextCreated = contextCreated;
       this.thrown = thrown;
+      this.dir = dir;
     }
 
     public Builder withVmConfiguration(VmConfiguration vmConfiguration) {
@@ -277,29 +292,14 @@ public class GfshContext implements GfshExecutor {
     }
 
     public Builder withGeodeVersion(String geodeVersion) {
-      gfshPath = findGfsh(geodeVersion);
+      this.geodeVersion = geodeVersion;
       return this;
     }
 
-    public GfshContext build(Path dir) {
-      this.dir = dir;
+    public GfshContext build() {
       GfshContext context = new GfshContext(this);
       contextCreated.accept(context);
       return context;
-    }
-
-    private static Path findGfsh(String version) {
-      Path geodeHome;
-      if (version == null || VersionManager.isCurrentVersion(version)) {
-        geodeHome = new RequiresGeodeHome().getGeodeHome().toPath();
-      } else {
-        geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
-      }
-
-      if (isWindows()) {
-        return geodeHome.resolve("bin").resolve("gfsh.bat");
-      }
-      return geodeHome.resolve("bin").resolve("gfsh");
     }
   }
 }

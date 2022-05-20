@@ -22,7 +22,6 @@ import static org.apache.geode.test.version.TestVersions.greaterThan;
 import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Path;
 import java.util.Collection;
 
 import org.junit.Before;
@@ -69,7 +68,7 @@ public class OperationManagementUpgradeTest {
 
   private final VmConfiguration sourceVmConfiguration;
 
-  private GfshExecutor gfsh;
+  private GfshExecutor currentGfsh;
   private GfshExecutor oldGfsh;
   private VM vm;
 
@@ -80,15 +79,15 @@ public class OperationManagementUpgradeTest {
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule();
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule(order = 2)
   public DistributedRule distributedRule = new DistributedRule();
 
   @Before
   public void setUp() {
-    Path tempFolder = folderRule.getFolder().toPath();
-    gfsh = gfshRule.executor().build(tempFolder);
-    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build(tempFolder);
+    currentGfsh = gfshRule.executor().build();
+    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build();
+
     // get the vm with the same version of the oldGfsh
     vm = getVM(sourceVmConfiguration, 0);
   }
@@ -128,7 +127,7 @@ public class OperationManagementUpgradeTest {
     // use new gfsh to start locator1, make sure new locator can start
     GfshScript
         .of(startLocatorCommand("locator1", locatorPort1, jmxPort1, httpPort1, locatorPort2))
-        .execute(gfsh, execute.getWorkingDir());
+        .execute(currentGfsh, execute.getWorkingDir());
 
     // use the new cms client
     ClusterManagementService cms = new ClusterManagementServiceBuilder()

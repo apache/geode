@@ -19,9 +19,9 @@ import static org.apache.geode.test.junit.rules.gfsh.GfshContext.Builder;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -42,21 +42,31 @@ public class GfshRule implements TestRule, GfshExecutor {
 
   private final Supplier<Folder> folderSupplier;
 
+  /**
+   * Returns a builder for a {@link GfshExecutor} that uses this {@code GfshRule}'s folder as the
+   * working directory for invoked processes.
+   *
+   * @return the builder
+   */
   public Builder executor() {
-    return new Builder(gfshContexts::add, errors::add);
+    return executor(Paths.get("."));
   }
 
-  public GfshRule() {
-    this(null);
+  /**
+   * Returns a builder for a {@link GfshExecutor} that uses dir as the working directory for invoked
+   * processes. If dir is relative it will be resolved against this {@code GfshRule}'s folder. If
+   * dir is absolute it will be used as is.
+   *
+   * @param dir working directory for invoked processes
+   * @return the builder
+   */
+  public Builder executor(Path dir) {
+    return new Builder(gfshContexts::add, errors::add,
+        folderSupplier.get().toPath().resolve(dir).normalize());
   }
 
   public GfshRule(Supplier<Folder> folderSupplier) {
     this.folderSupplier = folderSupplier;
-  }
-
-  public GfshRule setFolder(Folder folder) {
-    suppliedFolder.set(folder);
-    return this;
   }
 
   @Override
@@ -106,11 +116,7 @@ public class GfshRule implements TestRule, GfshExecutor {
       if (context != null) {
         return context;
       }
-
-      Folder folder = suppliedFolder.get();
-      Objects.requireNonNull(folder,
-          "Construction of GfshRule with Supplier<Folder> is required in order to use defaultContext()");
-      return executor().build(suppliedFolder.get().toPath());
+      return executor(Paths.get(".")).build();
     }
   }
 

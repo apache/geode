@@ -101,7 +101,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule();
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public TestName testName = new TestName();
 
@@ -136,12 +136,8 @@ public class Tomcat8ClientServerRollingUpgradeTest {
 
   @Before
   public void setup() throws Exception {
-    Path tempFolder = folderRule.getFolder().toPath();
-    currentGfsh = gfshRule.executor()
-        .build(tempFolder);
-    oldGfsh = gfshRule.executor()
-        .withVmConfiguration(sourceVmConfiguration)
-        .build(tempFolder);
+    currentGfsh = gfshRule.executor().build();
+    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build();
 
     String version = sourceVmConfiguration.geodeVersion().toString();
     Path installLocation;
@@ -153,6 +149,8 @@ public class Tomcat8ClientServerRollingUpgradeTest {
 
     File oldBuild = installLocation.toFile();
     File oldModules = installLocation.resolve("tools").resolve("Modules").toFile();
+
+    Path tempFolder = folderRule.getFolder().toPath();
 
     tomcat8AndOldModules =
         new TomcatInstall(tempFolder, "Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,

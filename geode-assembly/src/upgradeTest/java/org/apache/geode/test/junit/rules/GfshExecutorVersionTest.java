@@ -31,13 +31,13 @@ public class GfshExecutorVersionTest {
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule();
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   @Test
   public void contextUsesCurrentGeodeVersionByDefault() {
     String currentVersion = ProductVersionUtil.getDistributionVersion().getVersion();
 
-    GfshExecutor executor = gfshRule.executor().build(folderRule.getFolder().toPath());
+    GfshExecutor executor = gfshRule.executor().build();
 
     assertThat(executor.execute("version").getOutputText()).contains(currentVersion);
   }
@@ -46,9 +46,7 @@ public class GfshExecutorVersionTest {
   public void contextUsesSpecifiedGeodeVersion() {
     String specifiedVersion = "1.3.0";
 
-    GfshExecutor executor = gfshRule.executor()
-        .withGeodeVersion(specifiedVersion)
-        .build(folderRule.getFolder().toPath());
+    GfshExecutor executor = gfshRule.executor().withGeodeVersion(specifiedVersion).build();
 
     assertThat(executor.execute("version").getOutputText()).contains(specifiedVersion);
   }

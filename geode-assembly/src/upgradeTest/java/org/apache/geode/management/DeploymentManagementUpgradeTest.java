@@ -68,30 +68,27 @@ public class DeploymentManagementUpgradeTest {
 
   private File clusterJar;
   private GfshExecutor oldGfsh;
-  private GfshExecutor gfsh;
+  private GfshExecutor currentGfsh;
 
   public DeploymentManagementUpgradeTest(VmConfiguration sourceVmConfiguration) {
     this.sourceVmConfiguration = sourceVmConfiguration;
   }
 
   @Rule(order = 0)
-  public FolderRule tempFolder = new FolderRule();
+  public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule();
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   @Before
   public void setUp() throws IOException {
     // prepare the jars to be deployed
-    File stagingDir = createDirectory(tempFolder.getFolder().toPath().resolve("staging")).toFile();
+    File stagingDir = createDirectory(folderRule.getFolder().toPath().resolve("staging")).toFile();
     clusterJar = stagingDir.toPath().resolve("cluster.jar").toFile();
     JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJarFromClassNames(clusterJar, "Class1");
 
-    oldGfsh = gfshRule.executor()
-        .withVmConfiguration(sourceVmConfiguration)
-        .build(tempFolder.getFolder().toPath());
-    gfsh = gfshRule.executor()
-        .build(tempFolder.getFolder().toPath());
+    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build();
+    currentGfsh = gfshRule.executor().build();
   }
 
   @Test
@@ -109,7 +106,7 @@ public class DeploymentManagementUpgradeTest {
     // use the latest gfsh to start the locator in the same working dir
     GfshScript
         .of(startLocatorCommand("test", locatorPort, jmxPort, httpPort, 0))
-        .execute(gfsh, execute.getWorkingDir());
+        .execute(currentGfsh, execute.getWorkingDir());
 
     ClusterManagementService cms = new ClusterManagementServiceBuilder()
         .setPort(httpPort)
