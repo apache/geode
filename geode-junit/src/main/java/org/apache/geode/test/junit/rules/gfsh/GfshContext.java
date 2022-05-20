@@ -244,7 +244,7 @@ public class GfshContext implements GfshExecutor {
     }
   }
 
-  public static class Builder implements GfshExecutor.Builder {
+  public static class Builder {
 
     private static final ProcessUtilsProvider processUtils = NativeProcessUtils.create();
 
@@ -261,31 +261,26 @@ public class GfshContext implements GfshExecutor {
       this.thrown = thrown;
     }
 
-    @Override
-    public Builder withJavaHome(Path javaHome) {
-      this.javaHome = javaHome;
-      return this;
-    }
-
-    @Override
-    public Builder withGeodeVersion(String geodeVersion) {
-      gfshPath = findGfsh(geodeVersion);
-      return this;
-    }
-
-    @Override
-    public GfshExecutor.Builder withVmConfiguration(VmConfiguration vmConfiguration) {
+    public Builder withVmConfiguration(VmConfiguration vmConfiguration) {
       javaHome = vmConfiguration.javaVersion().home();
       return withGeodeVersion(vmConfiguration.geodeVersion().toString());
     }
 
-    @Override
     public Builder withGfshJvmOptions(String... option) {
       jvmOptions.addAll(Arrays.asList(option));
       return this;
     }
 
-    @Override
+    public Builder withJavaHome(Path javaHome) {
+      this.javaHome = javaHome;
+      return this;
+    }
+
+    public Builder withGeodeVersion(String geodeVersion) {
+      gfshPath = findGfsh(geodeVersion);
+      return this;
+    }
+
     public GfshContext build(Path dir) {
       this.dir = dir;
       GfshContext context = new GfshContext(this);

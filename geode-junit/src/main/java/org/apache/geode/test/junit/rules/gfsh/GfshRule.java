@@ -15,6 +15,7 @@
 package org.apache.geode.test.junit.rules.gfsh;
 
 import static java.util.Collections.synchronizedList;
+import static org.apache.geode.test.junit.rules.gfsh.GfshContext.Builder;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -41,8 +42,8 @@ public class GfshRule implements TestRule, GfshExecutor {
 
   private final Supplier<Folder> folderSupplier;
 
-  public GfshExecutor.Builder executor() {
-    return new GfshContext.Builder(gfshContexts::add, errors::add);
+  public Builder executor() {
+    return new Builder(gfshContexts::add, errors::add);
   }
 
   public GfshRule() {

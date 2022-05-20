@@ -310,7 +310,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
    */
   private String getClassPathTomcat8AndOldModules() {
     TestVersion geodeVersion = sourceVmConfiguration.geodeVersion();
-    if (geodeVersion.equals(TestVersion.CURRENT_VERSION)) {
+    if (geodeVersion.equals(TestVersion.current())) {
       return getClassPathTomcat8AndCurrentModules();
     }
 

@@ -28,7 +28,6 @@ import org.apache.commons.io.LineIterator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -44,14 +43,14 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
  */
 public class StartServerCommandAcceptanceTest {
 
+  private static final String SERVER_NAME = "server";
+
   private Path rootFolder;
 
   @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
+  public FolderRule folderRule = new FolderRule(FolderRule.Policy.KEEP_ALWAYS);
   @Rule(order = 1)
   public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
-  @Rule
-  public TestName testName = new TestName();
 
   @Before
   public void setUp() {
@@ -59,10 +58,9 @@ public class StartServerCommandAcceptanceTest {
   }
 
   @Test
-  public void startStandaloneServerWithParametersShouldOverrideCacheXmlConfiguration()
-      throws IOException {
-    Path logFile = rootFolder.resolve(testName.getMethodName() + ".log");
-    Path cacheXmlFile = rootFolder.resolve(testName.getMethodName() + "Cache.xml");
+  public void parametersOverrideCacheXml() throws IOException {
+    Path logFile = rootFolder.resolve(SERVER_NAME + ".log");
+    Path cacheXmlFile = rootFolder.resolve(SERVER_NAME + "Cache.xml");
 
     int[] ports = getRandomAvailableTCPPorts(2);
     int serverPortInXml = ports[0];
@@ -79,9 +77,9 @@ public class StartServerCommandAcceptanceTest {
     server.setMessageTimeToLive(180);
     server.setSocketBufferSize(32768);
 
-    PrintWriter pw = new PrintWriter(new FileWriter(cacheXmlFile.toFile()), true);
-    CacheXmlGenerator.generate(creation, pw);
-    pw.close();
+    try (PrintWriter pw = new PrintWriter(new FileWriter(cacheXmlFile.toFile()), true)) {
+      CacheXmlGenerator.generate(creation, pw);
+    }
 
     String startServerCommand = String.join(" ",
         "start server",
@@ -91,7 +89,7 @@ public class StartServerCommandAcceptanceTest {
         "--message-time-to-live=360",
         "--socket-buffer-size=16384",
         "--server-port=" + serverPortInGfsh,
-        "--name=" + testName.getMethodName(),
+        "--name=" + SERVER_NAME,
         "--cache-xml-file=" + cacheXmlFile,
         "--J=-Dgemfire.log-file=" + logFile);
 
@@ -99,7 +97,7 @@ public class StartServerCommandAcceptanceTest {
         .of(startServerCommand)
         .execute(gfshRule);
     assertThat(execution.getOutputText())
-        .containsPattern("Server .* " + testName.getMethodName() + " is currently online.");
+        .containsPattern("Server .* " + SERVER_NAME + " is currently online.");
 
     // Assert Server Properties.
     Boolean configurationLineFound = Boolean.FALSE;
@@ -121,10 +119,9 @@ public class StartServerCommandAcceptanceTest {
   }
 
   @Test
-  public void startServerWithParametersWhenClusterConfigurationServiceIsEnabledShouldOverrideDefaults()
-      throws IOException {
+  public void usesClusterConfigurationIfEnabled() throws IOException {
     int serverPort = getRandomAvailableTCPPort();
-    Path logFile = rootFolder.resolve(testName.getMethodName() + ".log");
+    Path logFile = rootFolder.resolve(SERVER_NAME + ".log");
 
     String startServerCommand = String.join(" ",
         "start server",
@@ -135,13 +132,13 @@ public class StartServerCommandAcceptanceTest {
         "--socket-buffer-size=8192",
         "--server-port=" + serverPort,
         "--use-cluster-configuration=true",
-        "--name=" + testName.getMethodName(),
+        "--name=" + SERVER_NAME,
         "--J=-Dgemfire.log-file=" + logFile);
 
     // Start Locator, configure PDX (just to have a non-empty cluster-configuration) and start
     // server.
     GfshExecution startClusterExecution = GfshScript
-        .of("start locator --name=locator1 --connect=true --enable-cluster-configuration=true",
+        .of("start locator --name=locator --connect=true --enable-cluster-configuration=true",
             "configure pdx --read-serialized=true",
             startServerCommand)
         .execute(gfshRule);
@@ -149,7 +146,7 @@ public class StartServerCommandAcceptanceTest {
     assertThat(startClusterExecution.getOutputText())
         .contains("Successfully connected to: JMX Manager")
         .contains("Cluster configuration for group 'cluster' is updated")
-        .containsPattern("Server .* " + testName.getMethodName() + " is currently online.");
+        .containsPattern("Server .* " + SERVER_NAME + " is currently online.");
 
     // Assert Server Properties.
     boolean configurationLineFound = false;

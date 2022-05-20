@@ -49,7 +49,9 @@ public class StopServerWithSecurityAcceptanceTest {
   public void setUp() throws IOException {
     Path rootFolder = folderRule.getFolder().toPath();
     securityPropertiesFile = rootFolder.resolve("security.properties").toFile();
-    securityProps.store(new FileOutputStream(securityPropertiesFile), null);
+    try (FileOutputStream out = new FileOutputStream(securityPropertiesFile)) {
+      securityProps.store(out, null);
+    }
   }
 
   @Test

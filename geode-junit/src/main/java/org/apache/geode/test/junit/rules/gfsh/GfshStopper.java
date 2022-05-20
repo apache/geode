@@ -27,8 +27,7 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.ProcessUtilsProvider;
 
 /**
- * Provides methods for stopping and awaiting the termination of server and locator processes that
- * were started using {@code GfshExecution}.
+ * Provides methods for stopping and awaiting the termination of server and locator processes.
  */
 public class GfshStopper {
 
@@ -36,13 +35,6 @@ public class GfshStopper {
   private final Path rootFolder;
   private final ProcessType processType;
 
-  /**
-   * Use {@code GfshExecution} to create instances of {@code GfshStopper}.
-   *
-   * @param executor KIRK
-   * @param rootFolder KIRK
-   * @param processType KIRK
-   */
   GfshStopper(GfshExecutor executor, Path rootFolder, ProcessType processType) {
     this.executor = executor;
     this.rootFolder = rootFolder.toAbsolutePath();
@@ -63,31 +55,16 @@ public class GfshStopper {
     }
   }
 
-  /**
-   * Stop the member in the named directory using the provided {@code GfshExecutor}.
-   *
-   * @param directoryName KIRK
-   */
   public void stop(String directoryName) {
     stop(Paths.get(directoryName));
   }
 
-  /**
-   * KIRK
-   *
-   * @param directory KIRK
-   */
   public void awaitStop(Path directory) {
     Path serverPidFile =
         rootFolder.resolve(directory).resolve(processType.getPidFileName()).normalize();
     readPid(serverPidFile).ifPresent(this::awaitStop);
   }
 
-  /**
-   * KIRK
-   *
-   * @param directoryName KIRK
-   */
   public void awaitStop(String directoryName) {
     awaitStop(Paths.get(directoryName));
   }

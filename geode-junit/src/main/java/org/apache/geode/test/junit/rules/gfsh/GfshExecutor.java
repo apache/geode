@@ -17,8 +17,6 @@ package org.apache.geode.test.junit.rules.gfsh;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.apache.geode.test.version.VmConfiguration;
-
 public interface GfshExecutor {
 
   GfshExecution execute(String... commands);
@@ -32,17 +30,4 @@ public interface GfshExecutor {
   GfshExecution execute(Path workingDir, GfshScript gfshScript);
 
   GfshExecution execute(File workingDir, GfshScript gfshScript);
-
-  interface Builder {
-
-    GfshExecutor.Builder withJavaHome(Path javaHome);
-
-    GfshExecutor.Builder withGeodeVersion(String geodeVersion);
-
-    GfshExecutor.Builder withVmConfiguration(VmConfiguration vmConfiguration);
-
-    GfshExecutor.Builder withGfshJvmOptions(String... option);
-
-    GfshExecutor build(Path dir);
-  }
 }
