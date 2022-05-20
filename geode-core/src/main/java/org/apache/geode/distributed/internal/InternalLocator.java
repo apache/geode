@@ -66,7 +66,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.api.GMSUtil;
+import org.apache.geode.distributed.internal.membership.api.LocatorConfigurationParser;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
@@ -782,7 +782,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     List<HostAndPort> hostAndPorts;
     try {
-      hostAndPorts = GMSUtil.parseLocators(existingLocators, (InetAddress) null);
+      hostAndPorts = LocatorConfigurationParser.parseLocators(existingLocators, (InetAddress) null);
     } catch (MembershipConfigurationException e) {
       throw new IOException(e.getMessage(), e);
     }

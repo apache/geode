@@ -14,11 +14,9 @@
  * the License.
  *
  */
+
 package org.apache.geode.distributed.internal.membership.api;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -30,15 +28,8 @@ import java.util.StringTokenizer;
 
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.StaticSerialization;
 
-/**
- * GMSUtil contains a few static utility methods that should probably reside in other classes
- */
-public class GMSUtil {
-
+public class LocatorConfigurationParser {
   /**
    * parse locators & check that the resulting address is compatible with the given address
    *
@@ -60,20 +51,6 @@ public class GMSUtil {
       // ignore
     }
     return parseLocators(locatorsString, addr);
-  }
-
-  public static <ID extends MemberIdentifier> Set<ID> readHashSetOfMemberIDs(DataInput in,
-      DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    int size = StaticSerialization.readArrayLength(in);
-    if (size == -1) {
-      return null;
-    }
-    Set<ID> result = new HashSet<>();
-    for (int i = 0; i < size; i++) {
-      result.add(context.getDeserializer().readObject(in));
-    }
-    return result;
   }
 
   /**
@@ -161,77 +138,5 @@ public class GMSUtil {
   private static MembershipConfigurationException createBadPortException(final String str) {
     return new MembershipConfigurationException("This process is attempting to use a locator" +
         " with a malformed port specification: " + str);
-  }
-
-  /**
-   * Parses comma-separated-roles/groups into array of groups (strings).
-   */
-  public static String[] parseGroups(String csvRoles, String csvGroups) {
-    List<String> groups = new ArrayList<>();
-    parseCsv(groups, csvRoles);
-    parseCsv(groups, csvGroups);
-    return groups.toArray(new String[groups.size()]);
-  }
-
-
-  private static void parseCsv(List<String> groups, String csv) {
-    if (csv == null || csv.length() == 0) {
-      return;
-    }
-    StringTokenizer st = new StringTokenizer(csv, ",");
-    while (st.hasMoreTokens()) {
-      String groupName = st.nextToken().trim();
-      if (!groups.contains(groupName)) { // only add each group once
-        groups.add(groupName);
-      }
-    }
-  }
-
-  /**
-   * replaces all occurrences of a given string in the properties argument with the given value
-   */
-  public static String replaceStrings(String properties, String property, String value) {
-    StringBuilder sb = new StringBuilder();
-    int start = 0;
-    int index = properties.indexOf(property);
-    while (index != -1) {
-      sb.append(properties, start, index);
-      sb.append(value);
-
-      start = index + property.length();
-      index = properties.indexOf(property, start);
-    }
-    sb.append(properties.substring(start));
-    return sb.toString();
-  }
-
-  public static <ID extends MemberIdentifier> List<ID> readArrayOfIDs(DataInput in,
-      DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    int size = StaticSerialization.readArrayLength(in);
-    if (size == -1) {
-      return null;
-    }
-    List<ID> result = new ArrayList<>(size);
-    for (int i = 0; i < size; i++) {
-      result.add(context.getDeserializer().readObject(in));
-    }
-    return result;
-  }
-
-  public static <ID extends MemberIdentifier> void writeSetOfMemberIDs(Set<ID> set, DataOutput out,
-      SerializationContext context) throws IOException {
-    int size;
-    if (set == null) {
-      size = -1;
-    } else {
-      size = set.size();
-    }
-    StaticSerialization.writeArrayLength(size, out);
-    if (size > 0) {
-      for (ID member : set) {
-        context.getSerializer().writeObject(member, out);
-      }
-    }
   }
 }

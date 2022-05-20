@@ -17,7 +17,7 @@
 
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.apache.geode.distributed.internal.membership.api.GMSUtil.parseLocators;
+import static org.apache.geode.distributed.internal.membership.api.LocatorConfigurationParser.parseLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -33,7 +33,7 @@ import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class GMSUtilTest {
+public class LocatorConfigurationParserTest {
 
   static final int PORT = 1234; // any old port--no need to have anything actually bound here
 

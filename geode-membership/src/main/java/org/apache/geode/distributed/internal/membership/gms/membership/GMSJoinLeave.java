@@ -41,7 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.membership.api.GMSUtil;
+import org.apache.geode.distributed.internal.membership.api.LocatorConfigurationParser;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
@@ -1912,7 +1912,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         config.isNetworkPartitionDetectionEnabled();
 
     String bindAddr = config.getBindAddress();
-    locators = GMSUtil.parseLocators(config.getLocators(), bindAddr);
+    locators = LocatorConfigurationParser.parseLocators(config.getLocators(), bindAddr);
     if (logger.isDebugEnabled()) {
       logger.debug("Parsed locators are {}", locators);
     }

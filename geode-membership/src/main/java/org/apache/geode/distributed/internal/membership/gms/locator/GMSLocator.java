@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.membership.api.GMSUtil;
+import org.apache.geode.distributed.internal.membership.api.LocatorConfigurationParser;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
@@ -121,7 +121,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
     if (this.locatorString == null || this.locatorString.isEmpty()) {
       locators = new ArrayList<>(0);
     } else {
-      locators = GMSUtil.parseLocators(locatorString,
+      locators = LocatorConfigurationParser.parseLocators(locatorString,
           bindAddress == null ? null : bindAddress.getAddress());
     }
     this.locatorStats = locatorStats;

@@ -57,7 +57,7 @@ import org.mockito.internal.verification.Times;
 import org.mockito.verification.Timeout;
 
 import org.apache.geode.distributed.internal.membership.api.Authenticator;
-import org.apache.geode.distributed.internal.membership.api.GMSUtil;
+import org.apache.geode.distributed.internal.membership.api.LocatorConfigurationParser;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
@@ -443,7 +443,7 @@ public class GMSJoinLeaveJUnitTest {
 
   @Test
   public void multipleLocatorsWithSameAddressAreCanonicalized() throws Exception {
-    List<HostAndPort> locators = GMSUtil.parseLocators(
+    List<HostAndPort> locators = LocatorConfigurationParser.parseLocators(
         "localhost[1234],localhost[1234],localhost[1234]", (InetAddress) null);
     assertThat(locators.size()).isEqualTo(1);
   }
