@@ -15,6 +15,7 @@
 package org.apache.geode.internal.offheap;
 
 import java.lang.reflect.Method;
+import java.util.function.Supplier;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -219,22 +220,17 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     // ooohml provides the hook for disconnecting and closing cache on OutOfOffHeapMemoryException
     OutOfOffHeapMemoryListener ooohml =
         new DisconnectingOutOfOffHeapMemoryListener((InternalDistributedSystem) system);
-    return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml);
-  }
-
-  static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
-      OutOfOffHeapMemoryListener ooohml) {
-    final OffHeapMemoryStats stats = new OffHeapStorage(sf);
-
-    final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
-
-    final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
-
-    return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize);
+    return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml, null);
   }
 
   static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
       OutOfOffHeapMemoryListener ooohml, int updateOffHeapStatsFrequencyMs) {
+    return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml,
+        () -> updateOffHeapStatsFrequencyMs);
+  }
+
+  static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
+      OutOfOffHeapMemoryListener ooohml, Supplier<Integer> updateOffHeapStatsFrequencyMsSupplier) {
     final OffHeapMemoryStats stats = new OffHeapStorage(sf);
 
     final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
@@ -242,7 +238,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
 
     return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize,
-        updateOffHeapStatsFrequencyMs);
+        updateOffHeapStatsFrequencyMsSupplier);
   }
 
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;

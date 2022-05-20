@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
@@ -66,7 +67,9 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   private final ScheduledExecutorService updateNonRealTimeStatsExecutor;
 
-  private final ScheduledFuture<?> updateNonRealTimeStatsFuture;
+  private volatile ScheduledFuture<?> updateNonRealTimeStatsFuture;
+
+  private final int updateOffHeapStatsFrequencyMs;
 
   private volatile OffHeapMemoryStats stats;
 
@@ -98,20 +101,15 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
       int slabCount, long offHeapMemorySize, long maxSlabSize,
-      int updateOffHeapStatsFrequencyMs) {
+      Supplier<Integer> updateOffHeapStatsFrequencyMsSupplier) {
     return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
-        SlabImpl::new, updateOffHeapStatsFrequencyMs);
+        SlabImpl::new, updateOffHeapStatsFrequencyMsSupplier);
   }
 
-  public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
-      int slabCount, long offHeapMemorySize, long maxSlabSize) {
-    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
-        SlabImpl::new, UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
-  }
-
-  private static MemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml,
+  static MemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml,
       OffHeapMemoryStats stats, int slabCount, long offHeapMemorySize, long maxSlabSize,
-      Slab[] slabs, SlabFactory slabFactory, int updateOffHeapStatsFrequencyMs) {
+      Slab[] slabs, SlabFactory slabFactory,
+      Supplier<Integer> updateOffHeapStatsFrequencyMsSupplier) {
     MemoryAllocatorImpl result = singleton;
     boolean created = false;
     try {
@@ -155,7 +153,10 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
           }
         }
 
-        result = new MemoryAllocatorImpl(ooohml, stats, slabs, updateOffHeapStatsFrequencyMs);
+        int updateOffHeapStatsFrequencyMs = updateOffHeapStatsFrequencyMsSupplier == null
+            ? UPDATE_OFF_HEAP_STATS_FREQUENCY_MS : updateOffHeapStatsFrequencyMsSupplier.get();
+        result = new MemoryAllocatorImpl(ooohml, stats, slabs,
+            updateOffHeapStatsFrequencyMs);
         singleton = result;
         LifecycleListener.invokeAfterCreate(result);
         created = true;
@@ -170,14 +171,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
         }
       }
     }
+    result.start();
     return result;
-  }
-
-  static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml,
-      OffHeapMemoryStats stats, int slabCount, long offHeapMemorySize, long maxSlabSize,
-      SlabFactory memChunkFactory) {
-    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null, memChunkFactory,
-        UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
   }
 
   public static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml,
@@ -196,9 +191,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
       }
     }
     return create(oooml, stats, slabCount, offHeapMemorySize, maxSlabSize, slabs, null,
-        UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
+        null);
   }
-
 
   private void reuse(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats newStats,
       long offHeapMemorySize, Slab[] slabs) {
@@ -241,6 +235,11 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
     updateNonRealTimeStatsExecutor =
         LoggingExecutors.newSingleThreadScheduledExecutor("Update Freelist Stats thread");
+
+    this.updateOffHeapStatsFrequencyMs = updateOffHeapStatsFrequencyMs;
+  }
+
+  void start() {
     updateNonRealTimeStatsFuture =
         updateNonRealTimeStatsExecutor.scheduleAtFixedRate(freeList::updateNonRealTimeStats, 0,
             updateOffHeapStatsFrequencyMs, TimeUnit.MILLISECONDS);

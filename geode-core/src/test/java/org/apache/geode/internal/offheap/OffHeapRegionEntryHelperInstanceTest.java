@@ -81,7 +81,7 @@ public class OffHeapRegionEntryHelperInstanceTest {
 
     memoryAllocator =
         MemoryAllocatorImpl.create(listener, stats, 1, OffHeapStorage.MIN_SLAB_SIZE,
-            OffHeapStorage.MIN_SLAB_SIZE);
+            OffHeapStorage.MIN_SLAB_SIZE, null);
 
     offHeapRegionEntryHelperInstance =
         spy(new OffHeapRegionEntryHelperInstance(ohAddress -> offHeapStoredObject,
