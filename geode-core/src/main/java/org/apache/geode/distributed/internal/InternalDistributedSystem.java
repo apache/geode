@@ -1652,6 +1652,9 @@ public class InternalDistributedSystem extends DistributedSystem
           // Finally, mark ourselves as disconnected
           setDisconnected();
           SystemFailure.stopThreads();
+          if (!attemptingToReconnect) {
+            SocketCreatorFactory.close();
+          }
         }
       }
     }
