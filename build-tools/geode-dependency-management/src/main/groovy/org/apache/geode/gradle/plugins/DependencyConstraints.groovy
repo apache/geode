@@ -47,7 +47,7 @@ class DependencyConstraints {
     deps.put("jackson.version", "2.13.2")
     deps.put("jackson.databind.version", "2.13.2.2")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.19")
+    deps.put("springframework.version", "5.3.20")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
