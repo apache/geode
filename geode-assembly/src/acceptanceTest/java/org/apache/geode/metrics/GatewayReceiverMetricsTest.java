@@ -179,8 +179,7 @@ public class GatewayReceiverMetricsTest {
     String stopSenderLocatorCommand = "stop locator --dir=" + senderLocatorFolder;
 
     gfshRule.execute(stopReceiverServerCommand, stopSenderServerCommand,
-        stopReceiverLocatorCommand,
-        stopSenderLocatorCommand);
+        stopReceiverLocatorCommand, stopSenderLocatorCommand);
   }
 
   @Test

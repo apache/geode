@@ -156,28 +156,27 @@ public class RegionEntriesGaugeTest {
 
     String getGaugeValueCommand = memberRegionEntryGaugeValueCommand(regionName);
 
-    await()
-        .untilAsserted(() -> {
-          GfshExecution execution =
-              gfshRule.execute(connectToLocatorCommand, getGaugeValueCommand);
-          OptionalInt server1EntryCount = linesOf(execution.getOutputText())
-              .filter(s -> s.startsWith("server1"))
-              .mapToInt(RegionEntriesGaugeTest::extractEntryCount)
-              .findFirst();
+    await().untilAsserted(() -> {
+      GfshExecution execution =
+          gfshRule.execute(connectToLocatorCommand, getGaugeValueCommand);
+      OptionalInt server1EntryCount = linesOf(execution.getOutputText())
+          .filter(s -> s.startsWith("server1"))
+          .mapToInt(RegionEntriesGaugeTest::extractEntryCount)
+          .findFirst();
 
-          assertThat(server1EntryCount)
-              .as("Number of entries reported by server1")
-              .hasValue(expectedNumberOfEntries);
+      assertThat(server1EntryCount)
+          .as("Number of entries reported by server1")
+          .hasValue(expectedNumberOfEntries);
 
-          String server2Response = linesOf(execution.getOutputText())
-              .filter(s -> s.startsWith("server2"))
-              .findFirst()
-              .orElse("No response from server2");
+      String server2Response = linesOf(execution.getOutputText())
+          .filter(s -> s.startsWith("server2"))
+          .findFirst()
+          .orElse("No response from server2");
 
-          assertThat(server2Response)
-              .as("server2 response from entry count function")
-              .endsWith("[Meter not found.]");
-        });
+      assertThat(server2Response)
+          .as("server2 response from entry count function")
+          .endsWith("[Meter not found.]");
+    });
   }
 
   @Test

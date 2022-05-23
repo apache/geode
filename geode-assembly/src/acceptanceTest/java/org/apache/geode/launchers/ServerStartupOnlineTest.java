@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 import javax.management.JMX;
@@ -121,7 +120,7 @@ public class ServerStartupOnlineTest {
 
     waitForStartServerCommandToHang();
 
-    await().atMost(Duration.ofMinutes(1)).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       String startingStatus = getServerStatusFromGfsh();
       assertThat(startingStatus)
           .as("Status server command output")

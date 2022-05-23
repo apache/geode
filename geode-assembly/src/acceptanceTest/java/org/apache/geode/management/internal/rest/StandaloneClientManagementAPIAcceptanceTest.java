@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -102,10 +101,11 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   public void clientCreatesRegionUsingClusterManagementService()
       throws IOException, InterruptedException {
     JarBuilder jarBuilder = new JarBuilder();
-    String filePath =
-        createTempFileFromResource(getClass(), "/ManagementClientCreateRegion.java")
-            .getAbsolutePath();
-    assertThat(filePath).as("java file resource not found").isNotBlank();
+    String filePath = createTempFileFromResource(
+        getClass(), "/ManagementClientCreateRegion.java").getAbsolutePath();
+    assertThat(filePath)
+        .as("java file resource not found")
+        .isNotBlank();
 
     File outputJar = new File(rootFolder.toFile(), "output.jar");
     jarBuilder.buildJar(outputJar, new File(filePath));
@@ -114,15 +114,14 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     int locatorPort = availablePorts[0];
     int httpPort = availablePorts[1];
     int jmxPort = availablePorts[2];
-    GfshExecution startCluster =
-        GfshScript
-            .of(
-                String.format(
-                    "start locator --port=%d --http-service-port=%d --J=-Dgemfire.JMX_MANAGER_PORT=%d %s",
-                    locatorPort, httpPort, jmxPort, getSslParameters()),
-                String.format("start server --locators=localhost[%d] --server-port=0", locatorPort))
-            .withName("startCluster")
-            .execute(gfshRule);
+
+    GfshExecution startCluster = GfshScript
+        .of(String.format(
+            "start locator --port=%d --http-service-port=%d --J=-Dgemfire.JMX_MANAGER_PORT=%d %s",
+            locatorPort, httpPort, jmxPort, getSslParameters()),
+            String.format("start server --locators=localhost[%d] --server-port=0", locatorPort))
+        .withName("startCluster")
+        .execute(gfshRule);
 
     assertThat(startCluster.getProcess().exitValue())
         .as("Cluster did not start correctly")
@@ -130,7 +129,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
     Process process = launchClientProcess(outputJar, httpPort);
 
-    boolean exited = process.waitFor(30, TimeUnit.SECONDS);
+    boolean exited = process.waitFor(getTimeout().toMillis(), MILLISECONDS);
     assertThat(exited)
         .as("Process did not exit within 10 seconds")
         .isTrue();

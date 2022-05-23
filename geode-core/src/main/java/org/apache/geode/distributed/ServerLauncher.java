@@ -333,7 +333,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     controlHandler = new ControlNotificationHandler() {
       @Override
       public void handleStop() {
-        logger.info("Handling ControllableProcess stop request.");
+        logger.debug("Handling ControllableProcess stop request.");
         if (isStoppable()) {
           stopInProcess();
         }
@@ -341,7 +341,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       @Override
       public ServiceState<?> handleStatus() {
-        logger.info("Handling ControllableProcess status request.");
+        logger.debug("Handling ControllableProcess status request.");
         return statusInProcess();
       }
     };
