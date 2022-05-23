@@ -247,7 +247,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       return SSLContext.getDefault();
     }
 
-    SSLContext newSSLContext = SSLUtil.getSSLContextInstance(sslConfig);
+    SSLContext newSSLContext = SSLUtil.getSSLContextInstance();
 
     KeyManager[] keyManagers = null;
     if (sslConfig.getKeystore() != null) {
@@ -371,8 +371,8 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   /**
-   * @see <a
-   *      href=https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLENG">JSSE
+   * @see <a href=
+   *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLENG">JSSE
    *      Reference Guide</a>
    *
    * @param socketChannel the socket's NIO channel
