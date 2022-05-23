@@ -771,6 +771,10 @@ public class PartitionedRegion extends LocalRegion
 
   private boolean regionCreationNotified;
 
+  public interface RegionAdvisorFactory {
+    RegionAdvisor create(PartitionedRegion region);
+  }
+
   /**
    * Constructor for a PartitionedRegion. This has an accessor (Region API) functionality and
    * contains a datastore for actual storage. An accessor can act as a local cache by having a local
@@ -784,6 +788,20 @@ public class PartitionedRegion extends LocalRegion
       InternalRegionArguments internalRegionArgs,
       StatisticsClock statisticsClock,
       ColocationLoggerFactory colocationLoggerFactory) {
+    this(regionName, regionAttributes, parentRegion, cache, internalRegionArgs, statisticsClock,
+        colocationLoggerFactory,
+        region -> RegionAdvisor.createRegionAdvisor(region));
+  }
+
+  PartitionedRegion(String regionName,
+      RegionAttributes regionAttributes,
+      LocalRegion parentRegion,
+      InternalCache cache,
+      InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock,
+      ColocationLoggerFactory colocationLoggerFactory,
+      RegionAdvisorFactory regionAdvisorFactory) {
+
     super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
         new PartitionedRegionDataView(), statisticsClock);
 
@@ -811,7 +829,7 @@ public class PartitionedRegion extends LocalRegion
     prStats.incTotalNumBuckets(totalNumberOfBuckets);
 
     // Warning: potential early escape of instance
-    distAdvisor = RegionAdvisor.createRegionAdvisor(this);
+    distAdvisor = regionAdvisorFactory.create(this);
     senderIdMonitor = createSenderIdMonitor();
     // Warning: potential early escape of instance
     redundancyProvider = new PRHARedundancyProvider(this, cache.getInternalResourceManager());
@@ -1371,10 +1389,13 @@ public class PartitionedRegion extends LocalRegion
    * @param ra Region attributes
    */
   private void initializeDataStore(RegionAttributes ra) {
-
-    dataStore =
+    setDataStore(
         PartitionedRegionDataStore.createDataStore(cache, this, ra.getPartitionAttributes(),
-            getStatisticsClock());
+            getStatisticsClock()));
+  }
+
+  void setDataStore(PartitionedRegionDataStore dataStore) {
+    this.dataStore = dataStore;
   }
 
   protected DistributedLockService getPartitionedRegionLockService() {
@@ -7079,7 +7100,7 @@ public class PartitionedRegion extends LocalRegion
   private void closePartitionedRegion(RegionEventImpl event) {
     final boolean isClose = event.getOperation().isClose();
     if (isClose) {
-      isClosed = true;
+      setClosed();
     }
     final RegionLock rl = getRegionLock();
     try {
@@ -7125,6 +7146,10 @@ public class PartitionedRegion extends LocalRegion
 
     logger.info("Partitioned Region {} with prId={} closed.",
         new Object[] {getFullPath(), getPRId()});
+  }
+
+  void setClosed() {
+    isClosed = true;
   }
 
   public void checkForColocatedChildren() {
@@ -7769,9 +7794,8 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private void closeDataStoreStats() {
-    PartitionedRegionDataStore localDataStore = dataStore;
-    if (localDataStore != null) {
-      CachePerfStats dataStoreStats = localDataStore.getCachePerfStats();
+    if (dataStore != null) {
+      CachePerfStats dataStoreStats = dataStore.getCachePerfStats();
       if (dataStoreStats != null) {
         dataStoreStats.close();
       }
