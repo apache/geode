@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -33,9 +34,11 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.internal.HttpService;
+import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
 import org.apache.geode.management.internal.AgentUtil;
@@ -67,6 +70,8 @@ public class InternalLocatorTest {
     when(distributionConfig.getSecurableCommunicationChannels())
         .thenReturn(new SecurableCommunicationChannel[] {});
     when(distributionConfig.getSecurityAuthTokenEnabledComponents()).thenReturn(new String[] {});
+    when(distributionConfig.getSSLProtocols()).thenReturn("any");
+    when(distributionConfig.getClusterSSLProtocols()).thenReturn("any");
     when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(regionFactory);
     when(cache.getOptionalService(HttpService.class))
         .thenReturn(Optional.of(httpService));
@@ -133,4 +138,52 @@ public class InternalLocatorTest {
     verify(httpService, never()).addWebApplication(eq("/management"), any(), any());
   }
 
+  @Test
+  public void getHostAddress() throws Exception {
+    // use localhost if no bindAddress
+    HostAddress locator = internalLocator.getHostAddress(null);
+    assertThat(locator.getAddress()).isEqualTo(LocalHostUtil.getLocalHost());
+
+    // use bindAddress name
+    HostAddress bindAddress = new HostAddress("test");
+    locator = internalLocator.getHostAddress(bindAddress);
+    assertThat(locator).isEqualTo(bindAddress);
+  }
+
+  @Test
+  public void addLocatorToBlankConfig() throws Exception {
+    String localHostname = LocalHostUtil.getCanonicalLocalHostName();
+    HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
+    String locator = internalLocator.addLocatorIfMissing(null, localhost, 1234);
+    assertThat(locator).isEqualTo(localHostname + "[1234]");
+  }
+
+  @Test
+  public void configurePeerLocatorWithNoMatchLocatorList() throws Exception {
+    String localHostname = LocalHostUtil.getCanonicalLocalHostName();
+    HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
+    String existing = "10.10.10.10[12345]";
+    String locator = internalLocator.addLocatorIfMissing(existing, localhost, 1234);
+    assertThat(locator).isEqualTo(existing + "," + localHostname + "[1234]");
+  }
+
+  @Test
+  public void configurePeerLocatorWithMatchingLocatorList() throws Exception {
+    HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
+    String localAddress = LocalHostUtil.getLocalHost().getHostAddress();
+    String existing = localAddress + "[12345]";
+    String locator = internalLocator.addLocatorIfMissing(existing, localhost, 12345);
+    // what's returned is what's specified in the original configuration
+    assertThat(locator).isEqualTo(existing);
+  }
+
+  @Test
+  public void configurePeerLocatorWithMatchingAddressButNoMatchingPort() throws Exception {
+    HostAddress localhost = new HostAddress(LocalHostUtil.getLocalHost());
+    String localAddress = LocalHostUtil.getLocalHost().getHostAddress();
+    String existing = localAddress + "[11110]";
+    String locator = internalLocator.addLocatorIfMissing(existing, localhost, 12345);
+    // what's returned is what's specified in the original configuration
+    assertThat(locator).isEqualTo(existing + "," + localhost.getHostName() + "[12345]");
+  }
 }
