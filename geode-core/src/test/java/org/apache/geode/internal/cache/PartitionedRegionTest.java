@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -82,6 +83,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
@@ -134,7 +136,8 @@ public class PartitionedRegionTest {
 
     partitionedRegion = new PartitionedRegion("regionName", attributesFactory.create(), null,
         cache, mock(InternalRegionArguments.class), disabledClock(),
-        ColocationLoggerFactory.create());
+        ColocationLoggerFactory.create(),
+        region -> mock(RegionAdvisor.class));
   }
 
   private Object[] cacheLoaderAndWriter() {
@@ -146,6 +149,23 @@ public class PartitionedRegionTest {
         new Object[] {mockLoader, mockWriter},
         new Object[] {null, null}
     };
+  }
+
+  @Test
+  public void postDestroyRegionForCacheCloseWillCloseDataStoreStats() {
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    CachePerfStats dataStoreStats = mock(CachePerfStats.class);
+    when(dataStore.getCachePerfStats()).thenReturn(dataStoreStats);
+    partitionedRegion.setDataStore(dataStore);
+    partitionedRegion.setClosed();
+    when(cache.getInternalResourceManager(anyBoolean()))
+        .thenReturn(mock(InternalResourceManager.class));
+    RegionEventImpl event = mock(RegionEventImpl.class);
+    when(event.getOperation()).thenReturn(Operation.CACHE_CLOSE);
+
+    partitionedRegion.postDestroyRegion(false, event);
+
+    verify(dataStoreStats).close();
   }
 
   @Test
