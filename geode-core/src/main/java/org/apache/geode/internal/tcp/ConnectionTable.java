@@ -643,6 +643,7 @@ public class ConnectionTable {
       map.clear();
     }
     socketCloser.close();
+    emergencyClose();
   }
 
   public void executeCommand(Runnable runnable) {
