@@ -1325,10 +1325,10 @@ public class CacheClientNotifier {
    */
   public synchronized void shutdown(long acceptorId) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("At cache server shutdown time, the number of cache servers in the cache is {}",
-          getCache().getCacheServers().size());
-    }
+    // if (isDebugEnabled) {
+    logger.info("At cache server shutdown time, the number of cache servers in the cache is {}",
+        getCache().getCacheServers().size());
+    // }
 
     Iterator<CacheClientProxy> it = _clientProxies.values().iterator();
     // Close all the client proxies

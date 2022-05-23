@@ -441,6 +441,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       final boolean isGatewayReceiver,
       final List<GatewayTransportFilter> gatewayTransportFilters,
       final StatisticsClock statisticsClock) throws IOException {
+    logger.info("JC debug: AcceptorImpl()");
     this.securityService = securityService;
     this.statisticsClock = statisticsClock;
 
@@ -1698,7 +1699,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         try {
           serverSock.close();
           logger.info(
-              "BGB AcceptorImpl closed server socket bound to address: {}, port: {} at: {} isClosed: {}, isBound: {} ",
+              "BGB AcceptorImpl closed server socket bound to address: {}, port: {}, isClosed: {}, isBound: {} ",
               serverSock.getInetAddress(),
               serverSock.getLocalPort(),
               serverSock.isClosed(),
@@ -1706,7 +1707,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
               getStackTrace(new Throwable()));
         } catch (IOException e) {
           logger.info(
-              "BGB: AcceptorImpl got exception closing socket bound to address: {}, port: {} isClosed: {}, isBound: {}",
+              "BGB: AcceptorImpl got exception closing socket bound to address: {}, port: {}, isClosed: {}, isBound: {}",
               serverSock.getInetAddress(),
               serverSock.getLocalPort(),
               serverSock.isClosed(),

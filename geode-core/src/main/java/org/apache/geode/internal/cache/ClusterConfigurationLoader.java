@@ -174,8 +174,11 @@ public class ClusterConfigurationLoader {
     // apply the cluster config first
     Configuration clusterConfiguration =
         requestedConfiguration.get(ConfigurationPersistenceService.CLUSTER_CONFIG);
+    logger.info("JC debug: applyClusterXmlConfiguration groupList: {} clusterConfiguration: {}",
+        groupList, clusterConfiguration);
     if (clusterConfiguration != null) {
       String cacheXmlContent = clusterConfiguration.getCacheXmlContent();
+      logger.info("JC debug: applyClusterXmlConfiguration cacheXmlContent: {}", cacheXmlContent);
       if (StringUtils.isNotBlank(cacheXmlContent)) {
         cacheXmlContentList.add(cacheXmlContent);
       }

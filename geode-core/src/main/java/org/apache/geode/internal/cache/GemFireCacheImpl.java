@@ -1439,6 +1439,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     boolean completedCacheXml = false;
     try {
+      logger.info("JC debug: GemFireCacheImpl {}, isClient: {} ", this, isClient);
       if (!isClient) {
         applyJarAndXmlFromClusterConfig();
       }
@@ -1488,6 +1489,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       // Deploy all the jars from the deploy working dir.
       ClassPathLoader.getLatest().getJarDeploymentService().loadJarsFromWorkingDirectory();
     }
+    logger.info("JC debug: applyJarAndXmlFromClusterConfig");
     clusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
         system.getConfig().getGroups());
   }
@@ -4199,6 +4201,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       } else {
         xml = CacheXmlParser.parse(is);
       }
+      logger.info("JC debug: loadCacheXml xml.create() cache: {}", this);
       xml.create(this);
     } catch (IOException e) {
       throw new CacheXmlException(

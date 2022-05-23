@@ -16,9 +16,11 @@
 package org.apache.geode.cache30;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper.crashDistributedSystem;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
@@ -35,8 +37,10 @@ import java.security.GeneralSecurityException;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -50,6 +54,7 @@ import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -68,43 +73,49 @@ import org.apache.geode.test.dunit.rules.MemberVM;
  * CacheServer binding to the same port.
  */
 public class ReconnectWithTlsAndClientsCacheServerDistributedTest implements Serializable {
+
   @Rule
-  public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
+  public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(2);
+
   @Rule
   public DistributedBlackboard blackboard = new DistributedBlackboard();
+
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
+
   private CacheFactory cacheFactory;
   private Properties geodeConfigurationProperties;
   private int clientsCachePort;
 
   private static final Logger logger = LogService.getLogger();
-  // private MemberVM server;
-  // private int locatorPort;
 
-  // @Before
-  // public void before() throws GeneralSecurityException, IOException {
-  // final Properties geodeConfig = geodeConfigurationProperties();
-  //
-  // final MemberVM locator =
-  // clusterStartupRule.startLocatorVM(0,
-  // x -> x.withConnectionToLocator().withProperties(geodeConfig)
-  // .withoutClusterConfigurationService().withoutManagementRestService());
-  //
-  // locatorPort = locator.getPort();
-  // /*
-  // * The only purpose of this extra member is to prevent quorum loss when we force-
-  // * disconnect the local (test) member. Having this member gives us an initial
-  // * cluster size of 3.
-  // */
-  // server = clusterStartupRule.startServerVM(1, geodeConfig, locator.getPort());
-  //
-  // // now make the test JVM a cluster member too
-  //// geodeConfig.setProperty("locators", "localhost[" + locator.getPort() + "]");
-  //// cacheFactory = new CacheFactory(geodeConfig);
-  ////
-  //// clientsCachePort = AvailablePortHelper.getRandomAvailableTCPPort();
-  // }
+  @Before
+  public void before() throws Exception {
+    final Properties geodeConfig = new Properties(); // geodeConfigurationProperties();
 
+    geodeConfig.setProperty(CACHE_XML_FILE,
+        createTempFileFromResource(getClass(), "cache.xml").getAbsolutePath());
 
+    final MemberVM locator =
+        clusterStartupRule.startLocatorVM(0);
+
+    gfsh.connectAndVerify(locator);
+
+    /*
+     * The only purpose of this extra member is to prevent quorum loss when we force-
+     * disconnect the local (test) member. Having this member gives us an initial
+     * cluster size of 3.
+     */
+    clusterStartupRule.startServerVM(1, locator.getPort());
+
+    // now make the test JVM a cluster member too
+    geodeConfig.setProperty("locators", "localhost[" + locator.getPort() + "]");
+    cacheFactory = new CacheFactory(geodeConfig);
+
+    clientsCachePort = AvailablePortHelper.getRandomAvailableTCPPort();
+  }
+
+  @Test
   public void disconnectAndReconnectTest() throws IOException {
     for (int i = 0; i < 5; ++i) {
       cycle(clientsCachePort);
@@ -115,7 +126,7 @@ public class ReconnectWithTlsAndClientsCacheServerDistributedTest implements Ser
    * Experiment to see what happens if I bind port ahead of CacheServer.
    * Doing this before addCacheServer() causes an exception
    */
-
+  @Test
   public void preBindToClientsCacheServerPortTest() throws IOException {
     final ServerSocket serverSocket = new ServerSocket();
     serverSocket.setReuseAddress(true);
@@ -125,7 +136,6 @@ public class ReconnectWithTlsAndClientsCacheServerDistributedTest implements Ser
     assertThatThrownBy(() -> cycle(clientsCachePort)).isInstanceOf(BindException.class);
   }
 
-  @Test
   public void testBindingSocket() throws Exception {
     blackboard.initBlackboard();
     MemberVM locator = clusterStartupRule.startLocatorVM(0);
@@ -193,8 +203,14 @@ public class ReconnectWithTlsAndClientsCacheServerDistributedTest implements Ser
 
   private void cycle(final int clientsCachePort) throws IOException {
     final Cache cache = cacheFactory.create();
+    logger.info("JC debug: test vm cache class: {}", cache.getClass().getName());
 
     startClientsCacheServer(clientsCachePort, cache);
+
+    if (cache.getRegion("testRegion") == null) {
+      gfsh.executeAndAssertThat("create region --name=testRegion --type=PARTITION")
+              .statusIsSuccess();
+    }
 
     final DistributedSystem originalDistributedSystem =
         cache.getDistributedSystem();

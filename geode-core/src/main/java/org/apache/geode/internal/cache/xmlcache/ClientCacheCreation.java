@@ -51,6 +51,8 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Represents a {@link ClientCache} that is created declaratively. Notice that it implements the
@@ -61,6 +63,7 @@ import org.apache.geode.internal.cache.PoolFactoryImpl;
  */
 @SuppressWarnings("deprecation")
 public class ClientCacheCreation extends CacheCreation implements ClientCache {
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Creates a new {@code ClientCacheCreation} with no root regions
@@ -171,6 +174,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
   @Override
   void create(InternalCache cache)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
+    logger.info("JC debug: ClientCacheCreation.create()");
     cache.setDeclarativeCacheConfig(getCacheConfig());
     if (!cache.isClient()) {
       throw new IllegalStateException(

@@ -373,7 +373,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         return diskStoreName;
       }
     };
-
+    logger.info("JC debug: CacheServerImpl.start() createAcceptor()");
     acceptor = createAcceptor(overflowAttributes);
 
     acceptor.start();

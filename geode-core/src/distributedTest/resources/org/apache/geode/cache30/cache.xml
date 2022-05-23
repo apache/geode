@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+  ~ agreements. See the NOTICE file distributed with this work for additional information regarding
+  ~ copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance with the License. You may obtain a
+  ~ copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software distributed under the License
+  ~ is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+  ~ or implied. See the License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+<cache xmlns="http://geode.apache.org/schema/cache" xmlns:jdbc="http://geode.apache.org/schema/jdbc" xmlns:lucene="http://geode.apache.org/schema/lucene" xmlns:query-config-service="http://geode.apache.org/schema/query-config-service" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:schemaLocation="http://geode.apache.org/schema/jdbc http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd http://geode.apache.org/schema/lucene http://geode.apache.org/schema/lucene/lucene-1.0.xsd http://geode.apache.org/schema/query-config-service http://geode.apache.org/schema/query-config-service/query-config-service-1.0.xsd http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd">
+
+<!--    <disk-store name="pdxmetadata">-->
+
+<!--        <disk-dirs>-->
+
+<!--            <disk-dir>/data/pdxmetadata</disk-dir>-->
+
+<!--        </disk-dirs>-->
+
+<!--    </disk-store>-->
+
+    <cache-server port="12345" max-connections="256"/>
+
+    <pdx disk-store-name="pdxmetadata" persistent="true" read-serialized="true"/>
+
+    <region name="gemfire-clients-6c4455cd77-b6trl-region-90e247c802f07dbb" refid="PARTITION">
+
+        <region-attributes data-policy="partition">
+
+            <partition-attributes redundant-copies="1"/>
+
+        </region-attributes>
+
+    </region>
+
+    <region name="gemfire-clients-6c4455cd77-jkxhx-region-22a679e0373fb735" refid="PARTITION">
+
+        <region-attributes data-policy="partition">
+
+            <partition-attributes redundant-copies="1"/>
+
+        </region-attributes>
+
+    </region>
+
+    <region name="gemfire-clients-6c4455cd77-m7sqn-region-9c5b921b0d8fcad8" refid="PARTITION">
+
+        <region-attributes data-policy="partition">
+
+            <partition-attributes redundant-copies="1"/>
+
+        </region-attributes>
+
+    </region>
+
+</cache>
