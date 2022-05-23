@@ -169,6 +169,10 @@ public class StatsKey {
   public static final String DISK_WRITEN_BYTES = "writtenBytes";
 
   public static final String DISK_RECOVERY_ENTRIES_CREATED = "recoveredEntryCreates";
+
+  public static final String DISK_RECOVERY_ENTRIES_UPDATED = "recoveredEntryUpdates";
+
+  public static final String DISK_RECOVERY_ENTRIES_DESTROYED = "recoveredEntryDestroys";
   public static final String DISK_RECOVERED_BYTES = "recoveredBytes";
 
   public static final String BACKUPS_IN_PROGRESS = "backupsInProgress";

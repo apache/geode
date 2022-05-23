@@ -9,5 +9,9 @@
   "Method org.apache.geode.cache.query.IndexStatistics.getReadLockCountLong()": "Added new methods.",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFragments()": "Added new stat",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFreedChunks()": "Added new stat",
-  "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat"
+  "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat",
+  "Class org.apache.geode.management.DiskStoreMXBean": "Added new methods.",
+  "Method org.apache.geode.management.DiskStoreMXBean.getTotalRecoveredEntryCreates()": "Added new stat",
+  "Method org.apache.geode.management.DiskStoreMXBean.getTotalRecoveredEntryDestroys()": "Added new stat",
+  "Method org.apache.geode.management.DiskStoreMXBean.getTotalRecoveredEntryUpdates()": "Added new stat"
 }

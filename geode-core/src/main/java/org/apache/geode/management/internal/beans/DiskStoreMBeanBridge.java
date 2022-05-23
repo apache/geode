@@ -247,6 +247,18 @@ public class DiskStoreMBeanBridge {
     return getDiskStoreStatistic(StatsKey.RECOVERIES_IN_PROGRESS).intValue();
   }
 
+  public int getTotalRecoveredEntryCreates() {
+    return getDiskStoreStatistic(StatsKey.DISK_RECOVERY_ENTRIES_CREATED).intValue();
+  }
+
+  public int getTotalRecoveredEntryUpdates() {
+    return getDiskStoreStatistic(StatsKey.DISK_RECOVERY_ENTRIES_UPDATED).intValue();
+  }
+
+  public int getTotalRecoveredEntryDestroys() {
+    return getDiskStoreStatistic(StatsKey.DISK_RECOVERY_ENTRIES_DESTROYED).intValue();
+  }
+
   public Number getDiskStoreStatistic(String statName) {
     if (diskStoreStats != null) {
       return diskStoreStats.getStats().get(statName);

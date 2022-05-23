@@ -177,6 +177,12 @@ public interface DiskStoreMXBean {
    */
   int getTotalRecoveriesInProgress();
 
+  int getTotalRecoveredEntryCreates();
+
+  int getTotalRecoveredEntryUpdates();
+
+  int getTotalRecoveredEntryDestroys();
+
   /**
    * Requests the DiskStore to start writing to a new op-log. The old oplog will be asynchronously
    * compressed if compaction is set to true. The new op-log will be created in the next available
