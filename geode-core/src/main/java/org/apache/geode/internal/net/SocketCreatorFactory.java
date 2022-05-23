@@ -29,7 +29,6 @@ public class SocketCreatorFactory {
 
   @MakeNotStatic
   private static SocketCreatorFactory instance = null;
-  @MakeNotStatic
   private final Map<SecurableCommunicationChannel, SocketCreator> socketCreators = new HashMap<>();
   private DistributionConfig distributionConfig;
 
@@ -54,10 +53,14 @@ public class SocketCreatorFactory {
   }
 
   private static synchronized SocketCreatorFactory getInstance(boolean closing) {
-    if (instance == null && !closing) {
-      instance = new SocketCreatorFactory();
+    SocketCreatorFactory result = instance;
+    if (result == null && !closing) {
+      result = new SocketCreatorFactory();
+      instance = result;
+    } else if (result != null && closing) {
+      instance = null;
     }
-    return instance;
+    return result;
   }
 
   private static synchronized SocketCreatorFactory getInstance() {
