@@ -279,8 +279,9 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   @Test
   public void performARollingUpgrade() {
+    // KIRK wants this test to run stress-new-test
     Optional<VmConfiguration> sourceConfiguration = VmConfigurations.upgrades().stream()
-        // Skip the configurations with the current Geode
+        // Skip the configurations with the current GeodeZZ
         .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.CURRENT_VERSION)))
         // Get the configuration with the latest Geode
         .max(comparing(VmConfiguration::geodeVersion));
