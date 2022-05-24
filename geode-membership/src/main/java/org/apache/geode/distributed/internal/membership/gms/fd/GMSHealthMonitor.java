@@ -456,26 +456,32 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     setNextNeighbor(cv, mbr);
 
     // we need to check this member
-    checkExecutor.execute(() -> {
-      boolean pinged;
-      try {
-        pinged = doCheckMember(mbr, true);
-      } catch (MembershipClosedException e) {
-        return;
-      }
+    try {
+      checkExecutor.execute(() -> {
+        boolean pinged;
+        try {
+          pinged = doCheckMember(mbr, true);
+        } catch (MembershipClosedException e) {
+          return;
+        }
 
-      if (!pinged) {
-        String reason = "Member isn't responding to heartbeat requests";
-        memberSuspected(localAddress, mbr, reason);
-        initiateSuspicion(mbr, reason);
-        setNextNeighbor(currentView, null);
-      } else {
-        logger.trace("Setting next neighbor as member {} has responded.", mbr);
-        memberUnsuspected(mbr);
-        // back to previous one
-        setNextNeighbor(currentView, null);
+        if (!pinged) {
+          String reason = "Member isn't responding to heartbeat requests";
+          memberSuspected(localAddress, mbr, reason);
+          initiateSuspicion(mbr, reason);
+          setNextNeighbor(currentView, null);
+        } else {
+          logger.trace("Setting next neighbor as member {} has responded.", mbr);
+          memberUnsuspected(mbr);
+          // back to previous one
+          setNextNeighbor(currentView, null);
+        }
+      });
+    } catch (RejectedExecutionException ex) {
+      if (!isStopping) {
+        throw ex;
       }
-    });
+    }
 
   }
 
@@ -1238,15 +1244,21 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
       final String reason = sr.getReason();
       logger.debug("Scheduling availability check for member {}; reason={}", mbr, reason);
       // its a coordinator
-      checkExecutor.execute(() -> {
-        try {
-          inlineCheckIfAvailable(initiator, cv, true, mbr, reason);
-        } catch (MembershipClosedException e) {
-          // shutting down
-        } catch (Exception e) {
-          logger.info("Unexpected exception while verifying member", e);
+      try {
+        checkExecutor.execute(() -> {
+          try {
+            inlineCheckIfAvailable(initiator, cv, true, mbr, reason);
+          } catch (MembershipClosedException e) {
+            // shutting down
+          } catch (Exception e) {
+            logger.info("Unexpected exception while verifying member", e);
+          }
+        });
+      } catch (RejectedExecutionException ex) {
+        if (!isStopping) {
+          throw ex;
         }
-      });
+      }
     }
   }
 
