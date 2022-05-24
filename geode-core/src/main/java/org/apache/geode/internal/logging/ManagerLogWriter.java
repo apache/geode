@@ -325,6 +325,9 @@ public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
     if (printWriter != null) {
       printWriter.close();
     }
+    // config has a reference to GemFireCacheImpl
+    // so to prevent it from being kept alive null it out
+    config = null;
   }
 
   public static File getLogNameForOldMainLog(final File log, final boolean useOldFile) {
