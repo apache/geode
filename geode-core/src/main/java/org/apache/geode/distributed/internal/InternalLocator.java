@@ -1081,9 +1081,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         while (system.isConnected()) {
           Thread.sleep(5000);
         }
-        // there would be a gap between stoppedForReconnect being to true and attemptingToReconnect
+        // there would be a gap between stoppedForReconnect being to true and isReconnecting()
         // being true, if system.waitUntilReconnected happened in between, this method would return
-        // with "restarted" being false, so we need also to wait till system is reconnecting
+        // false immediately. We should also to wait till system is reconnecting here
+        // in this call to prevent that.
         logger.info("waiting for distributed system to reconnect...");
         while (!system.isReconnecting()) {
           Thread.sleep(1000);
