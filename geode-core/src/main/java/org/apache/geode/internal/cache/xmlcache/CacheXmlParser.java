@@ -336,7 +336,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       throw new CacheXmlException(
           "No cache element specified.");
     }
-    logger.info("JC debug: CacheXmlParser this.cache: {}, cache class: {}", this.cache, cache.getClass().getName());
+    logger.info("JC debug: CacheXmlParser this.cache: {}, cache class: {}", this.cache,
+        cache.getClass().getName());
     this.cache.create(cache);
   }
 

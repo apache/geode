@@ -602,7 +602,9 @@ public class CacheCreation implements InternalCache {
 
     cache.readyDynamicRegionFactory();
 
-    logger.info("JC debug: CacheCreation.create() startCacheServers getCacheServers(): {} cache: {}", getCacheServers(), cache);
+    logger.info(
+        "JC debug: CacheCreation.create() startCacheServers getCacheServers(): {} cache: {}",
+        getCacheServers(), cache);
     // Create and start the CacheServers after the gateways have been initialized
     startCacheServers(getCacheServers(), cache, ServerLauncherParameters.INSTANCE);
 
@@ -738,12 +740,16 @@ public class CacheCreation implements InternalCache {
     Integer serverPort = null;
     String serverBindAdd = null;
     Boolean disableDefaultServer = null;
-    logger.info("JC debug: CacheCreation.startCacheServers() declarativeCacheServers: {}, parameters: {}", declarativeCacheServers, parameters);
+    logger.info(
+        "JC debug: CacheCreation.startCacheServers() declarativeCacheServers: {}, parameters: {}",
+        declarativeCacheServers, parameters);
     if (parameters != null) {
       serverPort = parameters.getPort();
       serverBindAdd = parameters.getBindAddress();
       disableDefaultServer = parameters.isDisableDefaultServer();
-      logger.info("JC debug: CacheCreation.startCacheServers() serverPort: {}, serverBindAdd: {}, disableDefaultServer: {}", serverPort, serverBindAdd, disableDefaultServer);
+      logger.info(
+          "JC debug: CacheCreation.startCacheServers() serverPort: {}, serverBindAdd: {}, disableDefaultServer: {}",
+          serverPort, serverBindAdd, disableDefaultServer);
     }
 
     if (declarativeCacheServers.size() > 1 && (serverPort != null || serverBindAdd != null)) {
@@ -769,7 +775,9 @@ public class CacheCreation implements InternalCache {
         }
       }
 
-      logger.info("JC debug: CacheCreation.startCacheServers() cache: {}, cacheServers: {}, existingCacheServer: {}", cache, cacheServers, existingCacheServer);
+      logger.info(
+          "JC debug: CacheCreation.startCacheServers() cache: {}, cacheServers: {}, existingCacheServer: {}",
+          cache, cacheServers, existingCacheServer);
 
       if (!existingCacheServer) {
         defaultServer = new CacheServerCreation((InternalCache) cache, false);
@@ -790,7 +798,8 @@ public class CacheCreation implements InternalCache {
           }
         }
       }
-      logger.info("JC debug: CacheCreation.startCacheServers() cacheServers: {}, startServer: {}", cacheServers, startServer);
+      logger.info("JC debug: CacheCreation.startCacheServers() cacheServers: {}, startServer: {}",
+          cacheServers, startServer);
       if (!startServer) {
         continue;
       }
@@ -1251,7 +1260,8 @@ public class CacheCreation implements InternalCache {
   public CacheServer addCacheServer() {
     CacheServer bridge = new CacheServerCreation(this, false);
     bridgeServers.add(bridge);
-    logger.info("JC debug: CacheCreation.addCacheServer() bridgeServers: {}, bridge: {}", bridgeServers, bridge, new Throwable());
+    logger.info("JC debug: CacheCreation.addCacheServer() bridgeServers: {}, bridge: {}",
+        bridgeServers, bridge, new Throwable());
     return bridge;
   }
 

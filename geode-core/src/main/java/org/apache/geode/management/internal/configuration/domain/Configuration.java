@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -43,6 +44,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
@@ -59,6 +61,8 @@ public class Configuration implements VersionedDataSerializable {
   private Properties gemfireProperties;
   private final Map<String, Deployment> deployments = new HashMap<>();
 
+  private static final Logger logger = LogService.getLogger();
+
   // Public no arg constructor required for Deserializable
   public Configuration() {
 
@@ -72,6 +76,7 @@ public class Configuration implements VersionedDataSerializable {
     gemfireProperties = new Properties();
     gemfireProperties.putAll(that.gemfireProperties);
     deployments.putAll(that.deployments);
+    logger.info("JC debug: Configuration that: {}", that, new Throwable());
   }
 
   public Configuration(String configName) {
@@ -87,9 +92,11 @@ public class Configuration implements VersionedDataSerializable {
 
   public void setCacheXmlContent(String cacheXmlContent) {
     this.cacheXmlContent = cacheXmlContent;
+    logger.info("JC debug: Configuration setCacheXmlContent: {}", cacheXmlContent, new Throwable());
   }
 
   public void setCacheXmlFile(File cacheXmlFile) throws IOException {
+    logger.info("JC debug: Configuration setCacheXmlFile: {}", cacheXmlFile, new Throwable());
     if (cacheXmlFile.length() == 0) {
       cacheXmlContent = "";
     } else {

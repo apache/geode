@@ -37,7 +37,6 @@ import java.security.GeneralSecurityException;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -60,6 +59,7 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 /*
  * This test creates a three member cluster. One member resides in the test JVM so only
@@ -209,7 +209,7 @@ public class ReconnectWithTlsAndClientsCacheServerDistributedTest implements Ser
 
     if (cache.getRegion("testRegion") == null) {
       gfsh.executeAndAssertThat("create region --name=testRegion --type=PARTITION")
-              .statusIsSuccess();
+          .statusIsSuccess();
     }
 
     final DistributedSystem originalDistributedSystem =
