@@ -306,6 +306,7 @@ public class LogWriterAppender extends AbstractAppender
     logWriter.shuttingDown();
     pause();
     logWriter.closingLogFile();
+    logWriter = null;
   }
 
   @Override
