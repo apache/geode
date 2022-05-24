@@ -30,7 +30,8 @@ public class OffHeapStorageNonRuntimeStatsJUnitTest {
     StatisticsFactory localStatsFactory = new LocalStatisticsFactory(null);
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     MemoryAllocator ma =
-        OffHeapStorage.basicCreateOffHeapStorage(localStatsFactory, 1024 * 1024, ooohml, 100);
+        OffHeapStorage.basicCreateOffHeapStorage(localStatsFactory, 1024 * 1024, ooohml, () -> 100,
+            null);
     try {
       OffHeapMemoryStats stats = ma.getStats();
 

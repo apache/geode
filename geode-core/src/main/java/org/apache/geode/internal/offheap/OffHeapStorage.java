@@ -220,17 +220,12 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     // ooohml provides the hook for disconnecting and closing cache on OutOfOffHeapMemoryException
     OutOfOffHeapMemoryListener ooohml =
         new DisconnectingOutOfOffHeapMemoryListener((InternalDistributedSystem) system);
-    return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml, null);
+    return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml, null, null);
   }
 
   static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
-      OutOfOffHeapMemoryListener ooohml, int updateOffHeapStatsFrequencyMs) {
-    return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml,
-        () -> updateOffHeapStatsFrequencyMs);
-  }
-
-  static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
-      OutOfOffHeapMemoryListener ooohml, Supplier<Integer> updateOffHeapStatsFrequencyMsSupplier) {
+      OutOfOffHeapMemoryListener ooohml, Supplier<Integer> updateOffHeapStatsFrequencyMsSupplier,
+      Supplier<NonRealTimeStatsUpdater> nonRealTimeStatsUpdaterSupplier) {
     final OffHeapMemoryStats stats = new OffHeapStorage(sf);
 
     final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
@@ -238,7 +233,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
 
     return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize,
-        updateOffHeapStatsFrequencyMsSupplier);
+        updateOffHeapStatsFrequencyMsSupplier, nonRealTimeStatsUpdaterSupplier);
   }
 
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;
