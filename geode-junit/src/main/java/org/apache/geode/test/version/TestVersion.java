@@ -20,7 +20,8 @@ import java.util.Objects;
 @SuppressWarnings("serial")
 public class TestVersion implements Comparable<TestVersion>, Serializable {
 
-  private static final TestVersion CURRENT_VERSION = new TestVersion(VersionManager.CURRENT_VERSION);
+  private static final TestVersion CURRENT_VERSION =
+      new TestVersion(VersionManager.CURRENT_VERSION);
 
   private final int major;
   private final int minor;
