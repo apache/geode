@@ -14,15 +14,21 @@
  */
 package org.apache.geode.session.tests;
 
+import static java.nio.file.Files.isDirectory;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
+import static org.apache.commons.io.FilenameUtils.getExtension;
+import static org.apache.geode.management.internal.configuration.utils.ZipUtils.unzip;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.function.IntSupplier;
@@ -34,8 +40,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.installer.Installer;
 import org.codehaus.cargo.container.installer.ZipURLInstaller;
@@ -46,7 +50,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 
 /**
  * Base class for handling downloading and configuring J2EE containers.
@@ -58,25 +61,25 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
  */
 public abstract class ContainerInstall {
 
-  private final IntSupplier portSupplier;
   static final Logger logger = LogService.getLogger();
-  static final String TMP_DIR = createTempDir();
-  static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
-  static final String GEODE_BUILD_HOME_LIB = GEODE_BUILD_HOME + "/lib/";
-  private static final String DEFAULT_INSTALL_DIR = TMP_DIR + "/cargo_containers/";
-  private static final String DEFAULT_MODULE_EXTRACTION_DIR = TMP_DIR + "/cargo_modules/";
-  static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
+
+  private final IntSupplier portSupplier;
+
+  static final Path GEODE_HOME_PATH = Paths.get(System.getenv("GEODE_HOME"));
+  static final Path GEODE_LIB_PATH = GEODE_HOME_PATH.resolve("lib");
+  static final Path DEFAULT_MODULE_PATH = GEODE_HOME_PATH.resolve("tools").resolve("Modules");
 
   protected IntSupplier portSupplier() {
     return portSupplier;
   }
 
   private final ConnectionType connType;
-  private final String installPath;
-  private final String modulePath;
-  private final String warFilePath;
-
+  private final Path rootDir;
+  private final Path installPath;
+  private final Path modulePath;
+  private final Path warFilePath;
   private final String defaultLocatorAddress;
+
   private int defaultLocatorPort;
 
   /**
@@ -122,12 +125,15 @@ public abstract class ContainerInstall {
     }
   }
 
-  public ContainerInstall(String name, String downloadURL, ConnectionType connectionType,
+  public ContainerInstall(Path rootDir, String name, String downloadURL,
+      ConnectionType connectionType,
       String moduleName, IntSupplier portSupplier) throws IOException {
-    this(name, downloadURL, connectionType, moduleName, DEFAULT_MODULE_LOCATION, portSupplier);
+    this(rootDir, name, downloadURL, connectionType, moduleName, DEFAULT_MODULE_PATH, portSupplier);
   }
 
   /**
+   * @param rootDir The root folder used by default for cargo logs, container configs and other
+   *        files and directories
    * @param name used to name install directory
    * @param downloadURL the URL from which to download the container
    * @param connType Enum representing the connection type of this installation (either client
@@ -138,28 +144,34 @@ public abstract class ContainerInstall {
    * @param portSupplier the port supplier
    * @throws IOException if an exception is encountered when deleting or accessing files
    */
-  public ContainerInstall(String name, String downloadURL, ConnectionType connType,
-      String moduleName, String geodeModuleLocation, IntSupplier portSupplier) throws IOException {
+  public ContainerInstall(Path rootDir, String name, String downloadURL, ConnectionType connType,
+      String moduleName, Path geodeModuleLocation, IntSupplier portSupplier)
+      throws IOException {
+    this.rootDir = rootDir;
+
     this.connType = connType;
     this.portSupplier = portSupplier;
 
-    String installDir = DEFAULT_INSTALL_DIR + name;
+    Path installDir = rootDir.toAbsolutePath().resolve("cargo_containers").resolve(name);
 
     clearPreviousInstall(installDir);
 
     URL url = getResource(getClass(), "/" + downloadURL);
-    logger.info("Installing container from URL " + url);
+    logger.info("Installing container from URL {}", url);
 
     // Optional step to install the container from a URL pointing to its distribution
     Installer installer =
-        new ZipURLInstaller(url, TMP_DIR + "/downloads", installDir);
+        new ZipURLInstaller(url, installDir + "/downloads", installDir.toString());
     installer.install();
 
     // Set install home
-    installPath = installer.getHome();
+    installPath = Paths.get(installer.getHome());
+
     // Find and extract the module path
-    modulePath = findAndExtractModule(geodeModuleLocation, moduleName);
-    logger.info("Extracted module " + moduleName + " to " + modulePath);
+    Path modulesDir = rootDir.toAbsolutePath().resolve("cargo_modules");
+    modulePath = findAndExtractModule(modulesDir, geodeModuleLocation, moduleName);
+    logger.info("Extracted module {} to {}", moduleName, modulePath);
+
     // Find the session testing war path
     warFilePath = findSessionTestingWar();
 
@@ -171,18 +183,17 @@ public abstract class ContainerInstall {
   }
 
   ServerContainer generateContainer(String containerDescriptors) throws IOException {
-    return generateContainer(null, containerDescriptors);
+    return generateContainer(rootDir, null, containerDescriptors);
   }
 
   /**
    * Cleans up the installation by deleting the extracted module and downloaded installation folders
    */
-  private void clearPreviousInstall(String installDir) throws IOException {
-    File installFolder = new File(installDir);
+  private void clearPreviousInstall(Path installDir) throws IOException {
     // Remove installs from previous runs in the same folder
-    if (installFolder.exists()) {
-      logger.info("Deleting previous install folder " + installFolder.getAbsolutePath());
-      FileUtils.deleteDirectory(installFolder);
+    if (Files.exists(installDir)) {
+      logger.info("Deleting previous install folder {}", installDir);
+      deleteDirectory(installDir.toFile());
     }
   }
 
@@ -200,10 +211,14 @@ public abstract class ContainerInstall {
     return connType.isClientServer();
   }
 
+  Path getRootDir() {
+    return rootDir;
+  }
+
   /*
    * Where the installation is located
    */
-  public String getHome() {
+  public Path getHome() {
     return installPath;
   }
 
@@ -214,13 +229,13 @@ public abstract class ContainerInstall {
    * needed XML files.
    */
   String getModulePath() {
-    return modulePath;
+    return modulePath.toString();
   }
 
   /**
    * The path to the session testing WAR file
    */
-  String getWarFilePath() {
+  Path getWarFilePath() {
     return warFilePath;
   }
 
@@ -255,8 +270,8 @@ public abstract class ContainerInstall {
   /*
    * Gets the cache XML file to use by default for this installation
    */
-  File getCacheXMLFile() {
-    return new File(modulePath + "/conf/" + getConnectionType().getCacheXMLFileName());
+  Path getCacheXMLFile() {
+    return modulePath.resolve("conf").resolve(getConnectionType().getCacheXMLFileName());
   }
 
   /*
@@ -275,15 +290,18 @@ public abstract class ContainerInstall {
   public abstract String getContextSessionManagerClass();
 
   /**
-   * Generates a {@link ServerContainer} from the given {@link ContainerInstall}
+   * Generates a {@link ServerContainer} from the given {@code ContainerInstall}
    *
+   * @param rootDir The root folder used by default for cargo logs, container configs and other
+   *        files and directories
    * @param containerConfigHome The folder that the container configuration folder should be setup
    *        in
    * @param containerDescriptors Additional descriptors used to identify a container
    * @return the newly generated {@link ServerContainer}
    * @throws IOException if an exception is encountered
    */
-  public abstract ServerContainer generateContainer(File containerConfigHome,
+  public abstract ServerContainer generateContainer(Path rootDir,
+      Path containerConfigHome,
       String containerDescriptors) throws IOException;
 
   /**
@@ -292,7 +310,7 @@ public abstract class ContainerInstall {
    * NOTE::This walks into the extensions folder and then uses a hardcoded path from there making it
    * very unreliable if things are moved.
    */
-  private static String findSessionTestingWar() {
+  private static Path findSessionTestingWar() {
     // Start out searching directory above current
     String curPath = "../";
 
@@ -316,8 +334,8 @@ public abstract class ContainerInstall {
     }
 
     // Return path to extensions plus hardcoded path from there to the WAR
-    return warModuleDir.getAbsolutePath()
-        + "/session-testing-war/build/libs/session-testing-war.war";
+    return warModuleDir.toPath().toAbsolutePath().normalize().resolve(
+        Paths.get("session-testing-war", "build", "libs", "session-testing-war.war"));
   }
 
   /**
@@ -327,58 +345,44 @@ public abstract class ContainerInstall {
    *        extract. Used as a search parameter to find the module archive.
    * @return The path to the non-archive (extracted) version of the module files
    */
-  private static String findAndExtractModule(String geodeModuleLocation, String moduleName)
+  private Path findAndExtractModule(Path defaultModulesDir, Path geodeModuleLocation,
+      String moduleName)
       throws IOException {
-    File modulesDir = new File(geodeModuleLocation);
-
-    logger.info("Trying to access build dir " + modulesDir);
+    logger.info("Trying to access build dir {}", geodeModuleLocation);
 
     // Search directory for tomcat module folder/zip
-    boolean archive = false;
-    File modulePath = null;
-    for (File file : modulesDir.listFiles()) {
+    final Path moduleSource = Files.list(geodeModuleLocation)
+        .filter(p -> p.toString().toLowerCase().contains(moduleName))
+        .findFirst()
+        .map(Path::toAbsolutePath)
+        .orElseThrow(() -> new AssertionError("Could not find module " + moduleName));
 
-      if (file.getName().toLowerCase().contains(moduleName)) {
-        modulePath = file;
-
-        archive = !file.isDirectory();
-        if (!archive) {
-          break;
-        }
-      }
+    if (isDirectory(moduleSource)) {
+      return moduleSource;
     }
 
-    assertThat(modulePath).describedAs("module path").isNotNull();
+    String moduleFileNameFull = moduleSource.getFileName().toString();
 
-    String extractedModulePath =
-        modulePath.getName().substring(0, modulePath.getName().length() - 4);
     // Get the name of the new module folder within the extraction directory
-    File newModuleFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR + extractedModulePath);
+    final Path moduleDestinationDir = defaultModulesDir.resolve(getBaseName(moduleFileNameFull));
+
     // Remove any previous module folders extracted here
-    if (newModuleFolder.exists()) {
-      logger.info("Deleting previous modules directory " + newModuleFolder.getAbsolutePath());
-      FileUtils.deleteDirectory(newModuleFolder);
+    if (isDirectory(moduleDestinationDir)) {
+      logger.info("Deleting previous modules directory {}", moduleDestinationDir);
+      deleteDirectory(moduleDestinationDir.toFile());
     }
 
     // Unzip if it is a zip file
-    if (archive) {
-      if (!FilenameUtils.getExtension(modulePath.getAbsolutePath()).equals("zip")) {
-        throw new IOException("Bad module archive " + modulePath);
-      }
+    assertThat(moduleSource).isRegularFile();
 
-      // Extract folder to location if not already there
-      if (!newModuleFolder.exists()) {
-        ZipUtils.unzip(modulePath.getAbsolutePath(), newModuleFolder.getAbsolutePath());
-      }
-
-      modulePath = newModuleFolder;
+    if (!getExtension(moduleFileNameFull).equals("zip")) {
+      throw new IOException("Bad module archive " + moduleSource);
     }
 
-    // No module found within directory throw IOException
-    if (modulePath == null) {
-      throw new IOException("No module found in " + modulesDir);
-    }
-    return modulePath.getAbsolutePath();
+    // Extract folder to location if not already there
+    unzip(moduleSource.toString(), moduleDestinationDir.toString());
+
+    return moduleDestinationDir;
   }
 
   /**
@@ -391,9 +395,9 @@ public abstract class ContainerInstall {
    *        property value the current value. If false, replaces the current property value with the
    *        given property value
    */
-  static void editPropertyFile(String filePath, String propertyName, String propertyValue,
+  static void editPropertyFile(Path filePath, String propertyName, String propertyValue,
       boolean append) throws Exception {
-    FileInputStream input = new FileInputStream(filePath);
+    InputStream input = Files.newInputStream(filePath);
     Properties properties = new Properties();
     properties.load(input);
 
@@ -405,17 +409,17 @@ public abstract class ContainerInstall {
     }
 
     properties.setProperty(propertyName, val);
-    properties.store(new FileOutputStream(filePath), null);
+    properties.store(Files.newOutputStream(filePath), null);
 
     logger.info("Modified container Property file " + filePath);
   }
 
-  static void editXMLFile(String XMLPath, String tagId, String tagName,
+  static void editXMLFile(Path XMLPath, String tagId, String tagName,
       String parentTagName, HashMap<String, String> attributes) {
     editXMLFile(XMLPath, tagId, tagName, tagName, parentTagName, attributes, false);
   }
 
-  static void editXMLFile(String XMLPath, String tagName, String parentTagName,
+  static void editXMLFile(Path XMLPath, String tagName, String parentTagName,
       HashMap<String, String> attributes, boolean writeOnSimilarAttributeNames) {
     editXMLFile(XMLPath, null, tagName, tagName, parentTagName, attributes,
         writeOnSimilarAttributeNames);
@@ -441,7 +445,7 @@ public abstract class ContainerInstall {
    *        rather than adding a new element. If false, create a new XML element (unless tagId is
    *        not null).
    */
-  private static void editXMLFile(String XMLPath, String tagId, String tagName,
+  private static void editXMLFile(Path XMLPath, String tagId, String tagName,
       String replacementTagName, String parentTagName, HashMap<String, String> attributes,
       boolean writeOnSimilarAttributeNames) {
 
@@ -449,7 +453,7 @@ public abstract class ContainerInstall {
       // Get XML file to edit
       DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-      Document doc = docBuilder.parse(XMLPath);
+      Document doc = docBuilder.parse(XMLPath.toFile());
 
       Node node = null;
       // Get node with specified tagId
@@ -500,12 +504,12 @@ public abstract class ContainerInstall {
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
       DOMSource source = new DOMSource(doc);
-      StreamResult result = new StreamResult(new File(XMLPath));
+      StreamResult result = new StreamResult(XMLPath.toFile());
       transformer.transform(source, result);
 
       logger.info("Modified container XML file " + XMLPath);
     } catch (Exception e) {
-      throw new RuntimeException("Unable to edit XML file", e);
+      throw new RuntimeException("Unable to edit XML file " + XMLPath, e);
     }
   }
 

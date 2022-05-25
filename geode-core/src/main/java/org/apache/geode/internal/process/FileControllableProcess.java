@@ -73,6 +73,9 @@ public class FileControllableProcess implements ControllableProcess {
     this.stopRequestFileWatchdog = stopRequestFileWatchdog;
     this.statusRequestFileWatchdog = statusRequestFileWatchdog;
 
+    logger.info("Creating {} for stop and status support in {}.", getClass().getSimpleName(),
+        directory);
+
     deleteFiles(directory, processType);
     stopRequestFileWatchdog.start();
     statusRequestFileWatchdog.start();

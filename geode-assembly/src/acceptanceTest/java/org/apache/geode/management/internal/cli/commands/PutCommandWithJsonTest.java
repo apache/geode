@@ -14,48 +14,59 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class PutCommandWithJsonTest {
 
-  private File jarToDeploy;
+  private Path jarToDeploy;
+  private int locatorPort;
 
-  @Rule
-  public GfshRule gfsh = new GfshRule();
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   @Before
   public void setup() throws IOException {
-    jarToDeploy = new File(gfsh.getTemporaryFolder().getRoot(), "ourJar.jar");
+    Path rootFolder = folderRule.getFolder().toPath();
+    jarToDeploy = rootFolder.resolve("ourJar.jar");
 
     String classContents =
         "public class Customer implements java.io.Serializable {private String name; public void setName(String name){this.name=name;}}";
     JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJar(jarToDeploy, classContents);
+    jarBuilder.buildJar(jarToDeploy.toFile(), classContents);
+
+    locatorPort = getRandomAvailableTCPPort();
   }
 
   @Test
-  public void putWithJsonString() throws Exception {
+  public void putWithJsonString() {
     GfshExecution execution = GfshScript
-        .of("start locator --name=locator", "start server --name=server --server-port=0",
+        .of("start locator --name=locator --port=" + locatorPort,
+            "start server --name=server --disable-default-server --locators=localhost["
+                + locatorPort + "]",
             "sleep --time=1",
-            "deploy --jar=" + jarToDeploy.getAbsolutePath(),
+            "deploy --jar=" + jarToDeploy,
             "create region --name=region --type=REPLICATE", "sleep --time=1",
             "put --region=region --key=key --value=('name':'Jinmei') --value-class=Customer")
-        .execute(gfsh);
+        .execute(gfshRule);
 
-    assertThat(execution.getOutputText()).doesNotContain("Couldn't convert JSON to Object");
-    assertThat(execution.getOutputText()).contains("Value Class : Customer");
+    assertThat(execution.getOutputText())
+        .contains("Value Class : Customer")
+        .doesNotContain("Couldn't convert JSON to Object");
   }
 }

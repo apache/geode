@@ -14,19 +14,21 @@
  */
 package org.apache.geode.session.tests;
 
+import static java.nio.file.Files.createTempDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.IntSupplier;
 import java.util.regex.Pattern;
 
-
 /**
- * Tomcat specific container installation class
- *
  * Provides logic for installation of tomcat. This makes the modifications to the tomcat install as
  * described in <a href=
  * "https://geode.apache.org/docs/guide/latest/tools_modules/http_session_mgmt/session_mgmt_tomcat.html">
@@ -36,6 +38,7 @@ public class TomcatInstall extends ContainerInstall {
   /**
    * Version of tomcat that this class will install
    *
+   * <p>
    * Includes the download URL for the each version, the version number associated with each
    * version, and other properties or XML attributes needed to setup tomcat containers within Cargo
    */
@@ -113,6 +116,8 @@ public class TomcatInstall extends ContainerInstall {
   /**
    * If you update this list method to return different dependencies, please also update the Tomcat
    * module documentation! The documentation can be found here:
+   *
+   * <p>
    * geode-docs/tools_modules/http_session_mgmt/tomcat_installing_the_module.html.md.erb
    */
   private static final String[] tomcatRequiredJars =
@@ -121,15 +126,37 @@ public class TomcatInstall extends ContainerInstall {
           "geode-membership", "geode-management", "geode-serialization", "geode-tcp-server",
           "javax.transaction-api", "jgroups", "log4j-api", "log4j-core", "log4j-jul", "micrometer",
           "shiro-core", "jetty-server", "jetty-util", "jetty-http", "jetty-io"};
+
   private final TomcatVersion version;
 
   private final CommitValve commitValve;
 
   public TomcatInstall(String name, TomcatVersion version, ConnectionType connectionType,
-      IntSupplier portSupplier,
+      IntSupplier portSupplier, CommitValve commitValve) throws Exception {
+    this(createTempDirectory("geode_container_install").toAbsolutePath(), name, version,
+        connectionType, DEFAULT_MODULE_PATH, GEODE_LIB_PATH, portSupplier, commitValve);
+  }
+
+  public TomcatInstall(Path rootDir, String name, TomcatVersion version,
+      ConnectionType connectionType,
+      IntSupplier portSupplier, CommitValve commitValve) throws Exception {
+    this(rootDir, name, version, connectionType, DEFAULT_MODULE_PATH, GEODE_LIB_PATH, portSupplier,
+        commitValve);
+  }
+
+  public TomcatInstall(String name, TomcatVersion version, ConnectionType connType,
+      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier,
       CommitValve commitValve)
       throws Exception {
-    this(name, version, connectionType, DEFAULT_MODULE_LOCATION, GEODE_BUILD_HOME_LIB,
+    this(createTempDirectory("geode_container_install").toAbsolutePath(), name, version, connType,
+        Paths.get(modulesJarLocation), Paths.get(extraJarsPath), portSupplier, commitValve);
+  }
+
+  public TomcatInstall(Path rootDir, String name, TomcatVersion version, ConnectionType connType,
+      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier,
+      CommitValve commitValve)
+      throws Exception {
+    this(rootDir, name, version, connType, Paths.get(modulesJarLocation), Paths.get(extraJarsPath),
         portSupplier, commitValve);
   }
 
@@ -137,12 +164,14 @@ public class TomcatInstall extends ContainerInstall {
    * Download and setup an installation tomcat using the {@link ContainerInstall} constructor and
    * some extra functions this class provides
    *
-   * Specifically, this function uses {@link #copyTomcatGeodeReqFiles(String, String)} to install
+   * <p>
+   * Specifically, this function uses {@link #copyTomcatGeodeReqFiles(Path, Path)} to install
    * geode session into Tomcat, {@link #setupDefaultSettings()} to modify the context and server XML
    * files within the installation's 'conf' folder, and {@link #updateProperties()} to set the jar
    * skipping properties needed to speedup container startup.
    *
-   *
+   * @param rootDir The root folder used by default for cargo logs, container configs and other
+   *        files and directories
    * @param name used to name install directory
    * @param version the version of Tomcat to use
    * @param connType Enum representing the connection type of this installation (either client
@@ -154,16 +183,17 @@ public class TomcatInstall extends ContainerInstall {
    *
    * @throws Exception if an exception is encountered
    */
-  public TomcatInstall(String name, TomcatVersion version, ConnectionType connType,
-      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier,
+  public TomcatInstall(Path rootDir, String name, TomcatVersion version, ConnectionType connType,
+      Path modulesJarLocation, Path extraJarsPath, IntSupplier portSupplier,
       CommitValve commitValve)
       throws Exception {
     // Does download and install from URL
-    super(name, version.getDownloadURL(), connType, "tomcat", modulesJarLocation, portSupplier);
+    super(rootDir, name, version.getDownloadURL(), connType, "tomcat", modulesJarLocation,
+        portSupplier);
 
     this.version = version;
     this.commitValve = commitValve;
-    modulesJarLocation = getModulePath() + "/lib/";
+    modulesJarLocation = Paths.get(getModulePath()).toAbsolutePath().resolve("lib");
 
     // Install geode sessions into tomcat install
     copyTomcatGeodeReqFiles(modulesJarLocation, extraJarsPath);
@@ -186,12 +216,12 @@ public class TomcatInstall extends ContainerInstall {
 
     // Set the session manager class within the context XML file
     attributes.put("className", getContextSessionManagerClass());
-    editXMLFile(getDefaultContextXMLFile().getAbsolutePath(), "Tomcat", "Manager", "Context",
+    editXMLFile(getDefaultContextXMLFile(), "Tomcat", "Manager", "Context",
         attributes);
 
     // Set the server lifecycle listener within the server XML file
     attributes.put("className", getServerLifeCycleListenerClass());
-    editXMLFile(getDefaultServerXMLFile().getAbsolutePath(), "Tomcat", "Listener", "Server",
+    editXMLFile(getDefaultServerXMLFile(), "Tomcat", "Listener", "Server",
         attributes);
   }
 
@@ -227,8 +257,8 @@ public class TomcatInstall extends ContainerInstall {
    *
    * @return the location of the context XML file in the installation's 'conf' directory
    */
-  public File getDefaultContextXMLFile() {
-    return new File(getHome() + "/conf/context.xml");
+  public Path getDefaultContextXMLFile() {
+    return getHome().resolve("conf").resolve("context.xml");
   }
 
   /**
@@ -236,13 +266,11 @@ public class TomcatInstall extends ContainerInstall {
    *
    * @return the location of the server XML file in the installation's 'conf' directory
    */
-  public File getDefaultServerXMLFile() {
-    return new File(getHome() + "/conf/server.xml");
+  public Path getDefaultServerXMLFile() {
+    return getHome().resolve("conf").resolve("server.xml");
   }
 
   /**
-   * Implements {@link ContainerInstall#getContextSessionManagerClass()}
-   *
    * Gets the TomcatDeltaSessionManager class associated with this {@link #version}. Use's the
    * {@link #version}'s toInteger function to do so.
    */
@@ -253,17 +281,16 @@ public class TomcatInstall extends ContainerInstall {
   }
 
   /**
-   * Implementation of {@link ContainerInstall#generateContainer(File, String)}, which generates a
-   * Tomcat specific container
-   *
    * Creates a {@link TomcatContainer} instance off of this installation.
    *
    * @param containerDescriptors Additional descriptors used to identify a container
    */
   @Override
-  public TomcatContainer generateContainer(File containerConfigHome, String containerDescriptors)
+  public TomcatContainer generateContainer(Path rootDir, Path containerConfigHome,
+      String containerDescriptors)
       throws IOException {
-    return new TomcatContainer(this, containerConfigHome, containerDescriptors, portSupplier());
+    return new TomcatContainer(this, rootDir, containerConfigHome, containerDescriptors,
+        portSupplier());
   }
 
   /**
@@ -276,9 +303,6 @@ public class TomcatInstall extends ContainerInstall {
     return version.getContainerId();
   }
 
-  /**
-   * @see ContainerInstall#getInstallDescription()
-   */
   @Override
   public String getInstallDescription() {
     return version.name() + "_" + getConnectionType().getName();
@@ -295,25 +319,26 @@ public class TomcatInstall extends ContainerInstall {
    * @throws IOException if the {@link #getModulePath()}, installation lib directory, or extra
    *         directory passed in contain no files.
    */
-  private void copyTomcatGeodeReqFiles(String moduleJarDir, String extraJarsPath)
+  private void copyTomcatGeodeReqFiles(Path moduleJarDir, Path extraJarsPath)
       throws IOException {
-    ArrayList<File> requiredFiles = new ArrayList<>();
+    List<File> requiredFiles = new ArrayList<>();
+
     // The library path for the current tomcat installation
-    String tomcatLibPath = getHome() + "/lib/";
+    Path tomcatLibPath = getHome().resolve("lib");
 
     // List of required jars and form version regexps from them
     String versionRegex = "-?[0-9]*.*\\.jar";
-    ArrayList<Pattern> patterns = new ArrayList<>(tomcatRequiredJars.length);
+    List<Pattern> patterns = new ArrayList<>(tomcatRequiredJars.length);
     for (String jar : tomcatRequiredJars) {
       patterns.add(Pattern.compile(jar + versionRegex));
     }
 
     // Don't need to copy any jars already in the tomcat install
-    File tomcatLib = new File(tomcatLibPath);
+    File tomcatLib = tomcatLibPath.toFile();
 
     // Find all jars in the tomcatModulePath and add them as required jars
     try {
-      for (File file : (new File(moduleJarDir)).listFiles()) {
+      for (File file : moduleJarDir.toFile().listFiles()) {
         if (file.isFile() && file.getName().endsWith(".jar")) {
           requiredFiles.add(file);
         }
@@ -325,7 +350,7 @@ public class TomcatInstall extends ContainerInstall {
 
     // Find all the required jars in the extraJarsPath
     try {
-      for (File file : (new File(extraJarsPath)).listFiles()) {
+      for (File file : extraJarsPath.toFile().listFiles()) {
         for (Pattern pattern : patterns) {
           if (pattern.matcher(file.getName()).find()) {
             requiredFiles.add(file);
@@ -342,7 +367,7 @@ public class TomcatInstall extends ContainerInstall {
       Files.copy(file.toPath(), tomcatLib.toPath().resolve(file.toPath().getFileName()),
           StandardCopyOption.REPLACE_EXISTING);
       logger.debug("Copied required jar from " + file.toPath() + " to "
-          + (new File(tomcatLibPath)).toPath().resolve(file.toPath().getFileName()));
+          + tomcatLibPath.resolve(file.toPath().getFileName()));
     }
 
     logger.info("Copied required jars into the Tomcat installation");
@@ -359,8 +384,8 @@ public class TomcatInstall extends ContainerInstall {
     }
 
     // Add the jars to skip to the catalina property file
-    editPropertyFile(getHome() + "/conf/catalina.properties", version.jarSkipPropertyName(),
-        jarsToSkip, true);
+    editPropertyFile(getHome().resolve("conf").resolve("catalina.properties"),
+        version.jarSkipPropertyName(), jarsToSkip, true);
   }
 
 }
