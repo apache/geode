@@ -303,6 +303,11 @@ public class LogWriterAppender extends AbstractAppender
   @Override
   public synchronized void stopSession() {
     LOGGER.info("Stopping session in {}.", this);
+    if (logWriter == null) {
+      // we are probably already paused but make sure we are
+      pause();
+      return;
+    }
     logWriter.shuttingDown();
     pause();
     logWriter.closingLogFile();
