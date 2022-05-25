@@ -41,11 +41,11 @@ public class ManagementRestSecurityConfigurationDUnitTest {
 
     // Unsecured no credentials
     assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/api-docs", null, null)).hasStatusCode(200);
+    assertResponse(client.doGet("/v3/api-docs", null, null)).hasStatusCode(200);
 
     // unsecured with credentials
     assertResponse(client.doGet("/swagger-ui.html", "cluster", "cluster")).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/api-docs", "cluster", "cluster")).hasStatusCode(200);
+    assertResponse(client.doGet("/v3/api-docs", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
     assertResponse(client.doGet("/v1/regions", "cluster", "cluster")).hasStatusCode(200);
@@ -66,11 +66,11 @@ public class ManagementRestSecurityConfigurationDUnitTest {
 
     // Unsecured no credentials
     assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/api-docs", null, null)).hasStatusCode(200);
+    assertResponse(client.doGet("/v3/api-docs", null, null)).hasStatusCode(200);
 
     // unsecured with credentials
     assertResponse(client.doGet("/swagger-ui.html", "cluster", "cluster")).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/api-docs", "cluster", "cluster")).hasStatusCode(200);
+    assertResponse(client.doGet("/v3/api-docs", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
     assertResponse(client.doGet("/v1/regions", "cluster", "cluster")).hasStatusCode(200);
