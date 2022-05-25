@@ -15,24 +15,29 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
-public class DistributedMulticastRegionWithUDPSecurityDUnitTest
-    extends DistributedMulticastRegionDUnitTest {
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+
+@SuppressWarnings("serial")
+public class DistributedMulticastRegionWithUDPSecurityDistributedTest
+    extends DistributedMulticastRegionDistributedTest {
   @Override
-  protected void addDSProps(Properties p) {
+  protected void setUDPDHAlgo(Properties p) {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
   }
 
   @Override
   protected void validateUDPEncryptionStats() {
-    long encrptTime =
-        getGemfireCache().getDistributionManager().getStats().getUDPMsgEncryptionTime();
+    long encryptTime =
+        ClusterStartupRule.getCache().getDistributionManager().getStats().getUDPMsgEncryptionTime();
     long decryptTime =
-        getGemfireCache().getDistributionManager().getStats().getUDPMsgDecryptionTime();
-    assertTrue("Should have multicast writes or reads. encrptTime=  " + encrptTime
-        + " ,decryptTime= " + decryptTime, encrptTime > 0 && decryptTime > 0);
+        ClusterStartupRule.getCache().getDistributionManager().getStats().getUDPMsgDecryptionTime();
+    assertThat(encryptTime > 0 && decryptTime > 0)
+        .as("Should have multicast writes or reads. encryptTime=  " + encryptTime
+            + " ,decryptTime= " + decryptTime)
+        .isTrue();
   }
 }
