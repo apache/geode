@@ -20,9 +20,11 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -35,10 +37,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
@@ -69,13 +72,15 @@ public class PersistenceAdvisorImplTest {
   private PersistentStateQueryResults persistentStateQueryResults;
 
   private PersistenceAdvisorImpl persistenceAdvisorImpl;
+  private PersistentMemberManager persistentMemberManager;
 
   private int diskStoreIDIndex = 92837487; // some random number
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class);
     persistentMemberView = mock(DiskRegion.class);
+    persistentMemberManager = mock(PersistentMemberManager.class);
     PersistentStateQueryMessageSenderFactory queryMessageSenderFactory =
         mock(PersistentStateQueryMessageSenderFactory.class);
     PersistentStateQueryMessage queryMessage =
@@ -91,8 +96,15 @@ public class PersistenceAdvisorImplTest {
 
     persistenceAdvisorImpl =
         new PersistenceAdvisorImpl(cacheDistributionAdvisor, null, persistentMemberView, null, null,
-            null, mock(StartupStatus.class), mock(Transformer.class),
+            persistentMemberManager, mock(StartupStatus.class), mock(Transformer.class),
             mock(CollectionTransformer.class), queryMessageSenderFactory);
+  }
+
+  @Test
+  void closeDoesNotThrowException() {
+    persistenceAdvisorImpl = spy(persistenceAdvisorImpl);
+    doThrow(new ForcedDisconnectException("test")).when(persistenceAdvisorImpl).releaseTieLock();
+    assertThatCode(() -> persistenceAdvisorImpl.close()).doesNotThrowAnyException();
   }
 
   /**

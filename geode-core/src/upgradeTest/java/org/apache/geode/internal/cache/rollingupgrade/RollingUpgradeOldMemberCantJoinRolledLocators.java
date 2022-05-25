@@ -31,7 +31,7 @@ public class RollingUpgradeOldMemberCantJoinRolledLocators extends RollingUpgrad
    */
   @Test
   public void testOldMemberCantJoinRolledLocators() {
-    VM oldServer = Host.getHost(0).getVM(oldVersion, 1);
+    VM oldServer = Host.getHost(0).getVM(sourceConfiguration, 1);
     Properties props = getSystemProperties(); // uses the DUnit locator
     try {
       oldServer.invoke(invokeCreateCache(props));

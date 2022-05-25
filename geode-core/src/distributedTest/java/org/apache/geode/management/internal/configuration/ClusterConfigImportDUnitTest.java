@@ -19,8 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,7 +28,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-
 
 public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
 
@@ -54,7 +51,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   }
 
   @Test
-  public void testImportWithRunningServerWithRegion() throws Exception {
+  public void testImportWithRunningServerWithRegion() {
     MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
     // create another server as well
     MemberVM server2 = lsRule.startServerVM(2, serverProps, locatorVM.getPort());
@@ -73,7 +70,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   }
 
   @Test
-  public void testImportWithRunningServer() throws Exception {
+  public void testImportWithRunningServer() throws ClassNotFoundException {
     MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
     serverProps.setProperty("groups", "group2");
@@ -117,7 +114,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   }
 
   @Test
-  public void testImportClusterConfig() throws Exception {
+  public void testImportClusterConfig() throws ClassNotFoundException {
     gfshConnector
         .executeAndAssertThat(
             "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
@@ -125,7 +122,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
 
     // Make sure that a backup of the old clusterConfig was created
     assertThat(locatorVM.getWorkingDir().listFiles())
-        .filteredOn((File file) -> file.getName().contains("cluster_config")).hasSize(2);
+        .filteredOn(file -> file.getName().contains("cluster_config")).hasSize(2);
 
     CONFIG_FROM_ZIP.verify(locatorVM);
 
@@ -145,7 +142,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   }
 
   @Test
-  public void testImportWithMultipleLocators() throws Exception {
+  public void testImportWithMultipleLocators() throws ClassNotFoundException {
     locatorProps.setProperty(LOCATORS, "localhost[" + locatorVM.getPort() + "]");
     MemberVM locator1 = lsRule.startLocatorVM(1, locatorProps);
 

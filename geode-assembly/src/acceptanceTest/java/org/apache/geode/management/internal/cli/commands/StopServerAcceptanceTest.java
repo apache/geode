@@ -14,36 +14,58 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class StopServerAcceptanceTest {
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
+  private int locatorPort;
 
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   @Before
-  public void startCluster() {
-    gfshRule.execute("start locator --name=locator", "start server --name=server --server-port=0");
+  public void setUp()
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    locatorPort = getRandomAvailableTCPPort();
+
+    gfshRule.execute(GfshScript
+        .of("start locator --name=locator --port=" + locatorPort,
+            "start server --name=server --disable-default-server --locators=localhost["
+                + locatorPort + "]"));
   }
 
   @Test
-  public void canStopServerByNameWhenConnectedOverJmx() throws Exception {
-    gfshRule.execute("connect", "stop server --name=server");
+  public void canStopServerByNameWhenConnectedOverJmx() {
+    gfshRule.execute(GfshScript
+        .of("connect --locator=localhost[" + locatorPort + "]",
+            "stop server --name=server"));
   }
 
   @Test
-  public void canStopServerByNameWhenConnectedOverHttp() throws Exception {
-    gfshRule.execute("connect --use-http", "stop server --name=server");
+  public void canStopServerByNameWhenConnectedOverHttp() {
+    gfshRule.execute(GfshScript
+        .of("connect --use-http --locator=localhost[" + locatorPort + "]",
+            "stop server --name=server"));
   }
 
   @Test
-  public void cannotStopServerByNameWhenNotConnected() throws Exception {
-    gfshRule.execute(GfshScript.of("stop server --name=server").expectFailure());
+  public void cannotStopServerByNameWhenNotConnected() {
+    gfshRule.execute(GfshScript
+        .of("stop server --name=server")
+        .expectFailure());
   }
 }

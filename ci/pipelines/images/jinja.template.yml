@@ -178,7 +178,7 @@ resources:
     branch: ((geode-build-branch))
     depth: 1
     paths:
-    - "buildSrc/src/main/groovy/org/apache/geode/gradle/plugins/DependencyConstraints.groovy"
+    - "build-tools/geode-dependency-management/src/main/groovy/org/apache/geode/gradle/plugins/DependencyConstraints.groovy"
 
 - name: gce-instances-resource-dockerfile
   type: git

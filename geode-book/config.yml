@@ -45,5 +45,6 @@ template_variables:
   book_title_short: Geode Docs
   local_header_title: Apache Geode
   local_header_img: /images/Apache_Geode_logo_symbol.png
+  javadocs: /releases/latest/javadoc
 
 broken_link_exclusions: iefix|using_custom_classes|arrowhead|cppdocs|DotNetDocs

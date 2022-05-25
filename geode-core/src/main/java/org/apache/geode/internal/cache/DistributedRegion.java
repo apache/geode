@@ -2604,6 +2604,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             ex);
       }
     }
+
     waitForCurrentOperations();
   }
 
@@ -2615,9 +2616,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (!cache.forcedDisconnect() && flushOnClose
         && getDistributionManager().getDistribution() != null
         && getDistributionManager().getDistribution().isConnected()) {
-      getDistributionAdvisor().forceNewMembershipVersion();
+      distAdvisor.forceNewMembershipVersion();
       try {
-        getDistributionAdvisor().waitForCurrentOperations();
+        distAdvisor.waitForCurrentOperations();
       } catch (Exception e) {
         // log this but try to close the region so that listeners are invoked
         logger.warn(String.format("%s: error closing region %s", this, getFullPath()), e);

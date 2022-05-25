@@ -14,9 +14,9 @@
  */
 package org.apache.geode.metrics.function.executions;
 
-
 import static java.io.File.pathSeparatorChar;
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,12 +26,10 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
@@ -40,10 +38,10 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.SimpleMetricsPublishingService;
 import org.apache.geode.rules.ServiceJarRule;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 /**
@@ -57,19 +55,20 @@ public class FunctionExecutionsTimerNoResultTest {
   private Region<Object, Object> partitionRegion;
   private FunctionToTimeWithoutResult functionWithNoResult;
   private Duration functionDuration;
+  private Path rootFolder;
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   @Before
   public void setUp() throws IOException {
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
+
+    int[] availablePorts = getRandomAvailableTCPPorts(3);
 
     locatorPort = availablePorts[0];
     int locatorJmxPort = availablePorts[1];
@@ -78,8 +77,7 @@ public class FunctionExecutionsTimerNoResultTest {
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
 
-    Path functionsJarPath = temporaryFolder.getRoot().toPath()
-        .resolve("functions.jar").toAbsolutePath();
+    Path functionsJarPath = rootFolder.resolve("functions.jar");
     writeJarFromClasses(functionsJarPath.toFile(),
         GetFunctionExecutionTimerValues.class, FunctionToTimeWithoutResult.class,
         ExecutionsTimerValues.class, ThreadSleep.class);
@@ -87,7 +85,7 @@ public class FunctionExecutionsTimerNoResultTest {
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + "locator",
-        "--dir=" + temporaryFolder.newFolder("locator").getAbsolutePath(),
+        "--dir=" + rootFolder.resolve("locator"),
         "--port=" + locatorPort,
         "--http-service-port=0",
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
@@ -196,11 +194,11 @@ public class FunctionExecutionsTimerNoResultTest {
     await().untilAsserted(() -> {
       ExecutionsTimerValues value = failureTimerValue();
 
-      Assertions.assertThat(value.count)
+      assertThat(value.count)
           .as("Number of failed executions")
           .isEqualTo(1);
 
-      Assertions.assertThat(value.totalTime)
+      assertThat(value.totalTime)
           .as("Total time of failed executions")
           .isGreaterThan(functionDuration.toNanos());
     });
@@ -241,13 +239,12 @@ public class FunctionExecutionsTimerNoResultTest {
   }
 
   private String startServerCommand(String serverName, int serverPort, Path serviceJarPath,
-      Path functionsJarPath)
-      throws IOException {
+      Path functionsJarPath) {
     return String.join(" ",
         "start server",
         "--name=" + serverName,
         "--groups=" + serverName,
-        "--dir=" + temporaryFolder.newFolder(serverName).getAbsolutePath(),
+        "--dir=" + rootFolder.resolve(serverName),
         "--server-port=" + serverPort,
         "--locators=localhost[" + locatorPort + "]",
         "--classpath=" + serviceJarPath + pathSeparatorChar + functionsJarPath);
@@ -290,7 +287,7 @@ public class FunctionExecutionsTimerNoResultTest {
         .filter(v -> v.succeeded == isSuccessful)
         .collect(toList());
 
-    Assertions.assertThat(values)
+    assertThat(values)
         .hasSize(1);
 
     return values.get(0);

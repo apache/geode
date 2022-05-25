@@ -15,11 +15,11 @@
 package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.assertj.core.api.Assertions;
-import org.junit.Assume;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -31,19 +31,22 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.version.TestVersion;
 
 public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentVersion
     extends LuceneSearchWithRollingUpgradeDUnit {
 
   @Test
   public void luceneReindexShouldBeSuccessfulWhenAllServersRollToCurrentVersion() throws Exception {
-    Assume.assumeFalse("minor versions should be different",
-        majorMinor(oldVersion).equals(majorMinor(KnownVersion.CURRENT.getName())));
+    assumeThat(sourceConfiguration.geodeVersion().majorMinor())
+        .as("source configuration Geode version major minor")
+        .isNotEqualTo(TestVersion.current().majorMinor())
+        .isNotEqualTo(majorMinor(KnownVersion.CURRENT.getName()));
 
     final Host host = Host.getHost(0);
-    VM locator1 = host.getVM(oldVersion, 0);
-    VM server1 = host.getVM(oldVersion, 1);
-    VM server2 = host.getVM(oldVersion, 2);
+    VM locator1 = host.getVM(sourceConfiguration, 0);
+    VM server1 = host.getVM(sourceConfiguration, 1);
+    VM server2 = host.getVM(sourceConfiguration, 2);
 
     final String regionName = "aRegion";
     RegionShortcut shortcut = RegionShortcut.PARTITION_REDUNDANT;
@@ -120,8 +123,7 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
    */
   private static String majorMinor(String version) {
     String[] parts = version.split("\\.");
-    Assertions.assertThat(parts.length).isGreaterThanOrEqualTo(2);
+    assertThat(parts.length).isGreaterThanOrEqualTo(2);
     return parts[0] + "." + parts[1];
   }
-
 }

@@ -70,29 +70,35 @@ import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @SuppressWarnings("ConstantConditions")
 @Category(WanTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
-  @Parameterized.Parameters(name = "from_v{0}")
-  public static Collection data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
-    }
+  @Parameterized.Parameters(name = "From {0}")
+  public static Collection<VmConfiguration> data() {
+    List<VmConfiguration> result = VmConfigurations.upgrades();
+    assertThat(result)
+        .as("configurations to upgrade from")
+        .isNotEmpty();
+    System.out.println("upgrading from configurations: " + result);
     return result;
   }
 
   // the old version of Geode we're testing against
   @Parameterized.Parameter
-  public String oldVersion;
+  public VmConfiguration sourceVmConfiguration;
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
+
+  // The test name with sequences of non-region-name characters replace by hyphens
+  String getSanitizedTestName() {
+    return getName().replaceAll("[^a-zA-Z0-9-_.^`\\[\\]\\\\]+", "-");
+  }
 
   void startLocator(int port, int distributedSystemId, String locators,
       String remoteLocators) throws IOException {

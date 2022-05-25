@@ -35,9 +35,9 @@ public class RollingUpgradeRollLocatorsWithOldServer extends RollingUpgrade2DUni
   @Test
   public void testRollLocatorsWithOldServer() {
     final Host host = Host.getHost(0);
-    VM locator1 = host.getVM(oldVersion, 0);
-    VM locator2 = host.getVM(oldVersion, 1);
-    VM server4 = host.getVM(oldVersion, 3);
+    VM locator1 = host.getVM(sourceConfiguration, 0);
+    VM locator2 = host.getVM(sourceConfiguration, 1);
+    VM server4 = host.getVM(sourceConfiguration, 3);
 
     int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     locator1.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));

@@ -52,7 +52,6 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
@@ -92,7 +91,7 @@ public class TcpServerProductVersionUpgradeTest implements Serializable {
 
 
   private static final TestVersion oldProductVersion = getOldProductVersion();
-  private static final TestVersion currentProductVersion = TestVersion.CURRENT_VERSION;
+  private static final TestVersion currentProductVersion = TestVersion.current();
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<VersionConfiguration> data() {
@@ -151,14 +150,13 @@ public class TcpServerProductVersionUpgradeTest implements Serializable {
   @Test
   public void testAllMessageTypes() {
     int clientVMNumber =
-        versions.clientProductVersion.equals(TestVersion.CURRENT_VERSION)
+        versions.clientProductVersion.equals(TestVersion.current())
             ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
     int locatorVMNumber =
-        versions.locatorProductVersion.equals(TestVersion.CURRENT_VERSION)
+        versions.locatorProductVersion.equals(TestVersion.current())
             ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
-    VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), clientVMNumber);
-    VM locatorVM =
-        Host.getHost(0).getVM(versions.locatorProductVersion.toString(), locatorVMNumber);
+    VM clientVM = VM.getVM(versions.clientProductVersion.toString(), clientVMNumber);
+    VM locatorVM = VM.getVM(versions.locatorProductVersion.toString(), locatorVMNumber);
     int locatorPort = createLocator(locatorVM);
 
     clientVM.invoke("issue version request",

@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management;
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
+
 import java.util.Collection;
-import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,22 +31,24 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.TestVersions;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 @Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 public class GfshRebalanceCommandCompatibilityTest {
-  private final String oldVersion;
+  private final VmConfiguration sourceVmConfiguration;
 
   @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.11.0") < 0);
-    return result;
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(TestVersions.atLeast(TestVersion.valueOf("1.11.0"))))
+        .collect(toList());
   }
 
-  public GfshRebalanceCommandCompatibilityTest(String oldVersion) {
-    this.oldVersion = oldVersion;
+  public GfshRebalanceCommandCompatibilityTest(VmConfiguration sourceVmConfiguration) {
+    this.sourceVmConfiguration = sourceVmConfiguration;
   }
 
   @Rule
@@ -56,16 +60,17 @@ public class GfshRebalanceCommandCompatibilityTest {
   @Test
   public void whenCurrentVersionLocatorsExecuteRebalanceOnOldServersThenItMustSucceed()
       throws Exception {
-    MemberVM locator1 = cluster.startLocatorVM(0, oldVersion);
+    MemberVM locator1 = cluster.startLocatorVM(0, sourceVmConfiguration);
     int locatorPort1 = locator1.getPort();
     MemberVM locator2 =
-        cluster.startLocatorVM(1, 0, oldVersion, x -> x.withConnectionToLocator(locatorPort1));
+        cluster.startLocatorVM(1, 0, sourceVmConfiguration,
+            x -> x.withConnectionToLocator(locatorPort1));
     int locatorPort2 = locator2.getPort();
-    cluster
-        .startServerVM(2, oldVersion, s -> s.withRegion(RegionShortcut.PARTITION, "region")
+    cluster.startServerVM(2, sourceVmConfiguration,
+        s -> s.withRegion(RegionShortcut.PARTITION, "region")
             .withConnectionToLocator(locatorPort1, locatorPort2));
-    cluster
-        .startServerVM(3, oldVersion, s -> s.withRegion(RegionShortcut.PARTITION, "region")
+    cluster.startServerVM(3, sourceVmConfiguration,
+        s -> s.withRegion(RegionShortcut.PARTITION, "region")
             .withConnectionToLocator(locatorPort1, locatorPort2));
     cluster.stop(0);
     locator1 = cluster.startLocatorVM(0, x -> x.withConnectionToLocator(locatorPort2));

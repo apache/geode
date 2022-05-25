@@ -78,6 +78,7 @@ org/apache/geode/test/concurrent/FileBasedCountDownLatch,false,dataFile:java/io/
 org/apache/geode/test/junit/rules/CloseableReference,false,autoClose:java/util/concurrent/atomic/AtomicBoolean
 org/apache/geode/test/junit/rules/ConditionalIgnoreRule,false
 org/apache/geode/test/junit/rules/ExecutorServiceRule,false,awaitTerminationBeforeShutdown:boolean,awaitTerminationTimeUnit:java/util/concurrent/TimeUnit,awaitTerminationTimeout:long,enableAwaitTermination:boolean,threadCount:int,useShutdown:boolean,useShutdownNow:boolean
+org/apache/geode/test/junit/rules/FolderRule$Policy,false
 org/apache/geode/test/junit/rules/IgnoreOnWindowsRule,false
 org/apache/geode/test/junit/rules/IgnoreUntilRule,false
 org/apache/geode/test/junit/rules/JarFileRule,false,className:java/lang/String,jarFile:java/io/File,jarName:java/lang/String,makeJarLarge:boolean
@@ -108,7 +109,9 @@ org/apache/geode/test/junit/rules/serializable/SerializableTestWatcher,false
 org/apache/geode/test/junit/rules/serializable/SerializableTimeout,false
 org/apache/geode/test/junit/rules/serializable/SerializableTimeout$SerializationProxy,false,lookForStuckThread:boolean,timeUnit:java/util/concurrent/TimeUnit,timeout:long
 org/apache/geode/test/junit/support/IgnoreConditionEvaluationException,false
+org/apache/geode/test/version/JavaVersion,false,home:java/lang/String,specificationVersion:int
 org/apache/geode/test/version/TestVersion,false,major:int,minor:int,release:int
+org/apache/geode/test/version/VmConfiguration,false,geodeVersion:org/apache/geode/test/version/TestVersion,javaVersion:org/apache/geode/test/version/JavaVersion
 parReg/query/unittest/NewPortfolio,false,MAX_NUM_OF_POSITIONS:int,MAX_PRICE:int,MAX_QTY:int,NUM_OF_SECURITIES:int,NUM_OF_TYPES:int,id:int,myVersion:java/lang/String,name:java/lang/String,positions:java/util/Map,status:java/lang/String,type:java/lang/String,undefinedTestField:java/lang/String
 parReg/query/unittest/Position,false,MAX_PRICE:int,NUM_OF_SECURITIES:int,mktValue:double,qty:double,secId:java/lang/String
 util/TestException,false

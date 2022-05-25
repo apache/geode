@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -28,6 +29,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
 public class FlusherThreadTest {
 
@@ -42,6 +47,10 @@ public class FlusherThreadTest {
     diskStoreImpl = mock(DiskStoreImpl.class);
     diskStoreStats = mock(DiskStoreStats.class);
     PersistentOplogSet persistentOpLogSet = mock(PersistentOplogSet.class);
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    DistributionManager dm = mock(DistributionManager.class);
+    ThreadsMonitoring threadsMonitoring = mock(ThreadsMonitoring.class);
 
     when(diskStoreImpl.getAsyncMonitor()).thenReturn(new Object());
     when(diskStoreImpl.getForceFlushCount()).thenReturn(new AtomicInteger(1));
@@ -51,6 +60,14 @@ public class FlusherThreadTest {
     when(diskStoreImpl.getStats()).thenReturn(diskStoreStats);
     when(diskStoreImpl.checkAndClearForceFlush()).thenReturn(true);
     when(diskStoreImpl.isStopFlusher()).thenReturn(false).thenReturn(true);
+
+    when(diskStoreImpl.getAsyncMonitor()).thenReturn(new Object());
+    when(diskStoreImpl.getCache()).thenReturn(cache);
+    when(cache.getInternalDistributedSystem()).thenReturn(ids);
+    when(ids.getDM()).thenReturn(dm);
+    when(dm.getThreadMonitoring()).thenReturn(threadsMonitoring);
+    when(threadsMonitoring.createAbstractExecutor(any())).thenReturn(mock(AbstractExecutor.class));
+
 
     flusherThread = new DiskStoreImpl.FlusherThread(diskStoreImpl);
   }

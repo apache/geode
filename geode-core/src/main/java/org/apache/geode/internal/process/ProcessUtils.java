@@ -22,7 +22,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Path;
 
 import org.apache.geode.annotations.Immutable;
 
@@ -34,7 +36,7 @@ import org.apache.geode.annotations.Immutable;
 public class ProcessUtils {
 
   @Immutable
-  private static final InternalProcessUtils internal = initializeInternalProcessUtils();
+  private static final ProcessUtilsProvider internal = initializeInternalProcessUtils();
 
   private ProcessUtils() {
     // nothing
@@ -125,12 +127,18 @@ public class ProcessUtils {
     return internal.killProcess(pid);
   }
 
-  public static int readPid(final File pidFile) throws IOException {
+  public static int readPid(final Path pidFile) {
+    return readPid(pidFile.toFile());
+  }
+
+  public static int readPid(final File pidFile) {
     notNull(pidFile, "Invalid pidFile '" + pidFile + "' specified");
     isTrue(pidFile.exists(), "Nonexistent pidFile '" + pidFile + "' specified");
 
     try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
       return Integer.parseInt(reader.readLine());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -149,7 +157,7 @@ public class ProcessUtils {
     return internal.isAttachApiAvailable();
   }
 
-  private static InternalProcessUtils initializeInternalProcessUtils() {
+  private static ProcessUtilsProvider initializeInternalProcessUtils() {
     // 1) prefer Attach because it filters out non-JVM processes
     try {
       Class.forName("com.sun.tools.attach.VirtualMachine");
@@ -174,7 +182,7 @@ public class ProcessUtils {
     }
 
     // 3) consider logging warning and then proceed with no-op
-    return new InternalProcessUtils() {
+    return new ProcessUtilsProvider() {
       @Override
       public boolean isProcessAlive(final int pid) {
         return false;
@@ -197,17 +205,4 @@ public class ProcessUtils {
     };
   }
 
-  /**
-   * Defines the SPI for ProcessUtils
-   */
-  interface InternalProcessUtils {
-
-    boolean isProcessAlive(final int pid);
-
-    boolean killProcess(final int pid);
-
-    boolean isAvailable();
-
-    boolean isAttachApiAvailable();
-  }
 }

@@ -24,7 +24,7 @@ public class RollingUpgradeCreateMultiIndexesMixedServersOnPartitionedRegions
   @Ignore("GEODE_2356: test fails when index creation succeeds")
   @Test
   public void testCreateMultiIndexesMixedServersOnPartitionedRegions() throws Exception {
-    doTestCreateIndexes(true, true, oldVersion);
+    doTestCreateIndexes(true, true, sourceConfiguration);
   }
 
 }

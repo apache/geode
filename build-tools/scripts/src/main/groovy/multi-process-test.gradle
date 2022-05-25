@@ -45,6 +45,18 @@ def multiProcessTestTasks = [acceptanceTest, repeatAcceptanceTest,
                              upgradeTest, repeatUpgradeTest,
                              uiTest, repeatUnitTest]
 
+for (task in multiProcessTestTasks) {
+  if(project.hasProperty('testJava8Home')) {
+    task.environment "TEST_JAVA_8_HOME", "${project.testJava8Home}"
+  }
+  if(project.hasProperty('testJava11Home')) {
+    task.environment "TEST_JAVA_11_HOME", "${project.testJava11Home}"
+  }
+  if(project.hasProperty('testJava17Home')) {
+    task.environment "TEST_JAVA_17_HOME", "${project.testJava17Home}"
+  }
+}
+
 if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
   for (task in multiProcessTestTasks) {
     task.environment "JAVA_HOME", "${project.testJVM}"

@@ -15,6 +15,8 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.io.BufferedReader;
@@ -22,7 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,20 +54,22 @@ import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.TestVersions;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 public class RestAPICompatibilityTest {
-  private final String oldVersion;
+  private final VmConfiguration sourceVmConfiguration;
   private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Parameterized.Parameters(name = "{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.11.0") < 0);
-    return result;
+  public static Collection<VmConfiguration> data() {
+    return VmConfigurations.upgrades().stream()
+        .filter(hasGeodeVersion(TestVersions.atLeast(TestVersion.valueOf("1.11.0"))))
+        .collect(toList());
   }
 
   @Rule
@@ -75,8 +78,9 @@ public class RestAPICompatibilityTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  public RestAPICompatibilityTest(String oldVersion) throws JsonProcessingException {
-    this.oldVersion = oldVersion;
+  public RestAPICompatibilityTest(VmConfiguration sourceVmConfiguration)
+      throws JsonProcessingException {
+    this.sourceVmConfiguration = sourceVmConfiguration;
     DiskStore diskStore = new DiskStore();
     diskStore.setName("diskStore");
     postRESTAPICalls = new HashMap<>();
@@ -104,15 +108,18 @@ public class RestAPICompatibilityTest {
     int locatorPort2 = locatorPorts[1];
 
     // Initialize all cluster members with old versions
-    cluster.startLocatorVM(0, locatorPort1, oldVersion, MemberStarterRule::withHttpService);
-    cluster.startLocatorVM(1, locatorPort2, oldVersion,
+    cluster.startLocatorVM(0, locatorPort1, sourceVmConfiguration,
+        MemberStarterRule::withHttpService);
+    cluster.startLocatorVM(1, locatorPort2, sourceVmConfiguration,
         x -> x.withConnectionToLocator(locatorPort1).withHttpService());
     cluster
-        .startServerVM(2, oldVersion, s -> s.withRegion(RegionShortcut.PARTITION, "region")
-            .withConnectionToLocator(locatorPort1, locatorPort2));
+        .startServerVM(2, sourceVmConfiguration,
+            s -> s.withRegion(RegionShortcut.PARTITION, "region")
+                .withConnectionToLocator(locatorPort1, locatorPort2));
     cluster
-        .startServerVM(3, oldVersion, s -> s.withRegion(RegionShortcut.PARTITION, "region")
-            .withConnectionToLocator(locatorPort1, locatorPort2));
+        .startServerVM(3, sourceVmConfiguration,
+            s -> s.withRegion(RegionShortcut.PARTITION, "region")
+                .withConnectionToLocator(locatorPort1, locatorPort2));
 
     // Roll locators to the current version
     cluster.stop(0);
@@ -143,7 +150,8 @@ public class RestAPICompatibilityTest {
     try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
       for (Map.Entry<String, String[]> entry : postRESTAPICalls.entrySet()) {
         // Skip the test is the version is before the REST api was introduced.
-        if (TestVersion.compare(oldVersion, entry.getValue()[2]) < 0) {
+        TestVersion restApiMinimumGeodeVersion = TestVersion.valueOf(entry.getValue()[2]);
+        if (sourceVmConfiguration.geodeVersion().lessThan(restApiMinimumGeodeVersion)) {
           continue;
         }
         HttpPost post =

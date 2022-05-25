@@ -94,7 +94,7 @@ class MyAsyncEventListener implements AsyncEventListener {
 
 ## <a id="implementing_write_behind_cache_event_handling__section_AB80262CFB6D4867B52A5D6D880A5294" class="no-quick-link"></a>Processing AsyncEvents
 
-Use the [AsyncEventListener.processEvents](/releases/latest/javadoc/org/apache/geode/cache/asyncqueue/AsyncEventListener.html) method to process AsyncEvents. This method is called asynchronously when events are queued to be processed. The size of the list reflects the number of batch events where batch size is defined in the AsyncEventQueueFactory. The `processEvents` method returns a boolean; true if the AsyncEvents are processed correctly, and false if any events fail processing. As long as `processEvents` returns false, <%=vars.product_name%> continues to re-try processing the events.
+Use the [AsyncEventListener.processEvents](<%=vars.javadocs%>/org/apache/geode/cache/asyncqueue/AsyncEventListener.html) method to process AsyncEvents. This method is called asynchronously when events are queued to be processed. The size of the list reflects the number of batch events where batch size is defined in the AsyncEventQueueFactory. The `processEvents` method returns a boolean; true if the AsyncEvents are processed correctly, and false if any events fail processing. As long as `processEvents` returns false, <%=vars.product_name%> continues to re-try processing the events.
 
 You can use the `getDeserializedValue` method to obtain cache values for entries that have been updated or created. Since the `getDeserializedValue` method will return a null value for destroyed entries, you should use the `getKey` method to obtain references to cache objects that have been destroyed. Here's an example of processing AsyncEvents:
 
@@ -234,7 +234,7 @@ To configure a write-behind cache listener, you first configure an asynchronous 
     mutator.addAsyncEventQueueId("sampleQueue");        
     ```
 
-    See the [<%=vars.product_name%> API documentation](/releases/latest/javadoc/org/apache/geode/cache/AttributesMutator.html) for more information.
+    See the [<%=vars.product_name%> API documentation](<%=vars.javadocs%>/org/apache/geode/cache/AttributesMutator.html) for more information.
 
 4.  Optionally configure persistence and conflation for the queue.
     **Note:**

@@ -109,10 +109,14 @@ public class ClassAnalysisRule implements TestRule {
     String alternateBuildDirName =
         Paths.get(getModuleName(), "build", "classes", sourceSet).toString();
 
+    // check for IntelliJ build location
+    String intellijBuildDirName = getModuleName() + "." + sourceSet;
+
     String buildDir = null;
     for (File entry : entries) {
       if (entry.toString().endsWith(gradleBuildDirName)
-          || entry.toString().endsWith(alternateBuildDirName)) {
+          || entry.toString().endsWith(alternateBuildDirName)
+          || entry.toString().endsWith(intellijBuildDirName)) {
         buildDir = entry.toString();
         break;
       }

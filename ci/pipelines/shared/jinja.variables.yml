@@ -141,7 +141,7 @@ tests:
   RAM: '90'
   name: integration
 - ARTIFACT_SLUG: upgradetestfiles
-  CALL_STACK_TIMEOUT: '8400'
+  CALL_STACK_TIMEOUT: '13500'
   CPUS: '96'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '48'

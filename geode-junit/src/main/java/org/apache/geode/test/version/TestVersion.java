@@ -17,18 +17,25 @@ package org.apache.geode.test.version;
 import java.io.Serializable;
 import java.util.Objects;
 
+@SuppressWarnings("serial")
 public class TestVersion implements Comparable<TestVersion>, Serializable {
-  public static final TestVersion CURRENT_VERSION = new TestVersion(VersionManager.CURRENT_VERSION);
+
+  private static final TestVersion CURRENT_VERSION =
+      new TestVersion(VersionManager.CURRENT_VERSION);
 
   private final int major;
   private final int minor;
   private final int release;
 
+  public static TestVersion current() {
+    return CURRENT_VERSION;
+  }
+
   public static TestVersion valueOf(final String versionString) {
     return new TestVersion(versionString);
   }
 
-  public TestVersion(String versionString) {
+  private TestVersion(String versionString) {
     String[] split = versionString.split("\\.");
     if (split.length != 3) {
       throw new IllegalArgumentException("Expected a version string but received " + versionString);
@@ -39,6 +46,10 @@ public class TestVersion implements Comparable<TestVersion>, Serializable {
       split[2] = split[2].substring(0, split[2].length() - "-incubating".length());
     }
     release = Integer.parseInt(split[2]);
+  }
+
+  public String majorMinor() {
+    return "" + major + '.' + minor;
   }
 
   /*
@@ -53,7 +64,6 @@ public class TestVersion implements Comparable<TestVersion>, Serializable {
   public String toString() {
     return "" + major + "." + minor + "." + release;
   }
-
 
   @Override
   public boolean equals(Object o) {
@@ -102,10 +112,6 @@ public class TestVersion implements Comparable<TestVersion>, Serializable {
 
   public boolean lessThan(final TestVersion other) {
     return compareTo(other) < 0;
-  }
-
-  public boolean equals(final TestVersion other) {
-    return compareTo(other) == 0;
   }
 
   public boolean greaterThan(final TestVersion other) {

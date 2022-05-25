@@ -18,7 +18,6 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.closeAndCheckForSuspects;
 
@@ -55,6 +54,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
 
 /**
  * A rule to help you start locators and servers or clients inside of a
@@ -145,11 +145,11 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   private void before(Description description) throws Throwable {
+    DUnitLauncher.launchIfNeeded(vmCount, false);
     if (isJavaVersionAtLeast(JavaVersion.JAVA_11)) {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
-    DUnitLauncher.launchIfNeeded(vmCount, false);
     restoreSystemProperties.beforeDistributedTest(description);
     occupiedVMs = new HashMap<>();
   }
@@ -210,8 +210,12 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public MemberVM startLocatorVM(int index, String version) {
+    return startLocatorVM(index, VmConfiguration.forGeodeVersion(version));
+  }
+
+  public MemberVM startLocatorVM(int index, VmConfiguration vmConfiguration) {
     int port = getRandomAvailableTCPPort();
-    return startLocatorVM(index, port, version, x -> x);
+    return startLocatorVM(index, port, vmConfiguration, x -> x);
   }
 
   public MemberVM startLocatorVM(int index,
@@ -225,10 +229,16 @@ public class ClusterStartupRule implements SerializableTestRule {
     return startLocatorVM(index, 0, VersionManager.CURRENT_VERSION, ruleOperatorWithPort);
   }
 
-  public MemberVM startLocatorVM(int index, int port, String version,
+  public MemberVM startLocatorVM(int index, int port, String geodeVersion,
+      SerializableFunction<LocatorStarterRule> ruleOperator) {
+    return startLocatorVM(index, port, VmConfiguration.forGeodeVersion(geodeVersion),
+        ruleOperator);
+  }
+
+  public MemberVM startLocatorVM(int index, int port, VmConfiguration vmConfiguration,
       SerializableFunction<LocatorStarterRule> ruleOperator) {
     final String defaultName = "locator-" + index;
-    VM locatorVM = getVM(index, version);
+    VM locatorVM = getVM(index, vmConfiguration);
     LocatorStarterRule locatorStarter = new LocatorStarterRule();
     Locator server = locatorVM.invoke("start locator in vm" + index, () -> {
       memberStarter = locatorStarter;
@@ -268,10 +278,15 @@ public class ClusterStartupRule implements SerializableTestRule {
     return startServerVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
   }
 
-  public MemberVM startServerVM(int index, String version,
+  public MemberVM startServerVM(int index, String geodeVersion,
+      SerializableFunction<ServerStarterRule> ruleOperator) {
+    return startServerVM(index, VmConfiguration.forGeodeVersion(geodeVersion), ruleOperator);
+  }
+
+  public MemberVM startServerVM(int index, VmConfiguration vmConfiguration,
       SerializableFunction<ServerStarterRule> ruleOperator) {
     final String defaultName = "server-" + index;
-    VM serverVM = getVM(index, version);
+    VM serverVM = getVM(index, vmConfiguration);
     ServerStarterRule serverStarter = new ServerStarterRule();
     Server server = serverVM.invoke("startServerVM", () -> {
       memberStarter = serverStarter;
@@ -292,7 +307,38 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   public ClientVM startClientVM(int index, String clientVersion,
       SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
-    VM client = getVM(index, clientVersion);
+    return startClientVM(index, VmConfiguration.forGeodeVersion(clientVersion),
+        clientCacheRuleSetUp);
+  }
+
+  public ClientVM startClientVM(int index,
+      SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
+    return startClientVM(index, VersionManager.CURRENT_VERSION, clientCacheRuleSetUp);
+  }
+
+  public ClientVM startClientVM(int index, Properties properties,
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
+    return startClientVM(index,
+        c -> c.withProperties(properties).withCacheSetup(cacheFactorySetup));
+  }
+
+  public ClientVM startClientVM(int index, String clientVersion, Properties properties,
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup)
+      throws Exception {
+    return startClientVM(index, VmConfiguration.forGeodeVersion(clientVersion), properties,
+        cacheFactorySetup);
+  }
+
+  public ClientVM startClientVM(int index, VmConfiguration clientVmConfiguration,
+      Properties properties, SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup)
+      throws Exception {
+    return startClientVM(index, clientVmConfiguration,
+        c -> c.withProperties(properties).withCacheSetup(cacheFactorySetup));
+  }
+
+  public ClientVM startClientVM(int index, VmConfiguration vmConfiguration,
+      SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
+    VM client = getVM(index, vmConfiguration);
     Exception error = client.invoke(() -> {
       clientCacheRule = new ClientCacheRule();
       try {
@@ -311,25 +357,6 @@ public class ClusterStartupRule implements SerializableTestRule {
     return clientVM;
   }
 
-  public ClientVM startClientVM(int index,
-      SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
-    return startClientVM(index, VersionManager.CURRENT_VERSION, clientCacheRuleSetUp);
-  }
-
-  public ClientVM startClientVM(int index, String clientVersion, Properties properties,
-      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup)
-      throws Exception {
-    return startClientVM(index, clientVersion,
-        c -> c.withProperties(properties).withCacheSetup(cacheFactorySetup));
-  }
-
-
-  public ClientVM startClientVM(int index, Properties properties,
-      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
-    return startClientVM(index,
-        c -> c.withProperties(properties).withCacheSetup(cacheFactorySetup));
-  }
-
   /**
    * Returns the {@link Member} running inside the VM with the specified {@code index}
    *
@@ -340,12 +367,12 @@ public class ClusterStartupRule implements SerializableTestRule {
     return (MemberVM) occupiedVMs.get(index);
   }
 
-  public VM getVM(int index, String version) {
-    return getHost(0).getVM(version, index);
+  public VM getVM(int index, VmConfiguration vmConfiguration) {
+    return VM.getVM(vmConfiguration, index);
   }
 
   public VM getVM(int index) {
-    return getHost(0).getVM(index);
+    return VM.getVM(index);
   }
 
   /**

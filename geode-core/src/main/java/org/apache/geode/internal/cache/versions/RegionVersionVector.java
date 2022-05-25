@@ -196,6 +196,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     isLiveVector = true;
     region = owner;
     localExceptions = new RegionVersionHolder<>(0);
+    localExceptions.id = myId;
     memberToVersion =
         new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
     memberToGCVersion =
@@ -609,6 +610,9 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       if (!mbr.equals(myId)) {
         h = otherHolder.clone();
         h.makeReadyForRecording();
+        if (h.id == null) {
+          h.id = mbr;
+        }
         memberToVersion.put(mbr, h);
       } else {
         RegionVersionHolder<T> vh = otherHolder;

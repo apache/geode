@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -102,6 +103,8 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * This test will not run properly in eclipse at this point due to having to bounce vms Currently,
@@ -121,15 +124,14 @@ import org.apache.geode.test.version.VersionManager;
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
 
-  @Parameterized.Parameters(name = "from_v{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
-    }
-    return result;
+  @Parameterized.Parameters(name = "From {0}")
+  public static Collection<VmConfiguration> data() {
+    List<VmConfiguration> sourceConfigurations = VmConfigurations.upgrades();
+    assertThat(sourceConfigurations)
+        .as("upgrade configurations")
+        .isNotEmpty();
+    System.out.println("upgrading from configurations: " + sourceConfigurations);
+    return sourceConfigurations;
   }
 
   File[] testingDirs = new File[3];
@@ -141,8 +143,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
   protected static GemFireCache cache;
 
   @Parameterized.Parameter
-  public String oldVersion;
-
+  public VmConfiguration sourceConfiguration;
 
   private void deleteVMFiles() {
     System.out.println("deleting files in vm" + VM.getCurrentVMNum());
@@ -232,13 +233,14 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
    * results are present. Note that the puts have overlapping region keys just to test new puts and
    * replaces
    */
-  void doTestPutAndGetMixedServers(String objectType, boolean partitioned, String oldVersion)
+  void doTestPutAndGetMixedServers(String objectType, boolean partitioned,
+      VmConfiguration sourceConfiguration)
       throws Exception {
     final Host host = Host.getHost(0);
     VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    VM oldServerAndLocator = host.getVM(oldVersion, 1);
+    VM oldServerAndLocator = host.getVM(sourceConfiguration, 1);
     VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM oldServer2 = host.getVM(oldVersion, 3);
+    VM oldServer2 = host.getVM(sourceConfiguration, 3);
 
     String regionName = "aRegion";
 
@@ -296,12 +298,13 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     }
   }
 
-  void doTestQueryMixedServers(boolean partitioned, String oldVersion) throws Exception {
+  void doTestQueryMixedServers(boolean partitioned, VmConfiguration sourceConfiguration)
+      throws Exception {
     final Host host = Host.getHost(0);
     VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    VM oldServer = host.getVM(oldVersion, 1);
+    VM oldServer = host.getVM(sourceConfiguration, 1);
     VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM oldServerAndLocator = host.getVM(oldVersion, 3);
+    VM oldServerAndLocator = host.getVM(sourceConfiguration, 3);
 
     String regionName = "cqs";
 
@@ -359,12 +362,12 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
   }
 
   void doTestCreateIndexes(boolean createMultiIndexes, boolean partitioned,
-      String oldVersion) throws Exception {
+      VmConfiguration sourceConfiguration) throws Exception {
     final Host host = Host.getHost(0);
     final VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    final VM oldServer = host.getVM(oldVersion, 1);
+    final VM oldServer = host.getVM(sourceConfiguration, 1);
     final VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    final VM oldServerAndLocator = host.getVM(oldVersion, 3);
+    final VM oldServerAndLocator = host.getVM(sourceConfiguration, 3);
 
     String regionName = "cqs";
 

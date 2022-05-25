@@ -24,6 +24,7 @@ import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -31,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -64,6 +66,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.api.LocatorConfigurationParser;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
@@ -71,6 +74,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.tcpserver.HostAddress;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -707,70 +711,101 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       // LOG: changed from config to info
       logger.info("Using existing distributed system: {}", existing);
       startCache(existing);
+      return;
+    }
+
+    HostAddress thisLocator = getHostAddress(hostAddress);
+    if (peerLocator) {
+      String existingLocators = distributionConfig.getLocators();
+      String newLocators = addLocatorIfMissing(existingLocators, thisLocator, getPort());
+      if (!newLocators.equals(existingLocators)) {
+        setLocatorProperties(newLocators);
+      }
+    }
+
+    Properties distributedSystemProperties = new Properties();
+    // LogWriterAppender is now shared via that class
+    // using a DistributionConfig earlier in this method
+    distributedSystemProperties.put(DistributionConfig.DS_CONFIG_NAME, distributionConfig);
+
+    logger.info("Starting distributed system");
+
+    internalDistributedSystem =
+        InternalDistributedSystem
+            .connectInternal(distributedSystemProperties, null,
+                new InternalDistributedSystemMetricsService.Builder(),
+                membershipLocator);
+
+    if (peerLocator) {
+      // We've created a peer location message handler - it needs to be connected to
+      // the membership service in order to get membership view notifications
+      membershipLocator
+          .setMembership(internalDistributedSystem.getDM()
+              .getDistribution().getMembership());
+    }
+
+    internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));
+
+    startCache(internalDistributedSystem);
+
+    logger.info("Locator started on {}[{}]", thisLocator, getPort());
+
+  }
+
+  HostAddress getHostAddress(HostAddress hostAddress) throws UnknownHostException {
+    HostAddress thisLocator;
+    if (hostAddress != null && !StringUtils.isEmpty(hostAddress.getHostName())) {
+      thisLocator = hostAddress;
     } else {
+      thisLocator = new HostAddress(LocalHostUtil.getLocalHost());
+    }
+    return thisLocator;
+  }
 
-      StringBuilder sb = new StringBuilder(100);
-      if (hostAddress != null && !StringUtils.isEmpty(hostAddress.getHostName())) {
-        sb.append(hostAddress.getHostName());
-      } else {
-        sb.append(LocalHostUtil.getLocalHost().getCanonicalHostName());
-      }
-      sb.append('[').append(getPort()).append(']');
-      String thisLocator = sb.toString();
+  /**
+   * add this locator to the locators list if not already in, note the locator's
+   * hostname is used, but if it resoves to be the same as what's already in the
+   * list, what's specified by the user is preserved
+   *
+   * @param existingLocators the existing configured locators
+   * @param thisLocator this locator's address
+   * @param port this locator's port
+   * @return the comma separated list of locators with this locator added
+   *         if this locator is not already in the list
+   */
+  String addLocatorIfMissing(String existingLocators, HostAddress thisLocator, int port)
+      throws IOException {
+    String thisLocatorHostnameAndPort = String.format("%s[%d]", thisLocator.getHostName(), port);
+    if (StringUtils.isBlank(existingLocators)) {
+      return thisLocatorHostnameAndPort;
+    }
 
-      if (peerLocator) {
-        // append this locator to the locators list from the config properties
-        boolean setLocatorsProp = false;
-        String locatorsConfigValue = distributionConfig.getLocators();
-        if (StringUtils.isNotBlank(locatorsConfigValue)) {
-          if (!locatorsConfigValue.contains(thisLocator)) {
-            locatorsConfigValue = locatorsConfigValue + ',' + thisLocator;
-            setLocatorsProp = true;
-          }
-        } else {
-          locatorsConfigValue = thisLocator;
-          setLocatorsProp = true;
-        }
-        if (setLocatorsProp) {
-          Properties updateEnv = new Properties();
-          updateEnv.setProperty(LOCATORS, locatorsConfigValue);
-          distributionConfig.setApiProps(updateEnv);
-          String locatorsPropertyName = GEMFIRE_PREFIX + LOCATORS;
-          if (System.getProperty(locatorsPropertyName) != null) {
-            System.setProperty(locatorsPropertyName, locatorsConfigValue);
-          }
-        }
-        // No longer default mcast-port to zero.
-      }
+    List<HostAndPort> hostAndPorts;
+    try {
+      hostAndPorts = LocatorConfigurationParser.parseLocators(existingLocators, (InetAddress) null);
+    } catch (MembershipConfigurationException e) {
+      throw new IOException(e.getMessage(), e);
+    }
 
-      Properties distributedSystemProperties = new Properties();
-      // LogWriterAppender is now shared via that class
-      // using a DistributionConfig earlier in this method
-      distributedSystemProperties.put(DistributionConfig.DS_CONFIG_NAME, distributionConfig);
+    if (hostAndPorts.stream().anyMatch(
+        (hp) -> thisLocator.getAddress().equals(hp.getAddress())
+            && port == hp.getPort())) {
+      return existingLocators;
+    }
+    // if not found in existing locators
+    return existingLocators + "," + thisLocatorHostnameAndPort;
+  }
 
-      logger.info("Starting distributed system");
-
-      internalDistributedSystem =
-          InternalDistributedSystem
-              .connectInternal(distributedSystemProperties, null,
-                  new InternalDistributedSystemMetricsService.Builder(),
-                  membershipLocator);
-
-      if (peerLocator) {
-        // We've created a peer location message handler - it needs to be connected to
-        // the membership service in order to get membership view notifications
-        membershipLocator
-            .setMembership(internalDistributedSystem.getDM()
-                .getDistribution().getMembership());
-      }
-
-      internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));
-
-      startCache(internalDistributedSystem);
-
-      logger.info("Locator started on {}", thisLocator);
+  private void setLocatorProperties(String locatorsConfigValue) {
+    Properties updateEnv = new Properties();
+    updateEnv.setProperty(LOCATORS, locatorsConfigValue);
+    distributionConfig.setApiProps(updateEnv);
+    String locatorsPropertyName = GEMFIRE_PREFIX + LOCATORS;
+    if (System.getProperty(locatorsPropertyName) != null) {
+      System.setProperty(locatorsPropertyName, locatorsConfigValue);
     }
   }
+
 
   private void startCache(DistributedSystem system) throws IOException {
     InternalCache internalCache = GemFireCacheImpl.getInstance();

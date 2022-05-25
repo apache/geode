@@ -16,6 +16,7 @@ package org.apache.geode.security;
 
 import static org.apache.geode.security.SecurityTestUtils.closeCache;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,7 +29,8 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.version.VmConfiguration;
+import org.apache.geode.test.version.VmConfigurations;
 
 /**
  * Tests for authorization from client to server. This tests for authorization of all operations
@@ -44,20 +46,18 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthorizationCQDUnitTest extends ClientAuthorizationTestCase {
-  @Parameterized.Parameters(name = "from_v{0}")
-  public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersions();
-    if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
-    }
-    return result;
+  @Parameterized.Parameters(name = "From {0}")
+  public static Collection<VmConfiguration> data() {
+    List<VmConfiguration> configurations = VmConfigurations.upgrades();
+    assertThat(configurations)
+        .as("configurations to upgrade from")
+        .isNotEmpty();
+    System.out.println("upgrading from configurations: " + configurations);
+    return configurations;
   }
 
-  public ClientAuthorizationCQDUnitTest(String version) {
-    super();
-    clientVersion = version;
+  public ClientAuthorizationCQDUnitTest(VmConfiguration clientVmConfiguration) {
+    super(clientVmConfiguration);
   }
 
   @Override
