@@ -37,7 +37,6 @@ public class NativeProcessUtilsTest {
   private static final int PREFERRED_FAKE_PID = 42;
 
   private int actualPid;
-  private int fakePid;
   private NativeProcessUtils nativeProcessUtils;
 
   @Rule
@@ -46,28 +45,32 @@ public class NativeProcessUtilsTest {
   @Before
   public void before() throws Exception {
     actualPid = identifyPid();
-    fakePid = new AvailablePid().findAvailablePid(PREFERRED_FAKE_PID);
     nativeProcessUtils = new NativeProcessUtils();
   }
 
   @Test
-  public void isAttachApiAvailable_returnsFalse() throws Exception {
+  public void isAttachApiAvailable_returnsFalse() {
     assertThat(nativeProcessUtils.isAttachApiAvailable()).isFalse();
   }
 
   @Test
-  public void isAvailable_returnsTrue() throws Exception {
+  public void isAvailable_returnsTrue() {
     assertThat(nativeProcessUtils.isAvailable()).isTrue();
   }
 
   @Test
-  public void isProcessAlive_livePid_returnsTrue() throws Exception {
-    assertThat(nativeProcessUtils.isProcessAlive(actualPid)).isTrue();
+  public void isProcessAlive_livePid_returnsTrue() {
+    assertThat(nativeProcessUtils.isProcessAlive(actualPid))
+        .as("is process identified by " + actualPid + " alive?")
+        .isTrue();
   }
 
   @Test
   @Retry(3)
   public void isProcessAlive_deadPid_returnsFalse() throws Exception {
-    assertThat(nativeProcessUtils.isProcessAlive(fakePid)).isFalse();
+    int fakePid = new AvailablePid().findAvailablePid(PREFERRED_FAKE_PID);
+    assertThat(nativeProcessUtils.isProcessAlive(fakePid))
+        .as("is process identified by " + fakePid + " alive?")
+        .isFalse();
   }
 }

@@ -17,7 +17,6 @@ package org.apache.geode.serialization.filter;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import org.junit.Before;
@@ -25,22 +24,25 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class StartServerGlobalSerialFilterAcceptanceTest {
 
-  @Rule
+  @Rule(order = 0)
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
+  @Rule(order = 1)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 2)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
-  private File serverFolder;
+  private Path serverFolder;
   private int jmxPort;
 
   @Before
   public void setServerFolder() {
-    serverFolder = gfshRule.getTemporaryFolder().getRoot();
+    serverFolder = folderRule.getFolder().toPath().toAbsolutePath();
   }
 
   @Before
@@ -53,7 +55,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=server",
-        "--dir=" + serverFolder.getAbsolutePath(),
+        "--dir=" + serverFolder,
         "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
@@ -63,7 +65,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
 
     gfshRule.execute(startServerCommand);
 
-    Path serverLogFile = serverFolder.toPath().resolve("server.log");
+    Path serverLogFile = serverFolder.resolve("server.log");
     await().untilAsserted(() -> {
       LogFileAssert.assertThat(serverLogFile.toFile()).exists()
           .doesNotContain("Global serial filter is now configured.")
@@ -76,7 +78,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=server",
-        "--dir=" + serverFolder.getAbsolutePath(),
+        "--dir=" + serverFolder,
         "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
@@ -87,7 +89,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
 
     gfshRule.execute(startServerCommand);
 
-    Path serverLogFile = serverFolder.toPath().resolve("server.log");
+    Path serverLogFile = serverFolder.resolve("server.log");
     await().untilAsserted(() -> {
       LogFileAssert.assertThat(serverLogFile.toFile()).exists()
           .doesNotContain("Global serial filter is now configured.")
@@ -104,7 +106,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=server",
-        "--dir=" + serverFolder.getAbsolutePath(),
+        "--dir=" + serverFolder,
         "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
@@ -115,7 +117,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
 
     gfshRule.execute(startServerCommand);
 
-    Path serverLogFile = serverFolder.toPath().resolve("server.log");
+    Path serverLogFile = serverFolder.resolve("server.log");
     await().untilAsserted(() -> {
       LogFileAssert.assertThat(serverLogFile.toFile()).exists()
           .contains("Global serial filter is now configured.")
@@ -128,7 +130,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=server",
-        "--dir=" + serverFolder.getAbsolutePath(),
+        "--dir=" + serverFolder,
         "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
@@ -140,7 +142,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
 
     gfshRule.execute(startServerCommand);
 
-    Path serverLogFile = serverFolder.toPath().resolve("server.log");
+    Path serverLogFile = serverFolder.resolve("server.log");
     await().untilAsserted(() -> {
       LogFileAssert.assertThat(serverLogFile.toFile()).exists()
           .doesNotContain("Global serial filter is now configured.")

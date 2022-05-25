@@ -14,23 +14,21 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static java.util.Arrays.stream;
-import static org.apache.geode.management.internal.cli.shell.DirectoryTree.printDirectoryTree;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.internal.process.ProcessType.LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -43,57 +41,39 @@ public class StatusLocatorExitCodeAcceptanceTest {
 
   private static final String LOCATOR_NAME = "myLocator";
 
-  private static int locatorPort;
-  private static Path toolsJar;
-  private static int locatorPid;
-  private static Path locatorDir;
-  private static Path rootPath;
-  private static String connectCommand;
+  private int locatorPort;
+  private int locatorPid;
+  private Path locatorDir;
+  private String connectCommand;
 
-  @ClassRule
-  public static GfshRule gfshRule = new GfshRule();
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
-  @BeforeClass
-  public static void startLocator() throws IOException {
-    rootPath = gfshRule.getTemporaryFolder().getRoot().toPath();
-    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+  @Before
+  public void startLocator() {
+    locatorPort = getRandomAvailableTCPPort();
 
-    GfshExecution execution = GfshScript.of(
-        "start locator --name=" + LOCATOR_NAME + " --port=" + locatorPort)
+    GfshExecution execution = GfshScript
+        .of("start locator --name=" + LOCATOR_NAME + " --port=" + locatorPort)
         .execute(gfshRule);
 
     assertThat(execution.getProcess().exitValue())
         .isZero();
 
-    locatorPid = readPidFile(LOCATOR_NAME, "locator.pid");
-    locatorDir = rootPath.resolve(LOCATOR_NAME).toAbsolutePath();
+    locatorDir = execution.getSubDir(LOCATOR_NAME);
+    locatorPid = LOCATOR.readPid(locatorDir);
 
     connectCommand = "connect --locator=[" + locatorPort + "]";
-  }
-
-  @BeforeClass
-  public static void setUpJavaTools() {
-    String javaHome = System.getProperty("java.home");
-    assertThat(javaHome)
-        .as("System.getProperty(\"java.home\")")
-        .isNotNull();
-
-    Path javaHomeFile = new File(javaHome).toPath();
-    assertThat(javaHomeFile)
-        .as(javaHomeFile + ": " + printDirectoryTree(javaHomeFile.toFile()))
-        .exists();
-
-    String toolsPath = javaHomeFile.toFile().getName().equalsIgnoreCase("jre")
-        ? ".." + File.separator + "lib" + File.separator + "tools.jar"
-        : "lib" + File.separator + "tools.jar";
-    toolsJar = javaHomeFile.resolve(toolsPath);
   }
 
   @Test
   public void statusCommandWithInvalidPortShouldFail() {
     String commandWithBadPort = "status locator --port=-10";
 
-    GfshScript.of(commandWithBadPort)
+    GfshScript
+        .of(commandWithBadPort)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -103,7 +83,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void statusCommandWithInvalidOptionValueShouldFail() {
     String commandWithBadPid = "status locator --pid=-1";
 
-    GfshScript.of(commandWithBadPid)
+    GfshScript
+        .of(commandWithBadPid)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -113,7 +94,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void statusCommandWithIncorrectHostShouldFail() {
     String commandWithWrongHostname = "status locator --host=someIncorrectHostname";
 
-    GfshScript.of(commandWithWrongHostname)
+    GfshScript
+        .of(commandWithWrongHostname)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -121,10 +103,11 @@ public class StatusLocatorExitCodeAcceptanceTest {
 
   @Test
   public void statusCommandWithIncorrectPortShouldFail() {
-    int incorrectPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int incorrectPort = getRandomAvailableTCPPort();
     String commandWithWrongPort = "status locator --port=" + incorrectPort;
 
-    GfshScript.of(commandWithWrongPort)
+    GfshScript
+        .of(commandWithWrongPort)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -134,7 +117,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void statusCommandWithIncorrectDirShouldFail() {
     String commandWithWrongDir = "status locator --dir=.";
 
-    GfshScript.of(commandWithWrongDir)
+    GfshScript
+        .of(commandWithWrongDir)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -144,7 +128,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void statusCommandWithIncorrectNameShouldFail() {
     String commandWithWrongName = "status locator --name=some-locator-name";
 
-    GfshScript.of(commandWithWrongName)
+    GfshScript
+        .of(commandWithWrongName)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -154,7 +139,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void onlineStatusCommandShouldSucceedWhenConnected_locator_name() {
     String statusCommand = "status locator --name=" + LOCATOR_NAME;
 
-    GfshScript.of(connectCommand, statusCommand)
+    GfshScript
+        .of(connectCommand, statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -164,7 +150,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void onlineStatusCommandShouldSucceedWhenConnected_locator_port() {
     String statusCommand = "status locator --port=" + locatorPort;
 
-    GfshScript.of(connectCommand, statusCommand)
+    GfshScript
+        .of(connectCommand, statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -174,7 +161,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void onlineStatusCommandShouldSucceedWhenConnected_locator_host_and_port() {
     String statusCommand = "status locator --host=localhost --port=" + locatorPort;
 
-    GfshScript.of(connectCommand, statusCommand)
+    GfshScript
+        .of(connectCommand, statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -184,7 +172,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void onlineStatusCommandShouldFailWhenConnectedNonDefaultPort_locator_host() {
     String statusCommand = "status locator --host=localhost";
 
-    GfshScript.of(connectCommand, statusCommand)
+    GfshScript
+        .of(connectCommand, statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -194,7 +183,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedWhenConnected_locator_dir() {
     String statusCommand = "status locator --dir=" + locatorDir;
 
-    GfshScript.of(connectCommand, statusCommand)
+    GfshScript
+        .of(connectCommand, statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -204,7 +194,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void onlineStatusCommandShouldFailWhenNotConnected_locator_name() {
     String statusCommand = "status locator --name=" + LOCATOR_NAME;
 
-    GfshScript.of(statusCommand)
+    GfshScript
+        .of(statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -215,7 +206,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
     // --host defaults to localhost, so `status locator --port=xxx` should still succeed.
     String statusCommand = "status locator --port=" + locatorPort;
 
-    GfshScript.of(statusCommand)
+    GfshScript
+        .of(statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -225,9 +217,10 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedWhenConnected_locator_pid() {
     String statusCommand = "status locator --pid=" + locatorPid;
 
-    GfshScript.of(connectCommand, statusCommand)
+    GfshScript
+        .of(connectCommand, statusCommand)
         .withName("test-frame")
-        .addToClasspath(toolsJar.toFile().getAbsolutePath())
+        .addToClasspath(toolsJar())
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
   }
@@ -238,7 +231,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
     // --port=xxx` should succeed
     String statusCommand = "status locator --host=localhost --port=" + locatorPort;
 
-    GfshScript.of(statusCommand)
+    GfshScript
+        .of(statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -248,7 +242,8 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedEvenWhenNotConnected_locator_dir() {
     String statusCommand = "status locator --dir=" + locatorDir;
 
-    GfshScript.of(statusCommand)
+    GfshScript
+        .of(statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -258,27 +253,28 @@ public class StatusLocatorExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedEvenWhenNotConnected_locator_pid() {
     String statusCommand = "status locator --pid=" + locatorPid;
 
-    GfshScript.of(statusCommand)
+    GfshScript
+        .of(statusCommand)
         .withName("test-frame")
-        .addToClasspath(toolsJar.toFile().getAbsolutePath())
+        .addToClasspath(toolsJar())
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
   }
 
-  private static int readPidFile(String memberName, String pidFileEndsWith) throws IOException {
-    File directory = rootPath.resolve(memberName).toFile();
-    File[] files = directory.listFiles();
-
-    assertThat(files)
-        .as(String.format("Expected directory ('%s') for member '%s'.", directory, memberName))
+  private static String toolsJar() {
+    String javaHome = System.getProperty("java.home");
+    assertThat(javaHome)
+        .as("java.home system property")
         .isNotNull();
 
-    File pidFile = stream(files)
-        .filter(file -> file.getName().endsWith(pidFileEndsWith))
-        .findFirst()
-        .orElseThrow(() -> new RuntimeException(String
-            .format("Expected member '%s' to have pid file but could not find it.", memberName)));
+    Path javaHomePath = Paths.get(javaHome).toAbsolutePath();
+    assertThat(javaHomePath)
+        .as("java.home path")
+        .exists();
 
-    return new PidFile(pidFile).readPid();
+    boolean isJre = javaHomePath.getFileName().toString().equalsIgnoreCase("jre");
+    Path jdkPath = javaHomePath.resolve(isJre ? ".." : ".").normalize();
+
+    return jdkPath.resolve("lib").resolve("tools.jar").toString();
   }
 }

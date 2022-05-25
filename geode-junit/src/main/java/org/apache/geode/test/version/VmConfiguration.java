@@ -17,7 +17,6 @@
 package org.apache.geode.test.version;
 
 import static java.lang.String.format;
-import static org.apache.geode.test.version.TestVersion.CURRENT_VERSION;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -62,14 +61,14 @@ public class VmConfiguration implements Serializable {
    * @return the configuration
    */
   public static VmConfiguration forJavaVersion(JavaVersion javaVersion) {
-    return new VmConfiguration(javaVersion, CURRENT_VERSION);
+    return new VmConfiguration(javaVersion, TestVersion.current());
   }
 
   /**
    * @return the configuration of the current JVM
    */
   public static VmConfiguration current() {
-    return new VmConfiguration(JavaVersions.current(), CURRENT_VERSION);
+    return new VmConfiguration(JavaVersions.current(), TestVersion.current());
   }
 
   /**
@@ -105,7 +104,7 @@ public class VmConfiguration implements Serializable {
 
   @Override
   public String toString() {
-    String geodeVersionString = geodeVersion.equals(CURRENT_VERSION)
+    String geodeVersionString = geodeVersion.equals(TestVersion.current())
         ? "current"
         : geodeVersion.toString();
     return format("%s{java=%s, geode=%s}",

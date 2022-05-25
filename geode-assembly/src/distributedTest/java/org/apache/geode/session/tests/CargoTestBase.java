@@ -448,7 +448,7 @@ public abstract class CargoTestBase {
 
   private void checkLogs() {
     for (int i = 0; i < manager.numContainers(); i++) {
-      File cargo_dir = manager.getContainer(i).cargoLogDir;
+      File cargo_dir = manager.getContainer(i).cargoLogDir.toFile();
       LogChecker.checkLogs(cargo_dir);
     }
   }

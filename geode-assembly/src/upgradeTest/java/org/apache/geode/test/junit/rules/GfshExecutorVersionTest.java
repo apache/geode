@@ -12,49 +12,42 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.test.junit.rules;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.rules.FolderRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
+import org.apache.geode.internal.util.ProductVersionUtil;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecutor;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-public class DestroyIndexIfExistsTest {
-
-  private int locatorPort;
+@Category(GfshTest.class)
+public class GfshExecutorVersionTest {
 
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
   public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
-  @Before
-  public void setUp() {
-    locatorPort = getRandomAvailableTCPPort();
+  @Test
+  public void contextUsesCurrentGeodeVersionByDefault() {
+    String currentVersion = ProductVersionUtil.getDistributionVersion().getVersion();
+
+    GfshExecutor executor = gfshRule.executor().build();
+
+    assertThat(executor.execute("version").getOutputText()).contains(currentVersion);
   }
 
   @Test
-  public void destroyIndexIfExists()
-      throws IOException, ExecutionException, InterruptedException, TimeoutException {
-    GfshExecution execution = GfshScript
-        .of("start locator --name=locator --port=" + locatorPort,
-            "start server --name=server --server-port=0",
-            "sleep --time=1",
-            "destroy index --name=i1 --if-exists=true")
-        .execute(gfshRule);
+  public void contextUsesSpecifiedGeodeVersion() {
+    String specifiedVersion = "1.3.0";
 
-    assertThat(execution.getOutputText())
-        .contains("IGNORED", "Index named \"i1\" not found");
+    GfshExecutor executor = gfshRule.executor().withGeodeVersion(specifiedVersion).build();
+
+    assertThat(executor.execute("version").getOutputText()).contains(specifiedVersion);
   }
 }
