@@ -1006,9 +1006,9 @@ lib/grumpy-core-0.2.2.jar
 lib/httpclient-4.5.13.jar
 lib/httpcore-4.4.14.jar
 lib/istack-commons-runtime-3.0.9.jar
-lib/jackson-annotations-2.10.5.jar
-lib/jackson-core-2.10.5.jar
-lib/jackson-databind-2.10.5.1.jar
+lib/jackson-annotations-2.12.6.jar
+lib/jackson-core-2.12.6.jar
+lib/jackson-databind-2.12.6.1.jar
 lib/javax.activation-1.2.0.jar
 lib/javax.activation-api-1.2.0.jar
 lib/javax.mail-api-1.6.2.jar
