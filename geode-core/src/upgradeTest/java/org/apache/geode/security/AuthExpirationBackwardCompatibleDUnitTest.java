@@ -36,8 +36,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
@@ -58,15 +56,12 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.TestVersions;
 import org.apache.geode.test.version.VmConfiguration;
 import org.apache.geode.test.version.VmConfigurations;
 
 @Category({SecurityTest.class})
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
   // only test versions greater than or equal to 1.14.0
   private static final TestVersion test_start_version = TestVersion.valueOf("1.14.0");
@@ -74,10 +69,8 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   private static RegionService user0Service;
   private static RegionService user1Service;
 
-  @Parameterized.Parameter
-  public VmConfiguration clientVmConfiguration;
+  public VmConfiguration clientVmConfiguration = VmConfiguration.current();
 
-  @Parameterized.Parameters(name = "Client {0}")
   public static Collection<VmConfiguration> data() {
     return VmConfigurations.all().stream()
         .filter(hasGeodeVersion(TestVersions.atLeast(test_start_version)))
