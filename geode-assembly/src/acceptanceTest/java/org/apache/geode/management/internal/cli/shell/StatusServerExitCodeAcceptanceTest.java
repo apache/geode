@@ -14,22 +14,23 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.internal.process.ProcessType.SERVER;
+import static java.util.Arrays.stream;
 import static org.apache.geode.management.internal.cli.shell.DirectoryTree.printDirectoryTree;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -43,36 +44,37 @@ public class StatusServerExitCodeAcceptanceTest {
   private static final String LOCATOR_NAME = "myLocator";
   private static final String SERVER_NAME = "myServer";
 
-  private Path toolsJar;
-  private int serverPid;
-  private Path serverDir;
-  private String connectCommand;
+  private static int locatorPort;
+  private static Path toolsJar;
+  private static int serverPid;
+  private static Path serverDir;
+  private static Path rootPath;
+  private static String connectCommand;
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @ClassRule
+  public static GfshRule gfshRule = new GfshRule();
 
-  @Before
-  public void startCluster() {
-    int locatorPort = getRandomAvailableTCPPort();
+  @BeforeClass
+  public static void startCluster() throws IOException {
+    rootPath = gfshRule.getTemporaryFolder().getRoot().toPath();
+    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    GfshExecution execution = GfshScript
-        .of("start locator --name=" + LOCATOR_NAME + " --port=" + locatorPort,
-            "start server --disable-default-server --name=" + SERVER_NAME)
+    GfshExecution execution = GfshScript.of(
+        "start locator --name=" + LOCATOR_NAME + " --port=" + locatorPort,
+        "start server --disable-default-server --name=" + SERVER_NAME)
         .execute(gfshRule);
 
     assertThat(execution.getProcess().exitValue())
         .isZero();
 
-    serverDir = execution.getWorkingDir().toPath().resolve(SERVER_NAME);
-    serverPid = SERVER.readPid(serverDir);
+    serverPid = readPidFile(SERVER_NAME, "server.pid");
+    serverDir = rootPath.resolve(SERVER_NAME).toAbsolutePath();
 
     connectCommand = "connect --locator=[" + locatorPort + "]";
   }
 
-  @Before
-  public void setUpJavaTools() {
+  @BeforeClass
+  public static void setUpJavaTools() {
     String javaHome = System.getProperty("java.home");
     assertThat(javaHome)
         .as("System.getProperty(\"java.home\")")
@@ -93,8 +95,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void statusCommandWithInvalidOptionValueShouldFail() {
     String commandWithBadPid = "status server --pid=-1";
 
-    GfshScript
-        .of(commandWithBadPid)
+    GfshScript.of(commandWithBadPid)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -104,8 +105,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void statusCommandWithIncorrectDirShouldFail() {
     String commandWithWrongDir = "status server --dir=.";
 
-    GfshScript
-        .of(commandWithWrongDir)
+    GfshScript.of(commandWithWrongDir)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -115,8 +115,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void statusCommandWithIncorrectNameShouldFail() {
     String commandWithWrongName = "status server --name=some-server-name";
 
-    GfshScript
-        .of(commandWithWrongName)
+    GfshScript.of(commandWithWrongName)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -126,8 +125,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void statusCommandWithIncorrectPidShouldFail() {
     String commandWithWrongPid = "status server --pid=100";
 
-    GfshScript
-        .of(commandWithWrongPid)
+    GfshScript.of(commandWithWrongPid)
         .withName("test-frame")
         .addToClasspath(toolsJar.toFile().getAbsolutePath())
         .expectExitCode(ExitCode.FATAL.getValue())
@@ -138,8 +136,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void onlineStatusCommandShouldFailWhenNotConnected_server_name() {
     String statusCommand = "status server --name=" + SERVER_NAME;
 
-    GfshScript
-        .of(statusCommand)
+    GfshScript.of(statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.FATAL.getValue())
         .execute(gfshRule);
@@ -149,8 +146,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void onlineStatusCommandShouldSucceedWhenConnected_server_name() {
     String statusCommand = "status server --name=" + SERVER_NAME;
 
-    GfshScript
-        .of(connectCommand, statusCommand)
+    GfshScript.of(connectCommand, statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -160,8 +156,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedWhenConnected_server_dir() {
     String statusCommand = "status server --dir=" + serverDir;
 
-    GfshScript
-        .of(connectCommand, statusCommand)
+    GfshScript.of(connectCommand, statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -171,8 +166,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedWhenConnected_server_pid() {
     String statusCommand = "status server --pid=" + serverPid;
 
-    GfshScript
-        .of(connectCommand, statusCommand)
+    GfshScript.of(connectCommand, statusCommand)
         .withName("test-frame")
         .addToClasspath(toolsJar.toFile().getAbsolutePath())
         .expectExitCode(ExitCode.NORMAL.getValue())
@@ -183,8 +177,7 @@ public class StatusServerExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedEvenWhenNotConnected_server_dir() {
     String statusCommand = "status server --dir=" + serverDir;
 
-    GfshScript
-        .of(statusCommand)
+    GfshScript.of(statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .execute(gfshRule);
@@ -194,11 +187,27 @@ public class StatusServerExitCodeAcceptanceTest {
   public void offlineStatusCommandShouldSucceedEvenWhenNotConnected_server_pid() {
     String statusCommand = "status server --pid=" + serverPid;
 
-    GfshScript
-        .of(statusCommand)
+    GfshScript.of(statusCommand)
         .withName("test-frame")
         .expectExitCode(ExitCode.NORMAL.getValue())
         .addToClasspath(toolsJar.toFile().getAbsolutePath())
         .execute(gfshRule);
+  }
+
+  private static int readPidFile(String memberName, String pidFileEndsWith) throws IOException {
+    File directory = rootPath.resolve(memberName).toFile();
+    File[] files = directory.listFiles();
+
+    assertThat(files)
+        .as(String.format("Expected directory ('%s') for member '%s'.", directory, memberName))
+        .isNotNull();
+
+    File pidFile = stream(files)
+        .filter(file -> file.getName().endsWith(pidFileEndsWith))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException(String
+            .format("Expected member '%s' to have pid file but could not find it.", memberName)));
+
+    return new PidFile(pidFile).readPid();
   }
 }

@@ -14,13 +14,12 @@
  */
 package org.apache.geode.session.tests;
 
-import static java.nio.file.Files.copy;
-
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.function.IntSupplier;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.cargo.container.configuration.FileConfig;
 import org.codehaus.cargo.container.configuration.StandaloneLocalConfiguration;
 import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
@@ -35,15 +34,14 @@ import org.codehaus.cargo.util.XmlReplacement;
  */
 public class TomcatContainer extends ServerContainer {
 
-  private final Path contextXMLFile;
-  private final Path serverXMLFile;
+  private final File contextXMLFile;
+  private final File serverXMLFile;
 
-  private static final String DEFAULT_TOMCAT_CONFIG_XML_DIR = "conf/";
+  public static final String DEFAULT_TOMCAT_CONFIG_XML_DIR = "conf/";
 
-  private static final String DEFAULT_TOMCAT_XML_REPLACEMENT_DIR =
+  public static final String DEFAULT_TOMCAT_XML_REPLACEMENT_DIR =
       DEFAULT_TOMCAT_CONFIG_XML_DIR + "Catalina/localhost/";
-
-  private static final String DEFAULT_TOMCAT_CONTEXT_XML_REPLACEMENT_NAME = "context.xml.default";
+  public static final String DEFAULT_TOMCAT_CONTEXT_XML_REPLACEMENT_NAME = "context.xml.default";
 
   /*
    * Setup the Tomcat container
@@ -53,19 +51,18 @@ public class TomcatContainer extends ServerContainer {
    * properties, deploys the session testing WAR file to the Cargo container, and sets various
    * container properties (i.e. locator, local cache, etc.)
    */
-  TomcatContainer(TomcatInstall install, Path rootDir, Path containerConfigHome,
+  public TomcatContainer(TomcatInstall install, File containerConfigHome,
       String containerDescriptors, IntSupplier portSupplier) throws IOException {
-    super(install, rootDir, containerConfigHome, containerDescriptors, portSupplier);
+    super(install, containerConfigHome, containerDescriptors, portSupplier);
 
     // Setup container specific XML files
-    contextXMLFile = cargoLogDir.resolve("context.xml");
-    serverXMLFile = defaultConfigDir.resolve("server.xml");
+    contextXMLFile = new File(cargoLogDir.getAbsolutePath() + "/context.xml");
+    serverXMLFile = new File(DEFAULT_CONF_DIR + "server.xml");
 
     // Copy the default container context XML file from the install to the specified path
-    copy(defaultConfigDir.resolve("context.xml"), contextXMLFile);
+    FileUtils.copyFile(new File(DEFAULT_CONF_DIR + "context.xml"), contextXMLFile);
     // Set the container context XML file to the new location copied to above
-    setConfigFile(contextXMLFile,
-        DEFAULT_TOMCAT_XML_REPLACEMENT_DIR,
+    setConfigFile(contextXMLFile.getAbsolutePath(), DEFAULT_TOMCAT_XML_REPLACEMENT_DIR,
         DEFAULT_TOMCAT_CONTEXT_XML_REPLACEMENT_NAME);
 
     if (install.getConnectionType() == ContainerInstall.ConnectionType.CLIENT_SERVER ||
@@ -97,25 +94,23 @@ public class TomcatContainer extends ServerContainer {
   }
 
   /**
-   * Implements the {@code ServerContainer#writeSettings()} function in order to write the proper
+   * Implements the {@link ServerContainer#writeSettings()} function in order to write the proper
    * settings to the container
    *
-   * <p>
-   * Method uses the {@link ContainerInstall#editXMLFile(Path, String, String, String, HashMap)}
+   * Method uses the {@link ContainerInstall#editXMLFile(String, String, String, String, HashMap)}
    * to edit the {@link #contextXMLFile} with the {@link #cacheProperties}. Method uses
    * {@link #writePropertiesToConfig(StandaloneLocalConfiguration, String, String, HashMap)} to
    * write the {@link #systemProperties} to the {@link #serverXMLFile} using the container's
    * configuration (obtained from {@link #getConfiguration()}).
    */
   @Override
-  public void writeSettings() {
+  public void writeSettings() throws IOException {
     StandaloneLocalConfiguration config = (StandaloneLocalConfiguration) getConfiguration();
 
     // Edit the context XML file
-    ContainerInstall.editXMLFile(contextXMLFile, "Tomcat", "Manager", "Context",
+    ContainerInstall.editXMLFile(contextXMLFile.getAbsolutePath(), "Tomcat", "Manager", "Context",
         cacheProperties);
-    writePropertiesToConfig(config,
-        DEFAULT_TOMCAT_CONFIG_XML_DIR + "/" + serverXMLFile.toFile().getName(),
+    writePropertiesToConfig(config, DEFAULT_TOMCAT_CONFIG_XML_DIR + "/" + serverXMLFile.getName(),
         "//Server/Listener[@className='"
             + ((TomcatInstall) getInstall()).getServerLifeCycleListenerClass() + "']",
         systemProperties);
@@ -161,10 +156,10 @@ public class TomcatContainer extends ServerContainer {
    * @param configDirDest The name of the directory that the configuration file be placed in
    * @param configFileDestName The name of destination file for the new configuration file
    */
-  private void setConfigFile(Path filePath, String configDirDest, String configFileDestName) {
+  private void setConfigFile(String filePath, String configDirDest, String configFileDestName) {
     FileConfig configFile = new FileConfig();
 
-    configFile.setFile(filePath.toString());
+    configFile.setFile(filePath);
     configFile.setToDir(configDirDest);
     configFile.setToFile(configFileDestName);
     getConfiguration().setConfigFileProperty(configFile);

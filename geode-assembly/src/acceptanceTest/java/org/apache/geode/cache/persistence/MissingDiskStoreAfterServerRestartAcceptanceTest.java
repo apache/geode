@@ -15,7 +15,7 @@
 package org.apache.geode.cache.persistence;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,9 +28,9 @@ import java.nio.file.StandardCopyOption;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.assertj.LogFileAssert;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MissingDiskStoreAfterServerRestartAcceptanceTest {
@@ -45,24 +45,36 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
 
   private Path server4Folder;
   private Path server5Folder;
+  private TemporaryFolder temporaryFolder;
 
+  private int locatorPort;
+
+  private String startServer1Command;
+  private String startServer2Command;
+  private String startServer3Command;
+  private String startServer4Command;
   private String startServer5Command;
 
+  private String createRegionWithUnderscoreCommand;
   private String connectToLocatorCommand;
   private String queryCommand;
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
 
   @Before
-  public void setUp() {
-    Path rootFolder = folderRule.getFolder().toPath();
-    server4Folder = rootFolder.resolve(SERVER_4_NAME);
-    server5Folder = rootFolder.resolve(SERVER_5_NAME);
+  public void setUp() throws Exception {
+    temporaryFolder = gfshRule.getTemporaryFolder();
+    server4Folder = temporaryFolder.newFolder(SERVER_4_NAME).toPath().toAbsolutePath();
+    server5Folder = temporaryFolder.newFolder(SERVER_5_NAME).toPath().toAbsolutePath();
 
-    int locatorPort = getRandomAvailableTCPPort();
+    int[] ports = getRandomAvailableTCPPorts(6);
+    locatorPort = ports[0];
+    int server1Port = ports[1];
+    int server2Port = ports[2];
+    int server3Port = ports[3];
+    int server4Port = ports[4];
+    int server5Port = ports[5];
 
     String startLocatorCommand = String.join(" ",
         "start locator",
@@ -70,39 +82,39 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
         "--port=" + locatorPort,
         "--locators=localhost[" + locatorPort + "]");
 
-    String startServer1Command = String.join(" ",
+    startServer1Command = String.join(" ",
         "start server",
         "--name=" + SERVER_1_NAME,
         "--locators=localhost[" + locatorPort + "]",
-        "--disable-default-server");
+        "--server-port=" + server1Port);
 
-    String startServer2Command = String.join(" ",
+    startServer2Command = String.join(" ",
         "start server",
         "--name=" + SERVER_2_NAME,
         "--locators=localhost[" + locatorPort + "]",
-        "--disable-default-server");
+        "--server-port=" + server2Port);
 
-    String startServer3Command = String.join(" ",
+    startServer3Command = String.join(" ",
         "start server",
         "--name=" + SERVER_3_NAME,
         "--locators=localhost[" + locatorPort + "]",
-        "--disable-default-server");
+        "--server-port=" + server3Port);
 
-    String startServer4Command = String.join(" ",
+    startServer4Command = String.join(" ",
         "start server",
         "--name=" + SERVER_4_NAME,
         "--dir=" + server4Folder,
         "--locators=localhost[" + locatorPort + "]",
-        "--disable-default-server");
+        "--server-port=" + server4Port);
 
     startServer5Command = String.join(" ",
         "start server",
         "--name=" + SERVER_5_NAME,
         "--dir=" + server5Folder,
         "--locators=localhost[" + locatorPort + "]",
-        "--disable-default-server");
+        "--server-port=" + server5Port);
 
-    String createRegionWithUnderscoreCommand = String.join(" ",
+    createRegionWithUnderscoreCommand = String.join(" ",
         "create region",
         "--name=" + REGION_NAME_WITH_UNDERSCORE,
         "--type=PARTITION_REDUNDANT_PERSISTENT",
@@ -112,7 +124,7 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
     connectToLocatorCommand = "connect --locator=localhost[" + locatorPort + "]";
 
     queryCommand =
-        "query --query='select * from " + SEPARATOR + REGION_NAME_WITH_UNDERSCORE + "'";
+        "query --query=\'select * from " + SEPARATOR + REGION_NAME_WITH_UNDERSCORE + "\'";
 
     gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
         startServer3Command, startServer4Command,
@@ -134,7 +146,8 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
     gfshRule.execute(startServer5Command);
 
     await().untilAsserted(() -> {
-      String waitingForMembersMessage = "Server server5 startup completed in";
+      String waitingForMembersMessage = String.format(
+          "Server server5 startup completed in");
 
       LogFileAssert.assertThat(server5Folder.resolve(SERVER_5_NAME + ".log").toFile())
           .exists()

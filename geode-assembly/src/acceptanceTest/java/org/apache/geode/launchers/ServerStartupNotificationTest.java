@@ -17,6 +17,7 @@ package org.apache.geode.launchers;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletionException;
@@ -26,6 +27,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
@@ -33,32 +35,34 @@ import org.apache.geode.launchers.startuptasks.CompletingAndFailing;
 import org.apache.geode.launchers.startuptasks.Failing;
 import org.apache.geode.launchers.startuptasks.MultipleFailing;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupNotificationTest {
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
-  @Rule(order = 2)
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
   public TestName testName = new TestName();
-  @Rule(order = 3)
+
+  @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
-  private Path serverFolder;
+  private File serverFolder;
   private String serverName;
 
   @Before
   public void setup() {
-    serverFolder = folderRule.getFolder().toPath().toAbsolutePath();
+    serverFolder = temporaryFolder.getRoot();
     serverName = testName.getMethodName();
   }
 
   @After
   public void stopServer() {
-    String stopServerCommand = "stop server --dir=" + serverFolder.toFile();
+    String stopServerCommand = "stop server --dir=" + serverFolder.getAbsolutePath();
     gfshRule.execute(stopServerCommand);
   }
 
@@ -67,12 +71,12 @@ public class ServerStartupNotificationTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
-        "--dir=" + serverFolder,
+        "--dir=" + serverFolder.getAbsolutePath(),
         "--disable-default-server");
 
     gfshRule.execute(startServerCommand);
 
-    Path logFile = serverFolder.resolve(serverName + ".log");
+    Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
     Pattern expectedLogLine =
         Pattern.compile("^\\[info .*].*Server " + serverName + " startup completed in \\d+ ms");
@@ -89,13 +93,13 @@ public class ServerStartupNotificationTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
-        "--dir=" + serverFolder,
+        "--dir=" + serverFolder.getAbsolutePath(),
         "--classpath=" + serviceJarPath,
         "--disable-default-server");
 
     gfshRule.execute(startServerCommand);
 
-    Path logFile = serverFolder.resolve(serverName + ".log");
+    Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
     Exception exception = Failing.EXCEPTION;
     String errorDetail = CompletionException.class.getName() + ": " +
@@ -117,13 +121,13 @@ public class ServerStartupNotificationTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
-        "--dir=" + serverFolder,
+        "--dir=" + serverFolder.getAbsolutePath(),
         "--classpath=" + serviceJarPath,
         "--disable-default-server");
 
     gfshRule.execute(startServerCommand);
 
-    Path logFile = serverFolder.resolve(serverName + ".log");
+    Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
     Exception exception = MultipleFailing.EXCEPTION;
     String errorDetail = CompletionException.class.getName() + ": " +
@@ -145,13 +149,13 @@ public class ServerStartupNotificationTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
-        "--dir=" + serverFolder,
+        "--dir=" + serverFolder.getAbsolutePath(),
         "--classpath=" + serviceJarPath,
         "--disable-default-server");
 
     gfshRule.execute(startServerCommand);
 
-    Path logFile = serverFolder.resolve(serverName + ".log");
+    Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
     Exception exception = CompletingAndFailing.EXCEPTION;
     String errorDetail = CompletionException.class.getName() + ": " +
