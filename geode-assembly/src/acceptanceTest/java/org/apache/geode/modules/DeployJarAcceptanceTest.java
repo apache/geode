@@ -16,357 +16,253 @@
  */
 package org.apache.geode.modules;
 
-import static java.nio.file.Files.createDirectories;
+
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.junit.rules.FolderRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class DeployJarAcceptanceTest {
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @ClassRule
+  public static GfshRule gfshRule = new GfshRule();
 
-  private Path jarFile;
-  private Path jarFileV2;
-  private Path anotherJarFile;
-  private Path stagingTempDir;
+  @ClassRule
+  public static TemporaryFolder stagingTempDir = new TemporaryFolder();
 
-  @Before
-  public void setUp()
-      throws IOException, ExecutionException, InterruptedException, TimeoutException {
-    Path rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
-    stagingTempDir = rootFolder;
+  private static File jarFile;
+  private static File jarFileV2;
+  private static File anotherJarFile;
 
-    Path stagingDir = createDirectories(rootFolder.resolve("staging"));
-    jarFile = stagingDir.resolve("myJar-1.0.jar");
-    jarFileV2 = stagingDir.resolve("myJar-2.0.jar");
-    anotherJarFile = stagingDir.resolve("anotherJar-1.0.jar");
+  @BeforeClass
+  public static void setup() throws IOException {
+    File stagingDir = stagingTempDir.newFolder("staging");
+    jarFile = new File(stagingDir, "myJar-1.0.jar");
+    jarFileV2 = new File(stagingDir, "myJar-2.0.jar");
+    anotherJarFile = new File(stagingDir, "anotherJar-1.0.jar");
     JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJarFromClassNames(jarFile.toFile(), "SomeClass");
-    jarBuilder.buildJarFromClassNames(jarFileV2.toFile(), "SomeClass", "SomeClassVersionTwo");
-    jarBuilder.buildJarFromClassNames(anotherJarFile.toFile(), "SomeOtherClass");
+    jarBuilder.buildJarFromClassNames(jarFile, "SomeClass");
+    jarBuilder.buildJarFromClassNames(jarFileV2, "SomeClass", "SomeClassVersionTwo");
+    jarBuilder.buildJarFromClassNames(anotherJarFile, "SomeOtherClass");
 
     GfshScript
-        .of("start locator --name=locator",
-            "configure pdx --read-serialized=true",
+        .of("start locator --name=locator", "configure pdx --read-serialized=true",
             "start server --name=server --locators=localhost[10334]")
         .execute(gfshRule);
   }
 
   @After
-  public void tearDown()
-      throws IOException, ExecutionException, InterruptedException, TimeoutException {
-    System.out.println(GfshScript
-        .of(connectCommand(),
-            "undeploy")
-        .execute(gfshRule)
-        .getOutputText());
+  public void teardown() {
+    System.out.println(GfshScript.of(getLocatorGFSHConnectionString(), "undeploy")
+        .execute(gfshRule).getOutputText());
+  }
+
+  private String getLocatorGFSHConnectionString() {
+    return "connect --locator=localhost[10334]";
   }
 
   @Test
-  public void testDeployJar() {
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFile)
-        .execute(gfshRule);
+  public void testDeployJar() throws IOException {
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule).getOutputText())
-            .contains(jarFile.toFile().getName())
-            .contains("JAR Location");
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).contains(jarFile.getName()).contains("JAR Location");
   }
 
   @Test
-  public void testDeployExistingJar() {
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFile)
-        .execute(gfshRule);
+  public void testDeployExistingJar() throws IOException {
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains(jarFile.toFile().getName())
-            .contains("JAR Location");
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).contains(jarFile.getName()).contains("JAR Location");
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFile)
-        .execute(gfshRule)
-        .getOutputText())
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule).getOutputText())
             .contains("Already deployed");
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains(jarFile.toFile().getName())
-            .contains("JAR Location");
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).contains(jarFile.getName()).contains("JAR Location");
   }
 
   @Test
-  public void testUndeployJar() {
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFile)
-        .execute(gfshRule);
+  public void testUndeployJar() throws IOException {
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "undeploy --jar=" + jarFile.toFile().getName())
-        .execute(gfshRule)
-        .getOutputText())
-            .contains(jarFile.toFile().getName())
-            .contains("Un-Deployed From JAR Location");
+    assertThat(
+        GfshScript.of(getLocatorGFSHConnectionString(),
+            "undeploy --jar=" + jarFile.getName())
+            .execute(gfshRule).getOutputText()).contains(jarFile.getName())
+                .contains("Un-Deployed From JAR Location");
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule)
-        .getOutputText())
-            .doesNotContain(jarFile.toFile().getName());
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).doesNotContain(jarFile.getName());
   }
 
   @Test
   public void testUndeployWithNothingDeployed() {
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "undeploy --jar=" + jarFile.toFile().getName())
-        .execute(gfshRule).getOutputText())
-            .contains(jarFile.toFile().getName() + " not deployed");
+    assertThat(
+        GfshScript.of(getLocatorGFSHConnectionString(),
+            "undeploy --jar=" + jarFile.getName())
+            .execute(gfshRule).getOutputText()).contains(jarFile.getName() + " not deployed");
   }
 
   @Test
-  public void testRedeployNewJar() {
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFile)
-        .execute(gfshRule);
+  public void testRedeployNewJar() throws IOException {
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "undeploy --jar=" + jarFile.toFile().getName())
-        .execute(gfshRule)
-        .getOutputText())
-            .contains(jarFile.toFile().getName())
-            .contains("Un-Deployed From JAR Location");
+    assertThat(
+        GfshScript.of(getLocatorGFSHConnectionString(),
+            "undeploy --jar=" + jarFile.getName())
+            .execute(gfshRule).getOutputText()).contains(jarFile.getName())
+                .contains("Un-Deployed From JAR Location");
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule)
-        .getOutputText())
-            .doesNotContain(jarFile.toFile().getName());
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).doesNotContain(jarFile.getName());
 
     GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + anotherJarFile)
+        .of(getLocatorGFSHConnectionString(),
+            "deploy --jar=" + anotherJarFile.getCanonicalPath())
         .execute(gfshRule);
-
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains(anotherJarFile.toFile().getName());
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed")
+        .execute(gfshRule).getOutputText()).contains(anotherJarFile.getName());
   }
 
   @Test
-  public void testUpdateJar() {
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFile)
-        .execute(gfshRule);
+  public void testUpdateJar() throws IOException {
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath()).execute(gfshRule);
 
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFileV2)
-        .execute(gfshRule);
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFileV2.getCanonicalPath()).execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains(jarFileV2.toFile().getName())
-            .doesNotContain(jarFile.toFile().getName());
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
+        "list deployed").execute(gfshRule).getOutputText()).contains(jarFileV2.getName())
+            .doesNotContain(jarFile.getName());
   }
 
   @Test
-  public void testDeployMultipleJars() {
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jar=" + jarFile,
-            "deploy --jar=" + anotherJarFile)
-        .execute(gfshRule);
+  public void testDeployMultipleJars() throws IOException {
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "deploy --jar=" + jarFile.getCanonicalPath(),
+        "deploy --jar=" + anotherJarFile.getCanonicalPath()).execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list deployed")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains(jarFile.toFile().getName())
-            .contains(anotherJarFile.toFile().getName());
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(),
+        "list deployed").execute(gfshRule).getOutputText()).contains(jarFile.getName())
+            .contains(anotherJarFile.getName());
   }
 
   @Test
   public void testDeployFunction() throws IOException {
-    Path source = loadTestResource("/example/test/function/ExampleFunction.java");
-    Path outputJar = stagingTempDir.resolve("function.jar").toAbsolutePath();
-
     JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJar(outputJar.toFile(), source.toFile());
+    File source = loadTestResource("/example/test/function/ExampleFunction.java");
 
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jars=" + outputJar)
+    File outputJar = new File(stagingTempDir.newFolder(), "function.jar");
+    jarBuilder.buildJar(outputJar, source);
+
+    GfshScript.of(getLocatorGFSHConnectionString(), "deploy --jars=" + outputJar.getCanonicalPath())
         .execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list functions")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains("ExampleFunction");
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
+        .getOutputText()).contains("ExampleFunction");
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "execute function --id=ExampleFunction")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains("SUCCESS");
+    assertThat(
+        GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=ExampleFunction")
+            .execute(gfshRule)
+            .getOutputText()).contains("SUCCESS");
   }
 
   @Test
   public void testDeployAndUndeployFunction() throws IOException {
-    Path source = loadTestResource("/example/test/function/ExampleFunction.java");
-    Path outputJar = stagingTempDir.resolve("function.jar");
-
     JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJar(outputJar.toFile(), source.toFile());
+    File source = loadTestResource("/example/test/function/ExampleFunction.java");
 
-    GfshScript
-        .of(connectCommand(),
-            "deploy --jars=" + outputJar)
+    File outputJar = new File(stagingTempDir.newFolder(), "function.jar");
+    jarBuilder.buildJar(outputJar, source);
+
+    GfshScript.of(getLocatorGFSHConnectionString(), "deploy --jars=" + outputJar.getCanonicalPath())
         .execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list functions")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains("ExampleFunction");
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
+        .getOutputText()).contains("ExampleFunction");
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "execute function --id=ExampleFunction")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains("SUCCESS");
+    assertThat(
+        GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=ExampleFunction")
+            .execute(gfshRule)
+            .getOutputText()).contains("SUCCESS");
 
     GfshScript
-        .of(connectCommand(),
-            "undeploy --jars=" + outputJar.toFile().getName())
+        .of(getLocatorGFSHConnectionString(), "undeploy --jars=" + outputJar.getName())
         .execute(gfshRule);
 
-    assertThat(GfshScript
-        .of(connectCommand(),
-            "list functions")
-        .execute(gfshRule)
-        .getOutputText())
-            .doesNotContain("ExampleFunction");
+    assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list functions").execute(gfshRule)
+        .getOutputText()).doesNotContain("ExampleFunction");
+
+
   }
 
   @Test
   public void testDeployPojo() throws IOException {
-    Path functionSource = loadTestResource("/example/test/function/PojoFunction.java");
-    Path pojoSource = loadTestResource("/example/test/pojo/ExamplePojo.java");
-    Path outputJar = stagingTempDir.resolve("functionAndPojo.jar");
-
     JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJar(outputJar.toFile(), pojoSource.toFile(), functionSource.toFile());
+    File functionSource = loadTestResource("/example/test/function/PojoFunction.java");
+    File pojoSource = loadTestResource("/example/test/pojo/ExamplePojo.java");
 
-    Path folderForExampleDiskStore =
-        createDirectories(stagingTempDir.resolve("folderForExampleDiskStore")).toAbsolutePath();
-
-    System.out.println(GfshScript
-        .of(connectCommand(),
-            "create disk-store --name=ExampleDiskStore --dir=" + folderForExampleDiskStore)
-        .execute(gfshRule)
-        .getOutputText());
+    File outputJar = new File(stagingTempDir.newFolder(), "functionAndPojo.jar");
+    jarBuilder.buildJar(outputJar, pojoSource, functionSource);
 
     System.out.println(GfshScript
-        .of(connectCommand(),
+        .of(getLocatorGFSHConnectionString(),
+            "create disk-store --name=ExampleDiskStore --dir="
+                + stagingTempDir.newFolder().getCanonicalPath())
+        .execute(gfshRule).getOutputText());
+
+    System.out.println(GfshScript
+        .of(getLocatorGFSHConnectionString(),
             "create region --name=/ExampleRegion --type=REPLICATE_PERSISTENT --disk-store=ExampleDiskStore")
         .execute(gfshRule).getOutputText());
 
     System.out.println(GfshScript
-        .of(connectCommand(),
-            "deploy --jars=" + outputJar)
+        .of(getLocatorGFSHConnectionString(), "deploy --jars=" + outputJar.getAbsolutePath())
         .execute(gfshRule));
 
-    System.out.println(GfshScript
-        .of(connectCommand(),
-            "execute function --id=PojoFunction")
-        .execute(gfshRule)
-        .getOutputText());
+    System.out.println(
+        GfshScript.of(getLocatorGFSHConnectionString(), "execute function --id=PojoFunction")
+            .execute(gfshRule).getOutputText());
 
     assertThat(GfshScript
-        .of(connectCommand(),
-            "query --query='SELECT * FROM /ExampleRegion'")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains("John");
+        .of(getLocatorGFSHConnectionString(), "query --query='SELECT * FROM /ExampleRegion'")
+        .execute(gfshRule).getOutputText()).contains("John");
 
-    // 1: issue stop command
-    GfshExecution execution = GfshScript
-        .of(connectCommand(),
-            "stop server --name=server")
-        .execute(gfshRule);
+    GfshScript.of(getLocatorGFSHConnectionString(), "stop server --name=server").execute(gfshRule);
 
-    // 2: await termination of process
-    execution.serverStopper().awaitStop("server");
-
-    GfshScript
-        .of(connectCommand(),
-            "start server --name=server --locators=localhost[10334] --server-port=40404 --http-service-port=9090 --start-rest-api")
+    GfshScript.of(getLocatorGFSHConnectionString(),
+        "start server --name=server --locators=localhost[10334]  --server-port=40404 --http-service-port=9090 --start-rest-api")
         .execute(gfshRule);
 
     assertThat(GfshScript
-        .of(connectCommand(),
-            "query --query='SELECT * FROM /ExampleRegion'")
-        .execute(gfshRule)
-        .getOutputText())
-            .contains("John");
+        .of(getLocatorGFSHConnectionString(), "query --query='SELECT * FROM /ExampleRegion'")
+        .execute(gfshRule).getOutputText()).contains("John");
   }
 
-  private String connectCommand() {
-    return "connect --locator=localhost[10334]";
-  }
+  private File loadTestResource(String fileName) {
+    String filePath =
+        createTempFileFromResource(getClass(), fileName).getAbsolutePath();
+    assertThat(filePath).isNotNull();
 
-  private Path loadTestResource(String fileName) {
-    return createTempFileFromResource(getClass(), fileName).toPath().toAbsolutePath();
+    return new File(filePath);
   }
 }

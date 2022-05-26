@@ -128,8 +128,7 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
       public void evaluate() throws Throwable {
         List<Throwable> errors = new ArrayList<>();
 
-        methodName.set(description.getMethodName());
-        before();
+        before(description);
         try {
           base.evaluate();
         } catch (Throwable e) {
@@ -144,20 +143,15 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     };
   }
 
-  public void before(String methodName) throws Throwable {
-    this.methodName.set(methodName);
-    before();
-  }
-
-  @Override
-  protected void before() throws Throwable {
+  protected void before(Description description) throws Throwable {
+    methodName.set(description.getMethodName());
     passed.set(true);
-    super.before();
+    before();
     logger.info("SerializableTemporaryFolder root: {}", getRoot().getAbsolutePath());
   }
 
   @Override
-  public void after() {
+  protected void after() {
     File directory = copyTo.get();
     if (directory != null && when.get().test(passed.get())) {
       File timestamp = new File(directory, String.valueOf(System.currentTimeMillis()));

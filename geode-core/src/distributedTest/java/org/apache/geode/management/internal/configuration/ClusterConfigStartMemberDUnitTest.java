@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -31,6 +30,7 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
+
 public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
 
   private MemberVM locator;
@@ -39,18 +39,18 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Before
-  public void before() throws IOException {
+  public void before() throws Exception {
     locator = startLocatorWithLoadCCFromDir();
   }
 
   @Test
-  public void testStartLocator() throws ClassNotFoundException {
+  public void testStartLocator() throws Exception {
     MemberVM secondLocator = lsRule.startLocatorVM(1, locator.getPort());
     REPLICATED_CONFIG_FROM_ZIP.verify(secondLocator);
   }
 
   @Test
-  public void testStartServerWithSingleGroup() throws ClassNotFoundException {
+  public void testStartServerWithSingleGroup() throws Exception {
     ClusterConfig expectedNoGroupConfig = new ClusterConfig(CLUSTER);
     ClusterConfig expectedGroup1Config = new ClusterConfig(CLUSTER, GROUP1);
     ClusterConfig expectedGroup2Config = new ClusterConfig(CLUSTER, GROUP2);
@@ -68,7 +68,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
   }
 
   @Test
-  public void testStartServerWithMultipleGroup() throws ClassNotFoundException {
+  public void testStartServerWithMultipleGroup() throws Exception {
     ClusterConfig expectedGroup1And2Config = new ClusterConfig(CLUSTER, GROUP1, GROUP2);
 
     serverProps.setProperty(GROUPS, "group1,group2");
@@ -77,7 +77,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
     expectedGroup1And2Config.verify(server);
   }
 
-  private MemberVM startLocatorWithLoadCCFromDir() throws IOException {
+  private MemberVM startLocatorWithLoadCCFromDir() throws Exception {
     File locatorDir = new File(lsRule.getWorkingDirRoot(), "vm0");
     File configDir = new File(locatorDir, "cluster_config");
 
@@ -93,6 +93,8 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     properties.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, "true");
 
-    return lsRule.startLocatorVM(0, properties);
+    MemberVM locator = lsRule.startLocatorVM(0, properties);
+
+    return locator;
   }
 }

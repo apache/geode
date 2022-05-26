@@ -118,7 +118,7 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
   }
 
   private boolean isCurrentVersionMajorMinor(TestVersion geodeVersion) {
-    return geodeVersion.equals(TestVersion.current()) ||
+    return geodeVersion.equals(TestVersion.CURRENT_VERSION) ||
         majorMinor(geodeVersion.toString()).equals(majorMinor(KnownVersion.CURRENT.getName()));
   }
 
