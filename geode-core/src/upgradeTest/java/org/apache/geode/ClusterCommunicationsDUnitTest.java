@@ -281,7 +281,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   public void performARollingUpgrade() {
     Optional<VmConfiguration> sourceConfiguration = VmConfigurations.upgrades().stream()
         // Skip the configurations with the current Geode
-        .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.current())))
+        .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.CURRENT_VERSION)))
         // Get the configuration with the latest Geode
         .max(comparing(VmConfiguration::geodeVersion));
     assumeThat(sourceConfiguration)

@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
@@ -37,12 +36,10 @@ public class StartLocatorJmxSerialFilterAcceptanceTest {
 
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
-  @Rule(order = 0)
+  @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
-  @Rule(order = 1)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 2)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
 
   private Path locatorFolder;
   private int locatorPort;
@@ -51,7 +48,7 @@ public class StartLocatorJmxSerialFilterAcceptanceTest {
 
   @Before
   public void setUpFiles() {
-    locatorFolder = folderRule.getFolder().toPath().toAbsolutePath();
+    locatorFolder = gfshRule.getTemporaryFolder().getRoot().toPath().toAbsolutePath();
     locatorLogFile = locatorFolder.resolve("locator.log");
   }
 
