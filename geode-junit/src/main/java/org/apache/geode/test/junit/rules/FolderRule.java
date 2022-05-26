@@ -15,16 +15,11 @@
 package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.AssumptionViolatedException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
-import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
 public class FolderRule implements TestRule {
@@ -33,8 +28,6 @@ public class FolderRule implements TestRule {
     DELETE_ON_PASS,
     KEEP_ALWAYS
   }
-
-  private final List<Throwable> errors = new ArrayList<>();
 
   private final Policy policy;
 
@@ -57,41 +50,17 @@ public class FolderRule implements TestRule {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        createFolder(description);
-        try {
-          base.evaluate();
-        } catch (MultipleFailureException e) {
-          errors.addAll(e.getFailures());
-        } catch (Throwable e) {
-          errors.add(e);
-        } finally {
-          try {
-            if (policy == Policy.DELETE_ON_PASS && passed()) {
-              await()
-                  .ignoreExceptionsInstanceOf(IOException.class)
-                  .untilAsserted(() -> folder.delete());
-            }
-          } catch (Throwable e) {
-            errors.add(e);
-          }
+        folder = FolderFactory.create(description);
+        base.evaluate();
+        if (policy == Policy.DELETE_ON_PASS) {
+          await()
+              .ignoreExceptions()
+              .untilAsserted(() -> {
+                Throwable thrown = catchThrowable(() -> folder.delete());
+                assertThat(thrown).isNull();
+              });
         }
-
-        MultipleFailureException.assertEmpty(errors);
       }
     };
-  }
-
-  private boolean passed() {
-    return errors.stream().allMatch(t -> t instanceof AssumptionViolatedException);
-  }
-
-  private void createFolder(Description description) throws IOException {
-    String className = description.getTestClass().getSimpleName();
-    String methodName = sanitizeForFolderName(description.getMethodName());
-    folder = new Folder(Paths.get(className, methodName));
-  }
-
-  private String sanitizeForFolderName(String methodName) {
-    return methodName.replaceAll("[ ,]+", "-");
   }
 }

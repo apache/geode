@@ -19,10 +19,9 @@ import static org.apache.geode.test.junit.rules.gfsh.GfshContext.Builder;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.junit.rules.TestRule;
@@ -31,16 +30,17 @@ import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
 import org.apache.geode.test.junit.rules.Folder;
+import org.apache.geode.test.junit.rules.FolderFactory;
 
 public class GfshRule implements TestRule, GfshExecutor {
 
   private final List<GfshContext> gfshContexts = synchronizedList(new ArrayList<>());
   private final List<Throwable> errors = synchronizedList(new ArrayList<>());
 
-  private final AtomicReference<Folder> suppliedFolder = new AtomicReference<>();
-  private final AtomicReference<GfshContext> defaultContext = new AtomicReference<>();
+  private final Function<Description, Folder> folderProvider;
 
-  private final Supplier<Folder> folderSupplier;
+  private Folder folder;
+  private GfshExecutor defaultExecutor;
 
   /**
    * Returns a builder for a {@link GfshExecutor} that uses this {@code GfshRule}'s folder as the
@@ -49,24 +49,19 @@ public class GfshRule implements TestRule, GfshExecutor {
    * @return the builder
    */
   public Builder executor() {
-    return executor(Paths.get("."));
+    return new Builder(gfshContexts::add, errors::add, folder.toPath());
   }
 
-  /**
-   * Returns a builder for a {@link GfshExecutor} that uses dir as the working directory for invoked
-   * processes. If dir is relative it will be resolved against this {@code GfshRule}'s folder. If
-   * dir is absolute it will be used as is.
-   *
-   * @param dir working directory for invoked processes
-   * @return the builder
-   */
-  public Builder executor(Path dir) {
-    return new Builder(gfshContexts::add, errors::add,
-        folderSupplier.get().toPath().resolve(dir).normalize());
+  public GfshRule() {
+    this(FolderFactory::create);
   }
 
   public GfshRule(Supplier<Folder> folderSupplier) {
-    this.folderSupplier = folderSupplier;
+    this(description -> folderSupplier.get());
+  }
+
+  private GfshRule(Function<Description, Folder> folderProvider) {
+    this.folderProvider = folderProvider;
   }
 
   @Override
@@ -74,8 +69,9 @@ public class GfshRule implements TestRule, GfshExecutor {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
+        folder = folderProvider.apply(description);
+        defaultExecutor = executor().build();
         try {
-          initializeFolder();
           base.evaluate();
         } catch (MultipleFailureException e) {
           errors.addAll(e.getFailures());
@@ -83,7 +79,7 @@ public class GfshRule implements TestRule, GfshExecutor {
           errors.add(e);
         } finally {
           try {
-            cleanupGfshContexts();
+            gfshContexts.forEach(GfshContext::killProcesses);
           } catch (Throwable e) {
             errors.add(e);
           }
@@ -94,59 +90,33 @@ public class GfshRule implements TestRule, GfshExecutor {
     };
   }
 
-  private void initializeFolder() {
-    synchronized (defaultContext) {
-      if (defaultContext.get() != null || suppliedFolder.get() != null) {
-        return;
-      }
-
-      if (folderSupplier != null) {
-        suppliedFolder.set(folderSupplier.get());
-      }
-    }
-  }
-
-  private void cleanupGfshContexts() {
-    gfshContexts.forEach(GfshContext::killProcesses);
-  }
-
-  private GfshExecutor defaultExecutor() {
-    synchronized (defaultContext) {
-      GfshContext context = defaultContext.get();
-      if (context != null) {
-        return context;
-      }
-      return executor(Paths.get(".")).build();
-    }
-  }
-
   @Override
   public GfshExecution execute(String... commands) {
-    return defaultExecutor().execute(commands);
+    return defaultExecutor.execute(commands);
   }
 
   @Override
   public GfshExecution execute(GfshScript gfshScript) {
-    return defaultExecutor().execute(gfshScript);
+    return defaultExecutor.execute(gfshScript);
   }
 
   @Override
   public GfshExecution execute(File workingDir, String... commands) {
-    return defaultExecutor().execute(workingDir, commands);
+    return defaultExecutor.execute(workingDir, commands);
   }
 
   @Override
   public GfshExecution execute(Path workingDir, String... commands) {
-    return defaultExecutor().execute(workingDir, commands);
+    return defaultExecutor.execute(workingDir, commands);
   }
 
   @Override
   public GfshExecution execute(Path workingDir, GfshScript gfshScript) {
-    return defaultExecutor().execute(workingDir, gfshScript);
+    return defaultExecutor.execute(workingDir, gfshScript);
   }
 
   @Override
   public GfshExecution execute(File workingDir, GfshScript gfshScript) {
-    return defaultExecutor().execute(workingDir, gfshScript);
+    return defaultExecutor.execute(workingDir, gfshScript);
   }
 }

@@ -14,18 +14,19 @@
  */
 package org.apache.geode.launchers;
 
+import static java.nio.charset.Charset.defaultCharset;
 import static java.nio.file.Files.createDirectory;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.rules.FolderRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupValueRecoveryNotificationTest {
@@ -128,14 +130,17 @@ public class ServerStartupValueRecoveryNotificationTest {
         putCommandInRegionTwo);
 
     String stopServer1Command = "stop server --dir=" + server1Folder;
-    gfshRule.execute(stopServer1Command);
+    GfshExecution execution = gfshRule.execute(stopServer1Command);
+    execution.serverStopper().awaitStop(server1Folder);
   }
 
   @After
   public void stopAllMembers() {
     String stopServer1Command = "stop server --dir=" + server1Folder;
     String stopLocatorCommand = "stop locator --dir=" + locatorFolder;
-    gfshRule.execute(stopServer1Command, stopLocatorCommand);
+    GfshExecution execution = gfshRule.execute(stopServer1Command, stopLocatorCommand);
+    execution.serverStopper().awaitStop(server1Folder);
+    execution.locatorStopper().awaitStop(locatorFolder);
   }
 
   @Test
@@ -169,9 +174,9 @@ public class ServerStartupValueRecoveryNotificationTest {
               .or(valuesRecoveredSecondRegionPattern.asPredicate())
               .or(serverOnlinePattern.asPredicate());
 
-          final List<String> foundPatterns =
-              Files.lines(logFile).filter(isRelevantLine)
-                  .collect(Collectors.toList());
+          final List<String> foundPatterns = readLines(logFile.toFile(), defaultCharset()).stream()
+              .filter(isRelevantLine)
+              .collect(toList());
 
           assertThat(foundPatterns)
               .as("Log file " + logFile + " includes one line matching each of "

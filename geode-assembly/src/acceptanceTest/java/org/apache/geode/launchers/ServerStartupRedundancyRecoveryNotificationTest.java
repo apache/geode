@@ -14,17 +14,18 @@
  */
 package org.apache.geode.launchers;
 
+import static java.nio.charset.Charset.defaultCharset;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.rules.FolderRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupRedundancyRecoveryNotificationTest {
@@ -117,7 +119,8 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         createRegionCommand, createRegionTwoCommand, putCommand, putCommandInRegionTwo);
 
     String stopServer1Command = "stop server --dir=" + server1Folder;
-    gfshRule.execute(stopServer1Command);
+    GfshExecution execution = gfshRule.execute(stopServer1Command);
+    execution.serverStopper().awaitStop(server1Folder);
   }
 
   @After
@@ -125,7 +128,11 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
     String stopServer1Command = "stop server --dir=" + server1Folder;
     String stopServer2Command = "stop server --dir=" + server2Folder;
     String stopLocatorCommand = "stop locator --dir=" + locatorFolder;
-    gfshRule.execute(stopServer1Command, stopServer2Command, stopLocatorCommand);
+    GfshExecution execution =
+        gfshRule.execute(stopServer1Command, stopServer2Command, stopLocatorCommand);
+    execution.serverStopper().awaitStop(server1Folder);
+    execution.serverStopper().awaitStop(server2Folder);
+    execution.locatorStopper().awaitStop(locatorFolder);
   }
 
   @Test
@@ -162,9 +169,9 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
               .or(redundancyRestoredSecondRegionPattern.asPredicate())
               .or(serverOnlinePattern.asPredicate());
 
-          final List<String> foundPatterns =
-              Files.lines(logFile).filter(isRelevantLine)
-                  .collect(Collectors.toList());
+          final List<String> foundPatterns = readLines(logFile.toFile(), defaultCharset()).stream()
+              .filter(isRelevantLine)
+              .collect(toList());
 
           assertThat(foundPatterns)
               .as("Log file " + logFile + " includes one line matching each of "

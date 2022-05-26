@@ -23,6 +23,7 @@ import static org.apache.geode.test.util.ResourceUtils.getResource;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.FolderRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 @Category(LoggingTest.class)
@@ -75,6 +77,13 @@ public class ServerWithCustomLogConfigAcceptanceTest {
 
     serverLogFile = workingDir.resolve(serverName + ".log");
     customLogFile = workingDir.resolve("custom.log");
+  }
+
+  @After
+  public void stopServer() {
+    String stopServerCommand = "stop server --dir=" + workingDir;
+    GfshExecution execution = gfshRule.execute(stopServerCommand);
+    execution.serverStopper().awaitStop(workingDir);
   }
 
   @Test

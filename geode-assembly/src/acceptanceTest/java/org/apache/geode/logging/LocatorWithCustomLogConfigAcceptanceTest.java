@@ -24,6 +24,7 @@ import static org.apache.geode.test.util.ResourceUtils.getResource;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.FolderRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 @Category(LoggingTest.class)
@@ -88,6 +90,13 @@ public class LocatorWithCustomLogConfigAcceptanceTest {
     locatorPort = ports[0];
     httpPort = ports[1];
     rmiPort = ports[2];
+  }
+
+  @After
+  public void stopLocator() {
+    String stopLocatorCommand = "stop locator --dir=" + workingDir;
+    GfshExecution execution = gfshRule.execute(stopLocatorCommand);
+    execution.locatorStopper().awaitStop(workingDir);
   }
 
   @Test
