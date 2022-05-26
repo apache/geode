@@ -528,10 +528,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       startWaitOnLocatorToStopThread(vm0);
       forceDisconnect(vm0);
       newdm = waitForReconnect(vm0);
-      // wait for some time before checking to make sure the thread won't exit.
-      Thread.sleep(1000);
       vm0.invoke("assert the locator thread is still waiting", () -> {
-        assertThat(waitOnLocatorToStopThread.isAlive()).isTrue();
+        await().during(1, SECONDS)
+            .untilAsserted(() -> assertThat(waitOnLocatorToStopThread.isAlive()).isTrue());
       });
 
       assertTrue("Expected the restarted member to be hosting a running locator",
