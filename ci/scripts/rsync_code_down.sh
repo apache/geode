@@ -29,6 +29,9 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+. ${SCRIPTDIR}/shared_utilities.sh
+is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
+
 SSHKEY_FILE="instance-data/sshkey"
 
 test -e ${SSHKEY_FILE}

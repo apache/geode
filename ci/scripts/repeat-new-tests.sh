@@ -27,6 +27,10 @@ while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a sym
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+. "${SCRIPTDIR}/shared_utilities.sh"
+
+is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
+
 function changes_for_path() {
   pushd geode >> /dev/null
     local path="$1" # only expand once in the line below

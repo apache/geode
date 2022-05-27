@@ -34,6 +34,9 @@ if [[ -z "${GRADLE_TASK}" ]]; then
   exit 1
 fi
 
+. ${SCRIPTDIR}/shared_utilities.sh
+is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
+
 REPODIR=$(cd geode; git rev-parse --show-toplevel)
 
 if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
