@@ -17,6 +17,7 @@ package org.apache.geode.internal.process;
 import static org.apache.commons.lang3.Validate.isTrue;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.process.ProcessUtils.InternalProcessUtils;
 import org.apache.geode.internal.shared.NativeCalls;
 
 /**
@@ -24,14 +25,10 @@ import org.apache.geode.internal.shared.NativeCalls;
  *
  * @since GemFire 8.0
  */
-public class NativeProcessUtils implements ProcessUtilsProvider {
+class NativeProcessUtils implements InternalProcessUtils {
 
   @Immutable
   private static final NativeCalls nativeCalls = NativeCalls.getInstance();
-
-  public static ProcessUtilsProvider create() {
-    return new NativeProcessUtils();
-  }
 
   @Override
   public boolean isProcessAlive(final int pid) {

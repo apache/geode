@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -112,14 +111,6 @@ public class CertStores {
   }
 
   public static Properties propertiesWith(String components, String protocols, String ciphers,
-      Path trustStoreFile, String trustStorePassword, Path keyStoreFile, String keyStorePassword,
-      boolean requireAuth, boolean endPointVerification) {
-    return propertiesWith(components, protocols, ciphers, trustStoreFile.toFile(),
-        trustStorePassword, keyStoreFile.toFile(), keyStorePassword, requireAuth,
-        endPointVerification);
-  }
-
-  public static Properties propertiesWith(String components, String protocols, String ciphers,
       File trustStoreFile, String trustStorePassword, File keyStoreFile, String keyStorePassword,
       boolean requireAuth, boolean endPointVerification) {
 
@@ -142,13 +133,8 @@ public class CertStores {
 
   public void createTrustStore(String filename, String password)
       throws GeneralSecurityException, IOException {
-    createTrustStore(Paths.get(filename), password);
-  }
-
-  public void createTrustStore(Path filePath, String password)
-      throws GeneralSecurityException, IOException {
     KeyStore ks = KeyStore.getInstance("JKS");
-    try (InputStream in = Files.newInputStream(filePath)) {
+    try (InputStream in = Files.newInputStream(Paths.get(filename))) {
       ks.load(in, password.toCharArray());
     } catch (IOException e) {
       ks = createEmptyKeyStore();
@@ -157,17 +143,12 @@ public class CertStores {
       ks.setCertificateEntry(cert.getKey(), cert.getValue().getCertificate());
     }
 
-    try (OutputStream out = Files.newOutputStream(filePath)) {
+    try (OutputStream out = Files.newOutputStream(Paths.get(filename))) {
       ks.store(out, password.toCharArray());
     }
   }
 
   public void createKeyStore(String filename, String password)
-      throws GeneralSecurityException, IOException {
-    createKeyStore(Paths.get(filename), password);
-  }
-
-  public void createKeyStore(Path filePath, String password)
       throws GeneralSecurityException, IOException {
     KeyStore ks = createEmptyKeyStore();
 
@@ -182,7 +163,7 @@ public class CertStores {
       ks.setKeyEntry(entry.getKey(), cert.getPrivateKey(), password.toCharArray(),
           chain.toArray(new Certificate[] {}));
     }
-    try (OutputStream out = Files.newOutputStream(filePath)) {
+    try (OutputStream out = Files.newOutputStream(Paths.get(filename))) {
       ks.store(out, password.toCharArray());
     }
   }

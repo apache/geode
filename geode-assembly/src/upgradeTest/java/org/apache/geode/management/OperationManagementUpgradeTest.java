@@ -15,24 +15,20 @@
 
 package org.apache.geode.management;
 
-import static java.util.stream.Collectors.toList;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.dunit.VM.getVM;
-import static org.apache.geode.test.version.TestVersions.greaterThan;
-import static org.apache.geode.test.version.VmConfigurations.hasGeodeVersion;
+import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
+import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.List;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -40,61 +36,46 @@ import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilde
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecutor;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
-import org.apache.geode.test.version.VmConfiguration;
-import org.apache.geode.test.version.VmConfigurations;
+import org.apache.geode.test.version.VersionManager;
 
-@Category(BackwardCompatibilityTest.class)
+@Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
-@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class OperationManagementUpgradeTest {
+  private final String oldVersion;
+  private final VM vm;
 
-  @Parameters(name = "{0}")
-  public static Collection<VmConfiguration> data() {
-    return VmConfigurations.upgrades().stream()
-        .filter(hasGeodeVersion(greaterThan(TestVersion.valueOf("1.13.0"))))
-        .collect(toList());
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<String> data() {
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+    result.removeIf(s -> TestVersion.compare(s, "1.13.0") < 0);
+    return result;
   }
 
-  private static final String HOSTNAME = "localhost";
-
-  private final VmConfiguration sourceVmConfiguration;
-
-  private GfshExecutor currentGfsh;
-  private GfshExecutor oldGfsh;
-  private VM vm;
-
-  public OperationManagementUpgradeTest(VmConfiguration sourceVmConfiguration) {
-    this.sourceVmConfiguration = sourceVmConfiguration;
-  }
-
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
-  @Rule(order = 2)
-  public DistributedRule distributedRule = new DistributedRule();
-
-  @Before
-  public void setUp() {
-    currentGfsh = gfshRule.executor().build();
-    oldGfsh = gfshRule.executor().withVmConfiguration(sourceVmConfiguration).build();
-
+  public OperationManagementUpgradeTest(String version) {
+    oldVersion = version;
+    oldGfsh = new GfshRule(oldVersion);
+    DUnitLauncher.launchIfNeeded(false);
     // get the vm with the same version of the oldGfsh
-    vm = getVM(sourceVmConfiguration, 0);
+    vm = VM.getVM(oldVersion, 0);
   }
+
+  @Rule
+  public GfshRule oldGfsh;
+
+  @Rule
+  public GfshRule gfsh = new GfshRule();
 
   @Test
   public void newLocatorCanReadOldConfigurationData() {
-    int[] ports = getRandomAvailableTCPPorts(7);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(7);
     int locatorPort1 = ports[0];
     int jmxPort1 = ports[1];
     int httpPort1 = ports[2];
@@ -102,16 +83,19 @@ public class OperationManagementUpgradeTest {
     int jmxPort2 = ports[4];
     int httpPort2 = ports[5];
     int serverPort = ports[6];
-    GfshExecution execute = GfshScript
-        .of(startLocatorCommand("locator1", locatorPort1, jmxPort1, httpPort1, 0))
-        .and(startLocatorCommand("locator2", locatorPort2, jmxPort2, httpPort2, locatorPort1))
-        .and(startServerCommand("server", serverPort, locatorPort1))
-        .execute(oldGfsh);
+    final String hostname = "localhost";
+    GfshExecution execute =
+        GfshScript
+            .of(startLocatorCommand("locator1", hostname, locatorPort1, jmxPort1, httpPort1, 0))
+            .and(startLocatorCommand("locator2", hostname, locatorPort2, jmxPort2, httpPort2,
+                locatorPort1))
+            .and(startServerCommand("server", hostname, serverPort, locatorPort1))
+            .execute(oldGfsh);
 
     String operationId = vm.invoke(() -> {
       // start a cms client that connects to locator1's http port
       ClusterManagementService cms = new ClusterManagementServiceBuilder()
-          .setHost(HOSTNAME)
+          .setHost(hostname)
           .setPort(httpPort1)
           .build();
 
@@ -123,36 +107,20 @@ public class OperationManagementUpgradeTest {
     });
 
     // stop locator1
-    execute.locatorStopper().stop("locator1");
+    oldGfsh.stopLocator(execute, "locator1");
     // use new gfsh to start locator1, make sure new locator can start
-    GfshScript
-        .of(startLocatorCommand("locator1", locatorPort1, jmxPort1, httpPort1, locatorPort2))
-        .execute(currentGfsh, execute.getWorkingDir());
+    GfshScript.of(startLocatorCommand("locator1", hostname, locatorPort1, jmxPort1, httpPort1,
+        locatorPort2))
+        .execute(gfsh, execute.getWorkingDir());
 
     // use the new cms client
     ClusterManagementService cms = new ClusterManagementServiceBuilder()
-        .setHost(HOSTNAME)
+        .setHost(hostname)
         .setPort(httpPort1)
         .build();
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> operationResult =
         cms.get(new RebalanceOperation(), operationId);
     System.out.println(operationResult);
     assertThat(operationResult.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-  }
-
-  private static String startServerCommand(String name, int port, int connectedLocatorPort) {
-    return String.format("start server --name=%s --server-port=%d --locators=%s[%d]",
-        name, port, HOSTNAME, connectedLocatorPort);
-  }
-
-  private static String startLocatorCommand(String name, int port, int jmxPort, int httpPort,
-      int connectedLocatorPort) {
-    String startLocatorCommand =
-        "start locator --name=%s --port=%d --http-service-port=%d --J=-Dgemfire.jmx-manager-port=%d";
-    if (connectedLocatorPort > 0) {
-      return String.format(startLocatorCommand + " --locators=%s[%d]",
-          name, port, httpPort, jmxPort, HOSTNAME, connectedLocatorPort);
-    }
-    return String.format(startLocatorCommand, name, port, httpPort, jmxPort);
   }
 }

@@ -14,14 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.logging.internal.Configuration.STARTUP_CONFIGURATION;
-import static org.apache.geode.test.assertj.LogFileAssert.assertThat;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,9 +24,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.Banner;
+import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -41,36 +36,24 @@ public class GfshStartLocatorLogAcceptanceTest {
 
   private File logFile;
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
 
   @Before
-  public void setUp()
-      throws IOException, ExecutionException, InterruptedException, TimeoutException {
-    int locatorPort = getRandomAvailableTCPPort();
-
-    GfshExecution execution = GfshScript
-        .of("start locator --name=locator --port=" + locatorPort)
-        .execute(gfshRule);
-
-    logFile = execution
-        .getSubDir("locator")
-        .resolve("locator.log")
-        .toAbsolutePath()
-        .toFile();
+  public void setUp() {
+    GfshExecution gfshExecution = GfshScript.of("start locator").execute(gfshRule);
+    File[] files = gfshExecution.getWorkingDir().listFiles();
+    String logName = files[0].getAbsolutePath() + "/" + files[0].getName() + ".log";
+    logFile = new File(logName);
   }
 
   @Test
   public void bannerIsLoggedOnlyOnce() {
-    assertThat(logFile)
-        .containsOnlyOnce(Banner.BannerHeader.displayValues());
+    LogFileAssert.assertThat(logFile).containsOnlyOnce(Banner.BannerHeader.displayValues());
   }
 
   @Test
   public void startupConfigIsLoggedOnlyOnce() {
-    assertThat(logFile)
-        .containsOnlyOnce(STARTUP_CONFIGURATION);
+    LogFileAssert.assertThat(logFile).containsOnlyOnce(STARTUP_CONFIGURATION);
   }
 }
