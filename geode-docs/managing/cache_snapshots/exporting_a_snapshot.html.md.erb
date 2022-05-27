@@ -44,7 +44,10 @@ Optionally, you can set a filter on the snapshot entries during the export. See 
 
 ## <a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_30C1BBB41C194825A46E49E5756369D6" class="no-quick-link"></a>Exporting a Region Snapshot
 
-You can also export a specific region using the following API or gfsh commands:
+You can also export a specific region using the API or gfsh commands below.
+
+**Note:**
+In the case of non-persistent regions, the snapshot that you export contains both in-cache entries and entries that overflow to disk.
 
 **Java API:**
 
