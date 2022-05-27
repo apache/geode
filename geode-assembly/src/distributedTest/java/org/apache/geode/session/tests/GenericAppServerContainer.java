@@ -17,11 +17,11 @@ package org.apache.geode.session.tests;
 import static java.lang.System.lineSeparator;
 import static java.nio.charset.Charset.defaultCharset;
 import static org.apache.commons.io.FileUtils.readLines;
-import static org.apache.geode.session.tests.ContainerInstall.GEODE_BUILD_HOME;
-import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -46,8 +46,6 @@ public class GenericAppServerContainer extends ServerContainer {
   private final File modifyWarScript;
   private final File modifyWarScriptLog;
 
-  private static final String DEFAULT_GENERIC_APPSERVER_WAR_DIR = TMP_DIR + "/cargo_wars/";
-
   /**
    * Setup the generic appserver container
    *
@@ -56,9 +54,10 @@ public class GenericAppServerContainer extends ServerContainer {
    * creating a temporary WAR file to use, deploys the war to the Cargo container, and sets various
    * container properties (i.e. locator, local cache, etc.)
    */
-  public GenericAppServerContainer(GenericAppServerInstall install, File containerConfigHome,
+  public GenericAppServerContainer(GenericAppServerInstall install, Path rootDir,
+      Path containerConfigHome,
       String containerDescriptors, IntSupplier portSupplier) throws IOException {
-    super(install, containerConfigHome, containerDescriptors, portSupplier);
+    super(install, rootDir, containerConfigHome, containerDescriptors, portSupplier);
 
     // Setup modify war script file so that it is executable and easily findable
     modifyWarScript = new File(install.getModulePath() + "/bin/modify_war");
@@ -72,9 +71,9 @@ public class GenericAppServerContainer extends ServerContainer {
     Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"));
 
     // Create temp war file to use
-    File warDir = new File(DEFAULT_GENERIC_APPSERVER_WAR_DIR);
-    warDir.mkdirs();
-    setWarFile(File.createTempFile(description, ".war", warDir));
+    Path defaultGenericAppserverWarDir = rootDir.resolve("cargo_wars");
+    Files.createDirectories(defaultGenericAppserverWarDir);
+    setWarFile(Files.createFile(defaultGenericAppserverWarDir.resolve(description + ".war")));
 
     // Deploy war file to container configuration
     deployWar();
@@ -107,13 +106,13 @@ public class GenericAppServerContainer extends ServerContainer {
     command.add(modifyWarScript.getAbsolutePath());
     // Path to the WAR file to modify
     command.add("-w");
-    command.add(install.getWarFilePath());
+    command.add(install.getWarFilePath().toString());
     // Get connection type for the WAR (peer-to-peer or client-server)
     command.add("-t");
     command.add(install.getConnectionType().getName());
     // Path to the modified version of the origin WAR file
     command.add("-o");
-    command.add(getWarFile().getAbsolutePath());
+    command.add(getWarFile().toString());
     // Add all the cache properties setup to the WAR file
     for (String property : cacheProperties.keySet()) {
       command.add("-p");
@@ -140,7 +139,7 @@ public class GenericAppServerContainer extends ServerContainer {
   private void modifyWarFile() throws IOException, InterruptedException {
     // Build the environment to run the command
     ProcessBuilder builder = new ProcessBuilder();
-    builder.environment().put("GEODE", GEODE_BUILD_HOME);
+    builder.environment().put("GEODE", ContainerInstall.GEODE_HOME_PATH.toString());
     builder.inheritIO();
     // Setup the environment builder with the command
     builder.command(buildCommand());

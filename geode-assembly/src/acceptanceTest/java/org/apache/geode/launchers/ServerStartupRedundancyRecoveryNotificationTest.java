@@ -19,7 +19,6 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,9 +30,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupRedundancyRecoveryNotificationTest {
@@ -42,13 +41,14 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   private static final String SERVER_2_NAME = "server2";
   private static final String LOCATOR_NAME = "locator";
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public TestName testName = new TestName();
 
+  private Path rootFolder;
   private Path locatorFolder;
   private Path server1Folder;
   private Path server2Folder;
@@ -58,11 +58,11 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   private String regionNameTwo;
 
   @Before
-  public void redundantRegionThatRequiresRedundancyRecovery() throws IOException {
-    locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
-    server1Folder = temporaryFolder.newFolder(SERVER_1_NAME + "_before").toPath()
-        .toAbsolutePath();
-    server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
+  public void redundantRegionThatRequiresRedundancyRecovery() {
+    rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
+    locatorFolder = rootFolder.resolve(LOCATOR_NAME);
+    server1Folder = rootFolder.resolve(SERVER_1_NAME + "_before");
+    server2Folder = rootFolder.resolve(SERVER_2_NAME);
 
     locatorPort = getRandomAvailableTCPPort();
 
@@ -129,10 +129,9 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   }
 
   @Test
-  public void startupReportsOnlineOnlyAfterRedundancyRestored() throws IOException {
+  public void startupReportsOnlineOnlyAfterRedundancyRestored() {
     String connectCommand = "connect --locator=localhost[" + locatorPort + "]";
-    server1Folder =
-        temporaryFolder.newFolder(SERVER_1_NAME + "_test").toPath().toAbsolutePath();
+    server1Folder = rootFolder.resolve(SERVER_1_NAME + "_test");
     startServer1Command = String.join(" ",
         "start server",
         "--name=" + SERVER_1_NAME,

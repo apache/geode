@@ -14,8 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.IntSupplier;
 
 /**
@@ -70,14 +71,21 @@ public class GenericAppServerInstall extends ContainerInstall {
   private final GenericAppServerVersion version;
 
   public GenericAppServerInstall(String name, GenericAppServerVersion version,
-      ConnectionType connType, IntSupplier portSupplier) throws IOException, InterruptedException {
-    super(name, version.getDownloadURL(), connType, "appserver", portSupplier);
+      ConnectionType connType, IntSupplier portSupplier) throws IOException {
+    this(Files.createTempDirectory("geode_container_install").toAbsolutePath(), name, version,
+        connType, portSupplier);
+  }
+
+  public GenericAppServerInstall(Path rootDir, String name, GenericAppServerVersion version,
+      ConnectionType connType, IntSupplier portSupplier) throws IOException {
+    super(rootDir, name, version.getDownloadURL(), connType, "appserver", portSupplier);
 
     this.version = version;
   }
 
   /**
-   * Implementation of {@link ContainerInstall#generateContainer(File, String)}, which generates a
+   * Implementation of {@link ContainerInstall#generateContainer(Path, Path, String)}, which
+   * generates a
    * generic appserver specific container
    *
    * Creates a {@link GenericAppServerContainer} instance off of this installation.
@@ -85,9 +93,10 @@ public class GenericAppServerInstall extends ContainerInstall {
    * @param containerDescriptors Additional descriptors used to identify a container
    */
   @Override
-  public GenericAppServerContainer generateContainer(File containerConfigHome,
+  public GenericAppServerContainer generateContainer(Path rootDir,
+      Path containerConfigHome,
       String containerDescriptors) throws IOException {
-    return new GenericAppServerContainer(this, containerConfigHome, containerDescriptors,
+    return new GenericAppServerContainer(this, rootDir, containerConfigHome, containerDescriptors,
         portSupplier());
   }
 
