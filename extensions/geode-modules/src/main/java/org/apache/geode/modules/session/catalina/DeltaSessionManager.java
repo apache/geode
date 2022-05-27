@@ -37,10 +37,12 @@ import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.session.StandardSession;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 import org.apache.geode.modules.util.ContextMapper;
 import org.apache.geode.modules.util.RegionConfiguration;
@@ -50,6 +52,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     extends ManagerBase
     implements Lifecycle, PropertyChangeListener, SessionManager, DeltaSessionManagerConfiguration {
 
+  private static final Logger logger = LogService.getLogger();
   static final String catalinaBaseSystemProperty = "catalina.base";
   static final String javaTempDirSystemProperty = "java.io.tmpdir";
   static final String fileSeparatorSystemProperty = "file.separator";
@@ -530,6 +533,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
         getSessionsToTouch().clear();
 
         // Touch the sessions we currently have
+        logger.info("JC debug: TimerTask sessionIds.isEmpty(): {}", sessionIds.isEmpty());
         if (!sessionIds.isEmpty()) {
           getSessionCache().touchSessions(sessionIds);
           if (getLogger().isDebugEnabled()) {

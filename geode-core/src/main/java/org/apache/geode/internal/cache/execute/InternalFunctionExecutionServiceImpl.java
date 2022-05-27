@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -45,11 +47,12 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class InternalFunctionExecutionServiceImpl
     implements FunctionExecutionService, InternalFunctionExecutionService {
-
+  private static final Logger logger = LogService.getLogger();
   /**
    * use when the optimization to execute onMember locally is not desired.
    */
@@ -117,7 +120,7 @@ public class InternalFunctionExecutionServiceImpl
     if (region == null) {
       throw new FunctionException("Region instance passed is null");
     }
-
+    logger.info("JC debug: region: {}", region);
     if (region.isDestroyed()) {
       ((LocalRegion) region).getCancelCriterion().checkCancelInProgress();
       throw new RegionDestroyedException("Region is destroyed", region.getFullPath());
@@ -136,6 +139,7 @@ public class InternalFunctionExecutionServiceImpl
             ProxyRegion proxyRegion = (ProxyRegion) region;
             region = proxyRegion.getRealRegion();
             proxyCache = proxyRegion.getAuthenticatedCache();
+            logger.info("JC debug: proxyCache: {}", proxyCache);
           } else {
             throw new UnsupportedOperationException();
           }
