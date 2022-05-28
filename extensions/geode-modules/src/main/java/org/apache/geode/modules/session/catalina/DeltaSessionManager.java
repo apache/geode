@@ -533,7 +533,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
         getSessionsToTouch().clear();
 
         // Touch the sessions we currently have
-        logger.info("JC debug: TimerTask sessionIds.isEmpty(): {}", sessionIds.isEmpty());
         if (!sessionIds.isEmpty()) {
           getSessionCache().touchSessions(sessionIds);
           if (getLogger().isDebugEnabled()) {

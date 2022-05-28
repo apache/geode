@@ -71,7 +71,6 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     cacheFactory.addPoolServer("localhost", serverVM.getPort()).setPoolSubscriptionEnabled(true);
     clientCache = cacheFactory.create();
     assertThat(clientCache).isNotNull();
-    logger.info("JC debug: setup clientCache: {}", clientCache);
 
     DeltaSessionManager manager = new Tomcat8DeltaSessionManager();
     assertThat(manager).isNotNull();
@@ -105,9 +104,6 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
 
   @After
   public void tearDown() {
-    logger.info("JC debug: tearDown clientCache: {}", clientCache);
-    clientCache.close();
-    clientCache = null;
     port = -1;
 
     server.stopContainer();
@@ -117,5 +113,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     sessionManager = null;
     region = null;
 
+    clientCache.close();
+    clientCache = null;
   }
 }

@@ -97,7 +97,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     // region type. Currently there is no way to know the type of region created
     // on the server. Maybe the CreateRegionFunction should return it.
     String regionAttributesID = getSessionManager().getRegionAttributesId().toLowerCase();
-    logger.info("JC debug: regionAttributesID: {}", regionAttributesID);
+
     // Invoke the appropriate function depending on the type of region
     if (regionAttributesID.startsWith("partition")) {
       // Execute the partitioned touch function on the primary server(s)
@@ -282,7 +282,6 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   }
 
   Execution getExecutionForFunctionOnRegionWithFilter(Set<?> filter) {
-    logger.info("JC debug: getSessionRegion(): {}", getSessionRegion());
     if (filter != null && filter.size() > 0) {
       return FunctionService.onRegion(getSessionRegion()).withFilter(filter);
     } else {
