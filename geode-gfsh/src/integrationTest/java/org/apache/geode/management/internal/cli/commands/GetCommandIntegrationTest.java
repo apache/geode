@@ -105,7 +105,7 @@ public class GetCommandIntegrationTest {
         .statusIsSuccess()
         .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
         .hasContent()
-        .hasEntrySatisfying("Value", v->v.contains("\"startTime\":1653595626520"));
+        .hasEntrySatisfying("Value", v -> v.contains("\"startTime\":1653595626520"));
   }
 
   @Test

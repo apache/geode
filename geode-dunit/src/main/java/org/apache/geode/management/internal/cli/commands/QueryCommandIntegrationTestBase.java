@@ -201,7 +201,8 @@ public class QueryCommandIntegrationTestBase {
   @Test
   public void outputDisplaysResultsFromComplexRegion() throws Exception {
     String result = gfsh
-        .execute("query --query='select c.name, c.address, c.birthday from " + SEPARATOR + "complexRegion c'");
+        .execute("query --query='select c.name, c.address, c.birthday from " + SEPARATOR
+            + "complexRegion c'");
 
     String[] resultLines = splitOnLineBreaks(result);
 
