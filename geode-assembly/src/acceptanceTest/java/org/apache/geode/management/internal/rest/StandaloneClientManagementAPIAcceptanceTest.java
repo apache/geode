@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -123,18 +124,18 @@ public class StandaloneClientManagementAPIAcceptanceTest {
         .withName("startCluster")
         .execute(gfshRule);
 
+    int expectedReturnCode = 0;
     assertThat(startCluster.getProcess().exitValue())
-        .as("Cluster did not start correctly")
-        .isEqualTo(0);
+        .as("Cluster did not start correctly").isEqualTo(expectedReturnCode);
 
     Process process = launchClientProcess(outputJar, httpPort);
 
-    boolean exited = process.waitFor(getTimeout().toMillis(), MILLISECONDS);
-    assertThat(exited)
-        .as("Process did not exit within 10 seconds")
+    long processTimeout = getTimeout().getSeconds();
+    boolean exited = process.waitFor(processTimeout, TimeUnit.SECONDS);
+    assertThat(exited).as(String.format("Process did not exit within %d seconds", processTimeout))
         .isTrue();
     assertThat(process.exitValue())
-        .as("Process did not exit with 0 return code")
+        .as(String.format("Process did not exit with %d return code", expectedReturnCode))
         .isEqualTo(0);
 
     GfshExecution listRegionsResult = GfshScript
@@ -162,6 +163,9 @@ public class StandaloneClientManagementAPIAcceptanceTest {
         "jackson-annotations",
         "jackson-core",
         "jackson-databind",
+        "jackson-datatype-jsr310",
+        "jackson-datatype-joda",
+        "joda-time",
         "httpclient",
         "httpcore",
         "spring-beans",
