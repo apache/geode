@@ -47,7 +47,6 @@ class RetryPutIfAbsentIntegrationTest {
 
     clientEvent.setRegion(myRegion);
     byte[] valueBytes = new VMCachedDeserializable("myValue", 7).getSerializedValue();
-    System.out.println("first putIfAbsent");
     Object oldValue =
         myRegion.basicBridgePutIfAbsent(key, valueBytes, true, null, id, true, clientEvent);
     assertThat(oldValue).isNull();
@@ -59,7 +58,6 @@ class RetryPutIfAbsentIntegrationTest {
     clientEvent.setOperation(Operation.PUT_IF_ABSENT);
     assertThat(myRegion.getEventTracker().hasSeenEvent(clientEvent)).isFalse();
 
-    System.out.println("second putIfAbsent");
     oldValue = myRegion.basicBridgePutIfAbsent(key, valueBytes, true, null, id, true, clientEvent);
     assertThat(oldValue).isNull();
   }
@@ -76,7 +74,6 @@ class RetryPutIfAbsentIntegrationTest {
         }).create("myRegion");
 
     clientEvent.setRegion(myRegion);
-    System.out.println("first putIfAbsent of null value");
     Object oldValue =
         myRegion.basicBridgePutIfAbsent(key, null, true, null, id, true, clientEvent);
     assertThat(oldValue).isNull();
@@ -88,7 +85,6 @@ class RetryPutIfAbsentIntegrationTest {
     clientEvent.setOperation(Operation.PUT_IF_ABSENT);
     assertThat(myRegion.getEventTracker().hasSeenEvent(clientEvent)).isFalse();
 
-    System.out.println("second putIfAbsent of null value");
     oldValue = myRegion.basicBridgePutIfAbsent(key, null, true, null, id, true, clientEvent);
     assertThat(oldValue).isNull();
     assertThat(updateCount).isEqualTo(0);
