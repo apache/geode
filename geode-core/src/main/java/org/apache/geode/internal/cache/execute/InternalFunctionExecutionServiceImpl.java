@@ -120,7 +120,6 @@ public class InternalFunctionExecutionServiceImpl
     if (region == null) {
       throw new FunctionException("Region instance passed is null");
     }
-    logger.info("JC debug: region: {}", region);
     if (region.isDestroyed()) {
       ((LocalRegion) region).getCancelCriterion().checkCancelInProgress();
       throw new RegionDestroyedException("Region is destroyed", region.getFullPath());

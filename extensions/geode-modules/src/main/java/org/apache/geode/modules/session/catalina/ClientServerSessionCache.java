@@ -20,8 +20,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -35,7 +33,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
 import org.apache.geode.modules.util.BootstrappingFunction;
 import org.apache.geode.modules.util.CreateRegionFunction;
@@ -46,7 +43,7 @@ import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
 import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
 public class ClientServerSessionCache extends AbstractSessionCache {
-  private static final Logger logger = LogService.getLogger();
+
   private final ClientCache cache;
 
   protected static final String DEFAULT_REGION_ATTRIBUTES_ID =
