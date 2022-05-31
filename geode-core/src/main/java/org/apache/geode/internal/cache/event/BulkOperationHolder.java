@@ -50,6 +50,7 @@ public class BulkOperationHolder {
   void putVersionTag(EventID eventId, VersionTag versionTag) {
     entryVersionTags.put(eventId, versionTag);
     endOfLifeTimestamp = 0;
+    // TODO putVersionTag is called in the same sync block as an isRemoved that returned false. So no need to have putVersionTag set removed to false. It would be nice for this whole sync block to be a single method on BulkOperationHolder.
   }
 
   public Map<EventID, VersionTag> getEntryVersionTags() {
@@ -65,6 +66,10 @@ public class BulkOperationHolder {
     if (endOfLifeTimestamp == 0) {
       endOfLifeTimestamp = now; // a new holder - start the timer
     }
+    return isExpired(expirationTime);
+  }
+
+  private boolean isExpired(long expirationTime) {
     boolean expired = false;
     if (endOfLifeTimestamp <= expirationTime) {
       removed = true;

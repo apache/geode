@@ -308,6 +308,8 @@ public class DistributedEventTracker implements EventTracker {
 
     // Loop until we can successfully update the recorded bulk operations
     // For this thread id.
+    // TODO: This spins on whether the event has expired, and lets someone else remove it from the collection
+    // TODO: Put better sycnronization into the BulkOperationHolder class
     boolean retry = false;
     do {
       BulkOperationHolder bulkOpTracker = recordedBulkOpVersionTags.get(threadID);
