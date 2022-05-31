@@ -433,12 +433,12 @@ public class RegionMapPut extends AbstractRegionMapPut {
   }
 
   private boolean isSameValueAlreadyInCacheForPutIfAbsent(Object retainedValue) {
+    Object rawNewValue = getEvent().getRawNewValue();
     if (Token.isInvalid(retainedValue)) {
-      return getEvent().getRawNewValue() == null || Token.isInvalid(getEvent().getRawNewValue());
+      return rawNewValue == null || Token.isInvalid(rawNewValue);
     }
 
-    return ValueComparisonHelper.checkEquals(retainedValue,
-        getEvent().getRawNewValue(),
+    return ValueComparisonHelper.checkEquals(retainedValue, rawNewValue,
         isCompressedOffHeap(getEvent()), getOwner().getCache());
   }
 
