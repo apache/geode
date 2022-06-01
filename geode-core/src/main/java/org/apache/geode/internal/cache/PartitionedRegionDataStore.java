@@ -597,7 +597,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       ProxyBucketRegion buk = partitionedRegion.getRegionAdvisor().getProxyBucketArray()[bucketId];
       if (!buk.checkBucketRedundancyBeforeGrab(moveSource, replaceOffineData)) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Redundancy already satisfied. current owners=",
+          logger.debug("Redundancy already satisfied. current owners:{}",
               partitionedRegion.getRegionAdvisor().getBucketOwners(bucketId));
         }
         throw new RedundancyAlreadyMetException();
@@ -1257,7 +1257,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     final long curBytes = bytesInUse.get();
     if (isDebugEnabled) {
       logger.debug(
-          "canAccomodateMoreBytes: bytes = {} allocatedMemory = {} newAllocatedSize = {} thresholdSize = ",
+          "canAccomodateMoreBytes: bytes = {} allocatedMemory = {} newAllocatedSize = {} thresholdSize = {}",
           bytes, curBytes, (curBytes + bytes), maximumLocalBytes);
     }
     if ((curBytes + bytes) < maximumLocalBytes) {
@@ -2953,14 +2953,14 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     long start = stats.startFunctionExecution(function.hasResult());
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Executing Function: {} on Remote Node with context: ", function.getId(),
+        logger.debug("Executing Function:{} on Remote Node with context:{}", function.getId(),
             prContext);
       }
       function.execute(prContext);
       stats.endFunctionExecution(start, function.hasResult());
     } catch (FunctionException functionException) {
       if (logger.isDebugEnabled()) {
-        logger.debug("FunctionException occurred on remote node while executing Function: {}",
+        logger.debug("FunctionException occurred on remote node while executing Function:{}",
             function.getId(), functionException);
       }
       stats.endFunctionExecutionWithException(start, function.hasResult());
@@ -3022,7 +3022,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         // If this is a registration event, add interest for this key
         if (isRegister) {
           if (logger.isDebugEnabled()) {
-            logger.debug("PartitionedRegionDataStore for {} adding interest for: ",
+            logger.debug("PartitionedRegionDataStore for {} adding interest for: {}",
                 partitionedRegion.getFullPath(), key);
           }
           if (references == null) {
@@ -3033,7 +3033,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         } else {
           // If this is an unregistration event, remove interest for this key
           if (logger.isDebugEnabled()) {
-            logger.debug("PartitionedRegionDataStore for {} removing interest for: ",
+            logger.debug("PartitionedRegionDataStore for {} removing interest for: {}",
                 partitionedRegion.getFullPath(), key);
           }
           if (references != null) {

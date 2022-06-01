@@ -91,7 +91,7 @@ public class DeployFunction implements InternalFunction<Object[]> {
         functionResult.forEach(entry -> {
           if (entry != null) {
             if (entry instanceof Throwable) {
-              logger.warn("Error executing CacheRealizationFunction.", entry);
+              logger.warn("Error executing CacheRealizationFunction.", (Throwable) entry);
             } else if (entry instanceof RealizationResult) {
               RealizationResult realizationResult = (RealizationResult) entry;
               results.add(new DeploymentInfo(memberId,

@@ -140,7 +140,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
         sendResultsInOrder);
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Sending reply message count: {} to co-ordinating node");
+      logger.debug("Sending reply message count: {} to co-ordinating node", msgNum);
     }
 
     replyMsgNum++;

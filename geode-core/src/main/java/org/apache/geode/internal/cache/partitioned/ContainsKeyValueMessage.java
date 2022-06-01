@@ -127,7 +127,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       ContainsKeyValueReplyMessage.send(getSender(), getProcessorId(), getReplySender(dm),
           replyVal);
     } else {
-      logger.fatal("Partitioned Region <> is not configured to store data",
+      logger.fatal("Partitioned Region {} is not configured to store data",
           r.getFullPath());
       ForceReattemptException fre = new ForceReattemptException(
           String.format("Partitioned Region %s on %s is not configured to store data",
