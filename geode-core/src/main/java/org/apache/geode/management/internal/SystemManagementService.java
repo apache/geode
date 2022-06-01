@@ -769,8 +769,8 @@ public class SystemManagementService extends BaseManagementService {
         try {
           listener.memberJoined(event);
         } catch (Exception e) {
-          logger.error("Could not invoke listener event memberJoined for listener[{}] due to ",
-              listener.getClass(), e.getMessage(), e);
+          logger.error("Could not invoke listener event memberJoined for listener["
+              + listener.getClass() + "] due to " + e.getMessage(), e);
         }
       }
     }
@@ -782,8 +782,8 @@ public class SystemManagementService extends BaseManagementService {
           try {
             listener.memberCrashed(event);
           } catch (Exception e) {
-            logger.error("Could not invoke listener event memberCrashed for listener[{}] due to ",
-                listener.getClass(), e.getMessage(), e);
+            logger.error("Could not invoke listener event memberCrashed for listener["
+                + listener.getClass() + "] due to " + e.getMessage(), e);
           }
         }
       } else {
@@ -791,8 +791,8 @@ public class SystemManagementService extends BaseManagementService {
           try {
             listener.memberLeft(event);
           } catch (Exception e) {
-            logger.error("Could not invoke listener event memberLeft for listener[{}] due to ",
-                listener.getClass(), e.getMessage(), e);
+            logger.error("Could not invoke listener event memberLeft for listener["
+                + listener.getClass() + "] due to " + e.getMessage(), e);
           }
         }
       }

@@ -71,7 +71,7 @@ public class Size extends BaseCommand {
     String regionName = regionNamePart.getCachedString();
 
     if (regionName == null) {
-      logger.warn("The input region name for the %s request is null", "size");
+      logger.warn("The input region name for the size request is null");
       writeErrorResponse(clientMessage, MessageType.SIZE_ERROR,
           "The input region name for the size request is null",
           serverConnection);

@@ -337,7 +337,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       Object oldDSMembershipInfo = services.getConfig().getOldMembershipInfo();
       if (oldDSMembershipInfo != null) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Reusing JGroups channel from previous system", properties);
+          logger.debug("Reusing JGroups channel from previous system {}", properties);
         }
         MembershipInformationImpl oldInfo = (MembershipInformationImpl) oldDSMembershipInfo;
         myChannel = oldInfo.getChannel();
@@ -600,7 +600,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       // noinspection ConstantConditions
       pingPonger.sendPingMessage(myChannel, jgAddress, dest);
     } catch (Exception e) {
-      logger.warn("unable to send multicast message: {}",
+      logger.warn("unable to send multicast message: {} because of: {}",
           (jgAddress == null ? "multicast recipients" : jgAddress), e.getMessage());
       return false;
     }

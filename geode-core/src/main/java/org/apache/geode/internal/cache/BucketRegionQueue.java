@@ -145,7 +145,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
         if (logger.isDebugEnabled()) {
           logger.debug(
-              "For bucket {} ,total keys recovered are : {} last key recovered is : {} and the seqNo is ",
+              "For bucket:{}, total keys recovered are:{} last key recovered is:{} and the seqNo is:{}",
               getId(), eventSeqNumDeque.size(), lastKeyRecovered, getEventSeqNum());
         }
       }
@@ -188,11 +188,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
           // EntryNotFoundException to be thrown.
           destroyKey(key, true);
           if (isDebugEnabled) {
-            logger.debug("Destroyed {} from bucket: ", key, getId());
+            logger.debug("Destroyed {} from bucket: {}", key, getId());
           }
         } catch (ForceReattemptException fe) {
           if (isDebugEnabled) {
-            logger.debug("Bucket :{} moved to other member", getId());
+            logger.debug("Bucket: {} moved to other member", getId());
           }
         }
       }

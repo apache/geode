@@ -120,7 +120,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     }
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("ServerToClientFunctionResultSender sending last result2 {} " + oneResult);
+        logger.debug("ServerToClientFunctionResultSender sending last result2 {}", oneResult);
       }
       authorizeResult(oneResult);
       if (!fn.hasResult()) {

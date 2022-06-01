@@ -72,7 +72,7 @@ public class MonitoringRegionCacheListener extends CacheListenerAdapter<String, 
 
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Aggregation Failed failed for {} with exception {}", e);
+        logger.debug("Aggregation Failed failed for " + objectName + " with exception", e);
       }
     }
 

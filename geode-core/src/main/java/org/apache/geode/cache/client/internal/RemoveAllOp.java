@@ -130,7 +130,7 @@ public class RemoveAllOp {
         }
       }
     } catch (RuntimeException ex) {
-      logger.debug("single-hop removeAll encountered unexpected exception: {}", ex);
+      logger.debug("single-hop removeAll encountered unexpected exception:", ex);
       throw ex;
     }
 

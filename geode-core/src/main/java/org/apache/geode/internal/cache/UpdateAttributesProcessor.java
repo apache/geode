@@ -393,7 +393,7 @@ public class UpdateAttributesProcessor {
       if (exception != null) {
         m.setException(exception);
         if (logger.isDebugEnabled()) {
-          logger.debug("Replying with exception: {}" + m, exception);
+          logger.debug("Replying with exception:" + m, exception);
         }
       }
       m.setRecipient(recipient);
@@ -462,7 +462,7 @@ public class UpdateAttributesProcessor {
       if (exception != null) {
         m.setException(exception);
         if (logger.isDebugEnabled()) {
-          logger.debug("Replying with exception: {}" + m, exception);
+          logger.debug("Replying with exception:" + m, exception);
         }
       }
       m.setRecipient(recipient);

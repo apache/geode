@@ -161,7 +161,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
-            "{}: process invoking reply processor with processorId: {}", processorId);
+            "{}: process invoking reply processor with processorId: {}", this, processorId);
       }
 
       if (processor == null) {

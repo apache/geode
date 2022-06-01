@@ -123,7 +123,7 @@ public class SingleHopClientExecutor {
           if (ee.getCause() instanceof InternalFunctionInvocationTargetException) {
             if (isDebugEnabled) {
               logger.debug(
-                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.InternalFunctionInvocationTargetException : Caused by :{}",
+                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.InternalFunctionInvocationTargetException: Caused by:",
                   ee.getCause());
             }
             try {
@@ -152,7 +152,7 @@ public class SingleHopClientExecutor {
           } else if (ee.getCause() instanceof FunctionException) {
             if (isDebugEnabled) {
               logger.debug(
-                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.FunctionException : Caused by :{}",
+                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.FunctionException: Caused by:",
                   ee.getCause());
             }
             FunctionException fe = (FunctionException) ee.getCause();
@@ -164,7 +164,7 @@ public class SingleHopClientExecutor {
           } else if (ee.getCause() instanceof ServerOperationException) {
             if (isDebugEnabled) {
               logger.debug(
-                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.ServerOperationException : Caused by :{}",
+                  "ExecuteRegionFunctionSingleHopOp#ExecutionException.ServerOperationException: Caused by:",
                   ee.getCause());
             }
             ServerOperationException soe = (ServerOperationException) ee.getCause();
@@ -335,7 +335,7 @@ public class SingleHopClientExecutor {
         } catch (ExecutionException ee) {
           if (ee.getCause() instanceof ServerOperationException) {
             if (logger.isDebugEnabled()) {
-              logger.debug("GetAllOp#ExecutionException.ServerOperationException : Caused by :{}",
+              logger.debug("GetAllOp#ExecutionException.ServerOperationException: Caused by:",
                   ee.getCause());
             }
             throw (ServerOperationException) ee.getCause();

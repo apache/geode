@@ -326,10 +326,9 @@ public class EntryExpiryTask extends ExpiryTask {
         }
         if (hasExpired(getNow(), expTime)) {
           if (logger.isTraceEnabled()) {
-            // NOTE: original finer message used this.toString() twice
             logger.trace(
-                "{}.performTimeout().getExpirationTime() is {}; {}.expire({}). ttlExpiration: {}, idleExpiration: {}, ttlAttrs: {}, idleAttrs: {} action is: {}",
-                this, expTime, this, action, ttl, idle, getTTLAttributes(), getIdleAttributes());
+                "{}.performTimeout().getExpirationTime() is {}; ttlExpiration:{}, idleExpiration:{}, ttlAttrs:{}, idleAttrs:{} action is:{}",
+                this, expTime, ttl, idle, getTTLAttributes(), getIdleAttributes(), action);
           }
           expire(action, isPending);
           return;
