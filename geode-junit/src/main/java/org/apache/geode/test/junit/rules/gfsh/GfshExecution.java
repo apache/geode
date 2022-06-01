@@ -14,12 +14,15 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
+import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+import static org.apache.geode.internal.process.ProcessType.LOCATOR;
+import static org.apache.geode.internal.process.ProcessType.SERVER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,53 +31,39 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
-
 public class GfshExecution {
 
-  private static final String DOUBLE_QUOTE = "\"";
   private static final String SCRIPT_TIMEOUT_FAILURE_MESSAGE =
       "Process started by [%s] did not exit after %s %s";
   private static final String SCRIPT_EXIT_VALUE_DESCRIPTION =
       "Exit value from process started by [%s]";
 
-  private static final Predicate<File> IS_RUNNING_SERVER_DIRECTORY =
-      directory -> stream(directory.list())
-          .anyMatch(filename -> filename.endsWith("server.pid"));
-
-  private static final Predicate<File> IS_SERVER_DIRECTORY = directory -> stream(directory.list())
-      .anyMatch(filename -> filename.endsWith("server.pid") || filename.contains("server.status"));
-
-  private static final Predicate<File> IS_RUNNING_LOCATOR_DIRECTORY =
-      directory -> stream(directory.list())
-          .anyMatch(filename -> filename.endsWith("locator.pid"));
-
-  private static final Predicate<File> IS_LOCATOR_DIRECTORY = directory -> stream(directory.list())
-      .anyMatch(
-          filename -> filename.endsWith("locator.pid") || filename.contains("locator.status"));
-
+  private final GfshExecutor executor;
   private final Process process;
-  private final File workingDir;
-  private final ProcessLogger processLogger;
+  private final Path workingDir;
+  private final Path outputFile;
 
-  protected GfshExecution(Process process, File workingDir) {
+  protected GfshExecution(GfshExecutor executor, Process process, Path workingDir,
+      Path outputFile) {
+    this.executor = executor;
     this.process = process;
-    this.workingDir = workingDir;
-
-    processLogger = new ProcessLogger(process, workingDir.getName());
-    processLogger.start();
+    this.workingDir = workingDir.toAbsolutePath().normalize();
+    this.outputFile = outputFile.toAbsolutePath().normalize();
   }
 
   public String getOutputText() {
-    return processLogger.getOutputText();
+    try {
+      return readFileToString(outputFile.toFile(), Charset.defaultCharset());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /*
@@ -82,15 +71,69 @@ public class GfshExecution {
    * locator, this will be the parent directory of that member's working directory.
    */
   public File getWorkingDir() {
-    return workingDir;
+    return workingDir.toFile();
   }
 
   public Process getProcess() {
     return process;
   }
 
-  void awaitTermination(GfshScript script)
-      throws InterruptedException, TimeoutException, ExecutionException {
+  private List<Path> getServerDirs() {
+    File[] subDirs = workingDir.toFile().listFiles(File::isDirectory);
+
+    Predicate<File> isServerDir = dir -> stream(requireNonNull(dir.list()))
+        .anyMatch(filename -> filename.endsWith("server.pid"));
+
+    return stream(requireNonNull(subDirs)).filter(isServerDir)
+        .map(dir -> dir.toPath().toAbsolutePath())
+        .collect(toList());
+  }
+
+  private List<Path> getLocatorDirs() {
+    File[] subDirs = workingDir.toFile().listFiles(File::isDirectory);
+
+    Predicate<File> isLocatorDir = dir -> stream(requireNonNull(dir.list()))
+        .anyMatch(filename -> filename.endsWith("locator.pid"));
+
+    return stream(requireNonNull(subDirs)).filter(isLocatorDir)
+        .map(dir -> dir.toPath().toAbsolutePath())
+        .collect(toList());
+  }
+
+  private void printLogFiles() {
+    System.out.println("Printing contents of all log files found in " + workingDir);
+    List<File> logFiles = findLogFiles();
+
+    for (File logFile : logFiles) {
+      System.out.println("Contents of " + logFile.getAbsolutePath());
+      try (BufferedReader br =
+          new BufferedReader(new InputStreamReader(new FileInputStream(logFile)))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+          System.out.println(line);
+        }
+      } catch (IOException e) {
+        System.out.println("Unable to print log due to: " + getStackTrace(e));
+      }
+    }
+  }
+
+  private List<File> findLogFiles() {
+    List<Path> servers = getServerDirs();
+    List<Path> locators = getLocatorDirs();
+
+    return concat(servers.stream(), locators.stream())
+        .flatMap(this::findLogFiles)
+        .collect(toList());
+  }
+
+  private Stream<File> findLogFiles(Path memberDir) {
+    return stream(requireNonNull(memberDir.toFile().listFiles()))
+        .filter(File::isFile)
+        .filter(file -> file.getName().toLowerCase().endsWith(".log"));
+  }
+
+  void awaitTermination(GfshScript script) throws InterruptedException {
     boolean exited = process.waitFor(script.getTimeout(), script.getTimeoutTimeUnit());
 
     try {
@@ -104,9 +147,6 @@ public class GfshExecution {
     } catch (AssertionError error) {
       printLogFiles();
       throw error;
-    } finally {
-      processLogger.awaitTermination(script.getTimeout(), script.getTimeoutTimeUnit());
-      processLogger.close();
     }
   }
 
@@ -114,103 +154,45 @@ public class GfshExecution {
    * this only kills the process of "gfsh -e command", it does not kill the child processes started
    * by this command.
    */
-  void killProcess() {
+  void killProcess() throws InterruptedException {
     process.destroyForcibly();
     if (process.isAlive()) {
       // process may not terminate immediately after destroyForcibly
-      boolean exited;
-      try {
-        exited = process.waitFor(getTimeout().toMinutes(), MINUTES);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      boolean exited = process.waitFor(getTimeout().toMinutes(), MINUTES);
       if (!exited) {
-        throw new RuntimeException("failed to destroy the process of " + workingDir.getName());
+        throw new IllegalStateException(
+            "Failed to destroy Gfsh process started in " + workingDir);
       }
     }
   }
 
-  String[] getStopMemberCommands() {
-    Stream<String> stopServers = getServerDirs(true)
-        .stream()
-        .map(f -> "stop server --dir=" + quoteArgument(f.toString()));
-    Stream<String> stopLocators = getLocatorDirs(true)
-        .stream()
-        .map(f -> "stop locator --dir=" + quoteArgument(f.toString()));
-    return concat(stopServers, stopLocators)
-        .toArray(String[]::new);
+  public Path getSubDir(String subDirName) {
+    return getWorkingDir().toPath().resolve(subDirName);
   }
 
-  private void printLogFiles() {
-    System.out.println(
-        "Printing contents of all log files found in " + workingDir.getAbsolutePath());
-    List<File> logFiles = findLogFiles();
-
-    for (File logFile : logFiles) {
-      System.out.println("Contents of " + logFile.getAbsolutePath());
-      try (BufferedReader br = new BufferedReader(new InputStreamReader(
-          new FileInputStream(logFile), Charset.defaultCharset()))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-          System.out.println(line);
-        }
-      } catch (IOException e) {
-        System.out.println("Unable to print log due to: " + getStackTrace(e));
-      }
-    }
+  public GfshExecutor getExecutor() {
+    return executor;
   }
 
-  private List<File> getServerDirs(boolean isRunning) {
-    Predicate<File> predicate = isRunning ? IS_RUNNING_SERVER_DIRECTORY : IS_SERVER_DIRECTORY;
-    return findPotentialMemberDirectories()
-        .stream()
-        .filter(predicate)
-        .collect(toList());
+  /**
+   * Returns the {@code Stopper} for this {@code GfshExecution}. Provides methods for stopping and
+   * awaiting the termination of server and locator processes that were started using
+   * {@code GfshExecution}.
+   *
+   * @return the Stopper for stopping and awaiting processes started by this GfshExecution
+   */
+  public GfshStopper serverStopper() {
+    return new GfshStopper(executor, workingDir, SERVER);
   }
 
-  private List<File> getLocatorDirs(boolean isRunning) {
-    Predicate<File> predicate = isRunning ? IS_RUNNING_LOCATOR_DIRECTORY : IS_LOCATOR_DIRECTORY;
-    return findPotentialMemberDirectories()
-        .stream()
-        .filter(predicate)
-        .collect(toList());
-  }
-
-  private List<File> findPotentialMemberDirectories() {
-    File[] directories = workingDir.listFiles(File::isDirectory);
-
-    assertThat(directories)
-        .as("List of directories under " + workingDir.getAbsolutePath())
-        .isNotNull();
-
-    List<File> potentialMemberDirectories = new ArrayList<>(asList(directories));
-    potentialMemberDirectories.add(workingDir);
-
-    return potentialMemberDirectories;
-  }
-
-  private List<File> findLogFiles() {
-    List<File> servers = getServerDirs(false);
-    List<File> locators = getLocatorDirs(false);
-
-    return concat(servers.stream(), locators.stream())
-        .flatMap(GfshExecution::findLogFiles)
-        .collect(toList());
-  }
-
-  private static Stream<File> findLogFiles(File memberDir) {
-    return stream(memberDir.listFiles())
-        .filter(File::isFile)
-        .filter(file -> file.getName().toLowerCase().endsWith(".log"));
-  }
-
-  private static String quoteArgument(String argument) {
-    if (!argument.startsWith(DOUBLE_QUOTE)) {
-      argument = DOUBLE_QUOTE + argument;
-    }
-    if (!argument.endsWith(DOUBLE_QUOTE)) {
-      argument = argument + DOUBLE_QUOTE;
-    }
-    return argument;
+  /**
+   * Returns the {@code Stopper} for this {@code GfshExecution}. Provides methods for stopping and
+   * awaiting the termination of server and locator processes that were started using
+   * {@code GfshExecution}.
+   *
+   * @return the Stopper for stopping and awaiting processes started by this GfshExecution
+   */
+  public GfshStopper locatorStopper() {
+    return new GfshStopper(executor, workingDir, LOCATOR);
   }
 }

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.session.tests;
 
+import static java.nio.file.Files.copy;
 import static java.util.stream.Collectors.joining;
-import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
 import static org.apache.geode.test.process.JavaModuleHelper.getJvmModuleOptions;
 
 import java.io.File;
@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.InstalledLocalContainer;
 import org.codehaus.cargo.container.State;
+import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.configuration.ConfigurationType;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.deployable.WAR;
@@ -55,32 +56,30 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Subclasses provide setup and configuration of specific containers.
  */
 public abstract class ServerContainer {
-  private final File containerConfigHome;
+
+  protected static final Logger logger = LogService.getLogger();
+
+  private static final String DEFAULT_LOGGING_LEVEL = LoggingLevel.LOW.getLevel();
+
+  private final Path containerConfigHome;
   private final IntSupplier portSupplier;
   private final InstalledLocalContainer container;
   private final ContainerInstall install;
 
   private String locatorAddress;
   private int locatorPort;
-  private File warFile;
+  private Path warFile;
 
   public String description;
-  public File gemfireLogFile;
-  public File cacheXMLFile;
-  public File cargoLogDir;
+  public Path cacheXMLFile;
+  public Path cargoLogDir;
 
-  public String loggingLevel;
+  private String loggingLevel;
 
-  public HashMap<String, String> cacheProperties;
-  public HashMap<String, String> systemProperties;
+  protected HashMap<String, String> cacheProperties;
+  protected HashMap<String, String> systemProperties;
 
-  public final String DEFAULT_CONF_DIR;
-
-  public static final String DEFAULT_LOGGING_LEVEL = LoggingLevel.LOW.getLevel();
-  public static final String DEFAULT_LOG_DIR = "cargo_logs/";
-  public static final String DEFAULT_CONFIG_DIR = TMP_DIR + "/cargo_configs/";
-
-  public static final Logger logger = LogService.getLogger();
+  final Path defaultConfigDir;
 
   /**
    * Sets up the container using the given installation
@@ -91,6 +90,8 @@ public abstract class ServerContainer {
    * variable.
    *
    * @param install the installation with which to set up the container
+   * @param rootDir The root folder used by default for cargo logs, container configs and other
+   *        files and directories
    * @param containerConfigHome The folder that the container configuration folder should be setup
    *        in
    * @param containerDescriptors A string of extra descriptors for the container used in the
@@ -98,7 +99,7 @@ public abstract class ServerContainer {
    * @param portSupplier allocates ports for use by the container
    * @throws IOException if an exception is encountered
    */
-  public ServerContainer(ContainerInstall install, File containerConfigHome,
+  public ServerContainer(ContainerInstall install, Path rootDir, Path containerConfigHome,
       String containerDescriptors, IntSupplier portSupplier) throws IOException {
     this.install = install;
     this.portSupplier = portSupplier;
@@ -106,26 +107,30 @@ public abstract class ServerContainer {
     description = generateUniqueContainerDescription(containerDescriptors);
     // Setup logging
     loggingLevel = DEFAULT_LOGGING_LEVEL;
-    cargoLogDir = new File(DEFAULT_LOG_DIR + description);
-    cargoLogDir.mkdirs();
+    cargoLogDir = rootDir.resolve("cargo_logs").resolve(description);
+    Files.createDirectories(cargoLogDir);
 
     logger.info("Creating new container {}", description);
 
-    DEFAULT_CONF_DIR = install.getHome() + "/conf/";
+    defaultConfigDir = install.getHome().resolve("conf");
+
     // Use the default configuration home path if not passed a config home
+    Path defaultConfigDir = rootDir.resolve("cargo_configs");
+
     this.containerConfigHome = containerConfigHome == null
-        ? new File(DEFAULT_CONFIG_DIR + description) : containerConfigHome;
+        ? defaultConfigDir.resolve(description) : containerConfigHome;
 
     // Init the property lists
     cacheProperties = new HashMap<>();
     systemProperties = new HashMap<>();
     // Set WAR file to session testing war
-    warFile = new File(install.getWarFilePath());
+    warFile = install.getWarFilePath();
 
     // Create the Cargo Container instance wrapping our physical container
-    LocalConfiguration configuration = (LocalConfiguration) new DefaultConfigurationFactory()
+    Configuration configuration = new DefaultConfigurationFactory()
         .createConfiguration(install.getInstallId(), ContainerType.INSTALLED,
-            ConfigurationType.STANDALONE, this.containerConfigHome.getAbsolutePath());
+            ConfigurationType.STANDALONE, this.containerConfigHome.toString());
+
     // Set configuration/container logging level
     configuration.setProperty(GeneralPropertySet.LOGGING, loggingLevel);
     // Removes secureRandom generation so that container startup is much faster
@@ -133,33 +138,33 @@ public abstract class ServerContainer {
         "-Djava.security.egd=file:/dev/./urandom -Xmx256m -Xms64m");
 
     // Setup the gemfire log file for this container
-    gemfireLogFile = new File(cargoLogDir.getAbsolutePath() + "/gemfire.log");
-    gemfireLogFile.getParentFile().mkdirs();
-    setSystemProperty("log-file", gemfireLogFile.getAbsolutePath());
+    Path gemfireLogFile = cargoLogDir.resolve("gemfire.log");
+    Files.createDirectories(cargoLogDir);
+    setSystemProperty("log-file", gemfireLogFile.toString());
 
-    logger.info("Gemfire logs can be found in {}", gemfireLogFile.getAbsolutePath());
+    logger.info("Gemfire logs can be found in {}", gemfireLogFile);
 
     // Create the container
-    container = (InstalledLocalContainer) (new DefaultContainerFactory())
+    container = (InstalledLocalContainer) new DefaultContainerFactory()
         .createContainer(install.getInstallId(), ContainerType.INSTALLED, configuration);
     // Set container's home dir to where it was installed
-    container.setHome(install.getHome());
+    container.setHome(install.getHome().toString());
     // Set container output log to directory setup for it
-    container.setOutput(cargoLogDir.getAbsolutePath() + "/container.log");
+    container.setOutput(cargoLogDir.resolve("container.log").toString());
 
     // Set cacheXML file
-    File installXMLFile = install.getCacheXMLFile();
+    Path installXMLFile = install.getCacheXMLFile();
     // Sets the cacheXMLFile variable and adds the cache XML file server system property map
-    setCacheXMLFile(new File(cargoLogDir.getAbsolutePath() + "/" + installXMLFile.getName()));
+    setCacheXMLFile(cargoLogDir.resolve(installXMLFile.getFileName()));
     // Copy the cacheXML file to a new, unique location for this container
-    FileUtils.copyFile(installXMLFile, cacheXMLFile);
+    copy(installXMLFile, cacheXMLFile);
   }
 
   /*
    * Generates a unique, mostly human readable, description string of the container using the
    * installation's description, extraIdentifiers, and the current system nano time
    */
-  public String generateUniqueContainerDescription(String extraIdentifiers) {
+  private String generateUniqueContainerDescription(String extraIdentifiers) {
     return String.join("_", Arrays.asList(install.getInstallDescription(), extraIdentifiers,
         UUID.randomUUID().toString()));
   }
@@ -167,9 +172,9 @@ public abstract class ServerContainer {
   /**
    * Deploys the {@link #warFile} to the cargo container ({@link #container}).
    */
-  public void deployWar() {
+  protected void deployWar() {
     // Get the cargo war from the war file
-    WAR war = new WAR(warFile.getAbsolutePath());
+    WAR war = new WAR(warFile.toString());
     // Set context access to nothing
     war.setContext("");
     // Deploy the war the container's configuration
@@ -232,8 +237,8 @@ public abstract class ServerContainer {
 
   public void dumpLogs() {
     System.out.println("Logs for container " + this);
-    dumpLogsInDir(cargoLogDir.toPath());
-    dumpLogsInDir(containerConfigHome.toPath().resolve("logs"));
+    dumpLogsInDir(cargoLogDir);
+    dumpLogsInDir(containerConfigHome.resolve("logs"));
     dumpConfiguration();
   }
 
@@ -254,7 +259,7 @@ public abstract class ServerContainer {
     System.out.println(path.toAbsolutePath());
     System.out.println("-------------------------------------------");
     try {
-      Files.copy(path, System.out);
+      copy(path, System.out);
     } catch (IOException thrown) {
       System.out.println("Exception while dumping log file to stdout.");
       System.out.println("   File: " + path.toAbsolutePath());
@@ -302,7 +307,7 @@ public abstract class ServerContainer {
    * @param port the port that the locator is listening on
    * @throws IOException if an exception is encountered when updating the locator property file
    */
-  public void setLocator(String address, int port) throws IOException {
+  protected void setLocator(String address, int port) throws IOException {
     locatorAddress = address;
     locatorPort = port;
     updateLocator();
@@ -311,29 +316,29 @@ public abstract class ServerContainer {
   /*
    * Sets the container's cache XML file
    */
-  public void setCacheXMLFile(File cacheXMLFile) throws IOException {
-    setSystemProperty("cache-xml-file", cacheXMLFile.getAbsolutePath());
+  private void setCacheXMLFile(Path cacheXMLFile) throws IOException {
+    setSystemProperty("cache-xml-file", cacheXMLFile.toString());
     this.cacheXMLFile = cacheXMLFile;
   }
 
   /*
    * Set a geode session replication property
    */
-  public String setCacheProperty(String name, String value) throws IOException {
+  protected String setCacheProperty(String name, String value) throws IOException {
     return cacheProperties.put(name, value);
   }
 
   /*
    * Set geode distributed system property
    */
-  public String setSystemProperty(String name, String value) throws IOException {
+  private String setSystemProperty(String name, String value) throws IOException {
     return systemProperties.put(name, value);
   }
 
   /*
    * Sets the war file for this container to deploy and use
    */
-  public void setWarFile(File warFile) {
+  void setWarFile(Path warFile) {
     this.warFile = warFile;
   }
 
@@ -356,7 +361,7 @@ public abstract class ServerContainer {
     return install;
   }
 
-  public File getWarFile() {
+  public Path getWarFile() {
     return warFile;
   }
 
@@ -372,11 +377,11 @@ public abstract class ServerContainer {
     return container.getState();
   }
 
-  public String getCacheProperty(String name) {
+  protected String getCacheProperty(String name) {
     return cacheProperties.get(name);
   }
 
-  public String getSystemProperty(String name) {
+  protected String getSystemProperty(String name) {
     return systemProperties.get(name);
   }
 
@@ -452,8 +457,7 @@ public abstract class ServerContainer {
       attributes.put("host", locatorAddress);
       attributes.put("port", Integer.toString(locatorPort));
 
-      ContainerInstall.editXMLFile(cacheXMLFile.getAbsolutePath(), "locator", "pool",
-          attributes, true);
+      ContainerInstall.editXMLFile(cacheXMLFile, "locator", "pool", attributes, true);
     } else {
       setSystemProperty("locators", locatorAddress + "[" + locatorPort + "]");
     }

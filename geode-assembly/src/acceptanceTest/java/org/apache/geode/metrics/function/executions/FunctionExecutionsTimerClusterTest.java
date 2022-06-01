@@ -14,23 +14,23 @@
  */
 package org.apache.geode.metrics.function.executions;
 
-
 import static java.io.File.pathSeparatorChar;
 import static java.lang.Boolean.TRUE;
 import static java.util.stream.Collectors.toList;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -45,6 +45,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.SimpleMetricsPublishingService;
 import org.apache.geode.rules.ServiceJarRule;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 /**
@@ -59,18 +60,27 @@ public class FunctionExecutionsTimerClusterTest {
   private Pool multiServerPool;
   private Region<Object, Object> replicateRegion;
   private Region<Object, Object> partitionRegion;
+  private Path rootFolder;
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   @Before
   public void setUp() throws IOException {
+    rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
+
+    Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
+        MetricsPublishingService.class, SimpleMetricsPublishingService.class);
+
+    Path functionsJarPath = folderRule.getFolder().toPath()
+        .resolve("functions.jar").toAbsolutePath();
+    writeJarFromClasses(functionsJarPath.toFile(), GetFunctionExecutionTimerValues.class,
+        FunctionToTimeWithResult.class, ExecutionsTimerValues.class, ThreadSleep.class);
+
     int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(4);
 
     locatorPort = availablePorts[0];
@@ -78,18 +88,10 @@ public class FunctionExecutionsTimerClusterTest {
     int server1Port = availablePorts[2];
     int server2Port = availablePorts[3];
 
-    Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
-        MetricsPublishingService.class, SimpleMetricsPublishingService.class);
-
-    Path functionsJarPath = temporaryFolder.getRoot().toPath()
-        .resolve("functions.jar").toAbsolutePath();
-    writeJarFromClasses(functionsJarPath.toFile(), GetFunctionExecutionTimerValues.class,
-        FunctionToTimeWithResult.class, ExecutionsTimerValues.class, ThreadSleep.class);
-
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + "locator",
-        "--dir=" + temporaryFolder.newFolder("locator").getAbsolutePath(),
+        "--dir=" + rootFolder.resolve("locator"),
         "--port=" + locatorPort,
         "--http-service-port=0",
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
@@ -165,7 +167,7 @@ public class FunctionExecutionsTimerClusterTest {
 
   @Test
   public void timersRecordCountAndTotalTime_ifFunctionExecutedOnReplicateRegion() {
-    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
+    Function<String[]> function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     executeFunctionOnReplicateRegion(function, functionDuration);
 
@@ -177,12 +179,12 @@ public class FunctionExecutionsTimerClusterTest {
 
     assertThat(getAggregateTotalTime(values))
         .as("Total time of function executions across all servers")
-        .isBetween((double) functionDuration.toNanos(), ((double) functionDuration.toNanos()) * 2);
+        .isBetween((double) functionDuration.toNanos(), (double) functionDuration.toNanos() * 2);
   }
 
   @Test
   public void timersRecordCountAndTotalTime_ifFunctionExecutedOnReplicateRegionMultipleTimes() {
-    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
+    Function<String[]> function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     int numberOfExecutions = 10;
 
@@ -192,7 +194,7 @@ public class FunctionExecutionsTimerClusterTest {
 
     List<ExecutionsTimerValues> values = getAllExecutionsTimerValues(function.getId());
 
-    double expectedMinimumTotalTime = ((double) functionDuration.toNanos()) * numberOfExecutions;
+    double expectedMinimumTotalTime = (double) functionDuration.toNanos() * numberOfExecutions;
     double expectedMaximumTotalTime = expectedMinimumTotalTime * 2;
 
     assertThat(getAggregateCount(values))
@@ -206,7 +208,7 @@ public class FunctionExecutionsTimerClusterTest {
 
   @Test
   public void timersRecordCountAndTotalTime_ifFunctionExecutedOnPartitionRegionMultipleTimes() {
-    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
+    Function<String[]> function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     int numberOfExecutions = 10;
 
@@ -217,7 +219,7 @@ public class FunctionExecutionsTimerClusterTest {
     List<ExecutionsTimerValues> server1Values = getServer1ExecutionsTimerValues(function.getId());
     List<ExecutionsTimerValues> server2Values = getServer2ExecutionsTimerValues(function.getId());
 
-    double expectedMinimumTotalTime = ((double) functionDuration.toNanos()) * numberOfExecutions;
+    double expectedMinimumTotalTime = (double) functionDuration.toNanos() * numberOfExecutions;
     double expectedMaximumTotalTime = expectedMinimumTotalTime * 2;
 
     assertThat(getAggregateCount(server1Values))
@@ -238,13 +240,12 @@ public class FunctionExecutionsTimerClusterTest {
   }
 
   private String startServerCommand(String serverName, int serverPort, Path serviceJarPath,
-      Path functionsJarPath)
-      throws IOException {
+      Path functionsJarPath) {
     return String.join(" ",
         "start server",
         "--name=" + serverName,
         "--groups=" + serverName,
-        "--dir=" + temporaryFolder.newFolder(serverName).getAbsolutePath(),
+        "--dir=" + rootFolder.resolve(serverName),
         "--server-port=" + serverPort,
         "--locators=localhost[" + locatorPort + "]",
         "--classpath=" + serviceJarPath + pathSeparatorChar + functionsJarPath);
@@ -262,9 +263,8 @@ public class FunctionExecutionsTimerClusterTest {
 
   private void executeFunctionOnRegion(Function<? super String[]> function, Duration duration,
       Region<?, ?> region) {
-    @SuppressWarnings("unchecked")
     Execution<String[], Object, List<Object>> execution =
-        (Execution<String[], Object, List<Object>>) FunctionService.onRegion(region);
+        uncheckedCast(FunctionService.onRegion(region));
 
     execution
         .setArguments(new String[] {String.valueOf(duration.toMillis()), TRUE.toString()})
@@ -286,10 +286,8 @@ public class FunctionExecutionsTimerClusterTest {
 
   private List<ExecutionsTimerValues> getExecutionsTimerValuesFromPool(String functionId,
       Pool pool) {
-    @SuppressWarnings("unchecked")
     Execution<Void, List<ExecutionsTimerValues>, List<List<ExecutionsTimerValues>>> functionExecution =
-        (Execution<Void, List<ExecutionsTimerValues>, List<List<ExecutionsTimerValues>>>) FunctionService
-            .onServers(pool);
+        uncheckedCast(FunctionService.onServers(pool));
 
     List<List<ExecutionsTimerValues>> timerValuesForEachServer = functionExecution
         .execute(new GetFunctionExecutionTimerValues())
@@ -301,11 +299,11 @@ public class FunctionExecutionsTimerClusterTest {
         .collect(toList());
   }
 
-  private static Long getAggregateCount(List<ExecutionsTimerValues> values) {
+  private static Long getAggregateCount(Collection<ExecutionsTimerValues> values) {
     return values.stream().map(x -> x.count).reduce(0L, Long::sum);
   }
 
-  private static Double getAggregateTotalTime(List<ExecutionsTimerValues> values) {
+  private static Double getAggregateTotalTime(Collection<ExecutionsTimerValues> values) {
     return values.stream().map(x -> x.totalTime).reduce(0.0, Double::sum);
   }
 }

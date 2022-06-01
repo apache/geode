@@ -19,14 +19,12 @@ import static org.apache.commons.lang3.Validate.isTrue;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
-import org.apache.geode.internal.process.ProcessUtils.InternalProcessUtils;
-
 /**
  * Implementation of the {@link ProcessUtils} SPI that uses the JDK Attach API.
  *
  * @since GemFire 8.0
  */
-class AttachProcessUtils implements InternalProcessUtils {
+class AttachProcessUtils implements ProcessUtilsProvider {
 
   @Override
   public boolean isProcessAlive(final int pid) {
