@@ -96,7 +96,7 @@ public class JQFilterVerificationDUnitTest {
 
     client = new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
     JsonNode jsonObject =
-        client.doGetAndAssert("/v1/api-docs").getJsonObject().get("paths");
+        client.doGetAndAssert("/v3/api-docs").getJsonObject().get("paths");
     Iterator<Map.Entry<String, JsonNode>> urls = jsonObject.fields();
     while (urls.hasNext()) {
       Map.Entry<String, JsonNode> url = urls.next();

@@ -17,25 +17,65 @@ package org.apache.geode.management.internal.rest.swagger;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springdoc.core.GroupedOpenApi;
+import org.springdoc.webmvc.ui.SwaggerUiHome;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
-import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import org.apache.geode.management.internal.rest.security.GeodeAuthenticationProvider;
 
 
 @PropertySource({"classpath:swagger-management.properties"})
-@SpringBootApplication(exclude = {TransactionAutoConfiguration.class, LdapAutoConfiguration.class})
+@EnableWebMvc
+@Configuration("swaggerConfigManagement")
+@ComponentScan(basePackages = {"org.springdoc"},
+    excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+        classes = SwaggerUiHome.class))
 @SuppressWarnings("unused")
-public class SwaggerConfig {
+public class SwaggerConfig implements WebApplicationInitializer {
+
+  @Override
+  public void onStartup(ServletContext servletContext) throws ServletException {
+    WebApplicationContext context = getContext();
+    servletContext.addListener(new ContextLoaderListener(context));
+    ServletRegistration.Dynamic dispatcher = servletContext.addServlet("geode",
+        new DispatcherServlet(context));
+    dispatcher.setLoadOnStartup(1);
+    dispatcher.addMapping("/*");
+  }
+
+  private AnnotationConfigWebApplicationContext getContext() {
+    AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+    context.scan("org.apache.geode.management.internal.rest");
+    context.register(this.getClass(), org.springdoc.webmvc.ui.SwaggerConfig.class,
+        org.springdoc.core.SwaggerUiConfigProperties.class,
+        org.springdoc.core.SwaggerUiOAuthProperties.class,
+        org.springdoc.webmvc.core.SpringDocWebMvcConfiguration.class,
+        org.springdoc.webmvc.core.MultipleOpenApiSupportConfiguration.class,
+        org.springdoc.core.SpringDocConfiguration.class,
+        org.springdoc.core.SpringDocConfigProperties.class,
+        org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class);
+
+    return context;
+  }
 
   @Bean
   public GroupedOpenApi api() {
