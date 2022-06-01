@@ -12,49 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class DestroyIndexIfExistsTest {
 
-  private int locatorPort;
+  @Rule
+  public GfshRule gfsh = new GfshRule();
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
-
-  @Before
-  public void setUp() {
-    locatorPort = getRandomAvailableTCPPort();
-  }
 
   @Test
-  public void destroyIndexIfExists()
-      throws IOException, ExecutionException, InterruptedException, TimeoutException {
-    GfshExecution execution = GfshScript
-        .of("start locator --name=locator --port=" + locatorPort,
-            "start server --name=server --server-port=0",
-            "sleep --time=1",
-            "destroy index --name=i1 --if-exists=true")
-        .execute(gfshRule);
+  public void destroyIndexIfExists() throws Exception {
+    GfshExecution execution =
+        GfshScript.of("start locator --name=locator", "start server --name=server --server-port=0",
+            "sleep --time=1", "destroy index --name=i1 --if-exists=true").execute(gfsh);
 
-    assertThat(execution.getOutputText())
-        .contains("IGNORED", "Index named \"i1\" not found");
+    assertThat(execution.getOutputText()).contains("IGNORED", "Index named \"i1\" not found");
   }
 }

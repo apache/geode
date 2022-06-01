@@ -20,7 +20,6 @@ import static org.apache.geode.cache.execute.FunctionService.onServer;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.apache.geode.test.micrometer.MicrometerAssertions.assertThat;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -36,6 +35,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -49,21 +49,21 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MemberTypeCommonTagsTest {
-
   private Path locatorFolder;
   private Path serverFolder;
   private Pool serverPool;
   private ClientCache clientCache;
   private Cache cache;
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
+
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
@@ -118,7 +118,7 @@ public class MemberTypeCommonTagsTest {
   }
 
   private DistributedMember startLocator() throws IOException {
-    locatorFolder = folderRule.getFolder().toPath().toAbsolutePath();
+    locatorFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
 
     int[] ports = getRandomAvailableTCPPorts(2);
 
@@ -165,7 +165,7 @@ public class MemberTypeCommonTagsTest {
   }
 
   private void startServer(boolean withLocator) throws IOException {
-    serverFolder = folderRule.getFolder().toPath().toAbsolutePath();
+    serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
 
     int[] availablePorts = getRandomAvailableTCPPorts(2);
 
@@ -209,10 +209,11 @@ public class MemberTypeCommonTagsTest {
     gfshRule.execute(stopServerCommand);
   }
 
-  private String memberTypeTag(Execution<?, ?, ?> execution) {
-    List<String> results = uncheckedCast(execution
+  private String memberTypeTag(Execution execution) {
+    @SuppressWarnings("unchecked")
+    List<String> results = (List<String>) execution
         .execute(new GetMemberTypeTag())
-        .getResult());
+        .getResult();
     return results.get(0);
   }
 

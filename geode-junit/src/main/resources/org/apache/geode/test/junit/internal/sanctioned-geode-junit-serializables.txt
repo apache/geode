@@ -78,7 +78,6 @@ org/apache/geode/test/concurrent/FileBasedCountDownLatch,false,dataFile:java/io/
 org/apache/geode/test/junit/rules/CloseableReference,false,autoClose:java/util/concurrent/atomic/AtomicBoolean
 org/apache/geode/test/junit/rules/ConditionalIgnoreRule,false
 org/apache/geode/test/junit/rules/ExecutorServiceRule,false,awaitTerminationBeforeShutdown:boolean,awaitTerminationTimeUnit:java/util/concurrent/TimeUnit,awaitTerminationTimeout:long,enableAwaitTermination:boolean,threadCount:int,useShutdown:boolean,useShutdownNow:boolean
-org/apache/geode/test/junit/rules/FolderRule$Policy,false
 org/apache/geode/test/junit/rules/IgnoreOnWindowsRule,false
 org/apache/geode/test/junit/rules/IgnoreUntilRule,false
 org/apache/geode/test/junit/rules/JarFileRule,false,className:java/lang/String,jarFile:java/io/File,jarName:java/lang/String,makeJarLarge:boolean

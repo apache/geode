@@ -59,6 +59,6 @@ public class TestVersions {
    * @return a predicate that tests if its argument is greater than @{code bound}
    */
   public static Predicate<TestVersion> greaterThan(TestVersion bound) {
-    return v -> v.greaterThan(bound);
+    return v -> v.greaterThanOrEqualTo(bound);
   }
 }

@@ -20,13 +20,10 @@ import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -75,7 +72,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  */
 public class GfshScript {
 
-  private final AtomicInteger count = new AtomicInteger(0);
   private final List<DebuggableCommand> commands = new ArrayList<>();
   private final List<String> extendedClasspath = new ArrayList<>();
   private final Random random = new Random();
@@ -164,19 +160,7 @@ public class GfshScript {
    * this will allow you to specify a gfsh workingDir when executing the script
    */
   public GfshExecution execute(GfshRule gfshRule, File workingDir) {
-    return gfshRule.execute(workingDir, this);
-  }
-
-  public GfshExecution execute(GfshExecutor executor) {
-    return executor.execute(this);
-  }
-
-  public GfshExecution execute(GfshExecutor executor, File workingDir) {
-    return executor.execute(workingDir, this);
-  }
-
-  public GfshExecution execute(GfshExecutor executor, Path workingDirPath) {
-    return executor.execute(workingDirPath.toFile(), this);
+    return gfshRule.execute(this, workingDir);
   }
 
   @Override
@@ -185,10 +169,6 @@ public class GfshScript {
         + commands.stream()
             .map(debuggableCommand -> "-e " + debuggableCommand.command)
             .collect(joining(" "));
-  }
-
-  Path nextOutputPath() {
-    return Paths.get(getName() + "-output-" + count.incrementAndGet() + ".log");
   }
 
   List<String> getExtendedClasspath() {

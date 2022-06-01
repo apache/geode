@@ -14,14 +14,12 @@
  */
 package org.apache.geode.management.internal.configuration;
 
-import static java.nio.file.Files.createFile;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +29,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+
 
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
 
@@ -45,10 +44,10 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
-  public void before() throws IOException {
-    clusterJar = createJarFileWithClass("Cluster", "cluster.jar", rootFolder.toFile());
-    group1Jar = createJarFileWithClass("Group1", "group1.jar", rootFolder.toFile());
-    group2Jar = createJarFileWithClass("Group2", "group2.jar", rootFolder.toFile());
+  public void before() throws Exception {
+    clusterJar = createJarFileWithClass("Cluster", "cluster.jar", temporaryFolder.getRoot());
+    group1Jar = createJarFileWithClass("Group1", "group1.jar", temporaryFolder.getRoot());
+    group2Jar = createJarFileWithClass("Group2", "group2.jar", temporaryFolder.getRoot());
   }
 
   @Test
@@ -149,7 +148,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    File junkFile = createFile(rootFolder.resolve("junk").toAbsolutePath()).toFile();
+    File junkFile = temporaryFolder.newFile("junk");
     FileWriter writer = new FileWriter(junkFile);
     writer.write("this is not a real jar");
     writer.close();
