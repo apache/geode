@@ -14,17 +14,14 @@
  */
 package org.apache.geode.cache;
 
-import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
@@ -32,55 +29,75 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
-public class RetryPutIfAbsentIntegrationTest {
+class RetryPutIfAbsentIntegrationTest {
 
-  Cache cache;
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  private Cache cache;
+  private LocalRegion myRegion;
+  private final ClientProxyMembershipID id =
+      new ClientProxyMembershipID(new InternalDistributedMember("localhost", 1));
+  private final EventIDHolder clientEvent =
+      new EventIDHolder(new EventID(new byte[] {1, 2, 3, 4, 5}, 1, 1));
+  private final String key = "key";
+  private int updateCount;
 
   @Test
-  public void duplicatePutIfAbsentIsAccepted() {
-    final String key = "mykey";
-    final String value = "myvalue";
+  void duplicatePutIfAbsentIsAccepted() {
+    myRegion = (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE)
+        .setConcurrencyChecksEnabled(true).create("myRegion");
 
-    LocalRegion myregion =
-        (LocalRegion) CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE)
-            .setConcurrencyChecksEnabled(true).create("myregion");
-
-    ClientProxyMembershipID id =
-        new ClientProxyMembershipID(new InternalDistributedMember("localhost", 1));
-    EventIDHolder clientEvent = new EventIDHolder(new EventID(new byte[] {1, 2, 3, 4, 5}, 1, 1));
-    clientEvent.setRegion(myregion);
-    byte[] valueBytes = new VMCachedDeserializable("myvalue", 7).getSerializedValue();
-    System.out.println("first putIfAbsent");
+    clientEvent.setRegion(myRegion);
+    byte[] valueBytes = new VMCachedDeserializable("myValue", 7).getSerializedValue();
     Object oldValue =
-        myregion.basicBridgePutIfAbsent("mykey", valueBytes, true, null, id, true, clientEvent);
-    assertEquals(null, oldValue);
-    assertTrue(myregion.containsKey(key));
+        myRegion.basicBridgePutIfAbsent(key, valueBytes, true, null, id, true, clientEvent);
+    assertThat(oldValue).isNull();
+    assertThat(myRegion.containsKey(key)).isTrue();
 
-    myregion.getEventTracker().clear();
+    myRegion.getEventTracker().clear();
 
-    clientEvent = new EventIDHolder(new EventID(new byte[] {1, 2, 3, 4, 5}, 1, 1));
-    clientEvent.setRegion(myregion);
     clientEvent.setPossibleDuplicate(true);
     clientEvent.setOperation(Operation.PUT_IF_ABSENT);
-    assertFalse(myregion.getEventTracker().hasSeenEvent(clientEvent));
+    assertThat(myRegion.getEventTracker().hasSeenEvent(clientEvent)).isFalse();
 
-    System.out.println("second putIfAbsent");
-    oldValue =
-        myregion.basicBridgePutIfAbsent("mykey", valueBytes, true, null, id, true, clientEvent);
-    assertEquals(null, oldValue);
+    oldValue = myRegion.basicBridgePutIfAbsent(key, valueBytes, true, null, id, true, clientEvent);
+    assertThat(oldValue).isNull();
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @Test
+  void duplicatePutIfAbsentOfNullValueDoesNotInvokeAfterUpdateListener() {
+    myRegion = (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE)
+        .setConcurrencyChecksEnabled(true)
+        .addCacheListener(new CacheListenerAdapter<Object, Object>() {
+          @Override
+          public void afterUpdate(EntryEvent<Object, Object> event) {
+            ++updateCount;
+          }
+        }).create("myRegion");
+
+    clientEvent.setRegion(myRegion);
+    Object oldValue =
+        myRegion.basicBridgePutIfAbsent(key, null, true, null, id, true, clientEvent);
+    assertThat(oldValue).isNull();
+    assertThat(myRegion.containsKey(key)).isTrue();
+
+    myRegion.getEventTracker().clear();
+
+    clientEvent.setPossibleDuplicate(true);
+    clientEvent.setOperation(Operation.PUT_IF_ABSENT);
+    assertThat(myRegion.getEventTracker().hasSeenEvent(clientEvent)).isFalse();
+
+    oldValue = myRegion.basicBridgePutIfAbsent(key, null, true, null, id, true, clientEvent);
+    assertThat(oldValue).isNull();
+    assertThat(updateCount).isEqualTo(0);
+  }
+
+  @BeforeEach
+  void setUp() {
     CacheUtils.startCache();
     cache = CacheUtils.getCache();
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterEach
+  void tearDown() {
     CacheUtils.closeCache();
   }
 

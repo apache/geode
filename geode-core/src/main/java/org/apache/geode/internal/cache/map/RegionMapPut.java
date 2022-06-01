@@ -235,7 +235,8 @@ public class RegionMapPut extends AbstractRegionMapPut {
     final EntryEventImpl event = getEvent();
     if (getOwner().isInitialized() && isCacheWrite()) {
       if (!isReplaceOnClient()) {
-        if (getRegionEntry().isDestroyedOrRemoved()) {
+        if (getRegionEntry().isDestroyedOrRemoved()
+            || (getRegionEntry().isInvalid() && event.getOperation() == Operation.PUT_IF_ABSENT)) {
           event.makeCreate();
         } else {
           event.makeUpdate();
@@ -343,6 +344,9 @@ public class RegionMapPut extends AbstractRegionMapPut {
     if (isReplaceOnClient()) {
       return true;
     }
+    if (getRegionEntry().isInvalid() && getEvent().getOperation() == Operation.PUT_IF_ABSENT) {
+      return false;
+    }
     return !getRegionEntry().isRemoved();
   }
 
@@ -409,9 +413,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
             event.isPossibleDuplicate()) {
           Object retainedValue = getRegionEntry().getValueRetain(getOwner());
           try {
-            if (ValueComparisonHelper.checkEquals(retainedValue,
-                getEvent().getRawNewValue(),
-                isCompressedOffHeap(event), getOwner().getCache())) {
+            if (isSameValueAlreadyInCacheForPutIfAbsent(retainedValue)) {
               if (logger.isDebugEnabled()) {
                 logger.debug("retried putIfAbsent found same value already in cache "
                     + "- allowing the operation.  entry={}; event={}", getRegionEntry(),
@@ -428,6 +430,16 @@ public class RegionMapPut extends AbstractRegionMapPut {
       }
     }
     return true;
+  }
+
+  private boolean isSameValueAlreadyInCacheForPutIfAbsent(Object retainedValue) {
+    Object rawNewValue = getEvent().getRawNewValue();
+    if (Token.isInvalid(retainedValue)) {
+      return rawNewValue == null || Token.isInvalid(rawNewValue);
+    }
+
+    return ValueComparisonHelper.checkEquals(retainedValue, rawNewValue,
+        isCompressedOffHeap(getEvent()), getOwner().getCache());
   }
 
 
