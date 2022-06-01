@@ -29,7 +29,7 @@ public class Tomcat8ClientServerCustomCacheXmlTest extends Tomcat8ClientServerTe
       regionAttributes.put("name", "gemfire_modules_sessions");
 
       ContainerInstall.editXMLFile(
-          container.cacheXMLFile,
+          container.cacheXMLFile.getAbsolutePath(),
           null,
           "region",
           "client-cache",

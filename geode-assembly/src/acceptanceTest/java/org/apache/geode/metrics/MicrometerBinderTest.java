@@ -16,7 +16,6 @@ package org.apache.geode.metrics;
 
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -32,6 +31,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -42,7 +42,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MicrometerBinderTest {
@@ -52,25 +51,26 @@ public class MicrometerBinderTest {
   private Pool serverPool;
   private Execution<String, Boolean, List<Boolean>> functionExecution;
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
+
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   @Before
   public void startServer() throws IOException {
-    Path rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
-    serverFolder = rootFolder;
-
-    Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
-        MetricsPublishingService.class, SimpleMetricsPublishingService.class);
+    serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
 
     int[] ports = getRandomAvailableTCPPorts(2);
 
     int serverPort = ports[0];
     int jmxRmiPort = ports[1];
+
+    Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
+        MetricsPublishingService.class, SimpleMetricsPublishingService.class);
 
     String startServerCommand = String.join(" ",
         "start server",
@@ -100,7 +100,10 @@ public class MicrometerBinderTest {
         .addServer("localhost", serverPort)
         .create("server-pool");
 
-    functionExecution = uncheckedCast(FunctionService.onServer(serverPool));
+    @SuppressWarnings("unchecked")
+    Execution<String, Boolean, List<Boolean>> functionExecution =
+        (Execution<String, Boolean, List<Boolean>>) FunctionService.onServer(serverPool);
+    this.functionExecution = functionExecution;
   }
 
   @After

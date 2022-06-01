@@ -17,6 +17,7 @@
 package org.apache.geode.test.version;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.version.TestVersion.CURRENT_VERSION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +91,7 @@ public class VmConfigurations {
   }
 
   private static Predicate<VmConfiguration> isUpgrade() {
-    return hasGeodeVersion(TestVersions.lessThan(TestVersion.current())).or(
+    return hasGeodeVersion(TestVersions.lessThan(CURRENT_VERSION)).or(
         hasJavaVersion(JavaVersions.lessThan(JavaVersions.current())));
   }
 

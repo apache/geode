@@ -14,14 +14,12 @@
  */
 package org.apache.geode.metrics.function.executions;
 
+
 import static java.io.File.pathSeparatorChar;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.valueOf;
-import static java.nio.file.Files.createDirectories;
 import static java.util.stream.Collectors.toList;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -34,6 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -42,13 +41,11 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.SimpleMetricsPublishingService;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.junit.rules.FolderRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 /**
  * Acceptance tests for function executions timer on a loner server with no locator
@@ -67,30 +64,30 @@ public class FunctionExecutionsTimerLonerTest {
   private String startServerCommandWithStatsDisabled;
   private String startServerCommandWithTimeStatsDisabled;
   private String stopServerCommand;
-  private Path rootFolder;
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   @Before
   public void setUp() throws IOException {
-    rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
-
-    int[] ports = getRandomAvailableTCPPorts(2);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
     serverPort = ports[0];
     jmxRmiPort = ports[1];
 
-    serverFolder = createDirectories(rootFolder.resolve("server"));
+    serverFolder = temporaryFolder.newFolder("server").toPath().toAbsolutePath();
 
     serviceJarPath = serviceJarRule.createJarFor("services.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
 
-    functionHelpersJarPath = rootFolder.resolve("function-helpers.jar");
+    functionHelpersJarPath =
+        temporaryFolder.getRoot().toPath().resolve("function-helpers.jar").toAbsolutePath();
     writeJarFromClasses(functionHelpersJarPath.toFile(), FunctionToTimeWithResult.class,
         GetFunctionExecutionTimerValues.class, ExecutionsTimerValues.class, ThreadSleep.class);
 
@@ -246,8 +243,7 @@ public class FunctionExecutionsTimerLonerTest {
 
   private void stopServer() {
     closeClientAndPool();
-    GfshExecution execution = GfshScript.of(stopServerCommand).execute(gfshRule);
-    execution.serverStopper().awaitStop(serverFolder);
+    gfshRule.execute(stopServerCommand);
   }
 
   private void startServerWithStatsEnabled() {
@@ -274,7 +270,8 @@ public class FunctionExecutionsTimerLonerTest {
 
   @SuppressWarnings("SameParameterValue")
   private <T> void deployFunction(Class<? extends Function<T>> functionClass) {
-    Path functionJarPath = rootFolder.resolve(functionClass.getSimpleName() + ".jar");
+    Path functionJarPath = temporaryFolder.getRoot().toPath()
+        .resolve(functionClass.getSimpleName() + ".jar").toAbsolutePath();
 
     Throwable thrown =
         catchThrowable(() -> writeJarFromClasses(functionJarPath.toFile(), functionClass));
@@ -305,8 +302,9 @@ public class FunctionExecutionsTimerLonerTest {
 
   private void executeFunction(Function<? super String[]> function, Duration duration,
       boolean successful) {
+    @SuppressWarnings("unchecked")
     Execution<String[], Object, List<Object>> execution =
-        uncheckedCast(FunctionService.onServer(serverPool));
+        (Execution<String[], Object, List<Object>>) FunctionService.onServer(serverPool);
 
     execution
         .setArguments(new String[] {valueOf(duration.toMillis()), valueOf(successful)})
@@ -316,8 +314,9 @@ public class FunctionExecutionsTimerLonerTest {
 
   @SuppressWarnings("SameParameterValue")
   private void executeFunctionById(String functionId, Duration duration) {
+    @SuppressWarnings("unchecked")
     Execution<String[], Object, List<Object>> execution =
-        uncheckedCast(FunctionService.onServer(serverPool));
+        (Execution<String[], Object, List<Object>>) FunctionService.onServer(serverPool);
 
     Throwable thrown = catchThrowable(() -> execution
         .setArguments(new String[] {valueOf(duration.toMillis()), TRUE.toString()})
@@ -351,8 +350,10 @@ public class FunctionExecutionsTimerLonerTest {
   }
 
   private List<ExecutionsTimerValues> getExecutionsTimerValuesFor(String functionId) {
+    @SuppressWarnings("unchecked")
     Execution<Void, List<ExecutionsTimerValues>, List<List<ExecutionsTimerValues>>> functionExecution =
-        uncheckedCast(FunctionService.onServer(serverPool));
+        (Execution<Void, List<ExecutionsTimerValues>, List<List<ExecutionsTimerValues>>>) FunctionService
+            .onServer(serverPool);
 
     List<List<ExecutionsTimerValues>> results = functionExecution
         .execute(new GetFunctionExecutionTimerValues())

@@ -62,7 +62,7 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
         // Skip versions older than 1.2
         .filter(hasGeodeVersion(TestVersions.atLeast(TestVersion.valueOf("1.2.0"))))
         // Skip Java upgrades
-        .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.current())))
+        .filter(hasGeodeVersion(TestVersions.lessThan(TestVersion.CURRENT_VERSION)))
         .map(VmConfiguration::geodeVersion)
         .map(String::valueOf)
         .collect(toList());

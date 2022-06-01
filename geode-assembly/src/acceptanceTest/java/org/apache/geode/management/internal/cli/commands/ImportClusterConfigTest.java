@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,38 +28,31 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class ImportClusterConfigTest extends ClusterConfigTestBase {
-
   private static final String locatorName = "locator";
   private static final String serverNotShutDownName = "serverNotShutDown";
 
   @Rule
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  public GfshRule gfsh = new GfshRule();
 
   @Test
   public void importWouldNotShutDownServer() {
     GfshExecution startCluster = GfshScript
         .of("start locator --name=" + locatorName,
-            "start server --name=" + serverNotShutDownName + " --disable-default-server")
-        .withName("startCluster")
-        .execute(gfshRule);
-    assertThat(startCluster.getOutputText())
-        .contains(locatorName + " is currently online")
+            "start server --name=" + serverNotShutDownName + " --server-port=0")
+        .withName("startCluster").execute(gfsh);
+    assertThat(startCluster.getOutputText()).contains(locatorName + " is currently online")
         .contains(serverNotShutDownName + " is currently online");
 
     GfshExecution importConfiguration = GfshScript
         .of("connect", "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
-        .withName("importConfiguration")
-        .execute(gfshRule);
+        .withName("importConfiguration").execute(gfsh);
     assertThat(importConfiguration.getOutputText())
         .contains("Cluster configuration successfully imported")
         .contains("Configure the servers in 'cluster' group: ");
 
-    GfshExecution listMembers = GfshScript
-        .of("connect",
-            "list members")
-        .withName("listMembers")
-        .execute(gfshRule);
-    assertThat(listMembers.getOutputText())
-        .contains("serverNotShutDown");
+    GfshExecution listMembers =
+        GfshScript.of("connect", "list members").withName("listMembers").execute(gfsh);
+    assertThat(listMembers.getOutputText()).contains("serverNotShutDown");
   }
+
 }

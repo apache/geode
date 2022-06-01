@@ -14,48 +14,26 @@
  */
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class RegionManagementAcceptanceTest {
 
-  private int locatorPort;
-  private int httpPort;
-
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
-
-  @Before
-  public void setUp() {
-    int[] ports = getRandomAvailableTCPPorts(2);
-    locatorPort = ports[0];
-    httpPort = ports[1];
-  }
+  @Rule
+  public GfshRule gfsh = new GfshRule();
 
   @Test
-  public void sanityCheck() {
-    GfshScript
-        .of("start locator --port=" + locatorPort + " --J=-Dgemfire.http-service-port=" + httpPort)
-        .execute(gfshRule);
+  public void sanityCheck() throws Exception {
+    GfshScript.of("start locator --port=0").execute(gfsh);
 
     // verify the management rest api is started correctly
     GeodeDevRestClient client =
-        new GeodeDevRestClient("/management/v1", "localhost", httpPort, false);
+        new GeodeDevRestClient("/management/v1", "localhost", 7070, false);
 
-    client
-        .doGetAndAssert("/ping")
-        .hasStatusCode(200)
-        .hasResponseBody()
-        .isEqualTo("pong");
+    client.doGetAndAssert("/ping").hasStatusCode(200).hasResponseBody().isEqualTo("pong");
   }
 }

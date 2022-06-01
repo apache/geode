@@ -21,7 +21,6 @@ import static org.apache.geode.cache.execute.FunctionService.onServer;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -36,9 +35,9 @@ import java.util.Properties;
 
 import io.micrometer.core.instrument.Timer;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -52,28 +51,22 @@ import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class CacheGetsTimerTest {
-
   private int locatorPort;
   private ClientCache clientCache;
   private Region<Object, Object> replicateRegion;
   private Region<Object, Object> partitionRegion;
-  private Path rootFolder;
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public GfshRule gfshRule = new GfshRule();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
-
-  @Before
-  public void setUp() {
-    rootFolder = folderRule.getFolder().toPath();
-  }
 
   @After
   public void tearDown() {
@@ -331,14 +324,15 @@ public class CacheGetsTimerTest {
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
 
-    Path helpersJarPath = rootFolder.resolve("helpers.jar");
+    Path helpersJarPath = temporaryFolder.getRoot().toPath()
+        .resolve("helpers.jar").toAbsolutePath();
     writeJarFromClasses(helpersJarPath.toFile(), TimerValue.class,
         FetchCacheGetsTimerValues.class, DenyAllDataRead.class, ClientSecurityConfig.class);
 
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + "locator",
-        "--dir=" + rootFolder.resolve("locator"),
+        "--dir=" + temporaryFolder.newFolder("locator").getAbsolutePath(),
         "--port=" + locatorPort,
         "--http-service-port=0",
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
@@ -348,7 +342,7 @@ public class CacheGetsTimerTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
-        "--dir=" + rootFolder.resolve(serverName),
+        "--dir=" + temporaryFolder.newFolder(serverName).getAbsolutePath(),
         "--server-port=" + serverPort,
         "--locators=localhost[" + locatorPort + "]",
         "--classpath=" + serviceJarPath + pathSeparatorChar + helpersJarPath);
@@ -400,7 +394,7 @@ public class CacheGetsTimerTest {
 
   private File createSecurityPropertiesFile() throws IOException {
     Properties securityProperties = ClientSecurityConfig.securityProperties();
-    File securityPropertiesFile = rootFolder.resolve("security.properties").toFile();
+    File securityPropertiesFile = gfshRule.getTemporaryFolder().newFile("security.properties");
     securityProperties.store(new FileOutputStream(securityPropertiesFile), null);
     return securityPropertiesFile;
   }
@@ -426,9 +420,11 @@ public class CacheGetsTimerTest {
   }
 
   private List<TimerValue> allTimerValuesForRegion(Region<?, ?> region) {
-    List<List<TimerValue>> timerValuesFromAllServers = uncheckedCast(onServer(clientCache)
-        .execute(new FetchCacheGetsTimerValues())
-        .getResult());
+    @SuppressWarnings("unchecked")
+    List<List<TimerValue>> timerValuesFromAllServers =
+        (List<List<TimerValue>>) onServer(clientCache)
+            .execute(new FetchCacheGetsTimerValues())
+            .getResult();
 
     assertThat(timerValuesFromAllServers)
         .hasSize(1);
@@ -439,10 +435,10 @@ public class CacheGetsTimerTest {
   }
 
   static class TimerValue implements Serializable {
-    private final long count;
-    private final double totalTime;
-    private final String region;
-    private final String result;
+    final long count;
+    final double totalTime;
+    final String region;
+    final String result;
 
     TimerValue(long count, double totalTime, String region, String result) {
       this.count = count;
@@ -523,7 +519,7 @@ public class CacheGetsTimerTest {
       return securityProperties();
     }
 
-    private static Properties securityProperties() {
+    static Properties securityProperties() {
       Properties securityProperties = new Properties();
       securityProperties.setProperty(SECURITY_MANAGER, DenyAllDataRead.class.getName());
       securityProperties.setProperty("security-username", "user");

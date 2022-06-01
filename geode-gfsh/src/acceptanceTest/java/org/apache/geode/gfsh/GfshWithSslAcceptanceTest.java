@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.gfsh;
 
 import static java.lang.String.format;
@@ -27,62 +28,63 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.Properties;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.internal.UniquePortSupplier;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class GfshWithSslAcceptanceTest {
-
   private static final String CERTIFICATE_ALGORITHM = "SHA256withRSA";
   private static final int CERTIFICATE_EXPIRATION_IN_DAYS = 1;
   private static final String STORE_PASSWORD = "geode";
   private static final String STORE_TYPE = "jks";
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  private final String startLocator;
+  private final String connect;
 
-  private String startLocator;
-  private String connect;
-  private Path keyStoreFile;
-  private Path trustStoreFile;
-  private Path securityPropertiesFile;
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
-  @Before
-  public void setUp() throws IOException, GeneralSecurityException {
-    Path rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
+  @Rule
+  public final GfshRule gfsh;
 
-    keyStoreFile = rootFolder.resolve("keyStoreFile");
-    trustStoreFile = rootFolder.resolve("trustStoreFile");
-    securityPropertiesFile = rootFolder.resolve("securityPropertiesFile");
+  private final File keyStoreFile;
+  private final File trustStoreFile;
+  private final File securityPropertiesFile;
 
-    final String hostName = InetAddress.getLocalHost().getCanonicalHostName();
-    generateKeyAndTrustStore(hostName, keyStoreFile, trustStoreFile);
+  public GfshWithSslAcceptanceTest() throws IOException,
+      GeneralSecurityException {
+    gfsh = new GfshRule();
 
     final UniquePortSupplier portSupplier = new UniquePortSupplier();
     final int port = portSupplier.getAvailablePort();
 
+    tempFolder.create();
+    keyStoreFile = tempFolder.newFile();
+    trustStoreFile = tempFolder.newFile();
+    securityPropertiesFile = tempFolder.newFile();
+
+    final String hostName = InetAddress.getLocalHost().getCanonicalHostName();
+    generateKeyAndTrustStore(hostName, keyStoreFile, trustStoreFile);
+
     startLocator = format(
         "start locator --connect=false --http-service-port=0 --name=locator --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s",
         hostName, port, portSupplier.getAvailablePort(),
-        securityPropertiesFile);
+        securityPropertiesFile.getAbsolutePath());
     connect = format("connect --locator=%s[%d] --security-properties-file=%s", hostName, port,
-        securityPropertiesFile);
+        securityPropertiesFile.getAbsolutePath());
   }
 
   @Test
@@ -90,12 +92,21 @@ public class GfshWithSslAcceptanceTest {
     generateSecurityProperties(true, securityPropertiesFile, keyStoreFile,
         trustStoreFile);
 
-    gfshRule.execute(startLocator);
-    gfshRule.execute(connect);
+    gfsh.execute(startLocator);
+    gfsh.execute(connect);
   }
 
-  private static void generateKeyAndTrustStore(final String hostName, final Path keyStoreFile,
-      final Path trustStoreFile) throws IOException, GeneralSecurityException {
+  // @Test
+  public void gfshCanConnectViaSslWithEndpointIdentificationDisabled() throws IOException {
+    generateSecurityProperties(false, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
+
+    gfsh.execute(startLocator);
+    gfsh.execute(connect);
+  }
+
+  public static void generateKeyAndTrustStore(final String hostName, final File keyStoreFile,
+      final File trustStoreFile) throws IOException, GeneralSecurityException {
     final CertificateMaterial ca =
         new CertificateBuilder(CERTIFICATE_EXPIRATION_IN_DAYS, CERTIFICATE_ALGORITHM)
             .commonName("Test CA")
@@ -113,12 +124,12 @@ public class GfshWithSslAcceptanceTest {
     store.withCertificate("geode", certificate);
     store.trust("ca", ca);
 
-    store.createKeyStore(keyStoreFile, STORE_PASSWORD);
-    store.createTrustStore(trustStoreFile, STORE_PASSWORD);
+    store.createKeyStore(keyStoreFile.getAbsolutePath(), STORE_PASSWORD);
+    store.createTrustStore(trustStoreFile.getAbsolutePath(), STORE_PASSWORD);
   }
 
   private static void generateSecurityProperties(final boolean endpointIdentificationEnabled,
-      final Path securityPropertiesFile, final Path keyStoreFile, final Path trustStoreFile)
+      final File securityPropertiesFile, final File keyStoreFile, final File trustStoreFile)
       throws IOException {
     final Properties properties = new Properties();
 
@@ -128,14 +139,15 @@ public class GfshWithSslAcceptanceTest {
         valueOf(endpointIdentificationEnabled));
     properties.setProperty(SSL_PROTOCOLS, "any");
 
-    properties.setProperty(SSL_KEYSTORE, keyStoreFile.toString());
+    properties.setProperty(SSL_KEYSTORE, keyStoreFile.getAbsolutePath());
     properties.setProperty(SSL_KEYSTORE_TYPE, STORE_TYPE);
     properties.setProperty(SSL_KEYSTORE_PASSWORD, STORE_PASSWORD);
 
-    properties.setProperty(SSL_TRUSTSTORE, trustStoreFile.toString());
+    properties.setProperty(SSL_TRUSTSTORE, trustStoreFile.getAbsolutePath());
     properties.setProperty(SSL_TRUSTSTORE_TYPE, STORE_TYPE);
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, STORE_PASSWORD);
 
-    properties.store(new FileWriter(securityPropertiesFile.toFile()), null);
+    properties.store(new FileWriter(securityPropertiesFile), null);
   }
+
 }
