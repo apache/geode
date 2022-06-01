@@ -46,7 +46,6 @@ class DependencyConstraints {
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.13.2")
     deps.put("jackson.databind.version", "2.13.2.2")
-    deps.put("joda-time.version", "2.10.14")
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.20")
 
@@ -129,7 +128,7 @@ class DependencyConstraints {
         api(group: 'javax.resource', name: 'javax.resource-api', version: '1.7.1')
         api(group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0')
         api(group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1')
-        api(group: 'joda-time', name: 'joda-time', version: get('joda-time.version'))
+        api(group: 'joda-time', name: 'joda-time', version: '2.10.14')
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
