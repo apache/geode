@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -99,6 +100,11 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       }
       InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
       try {
+        if (inetSocketAddress.getAddress() == null
+            || !inetSocketAddress.getAddress().isReachable(5000)) {
+          throw new UnknownHostException(
+              inetSocketAddress.getHostName() + ":" + inetSocketAddress.getPort());
+        }
         socket.connect(inetSocketAddress, Math.max(timeout, 0));
       } catch (ConnectException connectException) {
         logger.info("Failed to connect to " + inetSocketAddress);
