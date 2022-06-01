@@ -40,7 +40,7 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
   public void luceneReindexShouldBeSuccessfulWhenAllServersRollToCurrentVersion() throws Exception {
     assumeThat(sourceConfiguration.geodeVersion().majorMinor())
         .as("source configuration Geode version major minor")
-        .isNotEqualTo(TestVersion.CURRENT_VERSION.majorMinor())
+        .isNotEqualTo(TestVersion.current().majorMinor())
         .isNotEqualTo(majorMinor(KnownVersion.CURRENT.getName()));
 
     final Host host = Host.getHost(0);

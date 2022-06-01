@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.launchers;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,37 +31,33 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.launchers.startuptasks.WaitForFileToExist;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupOnlineTest {
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public TestName testName = new TestName();
-
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
-
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
@@ -75,10 +71,10 @@ public class ServerStartupOnlineTest {
     Path serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
         ServerLauncherCacheProvider.class, WaitForFileToExist.class);
 
-    serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
+    serverFolder = folderRule.getFolder().toPath().toAbsolutePath();
     serverName = testName.getMethodName();
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] ports = getRandomAvailableTCPPorts(2);
 
     int jmxHttpPort = ports[0];
     jmxRmiPort = ports[1];
@@ -102,7 +98,8 @@ public class ServerStartupOnlineTest {
   }
 
   @Test
-  public void startServerReturnsAfterStartupTaskCompletes() throws Exception {
+  public void startServerReturnsAfterStartupTaskCompletes()
+      throws InterruptedException, IOException {
     CompletableFuture<Void> startServerTask =
         executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
 
@@ -116,7 +113,8 @@ public class ServerStartupOnlineTest {
   }
 
   @Test
-  public void statusServerReportsStartingUntilStartupTaskCompletes() throws Exception {
+  public void statusServerReportsStartingUntilStartupTaskCompletes()
+      throws InterruptedException, IOException {
     CompletableFuture<Void> startServerTask =
         executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
 
@@ -141,7 +139,8 @@ public class ServerStartupOnlineTest {
   }
 
   @Test
-  public void memberMXBeanStatusReportsStartingUntilStartupTaskCompletes() throws Exception {
+  public void memberMXBeanStatusReportsStartingUntilStartupTaskCompletes()
+      throws InterruptedException, IOException {
     CompletableFuture<Void> startServerTask =
         executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
 
@@ -166,24 +165,20 @@ public class ServerStartupOnlineTest {
     });
   }
 
-  private String getServerStatusFromJmx() throws MalformedObjectNameException,
-      IOException {
+  private String getServerStatusFromJmx() throws MalformedObjectNameException, IOException {
     ObjectName objectName = ObjectName.getInstance("GemFire:type=Member,member=" + serverName);
     JMXServiceURL url =
         new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:" + jmxRmiPort + "/jmxrmi");
-    JMXConnector jmxConnector = JMXConnectorFactory.connect(url, null);
-    try {
+    try (JMXConnector jmxConnector = JMXConnectorFactory.connect(url, null)) {
       MBeanServerConnection mbeanServer = jmxConnector.getMBeanServerConnection();
       MemberMXBean memberMXBean =
           JMX.newMXBeanProxy(mbeanServer, objectName, MemberMXBean.class, false);
       String json = memberMXBean.status();
       return parseStatusFromJson(json);
-    } finally {
-      jmxConnector.close();
     }
   }
 
-  private String parseStatusFromJson(String json) throws IOException {
+  private String parseStatusFromJson(String json) throws JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readTree(json);
     return jsonNode.get("status").textValue();
@@ -194,8 +189,7 @@ public class ServerStartupOnlineTest {
     return gfshRule.execute(statusServerCommand).getOutputText();
   }
 
-  private void waitForStartServerCommandToHang()
-      throws InterruptedException {
+  private void waitForStartServerCommandToHang() throws InterruptedException {
     await().untilAsserted(() -> assertThat(serverFolder.resolve(serverName + ".log")).exists());
     // Without sleeping, this test can pass when it shouldn't.
     Thread.sleep(10_000);

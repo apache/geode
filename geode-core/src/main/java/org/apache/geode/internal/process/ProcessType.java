@@ -16,6 +16,8 @@ package org.apache.geode.internal.process;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+import java.nio.file.Path;
+
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -61,6 +63,10 @@ public enum ProcessType {
   public String getStatusFileName() {
     return System.getProperty(PROPERTY_TEST_PREFIX, EMPTY) + fileName
         + '.' + SUFFIX_STATUS;
+  }
+
+  public int readPid(Path workingDir) {
+    return ProcessUtils.readPid(workingDir.resolve(getPidFileName()));
   }
 
   @Override
