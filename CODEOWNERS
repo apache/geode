@@ -274,8 +274,8 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 # Testing utilities
 #-----------------------------------------------------------------
 #geode-concurrency-test/**
-geode-dunit/**                                                    @kirklund @demery-pivotal
-geode-junit/**                                                    @kirklund @demery-pivotal
+geode-dunit/**                                                    @kirklund @demery-pivotal @dschneider-pivotal
+geode-junit/**                                                    @kirklund @demery-pivotal @dschneider-pivotal
 geode-jmh/**                                                      @pivotal-jbarrett
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @kirklund
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao
