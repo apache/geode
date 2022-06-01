@@ -15,21 +15,32 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.ServerLocationExtension;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.tcpserver.ClientSocketCreator;
+import org.apache.geode.internal.cache.tier.ClientSideHandshake;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
+import org.apache.geode.internal.net.SocketCreator;
 
 public class ConnectionImplTest {
 
@@ -160,6 +171,83 @@ public class ConnectionImplTest {
         .isEqualTo(endPoint3);
     assertThat(connection.getEndpoint(endpointManager, serverLocationExtension4))
         .isNull();
+
+  }
+
+
+  @Test
+  public void testConnectConnectionForPingTask() throws Exception {
+
+    ServerLocationExtension serverLocationExtension1 =
+        new ServerLocationExtension(serverLocationAndMemberId1);
+    ClientSideHandshake handshake = mock(ClientSideHandshake.class);
+    SocketCreator socketCreator = mock(SocketCreator.class);
+    SocketFactory socketFactory = mock(SocketFactory.class);
+
+    ClientSocketCreator clientSocketCreator = mock(ClientSocketCreator.class);
+    when(socketCreator.forClient()).thenReturn(clientSocketCreator);
+
+    Socket socket = mock(Socket.class);
+    when(clientSocketCreator.connect(any(), anyInt(), anyInt(), any())).thenReturn(socket);
+
+    connection.connect(endpointManager, serverLocationExtension1, handshake, 4096, 0, 0,
+        CommunicationMode.ClientToServer, null, socketCreator, socketFactory);
+
+    verify(endpointManager, times(0)).referenceEndpoint(any(), any());
+
+  }
+
+
+  @Test
+  public void testConnectConnectionForNotPingTask() throws Exception {
+    ServerLocation serverLocation1 = new ServerLocation("localhost", 1);
+
+    ClientSideHandshake handshake = mock(ClientSideHandshake.class);
+    SocketCreator socketCreator = mock(SocketCreator.class);
+    SocketFactory socketFactory = mock(SocketFactory.class);
+
+    ServerQueueStatus status = mock(ServerQueueStatus.class);
+    when(handshake.handshakeWithServer(any(), any(), any())).thenReturn(status);
+
+    ClientSocketCreator clientSocketCreator = mock(ClientSocketCreator.class);
+    when(socketCreator.forClient()).thenReturn(clientSocketCreator);
+
+    Socket socket = mock(Socket.class);
+    when(clientSocketCreator.connect(any(), anyInt(), anyInt(), any())).thenReturn(socket);
+    when(endpointManager.referenceEndpoint(any(), any())).thenReturn(endPoint1);
+
+    connection.connect(endpointManager, serverLocation1, handshake, 4096, 0, 0,
+        CommunicationMode.ClientToServer, null, socketCreator, socketFactory);
+
+    verify(endpointManager, times(1)).referenceEndpoint(any(), any());
+
+  }
+
+  @Test
+  public void testConnectConnectionForPingTaskWhileEndpointIsClosed() throws Exception {
+    ServerLocationExtension serverLocationExtension1 =
+        new ServerLocationExtension(serverLocationAndMemberId1);
+
+    ClientSideHandshake handshake = mock(ClientSideHandshake.class);
+    SocketCreator socketCreator = mock(SocketCreator.class);
+    SocketFactory socketFactory = mock(SocketFactory.class);
+
+    ServerQueueStatus status = mock(ServerQueueStatus.class);
+    when(handshake.handshakeWithServer(any(), any(), any())).thenReturn(status);
+
+    ClientSocketCreator clientSocketCreator = mock(ClientSocketCreator.class);
+    when(socketCreator.forClient()).thenReturn(clientSocketCreator);
+
+    Socket socket = mock(Socket.class);
+    when(clientSocketCreator.connect(any(), anyInt(), anyInt(), any())).thenReturn(socket);
+    endPoint1.close();
+
+    when(endpointManager.referenceEndpoint(any(), any())).thenReturn(endPoint2);
+
+    connection.connect(endpointManager, serverLocationExtension1, handshake, 4096, 0, 0,
+        CommunicationMode.ClientToServer, null, socketCreator, socketFactory);
+
+    verify(endpointManager, times(1)).referenceEndpoint(any(), any());
 
   }
 }

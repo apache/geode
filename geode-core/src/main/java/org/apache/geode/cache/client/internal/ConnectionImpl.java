@@ -119,7 +119,7 @@ public class ConnectionImpl implements Connection {
       tempEndpoint = getEndpoint(endpointManager, (ServerLocationExtension) location);
     }
 
-    if (tempEndpoint == null) {
+    if (tempEndpoint == null || tempEndpoint.isClosed()) {
       tempEndpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
     }
 
