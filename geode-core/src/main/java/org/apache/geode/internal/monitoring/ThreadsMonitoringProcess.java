@@ -119,27 +119,39 @@ public class ThreadsMonitoringProcess extends TimerTask {
     return result;
   }
 
+  private static final boolean SHOW_LOCKS = Boolean.getBoolean("gemfire.threadmonitor.showLocks");
+
   @VisibleForTesting
   public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
-    /*
-     * NOTE: at least some implementations of getThreadInfo(long[], boolean, boolean)
-     * will core dump if the long array contains a duplicate value.
-     * That is why stuckThreadIds is a Set instead of a List.
-     */
     if (stuckThreadIds.isEmpty()) {
       return Collections.emptyMap();
     }
-    long[] ids = new long[stuckThreadIds.size()];
-    int idx = 0;
-    for (long id : stuckThreadIds) {
-      ids[idx] = id;
-      idx++;
-    }
-    ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().getThreadInfo(ids, true, true);
     Map<Long, ThreadInfo> result = new HashMap<>();
-    for (ThreadInfo threadInfo : threadInfos) {
-      if (threadInfo != null) {
-        result.put(threadInfo.getThreadId(), threadInfo);
+    if (SHOW_LOCKS) {
+      long[] ids = new long[stuckThreadIds.size()];
+      int idx = 0;
+      for (long id : stuckThreadIds) {
+        ids[idx] = id;
+        idx++;
+      }
+      /*
+       * NOTE: at least some implementations of getThreadInfo(long[], boolean, boolean)
+       * will core dump if the long array contains a duplicate value.
+       * That is why stuckThreadIds is a Set instead of a List.
+       */
+      ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().getThreadInfo(ids, true, true);
+      for (ThreadInfo threadInfo : threadInfos) {
+        if (threadInfo != null) {
+          result.put(threadInfo.getThreadId(), threadInfo);
+        }
+      }
+    } else {
+      for (long id : stuckThreadIds) {
+        ThreadInfo threadInfo =
+            ManagementFactory.getThreadMXBean().getThreadInfo(id, Integer.MAX_VALUE);
+        if (threadInfo != null) {
+          result.put(threadInfo.getThreadId(), threadInfo);
+        }
       }
     }
     return result;
