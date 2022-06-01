@@ -105,8 +105,14 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
     oldModules = new File(installLocation + "/tools/Modules/");
   }
 
-  protected void startServer(String name, String classPath, int locatorPort) throws Exception {
-    serverDir = tempFolder.newFolder("server").getPath();
+  protected void startServer(String name, String classPath, int locatorPort) throws IOException {
+    File serverFile = new File("server_dir_" + this.getClass().getSimpleName() + "_"
+        + testName.getMethodName().replace("[", "").replace("]", ""));
+    boolean success = serverFile.mkdir();
+    if (!success) {
+      throw new IOException("Cannot mkdir for file " + serverFile);
+    }
+    serverDir = serverFile.getAbsolutePath();
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
     command.addOption(CliStrings.START_SERVER__NAME, name);
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
@@ -116,8 +122,14 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
     gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
-  protected void startLocator(String name, String classPath, int port) throws Exception {
-    locatorDir = tempFolder.newFolder("locator").getPath();
+  protected void startLocator(String name, String classPath, int port) throws IOException {
+    File locatorFile = new File("locator_dir_" + this.getClass().getSimpleName() + "_"
+        + testName.getMethodName().replace("[", "").replace("]", ""));
+    boolean success = locatorFile.mkdir();
+    if (!success) {
+      throw new IOException("Cannot mkdir for file " + locatorFile);
+    }
+    locatorDir = locatorFile.getAbsolutePath();
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
     locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
