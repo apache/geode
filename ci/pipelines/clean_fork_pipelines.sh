@@ -14,6 +14,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+set -eu
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -22,10 +25,11 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-TARGET=geode
+TARGET=concourse.apachegeode-ci.info
 GEODE_FORK=${1}
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 GEODE_BRANCH=${2:-${CURRENT_BRANCH}}
+GCP_PROJECT=${3:-apachegeode-ci}
 
 . ${SCRIPTDIR}/shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
@@ -60,17 +64,17 @@ echo "Deleting build pipeline if it exists..."
 BUILD_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-main"
 fly -t ${TARGET} destroy-pipeline --non-interactive -p ${BUILD_PIPELINE}
 
-gcloud container images list | grep "${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}" | while IFS= read -r line; do
+gcloud --project="${GCP_PROJECT}" container images list | grep "${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}" | while IFS= read -r line; do
   echo "Deleting image: ${line}"
-  gcloud container images delete ${line}:latest --quiet
-  gcloud container images list-tags ${line} --filter='-tags:*'  --format='get(digest)' | while IFS= read -r line2; do
-    echo "Deleting image: ${line2}"
-    gcloud container images delete ${line}@${line2} --quiet
+  gcloud --project="${GCP_PROJECT}" container images delete ${line}:latest --quiet
+  gcloud --project="${GCP_PROJECT}" container images list-tags ${line} --filter='-tags:*'  --format='get(digest)' | while IFS= read -r line2; do
+  echo "Deleting image: ${line2}"
+  gcloud --project="${GCP_PROJECT}" container images delete ${line}@${line2} --quiet
   done
 done
-
-gcloud compute images list | awk "/^${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}/ {print \$1}" | while IFS= read -r line; do
+set -x
+gcloud --project="${GCP_PROJECT}" compute images list --filter="family ~ ${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}" --format='value(name)' | while IFS= read -r line; do
   echo "Deleting image: ${line}"
-  gcloud compute images delete ${line} --quiet
+  gcloud --project="${GCP_PROJECT}" compute images delete ${line} --quiet
 done
 
