@@ -200,7 +200,7 @@ tests:
   PARALLEL_DUNIT: 'true'
   PARALLEL_GRADLE: 'true'
   PLATFORM: windows
-  RAM: '24'
+  RAM: '16'
   name: windows-integration
 - ARTIFACT_SLUG: windows-coreintegrationtestfiles
   CPUS: '16'
@@ -212,7 +212,7 @@ tests:
   PARALLEL_DUNIT: 'true'
   PARALLEL_GRADLE: 'true'
   PLATFORM: windows
-  RAM: '16'
+  RAM: '24'
   name: windows-core-integration
 - ARTIFACT_SLUG: windows-unittestfiles
   CPUS: '10'
