@@ -120,6 +120,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
   }
 
   private static final boolean SHOW_LOCKS = Boolean.getBoolean("gemfire.threadmonitor.showLocks");
+  private static final boolean BATCH_CALLS = Boolean.getBoolean("gemfire.threadmonitor.batchCalls");
 
   @VisibleForTesting
   public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
@@ -127,7 +128,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
       return Collections.emptyMap();
     }
     Map<Long, ThreadInfo> result = new HashMap<>();
-    if (SHOW_LOCKS) {
+    if (BATCH_CALLS) {
       long[] ids = new long[stuckThreadIds.size()];
       int idx = 0;
       for (long id : stuckThreadIds) {
@@ -139,7 +140,8 @@ public class ThreadsMonitoringProcess extends TimerTask {
        * will core dump if the long array contains a duplicate value.
        * That is why stuckThreadIds is a Set instead of a List.
        */
-      ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().getThreadInfo(ids, true, true);
+      ThreadInfo[] threadInfos =
+          ManagementFactory.getThreadMXBean().getThreadInfo(ids, SHOW_LOCKS, SHOW_LOCKS);
       for (ThreadInfo threadInfo : threadInfos) {
         if (threadInfo != null) {
           result.put(threadInfo.getThreadId(), threadInfo);
@@ -147,8 +149,14 @@ public class ThreadsMonitoringProcess extends TimerTask {
       }
     } else {
       for (long id : stuckThreadIds) {
-        ThreadInfo threadInfo =
-            ManagementFactory.getThreadMXBean().getThreadInfo(id, Integer.MAX_VALUE);
+        ThreadInfo threadInfo;
+        if (SHOW_LOCKS) {
+          ThreadInfo[] threadInfos =
+              ManagementFactory.getThreadMXBean().getThreadInfo(new long[] {id}, true, true);
+          threadInfo = threadInfos[0];
+        } else {
+          threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id, Integer.MAX_VALUE);
+        }
         if (threadInfo != null) {
           result.put(threadInfo.getThreadId(), threadInfo);
         }
