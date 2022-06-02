@@ -1,8 +1,14 @@
 package org.apache.geode.internal.cache.event;
 
+import org.apache.geode.internal.cache.AbstractRegionMapTest;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.versions.VMVersionTag;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class BulkOperationHolderTest {
 
@@ -15,9 +21,28 @@ class BulkOperationHolderTest {
   }
 
   @Test
-  void testToString() {
+  void testToStringEmpty() {
     BulkOperationHolder obj = new BulkOperationHolder();
     assertEquals("BulkOperationHolder tags={}", obj.toString());
+  }
+
+  @Test
+  void testToStringWithContent() {
+    BulkOperationHolder obj = new BulkOperationHolder();
+    EventID event = mock(EventID.class);
+    VersionTag tag = mock(VMVersionTag.class);
+    when(event.toString()).thenReturn("mocked event");
+    when(tag.toString()).thenReturn("mocked version tag");
+    obj.putVersionTag(event, tag);
+    assertEquals("BulkOperationHolder tags={mocked event=mocked version tag}", obj.toString());
+    EventID event2 = mock(EventID.class);
+    VersionTag tag2 = mock(VMVersionTag.class);
+    when(event2.toString()).thenReturn("mocked event2");
+    when(tag2.toString()).thenReturn("mocked version tag2");
+    obj.putVersionTag(event2, tag2);
+    String expected = "BulkOperationHolder tags={mocked event=mocked version tag, mocked event2=mocked version tag2}";
+//    String expected = "BulkOperationHolder tags={mocked event2=mocked version tag2, mocked event2=mocked version tag2}";
+    assertEquals(expected, obj.toString());
   }
 
   @Test
