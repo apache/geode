@@ -52,7 +52,7 @@ public interface CompiledValue {
   int SUBTRACTION = -20;
   int DIVISION = -21;
   int MULTIPLICATION = -22;
-  int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
+  int INDEX_RESULT_THRESHOLD_DEFAULT = Integer.MAX_VALUE;
   String INDX_THRESHOLD_PROP_STR = GeodeGlossary.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
   String INDEX_INFO = "index_info";
   int indexThresholdSize =

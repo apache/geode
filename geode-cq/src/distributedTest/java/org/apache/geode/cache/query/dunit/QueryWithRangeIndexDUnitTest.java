@@ -77,6 +77,14 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
   private static final String regionName = "exampleRegion";
 
+  private static final String query = "query --query=\"<trace> select e.key, e.value from " +
+      SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'abc%'\"";
+
+  private static final String queryWithLimit =
+      "query --query=\"<trace> select e.key, e.value from " +
+          SEPARATOR + regionName
+          + ".entrySet e where e.value.positions['SUN'] like 'abc%' limit 5\"";
+
   @Before
   public void setUp() throws Exception {
     VM locator = getVM(0);
@@ -95,12 +103,45 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
     locator.invoke(() -> startLocator(locatorDir, locatorPort, locatorJmxPort));
 
     gfsh.connectAndVerify(locatorJmxPort, GfshCommandRule.PortType.jmxManager);
-
-    server.invoke(() -> startServer(serverDir, serverPort, locators));
   }
 
   @Test
   public void testQueryWithWildcardAndIndexOnAttributeFromHashMap() {
+    server.invoke(() -> startServer(serverDir, serverPort, locators));
+
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=PARTITION")
+        .statusIsSuccess();
+
+    server.invoke(() -> {
+      Cache cache = CacheFactory.getAnyInstance();
+      QueryService cacheQS = cache.getQueryService();
+      cacheQS.createIndex("IdIndex", "value.positions['SUN']",
+          SEPARATOR + regionName + ".entrySet");
+      Region<Integer, Portfolio> region =
+          cache.getRegion(regionName);
+
+      for (int i = 1; i < 5001; i++) {
+        Portfolio p1 = new Portfolio(i, i);
+        p1.positions = new HashMap<>();
+        p1.positions.put("IBM", "something");
+        if (i == 1000) {
+          p1.positions.put("SUN", "abcd");
+        } else {
+          p1.positions.put("SUN", "abac");
+        }
+        region.put(i, p1);
+      }
+    });
+
+    String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
+    assertThat(cmdResult).contains("\"Rows\":\"1\"");
+    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 5000)");
+  }
+
+  @Test
+  public void testQueryWithWildcardAndIndexThresholdSizeChanged() {
+    server.invoke(() -> startServerWithProperty(serverDir, serverPort, locators));
+
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=PARTITION")
         .statusIsSuccess();
 
@@ -116,17 +157,14 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
         Portfolio p1 = new Portfolio(i, i);
         p1.positions = new HashMap<>();
         p1.positions.put("IBM", "something");
-        if (i == 1) {
-          p1.positions.put("SUN", "something");
+        if (i == 1000) {
+          p1.positions.put("SUN", "abcd");
         } else {
-          p1.positions.put("SUN", "some");
+          p1.positions.put("SUN", "aab");
         }
         region.put(i, p1);
       }
     });
-
-    String query = "query --query=\"<trace> select e.key, e.value from " +
-        SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'somethin%'\"";
 
     String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
     assertThat(cmdResult).contains("\"Rows\":\"1\"");
@@ -135,6 +173,8 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
   @Test
   public void testLimitIsAppliedOnlyOnQueryResults() {
+    server.invoke(() -> startServerWithProperty(serverDir, serverPort, locators));
+
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=PARTITION")
         .statusIsSuccess();
 
@@ -151,21 +191,22 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
         p1.positions = new HashMap<>();
         p1.positions.put("IBM", "something");
         if (i % 2 == 0) {
-          p1.positions.put("SUN", "something");
+          p1.positions.put("SUN", "abcd");
         } else {
-          p1.positions.put("SUN", "some");
+          p1.positions.put("SUN", "abdef");
         }
         region.put(i, p1);
       }
     });
 
-    String query = "query --query=\"<trace> select e.key, e.value from " +
-        SEPARATOR + regionName
-        + ".entrySet e where e.value.positions['SUN'] like 'somethin%' limit 5\"";
-
     String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
-    assertThat(cmdResult).contains("\"Rows\":\"5\"");
-    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 10000)");
+    assertThat(cmdResult).contains("\"Rows\":\"100\"");
+    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 5000)");
+
+    String cmdResultWithLimit =
+        String.valueOf(gfsh.executeAndAssertThat(queryWithLimit).getResultModel());
+    assertThat(cmdResultWithLimit).contains("\"Rows\":\"5\"");
+    assertThat(cmdResultWithLimit).contains("indexesUsed(1):IdIndex(Results: 5000)");
   }
 
   private static void startLocator(File workingDirectory, int locatorPort,
@@ -191,7 +232,6 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
   private static void startServer(File workingDirectory, int serverPort,
       String locators) {
-    System.setProperty(GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE", "10000");
     ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setDeletePidFileOnStop(Boolean.TRUE)
         .setMemberName(serverName)
@@ -202,5 +242,11 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
         .build();
 
     serverLauncher.start();
+  }
+
+  private static void startServerWithProperty(File workingDirectory, int serverPort,
+      String locators) {
+    System.setProperty(GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE", "10000");
+    startServer(workingDirectory, serverPort, locators);
   }
 }
