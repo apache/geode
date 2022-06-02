@@ -104,8 +104,6 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
 
   @After
   public void tearDown() {
-    clientCache.close();
-    clientCache = null;
     port = -1;
 
     server.stopContainer();
@@ -115,5 +113,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     sessionManager = null;
     region = null;
 
+    clientCache.close();
+    clientCache = null;
   }
 }

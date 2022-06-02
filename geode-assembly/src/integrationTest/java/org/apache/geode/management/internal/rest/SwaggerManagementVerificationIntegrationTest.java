@@ -55,7 +55,7 @@ public class SwaggerManagementVerificationIntegrationTest {
 
     // Check the JSON
     JsonNode json =
-        assertResponse(client.get("/management/v1/api-docs")).hasStatusCode(200)
+        assertResponse(client.get("/management/v3/api-docs")).hasStatusCode(200)
             .getJsonObject();
     assertThat(json.get("openapi").asText(), is("3.0.1"));
 

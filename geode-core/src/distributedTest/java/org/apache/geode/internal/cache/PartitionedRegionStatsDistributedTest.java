@@ -16,12 +16,12 @@ package org.apache.geode.internal.cache;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.Serializable;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.Statistics;
@@ -31,11 +31,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
-
-public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
+@SuppressWarnings("serial")
+public class PartitionedRegionStatsDistributedTest implements Serializable {
 
   private static final int CNT = 10;
   private static final int PUT = 1;
@@ -51,55 +51,64 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
   public static final String STAT_CONFIGURED_REDUNDANT_COPIES = "configuredRedundantCopies";
   public static final String STAT_ACTUAL_REDUNDANT_COPIES = "actualRedundantCopies";
 
-  private VM vm0;
-  private VM vm1;
-  private VM vm2;
-  private VM vm3;
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
-  private String regionName;
-
-  @Before
-  public void setUp() throws Exception {
-    vm0 = getHost(0).getVM(0);
-    vm1 = getHost(0).getVM(1);
-    vm2 = getHost(0).getVM(2);
-    vm3 = getHost(0).getVM(3);
-
-    regionName = "region";
-  }
+  private final String regionName = "region";
 
   @Test
-  public void testClose() throws Exception {
+  public void whenOperationsAreDoneOnEntriesThenStatsMustBeCorrect() {
+    MemberVM locator1 = clusterStartupRule.startLocatorVM(0);
+    int locator1Port = locator1.getPort();
+
+    MemberVM server1 =
+        clusterStartupRule.startServerVM(2,
+            s -> s.withConnectionToLocator(locator1Port));
+    MemberVM server2 =
+        clusterStartupRule.startServerVM(3,
+            s -> s.withConnectionToLocator(locator1Port));
+    MemberVM server3 =
+        clusterStartupRule.startServerVM(4,
+            s -> s.withConnectionToLocator(locator1Port));
+    MemberVM server4 =
+        clusterStartupRule.startServerVM(5,
+            s -> s.withConnectionToLocator(locator1Port));
+
     // Create PRs on 3 VMs and accessors on 1 VM
-    vm0.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
-    vm1.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
-    vm2.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
-    vm3.invoke(() -> createPartitionedRegion(regionName, 0, 1, 5));
+    server1.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
+    server2.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
+    server3.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
+    server4.invoke(() -> createPartitionedRegion(regionName, 0, 1, 5));
 
     // Do Region operations.
-    vm0.invoke(() -> doOpsOnRegion(regionName, PUT));
-    vm0.invoke(() -> doOpsOnRegion(regionName, GET));
-    vm0.invoke(() -> doOpsOnRegion(regionName, GET_ENTRY));
-    vm0.invoke(() -> doOpsOnRegion(regionName, CONTAINS_KEY));
-    vm0.invoke(() -> doOpsOnRegion(regionName, CONTAINS_VALUE_FOR_KEY));
-    vm0.invoke(() -> doOpsOnRegion(regionName, INVALIDATE));
-    vm0.invoke(() -> doOpsOnRegion(regionName, DESTROY));
+    server1.invoke(() -> doOpsOnRegion(regionName, PUT));
+    server1.invoke(() -> doOpsOnRegion(regionName, GET));
+    server1.invoke(() -> doOpsOnRegion(regionName, GET_ENTRY));
+    server1.invoke(() -> doOpsOnRegion(regionName, CONTAINS_KEY));
+    server1.invoke(() -> doOpsOnRegion(regionName, CONTAINS_VALUE_FOR_KEY));
+    server1.invoke(() -> doOpsOnRegion(regionName, INVALIDATE));
+    server1.invoke(() -> doOpsOnRegion(regionName, DESTROY));
 
-    vm0.invoke(() -> validatePartitionedRegionOpsStats(regionName));
+    server1.invoke(() -> validatePartitionedRegionOpsStats(regionName));
 
-    vm0.invoke(() -> validateRedundantCopiesStats(regionName));
+    server1.invoke(() -> validateRedundantCopiesStats(regionName));
   }
 
   /**
-   * Ok, first problem, GC'd tombstone is counted as an entry To test - modifying a tombstone -
-   * modifying and doing tombstone GC?
+   * Test to ensure that tombstone entries are not counted as a part of region entries
    */
   @Test
-  public void testDataStoreEntryCountWithRebalance() throws Exception {
-    vm0.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
+  public void whenEntryIsDestroyedThenTombstoneShouldNotBePartOfEntries() {
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 =
+        clusterStartupRule.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server2 =
+        clusterStartupRule.startServerVM(2, s -> s.withConnectionToLocator(locatorPort));
+    server1.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    vm0.invoke(() -> {
-      Cache cache = getCache();
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       Region<Integer, Integer> region = cache.getRegion(regionName);
       region.put(0, 0);
       region.put(1, 1);
@@ -109,109 +118,129 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
       region.destroy(1);
     });
 
-    vm1.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
+    server2.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    vm0.invoke(() -> validateEntryCount(regionName, 1));
-    vm1.invoke(() -> validateEntryCount(regionName, 1));
+    server1.invoke(() -> validateEntryCount(regionName, 1));
+    server2.invoke(() -> validateEntryCount(regionName, 1));
   }
 
   @Test
-  public void testDataStoreEntryCount2WithRebalance() throws Exception {
-    vm0.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
+  public void whenRegionPutsAreDoneAndRebalanceCompletedThenStatsShouldBeCorrect() {
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 =
+        clusterStartupRule.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server2 =
+        clusterStartupRule.startServerVM(2, s -> s.withConnectionToLocator(locatorPort));
+    server1.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    vm0.invoke(() -> {
-      Cache cache = getCache();
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       Region<Integer, Integer> region = cache.getRegion(regionName);
       for (int i = 0; i <= 5; i++) {
         region.put(i, i);
       }
     });
 
-    vm1.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
+    server2.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    vm0.invoke(() -> validateEntryCount(regionName, 3));
-    vm1.invoke(() -> validateEntryCount(regionName, 3));
+    server1.invoke(() -> validateEntryCount(regionName, 3));
+    server2.invoke(() -> validateEntryCount(regionName, 3));
   }
 
   /**
    * Test to make sure the datastore entry count is accurate.
-   *
-   * Ok, first problem, GC'd tombstone is counted as an entry To test - modifying a tombstone -
-   * modifying and doing tombstone GC?
+   * Region entry stats are validated before and after entry destroy.
+   * Ensure that tombstones and tombstone GC are not affecting the region
+   * entry count.
    */
   @Test
-  public void testDataStoreEntryCount() throws Exception {
-    vm0.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
-    vm1.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
+  public void tombstoneAndGCShouldNotAffectTheEntryCount() {
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server0 =
+        clusterStartupRule.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server1 =
+        clusterStartupRule.startServerVM(2, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server2 =
+        clusterStartupRule.startServerVM(3, s -> s.withConnectionToLocator(locatorPort));
+    server0.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
+    server1.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
 
-    vm0.invoke(() -> putDataInRegion(regionName));
+    server0.invoke(() -> putDataInRegion(regionName));
 
-    vm0.invoke(() -> validateEntryCount(regionName, 4));
-    vm1.invoke(() -> validateEntryCount(regionName, 4));
+    server0.invoke(() -> validateEntryCount(regionName, 4));
+    server1.invoke(() -> validateEntryCount(regionName, 4));
 
     // Do a destroy
-    vm0.invoke(() -> {
-      Cache cache = getCache();
+    server0.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       Region<Integer, Integer> region = cache.getRegion(regionName);
       region.destroy(0);
     });
 
     // We expect the tombstone won't be recorded as part of the entry count
-    vm0.invoke(() -> validateEntryCount(regionName, 3));
-    vm1.invoke(() -> validateEntryCount(regionName, 3));
+    server0.invoke(() -> validateEntryCount(regionName, 3));
+    server1.invoke(() -> validateEntryCount(regionName, 3));
 
     // Destroy and modify a tombstone
-    vm0.invoke(() -> {
-      Cache cache = getCache();
+    server0.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       Region<Integer, Integer> region = cache.getRegion(regionName);
       region.destroy(113);
       region.put(113, 113);
     });
 
-    vm0.invoke(() -> validateEntryCount(regionName, 3));
-    vm1.invoke(() -> validateEntryCount(regionName, 3));
+    server0.invoke(() -> validateEntryCount(regionName, 3));
+    server1.invoke(() -> validateEntryCount(regionName, 3));
 
     // After GII (which might include the tombstone), a new members should still see only 2 live
     // entries.
-    vm2.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
+    server2.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
 
     // Wait for redundancy to be restored. Once it is the entry count should be 2
-    vm2.invoke(() -> {
-      Cache cache = getCache();
+    server2.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
       PartitionedRegionStats prStats = region.getPrStats();
       await()
           .untilAsserted(() -> assertThat(prStats.getLowRedundancyBucketCount()).isEqualTo(0));
     });
 
-    vm2.invoke(() -> validateEntryCount(regionName, 3));
+    server2.invoke(() -> validateEntryCount(regionName, 3));
 
     // A tombstone GC shouldn't affect the count.
-    vm0.invoke(() -> {
-      InternalCache cache = getCache();
+    server0.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
       TombstoneService tombstoneService = cache.getTombstoneService();
       tombstoneService.forceBatchExpirationForTests(1);
     });
 
-    vm0.invoke(() -> validateEntryCount(regionName, 3));
-    vm1.invoke(() -> validateEntryCount(regionName, 3));
-    vm2.invoke(() -> validateEntryCount(regionName, 3));
+    server0.invoke(() -> validateEntryCount(regionName, 3));
+    server1.invoke(() -> validateEntryCount(regionName, 3));
+    server2.invoke(() -> validateEntryCount(regionName, 3));
   }
 
   @Test
-  public void testTotalNumBuckets() {
-    vm0.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
-    vm1.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
+  public void testThatServersHaveTheCorrectNumberOfBucketsAfterPuts() {
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server0 =
+        clusterStartupRule.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server1 =
+        clusterStartupRule.startServerVM(2, s -> s.withConnectionToLocator(locatorPort));
+    server0.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
+    server1.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
 
-    vm0.invoke(() -> putDataInRegion(regionName));
-    vm1.invoke(() -> putDataInRegion(regionName));
+    server0.invoke(() -> putDataInRegion(regionName));
+    server1.invoke(() -> putDataInRegion(regionName));
 
-    vm0.invoke(() -> validateTotalNumBucketsCount(regionName, DEFAULT_NUM_BUCKETS));
-    vm1.invoke(() -> validateTotalNumBucketsCount(regionName, DEFAULT_NUM_BUCKETS));
+    server0.invoke(() -> validateTotalNumBucketsCount(regionName, DEFAULT_NUM_BUCKETS));
+    server1.invoke(() -> validateTotalNumBucketsCount(regionName, DEFAULT_NUM_BUCKETS));
   }
 
   private void putDataInRegion(final String regionName) {
-    Cache cache = getCache();
+    Cache cache = ClusterStartupRule.getCache();
     Region<Integer, Integer> region = cache.getRegion(regionName);
     region.put(0, 0);
     region.put(1, 1);
@@ -220,10 +249,11 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
   }
 
   private void createPartitionedRegionWithRedundantCopies(final String regionName) {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributesFactory<Integer, Integer> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(2);
 
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<Integer, Integer> regionFactory =
+        ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(paf.create());
 
     regionFactory.create(regionName);
@@ -231,34 +261,36 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
 
   private void createPartitionedRegion(final String regionName, final int localMaxMemory,
       final int redundancy, int totalNumBuckets) {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributesFactory<Integer, Integer> paf = new PartitionAttributesFactory<>();
     paf.setLocalMaxMemory(localMaxMemory);
     paf.setRedundantCopies(redundancy);
     paf.setTotalNumBuckets(totalNumBuckets);
 
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<Integer, Integer> regionFactory =
+        ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(paf.create());
-
     regionFactory.create(regionName);
   }
 
   private void createPartitionedRegionWithRebalance(final String regionName, int redundancy)
       throws InterruptedException, TimeoutException {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributesFactory<Integer, Integer> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(redundancy);
 
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<Integer, Integer> regionFactory =
+        ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(paf.create());
 
     regionFactory.create(regionName);
 
-    RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
+    RebalanceOperation op =
+        ClusterStartupRule.getCache().getResourceManager().createRebalanceFactory().start();
 
     op.getResults(2, MINUTES);
   }
 
   private void validateEntryCount(final String regionName, final int expectedCount) {
-    Cache cache = getCache();
+    Cache cache = ClusterStartupRule.getCache();
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
     PartitionedRegionStats stats = region.getPrStats();
     CachePerfStats cachePerfStats = region.getCachePerfStats();
@@ -269,7 +301,7 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
   }
 
   private void validateTotalNumBucketsCount(final String regionName, final int expectedCount) {
-    Cache cache = getCache();
+    Cache cache = ClusterStartupRule.getCache();
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
     PartitionedRegionStats stats = region.getPrStats();
 
@@ -277,7 +309,7 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
   }
 
   private void doOpsOnRegion(final String regionName, final int opType) {
-    doOpsOnRegion(getCache().getRegion(regionName), opType);
+    doOpsOnRegion(ClusterStartupRule.getCache().getRegion(regionName), opType);
   }
 
   private void doOpsOnRegion(final Region<Integer, Integer> region, final int opType) {
@@ -325,12 +357,10 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
   }
 
   private void validatePartitionedRegionOpsStats(final String regionName) {
-    Cache cache = getCache();
-    PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion(regionName);
+    Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(regionName);
 
-    assertThat(partitionedRegion).isNotNull();
-
-    Statistics stats = partitionedRegion.getPrStats().getStats();
+    assertThat(region).isNotNull();
+    Statistics stats = ((PartitionedRegion) region).getPrStats().getStats();
 
     int putsCompleted = stats.get("putsCompleted").intValue();
     int getsCompleted = stats.get("getsCompleted").intValue();
@@ -355,12 +385,11 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
   }
 
   private void validateRedundantCopiesStats(final String regionName) {
-    Cache cache = getCache();
-    PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion(regionName);
 
-    assertThat(partitionedRegion).isNotNull();
+    Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(regionName);
+    assertThat(region).isNotNull();
 
-    Statistics stats = partitionedRegion.getPrStats().getStats();
+    Statistics stats = ((PartitionedRegion) region).getPrStats().getStats();
     int configuredRedundantCopies = stats.get(STAT_CONFIGURED_REDUNDANT_COPIES).intValue();
     int actualRedundantCopies = stats.get(STAT_ACTUAL_REDUNDANT_COPIES).intValue();
 

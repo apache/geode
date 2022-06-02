@@ -32,7 +32,11 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
 public class DiskStoreImplValueRecoveryTest {
 
@@ -46,9 +50,19 @@ public class DiskStoreImplValueRecoveryTest {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     internalResourceManager = mock(InternalResourceManager.class);
 
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    DistributionManager dm = mock(DistributionManager.class);
+    ThreadsMonitoring threadsMonitoring = mock(ThreadsMonitoring.class);
+
     when(statisticsFactory.createStatistics(any(), any())).thenReturn(mock(Statistics.class));
     when(cache.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(cache.getDiskStoreMonitor()).thenReturn(mock(DiskStoreMonitor.class));
+
+    when(cache.getInternalDistributedSystem()).thenReturn(ids);
+    when(ids.getDM()).thenReturn(dm);
+    when(dm.getThreadMonitoring()).thenReturn(threadsMonitoring);
+    when(threadsMonitoring.createAbstractExecutor(any())).thenReturn(mock(AbstractExecutor.class));
+
 
     diskStore = new DiskStoreImpl(cache, "name", diskStoreAttributes, false, null, false, false,
         false, false, false, false, statisticsFactory,

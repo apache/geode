@@ -649,8 +649,9 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
           .hasCauseInstanceOf(AuthenticationFailedException.class);
     });
 
-    // client can't re-authenticate back, no CacheClientProxy exists (old queue destroyed)
-    assertThat(server.getServer().getAllClientSessions()).isEmpty();
+    // client can't re-authenticate back, no CacheClientProxy exists (old queue destroyed
+    // eventually)
+    await().untilAsserted(() -> assertThat(server.getServer().getAllClientSessions()).isEmpty());
   }
 
   @Test

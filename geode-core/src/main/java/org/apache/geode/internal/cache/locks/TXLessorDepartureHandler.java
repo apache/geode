@@ -108,8 +108,9 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
       // this shouldn't happen unless we're shutting down or someone has set a size constraint
       // on the waiting-pool using a system property
       if (!dm.getCancelCriterion().isCancelInProgress()) {
-        logger.warn("Unable to schedule background cleanup of transactions for departed member {}."
-            + "  Performing in-line cleanup of the transactions.");
+        logger.warn(
+            "Unable to schedule background cleanup of transactions for departed member {}. Performing in-line cleanup of the transactions.",
+            owner);
         recoverTx.run();
       }
     }

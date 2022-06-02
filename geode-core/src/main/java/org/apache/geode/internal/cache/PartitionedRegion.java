@@ -5086,8 +5086,8 @@ public class PartitionedRegion extends LocalRegion
         PartitionedRegion pr = (PartitionedRegion) o;
         if (pr.getPRId() == prId) {
           if (!pr.getRegionIdentifier().equals(regionId)) {
-            logger.warn("{} is using PRID {} for {} but this process maps that PRID to {}",
-                sender, prId, pr.getRegionIdentifier(), pr.getPRId());
+            logger.warn("{} is using PRID {} for regionId {} but this process maps that PRID to {}",
+                sender, prId, regionId, pr.getRegionIdentifier());
           }
         } else if (pr.getRegionIdentifier().equals(regionId)) {
           logger.warn("{} is using PRID {} for {} but this process is using PRID {}",
@@ -5547,8 +5547,8 @@ public class PartitionedRegion extends LocalRegion
       logger.debug("cleanupFailedInitialization: end of {}", getName());
     }
     if (savedFirstRuntimeException instanceof DistributedSystemDisconnectedException) {
-      logger.warn("cleanupFailedInitialization originally failed with {}",
-          savedFirstRuntimeException.toString());
+      logger.warn("cleanupFailedInitialization originally failed with:",
+          savedFirstRuntimeException);
       throw (DistributedSystemDisconnectedException) savedFirstRuntimeException;
     }
   }

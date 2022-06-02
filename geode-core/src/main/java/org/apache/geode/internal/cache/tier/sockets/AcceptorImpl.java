@@ -1304,7 +1304,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         closeSocket(socket);
         if (isRunning()) {
           if (logger.isDebugEnabled()) {
-            logger.debug("Aborted due to interrupt: {}", e);
+            logger.debug("Aborted due to interrupt:", e);
           }
         }
       } catch (IOException e) {

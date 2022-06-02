@@ -190,29 +190,29 @@ tests:
   RAM: '32'
   name: windows-gfsh-distributed
 - ARTIFACT_SLUG: windows-integrationtestfiles
-  CPUS: '6'
+  CPUS: '16'
   DISK: '200GB'
-  DUNIT_PARALLEL_FORKS: '0'
+  DUNIT_PARALLEL_FORKS: 12
   EXECUTE_TEST_TIMEOUT: 4h
   GRADLE_TASK: integrationTest
   GRADLE_TASK_OPTIONS: -x geode-core:integrationTest
   MAX_IN_FLIGHT: 2
-  PARALLEL_DUNIT: 'false'
-  PARALLEL_GRADLE: 'false'
+  PARALLEL_DUNIT: 'true'
+  PARALLEL_GRADLE: 'true'
   PLATFORM: windows
-  RAM: '8'
+  RAM: '16'
   name: windows-integration
 - ARTIFACT_SLUG: windows-coreintegrationtestfiles
-  CPUS: '6'
+  CPUS: '16'
   DISK: '200GB'
-  DUNIT_PARALLEL_FORKS: '0'
+  DUNIT_PARALLEL_FORKS: 12
   EXECUTE_TEST_TIMEOUT: 7h
   GRADLE_TASK: geode-core:integrationTest
   MAX_IN_FLIGHT: 3
-  PARALLEL_DUNIT: 'false'
-  PARALLEL_GRADLE: 'false'
+  PARALLEL_DUNIT: 'true'
+  PARALLEL_GRADLE: 'true'
   PLATFORM: windows
-  RAM: '10'
+  RAM: '16'
   name: windows-core-integration
 - ARTIFACT_SLUG: windows-unittestfiles
   CPUS: '10'
@@ -223,6 +223,7 @@ tests:
   MAX_IN_FLIGHT: 1
   ONLY_JDK: 11
   PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'true'
   PLATFORM: windows
   RAM: '10'
   name: windows-unit

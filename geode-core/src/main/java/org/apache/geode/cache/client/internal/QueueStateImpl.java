@@ -310,7 +310,7 @@ public class QueueStateImpl implements QueueState {
           success = true;
         } catch (Exception ex) {
           if (logger.isDebugEnabled()) {
-            logger.debug("Exception while sending an ack to the primary server: {}", ex);
+            logger.debug("Exception while sending an ack to the primary server:", ex);
           }
         } finally {
           if (!success) {

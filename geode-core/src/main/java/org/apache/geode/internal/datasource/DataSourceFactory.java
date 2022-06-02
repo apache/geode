@@ -131,7 +131,7 @@ public class DataSourceFactory {
       cf = mcf.createConnectionFactory((ConnectionManager) cm);
     } catch (Exception ex) {
       logger.error(
-          "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+          "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string:{}",
           ex.toString());
       throw new DataSourceCreateException(
           String.format(

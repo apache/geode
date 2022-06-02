@@ -263,7 +263,7 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
         logger.debug("Naming Exception caught in lookup: " + e);
         fail("failed in naming lookup: " + e);
       } catch (Exception e) {
-        logger.debug("Exception caught during naming lookup: {}", e);
+        logger.debug("Exception caught during naming lookup:", e);
         fail("failed in naming lookup: " + e);
       }
       try {
@@ -271,7 +271,7 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
           ds.getConnection();
         }
       } catch (Exception e) {
-        logger.debug("Exception caught in runTest1: {}", e);
+        logger.debug("Exception caught in runTest1:", e);
         fail("Exception caught in runTest1: " + e);
       }
     } finally {
@@ -325,11 +325,11 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
         fail("expected a Login time-out exceeded");
       } catch (SQLException sqle) {
         if (sqle.getMessage().indexOf("Login time-out exceeded") == -1) {
-          logger.debug("Exception caught in runTest2: {}", sqle);
+          logger.debug("Exception caught in runTest2:", sqle);
           fail("failed because of unhandled exception : " + sqle);
         }
       } catch (Exception e) {
-        logger.debug("Exception caught in runTest2: {}", e);
+        logger.debug("Exception caught in runTest2:", e);
         fail("failed because of unhandled exception : " + e);
       }
     } finally {

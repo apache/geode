@@ -23,7 +23,7 @@ groups:
   jobs:
   - {{ build_test.name }}
 {%- for test in tests %}
-  {%- for java_test_version in (java_test_versions) if (java_test_version.version == 11 or (java_test_version.version == 8 and test.PLATFORM == "linux") or (java_test_version.version == 17 and test.PLATFORM == "linux")) and ((not test.ONLY_JDK is defined) or test.ONLY_JDK == java_test_version.version) %}
+  {%- for java_test_version in (java_test_versions) if (not test.ONLY_JDK is defined) or test.ONLY_JDK == java_test_version.version %}
   - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
@@ -36,6 +36,15 @@ resources:
     disable_ci_skip: false
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
+- name: geode-windows-jdk8
+  type: pull-request
+  source:
+    access_token: ((github-apachegeode-ci-read-only-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+    base_branch: {{repository.branch}}
+    labels: [windows-jdk8]
 - name: geode-windows
   type: pull-request
   source:
@@ -45,6 +54,15 @@ resources:
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
     labels: [windows]
+- name: geode-windows-jdk17
+  type: pull-request
+  source:
+    access_token: ((github-apachegeode-ci-read-only-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+    base_branch: {{repository.branch}}
+    labels: [windows-jdk17]
 - name: geode-jdk8
   type: pull-request
   source:
@@ -299,7 +317,7 @@ jobs:
 
 
 {% for test in tests %}
-  {%- for java_test_version in (java_test_versions) if (java_test_version.version == 11 or (java_test_version.version == 8 and test.PLATFORM == "linux") or (java_test_version.version == 17 and test.PLATFORM == "linux")) and ((not test.ONLY_JDK is defined) or test.ONLY_JDK == java_test_version.version) %}
+  {%- for java_test_version in (java_test_versions) if (not test.ONLY_JDK is defined) or test.ONLY_JDK == java_test_version.version %}
 - name: {{test.name}}-test-{{java_test_version.name}}
   public: true
   plan:
@@ -314,6 +332,12 @@ jobs:
 {%- elif test.PLATFORM == "linux" %}
       - get: geode
         resource: geode-jdk8
+{%- elif test.PLATFORM == "windows" and java_test_version.version == 8 %}
+      - get: geode
+        resource: geode-windows-jdk8
+{%- elif test.PLATFORM == "windows" and java_test_version.version == 17 %}
+      - get: geode
+        resource: geode-windows-jdk17
 {%- else %}
       - get: geode
         resource: geode-windows

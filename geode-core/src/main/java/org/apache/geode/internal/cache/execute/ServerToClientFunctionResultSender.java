@@ -98,7 +98,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("ServerToClientFunctionResultSender sending last result1 {} " + oneResult);
+      logger.debug("ServerToClientFunctionResultSender sending last result1 {}", oneResult);
     }
     try {
       authorizeResult(oneResult);
@@ -145,7 +145,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("ServerToClientFunctionResultSender sending last result2 {} " + oneResult);
+      logger.debug("ServerToClientFunctionResultSender sending last result2 {}", oneResult);
     }
     try {
       authorizeResult(oneResult);
@@ -192,7 +192,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("ServerToClientFunctionResultSender sending result1 {} " + oneResult);
+      logger.debug("ServerToClientFunctionResultSender sending result1 {}", oneResult);
     }
     try {
       authorizeResult(oneResult);
@@ -234,7 +234,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("ServerToClientFunctionResultSender sending result2 {} " + oneResult);
+      logger.debug("ServerToClientFunctionResultSender sending result2 {}", oneResult);
     }
     try {
       authorizeResult(oneResult);
@@ -310,7 +310,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("ServerToClientFunctionResultSender setting exception {} ", exception);
+      logger.debug("ServerToClientFunctionResultSender setting exception:", exception);
     }
     synchronized (msg) {
       if (!sc.getTransientFlag(Command.RESPONDED)) {

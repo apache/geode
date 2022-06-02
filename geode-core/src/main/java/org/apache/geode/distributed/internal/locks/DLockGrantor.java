@@ -909,7 +909,7 @@ public class DLockGrantor {
               // skipping because member is no longer in view
               if (isDebugEnabled_DLS) {
                 logger.trace(LogMarker.DLS_VERBOSE,
-                    "Initialization of held locks is skipping {} because owner {} is not in view: ",
+                    "Initialization of held locks is skipping {} because owner {} is not in view: {}",
                     token, owner, members);
               }
               continue;
@@ -2234,7 +2234,7 @@ public class DLockGrantor {
     synchronized (suspendLock) {
       checkDestroyed();
       if (!dm.isCurrentMember(request.getSender())) {
-        logger.info(LogMarker.DLS_MARKER, "Ignoring lock request from non-member: %s", request);
+        logger.info(LogMarker.DLS_MARKER, "Ignoring lock request from non-member: {}", request);
         return false;
       }
       Integer integer = (Integer) readLockCountMap.get(rThread);
