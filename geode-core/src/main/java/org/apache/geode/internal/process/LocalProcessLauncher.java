@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -41,6 +44,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * @since GemFire 7.0
  */
 class LocalProcessLauncher {
+
+  private static final Logger logger = LogService.getLogger();
 
   static final String PROPERTY_IGNORE_IS_PID_ALIVE =
       GeodeGlossary.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";
@@ -127,6 +132,8 @@ class LocalProcessLauncher {
     File tempPidFile = new File(pidFile.getParent(), pidFile.getName() + ".tmp");
     tempPidFile.createNewFile();
 
+    logger.info("Writing process id {} to {}.", pid, pidFile);
+
     try (FileWriter writer = new FileWriter(tempPidFile)) {
       writer.write(String.valueOf(pid));
       writer.flush();
@@ -140,7 +147,7 @@ class LocalProcessLauncher {
     int otherPid = 0;
     try {
       otherPid = ProcessUtils.readPid(pidFile);
-    } catch (NumberFormatException | IOException ignore) {
+    } catch (NumberFormatException ignore) {
       // suppress
     }
     return otherPid;

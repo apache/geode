@@ -20,16 +20,19 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.test.junit.rules.FolderRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 @Category(LoggingTest.class)
@@ -46,37 +49,41 @@ public class ServerWithCustomLogConfigAcceptanceTest {
   private Path configWithoutGeodePluginsFile;
   private Path serverLogFile;
   private Path customLogFile;
-  private TemporaryFolder temporaryFolder;
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public TestName testName = new TestName();
 
   @Before
   public void setUpLogConfigFiles() {
-    temporaryFolder = gfshRule.getTemporaryFolder();
+    // set up log config files
+    workingDir = folderRule.getFolder().toPath().toAbsolutePath();
 
     configWithGeodePluginsFile = createFileFromResource(
-        getResource(CONFIG_WITH_GEODE_PLUGINS_FILE_NAME), temporaryFolder.getRoot(),
+        getResource(CONFIG_WITH_GEODE_PLUGINS_FILE_NAME), workingDir.toFile(),
         CONFIG_WITH_GEODE_PLUGINS_FILE_NAME)
             .toPath();
 
     configWithoutGeodePluginsFile = createFileFromResource(
-        getResource(CONFIG_WITHOUT_GEODE_PLUGINS_FILE_NAME), temporaryFolder.getRoot(),
+        getResource(CONFIG_WITHOUT_GEODE_PLUGINS_FILE_NAME), workingDir.toFile(),
         CONFIG_WITHOUT_GEODE_PLUGINS_FILE_NAME)
             .toPath();
-  }
 
-  @Before
-  public void setUpOutputFiles() {
-    temporaryFolder = gfshRule.getTemporaryFolder();
-
+    // set up output files
     serverName = testName.getMethodName();
 
-    workingDir = temporaryFolder.getRoot().toPath().toAbsolutePath();
     serverLogFile = workingDir.resolve(serverName + ".log");
     customLogFile = workingDir.resolve("custom.log");
+  }
+
+  @After
+  public void stopServer() {
+    String stopServerCommand = "stop server --dir=" + workingDir;
+    GfshExecution execution = gfshRule.execute(stopServerCommand);
+    execution.serverStopper().awaitStop(workingDir);
   }
 
   @Test
@@ -127,7 +134,7 @@ public class ServerWithCustomLogConfigAcceptanceTest {
   }
 
   @Test
-  public void serverLauncherUsesConfigFileInClasspathWithoutGeodePlugins() throws Exception {
+  public void serverLauncherUsesConfigFileInClasspathWithoutGeodePlugins() throws IOException {
     copy(configWithoutGeodePluginsFile, workingDir.resolve("log4j2.xml"));
 
     String classpath = workingDir.toFile().getAbsolutePath();
@@ -181,7 +188,7 @@ public class ServerWithCustomLogConfigAcceptanceTest {
   }
 
   @Test
-  public void serverLauncherUsesConfigFileInClasspathWithGeodePlugins() throws Exception {
+  public void serverLauncherUsesConfigFileInClasspathWithGeodePlugins() throws IOException {
     copy(configWithGeodePluginsFile, workingDir.resolve("log4j2.xml"));
 
     String classpath = workingDir.toFile().getAbsolutePath();

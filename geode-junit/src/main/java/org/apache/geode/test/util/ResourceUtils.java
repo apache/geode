@@ -19,19 +19,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.file.Files;
 
-import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
  * {@code ResourceUtils} is a utility class for tests that use resources and copy them to
  * directories such as {@code TemporaryFolder}.
- *
- * <p>
- * See also {@link Resources#getResource(String)} and {@link Resources#getResource(Class, String)}.
  */
 @SuppressWarnings("unused")
 public class ResourceUtils {
@@ -131,13 +130,9 @@ public class ResourceUtils {
    */
   public static File createFileFromResource(final URL resource, final File targetFolder,
       final String fileName) {
-    try {
-      File targetFile = new File(targetFolder, fileName);
-      IOUtils.copy(resource.openStream(), new FileOutputStream(targetFile));
-      return targetFile;
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    File targetFile = new File(targetFolder, fileName);
+    copyResourceToFile(resource, targetFile);
+    return targetFile;
   }
 
   /**
@@ -177,9 +172,9 @@ public class ResourceUtils {
    */
   public static File createTempFileFromResource(final URL resource, final String fileName) {
     try {
-      File targetFile = File.createTempFile(fileName, null);
+      File targetFile = Files.createTempFile(fileName, null).toFile();
       targetFile.deleteOnExit();
-      IOUtils.copy(resource.openStream(), new FileOutputStream(targetFile));
+      copyResourceToFile(resource, targetFile);
       return targetFile;
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -292,6 +287,15 @@ public class ResourceUtils {
           .as("Resource path '" + resource.getPath() + "'")
           .exists();
       FileUtils.copyDirectory(source, targetFolder);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private static void copyResourceToFile(final URL resource, final File targetFile) {
+    try (InputStream inputStream = resource.openStream();
+        OutputStream outputStream = new FileOutputStream(targetFile)) {
+      IOUtils.copy(inputStream, outputStream);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
