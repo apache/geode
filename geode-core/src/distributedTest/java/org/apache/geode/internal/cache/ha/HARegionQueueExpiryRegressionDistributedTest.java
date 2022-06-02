@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionPool;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper.setIsSlowStart;
+import static org.apache.geode.internal.cache.tier.sockets.ConflationDistributedTestHelper.setIsSlowStart;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -66,7 +66,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #36853: HA events can expire on primary server and this can cause data loss.
  */
 @Category({ClientSubscriptionTest.class})
-public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
+public class HARegionQueueExpiryRegressionDistributedTest extends CacheTestCase {
 
   /** The time in milliseconds by which the start of dispatcher will be delayed */
   private static final int DISPATCHER_SLOWSTART_TIME = 10_000;

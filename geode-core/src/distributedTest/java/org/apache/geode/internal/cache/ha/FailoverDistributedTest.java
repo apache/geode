@@ -47,7 +47,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDistributedTestHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -64,7 +64,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * receive duplicate events but should not miss any events.
  */
 @Category({ClientSubscriptionTest.class})
-public class FailoverDUnitTest extends JUnit4DistributedTestCase {
+public class FailoverDistributedTest extends JUnit4DistributedTestCase {
 
   protected static Cache cache = null;
   // server
@@ -84,10 +84,10 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     vm1 = host.getVM(1);
 
     // start servers first
-    vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    PORT1 = vm0.invoke(FailoverDUnitTest::createServerCache);
-    PORT2 = vm1.invoke(FailoverDUnitTest::createServerCache);
+    vm0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    vm1.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    PORT1 = vm0.invoke(FailoverDistributedTest::createServerCache);
+    PORT2 = vm1.invoke(FailoverDistributedTest::createServerCache);
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(NetworkUtils.getServerHostName(host), PORT1, PORT2);
@@ -108,10 +108,10 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     createEntries();
     waitForPrimaryAndBackups(1);
     registerInterestList();
-    primary.invoke(FailoverDUnitTest::put);
+    primary.invoke(FailoverDistributedTest::put);
     verifyEntries();
     setClientServerObserver();
-    primary.invoke(FailoverDUnitTest::stopServer);
+    primary.invoke(FailoverDistributedTest::stopServer);
     verifyEntriesAfterFailover();
   }
 
@@ -131,7 +131,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new FailoverDUnitTest().createCache(props);
+    new FailoverDistributedTest().createCache(props);
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -153,7 +153,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createServerCache() throws Exception {
-    new FailoverDUnitTest().createCache(new Properties());
+    new FailoverDistributedTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -271,7 +271,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
       public void beforePrimaryIdentificationFromBackup() {
-        primary.invoke(FailoverDUnitTest::putDuringFailover);
+        primary.invoke(FailoverDistributedTest::putDuringFailover);
         PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
       }
     });
@@ -313,8 +313,8 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     // close the clients first
     closeCache();
     // then close the servers
-    vm0.invoke(FailoverDUnitTest::closeCache);
-    vm1.invoke(FailoverDUnitTest::closeCache);
+    vm0.invoke(FailoverDistributedTest::closeCache);
+    vm1.invoke(FailoverDistributedTest::closeCache);
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 

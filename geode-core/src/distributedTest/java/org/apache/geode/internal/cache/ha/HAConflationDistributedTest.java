@@ -40,7 +40,7 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDistributedTestHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -60,7 +60,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * craete , conflated update & destroy).
  */
 @Category({ClientSubscriptionTest.class})
-public class HAConflationDUnitTest extends JUnit4CacheTestCase {
+public class HAConflationDistributedTest extends JUnit4CacheTestCase {
 
   VM server1 = null;
 
@@ -92,7 +92,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   static int actualNoEvents = 0;
 
-  public HAConflationDUnitTest() {
+  public HAConflationDistributedTest() {
     super();
   }
 
@@ -106,19 +106,20 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     client1 = host.getVM(2);
 
     int PORT1 = server1
-        .invoke(() -> HAConflationDUnitTest.createServerCache(Boolean.FALSE));
-    server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server1.invoke(HAConflationDUnitTest::makeDispatcherSlow);
+        .invoke(() -> HAConflationDistributedTest.createServerCache(Boolean.FALSE));
+    server1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart());
+    server1.invoke(HAConflationDistributedTest::makeDispatcherSlow);
     client1
-        .invoke(() -> HAConflationDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
+        .invoke(() -> HAConflationDistributedTest.createClientCache(
+            NetworkUtils.getServerHostName(host),
             PORT1, Boolean.TRUE));
   }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    client1.invoke(HAConflationDUnitTest::closeCacheAndDisconnect);
+    client1.invoke(HAConflationDistributedTest::closeCacheAndDisconnect);
     // close server
-    server1.invoke(HAConflationDUnitTest::closeCacheAndDisconnect);
+    server1.invoke(HAConflationDistributedTest::closeCacheAndDisconnect);
   }
 
   public static void closeCacheAndDisconnect() {
@@ -299,7 +300,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAConflationDUnitTest().createCache(props);
+    new HAConflationDistributedTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, host, new int[] {PORT1}, true, -1, -1,
         null);
@@ -324,7 +325,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static Integer createServerCache(Boolean isListenerPresent) throws Exception {
-    new HAConflationDUnitTest().createCache(new Properties());
+    new HAConflationDistributedTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableConflation(true);
