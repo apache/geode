@@ -1,24 +1,22 @@
 package org.apache.geode.internal.cache.event;
 
-import org.apache.geode.internal.cache.AbstractRegionMapTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.Test;
+
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.versions.VMVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class BulkOperationHolderTest {
 
   @Test
-  void putVersionTag() {
-  }
+  void putVersionTag() {}
 
   @Test
-  void getEntryVersionTags() {
-  }
+  void getEntryVersionTags() {}
 
   @Test
   void testToStringEmpty() {
@@ -35,14 +33,15 @@ class BulkOperationHolderTest {
     when(tag.toString()).thenReturn("mocked version tag");
     obj.putVersionTag(event, tag);
     assertEquals("BulkOperationHolder tags={mocked event=mocked version tag}", obj.toString());
+    assertEquals(false, obj.toString().matches(".*=\\{.*,.*}$"));
+
     EventID event2 = mock(EventID.class);
     VersionTag tag2 = mock(VMVersionTag.class);
     when(event2.toString()).thenReturn("mocked event2");
     when(tag2.toString()).thenReturn("mocked version tag2");
     obj.putVersionTag(event2, tag2);
-    String expected = "BulkOperationHolder tags={mocked event=mocked version tag, mocked event2=mocked version tag2}";
-//    String expected = "BulkOperationHolder tags={mocked event2=mocked version tag2, mocked event2=mocked version tag2}";
-    assertEquals(expected, obj.toString());
+    // Tags are in an undefined order. Assert that the format is correct.
+    assertEquals(true, obj.toString().matches(".*=\\{.*,.*}$"));
   }
 
   @Test
@@ -136,7 +135,7 @@ class BulkOperationHolderTest {
     obj.expire(8, 8);
     assertEquals(true, obj.isRemoved());
     obj.expire(8, 7);
-    assertEquals( true, obj.isRemoved());
+    assertEquals(true, obj.isRemoved());
     obj.expire(8, 6);
     assertEquals(true, obj.isRemoved());
   }
@@ -151,7 +150,7 @@ class BulkOperationHolderTest {
     obj.expire(8, 12);
     assertEquals(true, obj.isRemoved());
     obj.expire(8, 13);
-    assertEquals( true, obj.isRemoved());
+    assertEquals(true, obj.isRemoved());
     obj.expire(8, 14);
     assertEquals(true, obj.isRemoved());
   }
@@ -166,12 +165,11 @@ class BulkOperationHolderTest {
     obj.expire(8, 8);
     assertEquals(true, obj.isRemoved());
     obj.expire(8, 9);
-    assertEquals( true, obj.isRemoved());
+    assertEquals(true, obj.isRemoved());
     obj.expire(8, 10);
     assertEquals(true, obj.isRemoved());
   }
 
   @Test
-  void isRemoved() {
-  }
+  void isRemoved() {}
 }
