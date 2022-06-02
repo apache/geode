@@ -84,12 +84,18 @@ get-full-version() {
 }
 
 get_geode_pr_exclusion_dirs() {
-  local exclude_dirs=".github ci dev-tools etc geode-book geode-docs CODEOWNERS"
+  local exclude_dirs=".github ci dev-tools etc geode-book geode-docs"
   echo "${exclude_dirs}"
 }
 
+get_geode_pr_exclusion_files() {
+  local exclude_files="CODEOWNERS .gitignore .gitattributes .travis.yml CODEWATCHERS COMMITWATCHERS .asf.yaml CODE_OF_CONDUCT.md README.md TESTING.md"
+  echo "${exclude_files}"
+}
+
 is_source_from_pr_testable() {
-  if [[ $# -ne 2 ]]; then
+  set -x
+  if [[ $# -ne 3 ]]; then
     >&2 echo "Invalid args. Try ${0} \"<repo_path>\" \"<list of exclusion dirs>\""
     exit 1
   fi
@@ -98,6 +104,9 @@ is_source_from_pr_testable() {
     # If the repo_dir does not exist, assume call from non-PR
     return 0;
   fi
+
+  local exclude_dirs="${2}"
+  local exclude_files="${3}"
 
   # shellcheck disable=SC2164
   pushd "${repo_dir}" 2>&1 >> /dev/null
@@ -109,11 +118,12 @@ is_source_from_pr_testable() {
     pushd "${base_dir}" 2>&1 >> /dev/null
       local return_code=0
       if [ -d "${github_pr_dir}" ]; then
-        # Modify this path list with directories to exclude
-        local exclude_dirs="${2}"
         local exclude_pathspec=""
         for d in $(echo ${exclude_dirs}); do
           exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
+        done
+        for f in $(echo ${exclude_files}); do
+          exclude_pathspec="${exclude_pathspec} :(exclude,glob)${f}"
         done
         # shellcheck disable=SC2164
         pushd "${base_dir}" 2>&1 >> /dev/null
