@@ -990,7 +990,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   public void volunteerForPrimary() {
     InternalDistributedMember elector = primaryElector;
-    if (elector != null && regionAdvisor.hasPartitionedRegion(elector)) {
+    if (elector != null && !regionAdvisor.hasPartitionedRegion(elector)) {
       // another server will determine the primary node
       return;
     }
