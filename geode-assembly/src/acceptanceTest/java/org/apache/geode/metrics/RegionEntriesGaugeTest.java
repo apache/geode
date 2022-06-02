@@ -16,6 +16,7 @@
 package org.apache.geode.metrics;
 
 import static java.lang.Integer.parseInt;
+import static java.nio.file.Files.createDirectories;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
@@ -29,7 +30,6 @@ import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
@@ -45,7 +45,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -57,18 +56,17 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.categories.MetricsTest;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 @Category(MetricsTest.class)
 public class RegionEntriesGaugeTest {
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
@@ -76,13 +74,22 @@ public class RegionEntriesGaugeTest {
   private String connectToLocatorCommand;
   private String locatorString;
   private Pool server1Pool;
+  private Path rootFolder;
   private Path serviceJarPath;
 
   @Before
-  public void startMembers() throws Exception {
+  public void startMembers() throws IOException {
+    rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
+
     serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
+
+    Path folderForLocator = createDirectories(rootFolder.resolve("locator"));
+    Path folderForServer1 = createDirectories(rootFolder.resolve("server1"));
+    Path folderForServer2 = createDirectories(rootFolder.resolve("server2"));
+
     int[] availablePorts = getRandomAvailableTCPPorts(4);
+
     int locatorPort = availablePorts[0];
     int locatorJmxPort = availablePorts[1];
     int serverPort1 = availablePorts[2];
@@ -90,14 +97,10 @@ public class RegionEntriesGaugeTest {
 
     locatorString = "localhost[" + locatorPort + "]";
 
-    File folderForLocator = temporaryFolder.newFolder("locator");
-    File folderForServer1 = temporaryFolder.newFolder("server1");
-    File folderForServer2 = temporaryFolder.newFolder("server2");
-
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + "locator",
-        "--dir=" + folderForLocator.getAbsolutePath(),
+        "--dir=" + folderForLocator,
         "--port=" + locatorPort,
         "--http-service-port=0",
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
@@ -109,8 +112,7 @@ public class RegionEntriesGaugeTest {
 
     connectToLocatorCommand = "connect --locator=" + locatorString;
 
-    Path functionJarPath =
-        temporaryFolder.getRoot().toPath().resolve("function.jar").toAbsolutePath();
+    Path functionJarPath = rootFolder.resolve("function.jar").toAbsolutePath();
     writeJarFromClasses(functionJarPath.toFile(), GetMemberRegionEntriesGaugeFunction.class);
 
     String deployCommand = "deploy --jar=" + functionJarPath.toAbsolutePath();
@@ -154,27 +156,27 @@ public class RegionEntriesGaugeTest {
 
     String getGaugeValueCommand = memberRegionEntryGaugeValueCommand(regionName);
 
-    await()
-        .untilAsserted(() -> {
-          GfshExecution execution = gfshRule.execute(connectToLocatorCommand, getGaugeValueCommand);
-          OptionalInt server1EntryCount = linesOf(execution.getOutputText())
-              .filter(s -> s.startsWith("server1"))
-              .mapToInt(RegionEntriesGaugeTest::extractEntryCount)
-              .findFirst();
+    await().untilAsserted(() -> {
+      GfshExecution execution =
+          gfshRule.execute(connectToLocatorCommand, getGaugeValueCommand);
+      OptionalInt server1EntryCount = linesOf(execution.getOutputText())
+          .filter(s -> s.startsWith("server1"))
+          .mapToInt(RegionEntriesGaugeTest::extractEntryCount)
+          .findFirst();
 
-          assertThat(server1EntryCount)
-              .as("Number of entries reported by server1")
-              .hasValue(expectedNumberOfEntries);
+      assertThat(server1EntryCount)
+          .as("Number of entries reported by server1")
+          .hasValue(expectedNumberOfEntries);
 
-          String server2Response = linesOf(execution.getOutputText())
-              .filter(s -> s.startsWith("server2"))
-              .findFirst()
-              .orElse("No response from server2");
+      String server2Response = linesOf(execution.getOutputText())
+          .filter(s -> s.startsWith("server2"))
+          .findFirst()
+          .orElse("No response from server2");
 
-          assertThat(server2Response)
-              .as("server2 response from entry count function")
-              .endsWith("[Meter not found.]");
-        });
+      assertThat(server2Response)
+          .as("server2 response from entry count function")
+          .endsWith("[Meter not found.]");
+    });
   }
 
   @Test
@@ -245,7 +247,7 @@ public class RegionEntriesGaugeTest {
 
     int server3Port = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    File folderForServer3 = temporaryFolder.newFolder("server3");
+    Path folderForServer3 = createDirectories(rootFolder.resolve("server3"));
 
     String startServer3Command = startServerCommand("server3", server3Port, folderForServer3);
     gfshRule.execute(connectToLocatorCommand, startServer3Command);
@@ -338,12 +340,12 @@ public class RegionEntriesGaugeTest {
         .create(regionName);
   }
 
-  private String startServerCommand(String serverName, int serverPort, File folderForServer) {
+  private String startServerCommand(String serverName, int serverPort, Path folderForServer) {
     return String.join(" ",
         "start server",
         "--name=" + serverName,
         "--groups=" + serverName,
-        "--dir=" + folderForServer.getAbsolutePath(),
+        "--dir=" + folderForServer,
         "--server-port=" + serverPort,
         "--locators=" + locatorString,
         "--classpath=" + serviceJarPath);

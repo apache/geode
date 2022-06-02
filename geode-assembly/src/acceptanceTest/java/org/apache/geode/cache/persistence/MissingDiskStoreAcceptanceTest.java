@@ -28,13 +28,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MissingDiskStoreAcceptanceTest {
@@ -55,20 +55,18 @@ public class MissingDiskStoreAcceptanceTest {
   private String startServer1Command;
   private String startServer2Command;
 
-  @Rule
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule(order = 2)
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
-
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
-    locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
-    server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
-    server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
+    locatorFolder = folderRule.getFolder().toPath().resolve(LOCATOR_NAME).toAbsolutePath();
+    server1Folder = folderRule.getFolder().toPath().resolve(SERVER_1_NAME).toAbsolutePath();
+    server2Folder = folderRule.getFolder().toPath().resolve(SERVER_2_NAME).toAbsolutePath();
 
     int[] ports = getRandomAvailableTCPPorts(6);
     locatorPort = ports[0];

@@ -15,6 +15,7 @@
 package org.apache.geode.session.tests;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.After;
 import org.junit.Before;
@@ -58,8 +59,8 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
 
   private String startAServer(int serverNumber) {
     // List of all the jars for tomcat to put on the server classpath
-    String libDirJars = install.getHome() + "/lib/*";
-    String binDirJars = install.getHome() + "/bin/*";
+    Path libDir = install.getHome().resolve("lib");
+    Path binDir = install.getHome().resolve("bin");
 
     // Set server name based on the test about to be run
     String serverName =
@@ -72,7 +73,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, String.valueOf(locatorPortSuggestion));
     // Add Tomcat jars to server classpath
     command.addOption(CliStrings.START_SERVER__CLASSPATH,
-        binDirJars + File.pathSeparator + libDirJars);
+        binDir + "/*" + File.pathSeparator + libDir + "/*");
     command.addOption(CliStrings.START_SERVER__LOCATORS,
         locatorVM.invoke(() -> ClusterStartupRule.getLocator().asString()));
     command.addOption(CliStrings.START_SERVER__J, "-Dgemfire.member-timeout=60000");
