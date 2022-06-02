@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ruby:2.5
+FROM ruby:2.6.8
 
 LABEL Vendor="Apache Geode"
 LABEL version=unstable
@@ -25,16 +25,16 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - ; \
     apt-get install -y nodejs
 RUN gem install bundler:1.17.3 \
     rake multi_json:1.13.1 \
-    elasticsearch:2.0.2 \
+    elasticsearch:7.5.0 \
     multipart-post:2.0.0 \
-    faraday:0.15.4 \
+    faraday:0.17.4 \
     libv8:3.16.14.15 \
-    mini_portile2:2.5.0 \
-    racc:1.5.2 \
-    nokogiri:1.11.2 \
-    mimemagic:0.3.9 \
-    puma:4.3.8 \
-    rack:2.1.4 \
+    mini_portile2:2.8.0 \
+    racc:1.6.0 \
+    nokogiri:1.13.3 \
+    mimemagic:0.3.10 \
+    puma:5.6.2 \
+    rack:2.2.3 \
     smtpapi:0.1.0 \
     sendgrid-ruby:1.1.6 \
     therubyracer:0.12.2
