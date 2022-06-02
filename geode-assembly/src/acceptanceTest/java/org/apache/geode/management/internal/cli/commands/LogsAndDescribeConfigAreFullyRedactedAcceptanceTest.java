@@ -17,28 +17,25 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.examples.security.ExampleSecurityManager.SECURITY_JSON;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -57,29 +54,25 @@ public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
 
   private static final String PASSWORD = "abcdefg";
 
-  private int locatorPort;
-
-  @Rule(order = 0)
+  @Rule
   public RequiresGeodeHome geodeHome = new RequiresGeodeHome();
-  @Rule(order = 1)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 2)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  @Rule
+  public GfshRule gfsh = new GfshRule();
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void createDirectoriesAndFiles() throws IOException {
-    Path rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
-
-    Path geodePropertiesFile = rootFolder.resolve("geode.properties");
-    Path securityPropertiesFile = rootFolder.resolve("security.properties");
+  public void createDirectoriesAndFiles() throws Exception {
+    File geodePropertiesFile = temporaryFolder.newFile("geode.properties");
+    File securityPropertiesFile = temporaryFolder.newFile("security.properties");
 
     Properties geodeProperties = new Properties();
     geodeProperties.setProperty(LOG_LEVEL, "debug");
     geodeProperties.setProperty("security-username", "propertyFileUser");
     geodeProperties.setProperty("security-password", PASSWORD + "-propertyFile");
 
-    try (FileOutputStream fos = new FileOutputStream(geodePropertiesFile.toFile())) {
-      geodeProperties.store(fos, null);
+    try (FileOutputStream fileOutputStream = new FileOutputStream(geodePropertiesFile)) {
+      geodeProperties.store(fileOutputStream, null);
     }
 
     Properties securityProperties = new Properties();
@@ -88,46 +81,41 @@ public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
     securityProperties.setProperty("security-file-username", "securityPropertyFileUser");
     securityProperties.setProperty("security-file-password", PASSWORD + "-securityPropertyFile");
 
-    try (FileOutputStream fos = new FileOutputStream(securityPropertiesFile.toFile())) {
-      securityProperties.store(fos, null);
+    try (FileOutputStream fileOutputStream = new FileOutputStream(securityPropertiesFile)) {
+      securityProperties.store(fileOutputStream, null);
     }
 
     // The json is in the root resource directory.
-    createFileFromResource(getResource("/security.json"), rootFolder.toFile(),
+    createFileFromResource(getResource("/security.json"), temporaryFolder.getRoot(),
         "security.json");
-
-    locatorPort = getRandomAvailableTCPPort();
 
     String startLocatorCmd = new CommandStringBuilder("start locator")
         .addOption("name", "test-locator")
-        .addOption("port", String.valueOf(locatorPort))
-        .addOption("properties-file", geodePropertiesFile.toString())
-        .addOption("security-properties-file", securityPropertiesFile.toString())
+        .addOption("properties-file", geodePropertiesFile.getAbsolutePath())
+        .addOption("security-properties-file", securityPropertiesFile.getAbsolutePath())
         .addOption("J", "-Dsecure-username-jd=user-jd")
         .addOption("J", "-Dsecure-password-jd=password-jd")
-        .addOption("classpath", rootFolder.toString())
+        .addOption("classpath", temporaryFolder.getRoot().getAbsolutePath())
         .getCommandString();
 
     String startServerCmd = new CommandStringBuilder("start server")
         .addOption("name", "test-server")
-        .addOption("locators", "localhost[" + locatorPort + "]")
-        .addOption("disable-default-server", "true")
         .addOption("user", "viaStartMemberOptions")
         .addOption("password", PASSWORD + "-viaStartMemberOptions")
-        .addOption("properties-file", geodePropertiesFile.toString())
-        .addOption("security-properties-file", securityPropertiesFile.toString())
+        .addOption("properties-file", geodePropertiesFile.getAbsolutePath())
+        .addOption("security-properties-file", securityPropertiesFile.getAbsolutePath())
         .addOption("J", "-Dsecure-username-jd=user-jd")
         .addOption("J", "-Dsecure-password-jd=" + PASSWORD + "-password-jd")
-        .addOption("classpath", rootFolder.toString())
+        .addOption("server-port", "0")
+        .addOption("classpath", temporaryFolder.getRoot().getAbsolutePath())
         .getCommandString();
 
-    gfshRule.execute(startLocatorCmd, startServerCmd);
+    gfsh.execute(startLocatorCmd, startServerCmd);
   }
 
   @Test
   public void logsDoNotContainStringThatShouldBeRedacted() {
-    Path rootFolder = folderRule.getFolder().toPath();
-    File dir = rootFolder.toFile();
+    File dir = gfsh.getTemporaryFolder().getRoot();
     File[] logFiles = dir.listFiles((d, name) -> name.endsWith(".log"));
 
     for (File logFile : logFiles) {
@@ -138,24 +126,17 @@ public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
   @Test
   public void describeConfigRedactsJvmArguments() {
     String connectCommand = new CommandStringBuilder("connect")
-        .addOption("locator", "localhost[" + locatorPort + "]")
         .addOption("user", "viaStartMemberOptions")
-        .addOption("password", PASSWORD + "-viaStartMemberOptions")
-        .getCommandString();
+        .addOption("password", PASSWORD + "-viaStartMemberOptions").getCommandString();
 
     String describeLocatorConfigCommand = new CommandStringBuilder("describe config")
-        .addOption("hide-defaults", "false")
-        .addOption("member", "test-locator")
-        .getCommandString();
+        .addOption("hide-defaults", "false").addOption("member", "test-locator").getCommandString();
 
     String describeServerConfigCommand = new CommandStringBuilder("describe config")
-        .addOption("hide-defaults", "false")
-        .addOption("member", "test-server")
-        .getCommandString();
+        .addOption("hide-defaults", "false").addOption("member", "test-server").getCommandString();
 
     GfshExecution execution =
-        gfshRule.execute(connectCommand, describeLocatorConfigCommand,
-            describeServerConfigCommand);
+        gfsh.execute(connectCommand, describeLocatorConfigCommand, describeServerConfigCommand);
     assertThat(execution.getOutputText()).doesNotContain(PASSWORD);
   }
 }

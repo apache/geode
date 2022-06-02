@@ -14,35 +14,25 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class GfshDisconnectWithinScript {
 
-  private int locatorPort;
+  @Rule
+  public GfshRule gfsh = new GfshRule();
 
-  @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule();
-  @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   @Before
-  public void setUp() {
-    locatorPort = getRandomAvailableTCPPort();
-    gfshRule.execute("start locator --port=" + locatorPort);
+  public void setup() {
+    gfsh.execute("start locator");
   }
 
   @Test
   public void disconnectInScriptDoesNotRaiseNPE() {
-    gfshRule.execute(
-        "connect --locator=localhost[" + locatorPort + "]",
-        "disconnect",
-        "echo \"Disconnect command resolved without issue.\"");
+    gfsh.execute("connect", "disconnect", "echo \"Disconnect command resolved without issue.\"");
   }
 }

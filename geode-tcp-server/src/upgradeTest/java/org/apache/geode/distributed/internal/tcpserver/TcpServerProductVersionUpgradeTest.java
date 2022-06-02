@@ -91,7 +91,7 @@ public class TcpServerProductVersionUpgradeTest implements Serializable {
 
 
   private static final TestVersion oldProductVersion = getOldProductVersion();
-  private static final TestVersion currentProductVersion = TestVersion.current();
+  private static final TestVersion currentProductVersion = TestVersion.CURRENT_VERSION;
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<VersionConfiguration> data() {
@@ -150,10 +150,10 @@ public class TcpServerProductVersionUpgradeTest implements Serializable {
   @Test
   public void testAllMessageTypes() {
     int clientVMNumber =
-        versions.clientProductVersion.equals(TestVersion.current())
+        versions.clientProductVersion.equals(TestVersion.CURRENT_VERSION)
             ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
     int locatorVMNumber =
-        versions.locatorProductVersion.equals(TestVersion.current())
+        versions.locatorProductVersion.equals(TestVersion.CURRENT_VERSION)
             ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
     VM clientVM = VM.getVM(versions.clientProductVersion.toString(), clientVMNumber);
     VM locatorVM = VM.getVM(versions.locatorProductVersion.toString(), locatorVMNumber);

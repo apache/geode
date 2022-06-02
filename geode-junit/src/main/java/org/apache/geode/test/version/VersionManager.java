@@ -144,7 +144,7 @@ public class VersionManager {
    *
    * <p>
    * Note: if you need to compare version strings use {@link TestVersion#compare(String, String)} or
-   * {@link TestVersion#equals}.
+   * {@link TestVersion#equals(TestVersion)}.
    *
    * @return a list of older versions available for testing, sorted from oldest to newest
    */
@@ -166,7 +166,7 @@ public class VersionManager {
    *
    * <p>
    * Note: if you need to compare version strings use {@link TestVersion#compare(String, String)} or
-   * {@link TestVersion#equals}.
+   * {@link TestVersion#equals(TestVersion)}.
    *
    * @return a list of testable versions sorted from oldest to newest
    */
