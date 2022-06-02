@@ -14,6 +14,8 @@
  */
 package org.apache.geode.ssl;
 
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.createFile;
 import static java.util.regex.Pattern.compile;
 import static java.util.regex.Pattern.quote;
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
@@ -23,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -40,7 +41,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -48,12 +48,14 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 /**
  * This test creates a cluster and a client with SSL enabled for all components and client
  * authentication enabled.
  *
+ * <p>
  * It verifies that the cluster certificate, the client certificate, and the CA certificate can be
  * rotated without having to restart the client or the members.
  */
@@ -64,26 +66,27 @@ public class CertificateRotationTest {
   private static final Pattern updatedKeyManager = compile("Updated KeyManager");
   private static final Pattern updatedTrustManager = compile("Updated TrustManager");
 
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   private CertificateMaterial caCert;
 
   private String[] memberNames;
   private int locatorPort;
   private int locatorHttpPort;
-  private File clusterKeyStore;
-  private File clusterTrustStore;
-  private File clusterSecurityProperties;
+  private Path clusterKeyStore;
+  private Path clusterTrustStore;
+  private Path clusterSecurityProperties;
 
   private ClientCache client;
   private Region<String, String> region;
-  private File clientKeyStore;
-  private File clientTrustStore;
-  private File clientLogFile;
+  private Path clientKeyStore;
+  private Path clientTrustStore;
+  private Path clientLogFile;
+
+  private Path rootFolder;
 
   /**
    * The test setup creates a cluster with 1 locator and 2 servers, a client cache, and a CA
@@ -92,7 +95,9 @@ public class CertificateRotationTest {
    * client has a certificate signed by the same CA and also trusts the CA certificate.
    */
   @Before
-  public void setUp() throws Exception {
+  public void setUp() throws IOException, GeneralSecurityException, InterruptedException {
+    rootFolder = folderRule.getFolder().toPath().toAbsolutePath();
+
     caCert = new CertificateBuilder()
         .commonName("ca")
         .isCA()
@@ -116,7 +121,8 @@ public class CertificateRotationTest {
    * connection.
    */
   @Test
-  public void rotateClusterCertificate() throws Exception {
+  public void rotateClusterCertificate()
+      throws GeneralSecurityException, IOException {
     CertificateMaterial newClusterCert = new CertificateBuilder()
         .commonName("cluster")
         .issuedBy(caCert)
@@ -124,7 +130,7 @@ public class CertificateRotationTest {
         .sanIpAddress(InetAddress.getByName("127.0.0.1"))
         .generate();
 
-    writeCertsToKeyStore(clusterKeyStore.toPath(), newClusterCert);
+    writeCertsToKeyStore(clusterKeyStore, newClusterCert);
     waitForMembersToLogMessage(updatedKeyManager);
 
     assertThatCode(() -> region.put("foo", "bar"))
@@ -137,7 +143,8 @@ public class CertificateRotationTest {
    * connection.
    */
   @Test
-  public void rotateClientCertificate() throws Exception {
+  public void rotateClientCertificate()
+      throws GeneralSecurityException, IOException {
     CertificateMaterial newClientCert = new CertificateBuilder()
         .commonName("client")
         .issuedBy(caCert)
@@ -145,7 +152,7 @@ public class CertificateRotationTest {
         .sanIpAddress(InetAddress.getByName("127.0.0.1"))
         .generate();
 
-    writeCertsToKeyStore(clientKeyStore.toPath(), newClientCert);
+    writeCertsToKeyStore(clientKeyStore, newClientCert);
     waitForClientToLogMessage(updatedKeyManager);
 
     assertThatCode(() -> region.put("foo", "bar"))
@@ -159,7 +166,8 @@ public class CertificateRotationTest {
    * CA certificate removed.
    */
   @Test
-  public void rotateCaCertificate() throws Exception {
+  public void rotateCaCertificate()
+      throws GeneralSecurityException, IOException {
     /*
      * First, create a new CA certificate and add it to both the cluster's and the client's trust
      * stores. The trust stores will contain both the old and the new CA certificates.
@@ -170,8 +178,8 @@ public class CertificateRotationTest {
         .isCA()
         .generate();
 
-    writeCertsToTrustStore(clusterTrustStore.toPath(), caCert, newCaCert);
-    writeCertsToTrustStore(clientTrustStore.toPath(), caCert, newCaCert);
+    writeCertsToTrustStore(clusterTrustStore, caCert, newCaCert);
+    writeCertsToTrustStore(clientTrustStore, caCert, newCaCert);
 
     waitForMembersToLogMessage(updatedTrustManager);
     waitForClientToLogMessage(updatedTrustManager);
@@ -195,8 +203,8 @@ public class CertificateRotationTest {
         .sanIpAddress(InetAddress.getByName("127.0.0.1"))
         .generate();
 
-    writeCertsToKeyStore(clusterKeyStore.toPath(), newClusterCert);
-    writeCertsToKeyStore(clientKeyStore.toPath(), newClientCert);
+    writeCertsToKeyStore(clusterKeyStore, newClusterCert);
+    writeCertsToKeyStore(clientKeyStore, newClientCert);
 
     waitForMembersToLogMessage(updatedKeyManager);
     waitForClientToLogMessage(updatedKeyManager);
@@ -205,8 +213,8 @@ public class CertificateRotationTest {
      * Finally, remove the old CA certificate from both the cluster's and the client's trust stores.
      */
 
-    writeCertsToTrustStore(clusterTrustStore.toPath(), newCaCert);
-    writeCertsToTrustStore(clientTrustStore.toPath(), newCaCert);
+    writeCertsToTrustStore(clusterTrustStore, newCaCert);
+    writeCertsToTrustStore(clientTrustStore, newCaCert);
 
     for (String name : memberNames) {
       await().untilAsserted(() -> assertThat(logsForMember(name))
@@ -229,14 +237,15 @@ public class CertificateRotationTest {
    * being dynamically updated.
    */
   @Test
-  public void untrustedCertificateThrows() throws Exception {
+  public void untrustedCertificateThrows()
+      throws GeneralSecurityException, IOException {
     CertificateMaterial selfSignedCert = new CertificateBuilder()
         .commonName("client")
         .sanDnsName("localhost")
         .sanIpAddress(InetAddress.getByName("127.0.0.1"))
         .generate();
 
-    writeCertsToKeyStore(clientKeyStore.toPath(), selfSignedCert);
+    writeCertsToKeyStore(clientKeyStore, selfSignedCert);
     waitForClientToLogMessage(updatedKeyManager);
 
     assertThatThrownBy(() -> region.put("foo", "bar"))
@@ -281,11 +290,11 @@ public class CertificateRotationTest {
   }
 
   private Stream<String> logsForClient() throws IOException {
-    return Files.lines(clientLogFile.toPath());
+    return Files.lines(clientLogFile);
   }
 
   private Stream<String> logsForMember(String name) throws IOException {
-    Path logFile = temporaryFolder.getRoot().toPath().resolve(name).resolve(name + ".log");
+    Path logFile = rootFolder.resolve(name).resolve(name + ".log");
     return Files.lines(logFile);
   }
 
@@ -297,22 +306,22 @@ public class CertificateRotationTest {
         .sanIpAddress(InetAddress.getByName("127.0.0.1"))
         .generate();
 
-    clientKeyStore = temporaryFolder.newFile("client-keystore.jks");
-    writeCertsToKeyStore(clientKeyStore.toPath(), clientCert);
+    clientKeyStore = createFile(rootFolder.resolve("client-keystore.jks"));
+    writeCertsToKeyStore(clientKeyStore, clientCert);
 
-    clientTrustStore = temporaryFolder.newFile("client-truststore.jks");
-    writeCertsToTrustStore(clientTrustStore.toPath(), caCert);
+    clientTrustStore = createFile(rootFolder.resolve("client-truststore.jks"));
+    writeCertsToTrustStore(clientTrustStore, caCert);
 
-    File clientSecurityProperties = temporaryFolder.newFile("client-security.properties");
+    Path clientSecurityProperties = createFile(rootFolder.resolve("client-security.properties"));
     Properties properties = CertStores.propertiesWith("all", "any", "any",
         clientTrustStore, dummyStorePass, clientKeyStore, dummyStorePass, true, true);
-    properties.store(new FileOutputStream(clientSecurityProperties), "");
+    properties.store(new FileOutputStream(clientSecurityProperties.toFile()), "");
 
-    clientLogFile = temporaryFolder.newFile("client.log");
+    clientLogFile = createFile(rootFolder.resolve("client.log"));
 
     client = new ClientCacheFactory(properties)
         .addPoolLocator("localhost", locatorPort)
-        .set("log-file", clientLogFile.getAbsolutePath())
+        .set("log-file", clientLogFile.toString())
         // prevent the client from creating a connection until the first cache operation
         .setPoolMinConnections(0)
         .create();
@@ -320,8 +329,8 @@ public class CertificateRotationTest {
     region = client.<String, String>createClientRegionFactory(PROXY)
         .create(regionName);
 
-    waitForClientToLogMessage(compile(quote("Started watching " + clientKeyStore.getPath())));
-    waitForClientToLogMessage(compile(quote("Started watching " + clientTrustStore.getPath())));
+    waitForClientToLogMessage(compile(quote("Started watching " + clientKeyStore)));
+    waitForClientToLogMessage(compile(quote("Started watching " + clientTrustStore)));
 
     /*
      * This sleep is needed to ensure that any updates to the key or trust store file are detected
@@ -339,16 +348,16 @@ public class CertificateRotationTest {
         .sanIpAddress(InetAddress.getByName("127.0.0.1"))
         .generate();
 
-    clusterKeyStore = temporaryFolder.newFile("cluster-keystore.jks");
-    writeCertsToKeyStore(clusterKeyStore.toPath(), clusterCert);
+    clusterKeyStore = createFile(rootFolder.resolve("cluster-keystore.jks"));
+    writeCertsToKeyStore(clusterKeyStore, clusterCert);
 
-    clusterTrustStore = temporaryFolder.newFile("cluster-truststore.jks");
-    writeCertsToTrustStore(clusterTrustStore.toPath(), caCert);
+    clusterTrustStore = createFile(rootFolder.resolve("cluster-truststore.jks"));
+    writeCertsToTrustStore(clusterTrustStore, caCert);
 
-    clusterSecurityProperties = temporaryFolder.newFile("cluster-security.properties");
+    clusterSecurityProperties = createFile(rootFolder.resolve("cluster-security.properties"));
     Properties properties = CertStores.propertiesWith("all", "any", "any",
         clusterTrustStore, dummyStorePass, clusterKeyStore, dummyStorePass, true, true);
-    properties.store(new FileOutputStream(clusterSecurityProperties), "");
+    properties.store(new FileOutputStream(clusterSecurityProperties.toFile()), "");
 
     memberNames = new String[] {"locator", "server1", "server2"};
 
@@ -359,7 +368,7 @@ public class CertificateRotationTest {
   }
 
   private void startLocator(String name) throws IOException {
-    File dir = temporaryFolder.newFolder(name);
+    Path dir = createDirectories(rootFolder.resolve(name));
 
     int[] availablePorts = getRandomAvailableTCPPorts(3);
     locatorPort = availablePorts[0];
@@ -370,18 +379,18 @@ public class CertificateRotationTest {
         "start locator",
         "--connect=false",
         "--name=" + name,
-        "--dir=" + dir.getAbsolutePath(),
+        "--dir=" + dir,
         "--bind-address=127.0.0.1",
         "--port=" + locatorPort,
         "--http-service-port=" + locatorHttpPort,
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
-        "--security-properties-file=" + clusterSecurityProperties.getAbsolutePath());
+        "--security-properties-file=" + clusterSecurityProperties);
 
     gfshRule.execute(startLocatorCommand);
   }
 
   private void startServer(String name) throws IOException {
-    File dir = temporaryFolder.newFolder(name);
+    Path dir = createDirectories(rootFolder.resolve(name));
 
     int[] availablePorts = getRandomAvailableTCPPorts(1);
     int port = availablePorts[0];
@@ -391,11 +400,11 @@ public class CertificateRotationTest {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + name,
-        "--dir=" + dir.getAbsolutePath(),
+        "--dir=" + dir,
         "--bind-address=127.0.0.1",
         "--server-port=" + port,
         "--locators=" + locatorString,
-        "--security-properties-file=" + clusterSecurityProperties.getAbsolutePath());
+        "--security-properties-file=" + clusterSecurityProperties);
 
     gfshRule.execute(startServerCommand);
   }
@@ -406,7 +415,7 @@ public class CertificateRotationTest {
         "--use-http",
         "--use-ssl",
         "--url=https://localhost:" + locatorHttpPort + "/geode-mgmt/v1",
-        "--security-properties-file=" + clusterSecurityProperties.getAbsolutePath());
+        "--security-properties-file=" + clusterSecurityProperties);
 
     String createRegionCommand = String.join(" ",
         "create region",
@@ -422,7 +431,7 @@ public class CertificateRotationTest {
         "--use-http",
         "--use-ssl",
         "--url=https://localhost:" + locatorHttpPort + "/geode-mgmt/v1",
-        "--security-properties-file=" + clusterSecurityProperties.getAbsolutePath());
+        "--security-properties-file=" + clusterSecurityProperties);
 
     String shutdownCommand = "shutdown --include-locators=true";
     gfshRule.execute(connectToLocatorCommand, shutdownCommand);

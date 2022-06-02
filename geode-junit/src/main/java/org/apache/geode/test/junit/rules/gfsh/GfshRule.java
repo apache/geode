@@ -14,247 +14,109 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static java.io.File.pathSeparator;
 import static java.util.Collections.synchronizedList;
-import static org.apache.geode.internal.lang.SystemUtils.isWindows;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.test.junit.rules.gfsh.GfshContext.Builder;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.MultipleFailureException;
+import org.junit.runners.model.Statement;
 
-import org.apache.geode.test.junit.rules.RequiresGeodeHome;
-import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.test.junit.rules.Folder;
+import org.apache.geode.test.junit.rules.FolderFactory;
 
-/**
- * The {@code GfshRule} allows a test to execute Gfsh commands via the actual (fully-assembled) gfsh
- * binaries. Each call to {@link GfshRule#execute(GfshScript)} will invoke the given gfsh script in
- * a forked JVM. The {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
- *
- * <p>
- * If you want to debug into the gfsh or the locator/servers started using this rule, you can do:
- *
- * <pre>
- * GfshScript.of("start locator", 30000).and("start server", 30001).withDebugPort(30002).execute
- * </pre>
- *
- * This will set the gfsh to be debuggable at port 30002, and the locator started to be debuggable
- * at port 30000, and the server to be debuggable at 30001
- */
-public class GfshRule extends ExternalResource {
+public class GfshRule implements TestRule, GfshExecutor {
 
-  private final TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private final String version;
-  private final Path javaHome;
+  private final List<GfshContext> gfshContexts = synchronizedList(new ArrayList<>());
+  private final List<Throwable> errors = synchronizedList(new ArrayList<>());
 
-  private List<GfshExecution> gfshExecutions;
-  private Path gfsh;
+  private final Function<Description, Folder> folderProvider;
 
-  public GfshRule() {
-    this(null, null);
-  }
-
-  public GfshRule(final String version) {
-    this(version, null);
-  }
-
-  public GfshRule(final Path javaHome) {
-    this(null, javaHome);
-  }
-
-  public GfshRule(final String version, final Path javaHome) {
-    this.version = version;
-    this.javaHome = javaHome;
-  }
-
-  @Override
-  protected void before() throws IOException {
-    gfsh = findGfsh();
-    assertThat(gfsh).exists();
-
-    gfshExecutions = synchronizedList(new ArrayList<>());
-    temporaryFolder.create();
-  }
+  private Folder folder;
+  private GfshExecutor defaultExecutor;
 
   /**
-   * Attempts to stop any started servers/locators via pid file and tears down any remaining gfsh
-   * JVMs.
-   */
-  @Override
-  protected void after() {
-    // Copy the gfshExecutions list because stopMembers will add more executions
-    // This would not include the "stopMemberQuietly" executions
-    ((Iterable<GfshExecution>) new ArrayList<>(gfshExecutions))
-        .forEach(this::stopMembers);
-
-    // This will include the "stopMemberQuietly" executions
-    try {
-      gfshExecutions
-          .forEach(GfshExecution::killProcess);
-    } finally {
-      temporaryFolder.delete();
-    }
-  }
-
-  private Path findGfsh() {
-    Path geodeHome;
-    if (version == null) {
-      geodeHome = new RequiresGeodeHome().getGeodeHome().toPath();
-    } else {
-      geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
-    }
-
-    if (isWindows()) {
-      return geodeHome.resolve("bin/gfsh.bat");
-    }
-    return geodeHome.resolve("bin/gfsh");
-  }
-
-  public TemporaryFolder getTemporaryFolder() {
-    return temporaryFolder;
-  }
-
-  public Path getGfshPath() {
-    return gfsh;
-  }
-
-  public GfshExecution execute(String... commands) {
-    return execute(GfshScript.of(commands));
-  }
-
-  public GfshExecution execute(File workingDir, String... commands) {
-    return execute(GfshScript.of(commands), workingDir);
-  }
-
-  /*
-   * this will allow you to specify a gfsh workingDir when executing the script
-   * this is usually helpful if:
-   * 1. you would start a different gfsh session but would
-   * like to remain in the same working dir as your previous one, (You can get your gfsh session's
-   * working dir by using GfshExecution.getWorkingDir)
-   * 2. you already prepared the workingdir with some initial setup.
+   * Returns a builder for a {@link GfshExecutor} that uses this {@code GfshRule}'s folder as the
+   * working directory for invoked processes.
    *
-   * This way, this workingDir will be managed by the gfshRule and stop all the processes that
-   * exists in this working dir when tests finish
+   * @return the builder
    */
-  public GfshExecution execute(GfshScript gfshScript, File workingDir) {
-    System.out.println("Executing " + gfshScript);
-    try {
-      int debugPort = gfshScript.getDebugPort();
-      Process process = toProcessBuilder(gfshScript, gfsh, workingDir, debugPort).start();
-      GfshExecution gfshExecution = new GfshExecution(process, workingDir);
-      gfshExecutions.add(gfshExecution);
-      gfshExecution.awaitTermination(gfshScript);
-      return gfshExecution;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public Builder executor() {
+    return new Builder(gfshContexts::add, errors::add, folder.toPath());
   }
 
-  public GfshExecution execute(GfshScript gfshScript) {
-    try {
-      return execute(gfshScript, temporaryFolder.getRoot());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public GfshRule() {
+    this(FolderFactory::create);
   }
 
-  private ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
-      int gfshDebugPort) {
-    List<String> commandsToExecute = new ArrayList<>();
+  public GfshRule(Supplier<Folder> folderSupplier) {
+    this(description -> folderSupplier.get());
+  }
 
-    if (isWindows()) {
-      commandsToExecute.add("cmd.exe");
-      commandsToExecute.add("/c");
-    }
-    commandsToExecute.add(gfshPath.toAbsolutePath().toString());
+  private GfshRule(Function<Description, Folder> folderProvider) {
+    this.folderProvider = folderProvider;
+  }
 
-    for (DebuggableCommand command : gfshScript.getCommands()) {
-      if (command.debugPort > 0) {
-        commandsToExecute.add("-e " + command.command
-            + " --J='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address="
-            + command.debugPort + "'");
-      } else {
-        commandsToExecute.add("-e " + command.command);
+  @Override
+  public Statement apply(Statement base, Description description) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        folder = folderProvider.apply(description);
+        defaultExecutor = executor().build();
+        try {
+          base.evaluate();
+        } catch (MultipleFailureException e) {
+          errors.addAll(e.getFailures());
+        } catch (Throwable e) {
+          errors.add(e);
+        } finally {
+          try {
+            gfshContexts.forEach(GfshContext::killProcesses);
+          } catch (Throwable e) {
+            errors.add(e);
+          }
+        }
+
+        MultipleFailureException.assertEmpty(errors);
       }
-    }
-
-    ProcessBuilder processBuilder = new ProcessBuilder(commandsToExecute);
-    processBuilder.directory(workingDir);
-
-    List<String> extendedClasspath = gfshScript.getExtendedClasspath();
-    Map<String, String> environmentMap = processBuilder.environment();
-    if (!extendedClasspath.isEmpty()) {
-      String classpathKey = "CLASSPATH";
-      String existingJavaArgs = environmentMap.get(classpathKey);
-      String specified = String.join(pathSeparator, extendedClasspath);
-      String newValue =
-          String.format("%s%s", existingJavaArgs == null ? "" : existingJavaArgs + pathSeparator,
-              specified);
-      environmentMap.put(classpathKey, newValue);
-    }
-    if (gfshDebugPort > 0) {
-      environmentMap.put("JAVA_ARGS",
-          "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + gfshDebugPort);
-    }
-    if (null != javaHome) {
-      environmentMap.put("JAVA_HOME", javaHome.toString());
-    }
-
-    return processBuilder;
+    };
   }
 
-  /*
-   * this will stop the server that's been started in this gfsh execution
-   */
-  public void stopServer(GfshExecution execution, String serverName) {
-    String command = "stop server --dir="
-        + execution.getWorkingDir().toPath().resolve(serverName).toAbsolutePath();
-    execute(GfshScript.of(command).withName("Stop-server-" + serverName));
+  @Override
+  public GfshExecution execute(String... commands) {
+    return defaultExecutor.execute(commands);
   }
 
-  /*
-   * this will stop the locator that's been started in this gfsh execution
-   */
-  public void stopLocator(GfshExecution execution, String locatorName) {
-    String command = "stop locator --dir="
-        + execution.getWorkingDir().toPath().resolve(locatorName).toAbsolutePath();
-    execute(GfshScript.of(command).withName("Stop-locator-" + locatorName));
+  @Override
+  public GfshExecution execute(GfshScript gfshScript) {
+    return defaultExecutor.execute(gfshScript);
   }
 
-  private void stopMembers(GfshExecution gfshExecution) {
-    String[] stopMemberScripts = gfshExecution.getStopMemberCommands();
-    if (stopMemberScripts.length == 0) {
-      return;
-    }
-    execute(GfshScript.of(stopMemberScripts).withName("Stop-Members"));
+  @Override
+  public GfshExecution execute(File workingDir, String... commands) {
+    return defaultExecutor.execute(workingDir, commands);
   }
 
-  public static String startServerCommand(String name, String hostname, int port,
-      int connectedLocatorPort) {
-    String command = "start server --name=" + name
-        + " --server-port=" + port
-        + " --locators=" + hostname + "[" + connectedLocatorPort + "]";
-    return command;
+  @Override
+  public GfshExecution execute(Path workingDir, String... commands) {
+    return defaultExecutor.execute(workingDir, commands);
   }
 
-  public static String startLocatorCommand(String name, String hostname, int port, int jmxPort,
-      int httpPort,
-      int connectedLocatorPort) {
-    String command = "start locator --name=" + name
-        + " --port=" + port
-        + " --http-service-port=" + httpPort;
-    if (connectedLocatorPort > 0) {
-      command += " --locators=" + hostname + "[" + connectedLocatorPort + "]";
-    }
-    command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
-    return command;
+  @Override
+  public GfshExecution execute(Path workingDir, GfshScript gfshScript) {
+    return defaultExecutor.execute(workingDir, gfshScript);
+  }
+
+  @Override
+  public GfshExecution execute(File workingDir, GfshScript gfshScript) {
+    return defaultExecutor.execute(workingDir, gfshScript);
   }
 }

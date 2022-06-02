@@ -12,47 +12,47 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.launchers;
 
+import static java.nio.charset.Charset.defaultCharset;
+import static java.nio.file.Files.createDirectory;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.io.FileUtils.readLines;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.rules.FolderRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupValueRecoveryNotificationTest {
-
 
   private static final String SERVER_1_NAME = "server1";
   private static final String LOCATOR_NAME = "locator";
   private static final String DISKSTORE_1 = "diskstore1";
   private static final String DISKSTORE_2 = "diskstore2";
 
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @Rule
   public TestName testName = new TestName();
 
+  private Path temporaryFolder;
   private Path locatorFolder;
   private Path server1Folder;
   private int locatorPort;
@@ -60,11 +60,19 @@ public class ServerStartupValueRecoveryNotificationTest {
 
   @Before
   public void persistentRegionThatRequiresValueRecovery() throws IOException {
-    locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
-    server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
-    Path diskStore1Folder = temporaryFolder.newFolder(DISKSTORE_1).toPath().toAbsolutePath();
-    Path diskStore2Folder = temporaryFolder.newFolder(DISKSTORE_2).toPath().toAbsolutePath();
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    temporaryFolder = folderRule.getFolder().toPath().toAbsolutePath();
+
+    locatorFolder = temporaryFolder.resolve(LOCATOR_NAME);
+    server1Folder = temporaryFolder.resolve(SERVER_1_NAME);
+    Path diskStore1Folder = temporaryFolder.resolve(DISKSTORE_1);
+    Path diskStore2Folder = temporaryFolder.resolve(DISKSTORE_2);
+
+    createDirectory(locatorFolder);
+    createDirectory(server1Folder);
+    createDirectory(diskStore1Folder);
+    createDirectory(diskStore2Folder);
+
+    int[] ports = getRandomAvailableTCPPorts(1);
     locatorPort = ports[0];
 
     String startLocatorCommand = String.join(" ",
@@ -122,21 +130,25 @@ public class ServerStartupValueRecoveryNotificationTest {
         putCommandInRegionTwo);
 
     String stopServer1Command = "stop server --dir=" + server1Folder;
-    gfshRule.execute(stopServer1Command);
+    GfshExecution execution = gfshRule.execute(stopServer1Command);
+    execution.serverStopper().awaitStop(server1Folder);
   }
 
   @After
   public void stopAllMembers() {
     String stopServer1Command = "stop server --dir=" + server1Folder;
     String stopLocatorCommand = "stop locator --dir=" + locatorFolder;
-    gfshRule.execute(stopServer1Command, stopLocatorCommand);
+    GfshExecution execution = gfshRule.execute(stopServer1Command, stopLocatorCommand);
+    execution.serverStopper().awaitStop(server1Folder);
+    execution.locatorStopper().awaitStop(locatorFolder);
   }
 
   @Test
   public void startupReportsOnlineOnlyAfterRedundancyRestored() throws IOException {
+    server1Folder = temporaryFolder.resolve(SERVER_1_NAME + "secondfolder");
+    createDirectory(server1Folder);
+
     String connectCommand = "connect --locator=localhost[" + locatorPort + "]";
-    server1Folder =
-        temporaryFolder.newFolder(SERVER_1_NAME + "secondfolder").toPath().toAbsolutePath();
     startServer1Command = String.join(" ",
         "start server",
         "--name=" + SERVER_1_NAME,
@@ -162,9 +174,9 @@ public class ServerStartupValueRecoveryNotificationTest {
               .or(valuesRecoveredSecondRegionPattern.asPredicate())
               .or(serverOnlinePattern.asPredicate());
 
-          final List<String> foundPatterns =
-              Files.lines(logFile).filter(isRelevantLine)
-                  .collect(Collectors.toList());
+          final List<String> foundPatterns = readLines(logFile.toFile(), defaultCharset()).stream()
+              .filter(isRelevantLine)
+              .collect(toList());
 
           assertThat(foundPatterns)
               .as("Log file " + logFile + " includes one line matching each of "
@@ -187,5 +199,4 @@ public class ServerStartupValueRecoveryNotificationTest {
               .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
         });
   }
-
 }
