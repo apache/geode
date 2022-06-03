@@ -119,19 +119,35 @@ public class ThreadsMonitoringProcess extends TimerTask {
     return result;
   }
 
+  /**
+   * If set to true, then the JVM will be asked for what locks a thread holds.
+   * This is extra expensive to ask for on some JVMs so be careful setting this to true.
+   */
   private static final boolean SHOW_LOCKS = Boolean.getBoolean("gemfire.threadmonitor.showLocks");
+  /**
+   * If set to true, then the JVM will be asked for all potential stuck threads with one call.
+   * Since getThreadInfo on many JVMs, stops ALL threads from running, and since getting info
+   * on multiple threads with one call is additional work, setting this can cause an extra long
+   * stop the world that can then cause other problems (like a forced disconnect).
+   * So be careful setting this to true.
+   */
   private static final boolean BATCH_CALLS = Boolean.getBoolean("gemfire.threadmonitor.batchCalls");
 
+  private static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
+    return createThreadInfoMap(stuckThreadIds, SHOW_LOCKS, BATCH_CALLS);
+  }
+
   @VisibleForTesting
-  public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
+  public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds,
+      final boolean showLocks, final boolean batchCalls) {
     if (stuckThreadIds.isEmpty()) {
       return Collections.emptyMap();
     }
     logger.info("Obtaining ThreadInfo for " + stuckThreadIds.size()
-        + " threads. Configuration: showLocks=" + SHOW_LOCKS + " batchCalls=" + BATCH_CALLS
+        + " threads. Configuration: showLocks=" + showLocks + " batchCalls=" + batchCalls
         + " This is an expensive operation for the JVM and on most JVMs causes all threads to be paused.");
     Map<Long, ThreadInfo> result = new HashMap<>();
-    if (BATCH_CALLS) {
+    if (batchCalls) {
       long[] ids = new long[stuckThreadIds.size()];
       int idx = 0;
       for (long id : stuckThreadIds) {
@@ -144,7 +160,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
        * That is why stuckThreadIds is a Set instead of a List.
        */
       ThreadInfo[] threadInfos =
-          ManagementFactory.getThreadMXBean().getThreadInfo(ids, SHOW_LOCKS, SHOW_LOCKS);
+          ManagementFactory.getThreadMXBean().getThreadInfo(ids, showLocks, showLocks);
       for (ThreadInfo threadInfo : threadInfos) {
         if (threadInfo != null) {
           result.put(threadInfo.getThreadId(), threadInfo);
@@ -153,7 +169,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
     } else {
       for (long id : stuckThreadIds) {
         ThreadInfo threadInfo;
-        if (SHOW_LOCKS) {
+        if (showLocks) {
           ThreadInfo[] threadInfos =
               ManagementFactory.getThreadMXBean().getThreadInfo(new long[] {id}, true, true);
           threadInfo = threadInfos[0];
