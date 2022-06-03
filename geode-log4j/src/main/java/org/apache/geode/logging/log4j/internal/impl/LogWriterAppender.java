@@ -302,15 +302,14 @@ public class LogWriterAppender extends AbstractAppender
 
   @Override
   public synchronized void stopSession() {
-    if (logWriter == null) {
+    try {
+      LOGGER.info("Stopping session in {}.", this);
+      logWriter.shuttingDown();
       pause();
-      return;
+      logWriter.closingLogFile();
+    } finally {
+      logWriter = null;
     }
-    LOGGER.info("Stopping session in {}.", this);
-    logWriter.shuttingDown();
-    pause();
-    logWriter.closingLogFile();
-    logWriter = null;
   }
 
   @Override
