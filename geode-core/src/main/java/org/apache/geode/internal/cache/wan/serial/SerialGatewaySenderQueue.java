@@ -611,7 +611,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         keepOldEntry = true;
       }
 
-      // Replace the object's value into the queue if necessary
+      // Remove the old entry from the queue if necessary. The new entry is already present
+      // in the queue region.
       if (!keepOldEntry) {
         Conflatable previous = (Conflatable) region.remove(previousIndex);
         stats.decQueueSize(1);
