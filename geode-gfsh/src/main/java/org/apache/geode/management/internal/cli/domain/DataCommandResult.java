@@ -39,6 +39,7 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 
 /**
@@ -691,7 +692,7 @@ public class DataCommandResult implements Serializable {
       } else if (value instanceof UUID) {
         columnData.put("Result", valueToJson(value));
       } else {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = GeodeJsonMapper.getMapperWithAlwaysInclusion();
         JsonNode node = mapper.valueToTree(value);
 
         node.fieldNames().forEachRemaining(field -> {
@@ -729,7 +730,7 @@ public class DataCommandResult implements Serializable {
         return JSONFormatter.toJSON((PdxInstance) value);
       }
 
-      ObjectMapper mapper = new ObjectMapper();
+      ObjectMapper mapper = GeodeJsonMapper.getMapperWithAlwaysInclusion();
       try {
         return mapper.writeValueAsString(value);
       } catch (JsonProcessingException jex) {
