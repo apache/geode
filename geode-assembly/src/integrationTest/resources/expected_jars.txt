@@ -26,6 +26,7 @@ jackson-annotations
 jackson-core
 jackson-databind
 jackson-dataformat-yaml
+jackson-datatype-joda
 jackson-datatype-jsr
 jakarta.activation-api
 jakarta.validation-api
@@ -51,6 +52,7 @@ jgroups
 jline
 jna
 jna-platform
+joda-time
 jopt-simple
 json-path
 json-smart

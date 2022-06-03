@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -63,10 +65,12 @@ public class DistributedSystemMBeanIntegrationTest {
   private static Date date;
   private static java.sql.Date sqlDate;
   private static LocalDate localDate;
+  private static DateTime jodaDateTime;
 
   @BeforeClass
   public static void setupClass() throws Exception {
     Region<Object, Object> testRegion = server.getCache().getRegion("testRegion");
+    jodaDateTime = new DateTime(2020, 1, 1, 1, 1, DateTimeZone.UTC);
     localDate = LocalDate.of(2020, 1, 1);
     sqlDate = java.sql.Date.valueOf(localDate);
     date = new Date(sqlDate.getTime());
@@ -77,6 +81,7 @@ public class DistributedSystemMBeanIntegrationTest {
     employee.setStartDate(date);
     employee.setEndDate(sqlDate);
     employee.setBirthday(localDate);
+    employee.setAnniversary(jodaDateTime);
     testRegion.put(1, employee);
   }
 
@@ -100,7 +105,8 @@ public class DistributedSystemMBeanIntegrationTest {
         .doesNotContain("Job Title")
         .contains("\"java.util.Date\",\"" + dateString + "\"")
         .contains("\"java.sql.Date\",\"" + dateString + "\"")
-        .contains("\"java.time.LocalDate\",\"2020-01-01\"");
+        .contains("\"java.time.LocalDate\",\"2020-01-01\"")
+        .contains("\"org.joda.time.DateTime\",\"2020-01-01T01:01:00.000Z\"");
   }
 
   @Test
@@ -125,14 +131,28 @@ public class DistributedSystemMBeanIntegrationTest {
   }
 
   // this is simply to document the current behavior of gfsh
-  // gfsh refused to format the date objects as of jackson 2.12's fix#2683
+  // code changes made to enable jsr310
   @Test
-  public void queryAllUsingGfshRefusesToFormatLocalDate() throws Exception {
+  public void queryAllUsingGfshAbleToFormatLocalDate() throws Exception {
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    gfsh.executeAndAssertThat("query --query='" + SELECT_ALL + "'")
-        .statusIsError()
-        .containsOutput(
-            "Java 8 date/time type `java.time.LocalDate` not supported by default: add Module \"com.fasterxml.jackson.datatype:jackson-datatype-jsr310\"");
+    TabularResultModelAssert tabularResultModelAssert =
+        gfsh.executeAndAssertThat("query --query='" + SELECT_ALL + "'")
+            .statusIsSuccess()
+            .hasTableSection();
+    tabularResultModelAssert.hasColumn("birthday").containsExactly("[2020,1,1]");
+  }
+
+  // this is simply to document the current behavior of gfsh
+  // code changes made to enable Joda time
+  @Test
+  public void queryAllUsingGfshAbleToParseJodaDateTime() throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    TabularResultModelAssert tabularResultModelAssert =
+        gfsh.executeAndAssertThat("query --query='" + SELECT_ALL + "'")
+            .statusIsSuccess()
+            .hasTableSection();
+    tabularResultModelAssert.hasColumn("anniversary")
+        .containsExactly(jodaDateTime.getMillis() + "");
   }
 
   @Test
@@ -142,6 +162,7 @@ public class DistributedSystemMBeanIntegrationTest {
         .statusIsSuccess()
         .hasTableSection().hasColumns().asList()
         .containsExactlyInAnyOrder("id", "title");
+
   }
 
   @Test

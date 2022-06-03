@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,7 +30,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.joda.time.DateTime;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.query.data.CollectionHolder;
 import org.apache.geode.internal.logging.DateFormatter;
@@ -138,6 +138,12 @@ public class QueryResultFormatterTest {
         new QueryResultFormatter(100).add(RESULT, sqlDate);
     checkResult(sqlDateResult,
         "{\"result\":[[\"java.sql.Date\",\"" + expectedString + "\"]]}");
+
+    DateTime jodaTime = new DateTime(time);
+    QueryResultFormatter jodaTimeResult =
+        new QueryResultFormatter(100).add(RESULT, jodaTime);
+    String jsonString = jodaTimeResult.toString();
+    assertThat(jsonString).contains("{\"result\":[[\"org.joda.time.DateTime\",\"");
   }
 
   @Test
