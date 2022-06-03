@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -200,7 +201,8 @@ public class QueryCommandIntegrationTestBase {
   @Test
   public void outputDisplaysResultsFromComplexRegion() throws Exception {
     String result = gfsh
-        .execute("query --query='select c.name, c.address from " + SEPARATOR + "complexRegion c'");
+        .execute("query --query='select c.name, c.address, c.birthday from " + SEPARATOR
+            + "complexRegion c'");
 
     String[] resultLines = splitOnLineBreaks(result);
 
@@ -209,7 +211,7 @@ public class QueryCommandIntegrationTestBase {
     assertThat(resultLines[2]).containsPattern("Rows\\s+:\\s+100");
     assertThat(resultLines[3]).containsPattern("name\\s+\\|\\s+address");
     Arrays.asList(resultLines).subList(5, resultLines.length)
-        .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*"));
+        .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*\\d*"));
   }
 
   @Test
@@ -275,14 +277,17 @@ public class QueryCommandIntegrationTestBase {
   public static class Customer implements Serializable {
     public String name;
     public Address address;
+    public DateTime birthday;
+
 
     public Customer(String name, String street, String city) {
       this.name = name;
-      address = new Address(street, city);
+      this.address = new Address(street, city);
+      this.birthday = new DateTime();
     }
 
     public String toString() {
-      return name + address;
+      return name + address + birthday;
     }
   }
 
