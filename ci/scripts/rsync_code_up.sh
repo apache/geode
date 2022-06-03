@@ -32,7 +32,7 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 REPODIR=$(cd geode; git rev-parse --show-toplevel)
 
 . ${SCRIPTDIR}/shared_utilities.sh
-is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
+is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" "$(get_geode_pr_exclusion_files)" || exit 0
 
 SSHKEY_FILE="instance-data/sshkey"
 SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
