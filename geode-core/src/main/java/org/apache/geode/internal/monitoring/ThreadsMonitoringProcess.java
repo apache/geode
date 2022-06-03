@@ -127,6 +127,9 @@ public class ThreadsMonitoringProcess extends TimerTask {
     if (stuckThreadIds.isEmpty()) {
       return Collections.emptyMap();
     }
+    logger.info("Obtaining ThreadInfo for " + stuckThreadIds.size()
+        + " threads. Configuration: showLocks=" + SHOW_LOCKS + " batchCalls=" + BATCH_CALLS
+        + " This is an expensive operation for the JVM and on most JVMs causes all threads to be paused.");
     Map<Long, ThreadInfo> result = new HashMap<>();
     if (BATCH_CALLS) {
       long[] ids = new long[stuckThreadIds.size()];
@@ -162,6 +165,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
         }
       }
     }
+    logger.info("finished obtaining ThreadInfo");
     return result;
   }
 
