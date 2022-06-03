@@ -177,11 +177,17 @@ public interface DiskStoreMXBean {
    */
   int getTotalRecoveriesInProgress();
 
-  int getTotalRecoveredEntryCreates();
+  default int getTotalRecoveredEntryCreates() {
+    return 0;
+  };
 
-  int getTotalRecoveredEntryUpdates();
+  default int getTotalRecoveredEntryUpdates() {
+    return 0;
+  };
 
-  int getTotalRecoveredEntryDestroys();
+  default int getTotalRecoveredEntryDestroys() {
+    return 0;
+  };
 
   /**
    * Requests the DiskStore to start writing to a new op-log. The old oplog will be asynchronously
