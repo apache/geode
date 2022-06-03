@@ -94,9 +94,9 @@ get_geode_pr_exclusion_files() {
 }
 
 is_source_from_pr_testable() {
-  set -x
+
   if [[ $# -ne 3 ]]; then
-    >&2 echo "Invalid args. Try ${0} \"<repo_path>\" \"<list of exclusion dirs>\""
+    >&2 echo "Invalid args. Try ${0} \"<repo_path>\" \"<list of exclusion dirs>\" \"<list of exclusion files>\""
     exit 1
   fi
   local repo_dir="${1}"
