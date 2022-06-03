@@ -69,7 +69,7 @@ import org.apache.geode.test.version.VmConfigurations;
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
   // only test versions greater than or equal to 1.14.0
-  private static final TestVersion test_start_version = TestVersion.valueOf("1.15.0");
+  private static final TestVersion test_start_version = TestVersion.valueOf("1.14.4");
   private static final TestVersion feature_start_version = TestVersion.valueOf("1.15.0");
   private static RegionService user0Service;
   private static RegionService user1Service;
