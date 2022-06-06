@@ -140,8 +140,8 @@ public class ThreadsMonitoringProcess extends TimerTask {
 
   public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds,
       boolean showLocks, boolean batchCalls) {
-    return createThreadInfoMap(ManagementFactory.getThreadMXBean(), stuckThreadIds, SHOW_LOCKS,
-        BATCH_CALLS);
+    return createThreadInfoMap(ManagementFactory.getThreadMXBean(), stuckThreadIds, showLocks,
+        batchCalls);
   }
 
   static Map<Long, ThreadInfo> createThreadInfoMap(ThreadMXBean threadMXBean,
