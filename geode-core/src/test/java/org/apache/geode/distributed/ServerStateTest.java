@@ -113,7 +113,7 @@ public class ServerStateTest {
 
 
   @Test
-  public void fromJsonWithValidJsonStringReturnsServerState() {
+  public void fromJsonWithValidJsonStringReturnsServerState() throws JsonProcessingException {
     // given: valid json string
     String jsonString = createStatusJson();
 
@@ -141,7 +141,8 @@ public class ServerStateTest {
 
 
   @Test
-  public void fromJsonWithValidJsonStringReturnsServerStateToStringNoStatusMessage() {
+  public void fromJsonWithValidJsonStringReturnsServerStateToStringNoStatusMessage()
+      throws JsonProcessingException {
     // given: valid json string
     String jsonString = createStatusJson();
 
@@ -154,7 +155,8 @@ public class ServerStateTest {
   }
 
   @Test
-  public void fromJsonWithValidJsonStringReturnsServerStateToStringHasStatusMessage() {
+  public void fromJsonWithValidJsonStringReturnsServerStateToStringHasStatusMessage()
+      throws JsonProcessingException {
     // given: valid json string
     statusDescription = AbstractLauncher.Status.STARTING.getDescription();
     String jsonString = createStatusJson();
@@ -177,7 +179,7 @@ public class ServerStateTest {
     return list;
   }
 
-  private String createStatusJson() {
+  private String createStatusJson() throws JsonProcessingException {
     Map<String, Object> map = new HashMap<>();
     map.put(AbstractLauncher.ServiceState.JSON_CLASSPATH, classpath);
     map.put(AbstractLauncher.ServiceState.JSON_GEMFIREVERSION, gemFireVersion);
@@ -195,12 +197,7 @@ public class ServerStateTest {
     map.put(AbstractLauncher.ServiceState.JSON_UPTIME, uptime);
     map.put(AbstractLauncher.ServiceState.JSON_WORKINGDIRECTORY, workingDirectory);
 
-    String status = null;
-    try {
-      status = new ObjectMapper().writeValueAsString(map);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
+    String status = new ObjectMapper().writeValueAsString(map);
 
     return status;
   }
