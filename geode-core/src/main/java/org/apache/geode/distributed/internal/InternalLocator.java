@@ -1063,6 +1063,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   /**
+   * This method returns when the locator stops. This method should not return while locator is
+   * disconnected/reconnected
+   *
    * Waits for a locator to be told to stop.
    *
    * @throws InterruptedException thrown if the thread is interrupted
@@ -1074,11 +1077,16 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       restarted = false;
       membershipLocator.waitToShutdown();
       if (stoppedForReconnect) {
-        logger.info("waiting for distributed system to disconnect...");
-        while (system.isConnected()) {
-          Thread.sleep(5000);
+        // there would be a gap between stoppedForReconnect being to true and isReconnecting()
+        // being true, if system.waitUntilReconnected happened in between, this method would return
+        // false immediately. We should also to wait till system is reconnecting here
+        // in this call to prevent that.
+        logger.info("waiting for distributed system to disconnect and reconnect...");
+        while (system.isConnected() || !system.isReconnecting()) {
+          Thread.sleep(1000);
         }
-        logger.info("waiting for distributed system to reconnect...");
+
+        logger.info("waiting for distributed system to be reconnected...");
         try {
           restarted = system.waitUntilReconnected(-1, TimeUnit.SECONDS);
         } catch (CancelException e) {
