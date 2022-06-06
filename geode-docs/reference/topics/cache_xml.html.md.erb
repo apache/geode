@@ -267,7 +267,7 @@ Configures a gateway sender to distribute region events to another <%=vars.produ
 </tr>
 <tr>
 <td>batch-time-interval</td>
-<td>Maximum number of milliseconds that can elapse between sending batches.</td>
+<td>Maximum amount of time, in ms, that can elapse before a batch is delivered, when no events are found in the queue to reach the batch-size.</td>
 <td>1000</td>
 </tr>
 <tr>
@@ -539,7 +539,7 @@ Configures a queue for sending region events to an AsyncEventListener implementa
 </tr>
 <tr>
 <td>batch-time-interval</td>
-<td>Maximum number of milliseconds that can elapse between sending batches.</td>
+<td>Maximum amount of time, in ms, that can elapse before a batch is delivered, when no events are found in the queue to reach the batch-size.</td>
 <td>5</td>
 </tr>
 <tr>

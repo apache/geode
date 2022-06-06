@@ -132,7 +132,7 @@ create async-event-queue --id=value --listener=value [--groups=value(,value)*]
 </tr>
 <tr>
 <td><span class="keyword parmname">&#8209;&#8209;batch-time-interval</span></td>
-<td>Maximum amount of time, in ms, that can elapse before a batch is delivered.</td>
+<td>Maximum amount of time, in ms, that can elapse before a batch is delivered, when no events are found in the queue to reach the batch-size.</td>
 <td>5</td>
 </tr>
 <tr>
@@ -585,7 +585,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr>
 <td><span class="keyword parmname">&#8209;&#8209;batch-time-interval</span></td>
-<td>Maximum number of milliseconds that can elapse between sending batches.</td>
+<td>Maximum amount of time, in ms, that can elapse before a batch is delivered, when no events are found in the queue to reach the batch-size.</td>
 <td>1000</td>
 </tr>
 <tr>
