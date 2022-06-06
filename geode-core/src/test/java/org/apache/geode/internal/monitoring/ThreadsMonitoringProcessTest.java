@@ -44,14 +44,14 @@ public class ThreadsMonitoringProcessTest {
 
   @Test
   public void createThreadInfoMapWithIdsNoLocksNoBatchReturnsExpectedResult() {
-    Set<Long> pids = createPidSet();
+    Set<Long> threadIdSet = createThreadIdSet();
     ThreadInfo t1Info = createThreadInfoForNoLocksNoBatch(1L);
     ThreadInfo t2Info = createThreadInfoForNoLocksNoBatch(2L);
     ThreadInfo t3Info = createThreadInfoForNoLocksNoBatch(3L);
     Map<Long, ThreadInfo> expectedResult = createExpectedResult(t1Info, t2Info, t3Info);
 
     Map<Long, ThreadInfo> map =
-        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, pids, false,
+        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, threadIdSet, false,
             false);
 
     assertThat(map).isEqualTo(expectedResult);
@@ -68,53 +68,53 @@ public class ThreadsMonitoringProcessTest {
   }
 
   @NotNull
-  private Set<Long> createPidSet() {
-    Set<Long> pids = new HashSet<>();
-    pids.add(1L);
-    pids.add(2L);
-    pids.add(3L);
-    return pids;
+  private Set<Long> createThreadIdSet() {
+    Set<Long> threadIds = new HashSet<>();
+    threadIds.add(1L);
+    threadIds.add(2L);
+    threadIds.add(3L);
+    return threadIds;
   }
 
   @NotNull
-  private ThreadInfo createThreadInfoForNoLocksNoBatch(long pid) {
+  private ThreadInfo createThreadInfoForNoLocksNoBatch(long id) {
     ThreadInfo result = mock(ThreadInfo.class);
-    when(result.getThreadId()).thenReturn(pid);
-    when(threadMXBean.getThreadInfo(eq(pid), eq(Integer.MAX_VALUE))).thenReturn(result);
+    when(result.getThreadId()).thenReturn(id);
+    when(threadMXBean.getThreadInfo(eq(id), eq(Integer.MAX_VALUE))).thenReturn(result);
     return result;
   }
 
   @Test
   public void createThreadInfoMapWithIdsLocksNoBatchReturnsExpectedResult() {
-    Set<Long> pids = createPidSet();
+    Set<Long> threadIdSet = createThreadIdSet();
     ThreadInfo t1Info = createThreadInfoForLocksNoBatch(1L);
     ThreadInfo t2Info = createThreadInfoForLocksNoBatch(2L);
     ThreadInfo t3Info = createThreadInfoForLocksNoBatch(3L);
     Map<Long, ThreadInfo> expectedResult = createExpectedResult(t1Info, t2Info, t3Info);
 
     Map<Long, ThreadInfo> map =
-        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, pids, true,
+        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, threadIdSet, true,
             false);
 
     assertThat(map).isEqualTo(expectedResult);
   }
 
   @NotNull
-  private ThreadInfo createThreadInfoForLocksNoBatch(long pid) {
+  private ThreadInfo createThreadInfoForLocksNoBatch(long id) {
     ThreadInfo result = mock(ThreadInfo.class);
-    when(result.getThreadId()).thenReturn(pid);
-    when(threadMXBean.getThreadInfo(aryEq(new long[] {pid}), eq(true), eq(true))).thenReturn(
+    when(result.getThreadId()).thenReturn(id);
+    when(threadMXBean.getThreadInfo(aryEq(new long[] {id}), eq(true), eq(true))).thenReturn(
         new ThreadInfo[] {result});
     return result;
   }
 
   @Test
   public void createThreadInfoMapWithIdsLocksBatchReturnsExpectedResult() {
-    Set<Long> pids = createPidSet();
-    Map<Long, ThreadInfo> expectedResult = createThreadInfoMapForBatch(pids, true);
+    Set<Long> threadIdSet = createThreadIdSet();
+    Map<Long, ThreadInfo> expectedResult = createThreadInfoMapForBatch(threadIdSet, true);
 
     Map<Long, ThreadInfo> map =
-        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, pids, true,
+        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, threadIdSet, true,
             true);
 
     assertThat(map).isEqualTo(expectedResult);
@@ -122,31 +122,31 @@ public class ThreadsMonitoringProcessTest {
 
   @Test
   public void createThreadInfoMapWithIdsNoLocksBatchReturnsExpectedResult() {
-    Set<Long> pids = createPidSet();
-    Map<Long, ThreadInfo> expectedResult = createThreadInfoMapForBatch(pids, false);
+    Set<Long> threadIdSet = createThreadIdSet();
+    Map<Long, ThreadInfo> expectedResult = createThreadInfoMapForBatch(threadIdSet, false);
 
     Map<Long, ThreadInfo> map =
-        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, pids, false,
+        ThreadsMonitoringProcess.createThreadInfoMap(threadMXBean, threadIdSet, false,
             true);
 
     assertThat(map).isEqualTo(expectedResult);
   }
 
   @NotNull
-  private Map<Long, ThreadInfo> createThreadInfoMapForBatch(Set<Long> pids, boolean locks) {
-    long[] pidArray = new long[pids.size()];
-    ThreadInfo[] threadInfoArray = new ThreadInfo[pids.size()];
+  private Map<Long, ThreadInfo> createThreadInfoMapForBatch(Set<Long> threadIdSet, boolean locks) {
+    long[] threadIdArray = new long[threadIdSet.size()];
+    ThreadInfo[] threadInfoArray = new ThreadInfo[threadIdSet.size()];
     Map<Long, ThreadInfo> result = new HashMap<>();
     int idx = 0;
-    for (Long pid : pids) {
-      pidArray[idx] = pid;
+    for (Long id : threadIdSet) {
+      threadIdArray[idx] = id;
       ThreadInfo threadInfo = mock(ThreadInfo.class);
-      when(threadInfo.getThreadId()).thenReturn(pid);
+      when(threadInfo.getThreadId()).thenReturn(id);
       threadInfoArray[idx] = threadInfo;
-      result.put(pid, threadInfo);
+      result.put(id, threadInfo);
       idx++;
     }
-    when(threadMXBean.getThreadInfo(aryEq(pidArray), eq(locks), eq(locks)))
+    when(threadMXBean.getThreadInfo(aryEq(threadIdArray), eq(locks), eq(locks)))
         .thenReturn(threadInfoArray);
     return result;
   }

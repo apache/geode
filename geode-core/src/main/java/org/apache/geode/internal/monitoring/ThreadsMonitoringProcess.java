@@ -158,7 +158,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
       createThreadInfoMapUsingSingleCall(threadMXBean, stuckThreadIds, showLocks, result);
     } else {
       for (long id : stuckThreadIds) {
-        ThreadInfo threadInfo = createThreadInfoForSinglePid(threadMXBean, showLocks, id);
+        ThreadInfo threadInfo = createThreadInfoForSingleThread(threadMXBean, showLocks, id);
         if (threadInfo != null) {
           result.put(threadInfo.getThreadId(), threadInfo);
         }
@@ -168,7 +168,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
     return result;
   }
 
-  private static ThreadInfo createThreadInfoForSinglePid(
+  private static ThreadInfo createThreadInfoForSingleThread(
       ThreadMXBean threadMXBean, boolean showLocks, long id) {
     ThreadInfo threadInfo;
     if (showLocks) {
