@@ -17,6 +17,7 @@ package org.apache.geode.internal.monitoring;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -119,30 +120,87 @@ public class ThreadsMonitoringProcess extends TimerTask {
     return result;
   }
 
-  @VisibleForTesting
-  public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
-    /*
-     * NOTE: at least some implementations of getThreadInfo(long[], boolean, boolean)
-     * will core dump if the long array contains a duplicate value.
-     * That is why stuckThreadIds is a Set instead of a List.
-     */
+  /**
+   * If set to true, then the JVM will be asked for what locks a thread holds.
+   * This is extra expensive to ask for on some JVMs so be careful setting this to true.
+   */
+  private static final boolean SHOW_LOCKS = Boolean.getBoolean("gemfire.threadmonitor.showLocks");
+  /**
+   * If set to true, then the JVM will be asked for all potential stuck threads with one call.
+   * Since getThreadInfo on many JVMs, stops ALL threads from running, and since getting info
+   * on multiple threads with one call is additional work, setting this can cause an extra long
+   * stop the world that can then cause other problems (like a forced disconnect).
+   * So be careful setting this to true.
+   */
+  private static final boolean BATCH_CALLS = Boolean.getBoolean("gemfire.threadmonitor.batchCalls");
+
+  private static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds) {
+    return createThreadInfoMap(stuckThreadIds, SHOW_LOCKS, BATCH_CALLS);
+  }
+
+  public static Map<Long, ThreadInfo> createThreadInfoMap(Set<Long> stuckThreadIds,
+      boolean showLocks, boolean batchCalls) {
+    return createThreadInfoMap(ManagementFactory.getThreadMXBean(), stuckThreadIds, showLocks,
+        batchCalls);
+  }
+
+  static Map<Long, ThreadInfo> createThreadInfoMap(ThreadMXBean threadMXBean,
+      Set<Long> stuckThreadIds,
+      final boolean showLocks, final boolean batchCalls) {
     if (stuckThreadIds.isEmpty()) {
       return Collections.emptyMap();
     }
+    logger.info(
+        "Obtaining ThreadInfo for {} threads. Configuration: showLocks={} batchCalls={}. This is an expensive operation for the JVM and on most JVMs causes all threads to be paused.",
+        stuckThreadIds.size(), showLocks, batchCalls);
+    Map<Long, ThreadInfo> result = new HashMap<>();
+    if (batchCalls) {
+      createThreadInfoMapUsingSingleCall(threadMXBean, stuckThreadIds, showLocks, result);
+    } else {
+      for (long id : stuckThreadIds) {
+        ThreadInfo threadInfo = createThreadInfoForSingleThread(threadMXBean, showLocks, id);
+        if (threadInfo != null) {
+          result.put(threadInfo.getThreadId(), threadInfo);
+        }
+      }
+    }
+    logger.info("finished obtaining ThreadInfo");
+    return result;
+  }
+
+  private static ThreadInfo createThreadInfoForSingleThread(
+      ThreadMXBean threadMXBean, boolean showLocks, long id) {
+    ThreadInfo threadInfo;
+    if (showLocks) {
+      ThreadInfo[] threadInfos =
+          threadMXBean.getThreadInfo(new long[] {id}, true, true);
+      threadInfo = threadInfos[0];
+    } else {
+      threadInfo = threadMXBean.getThreadInfo(id, Integer.MAX_VALUE);
+    }
+    return threadInfo;
+  }
+
+  private static void createThreadInfoMapUsingSingleCall(
+      ThreadMXBean threadMXBean, Set<Long> stuckThreadIds, boolean showLocks,
+      Map<Long, ThreadInfo> result) {
     long[] ids = new long[stuckThreadIds.size()];
     int idx = 0;
     for (long id : stuckThreadIds) {
       ids[idx] = id;
       idx++;
     }
-    ThreadInfo[] threadInfos = ManagementFactory.getThreadMXBean().getThreadInfo(ids, true, true);
-    Map<Long, ThreadInfo> result = new HashMap<>();
+    /*
+     * NOTE: at least some implementations of getThreadInfo(long[], boolean, boolean)
+     * will core dump if the long array contains a duplicate value.
+     * That is why stuckThreadIds is a Set instead of a List.
+     */
+    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(ids, showLocks, showLocks);
     for (ThreadInfo threadInfo : threadInfos) {
       if (threadInfo != null) {
         result.put(threadInfo.getThreadId(), threadInfo);
       }
     }
-    return result;
   }
 
   private void addLockOwnerThreadId(Set<Long> stuckThreadIds, long threadId) {
