@@ -363,4 +363,9 @@ public class GatewaySenderMBeanBridge {
   public int getEventsExceedingAlertThreshold() {
     return getStatistic(StatsKey.GATEWAYSENDER_EVENTS_EXCEEDING_ALERT_THRESHOLD).intValue();
   }
+
+  public boolean isRecoveryOngoing() {
+    return abstractSender.isRecoveryOngoing();
+  }
+
 }

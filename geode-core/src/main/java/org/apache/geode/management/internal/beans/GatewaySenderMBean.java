@@ -256,4 +256,10 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   public int getEventsExceedingAlertThreshold() {
     return bridge.getEventsExceedingAlertThreshold();
   }
+
+  @Override
+  public boolean isRecoveryOngoing() {
+    return bridge.isRecoveryOngoing();
+  }
+
 }

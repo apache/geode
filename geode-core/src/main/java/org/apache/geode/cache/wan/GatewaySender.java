@@ -468,4 +468,5 @@ public interface GatewaySender {
    *
    */
   boolean getEnforceThreadsConnectSameReceiver();
+
 }

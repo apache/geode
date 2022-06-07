@@ -450,6 +450,23 @@ public class PartitionedRegion extends LocalRegion
 
   private final long birthTime = System.currentTimeMillis();
 
+
+  public static final int IDLE_STATE = 0;
+  public static final int SCHEDULED_RECOVERY = 1;
+  public static final int SCHEDULED_RECOVERY_REGION_INITIALIZED = 2;
+  public static final int EXECUTING_RECOVERY = 3;
+  public static final int EXECUTING_RECOVERY_REGION_INITIALIZED = 4;
+
+  private int recoveryState = IDLE_STATE;
+
+  public void setRecoveryState(int state) {
+    recoveryState = state;
+  }
+
+  public int getRecoveryState() {
+    return recoveryState;
+  }
+
   public void setShutDownAllStatus(int newStatus) {
     shutDownAllStatus = newStatus;
   }

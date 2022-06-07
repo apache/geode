@@ -18,6 +18,11 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+import static org.apache.geode.internal.cache.PartitionedRegion.EXECUTING_RECOVERY;
+import static org.apache.geode.internal.cache.PartitionedRegion.EXECUTING_RECOVERY_REGION_INITIALIZED;
+import static org.apache.geode.internal.cache.PartitionedRegion.IDLE_STATE;
+import static org.apache.geode.internal.cache.PartitionedRegion.SCHEDULED_RECOVERY;
+import static org.apache.geode.internal.cache.PartitionedRegion.SCHEDULED_RECOVERY_REGION_INITIALIZED;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -287,6 +292,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             String.format("Parallel Gateway Sender %s can not be used with replicated region %s",
                 this.sender.getId(), userRegion.getFullPath()));
       }
+    }
+
+    if (!asyncEvent && idx == 0) {
+      sender.setRecoveryOngoing(true);
     }
 
     buckToDispatchLock = new StoppableReentrantLock(sender.getCancelCriterion());
@@ -572,6 +581,23 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
         // Wait for buckets to be recovered.
         prQ.shadowPRWaitForBucketRecovery();
+
+        if (!asyncEvent) {
+          synchronized (prQ) {
+            int recoveryState = prQ.getRecoveryState();
+            if (recoveryState == IDLE_STATE) {
+              sender.setRecoveryOngoing(false);
+            } else {
+              if (recoveryState == SCHEDULED_RECOVERY) {
+                prQ.setRecoveryState(SCHEDULED_RECOVERY_REGION_INITIALIZED);
+              } else if (recoveryState == EXECUTING_RECOVERY) {
+                prQ.setRecoveryState(EXECUTING_RECOVERY_REGION_INITIALIZED);
+              } else {
+                throw new GatewaySenderException("Invalid recovery state " + recoveryState);
+              }
+            }
+          }
+        }
 
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);

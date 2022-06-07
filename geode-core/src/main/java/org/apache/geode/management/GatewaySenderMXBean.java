@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -350,6 +351,7 @@ public interface GatewaySenderMXBean {
    */
   int getEventsExceedingAlertThreshold();
 
-
+  @Experimental
+  boolean isRecoveryOngoing();
 
 }

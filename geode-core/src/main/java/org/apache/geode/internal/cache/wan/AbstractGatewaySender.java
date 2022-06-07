@@ -185,6 +185,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected volatile ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
       new ConcurrentLinkedQueue<>();
+
+
+  protected boolean recoveryOngoing = false;
+
+
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
    */
@@ -1617,4 +1622,13 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
     }
   }
+
+  public void setRecoveryOngoing(boolean recovery) {
+    recoveryOngoing = recovery;
+  }
+
+  public boolean isRecoveryOngoing() {
+    return recoveryOngoing;
+  }
+
 }

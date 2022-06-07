@@ -19,6 +19,11 @@ import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.internal.cache.ColocationHelper.checkMembersColocation;
+import static org.apache.geode.internal.cache.PartitionedRegion.EXECUTING_RECOVERY;
+import static org.apache.geode.internal.cache.PartitionedRegion.EXECUTING_RECOVERY_REGION_INITIALIZED;
+import static org.apache.geode.internal.cache.PartitionedRegion.IDLE_STATE;
+import static org.apache.geode.internal.cache.PartitionedRegion.SCHEDULED_RECOVERY;
+import static org.apache.geode.internal.cache.PartitionedRegion.SCHEDULED_RECOVERY_REGION_INITIALIZED;
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.printCollection;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
@@ -1502,6 +1507,17 @@ public class PRHARedundancyProvider {
           PartitionedRegionRebalanceOp rebalance = rebalanceOpFactory.create(
               partitionedRegion, false, director, replaceOfflineData, false);
 
+          if (partitionedRegion.isShadowPR()) {
+            synchronized (partitionedRegion) {
+              int recoveryState = partitionedRegion.getRecoveryState();
+              if (recoveryState == SCHEDULED_RECOVERY) {
+                partitionedRegion.setRecoveryState(EXECUTING_RECOVERY);
+              } else if (recoveryState == SCHEDULED_RECOVERY_REGION_INITIALIZED) {
+                partitionedRegion.setRecoveryState(EXECUTING_RECOVERY_REGION_INITIALIZED);
+              }
+            }
+          }
+
           long start = partitionedRegion.getPrStats().startRecovery();
 
           if (isFixedPartitionedRegion) {
@@ -1511,6 +1527,19 @@ public class PRHARedundancyProvider {
           }
 
           partitionedRegion.getPrStats().endRecovery(start);
+
+          if (partitionedRegion.isShadowPR()) {
+            synchronized (partitionedRegion) {
+              int recoveryState = partitionedRegion.getRecoveryState();
+              if (recoveryState == EXECUTING_RECOVERY) {
+                partitionedRegion.setRecoveryState(IDLE_STATE);
+              } else if (recoveryState == EXECUTING_RECOVERY_REGION_INITIALIZED) {
+                partitionedRegion.setRecoveryState(IDLE_STATE);
+                partitionedRegion.getParallelGatewaySender().setRecoveryOngoing(false);
+              }
+            }
+          }
+
           recoveryFuture = null;
           providerStartupTask.complete(null);
         } catch (CancelException e) {
@@ -1522,6 +1551,14 @@ public class PRHARedundancyProvider {
         } catch (Exception e) {
           logger.error("Unexpected exception during bucket recovery", e);
           providerStartupTask.completeExceptionally(e);
+        } finally {
+          if (partitionedRegion.isShadowPR()
+              && partitionedRegion.getRecoveryState() != IDLE_STATE) {
+            synchronized (partitionedRegion) {
+              partitionedRegion.setRecoveryState(IDLE_STATE);
+              partitionedRegion.getParallelGatewaySender().setRecoveryOngoing(false);
+            }
+          }
         }
       }
     };
@@ -1531,6 +1568,11 @@ public class PRHARedundancyProvider {
         try {
           if (logger.isDebugEnabled()) {
             if (isStartup) {
+              if (partitionedRegion.isShadowPR()) {
+                synchronized (partitionedRegion) {
+                  partitionedRegion.setRecoveryState(SCHEDULED_RECOVERY);
+                }
+              }
               logger.debug("{} scheduling redundancy recovery in {} ms", partitionedRegion, delay);
             } else {
               logger.debug(
