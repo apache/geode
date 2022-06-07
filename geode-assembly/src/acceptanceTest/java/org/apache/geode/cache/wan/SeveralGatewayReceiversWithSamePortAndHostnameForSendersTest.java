@@ -293,11 +293,11 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
     putKeyValues(vm1, NUM_PUTS, regionName);
 
-    await().untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
-
-    await().untilAsserted(() -> assertThat(getSenderPoolDisconnects(vm1, senderId)).isEqualTo(0));
-
-    await().untilAsserted(() -> assertThat(getPoolEndPointSize(vm1, senderId)).isEqualTo(1));
+    await().untilAsserted(() -> {
+      assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0);
+      assertThat(getSenderPoolDisconnects(vm1, senderId)).isEqualTo(0);
+      assertThat(getPoolEndPointSize(vm1, senderId)).isEqualTo(1);
+    });
 
   }
 
