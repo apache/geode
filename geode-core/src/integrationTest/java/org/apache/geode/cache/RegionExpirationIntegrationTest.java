@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache;
 
-import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
 import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
@@ -30,6 +28,9 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+
+import java.time.Duration;
+import java.time.Instant;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -70,10 +71,10 @@ public class RegionExpirationIntegrationTest {
   }
 
   @Test
-  public void increaseRegionTtl() throws Exception {
+  public void increaseRegionTtl() {
     int firstTtlSeconds = 3;
     int secondTtlSeconds = 8;
-    long startNanos = nanoTime();
+    Instant startInstant = Instant.now();
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(firstTtlSeconds, DESTROY));
@@ -84,15 +85,16 @@ public class RegionExpirationIntegrationTest {
         .setRegionTimeToLive(new ExpirationAttributes(secondTtlSeconds, DESTROY));
 
     await().until(region::isDestroyed);
-    assertThat(NANOSECONDS.toSeconds(nanoTime() - startNanos))
-        .isGreaterThanOrEqualTo(secondTtlSeconds);
+    Instant endInstant = Instant.now();
+    assertThat(Duration.between(startInstant, endInstant))
+        .isGreaterThanOrEqualTo(Duration.ofSeconds(secondTtlSeconds));
   }
 
   @Test
-  public void decreaseRegionTtl() throws Exception {
+  public void decreaseRegionTtl() {
     int firstTtlSeconds = 5;
     int secondTtlSeconds = 1;
-    long startNanos = nanoTime();
+    Instant startInstant = Instant.now();
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(firstTtlSeconds, DESTROY));
@@ -103,11 +105,13 @@ public class RegionExpirationIntegrationTest {
         .setRegionTimeToLive(new ExpirationAttributes(secondTtlSeconds, DESTROY));
 
     await().untilAsserted(() -> assertThat(region.isDestroyed()).isTrue());
-    assertThat(NANOSECONDS.toSeconds(nanoTime() - startNanos)).isLessThan(firstTtlSeconds);
+    Instant endInstant = Instant.now();
+    assertThat(Duration.between(startInstant, endInstant))
+        .isLessThan(Duration.ofSeconds(firstTtlSeconds));
   }
 
   @Test
-  public void regionTtlWithIdleMock() throws Exception {
+  public void regionTtlWithIdleMock() {
     int ttlSeconds = 5;
     int idleSeconds = 1;
 
