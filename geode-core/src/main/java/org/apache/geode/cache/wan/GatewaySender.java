@@ -16,7 +16,6 @@ package org.apache.geode.cache.wan;
 
 import java.util.List;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
@@ -215,34 +214,6 @@ public interface GatewaySender {
    * running, its configuration cannot be changed.
    */
   void startWithCleanQueue();
-
-
-  /**
-   * Prepare GatewaySender for closing of Cache.
-   *
-   * <p>
-   * Implementation of new API in ParallelGatewaySenderImpl:
-   *
-   *
-   * <pre>
-   * public void prepareForStop() {
-   *   if (!isRunning()) {
-   *     return;
-   *   }
-   *   pause();
-   *   if (eventProcessor != null &amp;&amp; !eventProcessor.isStopped()) {
-   *     eventProcessor.prepareForStopProcessing();
-   *   }
-   * }
-   * </pre>
-   *
-   *
-   * <p>
-   * Invoked at closing of cache.
-   *
-   */
-  @Experimental
-  void prepareForStop();
 
   /**
    * Stops this GatewaySender. The scope of this operation is the VM on which it is invoked. In case
