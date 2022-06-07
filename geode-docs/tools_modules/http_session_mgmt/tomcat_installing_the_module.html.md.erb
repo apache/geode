@@ -25,23 +25,11 @@ This topic describes how to install the HTTP session management module for Tomca
 2.  The HTTP Session Management Module for Tomcat is included in the <%=vars.product_name%> installation package. After you install <%=vars.product_name_long%>, you will find the module in the `tools/Modules` directory of the installation.
 
 3.  Unzip the module into the `$CATALINA_HOME` directory or wherever you installed the application server.
-4.  Copy the following jar files to the `lib` directory of your Tomcat server (`$CATALINA_HOME/lib`):
-    -   antlr jar
-    -   commons-io jar
-    -   commons-lang jar
-    -   commons-validator jar
-    -   fastutil jar
-    -   geode-commons jar
-    -   geode-core jar
-    -   geode-logging jar
-    -   geode-management jar
-    -   geode-serialization jar
-    -   javax.transaction-api jar
-    -   jgroups jar
-    -   log4j-api jar
-    -   log4j-core jar
-    -   log4j-jul jar
-    -   micrometer-core jar
-    -   shiro-core jar
 
+4.  Copy all of the jar files from the <%=vars.product_name%> `lib` subdirectory to the `lib` subdirectory of your Tomcat server (`$CATALINA_HOME/lib`):
+
+    ```
+    cd $CATALINA_HOME/lib
+    cp $GEODE_HOME/lib/*.jar .
+    ```
 
