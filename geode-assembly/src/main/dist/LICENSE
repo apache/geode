@@ -1023,6 +1023,9 @@ The EDL 1.0 License (http://www.eclipse.org/org/documents/edl-v10.php)
 Apache Geode bundles the following file under the EDL 1.0 License:
 
   - istack-commons-runtime v4.0.1
+  - jakarta.activation v1.2.1
+  - jakarta.validation v2.0.2
+  - jakarta.xml.bind v2.3.2
 
 Eclipse Distribution License - v 1.0
 
@@ -1062,8 +1065,6 @@ The MIT License (http://opensource.org/licenses/mit-license.html)
 
 Apache Geode bundles the following files under the MIT License:
 
-  - Checker Qual v3.12.0 (https://checkerframework.org), Copyright (c)
-    2004-present by the Checker Framework developers
   - ClassGraph v4.8.146 (https://github.com/classgraph/classgraph), Copyright
     (c) 2019 Luke Hutchison
   - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
@@ -1095,8 +1096,6 @@ Apache Geode bundles the following files under the MIT License:
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
-  - OrderStatisticTree (https://github.com/coderodde/OrderStatisticTree),
-    Copyright (c) 2021 Rodion Efremov
   - Sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
   - SLF4J API v1.7.32 (http://www.slf4j.org), Copyright (c) 2004-2017 QOS.ch
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
@@ -1106,6 +1105,7 @@ Apache Geode bundles the following files under the MIT License:
     contributors
   - Timeago v1.3.0 (http://timeago.yarp.com), Copyright (c) 2008-2015 Ryan
     McGeary
+  - webjars-locator-core (https://webjars.org), Copyright (c) 2013 James Ward
   - zTree v3.5.02 (http://zTree.me/), Copyright (c) 2010 Hunter.z
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
