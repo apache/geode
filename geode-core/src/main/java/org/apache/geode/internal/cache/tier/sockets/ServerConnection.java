@@ -576,55 +576,54 @@ public class ServerConnection implements Runnable {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
-      getCleanupTable().compute(handshake, (inHandshake, numRefs) -> {
-        byte endpointType = (byte) 0;
-        int queueSize = 0;
-        if (proxyId.isDurable()) {
+      byte endpointType = (byte) 0;
+      int queueSize = 0;
+      CacheClientProxy proxy = null;
+      if (proxyId.isDurable()) {
+        if (isDebugEnabled) {
+          logger.debug("looking if the Proxy existed for this durable client or not :{}",
+              proxyId);
+        }
+        proxy =
+            getAcceptor().getCacheClientNotifier().getClientProxy(proxyId);
+        if (proxy != null && proxy.waitRemoval()) {
+          proxy = getAcceptor().getCacheClientNotifier().getClientProxy(proxyId);
+        }
+        if (proxy != null) {
           if (isDebugEnabled) {
-            logger.debug("looking if the Proxy existed for this durable client or not :{}",
-                proxyId);
+            logger.debug("Proxy existed for this durable client :{} and proxy : {}", proxyId,
+                proxy);
           }
-          CacheClientProxy proxy =
-              getAcceptor().getCacheClientNotifier().getClientProxy(proxyId);
-          if (proxy != null && proxy.waitRemoval()) {
-            proxy = getAcceptor().getCacheClientNotifier().getClientProxy(proxyId);
-          }
-          if (proxy != null) {
-            if (isDebugEnabled) {
-              logger.debug("Proxy existed for this durable client :{} and proxy : {}", proxyId,
-                  proxy);
-            }
-            if (proxy.isPrimary()) {
-              endpointType = (byte) 2;
-              queueSize = proxy.getQueueSize();
-            } else {
-              endpointType = (byte) 1;
-              queueSize = proxy.getQueueSize();
-            }
-          }
-          if (numRefs == null) {
-            // Check whether this is a durable client first. A durable client with
-            // the same id is not allowed. In this case, reject the client.
-            if (proxy != null && !proxy.isPaused()) {
-              // The handshake refusal message must be smaller than 127 bytes.
-              String handshakeRefusalMessage =
-                  String.format("Duplicate durable clientId (%s)", proxyId.getDurableId());
-              logger.warn("{} : {}", name, handshakeRefusalMessage);
-              refuseHandshake(handshakeRefusalMessage,
-                  Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT);
-              return numRefs;
-            }
+          if (proxy.isPrimary()) {
+            endpointType = (byte) 2;
+            queueSize = proxy.getQueueSize();
+          } else {
+            endpointType = (byte) 1;
+            queueSize = proxy.getQueueSize();
           }
         }
+      }
+      byte finalEndpointType = endpointType;
+      int finalQueueSize = queueSize;
+      AtomicBoolean isDuplicateDurableClient = new AtomicBoolean(false);
+      CacheClientProxy finalProxy = proxy;
+      getCleanupTable().compute(handshake, (inHandShake, numRefs) -> {
+        // Check whether this is a durable client first. A durable client with
+        // the same id is not allowed. In this case, reject the client.
+        if (numRefs == null
+            && (proxyId.isDurable() && finalProxy != null && !finalProxy.isPaused())) {
+          isDuplicateDurableClient.set(true);
+          return numRefs;
+        }
         if (numRefs != null) {
-          if (acceptHandShake(endpointType, queueSize)) {
+          if (acceptHandShake(finalEndpointType, finalQueueSize)) {
             numRefs.increment();
             incedCleanupTableRef = true;
             result.set(true);
           }
           return numRefs;
         }
-        if (acceptHandShake(endpointType, queueSize)) {
+        if (acceptHandShake(finalEndpointType, finalQueueSize)) {
           clientJoined.set(true);
           numRefs = new MutableInt(1);
           incedCleanupTableRef = true;
@@ -633,6 +632,14 @@ public class ServerConnection implements Runnable {
         }
         return numRefs;
       });
+      if (isDuplicateDurableClient.get()) {
+        // The handshake refusal message must be smaller than 127 bytes.
+        String handshakeRefusalMessage =
+            String.format("Duplicate durable clientId (%s)", proxyId.getDurableId());
+        logger.warn("{} : {}", name, handshakeRefusalMessage);
+        refuseHandshake(handshakeRefusalMessage,
+            Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT);
+      }
       return result.get();
     } finally {
       if (isTerminated() || !result.get()) {
