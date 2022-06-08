@@ -103,19 +103,6 @@ tests:
   PLATFORM: linux
   RAM: '16'
   name: unit
-- ARTIFACT_SLUG: unithalfcputestfiles
-  CALL_STACK_TIMEOUT: '1200'
-  CPUS: '4'
-  DISK: '200GB'
-  DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 30m
-  GRADLE_TASK: test
-  MAX_IN_FLIGHT: 1
-  PARALLEL_DUNIT: 'false'
-  PARALLEL_GRADLE: 'true'
-  PLATFORM: linux
-  RAM: '16'
-  name: unithalfcpu
 - ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: '13500'
   CPUS: '6'

@@ -129,12 +129,16 @@ echo "${ZONE}" > "instance-data/zone"
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
-MACHINE_TYPE="e2-custom"
-if (( ${RAM} > 128 )); then
-  MACHINE_TYPE="custom"
+
+MACHINE_PREFIX="e2"
+if (( ${RAM} > 128 )) || (( ${CPUS} > 32 )); then
+  MACHINE_PREFIX="n2"
 fi
-if (( ${CPUS} > 32 )); then
-  MACHINE_TYPE="custom"
+
+if (( ${RAM} / ${CPUS} == 4 )) && (( ${CPUS} <= 96 )); then
+  MACHINE_TYPE="${MACHINE_PREFIX}-standard-${CPUS}"
+else
+  MACHINE_TYPE="${MACHINE_PREFIX}-custom-${CPUS}-${RAM_MEGABYTES}"
 fi
 
 TTL=$(($(date +%s) + 60 * 60 * 12))
