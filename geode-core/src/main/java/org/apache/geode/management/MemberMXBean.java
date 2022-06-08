@@ -184,14 +184,42 @@ public interface MemberMXBean {
   /**
    * Returns JVM metrics.
    *
-   * @return JVM metrics
+   * @return A collection of following JVM metrics beans:<br>
+   *         gcCount - (Long) the number of times garbage collection has occurred.<br>
+   *         gcTimeMillis - (Long) the amount of time (in milliseconds) spent on garbage
+   *         collection.<br>
+   *         initMemory - (Long) the initial number of megabytes of memory requested from the
+   *         operating system.<br>
+   *         committedMemory - (Long) the current number of megabytes of memory allocated.<br>
+   *         usedMemory - (Long) the current number of megabytes of memory being used.<br>
+   *         maxMemory - (Long) the maximum number of megabytes of memory available from the
+   *         operating system.<br>
+   *         totalThreads - (Integer) he number of threads in use.
    */
   JVMMetrics showJVMMetrics();
 
   /**
    * Returns operating system metrics.
    *
-   * @return operating system metrics
+   * @return A collection of following operating system metrics beans:<br>
+   *         maxFileDescriptorCount - (Long) the maximum number of open file descriptors allowed by
+   *         the operating system.<br>
+   *         openFileDescriptorCount - (Long) the current number of open file descriptors.<br>
+   *         processCpuTime - (Long) the amount of time (in nanoseconds) used by the member's
+   *         process.<br>
+   *         committedVirtualMemorySize - (Long) the current number of megabytes of memory
+   *         allocated.<br>
+   *         totalPhysicalMemorySize - (Long) the number of megabytes of free memory available to
+   *         the operating system.<br>
+   *         freePhysicalMemorySize - (Long) the number of megabytes of free memory available to the
+   *         operating system.<br>
+   *         totalSwapSpaceSize - (Long) the number of megabytes of swap space allocated.<br>
+   *         freeSwapSpaceSize - (Long) the number of megabytes of free swap space.<br>
+   *         name - (String) the name of the operating system.<br>
+   *         version - (String) the version of the operating system.<br>
+   *         arch - (String) the hardware architecture.<br>
+   *         availableProcessors - (Integer) the number of available processors.<br>
+   *         systemLoadAverage - (Double) the system load average.
    */
   OSMetrics showOSMetrics();
 
