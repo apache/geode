@@ -25,11 +25,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.lang.SystemProperty;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class WanCopyRegionFunctionService implements CacheService {
+
+  private static final String WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
+      "WAN Copy Region Function Execution Processor";
 
   private volatile ExecutorService wanCopyRegionFunctionExecutionPool;
 
@@ -41,11 +46,15 @@ public class WanCopyRegionFunctionService implements CacheService {
 
   @Override
   public boolean init(Cache cache) {
-    String WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
-        "WAN Copy Region Function Execution Processor";
-    int WAN_COPY_REGION_FUNCTION_MAX_CONCURRENT_THREADS = 10;
+    int maxConcurrentThreads = SystemProperty
+        .getProductIntegerProperty(
+            SystemPropertyHelper.WAN_COPY_REGION_MAX_CONCURRENT_THREADS, 10);
+    return init(maxConcurrentThreads);
+  }
+
+  boolean init(int maxConcurrentThreads) {
     wanCopyRegionFunctionExecutionPool = LoggingExecutors
-        .newFixedThreadPool(WAN_COPY_REGION_FUNCTION_MAX_CONCURRENT_THREADS,
+        .newFixedThreadPool(maxConcurrentThreads,
             WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX, true);
     return true;
   }

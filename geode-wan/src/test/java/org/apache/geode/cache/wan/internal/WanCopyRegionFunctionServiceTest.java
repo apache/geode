@@ -23,9 +23,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -36,7 +37,7 @@ public class WanCopyRegionFunctionServiceTest {
   private WanCopyRegionFunctionService service;
   private final InternalCache cache = mock(InternalCache.class);
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     service = new WanCopyRegionFunctionService();
     service.init(cache);
@@ -158,7 +159,7 @@ public class WanCopyRegionFunctionServiceTest {
     int executions = 5;
     CountDownLatch latch = new CountDownLatch(executions);
     for (int i = 0; i < executions; i++) {
-      Callable<CliFunctionResult> firstExecution = () -> {
+      Callable<CliFunctionResult> execution = () -> {
         latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
         return null;
       };
@@ -167,7 +168,7 @@ public class WanCopyRegionFunctionServiceTest {
       CompletableFuture
           .supplyAsync(() -> {
             try {
-              return service.execute(firstExecution, regionName, "mySender1");
+              return service.execute(execution, regionName, "mySender1");
             } catch (Exception e) {
               return null;
             }
@@ -183,4 +184,47 @@ public class WanCopyRegionFunctionServiceTest {
       latch.countDown();
     }
   }
+
+  @Test
+  public void concurrentExecutionsDoesNotExceedMaxConcurrentExecutions() {
+    int maxConcurrentExecutions = 2;
+    service.init(maxConcurrentExecutions);
+
+    int executions = 4;
+    CountDownLatch latch = new CountDownLatch(executions);
+    AtomicInteger concurrentExecutions = new AtomicInteger(0);
+    for (int i = 0; i < executions; i++) {
+      Callable<CliFunctionResult> execution = () -> {
+        concurrentExecutions.incrementAndGet();
+        latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
+        concurrentExecutions.decrementAndGet();
+        return null;
+      };
+
+      final String regionName = String.valueOf(i);
+      CompletableFuture
+          .supplyAsync(() -> {
+            try {
+              return service.execute(execution, regionName, "mySender1");
+            } catch (Exception e) {
+              return null;
+            }
+          });
+    }
+
+    // Wait for the functions to start execution
+    await().untilAsserted(
+        () -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
+
+    // Make sure concurrent executions does not exceed the maximum
+    assertThat(concurrentExecutions.get()).isEqualTo(maxConcurrentExecutions);
+
+    // End executions
+    for (int i = 0; i < executions; i++) {
+      latch.countDown();
+    }
+
+    await().untilAsserted(() -> assertThat(concurrentExecutions.get()).isEqualTo(0));
+  }
+
 }
