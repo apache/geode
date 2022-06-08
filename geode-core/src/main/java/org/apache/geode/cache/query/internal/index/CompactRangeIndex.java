@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -94,7 +92,6 @@ public class CompactRangeIndex extends AbstractIndex {
   protected ThreadLocal<OldKeyValuePair> oldKeyValue;
 
   private final IndexStore indexStore;
-
 
   @MutableForTesting
   static boolean TEST_ALWAYS_UPDATE_IN_PROGRESS = false;
@@ -484,9 +481,6 @@ public class CompactRangeIndex extends AbstractIndex {
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
-      if (limit < indexThresholdSize) {
-        limit = indexThresholdSize;
-      }
     }
 
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
@@ -521,9 +515,6 @@ public class CompactRangeIndex extends AbstractIndex {
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
-      if (limit != -1 && limit < indexThresholdSize) {
-        limit = indexThresholdSize;
-      }
     }
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
 
