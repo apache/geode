@@ -1018,6 +1018,7 @@ public class ServerConnection implements Runnable {
 
     AtomicBoolean unregisterClient = new AtomicBoolean(false);
 
+
     getCleanupProxyIdTable().compute(proxyId, (inProxyId, numRefs) -> {
       if (incedCleanupProxyIdTableRef) {
         incedCleanupProxyIdTableRef = false;
@@ -1025,7 +1026,7 @@ public class ServerConnection implements Runnable {
           numRefs.decrement();
           if (numRefs.intValue() <= 0) {
             unregisterClient.set(true);
-            getCleanupProxyIdTable().remove(proxyId);
+            numRefs = null;
             // here we can remove entry multiuser map for client
             proxyIdVsClientUserAuths.remove(proxyId);
           }
