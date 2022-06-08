@@ -116,9 +116,11 @@ public class ClientHealthMonitor {
    * note, these were moved from static fields in ServerConnection so that they will be cleaned up
    * when the client health monitor is shutdown.
    */
-  private final HashMap<ServerSideHandshake, MutableInt> cleanupTable = new HashMap<>();
+  private final ConcurrentHashMap<ServerSideHandshake, MutableInt> cleanupTable =
+      new ConcurrentHashMap<>();
 
-  private final HashMap<ClientProxyMembershipID, MutableInt> cleanupProxyIdTable = new HashMap<>();
+  private final ConcurrentHashMap<ClientProxyMembershipID, MutableInt> cleanupProxyIdTable =
+      new ConcurrentHashMap<>();
 
   /**
    * Used to track the connections for a particular client

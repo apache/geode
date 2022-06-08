@@ -38,6 +38,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -570,16 +571,14 @@ public class ServerConnection implements Runnable {
   }
 
   boolean processHandShake() {
-    boolean result = false;
-    boolean clientJoined = false;
+    AtomicBoolean result = new AtomicBoolean(false);
+    AtomicBoolean clientJoined = new AtomicBoolean(false);
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
-      synchronized (getCleanupTable()) {
-        MutableInt numRefs = getCleanupTable().get(handshake);
+      getCleanupTable().compute(handshake, (inHandshake, numRefs) -> {
         byte endpointType = (byte) 0;
         int queueSize = 0;
-
         if (proxyId.isDurable()) {
           if (isDebugEnabled) {
             logger.debug("looking if the Proxy existed for this durable client or not :{}",
@@ -613,7 +612,7 @@ public class ServerConnection implements Runnable {
               logger.warn("{} : {}", name, handshakeRefusalMessage);
               refuseHandshake(handshakeRefusalMessage,
                   Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT);
-              return result;
+              return numRefs;
             }
           }
         }
@@ -621,40 +620,42 @@ public class ServerConnection implements Runnable {
           if (acceptHandShake(endpointType, queueSize)) {
             numRefs.increment();
             incedCleanupTableRef = true;
-            result = true;
+            result.set(true);
           }
-          return result;
+          return numRefs;
         }
         if (acceptHandShake(endpointType, queueSize)) {
-          clientJoined = true;
-          getCleanupTable().put(handshake, new MutableInt(1));
+          clientJoined.set(true);
+          numRefs = new MutableInt(1);
           incedCleanupTableRef = true;
           stats.incCurrentClients();
-          result = true;
+          result.set(true);
         }
-        return result;
-      }
+        return numRefs;
+      });
+      return result.get();
     } finally {
-      if (isTerminated() || !result) {
+      if (isTerminated() || !result.get()) {
         return false;
       }
-      boolean registerClient = false;
-      synchronized (getCleanupProxyIdTable()) {
-        MutableInt numRefs = getCleanupProxyIdTable().get(proxyId);
+      AtomicBoolean registerClient = new AtomicBoolean(false);
+
+      getCleanupProxyIdTable().compute(proxyId, (inProxyId, numRefs) -> {
         if (numRefs != null) {
           numRefs.increment();
         } else {
-          registerClient = true;
-          getCleanupProxyIdTable().put(proxyId, new MutableInt(1));
+          registerClient.set(true);
+          numRefs = new MutableInt(1);
         }
         incedCleanupProxyIdTableRef = true;
-      }
+        return numRefs;
+      });
 
       if (isDebugEnabled) {
-        logger.debug("{}registering client {}", registerClient ? "" : "not ", proxyId);
+        logger.debug("{}registering client {}", registerClient.get() ? "" : "not ", proxyId);
       }
       crHelper.checkCancelInProgress(null);
-      if (clientJoined && isFiringMembershipEvents()) {
+      if (clientJoined.get() && isFiringMembershipEvents()) {
         InternalClientMembership.notifyClientJoined(proxyId.getDistributedMember());
       }
 
@@ -662,11 +663,11 @@ public class ServerConnection implements Runnable {
       synchronized (chmLock) {
         chmRegistered = true;
       }
-      if (registerClient) {
+      if (registerClient.get()) {
         chm.registerClient(proxyId, acceptor.getMaximumTimeBetweenPings());
       }
       serverConnectionCollection = chm.addConnection(proxyId, this);
-      acceptor.getConnectionListener().connectionOpened(registerClient, communicationMode);
+      acceptor.getConnectionListener().connectionOpened(registerClient.get(), communicationMode);
     }
   }
 
@@ -985,17 +986,16 @@ public class ServerConnection implements Runnable {
     }
 
     setNotProcessingMessage();
-    boolean clientDeparted = false;
-    boolean cleanupStats = false;
-    synchronized (getCleanupTable()) {
+    AtomicBoolean clientDeparted = new AtomicBoolean(false);
+    AtomicBoolean cleanupStats = new AtomicBoolean(false);
+    getCleanupTable().compute(handshake, (inHandShake, numRefs) -> {
       if (incedCleanupTableRef) {
         incedCleanupTableRef = false;
-        cleanupStats = true;
-        MutableInt numRefs = getCleanupTable().get(handshake);
+        cleanupStats.set(true);
         if (numRefs != null) {
           numRefs.decrement();
           if (numRefs.intValue() <= 0) {
-            clientDeparted = true;
+            clientDeparted.set(true);
             getCleanupTable().remove(handshake);
             stats.decCurrentClients();
           }
@@ -1006,29 +1006,32 @@ public class ServerConnection implements Runnable {
           stats.decCurrentClientConnections();
         }
       }
-    }
+      return numRefs;
+    });
 
-    boolean unregisterClient = false;
-    synchronized (getCleanupProxyIdTable()) {
+    AtomicBoolean unregisterClient = new AtomicBoolean(false);
+
+    getCleanupProxyIdTable().compute(proxyId, (inProxyId, numRefs) -> {
       if (incedCleanupProxyIdTableRef) {
         incedCleanupProxyIdTableRef = false;
-        MutableInt numRefs = getCleanupProxyIdTable().get(proxyId);
         if (numRefs != null) {
           numRefs.decrement();
           if (numRefs.intValue() <= 0) {
-            unregisterClient = true;
+            unregisterClient.set(true);
             getCleanupProxyIdTable().remove(proxyId);
             // here we can remove entry multiuser map for client
             proxyIdVsClientUserAuths.remove(proxyId);
           }
         }
       }
-    }
+      return numRefs;
+    });
+
     cleanup(timedOut);
     if (getAcceptor().isRunning()) {
       // If the client has departed notify bridge membership and unregister it from
       // the heartbeat monitor; other wise just remove the connection.
-      if (clientDeparted && isFiringMembershipEvents()) {
+      if (clientDeparted.get() && isFiringMembershipEvents()) {
         if (clientDisconnectedCleanly && !forceClientCrashEvent) {
           InternalClientMembership.notifyClientLeft(proxyId.getDistributedMember());
         } else {
@@ -1048,20 +1051,20 @@ public class ServerConnection implements Runnable {
 
     if (needsUnregister) {
       acceptor.getClientHealthMonitor().removeConnection(proxyId, this);
-      if (unregisterClient) {
+      if (unregisterClient.get()) {
         acceptor.getClientHealthMonitor().unregisterClient(proxyId, getAcceptor(),
             clientDisconnectedCleanly, clientDisconnectedException);
       }
     }
 
-    if (unregisterClient) {
+    if (unregisterClient.get()) {
       // last server connection call all close on auth objects
       secureLogger.debug("ServerConnection.handleTermination clean client auths");
       cleanClientAuths();
     }
 
-    if (cleanupStats) {
-      acceptor.getConnectionListener().connectionClosed(clientDeparted, communicationMode);
+    if (cleanupStats.get()) {
+      acceptor.getConnectionListener().connectionClosed(clientDeparted.get(), communicationMode);
     }
   }
 

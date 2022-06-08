@@ -36,6 +36,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.shiro.subject.Subject;
@@ -282,7 +283,7 @@ public class ServerConnectionTest {
   }
 
   @Test
-  public void handleTerminationWithoutUnrgisterClientShouldNotNullClientAuths() {
+  public void handleTerminationWithoutUnregisterClientShouldNotNullClientAuths() {
     when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
     when(acceptor.getCacheClientNotifier()).thenReturn(notifier);
     ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
@@ -306,8 +307,8 @@ public class ServerConnectionTest {
     when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
     ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
     ServerConnection spy = spy(serverConnection);
-    Map<ServerSideHandshake, MutableInt> cleanupTable = mock(Map.class);
-    when(cleanupTable.get(any())).thenReturn(mock(MutableInt.class));
+    Map<ServerSideHandshake, MutableInt> cleanupTable = new ConcurrentHashMap<>();
+
     doReturn(cleanupTable).when(clientHealthMonitor).getCleanupTable();
     doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupProxyIdTable();
     spy.setClientUserAuths(clientUserAuths);
