@@ -47,104 +47,12 @@ This adds jar files to the `lib` subdirectory and XML files to the `conf` subdir
     cd $CATALINA_HOME
     unzip $GEODE_HOME/tools/Modules/Apache_Geode_Modules-SERVER-VERSION-Tomcat.zip
     ```
-6.  Copy the following jar files from the <%=vars.product_name%> `lib` subdirectory to the `lib` subdirectory of your Tomcat server (`$CATALINA_HOME/lib`), adding version numbers to the filenames as needed:
-    * antlr jar
-    * classgraph jar
-    * commons-beanutils jar
-    * commons-codec jar
-    * commons-collections jar
-    * commons-io jar
-    * commons-lang3 jar
-    * commons-logging jar
-    * commons-math3 jar
-    * commons-modeler jar
-    * commons-validator jar
-    * fastutil jar
-    * geo jar
-    * geode-common jar
-    * geode-connectors jar
-    * geode-core jar
-    * geode-cq jar
-    * geode-gfsh jar
-    * geode-http-service jar
-    * geode-log4j jar
-    * geode-logging jar
-    * geode-lucene jar
-    * geode-management jar
-    * geode-membership jar
-    * geode-memcached jar
-    * geode-old-client-support jar
-    * geode-protobuf jar
-    * geode-protobuf-messages jar
-    * geode-rebalancer jar
-    * geode-redis jar
-    * geode-serialization jar
-    * geode-tcp-server jar
-    * geode-unsafe jar
-    * geode-wan jar
-    * grumpy-core jar
-    * HdrHistogram jar
-    * HikariCP jar
-    * httpclient jar
-    * httpcore jar
-    * istack-commons-runtime jar
-    * jackson-annotations jar
-    * jackson-core jar
-    * jackson-databind jar
-    * javax.activation jar
-    * javax.activation-api jar
-    * javax.mail-api jar
-    * javax.resource-api jar
-    * javax.servlet-api jar
-    * javax.transaction-api jar
-    * jaxb-api jar
-    * jaxb-impl jar
-    * jetty-http jar
-    * jetty-io jar
-    * jetty-security jar
-    * jetty-server jar
-    * jetty-servlet jar
-    * jetty-util jar
-    * jetty-util-ajax jar
-    * jetty-webapp jar
-    * jetty-xml jar
-    * jgroups jar
-    * jline jar
-    * jna jar
-    * jna-platform jar
-    * jopt-simple jar
-    * LatencyUtils jar
-    * log4j-api jar
-    * log4j-core jar
-    * log4j-jcl jar
-    * log4j-jul jar
-    * log4j-slf4j-impl jar
-    * lucene-analyzers-common jar
-    * lucene-analyzers-phonetic jar
-    * lucene-core jar
-    * lucene-queries jar
-    * lucene-queryparser jar
-    * micrometer-core jar
-    * mx4j jar
-    * mx4j-remote jar
-    * mx4j-tools jar
-    * netty-all jar
-    * protobuf-java jar
-    * rmiio jar
-    * shiro-cache jar
-    * shiro-config-core jar
-    * shiro-config-ogdl jar
-    * shiro-core jar
-    * shiro-crypto-cipher jar
-    * shiro-crypto-core jar
-    * shiro-crypto-hash jar
-    * shiro-event jar
-    * shiro-lang jar
-    * slf4j-api jar
-    * snappy jar
-    * spring-core jar
-    * spring-jcl jar
-    * spring-shell jar
-    * swagger-annotations jar
+
+6.  Copy all of the jar files from the <%=vars.product_name%> `lib` subdirectory to the `lib` subdirectory of your Tomcat server (`$CATALINA_HOME/lib`):
+
+    ```
+    cd $CATALINA_HOME/lib
+    cp $GEODE_HOME/lib/*.jar .
+    ```
 
 Proceed to [Setting Up the HTTP Module for Tomcat](./tomcat_setting_up_the_module.html) to complete your Tomcat configuration.
