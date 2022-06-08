@@ -995,45 +995,60 @@ public class ServerConnection implements Runnable {
     setNotProcessingMessage();
     AtomicBoolean clientDeparted = new AtomicBoolean(false);
     AtomicBoolean cleanupStats = new AtomicBoolean(false);
-    getCleanupTable().compute(handshake, (inHandShake, numRefs) -> {
+    if (handshake != null) {
+      getCleanupTable().compute(handshake, (inHandShake, numRefs) -> {
+        if (incedCleanupTableRef) {
+          incedCleanupTableRef = false;
+          cleanupStats.set(true);
+          if (numRefs != null) {
+            numRefs.decrement();
+            if (numRefs.intValue() <= 0) {
+              clientDeparted.set(true);
+              numRefs = null;
+              stats.decCurrentClients();
+            }
+          }
+          if (communicationMode == CommunicationMode.ClientToServerForQueue) {
+            stats.decCurrentQueueConnections();
+          } else {
+            stats.decCurrentClientConnections();
+          }
+        }
+        return numRefs;
+      });
+    } else {
       if (incedCleanupTableRef) {
         incedCleanupTableRef = false;
         cleanupStats.set(true);
-        if (numRefs != null) {
-          numRefs.decrement();
-          if (numRefs.intValue() <= 0) {
-            clientDeparted.set(true);
-            getCleanupTable().remove(handshake);
-            stats.decCurrentClients();
-          }
-        }
         if (communicationMode == CommunicationMode.ClientToServerForQueue) {
           stats.decCurrentQueueConnections();
         } else {
           stats.decCurrentClientConnections();
         }
       }
-      return numRefs;
-    });
+    }
 
     AtomicBoolean unregisterClient = new AtomicBoolean(false);
 
-
-    getCleanupProxyIdTable().compute(proxyId, (inProxyId, numRefs) -> {
-      if (incedCleanupProxyIdTableRef) {
-        incedCleanupProxyIdTableRef = false;
-        if (numRefs != null) {
-          numRefs.decrement();
-          if (numRefs.intValue() <= 0) {
-            unregisterClient.set(true);
-            numRefs = null;
-            // here we can remove entry multiuser map for client
-            proxyIdVsClientUserAuths.remove(proxyId);
+    if (proxyId != null) {
+      getCleanupProxyIdTable().compute(proxyId, (inProxyId, numRefs) -> {
+        if (incedCleanupProxyIdTableRef) {
+          incedCleanupProxyIdTableRef = false;
+          if (numRefs != null) {
+            numRefs.decrement();
+            if (numRefs.intValue() <= 0) {
+              unregisterClient.set(true);
+              numRefs = null;
+              // here we can remove entry multiuser map for client
+              proxyIdVsClientUserAuths.remove(proxyId);
+            }
           }
         }
-      }
-      return numRefs;
-    });
+        return numRefs;
+      });
+    } else {
+      incedCleanupProxyIdTableRef = false;
+    }
 
     cleanup(timedOut);
     if (getAcceptor().isRunning()) {

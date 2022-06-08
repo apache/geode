@@ -289,7 +289,6 @@ public class ServerConnectionTest {
     ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
     ServerConnection spy = spy(serverConnection);
     doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupTable();
-    doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupProxyIdTable();
     spy.setClientUserAuths(clientUserAuths);
 
     spy.handleTermination(false);
