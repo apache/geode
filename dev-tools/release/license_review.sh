@@ -222,6 +222,7 @@ jsr305
 jetty-
 jgroups
 jna-
+joda-time
 lang-tag
 listenablefuture
 log4j-
@@ -233,11 +234,14 @@ nimbus-jose-jwt
 oauth2-oidc-sdk
 rmiio
 shiro-
+snakeyaml
 snappy
 spring-
 springdoc-
 swagger-annotations
-swagger-models"
+swagger-core
+swagger-models
+swagger-ui"
   echo "$1" | egrep -q "(mx4j-remote|jaxb-api|$(echo -n "$apache" | tr '\n' '|'))"
 }
 function shortenDep() {
@@ -246,7 +250,7 @@ function shortenDep() {
     -e 's/-impl//' \
     -e 's/-java//' \
     -e 's/shiro-.*/shiro-*/' \
-    -e 's/jackson-.*/shiro-*/' \
+    -e 's/jackson-.*/jackson-*/' \
     -e 's/jetty-.*/jetty-*/' \
     -e 's/jna-.*/jna-*/' \
     -e 's/lucene-.*/lucene-*/' \
@@ -266,7 +270,7 @@ for REPORT in report1 report2 ; do
   banner "Comparing $topic dep versions in ${NEW_DIR##*/} to $LICENSE"
   rm -f missing-$REPORT apache-$REPORT
   touch missing-$REPORT apache-$REPORT
-  tail -n +2 $NEW_DIR/$REPORT | sed -e 's#.*/##' -e 's/.jar//' | sed 's/-\([0-9]\)/ \1/' | sort -u | grep -v '^ra$' | while read dep ver; do
+  tail -n +2 $NEW_DIR/$REPORT | sed -e 's#.*/##' -e 's/\.jar//' | sed 's/-\([0-9]\)/ \1/' | sort -u | grep -v '^ra$' | while read dep ver; do
     if isApache2 $dep ; then
       echo $dep $ver >> apache-$REPORT
     else
@@ -363,4 +367,11 @@ if [ "${licFromWs}" = "true" ] ; then
   fi
 fi
 
-exit $result
+if [ "$result" == 1 ] ; then
+    banner "ERRORS WERE FOUND"
+    echo "review each section above for details"
+    exit 1
+else
+    banner "SUMMARY"
+    echo 'ALL GOOD!'
+fi
