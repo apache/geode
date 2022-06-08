@@ -129,6 +129,13 @@ echo "${ZONE}" > "instance-data/zone"
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
+MACHINE_TYPE="e2-custom"
+if (( ${RAM} > 128 )); then
+  MACHINE_TYPE="custom"
+fi
+if (( ${CPUS} > 32 )); then
+  MACHINE_TYPE="custom"
+fi
 
 TTL=$(($(date +%s) + 60 * 60 * 12))
 LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME},sha=${GEODE_SHA}"
@@ -137,7 +144,7 @@ echo "Applying the following labels to the instance: ${LABELS}"
 set +e
 INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \
-  --machine-type=e2-custom-${CPUS}-${RAM_MEGABYTES} \
+  --machine-type=${MACHINE_TYPE}-${CPUS}-${RAM_MEGABYTES} \
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
   --image="${IMAGE_NAME}" \
