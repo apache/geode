@@ -42,13 +42,12 @@ public class JarUtils {
   private static void writeClassTo(Class<?> clazz, JarOutputStream jarOutputStream) {
     String className = clazz.getName();
     String classAsPath = className.replace('.', '/') + ".class";
-    InputStream classInputStream = clazz.getClassLoader().getResourceAsStream(classAsPath);
-    if (classInputStream == null) {
-      throw new RuntimeException("No such class: " + clazz);
-    }
-    JarEntry classEntry = new JarEntry(classAsPath);
-    classEntry.setTime(System.currentTimeMillis());
-    try {
+    try (InputStream classInputStream = clazz.getClassLoader().getResourceAsStream(classAsPath)) {
+      if (classInputStream == null) {
+        throw new IllegalArgumentException("Cannot read class definition for " + className);
+      }
+      JarEntry classEntry = new JarEntry(classAsPath);
+      classEntry.setTime(System.currentTimeMillis());
       byte[] classBytes = IOUtils.toByteArray(classInputStream);
       jarOutputStream.putNextEntry(classEntry);
       jarOutputStream.write(classBytes);

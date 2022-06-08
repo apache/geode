@@ -23,7 +23,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.size.ObjectTraverser;
 import org.apache.geode.internal.size.ObjectTraverser.Visitor;
 
-public class TraverseInaccessibleJdkObject implements Function<Void> {
+public class TraverseEncapsulatedJdkObject implements Function<Void> {
   private static final Visitor TRAVERSE_ENTIRE_OBJECT_GRAPH = (parent, object) -> true;
   private final ObjectTraverser traverser = new ObjectTraverser();
 

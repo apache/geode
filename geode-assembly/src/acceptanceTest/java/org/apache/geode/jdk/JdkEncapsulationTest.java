@@ -16,8 +16,7 @@
 
 package org.apache.geode.jdk;
 
-import static java.util.stream.Collectors.joining;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.util.JarUtils.createJarWithClasses;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -25,7 +24,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,7 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.junit.rules.FolderRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.version.JavaVersions;
@@ -42,22 +39,14 @@ import org.apache.geode.test.version.JavaVersions;
  * Test several ways to make normally inaccessible JDK packages accessible on JDK 17.
  */
 public class JdkEncapsulationTest {
-  private static final String TRAVERSE_INACCESSIBLE_OBJECT = String.join(" ",
-      "execute", "function", "--id=" + TraverseInaccessibleJdkObject.ID);
-
-  private static final Path LINUX_ARGUMENT_FILE_RELATIVE_PATH =
-      Paths.get(System.getenv("GEODE_HOME"), "config", "open-all-jdk-packages-linux-openjdk-17")
-          .toAbsolutePath().normalize();
-
   @Rule(order = 0)
   public final FolderRule folderRule = new FolderRule();
 
   @Rule(order = 1)
   public final GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
-  private String connectToLocator;
-  private int serverPort;
-  private String locatorString;
+  private String startServer;
+  private GfshScript traverseEncapsulatedJdkObject;
 
   @BeforeClass
   public static void validOnlyOnJdk17AndLater() {
@@ -67,79 +56,69 @@ public class JdkEncapsulationTest {
 
   @Before
   public void startLocatorWithObjectTraverserFunction() throws IOException {
-    int[] availablePorts = getRandomAvailableTCPPorts(2);
-    int locatorPort = availablePorts[0];
-    serverPort = availablePorts[1];
-    locatorString = "localhost[" + locatorPort + "]";
-    connectToLocator = "connect --locator=" + locatorString;
+    Path jarPath = folderRule.getFolder().toPath().resolve("traverse-encapsulated-jdk-object.jar");
+    createJarWithClasses(jarPath, TraverseEncapsulatedJdkObject.class);
 
-    String startLocator = String.join(" ",
-        "start",
-        "locator",
-        "--port=" + locatorPort,
-        "--http-service-port=0");
+    int locatorPort = getRandomAvailableTCPPort();
+    String locators = "localhost[" + locatorPort + "]";
 
-    Path jarPath = folderRule.getFolder().toPath().resolve("traverse-object.jar");
-    createJarWithClasses(jarPath, TraverseInaccessibleJdkObject.class);
-    String deployObjectTraverserFunction = String.join(" ",
-        "deploy",
-        "--jar=" + jarPath);
-    gfshRule.execute(startLocator, deployObjectTraverserFunction);
+    startServer = "start server --name=server --disable-default-server --locators=" + locators;
+    traverseEncapsulatedJdkObject = GfshScript
+        .of("connect --locator=" + locators)
+        .and("execute function --id=" + TraverseEncapsulatedJdkObject.ID);
+
+    GfshScript
+        .of("start locator --port=" + locatorPort)
+        .and("deploy --jar=" + jarPath)
+        .execute(gfshRule);
   }
 
   // If this test fails, it means the object we're trying to traverse has no inaccessible fields,
   // and so is not useful for the other tests. If it fails, update TraverseInaccessibleJdkObject
   // to use a type that actually has inaccessible fields.
   @Test
-  public void cannotMakeInaccessibleFieldsAccessibleByDefault() {
-    gfshRule.execute(startServerWithOptions()); // No options
+  public void cannotMakeEncapsulatedFieldsAccessibleByDefault() {
+    gfshRule.execute(startServer); // No JDK options
 
-    GfshExecution execution = GfshScript.of(connectToLocator)
-        .and(TRAVERSE_INACCESSIBLE_OBJECT)
-        .expectExitCode(1) // Because java.math is not opened by default.
-        .execute(gfshRule);
+    String traversalResult = traverseEncapsulatedJdkObject
+        .expectExitCode(1) // Because we did not open any JDK packages.
+        .execute(gfshRule)
+        .getOutputText();
 
-    assertThat(execution.getOutputText())
-        .as("result of traversing %s", TraverseInaccessibleJdkObject.OBJECT.getClass())
+    assertThat(traversalResult)
+        .as("result of traversing %s", TraverseEncapsulatedJdkObject.OBJECT.getClass())
         .contains("Exception: java.lang.reflect.InaccessibleObjectException");
   }
 
   @Test
-  public void canMakeFieldsAccessibleOnExplicitlyOpenedPackages() {
-    String opensOptionFormat = "--J=--add-opens=%s/%s=ALL-UNNAMED";
-    String objectPackage = TraverseInaccessibleJdkObject.OBJECT.getClass().getPackage().getName();
-    String objectModule = TraverseInaccessibleJdkObject.MODULE;
-    String opensOption = String.format(opensOptionFormat, objectModule, objectPackage);
-    gfshRule.execute(startServerWithOptions(opensOption));
+  public void canMakeEncapsulatedFieldsAccessibleInExplicitlyOpenedPackages() {
+    String objectPackage = TraverseEncapsulatedJdkObject.OBJECT.getClass().getPackage().getName();
+    String objectModule = TraverseEncapsulatedJdkObject.MODULE;
 
-    GfshScript.of(connectToLocator)
-        .and(TRAVERSE_INACCESSIBLE_OBJECT)
-        .expectExitCode(0) // Because we explicitly opened java.math.
+    String openThePackageOfTheEncapsulatedJdkObject =
+        String.format(" --J=--add-opens=%s/%s=ALL-UNNAMED", objectModule, objectPackage);
+
+    gfshRule.execute(startServer + openThePackageOfTheEncapsulatedJdkObject);
+
+    traverseEncapsulatedJdkObject
+        .expectExitCode(0) // Because we opened the encapsulated object's package.
         .execute(gfshRule);
   }
 
   @Test
-  public void canMakeFieldsAccessibleOnPackagesOpenedByArgumentFile() {
+  public void canMakeEncapsulatedFieldsAccessibleInPackagesOpenedByArgumentFile() {
     // A few of the packages opened by this argument file are specific to Linux JDKs. Running this
     // test on other operating systems might emit some warnings, but they are harmless.
-    gfshRule.execute(startServerWithOptions("--J=@" + LINUX_ARGUMENT_FILE_RELATIVE_PATH));
+    String argumentFileName = "open-all-jdk-packages-linux-openjdk-17";
+    Path argumentFilePath = Paths.get(System.getenv("GEODE_HOME"), "config", argumentFileName)
+        .toAbsolutePath().normalize();
 
-    GfshScript.of(connectToLocator)
-        .and(TRAVERSE_INACCESSIBLE_OBJECT)
-        .expectExitCode(0) // Because the argument file opens java.math.
+    String useArgumentFile = " --J=@" + argumentFilePath;
+
+    gfshRule.execute(startServer + useArgumentFile);
+
+    traverseEncapsulatedJdkObject
+        .expectExitCode(0) // Because the argument file opens all JDK packages.
         .execute(gfshRule);
-  }
-
-  private String startServerWithOptions(String... option) {
-    Stream<String> baseCommand = Stream.of(
-        "start",
-        "server",
-        "--name=server",
-        "--server-port=" + serverPort,
-        "--locators=" + locatorString);
-    Stream<String> options = Stream.of(option);
-
-    return Stream.concat(baseCommand, options)
-        .collect(joining(" "));
   }
 }
