@@ -879,7 +879,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   };
 
   @Immutable
-  private static final Filter prServerWithCqFilter = profile -> {
+  private static final Predicate<Profile> prServerWithCqFilter = profile -> {
     CacheProfile prof = (CacheProfile) profile;
     return prof.isPartitioned && prof.hasCacheServer && prof.filterProfile != null
         && prof.filterProfile.hasCQs();
