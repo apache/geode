@@ -293,7 +293,7 @@ public class DistributionAdvisor {
   @VisibleForTesting
   long getDelay(DistributedRegion dr) {
     return dr.getGemFireCache().getCacheServers().stream()
-        .mapToLong(CacheServer::getMaximumTimeBetweenPings).max().orElse(0L);
+        .mapToLong(CacheServer::getMaximumTimeBetweenPings).max().orElse(60L);
   }
 
   @VisibleForTesting
