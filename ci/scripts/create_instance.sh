@@ -148,7 +148,7 @@ echo "Applying the following labels to the instance: ${LABELS}"
 set +e
 INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \
-  --machine-type=${MACHINE_TYPE}-${CPUS}-${RAM_MEGABYTES} \
+  --machine-type=${MACHINE_TYPE} \
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
   --image="${IMAGE_NAME}" \
