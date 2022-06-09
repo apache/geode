@@ -1425,9 +1425,9 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     processMessage(smm);
   }
 
-  void doAndIgnoreRejectedExecutionExceptionIfStopping(final Checker checker) {
+  void doAndIgnoreRejectedExecutionExceptionIfStopping(final Runnable runnable) {
     try {
-      checker.check();
+      runnable.run();
     } catch (RejectedExecutionException e) {
       if (!isStopping) {
         throw e;
@@ -1487,11 +1487,6 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   @FunctionalInterface
   interface Warner {
     void warn(String message);
-  }
-
-  @FunctionalInterface
-  interface Checker {
-    void check();
   }
 
   class Heart implements Runnable {

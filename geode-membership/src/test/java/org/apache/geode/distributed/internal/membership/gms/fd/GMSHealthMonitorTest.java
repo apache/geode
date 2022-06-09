@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.RejectedExecutionException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
