@@ -157,7 +157,6 @@ set +e
 INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \
   --machine-type=${MACHINE_TYPE} \
-  ${MIN_CPU_PLATFORM} \
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
   --image="${IMAGE_NAME}" \
