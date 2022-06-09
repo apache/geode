@@ -66,11 +66,13 @@ public class CreateIndexFunction implements InternalFunction<RegionConfig.Index>
     } catch (IndexExistsException e) {
       String message =
           CliStrings.format(CliStrings.CREATE_INDEX__INDEX__EXISTS, indexInfo.getName());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, false, message));
+      context.getResultSender().lastResult(
+          new CliFunctionResult(memberId, CliFunctionResult.StatusState.IGNORABLE, message));
     } catch (IndexNameConflictException e) {
       String message =
           CliStrings.format(CliStrings.CREATE_INDEX__NAME__CONFLICT, indexInfo.getName());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, false, message));
+      context.getResultSender().lastResult(
+          new CliFunctionResult(memberId, CliFunctionResult.StatusState.IGNORABLE, message));
     } catch (RegionNotFoundException e) {
       String message = CliStrings.format(CliStrings.CREATE_INDEX__INVALID__REGIONPATH,
           indexInfo.getFromClause());
