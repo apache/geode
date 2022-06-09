@@ -235,28 +235,28 @@ public class ClientUpdateMessageImplTest implements Serializable {
 
   public static class CqNameToOpSingleEntryTest {
     @Test
-    void isEmptyIsTrueWhenConstructedWithNullName() {
-      assertThat(new CqNameToOpSingleEntry(null, 0).isEmpty()).isTrue();
+    void isEmptyIsTrueWhenConstructedEmpty() {
+      assertThat(new CqNameToOpSingleEntry().isEmpty()).isTrue();
     }
 
     @Test
-    void sizeIsZeroWhenConstructedWithNullName() {
-      assertThat(new CqNameToOpSingleEntry(null, 0).size()).isZero();
+    void sizeIsZeroWhenConstructedEmpty() {
+      assertThat(new CqNameToOpSingleEntry().size()).isZero();
     }
 
     @Test
-    void isFullIsFalseWhenConstructedWithNullName() {
-      assertThat(new CqNameToOpSingleEntry(null, 0).isFull()).isFalse();
+    void isFullIsFalseWhenConstructedEmpty() {
+      assertThat(new CqNameToOpSingleEntry().isFull()).isFalse();
     }
 
     @Test
-    void getNamesIsEmptyWhenConstructedWithNullName() {
-      assertThat(new CqNameToOpSingleEntry(null, 0).getNames()).isEmpty();
+    void getNamesIsEmptyWhenConstructedEmpty() {
+      assertThat(new CqNameToOpSingleEntry().getNames()).isEmpty();
     }
 
     @Test
-    void canAddWhenConstructedWithNullName() {
-      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry(null, 0);
+    void canAddWhenConstructedEmpty() {
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry();
       cqNameToOpSingleEntry.add("something", 1);
       assertThat(cqNameToOpSingleEntry.isEmpty()).isFalse();
       assertThat(cqNameToOpSingleEntry.size()).isOne();
@@ -265,8 +265,8 @@ public class ClientUpdateMessageImplTest implements Serializable {
     }
 
     @Test
-    void canDeleteWhenConstructedWithNullName() {
-      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry(null, 0);
+    void canDeleteWhenConstructedEmpty() {
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry();
       cqNameToOpSingleEntry.delete("something");
       assertThat(cqNameToOpSingleEntry.isEmpty()).isTrue();
       assertThat(cqNameToOpSingleEntry.size()).isZero();

@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireIOException;
@@ -983,6 +984,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     void delete(String name);
   }
+
   /**
    * Contains either zero or one String to int tuples. This is a common case and this impl has a
    * much smaller memory footprint than a HashMap with one entry.
@@ -993,21 +995,24 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     private static final String[] EMPTY_NAMES_ARRAY = new String[0];
 
-
-    CqNameToOpSingleEntry(String name, Integer op) {
-      initializeName(name);
-      this.op = op;
+    /**
+     * Construct empty tuple.
+     */
+    CqNameToOpSingleEntry() {
+      name = EMPTY_NAMES_ARRAY;
+      this.op = 0;
     }
 
-    private void initializeName(String name) {
+    CqNameToOpSingleEntry(final @NotNull String name, final int op) {
       this.name = new String[] {name};
+      this.op = op;
     }
 
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
       out.writeByte(DSCODE.HASH_MAP.toByte());
-      int size = size();
+      final int size = size();
       InternalDataSerializer.writeArrayLength(size, out);
       if (size > 0) {
         DataSerializer.writeObject(name[0], out);
@@ -1017,7 +1022,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     @Override
     public boolean isEmpty() {
-      return name == null;
+      return size() == 0;
     }
 
     @Override
@@ -1030,16 +1035,16 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     @Override
     public int size() {
-      return isEmpty() ? 0 : 1;
+      return name.length;
     }
 
     @Override
     public String[] getNames() {
-      return (isEmpty()) ? EMPTY_NAMES_ARRAY : name;
+      return name;
     }
 
     @Override
-    public void add(String name, Integer op) {
+    public void add(final @NotNull String name, final @NotNull Integer op) {
       if (isEmpty()) {
         this.name = new String[] {name};
         this.op = op;
@@ -1052,8 +1057,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     @Override
     public void delete(String name) {
-      if (name.equals(this.name[0])) {
-        this.name = null;
+      if (!isEmpty() && name.equals(this.name[0])) {
+        this.name = EMPTY_NAMES_ARRAY;
       }
     }
 
@@ -1062,6 +1067,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       return !isEmpty();
     }
   }
+
   /**
    * Basically just a ConcurrentHashMap<String, Integer> but limits itself to the CqNameToOp
    * interface.

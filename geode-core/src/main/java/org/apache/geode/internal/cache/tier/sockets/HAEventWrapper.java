@@ -333,7 +333,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                     Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
                     value = new CqNameToOpSingleEntry(cqNamesKey, cqNamesValue);
                   } else if (cqNamesSize == 0) {
-                    value = new CqNameToOpSingleEntry(null, 0);
+                    value = new CqNameToOpSingleEntry();
                   } else {
                     value = new CqNameToOpHashMap(cqNamesSize);
                     for (int j = 0; j < cqNamesSize; j++) {
