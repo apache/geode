@@ -14,38 +14,59 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static java.util.Objects.requireNonNull;
+import static java.lang.System.lineSeparator;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.isDirectory;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.junit.rules.Folder.Policy.DELETE_ON_PASS;
+import static org.apache.geode.test.junit.rules.Folder.Policy.KEEP_ALWAYS;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class Folder {
 
-  private static final Logger logger = LogService.getLogger();
+  public enum Policy {
+    DELETE_ON_PASS,
+    KEEP_ALWAYS
+  }
 
   private final Path root;
+  private final Policy policy;
 
-  public Folder(Path root) throws IOException {
-    requireNonNull(root);
-    this.root = Files.createDirectories(root.toAbsolutePath().normalize());
+  public Folder(Policy policy, Path root) throws IOException {
+    this.root = root.toAbsolutePath().normalize();
+    this.policy = policy;
+
+    if (this.policy == DELETE_ON_PASS && isDirectory(this.root)) {
+      // folder already exists so caller does not own it and should not delete it
+      throw new IllegalStateException(folderAlreadyExistsFailureMessage(this.root));
+    }
+
+    createDirectories(this.root);
+  }
+
+  private static String folderAlreadyExistsFailureMessage(Path root) {
+    return String.join(lineSeparator(),
+        "Folder already exists: " + root,
+        "You must specify the order in which these rules are applied when using both:",
+        "    @Rule(order = 0)",
+        "    public FolderRule folderRule = new FolderRule();",
+        "    @Rule(order = 1)",
+        "    public GfshRule gfshRule = new GfshRule(folderRule::getFolder);");
   }
 
   public Path toPath() {
     return root;
   }
 
-  public void delete() throws IOException {
-    try {
-      deleteDirectory(root.toFile());
-    } catch (IOException | UncheckedIOException e) {
-      logger.error("Unable to delete directory " + root.toFile(), e);
+  public void testPassed() throws IOException {
+    if (policy == KEEP_ALWAYS) {
+      return;
     }
+    await()
+        .ignoreExceptions()
+        .untilAsserted(() -> deleteDirectory(root.toFile()));
   }
 }

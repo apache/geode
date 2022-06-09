@@ -20,13 +20,15 @@ import java.nio.file.Paths;
 
 import org.junit.runner.Description;
 
+import org.apache.geode.test.junit.rules.Folder.Policy;
+
 public class FolderFactory {
 
-  public static Folder create(Description description) {
+  public static Folder create(Policy policy, Description description) {
     String className = description.getTestClass().getSimpleName();
     String methodName = sanitizeForFolderName(description.getMethodName());
     try {
-      return new Folder(Paths.get(className, methodName));
+      return new Folder(policy, Paths.get(className, methodName));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

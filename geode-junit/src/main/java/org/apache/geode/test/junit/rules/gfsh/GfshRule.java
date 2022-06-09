@@ -52,10 +52,32 @@ public class GfshRule implements TestRule, GfshExecutor {
     return new Builder(gfshContexts::add, errors::add, folder.toPath());
   }
 
+  /**
+   * Creates a new {@code GfshRule}.
+   *
+   * <p>
+   * Use {@link #GfshRule(Supplier)} with a Folder Supplier instead.
+   */
   public GfshRule() {
-    this(FolderFactory::create);
+    this(description -> FolderFactory.create(Folder.Policy.DELETE_ON_PASS, description));
   }
 
+  /**
+   * Creates a new {@code GfshRule} that uses the supplied {@code Folder}.
+   *
+   * <p>
+   * Rules should be ordered to ensure that {@code FolderRule} is set up before and torn down after
+   * the {@code GfshRule}.
+   *
+   * <pre>
+   * {@code @Rule(order = 0)}
+   * {@code public FolderRule folderRule = new FolderRule();}
+   * {@code @Rule(order = 1)}
+   * {@code public GfshRule gfshRule = new GfshRule(folderRule::getFolder);}
+   * </pre>
+   *
+   * @param folderSupplier supplies the Folder for GfshRule to use
+   */
   public GfshRule(Supplier<Folder> folderSupplier) {
     this(description -> folderSupplier.get());
   }
@@ -71,6 +93,7 @@ public class GfshRule implements TestRule, GfshExecutor {
       public void evaluate() throws Throwable {
         folder = folderProvider.apply(description);
         defaultExecutor = executor().build();
+
         try {
           base.evaluate();
         } catch (MultipleFailureException e) {
@@ -80,6 +103,14 @@ public class GfshRule implements TestRule, GfshExecutor {
         } finally {
           try {
             gfshContexts.forEach(GfshContext::killProcesses);
+          } catch (Throwable e) {
+            errors.add(e);
+          }
+        }
+
+        if (errors.isEmpty()) {
+          try {
+            folder.testPassed();
           } catch (Throwable e) {
             errors.add(e);
           }

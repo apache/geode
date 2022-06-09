@@ -14,27 +14,22 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.apache.geode.test.junit.rules.Folder.Policy.DELETE_ON_PASS;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-public class FolderRule implements TestRule {
+import org.apache.geode.test.junit.rules.Folder.Policy;
 
-  public enum Policy {
-    DELETE_ON_PASS,
-    KEEP_ALWAYS
-  }
+public class FolderRule implements TestRule {
 
   private final Policy policy;
 
   private Folder folder;
 
   public FolderRule() {
-    this(Policy.DELETE_ON_PASS);
+    this(DELETE_ON_PASS);
   }
 
   public FolderRule(Policy policy) {
@@ -50,16 +45,9 @@ public class FolderRule implements TestRule {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        folder = FolderFactory.create(description);
+        folder = FolderFactory.create(policy, description);
         base.evaluate();
-        if (policy == Policy.DELETE_ON_PASS) {
-          await()
-              .ignoreExceptions()
-              .untilAsserted(() -> {
-                Throwable thrown = catchThrowable(() -> folder.delete());
-                assertThat(thrown).isNull();
-              });
-        }
+        folder.testPassed();
       }
     };
   }

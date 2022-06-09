@@ -48,7 +48,7 @@ public class StartServerCommandAcceptanceTest {
   private Path rootFolder;
 
   @Rule(order = 0)
-  public FolderRule folderRule = new FolderRule(FolderRule.Policy.KEEP_ALWAYS);
+  public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
   public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
