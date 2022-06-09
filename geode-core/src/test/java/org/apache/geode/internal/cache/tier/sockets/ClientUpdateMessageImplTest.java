@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -24,11 +23,13 @@ import static org.mockito.Mockito.withSettings;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.distributed.DistributedMember;
@@ -37,7 +38,6 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class ClientUpdateMessageImplTest implements Serializable {
   private final ClientProxyMembershipID client1 = mock(ClientProxyMembershipID.class);
@@ -45,11 +45,10 @@ public class ClientUpdateMessageImplTest implements Serializable {
   private final ClientUpdateMessageImpl.ClientCqConcurrentMap clientCqs =
       new ClientUpdateMessageImpl.ClientCqConcurrentMap();
 
-  @Rule
-  public ExecutorServiceRule executorService = new ExecutorServiceRule();
+  public ExecutorService executorService = Executors.newCachedThreadPool();
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void beforeEach() {
     ClientUpdateMessageImpl.CqNameToOpHashMap cqs1 =
         new ClientUpdateMessageImpl.CqNameToOpHashMap(2);
     cqs1.add("cqName1", 1);
@@ -60,8 +59,13 @@ public class ClientUpdateMessageImplTest implements Serializable {
     clientCqs.put(client2, cqs2);
   }
 
+  @AfterEach
+  void afterEach() {
+    assertThat(executorService.shutdownNow()).isEmpty();
+  }
+
   @Test
-  public void addInterestedClientTest() {
+  void addInterestedClientTest() {
     ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
 
@@ -79,18 +83,18 @@ public class ClientUpdateMessageImplTest implements Serializable {
   }
 
   @Test
-  public void serializeClientUpdateMessageNullInterestLists() {
+  void serializeClientUpdateMessageNullInterestLists() {
     ClientUpdateMessageImpl clientUpdateMessageImpl = getTestClientUpdateMessage();
 
     ClientUpdateMessageImpl clientUpdateMessageCopy = CopyHelper.copy(clientUpdateMessageImpl);
 
-    assertNotNull(clientUpdateMessageCopy);
+    assertThat(clientUpdateMessageCopy).isNotNull();
     assertThat(clientUpdateMessageCopy.hasClientsInterestedInUpdates()).isFalse();
     assertThat(clientUpdateMessageCopy.hasClientsInterestedInInvalidates()).isFalse();
   }
 
   @Test
-  public void serializeClientUpdateMessageWithInterestLists() {
+  void serializeClientUpdateMessageWithInterestLists() {
     ClientUpdateMessageImpl clientUpdateMessageImpl = getTestClientUpdateMessage();
 
     DistributedMember distributedMember =
@@ -123,7 +127,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
 
     ClientUpdateMessageImpl clientUpdateMessageCopy = CopyHelper.copy(clientUpdateMessageImpl);
 
-    assertNotNull(clientUpdateMessageCopy);
+    assertThat(clientUpdateMessageCopy).isNotNull();
     assertThat(clientUpdateMessageCopy.isClientInterestedInUpdates(interestedClientID)).isTrue();
     assertThat(clientUpdateMessageCopy.isClientInterestedInInvalidates(interestedClientID))
         .isTrue();
@@ -137,7 +141,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
   }
 
   @Test
-  public void addClientCqCanBeExecutedConcurrently() throws Exception {
+  void addClientCqCanBeExecutedConcurrently() throws Exception {
     ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
 
     int numOfEvents = 4;
@@ -182,7 +186,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
   private void addClientCqConcurrently(ClientUpdateMessageImpl clientUpdateMessageImpl,
       int numOfEvents, int[] cqEvents, String[] cqNames, ClientProxyMembershipID[] clients)
       throws InterruptedException, java.util.concurrent.ExecutionException {
-    List<Future<Void>> futures = new ArrayList<>();
+    List<Future<?>> futures = new ArrayList<>(numOfEvents);
     for (int i = 0; i < numOfEvents; i++) {
       ClientProxyMembershipID client = clients[i];
       String cqName = cqNames[i];
@@ -190,13 +194,13 @@ public class ClientUpdateMessageImplTest implements Serializable {
       futures.add(executorService
           .submit(() -> clientUpdateMessageImpl.addClientCq(client, cqName, cqEvent)));
     }
-    for (Future<Void> future : futures) {
+    for (Future<?> future : futures) {
       future.get();
     }
   }
 
   @Test
-  public void addOrSetClientCqsCanSetIfCqsMapIsNull() {
+  void addOrSetClientCqsCanSetIfCqsMapIsNull() {
     ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
 
     clientUpdateMessageImpl.addOrSetClientCqs(client1, clientCqs);
@@ -205,7 +209,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
   }
 
   @Test
-  public void addOrSetClientCqsCanAddCqsIfCqsMapNotNull() {
+  void addOrSetClientCqsCanAddCqsIfCqsMapNotNull() {
     ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
     clientUpdateMessageImpl.addClientCq(clientProxyMembershipID, "cqName", 10);
@@ -226,5 +230,6 @@ public class ClientUpdateMessageImplTest implements Serializable {
 
     assertThat(clientUpdateMessageImpl.getClientCqs().get(client2)).isNull();
   }
+
 
 }
