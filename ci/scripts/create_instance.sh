@@ -131,8 +131,15 @@ echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 
 MACHINE_PREFIX="e2"
+CPU_PLATFORM=""
+
 if (( ${RAM} > 128 )) || (( ${CPUS} > 32 )); then
   MACHINE_PREFIX="n2"
+  CPU_PLATFORM='Intel\ Ice\ Lake'
+fi
+if (( ${CPUS} > 80 )); then
+  MACHINE_PREFIX="n1"
+  CPU_PLATFORM='Intel\ Skylake'
 fi
 
 if (( ${RAM} / ${CPUS} == 4 )) && (( ${CPUS} <= 96 )); then
@@ -141,6 +148,11 @@ else
   MACHINE_TYPE="${MACHINE_PREFIX}-custom-${CPUS}-${RAM_MEGABYTES}"
 fi
 
+if [[ "${CPU_PLATFORM}" != "" ]]; then
+  MIN_CPU_PLATFORM="--min-cpu-platform=${CPU_PLATFORM}"
+else
+  MIN_CPU_PLATFORM=""
+fi
 TTL=$(($(date +%s) + 60 * 60 * 12))
 LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME},sha=${GEODE_SHA}"
 echo "Applying the following labels to the instance: ${LABELS}"
@@ -149,6 +161,7 @@ set +e
 INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \
   --machine-type=${MACHINE_TYPE} \
+  ${MIN_CPU_PLATFORM} \
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
   --image="${IMAGE_NAME}" \
