@@ -134,10 +134,6 @@ MACHINE_PREFIX="e2"
 CPU_PLATFORM=""
 
 if (( ${RAM} > 128 )) || (( ${CPUS} > 32 )); then
-  MACHINE_PREFIX="n2"
-  CPU_PLATFORM='Intel\ Ice\ Lake'
-fi
-if (( ${CPUS} > 80 )); then
   MACHINE_PREFIX="n1"
   CPU_PLATFORM='Intel\ Skylake'
 fi
