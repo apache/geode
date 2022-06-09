@@ -48,7 +48,7 @@ build_test:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '12'
+  RAM: '8'
   name: build
 
 examples_test:
