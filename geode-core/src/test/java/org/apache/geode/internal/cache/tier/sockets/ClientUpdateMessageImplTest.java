@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -36,6 +37,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
 
@@ -54,8 +56,8 @@ public class ClientUpdateMessageImplTest implements Serializable {
     cqs1.add("cqName1", 1);
     cqs1.add("cqName2", 2);
     clientCqs.put(client1, cqs1);
-    ClientUpdateMessageImpl.CqNameToOpSingleEntry cqs2 =
-        new ClientUpdateMessageImpl.CqNameToOpSingleEntry("cqName3", 3);
+    CqNameToOpSingleEntry cqs2 =
+        new CqNameToOpSingleEntry("cqName3", 3);
     clientCqs.put(client2, cqs2);
   }
 
@@ -163,9 +165,9 @@ public class ClientUpdateMessageImplTest implements Serializable {
     }
 
     assertThat(clientUpdateMessageImpl.getClientCqs().get(client2)).isInstanceOf(
-        ClientUpdateMessageImpl.CqNameToOpSingleEntry.class);
-    ClientUpdateMessageImpl.CqNameToOpSingleEntry client2Cqs =
-        (ClientUpdateMessageImpl.CqNameToOpSingleEntry) clientUpdateMessageImpl.getClientCqs()
+        CqNameToOpSingleEntry.class);
+    CqNameToOpSingleEntry client2Cqs =
+        (CqNameToOpSingleEntry) clientUpdateMessageImpl.getClientCqs()
             .get(client2);
     assertThat(client2Cqs.isEmpty()).isFalse();
   }
@@ -226,10 +228,93 @@ public class ClientUpdateMessageImplTest implements Serializable {
     assertThat(client1Cqs.get("cqName2")).isEqualTo(2);
 
     assertThat(clientUpdateMessageImpl.getClientCqs().get(clientProxyMembershipID)).isInstanceOf(
-        ClientUpdateMessageImpl.CqNameToOpSingleEntry.class);
+        CqNameToOpSingleEntry.class);
 
     assertThat(clientUpdateMessageImpl.getClientCqs().get(client2)).isNull();
   }
 
+  public static class CqNameToOpSingleEntryTest {
+    @Test
+    void isEmptyIsTrueWhenConstructedWithNullName() {
+      assertThat(new CqNameToOpSingleEntry(null, 0).isEmpty()).isTrue();
+    }
 
+    @Test
+    void sizeIsZeroWhenConstructedWithNullName() {
+      assertThat(new CqNameToOpSingleEntry(null, 0).size()).isZero();
+    }
+
+    @Test
+    void isFullIsFalseWhenConstructedWithNullName() {
+      assertThat(new CqNameToOpSingleEntry(null, 0).isFull()).isFalse();
+    }
+
+    @Test
+    void getNamesIsEmptyWhenConstructedWithNullName() {
+      assertThat(new CqNameToOpSingleEntry(null, 0).getNames()).isEmpty();
+    }
+
+    @Test
+    void canAddWhenConstructedWithNullName() {
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry(null, 0);
+      cqNameToOpSingleEntry.add("something", 1);
+      assertThat(cqNameToOpSingleEntry.isEmpty()).isFalse();
+      assertThat(cqNameToOpSingleEntry.size()).isOne();
+      assertThat(cqNameToOpSingleEntry.isFull()).isTrue();
+      assertThat(cqNameToOpSingleEntry.getNames()).containsExactly("something");
+    }
+
+    @Test
+    void canDeleteWhenConstructedWithNullName() {
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry(null, 0);
+      cqNameToOpSingleEntry.delete("something");
+      assertThat(cqNameToOpSingleEntry.isEmpty()).isTrue();
+      assertThat(cqNameToOpSingleEntry.size()).isZero();
+      assertThat(cqNameToOpSingleEntry.isFull()).isFalse();
+      assertThat(cqNameToOpSingleEntry.getNames()).isEmpty();
+    }
+
+    @Test
+    void isEmptyIsFalseWhenConstructedWithName() {
+      assertThat(new CqNameToOpSingleEntry("something", 0).isEmpty()).isFalse();
+    }
+
+    @Test
+    void sizeIsOneWhenConstructedWithName() {
+      assertThat(new CqNameToOpSingleEntry("something", 0).size()).isOne();
+    }
+
+    @Test
+    void isFullIsTrueWhenConstructedWithName() {
+      assertThat(new CqNameToOpSingleEntry("something", 0).isFull()).isTrue();
+    }
+
+    @Test
+    void canAddWithSameNameWhenConstructedWithName() {
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry("something", 0);
+      cqNameToOpSingleEntry.add("something", 1);
+      assertThat(cqNameToOpSingleEntry.isEmpty()).isFalse();
+      assertThat(cqNameToOpSingleEntry.size()).isOne();
+      assertThat(cqNameToOpSingleEntry.isFull()).isTrue();
+      assertThat(cqNameToOpSingleEntry.getNames()).containsExactly("something");
+    }
+
+    @Test
+    void canNotAddWithDifferentNameWhenConstructedWithName() {
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry("something", 0);
+      assertThatThrownBy(() -> cqNameToOpSingleEntry.add("other", 1))
+          .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void canDeleteSameNameWhenConstructedWithName() {
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry("something", 0);
+      cqNameToOpSingleEntry.delete("something");
+      assertThat(cqNameToOpSingleEntry.isEmpty()).isTrue();
+      assertThat(cqNameToOpSingleEntry.size()).isZero();
+      assertThat(cqNameToOpSingleEntry.isFull()).isFalse();
+      assertThat(cqNameToOpSingleEntry.getNames()).isEmpty();
+    }
+
+  }
 }
