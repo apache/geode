@@ -108,3 +108,4 @@ cat <<EOF > instance-data/${PIPELINE_NAME}-${JOB_NAME}-${BUILD_NUMBER}.json
   "totalCost": "${TOTAL_COST}",
 }
 EOF
+cat instance-data/${PIPELINE_NAME}-${JOB_NAME}-${BUILD_NUMBER}.json
