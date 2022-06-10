@@ -68,8 +68,8 @@ public class DocLinksControllerRestIntegrationTest {
     webContext.perform(get("/"))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.latest", is(basePath + "/v1/api-docs")))
+        .andExpect(jsonPath("$.latest", is(basePath + "/v3/api-docs")))
         .andExpect(jsonPath("$.supported", hasSize(1)))
-        .andExpect(jsonPath("$.supported[0]", is(basePath + "/v1/api-docs")));
+        .andExpect(jsonPath("$.supported[0]", is(basePath + "/v3/api-docs")));
   }
 }
