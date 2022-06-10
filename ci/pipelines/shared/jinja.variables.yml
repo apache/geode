@@ -48,7 +48,7 @@ build_test:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '8'
+  RAM: '12'
   name: build
 
 examples_test:
@@ -215,7 +215,7 @@ tests:
   RAM: '24'
   name: windows-core-integration
 - ARTIFACT_SLUG: windows-unittestfiles
-  CPUS: '8'
+  CPUS: '10'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 1h
@@ -225,7 +225,7 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'true'
   PLATFORM: windows
-  RAM: '8'
+  RAM: '10'
   name: windows-unit
 - ARTIFACT_SLUG: apicheck
   CALL_STACK_TIMEOUT: '20700'
