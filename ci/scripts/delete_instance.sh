@@ -64,29 +64,29 @@ case "${MACHINE_TYPE}" in
     CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 2 | rev)"
     RAM="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
     MACHINE_FAMILY="n1"
-    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".custom.cpu")"
-    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".custom.ram")"
+    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.cpu")"
+    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.ram")"
     ;;
   *-custom*)
     CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 2 | rev)"
     RAM="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
     MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
-    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".custom.cpu")"
-    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".custom.ram")"
+    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.cpu")"
+    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.ram")"
     ;;
   *-standard*)
     CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
     RAM=$(expr ${CPUS} \* 4 )
     MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
-    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".predefined.cpu")"
-    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".predefined.ram")"
+    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.cpu")"
+    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.ram")"
     ;;
   *-highcpu*)
     CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
     RAM=${CPUS}
     MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
-    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".predefined.cpu")"
-    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].\"${MACHINE_FAMILY}\".predefined.ram")"
+    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.cpu")"
+    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.ram")"
     ;;
   *)
     CPUS=0
@@ -102,10 +102,12 @@ JOB_NAME="$(cat instance-data/instance-information | jq -r '.[].labels."job-name
 PIPELINE_NAME="$(cat instance-data/instance-information | jq -r '.[].labels."pipeline-name"')"
 TOTAL_COST=$(echo "scale = 6; ((${CPUS} * ${CPU_COST}) + (${RAM} * ${RAM_COST})) * ${TOTAL_SECONDS} / 3600" | bc)
 echo "Total heavy lifter cost for ${PIPELINE_NAME}/${JOB_NAME} #${BUILD_NUMBER}: $ ${TOTAL_COST}"
-cat <<EOF > instance-data/${PIPELINE_NAME}-${JOB_NAME}-${BUILD_NUMBER}.json
+cat <<EOF > instance-data/cost-data.json
 {
   "pipeline": "${PIPELINE_NAME}",
   "job": "${JOB_NAME}",
+  "instanceName": "${INSTANCE_NAME}",
+  "instanceId": "${INSTANCE_ID}",
   "machineType": "${MACHINE_TYPE}",
   "cpu": "${CPUS}",
   "ram": "${RAM}",
@@ -115,4 +117,4 @@ cat <<EOF > instance-data/${PIPELINE_NAME}-${JOB_NAME}-${BUILD_NUMBER}.json
   "totalCost": "${TOTAL_COST}",
 }
 EOF
-cat instance-data/${PIPELINE_NAME}-${JOB_NAME}-${BUILD_NUMBER}.json
+gsutil cp instance-data/cost-data.json gs://${GCP_PROJECT}-infra/costs/${PIPELINE_NAME}/${JOB_NAME}/${PIPELINE_NAME}-${JOB_NAME}-${BUILD_NUMBER}-${INSTANCE_ID}.json
