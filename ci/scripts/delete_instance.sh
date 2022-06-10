@@ -62,14 +62,16 @@ MACHINE_TYPE="${FULL_MACHINE_TYPE##*/}"
 case "${MACHINE_TYPE}" in
   custom*)
     CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 2 | rev)"
-    RAM="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
+    RAM_MB="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
+    RAM="$(expr ${RAM_MB} / 1024)"
     MACHINE_FAMILY="n1"
     CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.cpu")"
     RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.ram")"
     ;;
   *-custom*)
     CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 2 | rev)"
-    RAM="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
+    RAM_MB="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
+    RAM="$(expr ${RAM_MB} / 1024)"
     MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
     CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.cpu")"
     RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.ram")"
