@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -65,11 +67,18 @@ public class DocLinksControllerRestIntegrationTest {
 
   @Test
   public void getDocumentationLinks() throws Exception {
-    webContext.perform(get("/"))
+    MvcResult mvcResult = webContext.perform(get("/"))
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.latest", is(basePath + "/v3/api-docs")))
         .andExpect(jsonPath("$.supported", hasSize(1)))
-        .andExpect(jsonPath("$.supported[0]", is(basePath + "/v3/api-docs")));
+        .andReturn();
+
+    String content = mvcResult.getResponse().getContentAsString();
+    String latestLink = JsonPath.read(content, "$.latest");
+    webContext.perform(get(latestLink))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.info.title", is("Apache Geode Management REST API")));
   }
 }
