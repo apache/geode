@@ -112,8 +112,8 @@ cat <<EOF > instance-data/cost-data.json
   "cpu": "${CPUS}",
   "ram": "${RAM}",
   "seconds": "${TOTAL_SECONDS}",
-  "cpuCost": "${CPU_COST}",
-  "ramCost": "${RAM_COST}",
+  "cpuRate": "${CPU_COST}",
+  "ramRate": "${RAM_COST}",
   "totalCost": "${TOTAL_COST}",
 }
 EOF
