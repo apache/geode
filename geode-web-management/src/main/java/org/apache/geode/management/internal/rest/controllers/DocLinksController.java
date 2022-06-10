@@ -35,7 +35,7 @@ public class DocLinksController {
     DocLinks docLinks = new DocLinks();
     String baseURL = request.getRequestURL().toString();
     List<String> uriList = new ArrayList<>();
-    uriList.add(baseURL + "v1/api-docs");
+    uriList.add(baseURL + "v3/api-docs");
     docLinks.setLatest(uriList.get(0));
     docLinks.setSupported(uriList);
     return new ResponseEntity<>(docLinks, HttpStatus.OK);
