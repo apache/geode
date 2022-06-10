@@ -638,6 +638,136 @@ public class ParallelGatewaySenderQueueJUnitTest {
     verify(cache, times(3)).getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE", true);
   }
 
+  @Test
+  public void testRecoverState_IDLE_STATE() {
+    ParallelGatewaySenderQueueMetaRegion mockMetaRegion =
+        mock(ParallelGatewaySenderQueueMetaRegion.class);
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    String regionPath = "/testRegion";
+    PartitionedRegion userPr = mock(PartitionedRegion.class);
+
+    when(userPr.getFullPath()).thenReturn(regionPath);
+    PartitionAttributes<?, ?> pa = mock(PartitionAttributes.class);
+    when(userPr.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn(null);
+
+    when(userPr.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+
+    when(userPr.getTotalNumberOfBuckets()).thenReturn(11);
+    when(userPr.getRedundantCopies()).thenReturn(1);
+    when(userPr.getLocalSize()).thenReturn(1);
+    when(userPr.getLocalMaxMemory()).thenReturn(100);
+
+    InternalCacheForClientAccess internalCache = mock(InternalCacheForClientAccess.class);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(internalCache);
+
+    BaseManagementService managementService = mock(BaseManagementService.class);
+    BaseManagementService.setManagementService(internalCache, managementService);
+
+
+    PartitionedRegion queuePr = mock(PartitionedRegion.class);
+
+    when(mockMetaRegion.getDataStore()).thenReturn(dataStore);
+    when(dataStore.getSizeOfLocalPrimaryBuckets()).thenReturn(3);
+    when(metaRegionFactory.newMetataRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(any())).thenReturn(queuePr);
+    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
+
+    when(queuePr.getRecoveryState()).thenReturn(0);
+
+    queue.addShadowPartitionedRegionForUserPR(userPr);
+    verify(sender).setRecoveryOngoing(false);
+
+  }
+
+  @Test
+  public void testRecoverState_SCHEDULED_RECOVERY() {
+    ParallelGatewaySenderQueueMetaRegion mockMetaRegion =
+        mock(ParallelGatewaySenderQueueMetaRegion.class);
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    String regionPath = "/testRegion";
+    PartitionedRegion userPr = mock(PartitionedRegion.class);
+
+    when(userPr.getFullPath()).thenReturn(regionPath);
+    PartitionAttributes<?, ?> pa = mock(PartitionAttributes.class);
+    when(userPr.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn(null);
+
+    when(userPr.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+
+    when(userPr.getTotalNumberOfBuckets()).thenReturn(11);
+    when(userPr.getRedundantCopies()).thenReturn(1);
+    when(userPr.getLocalSize()).thenReturn(1);
+    when(userPr.getLocalMaxMemory()).thenReturn(100);
+
+    InternalCacheForClientAccess internalCache = mock(InternalCacheForClientAccess.class);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(internalCache);
+
+    BaseManagementService managementService = mock(BaseManagementService.class);
+    BaseManagementService.setManagementService(internalCache, managementService);
+
+
+    PartitionedRegion queuePr = mock(PartitionedRegion.class);
+
+    when(mockMetaRegion.getDataStore()).thenReturn(dataStore);
+    when(dataStore.getSizeOfLocalPrimaryBuckets()).thenReturn(3);
+    when(metaRegionFactory.newMetataRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(any())).thenReturn(queuePr);
+    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
+
+    when(queuePr.getRecoveryState()).thenReturn(1);
+
+    queue.addShadowPartitionedRegionForUserPR(userPr);
+    verify(queuePr).setRecoveryState(2);
+
+  }
+
+
+  @Test
+  public void testRecoverState_EXECUTING_RECOVERY() {
+    ParallelGatewaySenderQueueMetaRegion mockMetaRegion =
+        mock(ParallelGatewaySenderQueueMetaRegion.class);
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    String regionPath = "/testRegion";
+    PartitionedRegion userPr = mock(PartitionedRegion.class);
+
+    when(userPr.getFullPath()).thenReturn(regionPath);
+    PartitionAttributes<?, ?> pa = mock(PartitionAttributes.class);
+    when(userPr.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn(null);
+
+    when(userPr.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+
+    when(userPr.getTotalNumberOfBuckets()).thenReturn(11);
+    when(userPr.getRedundantCopies()).thenReturn(1);
+    when(userPr.getLocalSize()).thenReturn(1);
+    when(userPr.getLocalMaxMemory()).thenReturn(100);
+
+    InternalCacheForClientAccess internalCache = mock(InternalCacheForClientAccess.class);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(internalCache);
+
+    BaseManagementService managementService = mock(BaseManagementService.class);
+    BaseManagementService.setManagementService(internalCache, managementService);
+
+
+    PartitionedRegion queuePr = mock(PartitionedRegion.class);
+
+    when(mockMetaRegion.getDataStore()).thenReturn(dataStore);
+    when(dataStore.getSizeOfLocalPrimaryBuckets()).thenReturn(3);
+    when(metaRegionFactory.newMetataRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(any())).thenReturn(queuePr);
+    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
+
+    when(queuePr.getRecoveryState()).thenReturn(3);
+
+    queue.addShadowPartitionedRegionForUserPR(userPr);
+    verify(queuePr).setRecoveryState(4);
+
+  }
+
   private GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,
       boolean isLastEventInTransaction) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
