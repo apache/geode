@@ -214,7 +214,6 @@ gradle.taskGraph.whenReady({ graph ->
                 "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.module=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.platform=ALL-UNNAMED",
-                "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.util.jar=ALL-UNNAMED",
                 "--add-opens=java.base/sun.reflect.annotation=ALL-UNNAMED",
