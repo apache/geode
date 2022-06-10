@@ -17,10 +17,15 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +36,7 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.distributed.DistributedMember;
@@ -39,6 +45,7 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
 
@@ -259,7 +266,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
     @Test
     void canAddWhenConstructedEmpty() {
       final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry();
-      cqNameToOpSingleEntry.add("something", MessageType.REQUEST);
+      cqNameToOpSingleEntry.add("something", MessageType.UPDATE_CLIENT_NOTIFICATION);
       assertThat(cqNameToOpSingleEntry.isEmpty()).isFalse();
       assertThat(cqNameToOpSingleEntry.size()).isOne();
       assertThat(cqNameToOpSingleEntry.isFull()).isTrue();
@@ -277,24 +284,53 @@ public class ClientUpdateMessageImplTest implements Serializable {
     }
 
     @Test
+    void sendToWritesEmptyHashMapWhenConstructedEmpty() throws IOException {
+      final DataOutput dataOutput = mock(DataOutput.class);
+
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry();
+      cqNameToOpSingleEntry.sendTo(dataOutput);
+
+      final InOrder order = inOrder(dataOutput);
+      order.verify(dataOutput).writeByte(DSCODE.HASH_MAP.toByte());
+      order.verify(dataOutput).writeByte(0);
+      order.verifyNoMoreInteractions();
+    }
+
+    @Test
+    void addToMessageAddsNothingWhenConstructedEmpty() {
+      final Message message = mock(Message.class);
+
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry = new CqNameToOpSingleEntry();
+      cqNameToOpSingleEntry.addToMessage(message);
+
+      verifyNoInteractions(message);
+    }
+
+    @Test
     void isEmptyIsFalseWhenConstructedWithName() {
-      assertThat(new CqNameToOpSingleEntry("something", MessageType.REQUEST).isEmpty()).isFalse();
+      assertThat(
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION).isEmpty())
+              .isFalse();
     }
 
     @Test
     void sizeIsOneWhenConstructedWithName() {
-      assertThat(new CqNameToOpSingleEntry("something", MessageType.REQUEST).size()).isOne();
+      assertThat(
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION).size())
+              .isOne();
     }
 
     @Test
     void isFullIsTrueWhenConstructedWithName() {
-      assertThat(new CqNameToOpSingleEntry("something", MessageType.REQUEST).isFull()).isTrue();
+      assertThat(
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION).isFull())
+              .isTrue();
     }
 
     @Test
     void canAddWithSameNameWhenConstructedWithName() {
       final CqNameToOpSingleEntry cqNameToOpSingleEntry =
-          new CqNameToOpSingleEntry("something", MessageType.REQUEST);
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION);
       cqNameToOpSingleEntry.add("something", MessageType.RESPONSE);
       assertThat(cqNameToOpSingleEntry.isEmpty()).isFalse();
       assertThat(cqNameToOpSingleEntry.size()).isOne();
@@ -305,7 +341,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
     @Test
     void canNotAddWithDifferentNameWhenConstructedWithName() {
       final CqNameToOpSingleEntry cqNameToOpSingleEntry =
-          new CqNameToOpSingleEntry("something", MessageType.REQUEST);
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION);
       assertThatThrownBy(() -> cqNameToOpSingleEntry.add("other", MessageType.RESPONSE))
           .isInstanceOf(IllegalStateException.class);
     }
@@ -313,12 +349,42 @@ public class ClientUpdateMessageImplTest implements Serializable {
     @Test
     void canDeleteSameNameWhenConstructedWithName() {
       final CqNameToOpSingleEntry cqNameToOpSingleEntry =
-          new CqNameToOpSingleEntry("something", MessageType.REQUEST);
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION);
       cqNameToOpSingleEntry.delete("something");
       assertThat(cqNameToOpSingleEntry.isEmpty()).isTrue();
       assertThat(cqNameToOpSingleEntry.size()).isZero();
       assertThat(cqNameToOpSingleEntry.isFull()).isFalse();
       assertThat(cqNameToOpSingleEntry.getNames()).isEmpty();
+    }
+
+    @Test
+    void sendToWritesSingleEntryHashMapWhenConstructedWithName() throws IOException {
+      final DataOutput dataOutput = mock(DataOutput.class);
+
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry =
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION);
+      cqNameToOpSingleEntry.sendTo(dataOutput);
+
+      final InOrder order = inOrder(dataOutput);
+      order.verify(dataOutput).writeByte(DSCODE.HASH_MAP.toByte());
+      order.verify(dataOutput).writeByte(1);
+      order.verify(dataOutput).writeBytes(eq("something"));
+      order.verify(dataOutput).writeInt(eq(14));
+      // won't verify all remaining interactions
+    }
+
+    @Test
+    void addToMessageAddsSingleEntryWhenConstructedWithName() {
+      final Message message = mock(Message.class);
+
+      final CqNameToOpSingleEntry cqNameToOpSingleEntry =
+          new CqNameToOpSingleEntry("something", MessageType.UPDATE_CLIENT_NOTIFICATION);
+      cqNameToOpSingleEntry.addToMessage(message);
+
+      final InOrder order = inOrder(message);
+      order.verify(message).addStringPart(eq("something"), eq(true));
+      order.verify(message).addIntPart(eq(MessageType.UPDATE_CLIENT_NOTIFICATION.id));
+      order.verifyNoMoreInteractions();
     }
 
   }
