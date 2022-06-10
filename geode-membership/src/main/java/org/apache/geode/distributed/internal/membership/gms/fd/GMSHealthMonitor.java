@@ -456,7 +456,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     setNextNeighbor(cv, mbr);
 
     // we need to check this member
-    checkExecutor.execute(() -> {
+    doAndIgnoreRejectedExecutionExceptionIfStopping(() -> checkExecutor.execute(() -> {
       boolean pinged;
       try {
         pinged = doCheckMember(mbr, true);
@@ -475,8 +475,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         // back to previous one
         setNextNeighbor(currentView, null);
       }
-    });
-
+    }));
   }
 
   private void initiateSuspicion(ID mbr, String reason) {
@@ -1237,8 +1236,9 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
 
       final String reason = sr.getReason();
       logger.debug("Scheduling availability check for member {}; reason={}", mbr, reason);
+
       // its a coordinator
-      checkExecutor.execute(() -> {
+      doAndIgnoreRejectedExecutionExceptionIfStopping(() -> checkExecutor.execute(() -> {
         try {
           inlineCheckIfAvailable(initiator, cv, true, mbr, reason);
         } catch (MembershipClosedException e) {
@@ -1246,7 +1246,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         } catch (Exception e) {
           logger.info("Unexpected exception while verifying member", e);
         }
-      });
+      }));
     }
   }
 
@@ -1423,6 +1423,16 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     }
     logger.trace("Processing suspect message locally");
     processMessage(smm);
+  }
+
+  void doAndIgnoreRejectedExecutionExceptionIfStopping(final Runnable runnable) {
+    try {
+      runnable.run();
+    } catch (RejectedExecutionException e) {
+      if (!isStopping) {
+        throw e;
+      }
+    }
   }
 
   private static class ConnectTimeoutTask extends TimerTask implements ConnectionWatcher {
