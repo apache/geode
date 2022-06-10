@@ -80,11 +80,18 @@ case "${MACHINE_TYPE}" in
     MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
     CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].${MACHINE_FAMILY}.predefined.cpu")"
     RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].${MACHINE_FAMILY}.predefined.ram")"
-  ;;
+    ;;
+  *-highcpu*)
+    CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
+    RAM=${CPUS}
+    MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
+    CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].${MACHINE_FAMILY}.predefined.cpu")"
+    RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".[].${MACHINE_FAMILY}.predefined.ram")"
+    ;;
   *)
     CPUS=0
     RAM=0
-    MACHINE_FAMILY="n1"
+    MACHINE_FAMILY="unknown"
     CPU_COST=0
     RAM_COST=0
     ;;
