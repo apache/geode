@@ -133,7 +133,7 @@ RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 MACHINE_PREFIX="e2"
 
 if (( ${RAM} > 128 )) || (( ${CPUS} > 32 )); then
-  MACHINE_PREFIX="n1"
+  MACHINE_PREFIX="n2"
 fi
 
 if (( ${RAM} == ${CPUS} )); then

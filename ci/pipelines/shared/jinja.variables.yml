@@ -118,7 +118,7 @@ tests:
   name: acceptance
 - ARTIFACT_SLUG: distributedtestfiles
   CALL_STACK_TIMEOUT: '11700'
-  CPUS: '96'
+  CPUS: '80'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '24'
   EXECUTE_TEST_TIMEOUT: 4h
@@ -126,7 +126,7 @@ tests:
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '250'
+  RAM: '320'
   name: distributed
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
@@ -138,11 +138,11 @@ tests:
   MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '90'
+  RAM: '96'
   name: integration
 - ARTIFACT_SLUG: upgradetestfiles
   CALL_STACK_TIMEOUT: '13500'
-  CPUS: '96'
+  CPUS: '80'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '48'
   EXECUTE_TEST_TIMEOUT: 4h
@@ -150,11 +150,11 @@ tests:
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '210'
+  RAM: '320'
   name: upgrade
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '35100'
-  CPUS: '96'
+  CPUS: '80'
   DISK: '300GB'
   DUNIT_PARALLEL_FORKS: '24'
   EXECUTE_TEST_TIMEOUT: 10h
@@ -162,7 +162,7 @@ tests:
   PARALLEL_DUNIT: 'true'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '280'
+  RAM: '320'
   name: stress-new
 - ARTIFACT_SLUG: windows-acceptancetestfiles
   CPUS: '6'
