@@ -239,7 +239,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
           String.format("GatewaySender %s can not be created with dispatcher threads less than 1",
               id));
     }
-
     // Verify socket read timeout if a proper logger is available
     if (cache instanceof GemFireCacheImpl) {
       // If socket read timeout is less than the minimum, log a warning.
@@ -252,6 +251,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
             new Object[] {"GatewaySender " + id, attrs.getSocketReadTimeout(),
                 GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT});
         attrs.setSocketReadTimeout(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT);
+      }
+
+      if (attrs.getDiskStoreName() != null
+          && cache.findDiskStore(attrs.getDiskStoreName()) == null) {
+        throw new IllegalStateException(
+            String.format("Disk store %s not found",
+                attrs.getDiskStoreName()));
       }
 
       // Log a warning if the old system property is set.

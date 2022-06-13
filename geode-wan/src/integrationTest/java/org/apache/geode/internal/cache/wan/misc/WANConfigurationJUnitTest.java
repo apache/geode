@@ -223,6 +223,43 @@ public class WANConfigurationJUnitTest {
     }
   }
 
+  @Test
+  public void test_GatewaySender_Serial_NonExistingDiskStore() {
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
+    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
+    fact.setManualStart(true);
+    fact.setDiskStoreName("FORNY");
+    try {
+      GatewaySender sender1 = fact.create("NYSender", 2);
+      fail("Expected IllegalStateException but not thrown");
+    } catch (Exception e) {
+      if (e instanceof IllegalStateException
+          && e.getMessage().contains("Disk store FORNY not found")) {
+      } else {
+        fail("Expected IllegalStateException but received :" + e);
+      }
+    }
+  }
+
+  @Test
+  public void test_GatewaySender_Parallel_NonExistingDiskStore() {
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
+    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
+    fact.setManualStart(true);
+    fact.setParallel(true);
+    fact.setDiskStoreName("FORNY");
+    try {
+      GatewaySender sender1 = fact.create("NYSender", 2);
+      fail("Expected IllegalStateException but not thrown");
+    } catch (Exception e) {
+      if (e instanceof IllegalStateException
+          && e.getMessage().contains("Disk store FORNY not found")) {
+      } else {
+        fail("Expected IllegalStateException but received :" + e);
+      }
+    }
+  }
+
   /**
    * Test to validate the gateway receiver attributes are correctly set
    */
@@ -303,7 +340,6 @@ public class WANConfigurationJUnitTest {
     fact.setBatchSize(200);
     fact.setBatchTimeInterval(300);
     fact.setPersistenceEnabled(false);
-    fact.setDiskStoreName("FORNY");
     fact.setMaximumQueueMemory(200);
     fact.setAlertThreshold(1200);
     GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
@@ -327,7 +363,6 @@ public class WANConfigurationJUnitTest {
     assertEquals(sender1.getBatchSize(), gatewaySender.getBatchSize());
     assertEquals(sender1.getBatchTimeInterval(), gatewaySender.getBatchTimeInterval());
     assertEquals(sender1.isPersistenceEnabled(), gatewaySender.isPersistenceEnabled());
-    assertEquals(sender1.getDiskStoreName(), gatewaySender.getDiskStoreName());
     assertEquals(sender1.getMaximumQueueMemory(), gatewaySender.getMaximumQueueMemory());
     assertEquals(sender1.getAlertThreshold(), gatewaySender.getAlertThreshold());
     assertEquals(sender1.getGatewayEventFilters().size(),
@@ -350,7 +385,6 @@ public class WANConfigurationJUnitTest {
     fact.setBatchSize(200);
     fact.setBatchTimeInterval(300);
     fact.setPersistenceEnabled(false);
-    fact.setDiskStoreName("FORNY");
     fact.setMaximumQueueMemory(200);
     fact.setAlertThreshold(1200);
     GatewayEventFilter myEventFilter1 = new MyGatewayEventFilter1();
@@ -374,7 +408,6 @@ public class WANConfigurationJUnitTest {
     assertEquals(sender1.getBatchSize(), gatewaySender.getBatchSize());
     assertEquals(sender1.getBatchTimeInterval(), gatewaySender.getBatchTimeInterval());
     assertEquals(sender1.isPersistenceEnabled(), gatewaySender.isPersistenceEnabled());
-    assertEquals(sender1.getDiskStoreName(), gatewaySender.getDiskStoreName());
     assertEquals(sender1.getMaximumQueueMemory(), gatewaySender.getMaximumQueueMemory());
     assertEquals(sender1.getAlertThreshold(), gatewaySender.getAlertThreshold());
     assertEquals(sender1.getGatewayEventFilters().size(),

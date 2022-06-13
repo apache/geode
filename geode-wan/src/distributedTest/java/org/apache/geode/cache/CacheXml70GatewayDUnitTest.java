@@ -125,6 +125,8 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   public void testParallelGatewaySender() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
+    DiskStoreFactory dsf = cache.createDiskStoreFactory();
+    dsf.create("LNSender");
 
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(true);
@@ -163,6 +165,9 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   public void testSerialGatewaySender() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
+    DiskStoreFactory dsf = cache.createDiskStoreFactory();
+    dsf.create("LNSender");
+
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(false);
     gatewaySenderFactory.setManualStart(true);

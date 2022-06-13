@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATO
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderAttributes;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderDoesNotExist;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -65,6 +66,8 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
+
+  String nonExistingDiskStore = "nonExistingDiskStore";
 
   @BeforeClass
   public static void beforeClass() {
@@ -436,4 +439,41 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         server3);
   }
 
+  @Test
+  public void testCreateParallelGatewaySenderWithNonExistingDiskStore() {
+    addIgnoredException(IllegalStateException.class);
+
+    String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
+        + "=ny" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME + "=" + nonExistingDiskStore;
+
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .hasTableSection().hasRowSize(3).hasColumn("Message").contains(
+            " java.lang.IllegalStateException: Disk store " + nonExistingDiskStore + " not found",
+            " java.lang.IllegalStateException: Disk store " + nonExistingDiskStore + " not found",
+            " java.lang.IllegalStateException: Disk store " + nonExistingDiskStore + " not found");
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess().containsOutput(
+        "GatewaySenders or GatewayReceivers are not available in cluster");
+  }
+
+  @Test
+  public void testCreateSerialGatewaySenderWithNonExistingDiskStore() {
+    addIgnoredException(IllegalStateException.class);
+
+    String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
+        + "=ny" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME + "=" + nonExistingDiskStore;
+
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .hasTableSection().hasRowSize(3).hasColumn("Message").contains(
+            " java.lang.IllegalStateException: Disk store " + nonExistingDiskStore + " not found",
+            " java.lang.IllegalStateException: Disk store " + nonExistingDiskStore + " not found",
+            " java.lang.IllegalStateException: Disk store " + nonExistingDiskStore + " not found");
+
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess().containsOutput(
+        "GatewaySenders or GatewayReceivers are not available in cluster");
+  }
 }
