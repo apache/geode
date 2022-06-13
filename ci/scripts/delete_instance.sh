@@ -51,7 +51,7 @@ while read BLAH ; do
     else
         START_TIMESTAMP=${BLAH}
     fi
-done < <(gcloud logging read "resource.type=gce_instance AND resource.labels.instance_id=${INSTANCE_ID} AND logName=projects/apachegeode-ci/logs/cloudaudit.googleapis.com%2Factivity" --format=json | jq -r '.[].timestamp')
+done < <(gcloud logging read "resource.type=gce_instance AND resource.labels.instance_id=${INSTANCE_ID} AND logName=projects/${GCP_PROJECT}/logs/cloudaudit.googleapis.com%2Factivity" --format=json | jq -r '.[].timestamp')
 
 START_SECONDS=$(date -d "${START_TIMESTAMP}" +%s)
 END_SECONDS=$(date -d "${END_TIMESTAMP}" +%s)
