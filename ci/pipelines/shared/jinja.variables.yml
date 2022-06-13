@@ -215,7 +215,7 @@ tests:
   RAM: '24'
   name: windows-core-integration
 - ARTIFACT_SLUG: windows-unittestfiles
-  CPUS: '10'
+  CPUS: '8'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 1h
@@ -225,7 +225,7 @@ tests:
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'true'
   PLATFORM: windows
-  RAM: '10'
+  RAM: '8'
   name: windows-unit
 - ARTIFACT_SLUG: apicheck
   CALL_STACK_TIMEOUT: '20700'
