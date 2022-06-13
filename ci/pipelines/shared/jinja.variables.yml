@@ -126,7 +126,8 @@ tests:
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '240'
+  # For N1 machine types, we ask for 256GiB but get 240GiB due to GCP overhead. Lets move to N2 (need quota)
+  RAM: '256'
   name: distributed
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
@@ -150,7 +151,8 @@ tests:
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '240'
+  # For N1 machine types, we ask for 256GiB but get 240GiB due to GCP overhead. Lets move to N2 (need quota)
+  RAM: '256'
   name: upgrade
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '35100'
@@ -162,7 +164,8 @@ tests:
   PARALLEL_DUNIT: 'true'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '240'
+  # For N1 machine types, we ask for 256GiB but get 240GiB due to GCP overhead. Lets move to N2 (need quota)
+  RAM: '256'
   name: stress-new
 - ARTIFACT_SLUG: windows-acceptancetestfiles
   CPUS: '6'
