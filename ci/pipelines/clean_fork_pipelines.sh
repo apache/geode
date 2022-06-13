@@ -25,11 +25,25 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-TARGET=concourse.apachegeode-ci.info
-GEODE_FORK=${1}
+META_PROPERTIES=${SCRIPTDIR}/meta/meta.properties
+LOCAL_META_PROPERTIES=${SCRIPTDIR}/meta/meta.properties.local
+
+## Load default properties
+echo "**************************************************"
+echo "Default Environment variables for this deployment:"
+cat ${META_PROPERTIES} | grep -v "^#"
+source ${META_PROPERTIES}
+
+## Load local overrides properties file
+if [[ -f ${LOCAL_META_PROPERTIES} ]]; then
+  echo "Local Environment overrides for this deployment:"
+  cat ${LOCAL_META_PROPERTIES} | grep -v "^#"
+  source ${LOCAL_META_PROPERTIES}
+  echo "**************************************************"
+fi
+
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-GEODE_BRANCH=${2:-${CURRENT_BRANCH}}
-GCP_PROJECT=${3:-apachegeode-ci}
+GEODE_BRANCH=${1:-${CURRENT_BRANCH}}
 
 . ${SCRIPTDIR}/shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
@@ -45,24 +59,34 @@ if [[ "${GEODE_FORK}" == "apache" ]]; then
   exit 1
 fi
 
+TARGET=${CONCOURSE_HOST}-${CONCOURSE_TEAM}
+CONCOURSE_URL="https://${CONCOURSE_HOST}"
+CONCOURSE_TEAM="${CONCOURSE_TEAM:-main}"
+
+fly -t "${TARGET}" status || \
+fly -t "${TARGET}" login \
+  --team-name "${CONCOURSE_TEAM}" \
+  --concourse-url="${CONCOURSE_URL}"
+
 echo "Fork is ${GEODE_FORK}"
 echo "Branch is ${GEODE_BRANCH}"
+echo "GCP Project is ${GCP_PROJECT}"
 
 echo "Deleting meta pipeline if it exists..."
 META_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-meta"
-fly -t ${TARGET} destroy-pipeline --non-interactive -p ${META_PIPELINE}
+fly -t "${TARGET}" destroy-pipeline --non-interactive -p "${META_PIPELINE}"
 
 echo "Deleting images pipeline if it exists..."
 IMAGES_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-images"
-fly -t ${TARGET} destroy-pipeline --non-interactive -p ${IMAGES_PIPELINE}
+fly -t "${TARGET}" destroy-pipeline --non-interactive -p "${IMAGES_PIPELINE}"
 
 echo "Deleting reaper pipeline if it exists..."
 REAPER_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-reaper"
-fly -t ${TARGET} destroy-pipeline --non-interactive -p ${REAPER_PIPELINE}
+fly -t "${TARGET}" destroy-pipeline --non-interactive -p "${REAPER_PIPELINE}"
 
 echo "Deleting build pipeline if it exists..."
 BUILD_PIPELINE="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-main"
-fly -t ${TARGET} destroy-pipeline --non-interactive -p ${BUILD_PIPELINE}
+fly -t "${TARGET}" destroy-pipeline --non-interactive -p "${BUILD_PIPELINE}"
 
 gcloud --project="${GCP_PROJECT}" container images list | grep "${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}" | while IFS= read -r line; do
   echo "Deleting image: ${line}"
