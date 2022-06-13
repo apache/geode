@@ -105,6 +105,7 @@ spring-plugin-core
 spring-plugin-metadata
 spring-security-config
 spring-security-core
+spring-security-crypto
 spring-security-ldap
 spring-security-web
 spring-shell
