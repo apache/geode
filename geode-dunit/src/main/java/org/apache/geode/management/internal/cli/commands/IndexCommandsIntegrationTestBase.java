@@ -136,7 +136,9 @@ public class IndexCommandsIntegrationTestBase {
     csb.addOption(CliStrings.CREATE_INDEX__REGION, SEPARATOR + regionName);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsSuccess()
+        .containsOutput("Index \"indexA\" already exists.  Create failed due to duplicate name.");
   }
 
   @Test
@@ -170,7 +172,7 @@ public class IndexCommandsIntegrationTestBase {
     createSimpleIndexA();
     gfsh.executeAndAssertThat(
         "create index --name=indexA --expression=key --region=" + SEPARATOR + "regionA")
-        .statusIsError()
+        .statusIsSuccess()
         .containsOutput("Index \"indexA\" already exists.  Create failed due to duplicate name");
   }
 

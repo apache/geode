@@ -102,6 +102,9 @@ public class ModifyColocationIntegrationTest {
     // Close everything
     cache.close();
 
+    // await cache close is complete
+    awaitCacheClose();
+
     // Restart uncolocated. We don't allow changing from colocated to uncolocated.
     thrown = catchThrowable(() -> createCacheAndColocatedPRs(null));
 

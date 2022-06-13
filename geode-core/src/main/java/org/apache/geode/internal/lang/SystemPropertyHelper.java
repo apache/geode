@@ -114,6 +114,14 @@ public class SystemPropertyHelper {
   public static final String RE_AUTHENTICATE_WAIT_TIME = "reauthenticate.wait.time";
 
   /**
+   * Maximum number of concurrent executions in a server of wan-copy region commands.
+   * Once the maximum number is reached, subsequent executions will be halted until
+   * a thread for any of the ongoing executions is released.
+   */
+  public static final String WAN_COPY_REGION_MAX_CONCURRENT_THREADS =
+      "geode.wan.copy-region.max-threads";
+
+  /**
    * As of Geode 1.4.0, a region set operation will be in a transaction even if it is the first
    * operation in the transaction.
    *

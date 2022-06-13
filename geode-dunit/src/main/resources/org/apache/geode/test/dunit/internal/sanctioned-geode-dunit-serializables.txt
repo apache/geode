@@ -113,7 +113,7 @@ org/apache/geode/management/ManagementTestBase$3,false,this$0:org/apache/geode/m
 org/apache/geode/management/internal/cli/commands/ExportLogsDistributedTestBase$LogLine,false,level:java/lang/String,message:java/lang/String,shouldBeIgnoredDueToTimestamp:boolean
 org/apache/geode/management/internal/cli/commands/Product,false,contractSize:java/lang/String,productCodes:java/util/TreeMap,productID:java/lang/Long,status:java/lang/String
 org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Address,false,city:java/lang/String,street:java/lang/String
-org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Customer,false,address:org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Address,name:java/lang/String
+org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Customer,false,address:org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Address,birthday:org/joda/time/DateTime,name:java/lang/String
 org/apache/geode/management/internal/cli/commands/ShowDeadlockDistributedTestBase$LockFunction,false
 org/apache/geode/management/internal/cli/commands/ShowLogCommandDistributedTestBase,false
 org/apache/geode/management/internal/configuration/ClusterConfig,false,groups:java/util/List
@@ -180,4 +180,4 @@ org/apache/geode/test/junit/rules/LocatorLauncherStartupRule,false,autoStart:boo
 org/apache/geode/test/junit/rules/LocatorStarterRule,false
 org/apache/geode/test/junit/rules/MemberStarterRule,false,autoStart:boolean,availableHttpPort:int,availableJmxPort:int,cleanWorkingDir:boolean,firstLevelChildrenFile:java/util/List,httpPort:int,jmxPort:int,logFile:boolean,memberPort:int,name:java/lang/String,properties:java/util/Properties,restore:org/apache/geode/test/junit/rules/accessible/AccessibleRestoreSystemProperties,systemProperties:java/util/Properties
 org/apache/geode/test/junit/rules/ServerLauncherStartupRule,false,autoStart:boolean,builderOperator:java/util/function/UnaryOperator,launcher:org/apache/geode/distributed/ServerLauncher,properties:java/util/Properties,temp:org/junit/rules/TemporaryFolder
-org/apache/geode/test/junit/rules/ServerStarterRule,false,availableLocatorPort:int,embeddedLocatorPort:int,pdxPersistent:boolean,pdxPersistentUserSet:boolean,pdxReadSerialized:boolean,pdxReadSerializedUserSet:boolean,pdxSerializer:org/apache/geode/pdx/PdxSerializer,regions:java/util/Map,serverCount:int
+org/apache/geode/test/junit/rules/ServerStarterRule,false,availableLocatorPort:int,embeddedLocatorPort:int,maxThreads:int,pdxPersistent:boolean,pdxPersistentUserSet:boolean,pdxReadSerialized:boolean,pdxReadSerializedUserSet:boolean,pdxSerializer:org/apache/geode/pdx/PdxSerializer,regions:java/util/Map,serverCount:int

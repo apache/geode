@@ -97,6 +97,7 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.serialization.filter.SystemPropertyGlobalSerialFilterConfigurationFactory;
 import org.apache.geode.internal.serialization.filter.UnableToSetSerialFilterException;
+import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -2924,6 +2925,34 @@ public class ServerLauncher extends AbstractLauncher<String> {
     @Override
     protected String getServiceName() {
       return SERVER_SERVICE_NAME;
+    }
+
+
+    /**
+     * Gets a String describing the state of Server.
+     *
+     * @return a String describing the Server state.
+     */
+    @Override
+    public String toString() {
+      if (getStatus() == Status.STARTING && getStatusMessage() != null) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Starting %s in %s on %s as %s at %s").append(System.lineSeparator());
+        sb.append(TO_STRING_PROCESS_ID).append("%s").append(System.lineSeparator());
+        sb.append(TO_STRING_JAVA_VERSION).append("%s").append(System.lineSeparator());
+        sb.append(TO_STRING_LOG_FILE).append("%s").append(System.lineSeparator());
+        sb.append(TO_STRING_JVM_ARGUMENTS).append("%s").append(System.lineSeparator());
+        sb.append(TO_STRING_CLASS_PATH).append("%s").append(System.lineSeparator());
+        sb.append(TO_STRING_STATUS_MESSAGE).append("%s");
+
+        return String.format(sb.toString(),
+            getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
+            toString(getTimestamp()), toString(getPid()), toString(getJavaVersion()),
+            getLogFile(), ArgumentRedactor.redact(getJvmArguments()),
+            toString(getClasspath()), toString(getStatusMessage()));
+
+      }
+      return super.toString();
     }
   }
 }

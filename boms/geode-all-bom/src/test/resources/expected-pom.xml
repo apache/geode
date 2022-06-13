@@ -245,7 +245,7 @@
       <dependency>
         <groupId>joda-time</groupId>
         <artifactId>joda-time</artifactId>
-        <version>2.10.9</version>
+        <version>2.10.14</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
@@ -625,42 +625,42 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-config</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-core</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-ldap</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-test</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-web</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-core</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-client</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-jose</artifactId>
-        <version>5.6.3</version>
+        <version>5.6.5</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>

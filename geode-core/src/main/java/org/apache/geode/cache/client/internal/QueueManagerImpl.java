@@ -862,8 +862,7 @@ public class QueueManagerImpl implements QueueManager {
       return;
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (queueConnections != null && queueConnections.getPrimary() != null
-        && !queueConnections.getPrimary().isDestroyed()) {
+    if (!isPrimaryRecoveryNeeded(queueConnections)) {
       if (isDebugEnabled) {
         logger.debug("Primary recovery not needed");
       }
@@ -964,6 +963,16 @@ public class QueueManagerImpl implements QueueManager {
       queueConnections = queueConnections.setPrimaryDiscoveryFailed(null);
       lock.notifyAll();
     }
+  }
+
+  static boolean isPrimaryRecoveryNeeded(final ConnectionList queueConnectionList) {
+    if (queueConnectionList != null) {
+      final Connection primaryConnection = queueConnectionList.getPrimary();
+      if (primaryConnection != null) {
+        return primaryConnection.isDestroyed();
+      }
+    }
+    return true;
   }
 
   private QueueConnectionImpl initializeQueueConnection(Connection connection, boolean isPrimary,

@@ -128,7 +128,7 @@ class DependencyConstraints {
         api(group: 'javax.resource', name: 'javax.resource-api', version: '1.7.1')
         api(group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0')
         api(group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1')
-        api(group: 'joda-time', name: 'joda-time', version: '2.10.9')
+        api(group: 'joda-time', name: 'joda-time', version: '2.10.14')
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
@@ -249,7 +249,7 @@ class DependencyConstraints {
       entry('selenium-support')
     }
 
-    dependencySet(group: 'org.springframework.security', version: '5.6.3') {
+    dependencySet(group: 'org.springframework.security', version: '5.6.5') {
       entry('spring-security-config')
       entry('spring-security-core')
       entry('spring-security-ldap')

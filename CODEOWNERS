@@ -234,10 +234,10 @@ geode-assembly/**/apache/geode/ssl/**                             @jdeppe-pivota
 #-----------------------------------------------------------------
 # Logging
 #-----------------------------------------------------------------
-geode-log4j/**                                                    @kirklund
-geode-logging/**                                                  @kirklund
-geode-core/**/org/apache/geode/logging/**                         @kirklund
-geode-core/**/org/apache/geode/internal/logging/**                @kirklund
+geode-log4j/**                                                    @kirklund @gesterzhou
+geode-logging/**                                                  @kirklund @gesterzhou
+geode-core/**/org/apache/geode/logging/**                         @kirklund @gesterzhou
+geode-core/**/org/apache/geode/internal/logging/**                @kirklund @gesterzhou
 geode-core/**/org/apache/geode/i18n/**                            @agingade @kirklund
 geode-core/**/org/apache/geode/internal/i18n/**                   @agingade @kirklund
 geode-core/**/org/apache/geode/internal/io/**                     @agingade @kirklund

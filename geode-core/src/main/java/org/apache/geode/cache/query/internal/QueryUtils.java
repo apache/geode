@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -665,9 +663,6 @@ public class QueryUtils {
     if (context.cacheGet(CompiledValue.ORDERBY_ATTRIB) == null) {
       limit = context.cacheGet(CompiledValue.RESULT_LIMIT) != null
           ? (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT) : -1;
-    }
-    if (limit != -1 && limit < indexThresholdSize) {
-      limit = indexThresholdSize;
     }
     return limit;
   }

@@ -60,13 +60,14 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
  * This test verifies the per-client notify-by-subscription (NBS) override functionality along with
- * register interest new receiveValues flag. Taken from the existing ClientConflationDUnitTest.java
+ * register interest new receiveValues flag. Taken from the existing
+ * ClientConflationDistributedTest.java
  * and modified.
  *
  * @since GemFire 6.0.3
  */
 @Category({ClientServerTest.class})
-public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
+public class ClientInterestNotifyDistributedTest extends JUnit4DistributedTestCase {
 
   class EventListener extends CacheListenerAdapter {
     public EventListener(String name) {
@@ -182,57 +183,57 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
 
     Host host = Host.getHost(0);
     // Create a feeder.
-    vm0.invoke(() -> ClientInterestNotifyDUnitTest
+    vm0.invoke(() -> ClientInterestNotifyDistributedTest
         .createClientCacheFeeder(NetworkUtils.getServerHostName(host), PORT));
 
     // Client 1 overrides NBS to true.
     // Client 2 "overrides" NSB to false.
     // Client 3 uses the default NBS which is false on the server.
 
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest
+    vm1.invoke(() -> ClientInterestNotifyDistributedTest
         .createClientCache(NetworkUtils.getServerHostName(host), PORT, "ClientOn"));
 
     // Feeder doFeed does one put on one key for each of the 3 regions so
     // that the following client RI with ALL_KEYS and KEYS_VALUE result works.
 
-    vm0.invoke(ClientInterestNotifyDUnitTest::doFeed);
+    vm0.invoke(ClientInterestNotifyDistributedTest::doFeed);
 
     // RI on ALL_KEYS with InterestResultPolicy KEYS_VALUES.
 
-    vm1.invoke(ClientInterestNotifyDUnitTest::registerInterest);
+    vm1.invoke(ClientInterestNotifyDistributedTest::registerInterest);
 
     // Get key for region 3 for all clients to check no unwanted notifications
     // arrive on client 1 region 3 since we do not register interest on any
     // client but notifications should arrive for client 2 and client 3.
 
-    vm1.invoke(ClientInterestNotifyDUnitTest::getEntries);
+    vm1.invoke(ClientInterestNotifyDistributedTest::getEntries);
 
     // Feeder doEntryOps does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions.
 
-    vm0.invoke(ClientInterestNotifyDUnitTest::doEntryOps);
+    vm0.invoke(ClientInterestNotifyDistributedTest::doEntryOps);
 
     waitForQueuesToDrain();
 
     // Unregister interest to check it works and no extra notifications received.
 
-    vm1.invoke(ClientInterestNotifyDUnitTest::unregisterInterest);
+    vm1.invoke(ClientInterestNotifyDistributedTest::unregisterInterest);
 
     // Feeder doEntryOps again does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions while no interest on the clients.
 
-    vm0.invoke(ClientInterestNotifyDUnitTest::doEntryOps);
+    vm0.invoke(ClientInterestNotifyDistributedTest::doEntryOps);
 
     assertAllQueuesEmpty(); // since no client has registered interest
 
     // Re-register interest on all clients except for region 3 again.
 
-    vm1.invoke(ClientInterestNotifyDUnitTest::registerInterest);
+    vm1.invoke(ClientInterestNotifyDistributedTest::registerInterest);
 
     // Feeder doEntryOps again does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions after clients re-register interest.
 
-    vm0.invoke(ClientInterestNotifyDUnitTest::doEntryOps);
+    vm0.invoke(ClientInterestNotifyDistributedTest::doEntryOps);
 
     waitForQueuesToDrain();
 
@@ -263,9 +264,9 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     // Region 3 of clients 2 and 3 receive an invalidate and a destroy each
     // because NBS is set to false for those clients.
 
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME1, 1, 3, 2, 2));
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME2, 0, 0, 1, 1));
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.doValidation(REGION_NAME3, 1, 0, 0, 0));
+    vm1.invoke(() -> ClientInterestNotifyDistributedTest.doValidation(REGION_NAME1, 1, 3, 2, 2));
+    vm1.invoke(() -> ClientInterestNotifyDistributedTest.doValidation(REGION_NAME2, 0, 0, 1, 1));
+    vm1.invoke(() -> ClientInterestNotifyDistributedTest.doValidation(REGION_NAME3, 1, 0, 0, 0));
 
   }
 
@@ -306,7 +307,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void createClientCache(String host, Integer port, /* String nbs, */
       String name) throws Exception {
-    ClientInterestNotifyDUnitTest test = new ClientInterestNotifyDUnitTest();
+    ClientInterestNotifyDistributedTest test = new ClientInterestNotifyDistributedTest();
     Cache cacheClient = test.createCache(createProperties1(/* nbs */));
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -334,7 +335,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createClientCacheFeeder(String host, Integer port) throws Exception {
-    ClientInterestNotifyDUnitTest test = new ClientInterestNotifyDUnitTest();
+    ClientInterestNotifyDistributedTest test = new ClientInterestNotifyDistributedTest();
     Cache cacheFeeder = test.createCache(createProperties1(
     /* DistributionConfig.NOTIFY_BY_SUBSCRIPTION_OVERRIDE_PROP_VALUE_DEFAULT */));
     AttributesFactory factory = new AttributesFactory();
@@ -416,7 +417,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   public static Integer createServerCache() throws Exception {
-    ClientInterestNotifyDUnitTest test = new ClientInterestNotifyDUnitTest();
+    ClientInterestNotifyDistributedTest test = new ClientInterestNotifyDistributedTest();
     Properties props = new Properties();
     props.setProperty(DELTA_PROPAGATION, "false");
     cacheServer = test.createCache(props);
@@ -568,8 +569,8 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(ClientInterestNotifyDUnitTest::closeCache);
-    vm1.invoke(ClientInterestNotifyDUnitTest::closeCache);
+    vm0.invoke(ClientInterestNotifyDistributedTest::closeCache);
+    vm1.invoke(ClientInterestNotifyDistributedTest::closeCache);
     closeCacheServer();
   }
 }

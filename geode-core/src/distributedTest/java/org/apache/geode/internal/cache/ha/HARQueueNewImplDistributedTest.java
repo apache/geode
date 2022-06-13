@@ -61,7 +61,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDistributedTestHelper;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -78,9 +78,9 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * @since GemFire 5.7
  */
 @Category({ClientSubscriptionTest.class})
-public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
+public class HARQueueNewImplDistributedTest extends JUnit4DistributedTestCase {
 
-  private static final String regionName = HARQueueNewImplDUnitTest.class.getSimpleName();
+  private static final String regionName = HARQueueNewImplDistributedTest.class.getSimpleName();
   private static final Map<Object, Object> map = new HashMap<>();
 
   private static Cache cache = null;
@@ -114,9 +114,11 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     clientVM2 = VM.getVM(3);
 
     PORT1 = serverVM0.invoke(
-        () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+        () -> HARQueueNewImplDistributedTest
+            .createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
     PORT2 = serverVM1.invoke(
-        () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
+        () -> HARQueueNewImplDistributedTest
+            .createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
 
     numOfCreates = 0;
     numOfUpdates = 0;
@@ -136,16 +138,16 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     map.clear();
 
     closeCache();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::closeCache);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::closeCache);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::closeCache);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::closeCache);
 
     // Unset the isSlowStartForTesting flag
-    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
 
     // then close the servers
-    serverVM0.invoke(HARQueueNewImplDUnitTest::closeCache);
-    serverVM1.invoke(HARQueueNewImplDUnitTest::closeCache);
+    serverVM0.invoke(HARQueueNewImplDistributedTest::closeCache);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::closeCache);
 
 
     disconnectAllFromDS();
@@ -170,7 +172,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
-    new HARQueueNewImplDUnitTest().createCache(new Properties());
+    new HARQueueNewImplDistributedTest().createCache(new Properties());
     RegionFactory<Object, Object> factory = cache.createRegionFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -214,7 +216,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HARQueueNewImplDUnitTest().createCache(props);
+    new HARQueueNewImplDistributedTest().createCache(props);
     AttributesFactory<Object, Object> factory = new AttributesFactory<>();
     ClientServerTestCase
         .configureConnectionPool(factory, host, port1, port2, true,
@@ -340,30 +342,30 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testClientMsgsRegionSize() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
+    serverVM1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::stopServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::stopServer);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::startServer);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 5));
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 5));
   }
 
   /**
@@ -374,38 +376,38 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testRefCountForNormalAndGIIPut() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("240000"));
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("240000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("240000"));
+    serverVM1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("240000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::stopServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::stopServer);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::startServer);
 
     serverVM1.invoke(() -> ValidateRegionSizes(PORT2));
     serverVM0.invoke(() -> ValidateRegionSizes(PORT1));
 
 
-    serverVM0.invoke(HARQueueNewImplDUnitTest::updateMapForVM0);
-    serverVM1.invoke(HARQueueNewImplDUnitTest::updateMapForVM1);
+    serverVM0.invoke(HARQueueNewImplDistributedTest::updateMapForVM0);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::updateMapForVM1);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyQueueData(
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyQueueData(
         PORT1));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyQueueData(
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyQueueData(
         PORT2));
   }
 
@@ -430,30 +432,30 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testRefCountForPeekAndRemove() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 5));
 
-    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest
+    serverVM0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest
         .waitTillMessagesAreDispatched(PORT1));
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 0));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 0));
   }
 
   /**
@@ -462,32 +464,32 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testRefCountForQRM() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::stopServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::stopServer);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::startServer);
 
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 5));
 
-    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
 
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 0));
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 0));
   }
 
   /**
@@ -498,49 +500,49 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testRefCountForDestroy() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
+    serverVM1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
     // 1. stop the second server
-    serverVM1.invoke(HARQueueNewImplDUnitTest::stopServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::stopServer);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
     // 3. start the second server.
-    serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::startServer);
     Thread.sleep(3000);
 
-    clientVM1.invoke(HARQueueNewImplDUnitTest::closeCache);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::closeCache);
 
     Thread.sleep(1000);
-    serverVM0.invoke(HARQueueNewImplDUnitTest::updateMap1);
-    serverVM1.invoke(HARQueueNewImplDUnitTest::updateMap1);
+    serverVM0.invoke(HARQueueNewImplDistributedTest::updateMap1);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::updateMap1);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyQueueData(
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyQueueData(
         PORT1));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyQueueData(
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyQueueData(
         PORT2));
 
-    clientVM2.invoke(HARQueueNewImplDUnitTest::closeCache);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::closeCache);
 
-    serverVM0.invoke(HARQueueNewImplDUnitTest::updateMap2);
-    serverVM1.invoke(HARQueueNewImplDUnitTest::updateMap2);
+    serverVM0.invoke(HARQueueNewImplDistributedTest::updateMap2);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::updateMap2);
 
     Thread.sleep(1000);
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyQueueData(
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyQueueData(
         PORT1));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyQueueData(
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyQueueData(
         PORT2));
   }
 
@@ -551,40 +553,40 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testConcurrentGIIAndDispatch() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("40000"));
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("40000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("40000"));
+    serverVM1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("40000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestListAll);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestListAll);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestListAll);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestListAll);
     // 1. stop the second server
-    serverVM1.invoke(HARQueueNewImplDUnitTest::stopServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::stopServer);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest
         .makeValuesOfSomeKeysNullInClientMsgsRegion(PORT1, new String[] {"k1", "k3"}));
     // 3. start the second server.
-    serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 3));
+    serverVM1.invoke(HARQueueNewImplDistributedTest::startServer);
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 3));
 
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyNullValuesInCMR(
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyNullValuesInCMR(
         PORT2, new String[] {"k1", "k3"}));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 3));
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 3));
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest
         .populateValuesOfSomeKeysInClientMsgsRegion(PORT1, new String[] {"k1", "k3"}));
 
-    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
   }
 
   /**
@@ -594,28 +596,28 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testTwoBridgeServersInOneVMDoShareCMR() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     Integer port3 = serverVM0
-        .invoke(() -> HARQueueNewImplDUnitTest.createOneMoreBridgeServer(Boolean.TRUE));
+        .invoke(() -> HARQueueNewImplDistributedTest.createOneMoreBridgeServer(Boolean.TRUE));
 
     createClientCache(getServerHostName(), PORT1, port3, "0");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 5));
     serverVM0.invoke(
-        () -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
+        () -> HARQueueNewImplDistributedTest.verifyRegionSize(5, 5));
   }
 
   /**
@@ -626,27 +628,27 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testUpdatesWithTwoBridgeServersInOneVM() throws Exception {
     Integer port3 = serverVM0
-        .invoke(() -> HARQueueNewImplDUnitTest.createOneMoreBridgeServer(Boolean.FALSE));
+        .invoke(() -> HARQueueNewImplDistributedTest.createOneMoreBridgeServer(Boolean.FALSE));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1", Boolean.TRUE);
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host, port3,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host, port3,
         PORT2, "1", Boolean.TRUE));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestListAll);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestListAll);
 
-    clientVM1.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
-    serverVM0.invoke(HARQueueNewImplDUnitTest::putEntries);
+    clientVM1.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
+    serverVM0.invoke(HARQueueNewImplDistributedTest::putEntries);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.waitTillMessagesAreDispatched(PORT1));
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.waitTillMessagesAreDispatched(port3));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.waitTillMessagesAreDispatched(PORT1));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.waitTillMessagesAreDispatched(port3));
 
     // expect updates
     verifyUpdatesReceived();
     // expect invalidates
-    clientVM1.invoke(HARQueueNewImplDUnitTest::verifyUpdatesReceived);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::verifyUpdatesReceived);
   }
 
   /**
@@ -656,30 +658,30 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testHAEventWrapperDoesNotHoldCUMOnceInsideCMR() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::stopServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::stopServer);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.createEntries(1000L));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.createEntries(1000L));
 
-    serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::startServer);
     Thread.sleep(2000);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyNullCUMReference(PORT1));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyNullCUMReference(PORT2));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.verifyNullCUMReference(PORT1));
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.verifyNullCUMReference(PORT2));
   }
 
   /**
@@ -690,42 +692,44 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testCMRNotCreatedForNoneEvictionPolicy() throws Exception {
-    serverVM0.invoke(HARQueueNewImplDUnitTest::closeCache);
-    serverVM1.invoke(HARQueueNewImplDUnitTest::closeCache);
+    serverVM0.invoke(HARQueueNewImplDistributedTest::closeCache);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::closeCache);
     Thread.sleep(2000);
     PORT1 = serverVM0.invoke(
-        () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE));
+        () -> HARQueueNewImplDistributedTest
+            .createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE));
     PORT2 = serverVM1.invoke(
-        () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE));
+        () -> HARQueueNewImplDistributedTest
+            .createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE));
     Boolean isRegion = Boolean.FALSE;
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
     serverVM0
-        .invoke(() -> HARQueueNewImplDUnitTest.verifyHaContainerType(isRegion, PORT1));
+        .invoke(() -> HARQueueNewImplDistributedTest.verifyHaContainerType(isRegion, PORT1));
     serverVM1
-        .invoke(() -> HARQueueNewImplDUnitTest.verifyHaContainerType(isRegion, PORT2));
+        .invoke(() -> HARQueueNewImplDistributedTest.verifyHaContainerType(isRegion, PORT2));
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.stopOneBridgeServer(PORT1));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.stopOneBridgeServer(PORT2));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.stopOneBridgeServer(PORT1));
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.stopOneBridgeServer(PORT2));
 
     serverVM0.invoke(
-        () -> HARQueueNewImplDUnitTest.verifyHaContainerDestroyed(isRegion, PORT1));
+        () -> HARQueueNewImplDistributedTest.verifyHaContainerDestroyed(isRegion, PORT1));
     serverVM1.invoke(
-        () -> HARQueueNewImplDUnitTest.verifyHaContainerDestroyed(isRegion, PORT2));
+        () -> HARQueueNewImplDistributedTest.verifyHaContainerDestroyed(isRegion, PORT2));
   }
 
   /**
@@ -737,33 +741,33 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   public void testCMRCreatedForMemOrEntryEvictionPolicy() throws Exception {
     Boolean isRegion = Boolean.TRUE;
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
     serverVM0
-        .invoke(() -> HARQueueNewImplDUnitTest.verifyHaContainerType(isRegion, PORT1));
+        .invoke(() -> HARQueueNewImplDistributedTest.verifyHaContainerType(isRegion, PORT1));
     serverVM1
-        .invoke(() -> HARQueueNewImplDUnitTest.verifyHaContainerType(isRegion, PORT2));
+        .invoke(() -> HARQueueNewImplDistributedTest.verifyHaContainerType(isRegion, PORT2));
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.stopOneBridgeServer(PORT1));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.stopOneBridgeServer(PORT2));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.stopOneBridgeServer(PORT1));
+    serverVM1.invoke(() -> HARQueueNewImplDistributedTest.stopOneBridgeServer(PORT2));
 
     serverVM0.invoke(
-        () -> HARQueueNewImplDUnitTest.verifyHaContainerDestroyed(isRegion, PORT1));
+        () -> HARQueueNewImplDistributedTest.verifyHaContainerDestroyed(isRegion, PORT1));
     serverVM1.invoke(
-        () -> HARQueueNewImplDUnitTest.verifyHaContainerDestroyed(isRegion, PORT2));
+        () -> HARQueueNewImplDistributedTest.verifyHaContainerDestroyed(isRegion, PORT2));
   }
 
   /**
@@ -776,22 +780,22 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestList);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestList);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestList);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestList);
 
-    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
+    serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDistributedTest::createEntries);
 
     serverVM0.invoke(
-        () -> HARQueueNewImplDUnitTest.verifyRootRegionsDoesNotReturnCMR(PORT1));
+        () -> HARQueueNewImplDistributedTest.verifyRootRegionsDoesNotReturnCMR(PORT1));
     serverVM1.invoke(
-        () -> HARQueueNewImplDUnitTest.verifyRootRegionsDoesNotReturnCMR(PORT2));
+        () -> HARQueueNewImplDistributedTest.verifyRootRegionsDoesNotReturnCMR(PORT2));
   }
 
   /**
@@ -802,41 +806,42 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Ignore("TODO")
   @Test
   public void testMemoryFootprintOfHARegionQueuesWithAndWithoutOverflow() throws Exception {
-    serverVM0.invoke(HARQueueNewImplDUnitTest::closeCache);
-    serverVM1.invoke(HARQueueNewImplDUnitTest::closeCache);
+    serverVM0.invoke(HARQueueNewImplDistributedTest::closeCache);
+    serverVM1.invoke(HARQueueNewImplDistributedTest::closeCache);
     Thread.sleep(2000);
     Integer numOfEntries = 30;
 
-    PORT1 = serverVM0.invoke(() -> HARQueueNewImplDUnitTest
+    PORT1 = serverVM0.invoke(() -> HARQueueNewImplDistributedTest
         .createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY, 30));
     PORT2 = serverVM1.invoke(
-        () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE));
+        () -> HARQueueNewImplDistributedTest
+            .createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE));
 
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("60000"));
+    serverVM1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("60000"));
 
     createClientCache(getServerHostName(), PORT1, PORT2,
         "1");
     final String client1Host = getServerHostName();
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client1Host,
+    clientVM1.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client1Host,
         PORT1, PORT2, "1"));
     final String client2Host = getServerHostName();
-    clientVM2.invoke(() -> HARQueueNewImplDUnitTest.createClientCache(client2Host,
+    clientVM2.invoke(() -> HARQueueNewImplDistributedTest.createClientCache(client2Host,
         PORT1, PORT2, "1"));
 
     registerInterestListAll();
-    clientVM1.invoke(HARQueueNewImplDUnitTest::registerInterestListAll);
-    clientVM2.invoke(HARQueueNewImplDUnitTest::registerInterestListAll);
+    clientVM1.invoke(HARQueueNewImplDistributedTest::registerInterestListAll);
+    clientVM2.invoke(HARQueueNewImplDistributedTest::registerInterestListAll);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.putHeavyEntries(numOfEntries));
+    serverVM0.invoke(() -> HARQueueNewImplDistributedTest.putHeavyEntries(numOfEntries));
 
-    Long usedMemInVM0 = serverVM0.invoke(() -> HARQueueNewImplDUnitTest
+    Long usedMemInVM0 = serverVM0.invoke(() -> HARQueueNewImplDistributedTest
         .getUsedMemoryAndVerifyRegionSize(numOfEntries, PORT1));
-    Long usedMemInVM1 = serverVM1.invoke(() -> HARQueueNewImplDUnitTest
+    Long usedMemInVM1 = serverVM1.invoke(() -> HARQueueNewImplDistributedTest
         .getUsedMemoryAndVerifyRegionSize(numOfEntries, -1));
 
-    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
 
     logger.debug("Used Mem: " + usedMemInVM1 + "(without overflow), "
         + usedMemInVM0 + "(with overflow)");

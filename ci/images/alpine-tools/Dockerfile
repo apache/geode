@@ -29,6 +29,7 @@ COPY --from=hashicorp/packer:1.4.5 /bin/packer /usr/local/bin/packer
 
 RUN apk --no-cache add \
       bash \
+      coreutils \
       curl \
       git \
       jq \

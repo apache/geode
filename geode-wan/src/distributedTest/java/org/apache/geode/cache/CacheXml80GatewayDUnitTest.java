@@ -105,6 +105,8 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   public void testGatewaySenderWithSubstitutionFilter() throws Exception {
     getSystem();
     CacheCreation cache = new CacheCreation();
+    DiskStoreFactory dsf = cache.createDiskStoreFactory();
+    dsf.create(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
 
     // Create a GatewaySender with GatewayEventSubstitutionFilter.
     // Don't start the sender to avoid 'Locators must be configured before starting gateway-sender'
@@ -113,6 +115,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     GatewaySenderFactory factory = cache.createGatewaySenderFactory();
     factory.setManualStart(true);
     factory.setGatewayEventSubstitutionFilter(new MyGatewayEventSubstitutionFilter());
+    factory.setDiskStoreName(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
     GatewaySender sender = factory.create(id, 2);
 
     // Verify the GatewayEventSubstitutionFilter is set on the GatewaySender.

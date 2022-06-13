@@ -53,7 +53,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDistributedTestHelper;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
@@ -73,7 +73,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * S2. The client should receive all the puts . These puts have arrived on S2 via GII of HARegion.
  */
 @Category({ClientSubscriptionTest.class})
-public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
+public class HAGIIDistributedTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;
   // server
@@ -81,7 +81,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   private static VM server1 = null;
   private static VM client0 = null;
 
-  private static final String REGION_NAME = HAGIIDUnitTest.class.getSimpleName() + "_region";
+  private static final String REGION_NAME = HAGIIDistributedTest.class.getSimpleName() + "_region";
 
   protected static GIIChecker checker = new GIIChecker();
   private int PORT2;
@@ -98,15 +98,16 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     client0 = host.getVM(2);
 
     // start server1
-    int PORT1 = server0.invoke(HAGIIDUnitTest::createServer1Cache);
-    server0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server0.invoke(HAGIIDUnitTest::setSystemProperty);
+    int PORT1 = server0.invoke(HAGIIDistributedTest::createServer1Cache);
+    server0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart());
+    server0.invoke(HAGIIDistributedTest::setSystemProperty);
 
 
     PORT2 = getRandomAvailableTCPPort();
     // Start the client
-    client0.invoke(() -> HAGIIDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-        PORT1, PORT2));
+    client0
+        .invoke(() -> HAGIIDistributedTest.createClientCache(NetworkUtils.getServerHostName(host),
+            PORT1, PORT2));
     client0.invoke(() -> checker.resetUpdateCounter());
   }
 
@@ -114,18 +115,18 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   public void testGIIRegionQueue() {
     try (IgnoredException ignoredException =
         IgnoredException.addIgnoredException(ConnectException.class)) {
-      client0.invoke(HAGIIDUnitTest::createEntries);
-      client0.invoke(HAGIIDUnitTest::registerInterestList);
-      server0.invoke(HAGIIDUnitTest::put);
+      client0.invoke(HAGIIDistributedTest::createEntries);
+      client0.invoke(HAGIIDistributedTest::registerInterestList);
+      server0.invoke(HAGIIDistributedTest::put);
 
-      server0.invoke(HAGIIDUnitTest::tombstonegc);
+      server0.invoke(HAGIIDistributedTest::tombstonegc);
 
-      client0.invoke(HAGIIDUnitTest::verifyEntries);
-      server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {PORT2});
+      client0.invoke(HAGIIDistributedTest::verifyEntries);
+      server1.invoke(HAGIIDistributedTest.class, "createServer2Cache", new Object[] {PORT2});
       Wait.pause(6000);
-      server0.invoke(HAGIIDUnitTest::stopServer);
+      server0.invoke(HAGIIDistributedTest::stopServer);
       // pause(10000);
-      client0.invoke(HAGIIDUnitTest::verifyEntriesAfterGiiViaListener);
+      client0.invoke(HAGIIDistributedTest::verifyEntriesAfterGiiViaListener);
     }
   }
 
@@ -144,18 +145,18 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new HAGIIDUnitTest().createCache(props);
+    new HAGIIDistributedTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, host, new int[] {PORT1, PORT2}, true, -1,
         2, null, 1000, -1, -1);
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.addCacheListener(HAGIIDUnitTest.checker);
+    factory.addCacheListener(HAGIIDistributedTest.checker);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
   }
 
   public static Integer createServer1Cache() throws Exception {
-    new HAGIIDUnitTest().createCache(new Properties());
+    new HAGIIDistributedTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -170,7 +171,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createServer2Cache(Integer port) throws Exception {
-    new HAGIIDUnitTest().createCache(new Properties());
+    new HAGIIDistributedTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -424,13 +425,13 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    ConflationDUnitTestHelper.unsetIsSlowStart();
-    Invoke.invokeInEveryVM(ConflationDUnitTestHelper.class, "unsetIsSlowStart");
+    ConflationDistributedTestHelper.unsetIsSlowStart();
+    Invoke.invokeInEveryVM(ConflationDistributedTestHelper.class, "unsetIsSlowStart");
     // close the clients first
-    client0.invoke(HAGIIDUnitTest::closeCache);
+    client0.invoke(HAGIIDistributedTest::closeCache);
     // then close the servers
-    server0.invoke(HAGIIDUnitTest::closeCache);
-    server1.invoke(HAGIIDUnitTest::closeCache);
+    server0.invoke(HAGIIDistributedTest::closeCache);
+    server1.invoke(HAGIIDistributedTest::closeCache);
   }
 
   public static void closeCache() {

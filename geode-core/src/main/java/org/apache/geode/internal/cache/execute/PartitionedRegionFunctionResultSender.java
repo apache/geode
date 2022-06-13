@@ -15,8 +15,9 @@
 
 package org.apache.geode.internal.cache.execute;
 
-
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
+import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.Logger;
 
@@ -25,8 +26,10 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -45,7 +48,7 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
 
   private static final Logger logger = LogService.getLogger();
 
-  PartitionedRegionFunctionStreamingMessage msg = null;
+  private final PartitionedRegionFunctionStreamingMessage msg;
 
   private final DistributionManager dm;
 
@@ -55,15 +58,15 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
 
   private final boolean forwardExceptions;
 
-  private ResultCollector<OUT, AGG> rc;
+  private final ResultCollector<OUT, AGG> rc;
 
-  private ServerToClientFunctionResultSender serverSender;
+  private final ServerToClientFunctionResultSender serverSender;
 
   private boolean localLastResultReceived = false;
 
-  private boolean onlyLocal = false;
+  private final boolean onlyLocal;
 
-  private boolean onlyRemote = false;
+  private final boolean onlyRemote;
 
   private boolean completelyDoneFromRemote = false;
 
@@ -75,6 +78,7 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
 
   private BucketMovedException bme;
 
+  private BiFunction<String, InternalDistributedSystem, FunctionStats> functionStatsFunctionProvider;
 
   public KnownVersion getClientVersion() {
     if (serverSender != null && serverSender.sc != null) { // is a client-server connection
@@ -83,41 +87,40 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
     return null;
   }
 
-  /**
-   * Have to combine next two constructor in one and make a new class which will send Results back.
-   *
-   */
   public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
-      long time, PartitionedRegionFunctionStreamingMessage msg, Function<IN> function,
-      int[] bucketArray) {
-    this.msg = msg;
-    this.dm = dm;
-    this.pr = pr;
-    this.time = time;
-    this.function = function;
-    this.bucketArray = bucketArray;
-
-    forwardExceptions = false;
+      long time, PartitionedRegionFunctionStreamingMessage msg,
+      Function<IN> function, int[] bucketArray) {
+    this(dm, pr, time, null, null, false, false, false, function, bucketArray, msg,
+        (x, y) -> FunctionStatsManager.getFunctionStats((String) x, (InternalDistributedSystem) y));
   }
 
-  /**
-   * Have to combine next two constructor in one and make a new class which will send Results back.
-   *
-   */
   public PartitionedRegionFunctionResultSender(DistributionManager dm,
       PartitionedRegion partitionedRegion, long time, ResultCollector<OUT, AGG> rc,
       ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
       boolean forwardExceptions, Function<IN> function, int[] bucketArray) {
+    this(dm, partitionedRegion, time, rc, sender, onlyLocal, onlyRemote, forwardExceptions,
+        function, bucketArray, null,
+        (x, y) -> FunctionStatsManager.getFunctionStats((String) x, (InternalDistributedSystem) y));
+  }
+
+  PartitionedRegionFunctionResultSender(DistributionManager dm,
+      PartitionedRegion partitionedRegion, long time, ResultCollector rc,
+      ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
+      boolean forwardExceptions, Function function, int[] bucketArray,
+      PartitionedRegionFunctionStreamingMessage msg,
+      BiFunction functionStatsFunctionProvider) {
     this.dm = dm;
     pr = partitionedRegion;
     this.time = time;
     this.rc = rc;
+    this.msg = msg;
     serverSender = sender;
     this.onlyLocal = onlyLocal;
     this.onlyRemote = onlyRemote;
     this.forwardExceptions = forwardExceptions;
     this.function = function;
     this.bucketArray = bucketArray;
+    this.functionStatsFunctionProvider = functionStatsFunctionProvider;
   }
 
   private void checkForBucketMovement(Object oneResult) {
@@ -201,7 +204,7 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
           // call a synchronized method as local node is also waiting to send lastResult
           lastResult(oneResult, rc, false, true, dm.getDistributionManagerId());
         }
-        FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
+        functionStatsFunctionProvider.apply(function.getId(), dm.getSystem())
             .incResultsReceived();
       }
       // incrementing result sent stats.
@@ -210,7 +213,7 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
       // time the stats for the result sent is again incremented : Once the PR team comes with the
       // concept of the Streaming FunctionOperation
       // for the partitioned Region then it will be simple to fix this problem.
-      FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
+      functionStatsFunctionProvider.apply(function.getId(), dm.getSystem())
           .incResultsReturned();
     }
   }
@@ -319,14 +322,14 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
       if (dm == null) {
         FunctionStatsManager.getFunctionStats(function.getId()).incResultsReceived();
       } else {
-        FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
+        functionStatsFunctionProvider.apply(function.getId(), dm.getSystem())
             .incResultsReceived();
       }
     }
     if (dm == null) {
       FunctionStatsManager.getFunctionStats(function.getId()).incResultsReturned();
     } else {
-      FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
+      functionStatsFunctionProvider.apply(function.getId(), dm.getSystem())
           .incResultsReturned();
     }
   }
@@ -358,21 +361,31 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
             "PartitionedRegionFunctionResultSender adding result to ResultCollector on local node {}",
             oneResult);
         rc.addResult(dm.getDistributionManagerId(), oneResult);
-        FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
+        functionStatsFunctionProvider.apply(function.getId(), dm.getSystem())
             .incResultsReceived();
       }
       // incrementing result sent stats.
-      FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
+      functionStatsFunctionProvider.apply(function.getId(), dm.getSystem())
           .incResultsReturned();
     }
   }
 
   private void clientSend(Object oneResult, DistributedMember memberID) {
-    serverSender.sendResult(oneResult, memberID);
+    try {
+      serverSender.sendResult(oneResult, memberID);
+    } catch (FunctionException e) {
+      logger.warn("Exception when sending result to client", e);
+      setException(e);
+    }
   }
 
   private void lastClientSend(DistributedMember memberID, Object lastResult) {
-    serverSender.lastResult(lastResult, memberID);
+    try {
+      serverSender.lastResult(lastResult, memberID);
+    } catch (FunctionException e) {
+      logger.warn("Exception when sending last result to client", e);
+      setException(e);
+    }
   }
 
   @Override
@@ -408,5 +421,4 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
   public boolean isLastResultReceived() {
     return localLastResultReceived;
   }
-
 }

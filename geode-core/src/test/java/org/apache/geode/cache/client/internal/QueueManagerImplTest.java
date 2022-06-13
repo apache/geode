@@ -23,12 +23,18 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
+
+import org.apache.geode.distributed.internal.ServerLocation;
 
 public class QueueManagerImplTest {
   private final InternalPool pool = mock(InternalPool.class, RETURNS_DEEP_STUBS);
@@ -38,6 +44,9 @@ public class QueueManagerImplTest {
   private final QueueConnectionImpl backup = mock(QueueConnectionImpl.class);
   private final ClientUpdater clientUpdater = mock(ClientUpdater.class);
   private QueueManagerImpl queueManager;
+
+  private final QueueManagerImpl.ConnectionList queueConnections = mock(
+      QueueManagerImpl.ConnectionList.class);
 
   @Before
   public void setup() {
@@ -51,6 +60,34 @@ public class QueueManagerImplTest {
     when(backup.getEndpoint()).thenReturn(backupEndpoint);
     when(backup.getUpdater()).thenReturn(clientUpdater);
     when(backupEndpoint.isClosed()).thenReturn(false);
+  }
+
+  @Test
+  public void whenPrimaryIsNotDestroyedThenPrimaryRecoveryIsNotNeeded() {
+    assertThat(queueManager.addToConnectionList((primary), true)).isTrue();
+    when(primary.isDestroyed()).thenReturn(false);
+    when(pool.getPoolOrCacheCancelInProgress()).thenReturn(null);
+    Set<ServerLocation> excludedServers = new HashSet<>();
+    queueManager.recoverPrimary(excludedServers);
+    verify(pool, times(2)).getPoolOrCacheCancelInProgress();
+  }
+
+  @Test
+  public void whenPrimaryIsNullThenPrimaryRecoveryIsNeeded() {
+    assertThat(QueueManagerImpl.isPrimaryRecoveryNeeded(null)).isTrue();
+  }
+
+  @Test
+  public void whenConnectionListIsNullThenPrimaryRecoveryIsNeeded() {
+    when(queueConnections.getPrimary()).thenReturn(null);
+    assertThat(QueueManagerImpl.isPrimaryRecoveryNeeded(queueConnections)).isTrue();
+  }
+
+  @Test
+  public void whenPrimaryIsDestroyedThenPrimaryRecoveryIsNeeded() {
+    when(queueConnections.getPrimary()).thenReturn(primary);
+    when(primary.isDestroyed()).thenReturn(true);
+    assertThat(QueueManagerImpl.isPrimaryRecoveryNeeded(queueConnections)).isTrue();
   }
 
   @Test

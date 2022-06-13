@@ -12,34 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
+package org.apache.geode.internal.process;
 
-public class ConflationDUnitTestHelper {
+/**
+ * Defines the SPI for ProcessUtils
+ */
+public interface ProcessUtilsProvider {
 
-  /**
-   * set the boolean for starting the dispatcher thread a bit later.
-   *
-   */
-  public static void setIsSlowStart() {
-    setIsSlowStart("5000");
-  }
+  boolean isProcessAlive(final int pid);
 
+  boolean killProcess(final int pid);
 
-  /**
-   * Set the boolean to make the dispatcher thread pause <code>milis</code> miliseconds.
-   *
-   */
-  public static void setIsSlowStart(String milis) {
-    CacheClientProxy.isSlowStartForTesting = true;
-    System.setProperty("slowStartTimeForTesting", milis);
-  }
+  boolean isAvailable();
 
-  /**
-   * Unset the boolean to start the dispatcher thread.
-   *
-   */
-  public static void unsetIsSlowStart() {
-    CacheClientProxy.isSlowStartForTesting = false;
-  }
-
+  boolean isAttachApiAvailable();
 }

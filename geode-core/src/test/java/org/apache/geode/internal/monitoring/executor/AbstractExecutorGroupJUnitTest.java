@@ -104,7 +104,7 @@ public class AbstractExecutorGroupJUnitTest {
         threadIds.add(blockedThread.getId());
         threadIds.add(blockingThread.getId());
         String threadReport = executor.createThreadReport(60000,
-            ThreadsMonitoringProcess.createThreadInfoMap(threadIds));
+            ThreadsMonitoringProcess.createThreadInfoMap(threadIds, true, true));
         assertThat(threadReport)
             .contains(AbstractExecutor.LOCK_OWNER_THREAD_STACK + " for \"blocking thread\"");
         assertThat(threadReport).contains("Waiting on <" + syncObject + ">");

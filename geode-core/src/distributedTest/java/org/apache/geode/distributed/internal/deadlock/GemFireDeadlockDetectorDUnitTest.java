@@ -196,10 +196,9 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
         .untilAsserted(() -> assertTrue(getBlackboard().isGateSignaled("two")));
 
     GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
+    await().until(() -> (detect.find().findCycle() != null));
+
     LinkedList<Dependency> deadlock = detect.find().findCycle();
-
-    assertTrue(deadlock != null);
-
     System.out.println("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
 
     assertEquals(4, deadlock.size());

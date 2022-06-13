@@ -47,24 +47,13 @@ This adds jar files to the `lib` subdirectory and XML files to the `conf` subdir
     cd $CATALINA_HOME
     unzip $GEODE_HOME/tools/Modules/Apache_Geode_Modules-SERVER-VERSION-Tomcat.zip
     ```
-6.  Copy the following jar files from the <%=vars.product_name%> `lib` subdirectory to the `lib` subdirectory of your Tomcat server (`$CATALINA_HOME/lib`), adding version numbers to the filenames as needed:
-    -   commons-io jar
-    -   commons-lang jar
-    -   commons-validator jar
-    -   fastutil jar
-    -   geode-common jar
-    -   geode-core jar
-    -   geode-logging jar
-    -   geode-management jar
-    -   geode-membership jar
-    -   geode-serialization jar
-    -   geode-tcp-server jar
-    -   javax.transaction-api jar
-    -   jgroups jar
-    -   log4j-api jar
-    -   log4j-core jar
-    -   log4j-jul jar
-    -   micrometer-core jar
-    -   shiro-core jar
+
+
+6.  Copy all of the jar files from the <%=vars.product_name%> `lib` subdirectory to the `lib` subdirectory of your Tomcat server (`$CATALINA_HOME/lib`):
+
+    ```
+    cd $CATALINA_HOME/lib
+    cp $GEODE_HOME/lib/*.jar .
+    ```
 
 Proceed to [Setting Up the HTTP Module for Tomcat](./tomcat_setting_up_the_module.html) to complete your Tomcat configuration.

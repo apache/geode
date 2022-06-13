@@ -64,7 +64,7 @@ import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDistributedTestHelper;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
@@ -82,9 +82,10 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * present. 8. close client1 and client2 9. close server1 and server2
  */
 @Category({ClientSubscriptionTest.class})
-public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
+public class HADispatcherDistributedTest extends JUnit4DistributedTestCase {
 
-  private static final String REGION_NAME = HADispatcherDUnitTest.class.getSimpleName() + "_region";
+  private static final String REGION_NAME =
+      HADispatcherDistributedTest.class.getSimpleName() + "_region";
   private static final Object dummyObj = "dummyObject";
   private static final String KEY1 = "KEY1";
   private static final String VALUE1 = "VALUE1";
@@ -120,7 +121,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
     PORT1 = server1.invoke(() -> createServerCache(Boolean.FALSE));
 
-    server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
+    server1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart());
     server1.invoke(this::makeDispatcherSlow);
     server1.invoke(this::setQRMslow);
 

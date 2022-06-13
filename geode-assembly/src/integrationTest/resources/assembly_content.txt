@@ -1070,3 +1070,6 @@ tools/Modules/Apache_Geode_Modules-0.0.0-Tomcat.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer30.zip
 tools/Pulse/geode-pulse-0.0.0.war
+lib/jackson-datatype-joda-2.13.2.jar
+lib/jackson-datatype-jsr310-2.13.2.jar
+lib/joda-time-2.10.14.jar

@@ -600,7 +600,6 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
 
   private Object[] getClassAndJson(Object obj) {
     Object[] array = new Object[2];
-
     if (obj == null) {
       array[0] = null;
       array[1] = null;
@@ -614,7 +613,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
       return array;
     }
 
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = GeodeJsonMapper.getMapperWithAlwaysInclusion();
     try {
       array[1] = mapper.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
