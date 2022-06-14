@@ -93,7 +93,7 @@ case "${MACHINE_TYPE}" in
     if [[ "${MACHINE_FAMILY}" == "n1" ]]; then
       RAM=$(echo "scale=1; (${CPUS} * 0.9) / 1" | bc)
     else
-      RAM=$(expr ${CPUS} \* 4)
+      RAM=${CPUS}
     fi
     CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.cpu")"
     RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.ram")"
