@@ -23,8 +23,6 @@
 
 {% macro plan_resource_gets(test) %}
 - get: geode-ci
-  passed:
-  - build
 - in_parallel:
   - get: geode
     trigger: true
