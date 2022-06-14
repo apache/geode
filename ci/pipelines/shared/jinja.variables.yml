@@ -142,6 +142,19 @@ tests:
   # For N1 machine types, we ask for 384GiB but get 360GiB due to GCP overhead. Lets move to N2 (need quota)
   RAM: '384'
   name: distributed-standard-96-48jobs
+- ARTIFACT_SLUG: distributedtestfiles
+  CALL_STACK_TIMEOUT: '11700'
+  CPUS: '96'
+  DISK: '200GB'
+  DUNIT_PARALLEL_FORKS: '72'
+  EXECUTE_TEST_TIMEOUT: 4h
+  GRADLE_TASK: distributedTest
+  MAX_IN_FLIGHT: 2
+  PARALLEL_DUNIT: 'true'
+  PLATFORM: linux
+  # For N1 machine types, we ask for 384GiB but get 360GiB due to GCP overhead. Lets move to N2 (need quota)
+  RAM: '384'
+  name: distributed-standard-96-72jobs
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
   CPUS: '96'
