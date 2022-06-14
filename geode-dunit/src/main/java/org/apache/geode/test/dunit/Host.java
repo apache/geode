@@ -200,7 +200,8 @@ public abstract class Host implements Serializable {
   protected void addVM(int vmid, VmConfiguration configuration, RemoteDUnitVMIF client,
       ProcessHolder processHolder, ChildVMLauncher childVMLauncher, boolean classLoaderIsolated) {
     VM vm =
-        new VM(this, configuration, vmid, client, processHolder, childVMLauncher, classLoaderIsolated);
+        new VM(this, configuration, vmid, client, processHolder, childVMLauncher,
+            classLoaderIsolated);
     vms.add(vm);
     vmEventNotifier.notifyAfterCreateVM(vm);
   }

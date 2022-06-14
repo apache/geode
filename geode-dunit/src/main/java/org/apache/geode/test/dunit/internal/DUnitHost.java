@@ -20,7 +20,6 @@ import java.rmi.RemoteException;
 
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.version.VersionManager;
 import org.apache.geode.test.version.VmConfiguration;
 
 class DUnitHost extends Host {
@@ -40,7 +39,8 @@ class DUnitHost extends Host {
       boolean classloaderIsolatedOverride)
       throws RemoteException {
     super(hostName, vmEventNotifier);
-    debuggingVM = new VM(this, VmConfiguration.current(), -1, new RemoteDUnitVM(0), null, null, false);
+    debuggingVM =
+        new VM(this, VmConfiguration.current(), -1, new RemoteDUnitVM(0), null, null, false);
     this.processManager = processManager;
     this.vmEventNotifier = vmEventNotifier;
     this.classloaderIsolatedOverride = classloaderIsolatedOverride;
@@ -52,7 +52,8 @@ class DUnitHost extends Host {
     for (int i = 0; i < numVMs; i++) {
       RemoteDUnitVMIF remote = processManager.getStub(i);
       ProcessHolder processHolder = processManager.getProcessHolder(i);
-      addVM(i, VmConfiguration.current(), remote, processHolder, processManager, classLoaderIsolated);
+      addVM(i, VmConfiguration.current(), remote, processHolder, processManager,
+          classLoaderIsolated);
     }
 
     if (launchLocator) {
@@ -98,7 +99,7 @@ class DUnitHost extends Host {
     if (whichVM < getVMCount()) {
       VM current = super.getVM(whichVM);
       if (!current.getConfiguration().equals(configuration)) {
-        current.bounce(configuration, false);
+        current.bounce(configuration);
       }
       return current;
     }
@@ -123,7 +124,8 @@ class DUnitHost extends Host {
         processManager.launchVM(configuration, whichVM, false, 0,
             classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
-        addVM(whichVM, configuration, processManager.getStub(whichVM), processManager.getProcessHolder(whichVM),
+        addVM(whichVM, configuration, processManager.getStub(whichVM),
+            processManager.getProcessHolder(whichVM),
             processManager, classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
 
       } catch (IOException | InterruptedException | NotBoundException e) {

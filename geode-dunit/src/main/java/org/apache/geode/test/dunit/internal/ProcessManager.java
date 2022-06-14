@@ -77,7 +77,8 @@ class ProcessManager implements ChildVMLauncher {
   }
 
   @Override
-  public synchronized ProcessHolder launchVM(VmConfiguration vmConfiguration, int vmNum, boolean bouncedVM,
+  public synchronized ProcessHolder launchVM(VmConfiguration vmConfiguration, int vmNum,
+      boolean bouncedVM,
       int remoteStubPort, boolean classLoaderIsolated) throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);

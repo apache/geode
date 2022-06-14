@@ -251,7 +251,8 @@ public class VM implements Serializable {
     return Host.getHost(0).getVMEventNotifier();
   }
 
-  public VM(final Host host, VmConfiguration configuration, final int id, final RemoteDUnitVMIF client,
+  public VM(final Host host, VmConfiguration configuration, final int id,
+      final RemoteDUnitVMIF client,
       final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher,
       boolean isClassLoaderIsolated) {
     this.host = host;
@@ -265,8 +266,7 @@ public class VM implements Serializable {
   }
 
   public VM initializeAsClientVM() {
-    bounceClassLoaderIsolated(this.configuration.geodeVersion().toString(), false);
-    return this;
+    return bounceClassLoaderIsolated(this.configuration, false);
   }
 
   /**
@@ -586,9 +586,10 @@ public class VM implements Serializable {
     }
   }
 
-  private VM bounceClassLoaderIsolated(String targetVersion, boolean newClassLoaderIsolated) {
+  private VM bounceClassLoaderIsolated(VmConfiguration configuration,
+      boolean newClassLoaderIsolated) {
     if (classLoaderIsolated != newClassLoaderIsolated) {
-      bounce(targetVersion, false, newClassLoaderIsolated);
+      bounce(configuration, false, newClassLoaderIsolated);
     }
     return this;
   }
@@ -632,6 +633,10 @@ public class VM implements Serializable {
     return bounce(VmConfiguration.forGeodeVersion(targetVersion), false, classLoaderIsolated);
   }
 
+  public VM bounce(VmConfiguration configuration) {
+    return bounce(configuration, false, classLoaderIsolated);
+  }
+
   public synchronized VM bounce(final VmConfiguration configuration, boolean force,
       boolean classLoaderIsolated) {
     checkAvailability(getClass().getName(), "bounceVM");
@@ -663,7 +668,8 @@ public class VM implements Serializable {
       // fixed ports. So when we bounce a VM, use an RMI port outside the usual range of ephemeral
       // ports for MacOS (49152–65535) and Linux (32768-60999).
       int remoteStubPort = AvailablePortHelper.getRandomAvailableTCPPort();
-      processHolder = childVMLauncher.launchVM(configuration, id, true, remoteStubPort, classLoaderIsolated);
+      processHolder =
+          childVMLauncher.launchVM(configuration, id, true, remoteStubPort, classLoaderIsolated);
       this.configuration = configuration;
       client = childVMLauncher.getStub(id);
       available = true;
