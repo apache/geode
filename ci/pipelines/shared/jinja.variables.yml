@@ -139,8 +139,8 @@ tests:
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  # For N1 machine types, we ask for 256GiB but get 240GiB due to GCP overhead. Lets move to N2 (need quota)
-  RAM: '360'
+  # For N1 machine types, we ask for 384GiB but get 360GiB due to GCP overhead. Lets move to N2 (need quota)
+  RAM: '384'
   name: distributed-standard-96-48jobs
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
