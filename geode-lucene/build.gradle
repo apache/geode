@@ -18,6 +18,7 @@
 plugins {
   id 'standard-subproject-configuration'
   id 'geode-publish-java'
+  id 'geode-jboss-module-plugin'
 }
 
 dependencies {

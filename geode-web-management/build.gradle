@@ -19,6 +19,7 @@ plugins {
   id 'geode-publish-war'
   id 'warnings'
   id 'nebula.facet'
+  id 'geode-jboss-module-plugin'
 }
 
 jar.enabled = false
