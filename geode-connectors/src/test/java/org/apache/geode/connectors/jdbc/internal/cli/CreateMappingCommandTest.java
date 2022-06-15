@@ -125,7 +125,8 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getType()).thenReturn("PARTITION");
     when(matchingRegion.getName()).thenReturn(regionName);
     matchingRegionAttributes = mock(RegionAttributesType.class);
-    when(matchingRegionAttributes.getDataPolicyEnum()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
+    when(matchingRegionAttributes.getDataPolicyEnum())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(matchingRegion.getRegionAttributes()).thenReturn(matchingRegionAttributes);
 
     arguments[0] = mapping;

@@ -44,9 +44,9 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.management.internal.AgentUtil;

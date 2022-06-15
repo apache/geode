@@ -24,10 +24,10 @@ import java.io.File;
 import org.junit.Test;
 
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 
 // TODO: Remove the deprecated method invocations once RegionAttributesCreation is also updated.
 public class CreateRegionFunctionTest {

@@ -37,12 +37,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -797,7 +797,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockCompanyRegion.getAttributes()).thenReturn(mockCompanyRegionAttributes);
     when(mockCompanyRegion.getFullPath()).thenReturn(SEPARATOR + "CompanyRegion");
     when(mockCompanyRegion.getName()).thenReturn("CompanyRegion");
-    when(mockCompanyRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockCompanyRegionAttributes.getDataPolicyEnum())
+        .thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockCompanyRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
     when(mockCompanyRegionAttributes.getEvictionAttributes())
         .thenReturn(mockCompanyEvictionAttributes);
@@ -866,7 +867,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
         mock(RegionAttributes.class, "PartnersRegionAttributes");
     when(mockPartnersRegion.getAttributes()).thenReturn(mockPartnersRegionAttributes);
     when(mockPartnersRegion.subregions(false)).thenReturn(Collections.emptySet());
-    when(mockPartnersRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockPartnersRegionAttributes.getDataPolicyEnum())
+        .thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockPartnersRegionAttributes.getDiskStoreName()).thenReturn("");
 
     @SuppressWarnings("unchecked")

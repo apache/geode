@@ -85,7 +85,8 @@ public class DestroyMappingCommandTest {
     matchingRegion = mock(RegionConfig.class);
     when(matchingRegion.getName()).thenReturn(regionName);
     matchingRegionAttributes = mock(RegionAttributesType.class);
-    when(matchingRegionAttributes.getDataPolicyEnum()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
+    when(matchingRegionAttributes.getDataPolicyEnum())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(matchingRegion.getRegionAttributes()).thenReturn(matchingRegionAttributes);
   }
 

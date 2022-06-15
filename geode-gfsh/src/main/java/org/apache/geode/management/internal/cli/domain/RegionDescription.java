@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 
 /***
  * Data class which contains description of a region and provides the aggregated view of the region
