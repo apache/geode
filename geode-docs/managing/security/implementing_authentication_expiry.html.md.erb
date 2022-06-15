@@ -23,7 +23,7 @@ Authentication expiry makes it possible for cluster administrators to limit the 
 and peer connections within the cluster. The use of expirable credentials is most common when used in
 combination with token based authentication and authorization.
 
-Client connections are notified of expiry through the throwing of an `AuthenticationExpiredException`
+Client connections are notified of expiry through `AuthenticationExpiredException`,
 which is thrown in the implementations of `SecurityManager.authenticate` or `SecurityManager.authorize`.
 
 Clients will do one automatic attempt to reconnect. Upon receiving a second `AuthenticationExpiredException`
