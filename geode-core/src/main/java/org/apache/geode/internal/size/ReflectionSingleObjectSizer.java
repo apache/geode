@@ -120,7 +120,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
       for (Field field : fields) {
         if (!Modifier.isStatic(field.getModifiers())) {
           try {
-            long offset = myUnsafe.fieldOffset(field);
+            long offset = myUnsafe.objectFieldOffset(field);
             if (offset >= lastFieldOffset) {
               lastFieldOffset = offset;
               lastField = field;

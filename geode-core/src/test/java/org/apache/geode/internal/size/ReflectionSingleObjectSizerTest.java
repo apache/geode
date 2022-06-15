@@ -32,7 +32,7 @@ public class ReflectionSingleObjectSizerTest {
   @Test
   public void sizeofReturnsSafeSizeofGivenUnsafeFieldOffsetUnsupported() {
     Unsafe unsafe = mock(Unsafe.class);
-    when(unsafe.fieldOffset(any())).thenThrow(UnsupportedOperationException.class);
+    when(unsafe.objectFieldOffset(any())).thenThrow(UnsupportedOperationException.class);
 
     long result = sizeof(TestClass.class, false, unsafe);
 
@@ -55,7 +55,7 @@ public class ReflectionSingleObjectSizerTest {
   public void unsafeSizeofReturnsFieldOffsetGivenMockedUnsafeFieldOffset() {
     Unsafe unsafe = mock(Unsafe.class);
     final long FIELD_OFFSET = 37;
-    when(unsafe.fieldOffset(any())).thenReturn(FIELD_OFFSET);
+    when(unsafe.objectFieldOffset(any())).thenReturn(FIELD_OFFSET);
 
     long result = unsafeSizeof(TestClass.class, unsafe);
 
@@ -65,7 +65,7 @@ public class ReflectionSingleObjectSizerTest {
   @Test
   public void unsafeSizeofReturnsMinusOneGivenUnsafeFieldOffsetUnsupported() {
     Unsafe unsafe = mock(Unsafe.class);
-    when(unsafe.fieldOffset(any())).thenThrow(UnsupportedOperationException.class);
+    when(unsafe.objectFieldOffset(any())).thenThrow(UnsupportedOperationException.class);
 
     long result = unsafeSizeof(TestClass.class, unsafe);
 

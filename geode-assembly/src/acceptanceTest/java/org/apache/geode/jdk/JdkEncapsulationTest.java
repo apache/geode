@@ -17,6 +17,7 @@
 package org.apache.geode.jdk;
 
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.jdk.ReflectEncapsulatedJdkObject.OBJECT;
 import static org.apache.geode.test.util.JarUtils.createJarWithClasses;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -36,7 +37,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.version.JavaVersions;
 
 /**
- * Test several ways to make normally inaccessible JDK packages accessible on JDK 17.
+ * Test several ways to make encapsulated types in JDK packages accessible for reflection on JDK 17.
  */
 public class JdkEncapsulationTest {
   @Rule(order = 0)
@@ -46,26 +47,26 @@ public class JdkEncapsulationTest {
   public final GfshRule gfshRule = new GfshRule(folderRule::getFolder);
 
   private String startServer;
-  private GfshScript traverseEncapsulatedJdkObject;
+  private GfshScript reflectEncapsulatedJdkObject;
 
   @BeforeClass
-  public static void validOnlyOnJdk17AndLater() {
+  public static void enableTheseTestsOnlyOnJdk17AndLater() {
     assumeThat(JavaVersions.current().specificationVersion())
         .isGreaterThanOrEqualTo(17);
   }
 
   @Before
-  public void startLocatorWithObjectTraverserFunction() throws IOException {
-    Path jarPath = folderRule.getFolder().toPath().resolve("traverse-encapsulated-jdk-object.jar");
-    createJarWithClasses(jarPath, TraverseEncapsulatedJdkObject.class);
+  public void startLocatorAndDeployReflectionFunction() throws IOException {
+    Path jarPath = folderRule.getFolder().toPath().resolve("reflect-encapsulated-jdk-object.jar");
+    createJarWithClasses(jarPath, ReflectEncapsulatedJdkObject.class);
 
     int locatorPort = getRandomAvailableTCPPort();
     String locators = "localhost[" + locatorPort + "]";
 
     startServer = "start server --name=server --disable-default-server --locators=" + locators;
-    traverseEncapsulatedJdkObject = GfshScript
+    reflectEncapsulatedJdkObject = GfshScript
         .of("connect --locator=" + locators)
-        .and("execute function --id=" + TraverseEncapsulatedJdkObject.ID);
+        .and("execute function --id=" + ReflectEncapsulatedJdkObject.ID);
 
     GfshScript
         .of("start locator --port=" + locatorPort)
@@ -73,34 +74,36 @@ public class JdkEncapsulationTest {
         .execute(gfshRule);
   }
 
-  // If this test fails, it means the object we're trying to traverse has no inaccessible fields,
-  // and so is not useful for the other tests. If it fails, update TraverseInaccessibleJdkObject
-  // to use a type that actually has inaccessible fields.
+  /**
+   * If this test fails, it means the object we're trying to reflect has no inaccessible fields,
+   * and so is not useful for the other tests. If it fails, update
+   * {@link ReflectEncapsulatedJdkObject} to use a type that has inaccessible fields.
+   */
   @Test
   public void cannotMakeEncapsulatedFieldsAccessibleByDefault() {
     gfshRule.execute(startServer); // No JDK options
 
-    String traversalResult = traverseEncapsulatedJdkObject
+    String reflectionResult = reflectEncapsulatedJdkObject
         .expectExitCode(1) // Because we did not open any JDK packages.
         .execute(gfshRule)
         .getOutputText();
 
-    assertThat(traversalResult)
-        .as("result of traversing %s", TraverseEncapsulatedJdkObject.OBJECT.getClass())
+    assertThat(reflectionResult)
+        .as("result of reflecting %s", OBJECT.getClass())
         .contains("Exception: java.lang.reflect.InaccessibleObjectException");
   }
 
   @Test
   public void canMakeEncapsulatedFieldsAccessibleInExplicitlyOpenedPackages() {
-    String objectPackage = TraverseEncapsulatedJdkObject.OBJECT.getClass().getPackage().getName();
-    String objectModule = TraverseEncapsulatedJdkObject.MODULE;
+    String objectPackage = OBJECT.getClass().getPackage().getName();
+    String objectModule = ReflectEncapsulatedJdkObject.MODULE;
 
     String openThePackageOfTheEncapsulatedJdkObject =
         String.format(" --J=--add-opens=%s/%s=ALL-UNNAMED", objectModule, objectPackage);
 
     gfshRule.execute(startServer + openThePackageOfTheEncapsulatedJdkObject);
 
-    traverseEncapsulatedJdkObject
+    reflectEncapsulatedJdkObject
         .expectExitCode(0) // Because we opened the encapsulated object's package.
         .execute(gfshRule);
   }
@@ -117,7 +120,7 @@ public class JdkEncapsulationTest {
 
     gfshRule.execute(startServer + useArgumentFile);
 
-    traverseEncapsulatedJdkObject
+    reflectEncapsulatedJdkObject
         .expectExitCode(0) // Because the argument file opens all JDK packages.
         .execute(gfshRule);
   }
