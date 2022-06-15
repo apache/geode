@@ -115,7 +115,7 @@ public class InterruptsDUnitTest implements Serializable {
     createCache(vm1);
     createRegion(vm1);
 
-    AsyncInvocation async0 = vm0.invokeAsync(() -> {
+    AsyncInvocation<Void> async0 = vm0.invokeAsync(() -> {
       puttingThread = Thread.currentThread();
       Region<Object, Object> region = cacheRule.getCache().getRegion("region");
       long value = 0;
@@ -147,7 +147,7 @@ public class InterruptsDUnitTest implements Serializable {
     return vm.invoke(() -> {
       assertFalse(cacheRule.getCache().isClosed());
       Region<Object, Object> region = cacheRule.getCache().getRegion("region");
-        return region.get(0);
+      return region.get(0);
     });
   }
 
@@ -176,6 +176,6 @@ public class InterruptsDUnitTest implements Serializable {
   }
 
   public Properties getDistributedSystemProperties() {
-    return cacheRule.getSystem().getProperties();
+    return new Properties();
   }
 }

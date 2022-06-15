@@ -16,9 +16,9 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins;
 
+import org.apache.commons.lang3.StringUtils;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.internal.impldep.org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.gradle.jboss.modules.plugins.task.AggregateTestModuleDescriptorsTask;
 import org.apache.geode.gradle.jboss.modules.plugins.task.GenerateTestModuleDescriptorsTask;
