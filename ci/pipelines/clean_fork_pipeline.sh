@@ -15,6 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+## This script deletes a given Concoure pipeline, and deletes the associated Google Compute Images and Google Container
+## Images. Tokens like fork-name and pipeline-name are read from ./ci/pipelines/meta/meta.properties(.local). Branch-
+## name may be passed in on the CLI, or else the current branch is assumed.
+##
+## usage: ./clean_fork_pipeline.sh [branch-name]
+##
 
 set -eu
 SOURCE="${BASH_SOURCE[0]}"
@@ -55,7 +61,7 @@ if [[ -z "${GEODE_FORK}" ]]; then
 fi
 
 if [[ "${GEODE_FORK}" == "apache" ]]; then
-  echo "This utility is not for primary pipelines."
+  echo "This utility is not for primary (Apache) pipelines."
   exit 1
 fi
 
