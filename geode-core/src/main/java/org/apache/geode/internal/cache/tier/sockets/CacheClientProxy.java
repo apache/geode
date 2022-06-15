@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -727,7 +728,11 @@ public class CacheClientProxy implements ClientSession {
     if (_messageDispatcher == null) {
       return;
     }
-    _messageDispatcher.notifyReAuthentication();
+
+    // use another thread to do the notification so that the server operation won't be blocked
+    ExecutorService threadPool =
+        _cache.getDistributionManager().getExecutors().getWaitingThreadPool();
+    threadPool.submit(() -> _messageDispatcher.notifyReAuthentication());
   }
 
   /**
