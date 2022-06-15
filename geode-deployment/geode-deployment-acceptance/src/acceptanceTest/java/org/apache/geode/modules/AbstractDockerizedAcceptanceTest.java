@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,12 +33,15 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractDockerizedAcceptanceTest {
-  @ClassRule
-  public static GfshRule gfshRule = new GfshRule();
+  @Rule(order = 0)
+  public FolderRule folderRule = new FolderRule();
+  @Rule(order = 1)
+  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
 
