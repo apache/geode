@@ -58,7 +58,7 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryExistsException;

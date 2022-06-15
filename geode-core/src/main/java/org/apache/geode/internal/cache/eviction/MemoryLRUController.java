@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.Token;
@@ -45,7 +46,7 @@ public class MemoryLRUController extends SizeLRUController {
    *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
    *        <p>
-   *        For a region with {@link org.apache.geode.cache.DataPolicy#PARTITION}, it is overridden
+   *        For a region with {@link DataPolicy#PARTITION}, it is overridden
    *        by {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int) "
    *        local max memory "} specified for the
    *        {@link org.apache.geode.cache.PartitionAttributes}. It signifies the amount of memory

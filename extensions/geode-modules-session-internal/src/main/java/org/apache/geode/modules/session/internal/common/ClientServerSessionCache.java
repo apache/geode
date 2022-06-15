@@ -23,7 +23,7 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;

@@ -44,7 +44,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionEvent;

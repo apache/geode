@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;

@@ -27,7 +27,7 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheExistsException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;

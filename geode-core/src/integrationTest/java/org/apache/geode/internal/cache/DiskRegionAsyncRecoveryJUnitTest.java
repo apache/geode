@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
 
 public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {

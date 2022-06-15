@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheWriter;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheListenerAdapter;

@@ -17,6 +17,7 @@ package org.apache.geode.cache;
 
 import java.util.Optional;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.control.ResourceManager;

@@ -23,7 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import util.TestException;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;

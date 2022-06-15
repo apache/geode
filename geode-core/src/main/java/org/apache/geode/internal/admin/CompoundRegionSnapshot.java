@@ -23,6 +23,7 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 
 /**
  * Presents an amalgam snapshot of all the {@linkplain org.apache.geode.cache.Region regions} in a
@@ -222,7 +223,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
   }
 
   /**
-   * Returns an {@link java.util.Iterator} of {@link org.apache.geode.cache.DataPolicy}
+   * Returns an {@link java.util.Iterator} of {@link DataPolicy}
    */
   public Iterator getAllDataPolicies() {
     return allDataPolicies.iterator();

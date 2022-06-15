@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import java.util.Arrays;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;

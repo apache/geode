@@ -44,7 +44,7 @@ import org.mockito.quality.Strictness;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.EvictionAction;

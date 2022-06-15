@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;

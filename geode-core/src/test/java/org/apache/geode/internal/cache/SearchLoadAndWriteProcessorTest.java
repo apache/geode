@@ -29,7 +29,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;

@@ -59,7 +59,7 @@ import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;

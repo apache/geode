@@ -32,7 +32,7 @@ import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;

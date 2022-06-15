@@ -18,7 +18,7 @@ import java.io.File;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskWriteAttributesFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;

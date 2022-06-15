@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.CacheEvent;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.QueueManager;

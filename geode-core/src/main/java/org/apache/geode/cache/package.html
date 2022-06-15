@@ -196,22 +196,22 @@ may be stored in either the JVM's heap or on a disk drive.
 
 <a name="dataPolicy"><h3>Data Policy</h3></a><a href="#top">Back to Top</a>
 
-<p>A region's {@linkplain org.apache.geode.cache.DataPolicy
+<p>A region's {@linkplain org.apache.geode.cache.api.DataPolicy
 "data policy" attribute} determines if data is stored in the local cache.
-The {@linkplain org.apache.geode.cache.DataPolicy#NORMAL normal policy}
+The {@linkplain org.apache.geode.cache.api.DataPolicy#NORMAL normal policy}
 will store region data in the local cache.
-The {@linkplain org.apache.geode.cache.DataPolicy#EMPTY empty policy}
+The {@linkplain org.apache.geode.cache.api.DataPolicy#EMPTY empty policy}
 will never store region data in the local cache. They act as proxy regions that
 distribute write operations to others and receive events from others.
-The {@linkplain org.apache.geode.cache.DataPolicy#withReplication replication policies}
+The {@linkplain org.apache.geode.cache.api.DataPolicy#withReplication replication policies}
 may reduce the number of net searches that a caching application has to be perform,
 and can provide a backup mechanism. The replicated region initializes itself when
 it is created with the keys and value of the region as found in other caches.
-The {@linkplain org.apache.geode.cache.DataPolicy#REPLICATE replicate policy} simply stores the relicate data in memory and
-the {@linkplain org.apache.geode.cache.DataPolicy#PERSISTENT_REPLICATE persistent replicate policy} stores the data in memory and disk.
-The {@linkplain org.apache.geode.cache.DataPolicy#withPartitioning partition policies} are used for <a href="#partition">partitioned</a> regions.
-The {@linkplain org.apache.geode.cache.DataPolicy#PARTITION partition policy} simply stores the <a href="#partition">partitioned</a> data in memory and
-the {@linkplain org.apache.geode.cache.DataPolicy#PERSISTENT_PARTITION persistent partition policy} stores the <a href="#partition">partitioned</a> data in memory and disk.
+The {@linkplain org.apache.geode.cache.api.DataPolicy#REPLICATE replicate policy} simply stores the relicate data in memory and
+the {@linkplain org.apache.geode.cache.api.DataPolicy#PERSISTENT_REPLICATE persistent replicate policy} stores the data in memory and disk.
+The {@linkplain org.apache.geode.cache.api.DataPolicy#withPartitioning partition policies} are used for <a href="#partition">partitioned</a> regions.
+The {@linkplain org.apache.geode.cache.api.DataPolicy#PARTITION partition policy} simply stores the <a href="#partition">partitioned</a> data in memory and
+the {@linkplain org.apache.geode.cache.api.DataPolicy#PERSISTENT_PARTITION persistent partition policy} stores the <a href="#partition">partitioned</a> data in memory and disk.
 </p>
 
 <a name="storageOnDisk"><h3>Disk Storage</h3></a>

@@ -25,6 +25,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;

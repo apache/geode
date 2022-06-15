@@ -17,6 +17,7 @@ package org.apache.geode.cache;
 import java.io.File;
 import java.util.Set;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.compression.Compressor;
 

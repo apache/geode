@@ -31,7 +31,7 @@ import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;

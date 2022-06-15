@@ -29,7 +29,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAction;

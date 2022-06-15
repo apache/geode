@@ -42,7 +42,7 @@ import org.apache.geode.alerting.internal.spi.AlertingIOException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EvictionAction;

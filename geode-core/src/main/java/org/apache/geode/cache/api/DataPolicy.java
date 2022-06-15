@@ -13,7 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.cache;
+package org.apache.geode.cache.api;
+
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.RegionAttributes;
 
 /**
  * Enumerated type for region data policy. The data policy specifies how this local cache will
@@ -38,10 +42,7 @@ package org.apache.geode.cache;
  * persistence applies to both local scope and distributed scope.
  * </ol>
  *
- * @see AttributesFactory#setDataPolicy
  * @see RegionAttributes#getDataPolicy
- *
- * @since GemFire 5.0
  */
 public enum DataPolicy {
   /**
@@ -89,29 +90,13 @@ public enum DataPolicy {
   /**
    * In addition to <code>PARTITION</code> also causes data to be stored to disk. The region
    * initialization may use the data stored on disk.
-   *
-   * @since GemFire 6.5
    */
   PERSISTENT_PARTITION;
-
-  private static final long serialVersionUID = 2095573273889467233L;
 
   /**
    * The data policy used by default; it is {@link #NORMAL}.
    */
   public static final DataPolicy DEFAULT = NORMAL;
-
-  /**
-   * Used as ordinal to represent this DataPolicy
-   *
-   * @deprecated use {@link #ordinal()}
-   */
-  @Deprecated
-  public final byte ordinal;
-
-  DataPolicy() {
-    ordinal = (byte) super.ordinal();
-  }
 
   /**
    * Return the DataPolicy represented by specified ordinal
@@ -159,7 +144,6 @@ public enum DataPolicy {
    * @return true if this policy does persistence.
    * @see #PERSISTENT_PARTITION
    * @see #PERSISTENT_REPLICATE
-   * @since GemFire 6.5
    */
   public boolean withPersistence() {
     return this == PERSISTENT_PARTITION || this == PERSISTENT_REPLICATE;
@@ -171,7 +155,6 @@ public enum DataPolicy {
    * @return true if this policy does partitioning
    * @see #PARTITION
    * @see #PERSISTENT_PARTITION
-   * @since GemFire 6.5
    */
   public boolean withPartitioning() {
     return this == PARTITION || this == PERSISTENT_PARTITION;
@@ -182,101 +165,8 @@ public enum DataPolicy {
    *
    * @return true if this policy does preloaded.
    * @see #PRELOADED
-   * @since GemFire 6.5
    */
   public boolean withPreloaded() {
     return this == PRELOADED;
   }
-
-  /**
-   * Return true if this policy is {@link #EMPTY}.
-   *
-   * @return true if this policy is {@link #EMPTY}.
-   * @deprecated from version 6.5 forward please use withStorage()
-   */
-  @Deprecated
-  public boolean isEmpty() {
-    return this == EMPTY;
-  }
-
-  /**
-   * Return true if this policy is {@link #NORMAL}.
-   *
-   * @return true if this policy is {@link #NORMAL}.
-   * @deprecated from version 6.5 forward please use an identity comparison with {@link #NORMAL}
-   */
-  @Deprecated
-  public boolean isNormal() {
-    return this == NORMAL;
-  }
-
-  /**
-   * Return true if this policy is {@link #PRELOADED}.
-   *
-   * @return true if this policy is {@link #PRELOADED}
-   * @deprecated from version 6.5 forward please use {@link #withPreloaded()}
-   */
-  @Deprecated
-  public boolean isPreloaded() {
-    return this == PRELOADED;
-  }
-
-  /**
-   * Return true if this policy is the default.
-   *
-   * @return true if this policy is the default.
-   * @deprecated from version 6.5 forward please use an identity comparison with {@link #DEFAULT}
-   */
-  @Deprecated
-  public boolean isDefault() {
-    return this == DEFAULT;
-  }
-
-  /**
-   * Return true if this policy is {@link #REPLICATE}.
-   *
-   * @return true if this policy is {@link #REPLICATE}.
-   * @deprecated from version 6.5 forward please use withReplication()
-   */
-  @Deprecated
-  public boolean isReplicate() {
-    return this == REPLICATE;
-  }
-
-  /**
-   * Return true if this policy is {@link #PERSISTENT_REPLICATE}.
-   *
-   * @return true if this policy is {@link #PERSISTENT_REPLICATE}.
-   * @deprecated from version 6.5 forward please use withPersistence() and withReplication()
-   */
-  @Deprecated
-  public boolean isPersistentReplicate() {
-    return this == PERSISTENT_REPLICATE;
-  }
-
-  /**
-   * Return true if this policy is {@link #PARTITION}.
-   *
-   * @return true if this policy is {@link #PARTITION}
-   * @deprecated from version 6.5 forward please use withPartitioning()
-   */
-  @Deprecated
-  public boolean isPartition() {
-    return this == PARTITION;
-  }
-
-  /**
-   * @param s a String representation of a DataPolicy
-   * @return a DataPolicy
-   * @deprecated use {@link #valueOf(String)}
-   */
-  @Deprecated
-  public static DataPolicy fromString(final String s) {
-    try {
-      return valueOf(s);
-    } catch (NullPointerException | IllegalArgumentException e) {
-      return null;
-    }
-  }
-
 }

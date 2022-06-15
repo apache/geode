@@ -27,6 +27,7 @@ import java.util.TreeMap;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;

@@ -26,6 +26,7 @@ import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.server.CacheServer;
@@ -660,7 +661,7 @@ public class ClientCacheFactory {
   /**
    * By default setPRSingleHopEnabled is <code>true</code> in which case the client is aware of the
    * location of partitions on servers hosting {@link Region regions} with
-   * {@link org.apache.geode.cache.DataPolicy#PARTITION}. Using this information, the client routes
+   * {@link DataPolicy#PARTITION}. Using this information, the client routes
    * the client cache operations directly to the server which is hosting the required partition for
    * the cache operation using a single network hop. This mode works best when
    * {@link #setPoolMaxConnections(int)} is set to <code>-1</code> which is the default. This mode
@@ -670,7 +671,7 @@ public class ClientCacheFactory {
    * on servers to go to the required partition for that cache operation. The client will use fewer
    * network connections to the servers.
    * <p>
-   * Caution: for {@link org.apache.geode.cache.DataPolicy#PARTITION partition} regions with
+   * Caution: for {@link DataPolicy#PARTITION partition} regions with
    * {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)
    * local-max-memory} equal to zero, no cache operations mentioned above will be routed to those
    * servers as they do not host any partitions.

@@ -21,7 +21,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationInProgressException;
 

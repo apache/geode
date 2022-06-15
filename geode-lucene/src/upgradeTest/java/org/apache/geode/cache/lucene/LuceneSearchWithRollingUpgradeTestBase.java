@@ -692,7 +692,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
       File diskStore) throws Exception {
     Object store = cache.getClass().getMethod("findDiskStore", String.class).invoke(cache, "store");
     Class dataPolicyObject = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.cache.DataPolicy");
+        .loadClass("org.apache.geode.cache.api.DataPolicy");
     Object dataPolicy = dataPolicyObject.getField("PERSISTENT_PARTITION").get(null);
     if (store == null) {
       Object dsf = cache.getClass().getMethod("createDiskStoreFactory").invoke(cache);

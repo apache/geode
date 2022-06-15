@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.ServerConnectivityException;

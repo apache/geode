@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.domain;
 
-import static org.apache.geode.cache.DataPolicy.NORMAL;
+import static org.apache.geode.cache.api.DataPolicy.NORMAL;
 import static org.apache.geode.cache.Scope.DISTRIBUTED_ACK;
 import static org.apache.geode.cache.Scope.LOCAL;
 import static org.apache.geode.management.internal.cli.domain.RegionDescription.findCommon;

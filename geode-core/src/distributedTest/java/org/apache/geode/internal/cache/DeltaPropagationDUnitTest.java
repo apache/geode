@@ -66,7 +66,7 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EvictionAttributes;

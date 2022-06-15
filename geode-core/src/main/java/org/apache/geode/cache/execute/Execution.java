@@ -17,7 +17,7 @@ package org.apache.geode.cache.execute;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.LowMemoryException;
 
 /**

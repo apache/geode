@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.cache.DataPolicy.NORMAL;
+import static org.apache.geode.cache.api.DataPolicy.NORMAL;
 import static org.apache.geode.cache.InterestPolicy.ALL;
 import static org.apache.geode.cache.Operation.CREATE;
 import static org.apache.geode.cache.Operation.DESTROY;
@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.Region;

@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.Properties;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.LeaseExpiredException;

@@ -16,6 +16,8 @@
 package org.apache.geode.cache;
 
 
+import org.apache.geode.cache.api.DataPolicy;
+
 /**
  * Supports modification of certain region attributes after the region has been created. It is
  * recommended that the attributes be completely initialized using an {@link AttributesFactory}

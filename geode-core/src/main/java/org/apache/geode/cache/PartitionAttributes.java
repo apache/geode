@@ -18,6 +18,7 @@ package org.apache.geode.cache;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.partition.PartitionListener;
@@ -38,7 +39,7 @@ import org.apache.geode.cache.partition.PartitionListener;
  * mutator methods e.g.
  * {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)}
  *
- * Also see {@link org.apache.geode.cache.DataPolicy#PARTITION}.
+ * Also see {@link DataPolicy#PARTITION}.
  *
  * @since GemFire 5.0
  *

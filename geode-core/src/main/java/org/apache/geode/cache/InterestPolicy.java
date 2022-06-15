@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache;
 
+import org.apache.geode.cache.api.DataPolicy;
+
 /**
  * Enumerated type for region subscription interest policy. The interest policy specifies what data
  * a subscriber is interested in having in its region.

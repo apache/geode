@@ -65,7 +65,7 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.CustomExpiry;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;

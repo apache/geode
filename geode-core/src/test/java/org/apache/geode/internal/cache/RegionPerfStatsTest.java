@@ -43,7 +43,7 @@ import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class RegionPerfStatsTest {

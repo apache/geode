@@ -35,7 +35,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.ClientSession;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.EvictionAction;

@@ -24,7 +24,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;

@@ -22,7 +22,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;

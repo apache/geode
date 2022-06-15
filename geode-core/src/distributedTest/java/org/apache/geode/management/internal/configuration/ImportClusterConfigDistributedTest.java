@@ -15,8 +15,8 @@
 
 package org.apache.geode.management.internal.configuration;
 
-import static org.apache.geode.cache.DataPolicy.PARTITION;
-import static org.apache.geode.cache.DataPolicy.REPLICATE;
+import static org.apache.geode.cache.api.DataPolicy.PARTITION;
+import static org.apache.geode.cache.api.DataPolicy.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;

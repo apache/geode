@@ -20,7 +20,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;

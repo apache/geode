@@ -16,7 +16,7 @@ package org.apache.geode.cache30;
 
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;

@@ -22,7 +22,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DuplicatePrimaryPartitionException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.FixedPartitionAttributes;

@@ -50,7 +50,7 @@ import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.CommitIncompleteException;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.MirrorType;

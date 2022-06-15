@@ -16,7 +16,7 @@ package org.apache.geode.cache30;
 
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.currentTimeMillis;
-import static org.apache.geode.cache.DataPolicy.REPLICATE;
+import static org.apache.geode.cache.api.DataPolicy.REPLICATE;
 import static org.apache.geode.cache.Scope.DISTRIBUTED_NO_ACK;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_DISTRIBUTION_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUEUE_SIZE;
@@ -43,7 +43,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;

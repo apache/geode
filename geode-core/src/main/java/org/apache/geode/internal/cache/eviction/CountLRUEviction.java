@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.internal.cache.InternalRegion;

@@ -44,7 +44,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;

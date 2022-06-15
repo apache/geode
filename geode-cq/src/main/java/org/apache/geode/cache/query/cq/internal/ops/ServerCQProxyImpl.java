@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.ServerProxy;

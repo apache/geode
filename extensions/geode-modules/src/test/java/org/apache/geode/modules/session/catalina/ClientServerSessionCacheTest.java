@@ -44,7 +44,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;

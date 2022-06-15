@@ -21,7 +21,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.internal.RegisterInterestOp.RegisterInterestOpImpl;
 import org.apache.geode.distributed.internal.ServerLocation;

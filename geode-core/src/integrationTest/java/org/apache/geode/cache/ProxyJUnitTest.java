@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

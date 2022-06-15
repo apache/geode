@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.CqStateImpl;

@@ -44,7 +44,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import org.apache.geode.Statistics;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;

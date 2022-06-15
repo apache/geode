@@ -19,7 +19,7 @@ import java.util.UUID;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 
 /**
  * A pattern describing a single member's a set of persistent files for a region. When a member has

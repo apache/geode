@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.util;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.PartitionAttributesFactory;

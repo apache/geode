@@ -17,7 +17,7 @@ package org.apache.geode.cache.query.cq.internal.ops;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;

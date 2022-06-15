@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.api.DataPolicy;
 
 
 /**

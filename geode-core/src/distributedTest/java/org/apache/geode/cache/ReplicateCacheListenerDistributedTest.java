@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.io.Serializable;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
