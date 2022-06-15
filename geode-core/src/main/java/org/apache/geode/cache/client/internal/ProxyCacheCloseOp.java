@@ -77,7 +77,7 @@ public class ProxyCacheCloseOp {
     @Override
     protected Object processResponse(final @NotNull Message msg) throws Exception {
       Part part = msg.getPart(0);
-      final int msgType = msg.getMessageType();
+      final MessageType msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {
         return part.getObject();
       } else if (msgType == MessageType.EXCEPTION) {
@@ -88,12 +88,12 @@ public class ProxyCacheCloseOp {
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
+        throw new InternalGemFireError("Unexpected message type " + msgType);
       }
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.REQUESTDATAERROR;
     }
 

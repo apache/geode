@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.MessageType.REGISTER_INTEREST;
+import static org.apache.geode.internal.cache.tier.MessageType.REGISTER_INTEREST_DATA_ERROR;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.ArrayList;
@@ -130,7 +132,7 @@ public class RegisterInterestOp {
         final boolean isDurable,
         final boolean receiveUpdatesAsInvalidates,
         final @NotNull DataPolicy regionDataPolicy) {
-      super(MessageType.REGISTER_INTEREST, 7);
+      super(REGISTER_INTEREST, 7);
       this.region = region;
       getMessage().addStringPart(region, true);
       getMessage().addIntPart(interestType.ordinal());
@@ -155,7 +157,7 @@ public class RegisterInterestOp {
      *
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    protected RegisterInterestOpImpl(String region, int msgType, int numParts) {
+    protected RegisterInterestOpImpl(String region, MessageType msgType, int numParts) {
       super(msgType, numParts);
       this.region = region;
     }
@@ -175,7 +177,7 @@ public class RegisterInterestOp {
       ChunkedMessage chunkedMessage = (ChunkedMessage) m;
       chunkedMessage.readHeader();
       switch (chunkedMessage.getMessageType()) {
-        case MessageType.RESPONSE_FROM_PRIMARY: {
+        case RESPONSE_FROM_PRIMARY: {
           LocalRegion localRegion = null;
 
           try {
@@ -233,11 +235,11 @@ public class RegisterInterestOp {
           }
           return serverKeys;
         }
-        case MessageType.RESPONSE_FROM_SECONDARY:
+        case RESPONSE_FROM_SECONDARY:
           // Read the chunk
           chunkedMessage.receiveChunk();
           return null;
-        case MessageType.EXCEPTION:
+        case EXCEPTION:
           // Read the chunk
           chunkedMessage.receiveChunk();
           // Deserialize the result
@@ -248,7 +250,7 @@ public class RegisterInterestOp {
           String s = this + ": While performing a remote " + getOpName();
           throw new ServerOperationException(s, (Throwable) obj);
         }
-        case MessageType.REGISTER_INTEREST_DATA_ERROR:
+        case REGISTER_INTEREST_DATA_ERROR:
           // Read the chunk
           chunkedMessage.receiveChunk();
 
@@ -266,8 +268,8 @@ public class RegisterInterestOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
-      return msgType == MessageType.REGISTER_INTEREST_DATA_ERROR;
+    protected boolean isErrorResponse(MessageType msgType) {
+      return msgType == REGISTER_INTEREST_DATA_ERROR;
     }
 
     @Override

@@ -117,7 +117,7 @@ public class ServerConnection implements Runnable {
   public static boolean allowInternalMessagesWithoutCredentials =
       !Boolean.getBoolean(DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME);
 
-  private Map<Integer, Command> commands;
+  private Map<MessageType, Command> commands;
 
   protected final SecurityService securityService;
 
@@ -477,7 +477,7 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  protected Map<Integer, Command> getCommands() {
+  protected Map<MessageType, Command> getCommands() {
     return commands;
   }
 
@@ -839,7 +839,7 @@ public class ServerConnection implements Runnable {
         if (!processMessages || crHelper.isShutdown()) {
           if (logger.isDebugEnabled()) {
             logger.debug("{} ignoring message of type {} from client {} due to shutdown.",
-                getName(), MessageType.getString(message.getMessageType()), proxyId);
+                getName(), message.getMessageType(), proxyId);
           }
           return;
         }
@@ -858,7 +858,7 @@ public class ServerConnection implements Runnable {
 
         if (logger.isTraceEnabled()) {
           logger.trace("{} received {} with txid {}", getName(),
-              MessageType.getString(message.getMessageType()), message.getTransactionId());
+              message.getMessageType(), message.getTransactionId());
           if (message.getTransactionId() < -1) {
             message.setTransactionId(-1);
           }
@@ -910,7 +910,7 @@ public class ServerConnection implements Runnable {
     }
 
     long uniqueId = getUniqueId();
-    String messageType = MessageType.getString(requestMessage.getMessageType());
+    String messageType = requestMessage.getMessageType().toString();
     if (uniqueId == 0 || uniqueId == -1) {
       logger.debug("No unique ID yet. {}, {}", messageType, getName());
       return null;
@@ -1105,7 +1105,7 @@ public class ServerConnection implements Runnable {
     commands = CommandInitializer.getDefaultInstance().get(clientVersion);
   }
 
-  private Command getCommand(Integer messageType) {
+  private Command getCommand(MessageType messageType) {
     return commands.get(messageType);
   }
 
@@ -1275,13 +1275,13 @@ public class ServerConnection implements Runnable {
     if (AcceptorImpl.isAuthenticationRequired() && logger.isDebugEnabled()) {
       logger.debug(
           "ServerConnection.updateAndGetSecurityPart() not adding security part for message type {}",
-          MessageType.getString(requestMessage.messageType));
+          requestMessage.messageType);
     }
     return null;
   }
 
   public boolean isInternalMessage(Message message, boolean allowOldInternalMessages) {
-    int messageType = message.getMessageType();
+    final MessageType messageType = message.getMessageType();
     boolean isInternalMessage = messageType == MessageType.PING
         || messageType == MessageType.REQUEST_EVENT_VALUE || messageType == MessageType.MAKE_PRIMARY
         || messageType == MessageType.REMOVE_USER_AUTH || messageType == MessageType.CLIENT_READY
@@ -1295,8 +1295,8 @@ public class ServerConnection implements Runnable {
     // we allow older clients to not send credentials for a handful of messages if and only if a
     // system property is set. This allows a rolling upgrade to be performed.
     if (!isInternalMessage && allowOldInternalMessages) {
-      isInternalMessage = messageType == MessageType.GETCQSTATS_MSG_TYPE
-          || messageType == MessageType.MONITORCQ_MSG_TYPE
+      isInternalMessage = messageType == MessageType.GETCQSTATS
+          || messageType == MessageType.MONITORCQ
           || messageType == MessageType.REGISTER_DATASERIALIZERS
           || messageType == MessageType.REGISTER_INSTANTIATORS
           || messageType == MessageType.ADD_PDX_TYPE

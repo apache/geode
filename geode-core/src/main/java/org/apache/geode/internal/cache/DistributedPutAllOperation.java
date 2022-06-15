@@ -820,7 +820,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
   @Override
   void doRemoveDestroyTokensFromCqResultKeys(FilterInfo filterInfo, ServerCQ cq) {
-    for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
+    for (Map.Entry<Long, MessageType> e : filterInfo.getCQs().entrySet()) {
       Long cqID = e.getKey();
       // For the CQs satisfying the event with destroy CQEvent, remove
       // the entry from CQ cache.

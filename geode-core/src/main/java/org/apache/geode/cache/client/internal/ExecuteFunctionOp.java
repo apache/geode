@@ -16,6 +16,8 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_FUNCTION;
+import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_FUNCTION_ERROR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -195,7 +197,7 @@ public class ExecuteFunctionOp {
         byte isReexecute,
         String[] groups, boolean allMembers, boolean ignoreFailedMembers,
         final int timeoutMs) {
-      super(MessageType.EXECUTE_FUNCTION, MSG_PARTS, timeoutMs);
+      super(EXECUTE_FUNCTION, MSG_PARTS, timeoutMs);
       byte fnState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
           function.optimizeForWrite());
 
@@ -227,7 +229,7 @@ public class ExecuteFunctionOp {
         MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
         boolean isFnSerializationReqd, boolean isHA, boolean optimizeForWrite, byte isReexecute,
         String[] groups, boolean allMembers, boolean ignoreFailedMembers, final int timeoutMs) {
-      super(MessageType.EXECUTE_FUNCTION, MSG_PARTS, timeoutMs);
+      super(EXECUTE_FUNCTION, MSG_PARTS, timeoutMs);
       byte fnState = AbstractExecution.getFunctionState(isHA, hasResult == (byte) 1,
           optimizeForWrite);
 
@@ -251,7 +253,7 @@ public class ExecuteFunctionOp {
     }
 
     ExecuteFunctionOpImpl(ExecuteFunctionOpImpl op, byte isReexecute) {
-      super(MessageType.EXECUTE_FUNCTION, MSG_PARTS, op.getTimeoutMs());
+      super(EXECUTE_FUNCTION, MSG_PARTS, op.getTimeoutMs());
       resultCollector = op.resultCollector;
       function = op.function;
       functionId = op.functionId;
@@ -318,7 +320,7 @@ public class ExecuteFunctionOp {
         // Read the header which describes the type of message following
         executeFunctionResponseMsg.readHeader();
         switch (executeFunctionResponseMsg.getMessageType()) {
-          case MessageType.EXECUTE_FUNCTION_RESULT:
+          case EXECUTE_FUNCTION_RESULT:
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "ExecuteFunctionOpImpl#processResponse: received message of type EXECUTE_FUNCTION_RESULT.");
@@ -367,7 +369,7 @@ public class ExecuteFunctionOp {
                   "ExecuteFunctionOpImpl#processResponse: received all the results from server successfully.");
             }
             return null;
-          case MessageType.EXCEPTION:
+          case EXCEPTION:
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "ExecuteFunctionOpImpl#processResponse: received message of type EXCEPTION");
@@ -383,7 +385,7 @@ public class ExecuteFunctionOp {
               throw new ServerOperationException(
                   ": While performing a remote execute Function" + t.getMessage(), t);
             }
-          case MessageType.EXECUTE_FUNCTION_ERROR:
+          case EXECUTE_FUNCTION_ERROR:
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "ExecuteFunctionOpImpl#processResponse: received message of type EXECUTE_FUNCTION_ERROR");
@@ -402,8 +404,8 @@ public class ExecuteFunctionOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
-      return msgType == MessageType.EXECUTE_FUNCTION_ERROR;
+    protected boolean isErrorResponse(MessageType msgType) {
+      return msgType == EXECUTE_FUNCTION_ERROR;
     }
 
     @Override

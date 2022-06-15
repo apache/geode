@@ -348,7 +348,7 @@ public class PutOp {
      * @since GemFire 6.1
      */
     private void processAck(Message msg, Connection con) throws Exception {
-      final int msgType = msg.getMessageType();
+      final MessageType msgType = msg.getMessageType();
       // Update delta stats
       if (deltaSent && region != null) {
         region.getCachePerfStats().incDeltasSent();
@@ -376,13 +376,13 @@ public class PutOp {
           throw new ServerOperationException(part.getString());
         } else {
           throw new InternalGemFireError(
-              "Unexpected message type " + MessageType.getString(msgType));
+              "Unexpected message type " + msgType);
         }
       }
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.PUT_DATA_ERROR;
     }
 

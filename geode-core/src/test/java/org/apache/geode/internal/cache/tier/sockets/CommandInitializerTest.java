@@ -102,7 +102,7 @@ public class CommandInitializerTest {
   @Test
   public void initializeGeode18Commands() {
     @SuppressWarnings("unchecked")
-    final Map<Integer, Command> commands = mock(Map.class);
+    final Map<MessageType, Command> commands = mock(Map.class);
 
     CommandInitializer.initializeGeode18Commands(commands);
 
@@ -115,7 +115,7 @@ public class CommandInitializerTest {
   @Test
   public void initializeGfe90Commands() {
     @SuppressWarnings("unchecked")
-    final Map<Integer, Command> commands = mock(Map.class);
+    final Map<MessageType, Command> commands = mock(Map.class);
 
     CommandInitializer.initializeGfe90Commands(commands);
 
@@ -129,7 +129,7 @@ public class CommandInitializerTest {
   @Test
   public void initializeGfe82Commands() {
     @SuppressWarnings("unchecked")
-    final Map<Integer, Command> commands = mock(Map.class);
+    final Map<MessageType, Command> commands = mock(Map.class);
 
     CommandInitializer.initializeGfe81Commands(commands);
 
@@ -207,9 +207,9 @@ public class CommandInitializerTest {
   @Test
   public void commandMapUnmodifiable() {
     final CommandInitializer commandInitializer = new CommandInitializer();
-    final Map<Integer, Command> commands =
+    final Map<MessageType, Command> commands =
         commandInitializer.get(KnownVersion.CURRENT.getClientServerProtocolVersion());
-    assertThatThrownBy(() -> commands.put(1, Put70.getCommand()))
+    assertThatThrownBy(() -> commands.put(MessageType.RESPONSE, Put70.getCommand()))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
@@ -220,11 +220,11 @@ public class CommandInitializerTest {
     newCommandMap.put(KnownVersion.CURRENT.getClientServerProtocolVersion(), command);
 
     final CommandInitializer commandInitializer = new CommandInitializer();
-    final Map<Integer, Command> commands =
+    final Map<MessageType, Command> commands =
         commandInitializer.get(KnownVersion.CURRENT.getClientServerProtocolVersion());
-    assertThat(commands).doesNotContainKeys(-2);
-    commandInitializer.register(-2, newCommandMap);
-    assertThat(commands).containsEntry(-2, command);
+    assertThat(commands).doesNotContainKeys(MessageType.RESPONSE);
+    commandInitializer.register(MessageType.RESPONSE, newCommandMap);
+    assertThat(commands).containsEntry(MessageType.RESPONSE, command);
   }
 
 }

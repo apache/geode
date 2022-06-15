@@ -29,6 +29,7 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
@@ -126,7 +127,7 @@ class ClientRegistrationMetadata {
     if (clientVersion == null) {
       message = KnownVersion.unsupportedVersionMessage(clientVersionOrdinal);
     } else {
-      final Map<Integer, Command> commands =
+      final Map<MessageType, Command> commands =
           CommandInitializer.getDefaultInstance().get(clientVersion);
       if (commands == null) {
         message = "No commands registered for version " + clientVersion + ".";

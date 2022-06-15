@@ -29,6 +29,7 @@ import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -79,7 +80,7 @@ class ServerSideHandshakeFactory {
       final KnownVersion clientVersion = Versioning.getKnownVersionOrDefault(
           Versioning.getVersion(clientVersionOrdinal), KnownVersion.TEST_VERSION);
       if (clientVersion != KnownVersion.TEST_VERSION) {
-        final Map<Integer, Command> commands =
+        final Map<MessageType, Command> commands =
             CommandInitializer.getDefaultInstance().get(clientVersion);
         if (commands != null) {
           return clientVersion;

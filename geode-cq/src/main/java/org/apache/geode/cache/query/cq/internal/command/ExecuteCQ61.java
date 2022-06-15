@@ -96,7 +96,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
 
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received {} request from {} CqName: {} queryString: {}",
-          serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
+          serverConnection.getName(), clientMessage.getMessageType(),
           serverConnection.getSocketString(), cqName, cqQueryString);
     }
 
@@ -108,7 +108,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
         // This should have been taken care at the client.
         String err =
             "Server notifyBySubscription mode is set to false. CQ execution is not supported in this mode.";
-        sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(),
+        sendCqResponse(MessageType.CQDATAERROR, err, clientMessage.getTransactionId(),
             null, serverConnection);
         return;
       }
@@ -171,7 +171,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
     }
 
     final boolean sendResults =
-        clientMessage.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE;
+        clientMessage.getMessageType() == MessageType.EXECUTECQ_WITH_IR;
 
     // Execute the query only if it is execute with initial results or
     // if it is a non PR query with execute query and maintain keys flags set

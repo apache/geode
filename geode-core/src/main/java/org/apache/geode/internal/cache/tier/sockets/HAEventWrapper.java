@@ -28,6 +28,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.ClientCqConcurrentMap;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpHashMap;
@@ -330,16 +331,17 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                         "The value of a ConcurrentHashMap is not allowed to be null.");
                   } else if (cqNamesSize == 1) {
                     String cqNamesKey = DataSerializer.readObject(in);
-                    Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
-                    value = new CqNameToOpSingleEntry(cqNamesKey, cqNamesValue);
+                    Integer cqNamesValue = DataSerializer.readObject(in);
+                    value =
+                        new CqNameToOpSingleEntry(cqNamesKey, MessageType.valueOf(cqNamesValue));
                   } else if (cqNamesSize == 0) {
-                    value = new CqNameToOpSingleEntry(null, 0);
+                    value = new CqNameToOpSingleEntry();
                   } else {
                     value = new CqNameToOpHashMap(cqNamesSize);
                     for (int j = 0; j < cqNamesSize; j++) {
                       String cqNamesKey = DataSerializer.readObject(in);
-                      Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
-                      value.add(cqNamesKey, cqNamesValue);
+                      Integer cqNamesValue = DataSerializer.readObject(in);
+                      value.add(cqNamesKey, MessageType.valueOf(cqNamesValue));
                     }
                   }
                 } else if (typeByte == DSCODE.NULL.toByte()) {

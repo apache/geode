@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 
@@ -35,9 +36,9 @@ public class FilterInfoTest {
   @Test
   public void validateSerialization() throws IOException, ClassNotFoundException {
     FilterInfo serialized = new FilterInfo();
-    HashMap<Long, Integer> cqs = new HashMap<>();
-    cqs.put(1L, 1);
-    cqs.put(2L, 2);
+    HashMap<Long, MessageType> cqs = new HashMap<>();
+    cqs.put(1L, MessageType.RESPONSE);
+    cqs.put(2L, MessageType.EXCEPTION);
     serialized.setCQs(cqs);
     Set<Long> clients = new HashSet<>();
     clients.add(1L);

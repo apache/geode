@@ -348,7 +348,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     }
   }
 
-  protected static void writeFunctionResponseException(Message origMsg, int messageType,
+  protected static void writeFunctionResponseException(Message origMsg, MessageType messageType,
       String message, ServerConnection serverConnection, Throwable e) throws IOException {
     ChunkedMessage functionResponseMsg = serverConnection.getFunctionResponseMessage();
     ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();

@@ -46,20 +46,20 @@ public class CqServiceFactoryImplTest {
 
     CommandRegistry commandRegistry = new CommandInitializer();
 
-    final Integer[] messageTypes = {
-        MessageType.EXECUTECQ_MSG_TYPE, MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
-        MessageType.GETCQSTATS_MSG_TYPE, MessageType.MONITORCQ_MSG_TYPE,
-        MessageType.STOPCQ_MSG_TYPE, MessageType.CLOSECQ_MSG_TYPE,
-        MessageType.GETDURABLECQS_MSG_TYPE};
+    final MessageType[] messageTypes = {
+        MessageType.EXECUTECQ, MessageType.EXECUTECQ_WITH_IR,
+        MessageType.GETCQSTATS, MessageType.MONITORCQ,
+        MessageType.STOPCQ, MessageType.CLOSECQ,
+        MessageType.GETDURABLECQS};
 
-    final Set<Integer> initialKeys = commandRegistry.get(KnownVersion.OLDEST).keySet();
+    final Set<MessageType> initialKeys = commandRegistry.get(KnownVersion.OLDEST).keySet();
     assertThat(initialKeys).doesNotContain(messageTypes);
 
     final CqServiceFactoryImpl cqServiceFactory = new CqServiceFactoryImpl();
     cqServiceFactory.initialize();
     cqServiceFactory.create(internalCache, commandRegistry);
 
-    final Set<Integer> expectedKeys = new HashSet<>(initialKeys);
+    final Set<MessageType> expectedKeys = new HashSet<>(initialKeys);
     expectedKeys.addAll(asList(messageTypes));
     assertThat(commandRegistry.get(KnownVersion.OLDEST)).containsOnlyKeys(expectedKeys);
   }

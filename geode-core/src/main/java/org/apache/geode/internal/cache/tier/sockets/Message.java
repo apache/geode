@@ -27,6 +27,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Immutable;
@@ -81,7 +82,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class Message {
 
   // Tentative workaround to avoid OOM stated in #46754.
-  public static final ThreadLocal<Integer> MESSAGE_TYPE = new ThreadLocal<>();
+  public static final ThreadLocal<MessageType> MESSAGE_TYPE = new ThreadLocal<>();
 
   public static final String MAX_MESSAGE_SIZE_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + "client.max-message-size";
@@ -141,12 +142,12 @@ public class Message {
   private static final int maxMessageSize =
       Integer.getInteger(MAX_MESSAGE_SIZE_PROPERTY, DEFAULT_MAX_MESSAGE_SIZE);
 
-  protected int messageType;
+  protected MessageType messageType;
   private int payloadLength = 0;
-  int numberOfParts = 0;
+  int numberOfParts;
   protected int transactionId = TXManagerImpl.NOTX;
   int currentPart = 0;
-  private Part[] partsList = null;
+  private Part[] partsList;
   private ByteBuffer cachedCommBuffer;
   protected Socket socket = null;
   private SocketChannel socketChannel = null;
@@ -193,13 +194,9 @@ public class Message {
     return (byte[]) securePart.getObject();
   }
 
-  public void setMessageType(int msgType) {
+  public void setMessageType(final @NotNull MessageType messageType) {
     messageModified = true;
-    if (!MessageType.validate(msgType)) {
-      throw new IllegalArgumentException(
-          "Invalid MessageType");
-    }
-    messageType = msgType;
+    this.messageType = messageType;
   }
 
   public void setVersion(KnownVersion clientVersion) {
@@ -444,7 +441,7 @@ public class Message {
     currentPart++;
   }
 
-  public int getMessageType() {
+  public MessageType getMessageType() {
     return messageType;
   }
 
@@ -530,7 +527,7 @@ public class Message {
     if (isRetry) {
       flagsByte |= MESSAGE_IS_RETRY;
     }
-    getCommBuffer().putInt(messageType).putInt(msgLen).putInt(numberOfParts)
+    getCommBuffer().putInt(messageType.id).putInt(msgLen).putInt(numberOfParts)
         .putInt(transactionId).put(flagsByte);
   }
 
@@ -781,7 +778,7 @@ public class Message {
     isRetry = (bits & MESSAGE_IS_RETRY) != 0;
     bits &= MESSAGE_IS_RETRY_MASK;
     flags = bits;
-    messageType = type;
+    messageType = MessageType.valueOf(type);
 
     readPayloadFields(numParts, len);
 
@@ -853,15 +850,15 @@ public class Message {
               len, numParts));
     }
 
-    Integer msgType = MESSAGE_TYPE.get();
-    if (msgType != null && msgType == MessageType.PING) {
+    MessageType msgType = MESSAGE_TYPE.get();
+    if (msgType == MessageType.PING) {
       // set it to null right away.
       MESSAGE_TYPE.set(null);
       // Some number which will not throw OOM but still be acceptable for a ping operation.
       int pingParts = 10;
       if (numParts > pingParts) {
         throw new IOException("Part length ( " + numParts + " ) is  inconsistent for "
-            + MessageType.getString(msgType) + " operation.");
+            + msgType + " operation.");
       }
     }
 
@@ -1049,7 +1046,7 @@ public class Message {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("type=").append(MessageType.getString(messageType));
+    sb.append("type=").append(messageType);
     sb.append("; payloadLength=").append(payloadLength);
     sb.append("; numberOfParts=").append(numberOfParts);
     sb.append("; hasSecurePart=").append(isSecureMode());

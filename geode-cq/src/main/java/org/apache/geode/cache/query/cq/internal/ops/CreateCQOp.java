@@ -89,7 +89,7 @@ public class CreateCQOp {
     public CreateCQOpImpl(final @NotNull String cqName, final @NotNull String queryStr,
         final int cqState, final boolean isDurable,
         final @NotNull DataPolicy regionDataPolicy) {
-      super(MessageType.EXECUTECQ_MSG_TYPE, 5);
+      super(MessageType.EXECUTECQ, 5);
       getMessage().addStringPart(cqName);
       getMessage().addStringPart(queryStr);
       getMessage().addIntPart(cqState);
@@ -109,7 +109,7 @@ public class CreateCQOp {
     protected Object processResponse(final @NotNull Message m) throws Exception {
       ChunkedMessage msg = (ChunkedMessage) m;
       msg.readHeader();
-      int msgType = msg.getMessageType();
+      MessageType msgType = msg.getMessageType();
       msg.receiveChunk();
       if (msgType == MessageType.REPLY) {
         return Boolean.TRUE;
@@ -132,7 +132,7 @@ public class CreateCQOp {
           throw new ServerOperationException(errorMessage);
         } else {
           throw new InternalGemFireError(
-              "Unexpected message type " + MessageType.getString(msgType));
+              "Unexpected message type " + msgType);
         }
       }
     }
@@ -142,7 +142,7 @@ public class CreateCQOp {
      *
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    protected CreateCQOpImpl(int msgType, int numParts) {
+    protected CreateCQOpImpl(MessageType msgType, int numParts) {
       super(msgType, numParts);
     }
 
@@ -151,8 +151,8 @@ public class CreateCQOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
-      return msgType == MessageType.CQDATAERROR_MSG_TYPE
+    protected boolean isErrorResponse(MessageType msgType) {
+      return msgType == MessageType.CQDATAERROR
           || msgType == MessageType.CQ_EXCEPTION_TYPE;
     }
 

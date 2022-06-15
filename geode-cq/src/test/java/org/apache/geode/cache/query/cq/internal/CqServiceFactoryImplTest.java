@@ -54,19 +54,19 @@ public class CqServiceFactoryImplTest {
     cqServiceFactory.initialize();
     cqServiceFactory.create(internalCache, commandRegistry);
 
-    verify(commandRegistry).register(MessageType.EXECUTECQ_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.EXECUTECQ,
         singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    verify(commandRegistry).register(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.EXECUTECQ_WITH_IR,
         singletonMap(KnownVersion.OLDEST, ExecuteCQ61.getCommand()));
-    verify(commandRegistry).register(MessageType.GETCQSTATS_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.GETCQSTATS,
         singletonMap(KnownVersion.OLDEST, GetCQStats.getCommand()));
-    verify(commandRegistry).register(MessageType.MONITORCQ_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.MONITORCQ,
         singletonMap(KnownVersion.OLDEST, MonitorCQ.getCommand()));
-    verify(commandRegistry).register(MessageType.STOPCQ_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.STOPCQ,
         singletonMap(KnownVersion.OLDEST, StopCQ.getCommand()));
-    verify(commandRegistry).register(MessageType.CLOSECQ_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.CLOSECQ,
         singletonMap(KnownVersion.OLDEST, CloseCQ.getCommand()));
-    verify(commandRegistry).register(MessageType.GETDURABLECQS_MSG_TYPE,
+    verify(commandRegistry).register(MessageType.GETDURABLECQS,
         singletonMap(KnownVersion.OLDEST, GetDurableCQs.getCommand()));
 
     verifyNoMoreInteractions(commandRegistry);

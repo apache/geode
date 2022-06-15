@@ -25,7 +25,6 @@ import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * TXSynchronizationOp sends JTA beforeCompletion and afterCompletion messages to the server pool.
@@ -76,20 +75,20 @@ public class TXSynchronizationOp {
 
     @Override
     protected void processAck(Message msg, String opName) throws Exception {
-      final int msgType = msg.getMessageType();
+      final MessageType msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {
         return;
-      } else {
-        Part part = msg.getPart(0);
-        if (msgType == MessageType.EXCEPTION) {
-          Throwable t = (Throwable) part.getObject();
-          if (t instanceof CommitConflictException
-              || t instanceof SynchronizationCommitConflictException) {
-            throw (GemFireException) t;
-          }
-        }
-        super.processAck(msg, opName);
       }
+
+      if (msgType == MessageType.EXCEPTION) {
+        Throwable t = (Throwable) msg.getPart(0).getObject();
+        if (t instanceof CommitConflictException
+            || t instanceof SynchronizationCommitConflictException) {
+          throw (GemFireException) t;
+        }
+      }
+
+      super.processAck(msg, opName);
     }
 
 
@@ -124,7 +123,7 @@ public class TXSynchronizationOp {
      * @see org.apache.geode.cache.client.internal.AbstractOp#isErrorResponse(int)
      */
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.REQUESTDATAERROR;
     }
 

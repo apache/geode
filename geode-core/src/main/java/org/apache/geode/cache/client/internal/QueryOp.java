@@ -99,7 +99,7 @@ public class QueryOp {
      *
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    protected QueryOpImpl(int msgType, int numParts) {
+    protected QueryOpImpl(MessageType msgType, int numParts) {
       super(msgType, numParts);
     }
 
@@ -209,8 +209,8 @@ public class QueryOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
-      return msgType == MessageType.QUERY_DATA_ERROR || msgType == MessageType.CQDATAERROR_MSG_TYPE
+    protected boolean isErrorResponse(MessageType msgType) {
+      return msgType == MessageType.QUERY_DATA_ERROR || msgType == MessageType.CQDATAERROR
           || msgType == MessageType.CQ_EXCEPTION_TYPE;
     }
 

@@ -58,7 +58,6 @@ import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
-import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
@@ -1011,7 +1010,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
     if (logger.isDebugEnabled()) {
       logger.debug("masqueradeAs tx {} for client message {}", val,
-          MessageType.getString(msg.getMessageType()));
+          msg.getMessageType());
     }
     return val;
   }

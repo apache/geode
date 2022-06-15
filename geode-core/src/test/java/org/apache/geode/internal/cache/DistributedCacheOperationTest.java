@@ -115,7 +115,7 @@ public class DistributedCacheOperationTest {
   @Test
   public void testDoRemoveDestroyTokensFromCqResultKeys() {
     Object key = new Object();
-    HashMap<Long, Integer> hashMap = new HashMap<>();
+    HashMap<Long, MessageType> hashMap = new HashMap<>();
     hashMap.put(1L, MessageType.LOCAL_DESTROY);
     EntryEventImpl baseEvent = mock(EntryEventImpl.class);
     ServerCQ serverCQ = mock(ServerCQ.class);

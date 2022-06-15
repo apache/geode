@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -37,7 +38,8 @@ public class ServerToClientFunctionResultSender65JUnitTest
     when(serverConnection.getAcceptor()).thenReturn(acceptor);
     when(acceptor.isSelector()).thenReturn(true);
     when(acceptor.isRunning()).thenReturn(true);
-    return new ServerToClientFunctionResultSender65(msg, 1, serverConnection, function,
+    return new ServerToClientFunctionResultSender65(msg, MessageType.RESPONSE, serverConnection,
+        function,
         executeFunctionOperationContext);
   }
 }

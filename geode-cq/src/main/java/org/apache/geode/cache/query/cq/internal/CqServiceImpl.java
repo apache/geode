@@ -14,6 +14,14 @@
  */
 package org.apache.geode.cache.query.cq.internal;
 
+import static org.apache.geode.internal.cache.tier.MessageType.CLEAR_REGION;
+import static org.apache.geode.internal.cache.tier.MessageType.DESTROY_REGION;
+import static org.apache.geode.internal.cache.tier.MessageType.EXCEPTION;
+import static org.apache.geode.internal.cache.tier.MessageType.INVALIDATE_REGION;
+import static org.apache.geode.internal.cache.tier.MessageType.LOCAL_CREATE;
+import static org.apache.geode.internal.cache.tier.MessageType.LOCAL_DESTROY;
+import static org.apache.geode.internal.cache.tier.MessageType.LOCAL_UPDATE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,11 +100,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class CqServiceImpl implements CqService {
   private static final Logger logger = LogService.getLogger();
-
-  private static final Integer MESSAGE_TYPE_LOCAL_CREATE = MessageType.LOCAL_CREATE;
-  private static final Integer MESSAGE_TYPE_LOCAL_UPDATE = MessageType.LOCAL_UPDATE;
-  private static final Integer MESSAGE_TYPE_LOCAL_DESTROY = MessageType.LOCAL_DESTROY;
-  private static final Integer MESSAGE_TYPE_EXCEPTION = MessageType.EXCEPTION;
 
   /**
    * System property to evaluate the query even though the initial results are not required when cq
@@ -927,15 +930,16 @@ public class CqServiceImpl implements CqService {
   }
 
   @Override
-  public void dispatchCqListeners(HashMap<String, Integer> cqs, int messageType, Object key,
+  public void dispatchCqListeners(HashMap<String, MessageType> cqs, MessageType messageType,
+      Object key,
       Object value, byte[] delta, QueueManager qManager, EventID eventId) {
     Object[] fullValue = new Object[1];
-    Iterator<Map.Entry<String, Integer>> iter = cqs.entrySet().iterator();
+    Iterator<Map.Entry<String, MessageType>> iter = cqs.entrySet().iterator();
     String cqName = null;
     final boolean isDebugEnabled = logger.isDebugEnabled();
     while (iter.hasNext()) {
       try {
-        Map.Entry<String, Integer> entry = iter.next();
+        Map.Entry<String, MessageType> entry = iter.next();
         cqName = entry.getKey();
         ClientCQImpl cQuery = (ClientCQImpl) getCq(cqName);
 
@@ -947,10 +951,10 @@ public class CqServiceImpl implements CqService {
           continue;
         }
 
-        Integer cqOp = entry.getValue();
+        MessageType cqOp = entry.getValue();
 
         // If Region destroy event, close the cq.
-        if (cqOp == MessageType.DESTROY_REGION) {
+        if (cqOp == DESTROY_REGION) {
           // The close will also invoke the listeners close().
           try {
             cQuery.close(false);
@@ -1156,30 +1160,30 @@ public class CqServiceImpl implements CqService {
   /**
    * Returns the Operation for the given EnumListenerEvent type.
    */
-  private Operation getOperation(int eventType) {
+  private Operation getOperation(MessageType eventType) {
     Operation op = null;
     switch (eventType) {
-      case MessageType.LOCAL_CREATE:
+      case LOCAL_CREATE:
         op = Operation.CREATE;
         break;
 
-      case MessageType.LOCAL_UPDATE:
+      case LOCAL_UPDATE:
         op = Operation.UPDATE;
         break;
 
-      case MessageType.LOCAL_DESTROY:
+      case LOCAL_DESTROY:
         op = Operation.DESTROY;
         break;
 
-      case MessageType.LOCAL_INVALIDATE:
+      case LOCAL_INVALIDATE:
         op = Operation.INVALIDATE;
         break;
 
-      case MessageType.CLEAR_REGION:
+      case CLEAR_REGION:
         op = Operation.REGION_CLEAR;
         break;
 
-      case MessageType.INVALIDATE_REGION:
+      case INVALIDATE_REGION:
         op = Operation.REGION_INVALIDATE;
         break;
     }
@@ -1211,7 +1215,7 @@ public class CqServiceImpl implements CqService {
     if (isDebugEnabled) {
       logger.debug("CQ service processing region event {}", event);
     }
-    Integer cqRegionEvent = generateCqRegionEvent(event);
+    MessageType cqRegionEvent = generateCqRegionEvent(event);
 
     for (int i = -1; i < profiles.length; i++) {
       CacheProfile cf;
@@ -1227,11 +1231,10 @@ public class CqServiceImpl implements CqService {
       if (pf == null || pf.getCqMap().isEmpty()) {
         continue;
       }
-      Map cqs = pf.getCqMap();
-      HashMap<Long, Integer> cqInfo = new HashMap<>();
-      for (final Object o : cqs.entrySet()) {
-        Map.Entry cqEntry = (Map.Entry) o;
-        ServerCQImpl cQuery = (ServerCQImpl) cqEntry.getValue();
+      Map<?, ServerCQImpl> cqs = pf.getCqMap();
+      HashMap<Long, MessageType> cqInfo = new HashMap<>();
+      for (final Map.Entry<?, ServerCQImpl> cqEntry : cqs.entrySet()) {
+        ServerCQImpl cQuery = cqEntry.getValue();
         if (!event.isOriginRemote() && event.getOperation().isRegionDestroy()
             && !((LocalRegion) event.getRegion()).isUsedForPartitionedRegionBucket()) {
           try {
@@ -1278,7 +1281,7 @@ public class CqServiceImpl implements CqService {
         || event.getOperation().isDestroy() || event.getOperation().isInvalidate()
         || (event.getOperation().isCreate() && isDupEvent));
 
-    HashMap<String, Integer> matchedCqs = new HashMap<>();
+    HashMap<String, MessageType> matchedCqs = new HashMap<>();
     long executionStartTime;
     for (int i = -1; i < profiles.length; i++) {
       CacheProfile cf;
@@ -1295,7 +1298,7 @@ public class CqServiceImpl implements CqService {
         continue;
       }
 
-      Map cqs = pf.getCqMap();
+      Map<?, ServerCQImpl> cqs = pf.getCqMap();
 
       if (isDebugEnabled) {
         logger.debug("Profile for {} processing {} CQs", cf.peerMemberId, cqs.size());
@@ -1315,11 +1318,10 @@ public class CqServiceImpl implements CqService {
         }
       }
 
-      HashMap<Long, Integer> cqInfo = new HashMap<>();
+      HashMap<Long, MessageType> cqInfo = new HashMap<>();
 
-      for (Object o : cqs.entrySet()) {
-        Map.Entry cqEntry = (Map.Entry) o;
-        ServerCQImpl cQuery = (ServerCQImpl) cqEntry.getValue();
+      for (Map.Entry<?, ServerCQImpl> cqEntry : cqs.entrySet()) {
+        ServerCQImpl cQuery = cqEntry.getValue();
         b_cqResults_newValue = false;
         b_cqResults_oldValue = false;
         queryOldValue = false;
@@ -1333,7 +1335,7 @@ public class CqServiceImpl implements CqService {
           logger.debug("Processing CQ : {} Key: {}", cqName, eventKey);
         }
 
-        Integer cqEvent = null;
+        MessageType cqEvent = null;
         if (matchedCqs.containsKey(cqName)) {
           cqEvent = matchedCqs.get(cqName);
           if (isDebugEnabled) {
@@ -1343,10 +1345,10 @@ public class CqServiceImpl implements CqService {
             continue;
           }
           // Update the Cache Results for this CQ.
-          if (cqEvent == MessageType.LOCAL_CREATE
-              || cqEvent == MessageType.LOCAL_UPDATE) {
+          if (cqEvent == LOCAL_CREATE
+              || cqEvent == LOCAL_UPDATE) {
             cQuery.addToCqResultKeys(eventKey);
-          } else if (cqEvent == MessageType.LOCAL_DESTROY) {
+          } else if (cqEvent == LOCAL_DESTROY) {
             cQuery.markAsDestroyedInCqResultKeys(eventKey);
           }
         } else {
@@ -1429,13 +1431,13 @@ public class CqServiceImpl implements CqService {
             }
 
             if (error) {
-              cqEvent = MESSAGE_TYPE_EXCEPTION;
+              cqEvent = EXCEPTION;
             } else {
               if (b_cqResults_newValue) {
                 if (b_cqResults_oldValue) {
-                  cqEvent = MESSAGE_TYPE_LOCAL_UPDATE;
+                  cqEvent = LOCAL_UPDATE;
                 } else {
-                  cqEvent = MESSAGE_TYPE_LOCAL_CREATE;
+                  cqEvent = LOCAL_CREATE;
                 }
                 // If its create and caching is enabled, cache the key
                 // for this CQ.
@@ -1444,7 +1446,7 @@ public class CqServiceImpl implements CqService {
                 // Base invalidate operation is treated as destroy.
                 // When the invalidate comes through, the entry will no longer
                 // satisfy the query and will need to be deleted.
-                cqEvent = MESSAGE_TYPE_LOCAL_DESTROY;
+                cqEvent = LOCAL_DESTROY;
                 // If caching is enabled, mark this event's key as removed
                 // from the CQ cache.
                 cQuery.markAsDestroyedInCqResultKeys(eventKey);
@@ -1498,16 +1500,16 @@ public class CqServiceImpl implements CqService {
     } // iteration over Profiles.
   }
 
-  private Integer generateCqRegionEvent(CacheEvent event) {
-    Integer cqEvent = null;
+  private MessageType generateCqRegionEvent(CacheEvent event) {
     if (event.getOperation().isRegionDestroy()) {
-      cqEvent = MessageType.DESTROY_REGION;
+      return DESTROY_REGION;
     } else if (event.getOperation().isRegionInvalidate()) {
-      cqEvent = MessageType.INVALIDATE_REGION;
+      return INVALIDATE_REGION;
     } else if (event.getOperation().isClear()) {
-      cqEvent = MessageType.CLEAR_REGION;
+      return CLEAR_REGION;
     }
-    return cqEvent;
+
+    return null;
   }
 
   /**

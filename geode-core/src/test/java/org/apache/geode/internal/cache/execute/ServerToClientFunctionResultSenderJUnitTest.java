@@ -32,6 +32,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -56,7 +57,8 @@ public class ServerToClientFunctionResultSenderJUnitTest {
     when(acceptor.isSelector()).thenReturn(true);
     when(acceptor.isRunning()).thenReturn(true);
 
-    return new ServerToClientFunctionResultSender(msg, 1, serverConnection, function,
+    return new ServerToClientFunctionResultSender(msg, MessageType.RESPONSE, serverConnection,
+        function,
         executeFunctionOperationContext);
   }
 

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.internal.cache.tier.MessageType.CQ_EXCEPTION_TYPE;
+import static org.apache.geode.internal.cache.tier.MessageType.RESPONSE;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -188,7 +191,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
         stats.incProcessQueryTime(start - oldStart);
 
         if (sendResults) {
-          queryResponseMsg.setMessageType(MessageType.RESPONSE);
+          queryResponseMsg.setMessageType(RESPONSE);
           queryResponseMsg.setTransactionId(msg.getTransactionId());
           queryResponseMsg.sendHeader();
         }
@@ -224,7 +227,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
 
       } else if (result instanceof Integer) {
         if (sendResults) {
-          queryResponseMsg.setMessageType(MessageType.RESPONSE);
+          queryResponseMsg.setMessageType(RESPONSE);
           queryResponseMsg.setTransactionId(msg.getTransactionId());
           queryResponseMsg.sendHeader();
           writeQueryResponseChunk(result, null, true, servConn);
@@ -251,7 +254,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       if (msg != null && logger.isDebugEnabled()) {
         logger.debug(
             "{}: ignoring message of type {} from client {} because shutdown occurred during message processing.",
-            servConn.getName(), MessageType.getString(msg.getMessageType()), servConn.getProxyID());
+            servConn.getName(), msg.getMessageType(), servConn.getProxyID());
       }
       servConn.setFlagProcessMessagesAsFalse();
       servConn.setClientDisconnectedException(se);
@@ -283,7 +286,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
     return results.getCollectionType();
   }
 
-  protected void sendCqResponse(int msgType, String msgStr, int txId, Throwable e,
+  protected void sendCqResponse(MessageType msgType, String msgStr, int txId, Throwable e,
       ServerConnection servConn) throws IOException {
     ChunkedMessage cqMsg = servConn.getChunkedResponseMessage();
     if (logger.isDebugEnabled()) {
@@ -291,16 +294,16 @@ public abstract class BaseCommandQuery extends BaseCommand {
     }
 
     switch (msgType) {
-      case MessageType.REPLY:
+      case REPLY:
         cqMsg.setNumberOfParts(1);
         break;
 
-      case MessageType.CQDATAERROR_MSG_TYPE:
+      case CQDATAERROR:
         logger.warn(msgStr);
         cqMsg.setNumberOfParts(1);
         break;
 
-      case MessageType.CQ_EXCEPTION_TYPE:
+      case CQ_EXCEPTION_TYPE:
         String exMsg = "";
         if (e != null) {
           exMsg = e.getLocalizedMessage();
@@ -313,9 +316,9 @@ public abstract class BaseCommandQuery extends BaseCommand {
         break;
 
       default:
-        msgType = MessageType.CQ_EXCEPTION_TYPE;
+        msgType = CQ_EXCEPTION_TYPE;
         cqMsg.setNumberOfParts(1);
-        msgStr += "Uknown query Exception.";
+        msgStr += "Unknown query Exception.";
         break;
     }
 

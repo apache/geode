@@ -16,6 +16,8 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_REGION_FUNCTION_ERROR;
+import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -161,7 +163,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         Set<String> removedNodes, boolean allBuckets, final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
       // It should have been used as a constant and documented
-      super(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP,
+      super(EXECUTE_REGION_FUNCTION_SINGLE_HOP,
           8 + serverRegionExecutor.getFilter().size() + removedNodes.size(), timeoutMs);
       isHA = function.isHA();
       optimizeForWrite = function.optimizeForWrite();
@@ -207,7 +209,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
       // It should have been used as a constant and documented
-      super(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP,
+      super(EXECUTE_REGION_FUNCTION_SINGLE_HOP,
           8 + serverRegionExecutor.getFilter().size() + removedNodes.size(), timeoutMs);
       this.isHA = isHA;
       this.optimizeForWrite = optimizeForWrite;
@@ -260,7 +262,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       try {
         executeFunctionResponseMsg.readHeader();
         switch (executeFunctionResponseMsg.getMessageType()) {
-          case MessageType.EXECUTE_REGION_FUNCTION_RESULT:
+          case EXECUTE_REGION_FUNCTION_RESULT:
             final boolean isDebugEnabled = logger.isDebugEnabled();
             if (isDebugEnabled) {
               logger.debug(
@@ -336,7 +338,7 @@ public class ExecuteRegionFunctionSingleHopOp {
             }
             return null;
 
-          case MessageType.EXCEPTION:
+          case EXCEPTION:
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "ExecuteRegionFunctionSingleHopOpImpl#processResponse: received message of type EXCEPTION");
@@ -362,7 +364,7 @@ public class ExecuteRegionFunctionSingleHopOp {
               throw new ServerOperationException(s, (Throwable) obj);
             }
             break;
-          case MessageType.EXECUTE_REGION_FUNCTION_ERROR:
+          case EXECUTE_REGION_FUNCTION_ERROR:
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "ExecuteRegionFunctionSingleHopOpImpl#processResponse: received message of type EXECUTE_REGION_FUNCTION_ERROR");
@@ -410,8 +412,8 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
-      return msgType == MessageType.EXECUTE_REGION_FUNCTION_ERROR;
+    protected boolean isErrorResponse(MessageType msgType) {
+      return msgType == EXECUTE_REGION_FUNCTION_ERROR;
     }
 
     @Override

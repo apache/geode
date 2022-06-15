@@ -47,7 +47,7 @@ public class CloseCQOp {
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     public CloseCQOpImpl(String cqName) {
-      super(MessageType.CLOSECQ_MSG_TYPE, 1);
+      super(MessageType.CLOSECQ, 1);
       getMessage().addStringPart(cqName);
     }
 
