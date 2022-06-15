@@ -10,6 +10,6 @@
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFragments()": "Added new stat",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFreedChunks()": "Added new stat",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat",
-  "Class org.apache.geode.cache.DataPolicy": "Enum changes will not actually affect any usage.",
+  "Class org.apache.geode.cache.RegionAttributes": "Bug in jampicmp detecting changes in interfaces.",
   "Class org.apache.geode.cache.InterestPolicy": "Enum changes will not actually affect any usage."
 }

@@ -22,6 +22,7 @@ import me.champeau.gradle.japicmp.JapicmpTask
 import org.apache.geode.gradle.japicmp.ParentIsExperimental
 import org.apache.geode.gradle.japicmp.GeodeApiRegressionRule
 import org.apache.geode.gradle.japicmp.GeodeSpiRegressionRule
+import org.apache.geode.gradle.japicmp.NewDefaultMethodOnInterface
 import org.apache.geode.gradle.japicmp.AllowMajorBreakingChanges
 
 def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v -> new ComparableVersion(v.name)}
@@ -33,7 +34,7 @@ tasks.register('japicmp', JapicmpTask) {
   inputs.files { ourUnpackTaskProvider }
 
   def d = java.nio.file.Paths.get(project(":geode-old-versions:${newest}").buildDir.path.toString(), "apache-geode-${newest}", 'lib')
-  // Dirty hack, to set the value as requied in configuration, 
+  // Dirty hack, to set the value as requied in configuration,
   // but then reset to the acutal unpacked jars on runtime.
   oldClasspath = files()
   oldArchives = files()
@@ -84,6 +85,7 @@ tasks.register('japicmp', JapicmpTask) {
     if (allowMajorBreaking) {
       addRule(AllowMajorBreakingChanges)
     } else {
+      addRule(NewDefaultMethodOnInterface)
       addRule(JApiChangeStatus.REMOVED, ParentIsExperimental)
       addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental)
       addRule(GeodeApiRegressionRule)

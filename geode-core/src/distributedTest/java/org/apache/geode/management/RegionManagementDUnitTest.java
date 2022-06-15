@@ -973,7 +973,7 @@ public class RegionManagementDUnitTest implements Serializable {
 
     assertThat(regionAttributesData.isIgnoreJTA()).isEqualTo(regionAttributes.getIgnoreJTA());
 
-    assertThat(regionAttributesData.getDataPolicyEnum())
+    assertThat(regionAttributesData.getDataPolicy())
         .isEqualTo(regionAttributes.getDataPolicyEnum().toString());
 
     assertThat(regionAttributesData.getScope()).isEqualTo(regionAttributes.getScope().toString());
