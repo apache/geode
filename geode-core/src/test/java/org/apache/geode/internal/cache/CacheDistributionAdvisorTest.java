@@ -25,8 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

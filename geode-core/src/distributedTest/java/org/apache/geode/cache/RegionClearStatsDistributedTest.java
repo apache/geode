@@ -24,11 +24,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;

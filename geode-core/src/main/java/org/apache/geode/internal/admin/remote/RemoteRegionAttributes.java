@@ -33,7 +33,6 @@ import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CustomExpiry;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.EntryEvent;
@@ -48,6 +47,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 

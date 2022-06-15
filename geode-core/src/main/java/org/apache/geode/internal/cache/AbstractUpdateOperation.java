@@ -26,11 +26,11 @@ import org.apache.geode.InvalidVersionException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -192,7 +192,8 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
               // key not here, blocked by DESTROYED token or ConcurrentCacheModificationException
               // thrown during second update attempt
               if (rgn.isUsedForPartitionedRegionBucket()
-                  || (rgn.getDataPolicyEnum().withReplication() && rgn.getConcurrencyChecksEnabled())) {
+                  || (rgn.getDataPolicyEnum().withReplication()
+                      && rgn.getConcurrencyChecksEnabled())) {
                 ev.makeCreate();
                 boolean thirdBasicUpdateSuccess =
                     rgn.basicUpdate(ev, false, false, lastMod, true, invokeCallbacks, false);

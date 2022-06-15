@@ -27,12 +27,12 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.internal.cache.entries.VersionedThinDiskRegionEntryHeapObjectKey;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;

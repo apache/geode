@@ -30,8 +30,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.junit.categories.SerializationTest;

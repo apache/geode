@@ -17,7 +17,6 @@ package org.apache.geode.cache;
 import java.io.File;
 import java.util.Set;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.compression.Compressor;
 
@@ -158,7 +157,9 @@ public interface RegionAttributes<K, V> {
    *
    * @return the region's <code>DataPolicy</code>
    */
-  org.apache.geode.cache.api.DataPolicy getDataPolicyEnum();
+  default org.apache.geode.cache.api.DataPolicy getDataPolicyEnum() {
+    return getDataPolicy().toEnum();
+  }
 
   /**
    * Returns the scope of the region. Default scope is DISTRIBUTED_NO_ACK. Please refer the gemfire
@@ -252,9 +253,9 @@ public interface RegionAttributes<K, V> {
    * writing the overflow data to disk).
    *
    * @return whether a persistent backup should be made of the region
-   *
    * @since GemFire 3.2
-   * @deprecated as of GemFire 5.0, use {@link DataPolicy#PERSISTENT_REPLICATE} instead
+   * @deprecated as of GemFire 5.0, use {@link
+   *             org.apache.geode.cache.DataPolicy#PERSISTENT_REPLICATE} instead
    */
   @Deprecated
   boolean getPersistBackup();

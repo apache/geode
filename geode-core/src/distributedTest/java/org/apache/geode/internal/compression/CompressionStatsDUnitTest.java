@@ -25,8 +25,8 @@ import java.util.Properties;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;

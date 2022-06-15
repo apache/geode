@@ -51,13 +51,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 

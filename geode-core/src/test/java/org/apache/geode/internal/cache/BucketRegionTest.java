@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.Delta;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.LossAction;
@@ -50,6 +49,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.LockObject;

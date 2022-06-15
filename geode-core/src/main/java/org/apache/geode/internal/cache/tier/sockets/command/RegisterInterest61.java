@@ -19,9 +19,9 @@ import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.internal.RegisterInterestOp;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.distributed.internal.LonerDistributionManager;

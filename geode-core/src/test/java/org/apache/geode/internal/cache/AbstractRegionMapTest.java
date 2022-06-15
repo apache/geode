@@ -45,12 +45,12 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

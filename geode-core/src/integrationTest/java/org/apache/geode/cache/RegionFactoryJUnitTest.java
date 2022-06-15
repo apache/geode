@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -61,6 +60,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;

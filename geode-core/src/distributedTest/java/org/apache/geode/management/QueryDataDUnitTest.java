@@ -44,7 +44,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -52,6 +51,7 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;

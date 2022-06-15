@@ -29,10 +29,10 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;

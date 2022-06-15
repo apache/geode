@@ -31,11 +31,11 @@ import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;

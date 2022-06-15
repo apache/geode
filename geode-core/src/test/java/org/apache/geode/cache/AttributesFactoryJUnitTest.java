@@ -25,9 +25,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Set;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.junit.Test;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.compression.SnappyCompressor;

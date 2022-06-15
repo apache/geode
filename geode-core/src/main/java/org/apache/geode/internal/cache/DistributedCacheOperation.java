@@ -1184,7 +1184,8 @@ public abstract class DistributedCacheOperation {
             // listeners and bridges, but it should not apply the change to the
             // region
             if (!rgn.isEventTrackerInitialized()
-                && (rgn.getDataPolicyEnum().withReplication() || rgn.getDataPolicyEnum().withPreloaded())) {
+                && (rgn.getDataPolicyEnum().withReplication()
+                    || rgn.getDataPolicyEnum().withPreloaded())) {
               if (logger.isTraceEnabled()) {
                 logger.trace(LogMarker.DM_BRIDGE_SERVER_VERBOSE,
                     "Ignoring possible duplicate event");

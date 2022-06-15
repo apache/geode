@@ -29,7 +29,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import org.apache.geode.cache.api.DataPolicy;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -41,6 +40,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.InOrder;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 

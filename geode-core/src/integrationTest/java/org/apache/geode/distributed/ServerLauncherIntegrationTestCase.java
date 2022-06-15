@@ -34,8 +34,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ErrorCollector;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.ServerLauncher.Builder;

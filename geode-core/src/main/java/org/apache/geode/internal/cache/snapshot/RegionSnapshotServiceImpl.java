@@ -31,8 +31,8 @@ import java.util.concurrent.Future;
 import org.apache.logging.log4j.LogManager;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ProxyRegion;
 import org.apache.geode.cache.execute.Function;

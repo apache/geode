@@ -705,8 +705,8 @@ public class AttributesFactory<K, V> {
     if (regionAttributes.partitionAttributes != null) {
       if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(dataPolicy)) {
         throw new IllegalStateException(
-                String.format("Data policies other than %s are not supported for Partitioned Regions",
-                        PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
+            String.format("Data policies other than %s are not supported for Partitioned Regions",
+                PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
       }
     }
     regionAttributes.setDataPolicy(dataPolicy);
@@ -1360,7 +1360,8 @@ public class AttributesFactory<K, V> {
         // on statisticsEnabled.
         setStatisticsEnabled(true);
       }
-      if (attrs.getDataPolicyEnum().withReplication() && !attrs.getDataPolicyEnum().withPersistence()
+      if (attrs.getDataPolicyEnum().withReplication()
+          && !attrs.getDataPolicyEnum().withPersistence()
           && attrs.getScope().isDistributed()) {
         RegionAttributesImpl<?, ?> rattr = attrs;
         if (!attrs.isForBucketRegion()) {
@@ -1541,7 +1542,8 @@ public class AttributesFactory<K, V> {
 
       // fix bug #52033 by invoking getLocalMaxMemoryForValidation here
       if (((PartitionAttributesImpl) pa).getLocalMaxMemoryForValidation() == 0
-          && attrs.getDataPolicyEnum() == org.apache.geode.cache.api.DataPolicy.PERSISTENT_PARTITION) {
+          && attrs
+              .getDataPolicyEnum() == org.apache.geode.cache.api.DataPolicy.PERSISTENT_PARTITION) {
         throw new IllegalStateException(
             "Persistence is not allowed when local-max-memory is zero.");
       }
@@ -1573,7 +1575,8 @@ public class AttributesFactory<K, V> {
     CustomExpiry<K, V> customEntryIdleTimeout = null;
 
     Scope scope = AbstractRegion.DEFAULT_SCOPE;
-    org.apache.geode.cache.api.DataPolicy dataPolicy = org.apache.geode.cache.api.DataPolicy.DEFAULT;
+    org.apache.geode.cache.api.DataPolicy dataPolicy =
+        org.apache.geode.cache.api.DataPolicy.DEFAULT;
     boolean statisticsEnabled = false;
     boolean ignoreJTA = false;
     boolean isLockGrantor = false;
@@ -1712,7 +1715,8 @@ public class AttributesFactory<K, V> {
     @Override
     public MirrorType getMirrorType() {
       if (dataPolicy == org.apache.geode.cache.api.DataPolicy.NORMAL || dataPolicy.withPreloaded()
-          || dataPolicy == org.apache.geode.cache.api.DataPolicy.EMPTY || dataPolicy.withPartitioning()) {
+          || dataPolicy == org.apache.geode.cache.api.DataPolicy.EMPTY
+          || dataPolicy.withPartitioning()) {
         return MirrorType.NONE;
       } else if (dataPolicy.withReplication()) {
         return MirrorType.KEYS_VALUES;

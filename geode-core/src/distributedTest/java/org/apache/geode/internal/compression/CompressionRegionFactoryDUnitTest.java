@@ -19,8 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.test.dunit.Host;

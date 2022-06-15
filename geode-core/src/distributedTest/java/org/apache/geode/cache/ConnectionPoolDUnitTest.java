@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -50,6 +49,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.LogWriter;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;

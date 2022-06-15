@@ -31,10 +31,10 @@ import org.junit.Test;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;

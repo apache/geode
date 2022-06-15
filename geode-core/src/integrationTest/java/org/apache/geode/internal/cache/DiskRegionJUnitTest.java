@@ -56,7 +56,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -64,6 +63,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.ObjectSizer;

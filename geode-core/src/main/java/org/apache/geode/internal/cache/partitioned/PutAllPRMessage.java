@@ -28,10 +28,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -609,7 +609,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     boolean evReturned = false;
     try {
 
-      if (prdValue == null && ev.getRegion().getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
+      if (prdValue == null
+          && ev.getRegion().getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
         ev.setLocalInvalid(true);
       }
       ev.setNewValue(prdValue);

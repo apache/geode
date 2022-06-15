@@ -30,9 +30,9 @@ import org.mockito.AdditionalAnswers;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;

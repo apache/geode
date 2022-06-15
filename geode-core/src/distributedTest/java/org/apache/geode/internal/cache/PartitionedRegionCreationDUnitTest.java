@@ -33,12 +33,12 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;

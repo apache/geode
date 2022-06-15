@@ -23,9 +23,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.BucketPersistenceAdvisor;
 import org.apache.geode.internal.cache.DiskStoreImpl;

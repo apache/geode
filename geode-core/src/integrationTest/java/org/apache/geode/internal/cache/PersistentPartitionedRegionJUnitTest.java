@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -39,6 +38,7 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.util.ObjectSizer;
 
 public class PersistentPartitionedRegionJUnitTest {

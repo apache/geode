@@ -48,10 +48,10 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;

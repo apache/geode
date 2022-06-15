@@ -28,9 +28,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;

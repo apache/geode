@@ -17,8 +17,8 @@ package org.apache.geode.cache.execute;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.api.DataPolicy;
 
 /**
  * Provides methods to build the context for the execution of a {@link Function} . A Context

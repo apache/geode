@@ -27,11 +27,11 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ContainsKeyOp.MODE;
 import org.apache.geode.cache.execute.Function;

@@ -15,11 +15,11 @@
 
 package org.apache.geode.cache.client;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 
 /**
  * Each enum represents a predefined {@link RegionAttributes} in a {@link ClientCache}. These enum

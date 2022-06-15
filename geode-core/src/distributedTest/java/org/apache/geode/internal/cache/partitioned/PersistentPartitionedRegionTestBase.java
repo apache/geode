@@ -35,11 +35,11 @@ import org.junit.Before;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;

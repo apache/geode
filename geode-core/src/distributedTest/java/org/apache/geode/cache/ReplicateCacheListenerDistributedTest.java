@@ -25,11 +25,11 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.io.Serializable;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedCounters;

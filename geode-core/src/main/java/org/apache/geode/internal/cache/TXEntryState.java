@@ -31,7 +31,6 @@ import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CommitConflictException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -39,6 +38,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1054,7 +1054,8 @@ public class TXEntryState implements Releasable {
   private void fetchRemoteVersionTag(EntryEventImpl event) {
     if (event.getRegion() instanceof DistributedRegion) {
       DistributedRegion dr = (DistributedRegion) event.getRegion();
-      if (dr.getDataPolicyEnum() == DataPolicy.NORMAL || dr.getDataPolicyEnum() == DataPolicy.PRELOADED) {
+      if (dr.getDataPolicyEnum() == DataPolicy.NORMAL
+          || dr.getDataPolicyEnum() == DataPolicy.PRELOADED) {
         VersionTag tag = null;
         try {
           tag = dr.fetchRemoteVersionTag(event.getKey());

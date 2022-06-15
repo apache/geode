@@ -26,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -36,6 +35,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.VM;

@@ -30,11 +30,11 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;

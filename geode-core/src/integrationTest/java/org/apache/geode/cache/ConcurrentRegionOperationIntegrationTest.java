@@ -23,11 +23,11 @@ import static org.mockito.Mockito.spy;
 
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;

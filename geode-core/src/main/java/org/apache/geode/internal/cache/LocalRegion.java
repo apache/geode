@@ -88,7 +88,6 @@ import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CustomExpiry;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DiskWriteAttributes;
@@ -115,6 +114,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
@@ -7422,7 +7422,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {
     // disallow local invalidation for replicated regions
-    if (getScope().isDistributed() && getDataPolicyEnum().withReplication() && !event.isDistributed()
+    if (getScope().isDistributed() && getDataPolicyEnum().withReplication()
+        && !event.isDistributed()
         && !isUsedForSerialGatewaySenderQueue()) {
       throw new IllegalStateException(
           "Not allowed to do a local destroy on a replicated region");
@@ -7532,7 +7533,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Returns true if this region's config indicates that it will use a disk store.
    */
   boolean usesDiskStore(RegionAttributes regionAttributes) {
-    return !isProxy() && (getAttributes().getDataPolicyEnum().withPersistence() || isOverflowEnabled());
+    return !isProxy()
+        && (getAttributes().getDataPolicyEnum().withPersistence() || isOverflowEnabled());
   }
 
   DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.cache.api.DataPolicy.NORMAL;
 import static org.apache.geode.cache.InterestPolicy.ALL;
 import static org.apache.geode.cache.Operation.CREATE;
 import static org.apache.geode.cache.Operation.DESTROY;
@@ -25,6 +24,7 @@ import static org.apache.geode.cache.Operation.REGION_CREATE;
 import static org.apache.geode.cache.Operation.REGION_INVALIDATE;
 import static org.apache.geode.cache.Operation.UPDATE;
 import static org.apache.geode.cache.Scope.DISTRIBUTED_ACK;
+import static org.apache.geode.cache.api.DataPolicy.NORMAL;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.junit.Assert.assertEquals;
@@ -41,13 +41,13 @@ import org.junit.Test;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.test.awaitility.GeodeAwaitility;

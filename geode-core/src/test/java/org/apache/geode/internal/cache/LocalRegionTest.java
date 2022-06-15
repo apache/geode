@@ -44,7 +44,6 @@ import org.mockito.quality.Strictness;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.EvictionAction;
@@ -54,6 +53,7 @@ import org.apache.geode.cache.MembershipAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.internal.QueryConfigurationService;

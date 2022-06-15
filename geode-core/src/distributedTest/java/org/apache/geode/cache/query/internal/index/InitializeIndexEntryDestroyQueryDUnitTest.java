@@ -32,10 +32,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;

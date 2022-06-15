@@ -54,7 +54,6 @@ import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.LossAction;
@@ -68,6 +67,7 @@ import org.apache.geode.cache.RegionMembershipListener;
 import org.apache.geode.cache.ResumptionAction;
 import org.apache.geode.cache.RoleException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -1222,7 +1222,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       advice = targetProvider.getInitialImageAdvice(advice);
       boolean attemptGetFromOne = imageSrc != null // we were given a specific member
           || getDataPolicyEnum().withPreloaded() && !advice.preloaded.isEmpty() // this is a
-                                                                            // preloaded
+          // preloaded
           // region
           || (!advice.replicates.isEmpty());
       // That is: if we have 0 or 1 giiProvider then we can do a getFromOne gii;

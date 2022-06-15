@@ -17,11 +17,11 @@ package org.apache.geode.internal.cache;
 import java.util.Collection;
 import java.util.Set;
 
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;

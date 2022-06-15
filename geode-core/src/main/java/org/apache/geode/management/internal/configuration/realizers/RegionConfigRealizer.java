@@ -26,12 +26,12 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;

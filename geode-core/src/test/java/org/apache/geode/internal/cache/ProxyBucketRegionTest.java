@@ -25,9 +25,9 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;

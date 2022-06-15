@@ -30,7 +30,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -38,6 +37,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.SubscriptionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.Connection;

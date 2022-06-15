@@ -2191,7 +2191,8 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   /** get version-generation permission from the region's version vector */
   @Override
   public void lockForCacheModification(InternalRegion owner, EntryEventImpl event) {
-    boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.getDataPolicyEnum().withReplication();
+    boolean lockedByBulkOp =
+        event.isBulkOpInProgress() && owner.getDataPolicyEnum().withReplication();
 
     if (armLockTestHook != null) {
       armLockTestHook.beforeLock(owner, event);
@@ -2212,7 +2213,8 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   /** release version-generation permission from the region's version vector */
   @Override
   public void releaseCacheModificationLock(InternalRegion owner, EntryEventImpl event) {
-    boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.getDataPolicyEnum().withReplication();
+    boolean lockedByBulkOp =
+        event.isBulkOpInProgress() && owner.getDataPolicyEnum().withReplication();
 
     if (armLockTestHook != null) {
       armLockTestHook.beforeRelease(owner, event);

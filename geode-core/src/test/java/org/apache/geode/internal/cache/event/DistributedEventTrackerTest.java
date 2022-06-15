@@ -32,9 +32,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

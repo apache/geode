@@ -22,13 +22,13 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.DuplicatePrimaryPartitionException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 

@@ -26,8 +26,8 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;
