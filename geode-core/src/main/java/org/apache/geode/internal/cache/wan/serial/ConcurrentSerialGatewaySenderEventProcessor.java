@@ -327,8 +327,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
         } catch (ExecutionException e) {
           // we don't expect any exception but if caught then eat it and log
           // warning
-          logger.warn("GatewaySender {} caught exception while stopping: {}",
-              new Object[] {sender, e.getCause()});
+          logger.warn("GatewaySender {} caught exception while stopping:",
+              sender, e);
         }
       }
     } catch (InterruptedException e) {
