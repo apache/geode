@@ -15,7 +15,6 @@
 package org.apache.geode.management;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -161,7 +160,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
     closeCache(memberVM2);
 
-    AsyncInvocation creatingPersistentRegionAsync = createPersistentRegionAsync(memberVM1);
+    AsyncInvocation<Void> creatingPersistentRegionAsync = createPersistentRegionAsync(memberVM1);
 
     memberVM1.invoke(() -> GeodeAwaitility.await().until(() -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) managementTestRule.getCache();
@@ -182,7 +181,7 @@ public class DiskManagementDUnitTest implements Serializable {
       assertThat(bean.revokeMissingDiskStores(missingDiskStores[0].getDiskStoreId())).isTrue();
     });
 
-    await(creatingPersistentRegionAsync);
+    creatingPersistentRegionAsync.await(2, MINUTES);
 
     verifyRecoveryStats(memberVM1, true);
 
@@ -343,10 +342,10 @@ public class DiskManagementDUnitTest implements Serializable {
 
   private void createPersistentRegion(final VM memberVM)
       throws InterruptedException, ExecutionException, TimeoutException {
-    await(createPersistentRegionAsync(memberVM));
+    createPersistentRegionAsync(memberVM).await(2, MINUTES);
   }
 
-  private AsyncInvocation createPersistentRegionAsync(final VM memberVM) {
+  private AsyncInvocation<Void> createPersistentRegionAsync(final VM memberVM) {
     return memberVM.invokeAsync("createPersistentRegionAsync", () -> {
       File dir = new File(diskDir, String.valueOf(ProcessUtils.identifyPid()));
 
@@ -393,10 +392,4 @@ public class DiskManagementDUnitTest implements Serializable {
             () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
-
-  private void await(final AsyncInvocation createPersistentRegionAsync)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    createPersistentRegionAsync.await(2, MINUTES);
-  }
-
 }

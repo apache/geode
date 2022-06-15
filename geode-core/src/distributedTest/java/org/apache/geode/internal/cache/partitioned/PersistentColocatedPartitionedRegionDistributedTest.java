@@ -342,7 +342,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       latch = new CountDownLatch(1);
     });
 
-    AsyncInvocation createPRsInVM0 = vm0.invokeAsync(() -> {
+    AsyncInvocation<Void> createPRsInVM0 = vm0.invokeAsync(() -> {
       createCache();
       createDiskStore(diskStoreName1);
       createPR_withPersistence(regionName, diskStoreName1, DEFAULT_RECOVERY_DELAY,

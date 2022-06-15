@@ -325,20 +325,20 @@ public class QueryMonitorDUnitTest {
       populateRegion(100, 1000);
     });
 
-    AsyncInvocation ai1 = server1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = server1.invokeAsync(() -> {
       for (int j = 0; j < 5; j++) {
         populateRegion(0, 2000);
       }
     });
 
-    AsyncInvocation ai2 = server2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = server2.invokeAsync(() -> {
       for (int j = 0; j < 5; j++) {
         populateRegion(1000, 3000);
       }
     });
 
     // server3 performs a region put after a query is canceled.
-    AsyncInvocation ai3 = server3.invokeAsync(() -> {
+    AsyncInvocation<Void> ai3 = server3.invokeAsync(() -> {
       Region exampleRegion = ClusterStartupRule.getCache().getRegion("exampleRegion");
       QueryService queryService = GemFireCacheImpl.getInstance().getQueryService();
       String qStr =

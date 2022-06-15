@@ -451,12 +451,12 @@ public class ParallelWANStatsDistributedTest extends WANTestBase {
       }
     }
 
-    List<AsyncInvocation<?>> asyncInvocations = new ArrayList<>(clients);
+    List<AsyncInvocation<Void>> asyncInvocations = new ArrayList<>(clients);
 
     int eventsPerTransaction = shipmentsPerTransaction + 1;
     for (int i = 0; i < clients; i++) {
       final int intCustId = i;
-      AsyncInvocation<?> asyncInvocation =
+      AsyncInvocation<Void> asyncInvocation =
           vm4.invokeAsync(() -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(
               customerData.get(intCustId),
               eventsPerTransaction));
@@ -464,7 +464,7 @@ public class ParallelWANStatsDistributedTest extends WANTestBase {
     }
 
     try {
-      for (AsyncInvocation<?> asyncInvocation : asyncInvocations) {
+      for (AsyncInvocation<Void> asyncInvocation : asyncInvocations) {
         asyncInvocation.await();
       }
     } catch (InterruptedException e) {

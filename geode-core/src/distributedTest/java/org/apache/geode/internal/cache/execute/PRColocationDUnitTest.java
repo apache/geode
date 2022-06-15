@@ -1848,9 +1848,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     Object[] attributeObjects2 = new Object[] {regionName, redundancy, localMaxmemory,
         totalNumBuckets, colocatedWith, isPartitionResolver};
 
-    AsyncInvocation async1 =
+    AsyncInvocation<Void> async1 =
         dataStore1.invokeAsync(PRColocationDUnitTest.class, "createPR", attributeObjects2);
-    AsyncInvocation async2 =
+    AsyncInvocation<Void> async2 =
         dataStore2.invokeAsync(PRColocationDUnitTest.class, "createPR", attributeObjects2);
 
     async1.join();

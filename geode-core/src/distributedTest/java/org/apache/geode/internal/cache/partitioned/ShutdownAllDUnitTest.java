@@ -114,10 +114,10 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     assertTrue(InternalDistributedSystem.getExistingSystems().isEmpty());
 
     // restart vm0
-    AsyncInvocation a0 = createRegionAsync(vm0, "region", "disk", true, 1);
+    AsyncInvocation<Void> a0 = createRegionAsync(vm0, "region", "disk", true, 1);
 
     // restart vm1
-    AsyncInvocation a1 = createRegionAsync(vm1, "region", "disk", true, 1);
+    AsyncInvocation<Void> a1 = createRegionAsync(vm1, "region", "disk", true, 1);
 
     a0.getResult(MAX_WAIT);
     a1.getResult(MAX_WAIT);
@@ -215,7 +215,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     closeAllCache();
     // in vm0 create the cache in a way that hangs until
     // it sees that a shutDownAll is in progress
-    AsyncInvocation<?> asyncCreate = vm0.invokeAsync(() -> {
+    AsyncInvocation<Void> asyncCreate = vm0.invokeAsync(() -> {
       cll = new CacheLifecycleListener() {
         @Override
         public void cacheCreated(InternalCache cache) {
@@ -321,11 +321,11 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     assertTrue(InternalDistributedSystem.getExistingSystems().isEmpty());
 
     // restart vm0, vm1, vm2
-    AsyncInvocation a0 = createRegionAsync(vm0, "region", "disk", true, 1);
+    AsyncInvocation<Void> a0 = createRegionAsync(vm0, "region", "disk", true, 1);
 
-    AsyncInvocation a1 = createRegionAsync(vm1, "region", "disk", true, 1);
+    AsyncInvocation<Void> a1 = createRegionAsync(vm1, "region", "disk", true, 1);
 
-    AsyncInvocation a2 = createRegionAsync(vm2, "region", "disk", true, 1);
+    AsyncInvocation<Void> a2 = createRegionAsync(vm2, "region", "disk", true, 1);
 
     a0.getResult(MAX_WAIT);
     a1.getResult(MAX_WAIT);
@@ -353,13 +353,13 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     shutDownAllMembers(vm2, 2);
 
-    AsyncInvocation a0 = createRegionAsync(vm0, "region", "disk", true, 1);
+    AsyncInvocation<Void> a0 = createRegionAsync(vm0, "region", "disk", true, 1);
     // [dsmith] Make sure that vm0 is waiting for vm1 to recover
     // If VM(0) recovers early, that is a problem, because we
     // are no longer doing a clean recovery.
     Thread.sleep(500);
     assertTrue(a0.isAlive());
-    AsyncInvocation a1 = createRegionAsync(vm1, "region", "disk", true, 1);
+    AsyncInvocation<Void> a1 = createRegionAsync(vm1, "region", "disk", true, 1);
     a0.getResult(MAX_WAIT);
     a1.getResult(MAX_WAIT);
 
@@ -403,13 +403,13 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     shutDownAllMembers(vm2, 2);
 
-    AsyncInvocation a0 = createRegionAsync(vm0, "region", "disk", true, 1);
+    AsyncInvocation<Void> a0 = createRegionAsync(vm0, "region", "disk", true, 1);
     // [dsmith] Make sure that vm0 is waiting for vm1 to recover
     // If VM(0) recovers early, that is a problem, because we
     // are no longer doing a clean recovery.
     Thread.sleep(500);
     assertTrue(a0.isAlive());
-    AsyncInvocation a1 = createRegionAsync(vm1, "region", "disk", true, 1);
+    AsyncInvocation<Void> a1 = createRegionAsync(vm1, "region", "disk", true, 1);
     a0.getResult(MAX_WAIT);
     a1.getResult(MAX_WAIT);
 
@@ -484,7 +484,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     // Add a cache listener that will cause the system to hang up.
     // Then do some puts to get us stuck in a put.
-    AsyncInvocation async1 = vm0.invokeAsync(new SerializableRunnable() {
+    AsyncInvocation<Void> async1 = vm0.invokeAsync(new SerializableRunnable() {
       @Override
       public void run() {
         Region<Object, Object> region = getCache().getRegion("region");
@@ -527,10 +527,10 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     Wait.pause(10000);
 
     // restart vm0
-    AsyncInvocation a0 = createRegionAsync(vm0, "region", "disk", true, 1);
+    AsyncInvocation<Void> a0 = createRegionAsync(vm0, "region", "disk", true, 1);
 
     // restart vm1
-    AsyncInvocation a1 = createRegionAsync(vm1, "region", "disk", true, 1);
+    AsyncInvocation<Void> a1 = createRegionAsync(vm1, "region", "disk", true, 1);
 
     a0.getResult(MAX_WAIT);
     a1.getResult(MAX_WAIT);
@@ -572,7 +572,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
     // restart one of the members (this will hang, waiting for the other members)
     // restart vm0
-    AsyncInvocation a0 = createRegionAsync(vm0, "region", "disk", true, 1);
+    AsyncInvocation<Void> a0 = createRegionAsync(vm0, "region", "disk", true, 1);
 
     // Wait a bit for the initialization to get stuck
     Wait.pause(20000);
@@ -594,7 +594,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     // now restart both members. This should work, but
     // no guarantee they'll do a clean recovery
     a0 = createRegionAsync(vm0, "region", "disk", true, 1);
-    AsyncInvocation a1 = createRegionAsync(vm1, "region", "disk", true, 1);
+    AsyncInvocation<Void> a1 = createRegionAsync(vm1, "region", "disk", true, 1);
 
     a0.getResult(MAX_WAIT);
     a1.getResult(MAX_WAIT);
@@ -690,7 +690,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  protected AsyncInvocation createRegionAsync(VM vm, final String regionName,
+  protected AsyncInvocation<Void> createRegionAsync(VM vm, final String regionName,
       final String diskStoreName, final boolean isPR, final int redundancy) {
     if (isPR) {
       SerializableRunnable createPR = getCreatePRRunnable(regionName, diskStoreName, redundancy);

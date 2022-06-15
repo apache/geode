@@ -269,7 +269,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
         DefaultQuery.testHook = getPauseHook(true, controller);
       });
       // remove from here to ....
-      AsyncInvocation queryExecution1 = executeQueryOnClient(client);
+      AsyncInvocation<Integer> queryExecution1 = executeQueryOnClient(client);
 
       // Gives async invocation a chance to start
       Thread.sleep(1000);
@@ -291,7 +291,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       });
       // We simulate a low memory/critical heap percentage hit
       setHeapToCriticalAndReleaseLatch(server1);
-      AsyncInvocation queryExecution = executeQueryOnClient(client);
+      AsyncInvocation<Integer> queryExecution = executeQueryOnClient(client);
       await().untilAsserted(() -> assertThat(queryExecution.get()).isEqualTo(0));
 
       verifyDroppedObjectsAndSetHeapToNormal(server1);
@@ -302,7 +302,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     }
   }
 
-  private AsyncInvocation executeQueryOnClient(VM client) {
+  private AsyncInvocation<Integer> executeQueryOnClient(VM client) {
     return client.invokeAsync("execute query from client", () -> {
       try {
         Query query1 =
@@ -659,7 +659,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       throws InterruptedException {
     createLatchTestHook(server, hitCriticalThreshold, VM.getController());
 
-    AsyncInvocation queryExecution = invokeClientQuery(client,
+    AsyncInvocation<Integer> queryExecution = invokeClientQuery(client,
         disabledQueryMonitorForLowMem, queryTimeout, hitCriticalThreshold, VM.getController());
 
     criticalMemoryCountDownLatch.await();
@@ -684,7 +684,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private void executeQueryWithCriticalHeapCalledAfterTimeout(VM server, VM client)
       throws InterruptedException {
     createLatchTestHook(server, false, VM.getController());
-    AsyncInvocation queryExecution = executeQueryWithTimeout(client);
+    AsyncInvocation<Integer> queryExecution = executeQueryWithTimeout(client);
 
     // Wait till the timeout expires on the query
     Thread.sleep(1 + TEST_QUERY_TIMEOUT);
@@ -702,7 +702,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   }
 
-  private AsyncInvocation executeQueryWithTimeout(VM client) {
+  private AsyncInvocation<Integer> executeQueryWithTimeout(VM client) {
     return client.invokeAsync("execute query from client", () -> {
       QueryService qs;
       try {
@@ -738,7 +738,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   }
 
-  private AsyncInvocation invokeClientQuery(VM client,
+  private AsyncInvocation<Integer> invokeClientQuery(VM client,
       final boolean disabledQueryMonitorForLowMem,
       final int queryTimeout,
       final boolean hitCriticalThreshold,

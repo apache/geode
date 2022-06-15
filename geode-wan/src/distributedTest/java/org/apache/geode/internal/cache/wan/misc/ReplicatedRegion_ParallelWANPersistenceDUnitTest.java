@@ -139,13 +139,13 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
 
     // create PR on local site
-    AsyncInvocation inv1 = vm4.invokeAsync(
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-    AsyncInvocation inv2 = vm5.invokeAsync(
+    AsyncInvocation<Void> inv2 = vm5.invokeAsync(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-    AsyncInvocation inv3 = vm6.invokeAsync(
+    AsyncInvocation<Void> inv3 = vm6.invokeAsync(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
-    AsyncInvocation inv4 = vm7.invokeAsync(
+    AsyncInvocation<Void> inv4 = vm7.invokeAsync(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
     try {
       inv1.join();
@@ -282,16 +282,16 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
 
     // create PR on local site
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv2 =
+    AsyncInvocation<Void> inv2 =
         vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv3 =
+    AsyncInvocation<Void> inv3 =
         vm6.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv4 =
+    AsyncInvocation<Void> inv4 =
         vm7.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
 
@@ -459,16 +459,16 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
 
     // create PR on local site
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv2 =
+    AsyncInvocation<Void> inv2 =
         vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv3 =
+    AsyncInvocation<Void> inv3 =
         vm6.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv4 =
+    AsyncInvocation<Void> inv4 =
         vm7.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
 
@@ -605,15 +605,17 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 
     Thread.sleep(60000);
     {
-      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-          .doPuts0(getTestMethodName() + "_RR", 10000));
+      AsyncInvocation<Void> inv1 =
+          vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+              .doPuts0(getTestMethodName() + "_RR", 10000));
       Thread.sleep(1000);
-      AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+      AsyncInvocation<Void> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
       Thread.sleep(2000);
-      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-          .doPuts1(getTestMethodName() + "_RR", 10000));
+      AsyncInvocation<Void> inv3 =
+          vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+              .doPuts1(getTestMethodName() + "_RR", 10000));
       Thread.sleep(1500);
-      AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
+      AsyncInvocation<Void> inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
       try {
         inv1.join();
         inv2.join();
@@ -637,14 +639,15 @@ public class ReplicatedRegion_ParallelWANPersistenceDUnitTest extends WANTestBas
 
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv2 =
+    AsyncInvocation<Void> inv2 =
         vm5.invokeAsync(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln",
             Scope.DISTRIBUTED_ACK, DataPolicy.PERSISTENT_REPLICATE, isOffHeap()));
-    AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-        .doPuts2(getTestMethodName() + "_RR", 15000));
+    AsyncInvocation<Void> inv3 =
+        vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+            .doPuts2(getTestMethodName() + "_RR", 15000));
     try {
       inv1.join();
       inv2.join();

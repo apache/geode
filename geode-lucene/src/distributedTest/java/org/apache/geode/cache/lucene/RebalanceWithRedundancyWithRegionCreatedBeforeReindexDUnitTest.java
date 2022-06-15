@@ -134,19 +134,19 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
     // dataStore4.invoke(() -> (createIndex));
     dataStore4.invoke(() -> initDataStore(regionTestType));
 
-    AsyncInvocation aiRebalancer = dataStore1.invokeAsync(rebalance);
+    AsyncInvocation<Void> aiRebalancer = dataStore1.invokeAsync(rebalance);
 
     if (doOps) {
-      AsyncInvocation aiConcOps = dataStore1.invokeAsync(doConcOps);
+      AsyncInvocation<Void> aiConcOps = dataStore1.invokeAsync(doConcOps);
       aiConcOps.join();
       aiConcOps.checkException();
     }
 
     // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(createIndex);
-    AsyncInvocation ai2 = dataStore2.invokeAsync(createIndex);
-    AsyncInvocation ai3 = dataStore3.invokeAsync(createIndex);
-    AsyncInvocation ai4 = dataStore4.invokeAsync(createIndex);
+    AsyncInvocation<Void> ai1 = dataStore1.invokeAsync(createIndex);
+    AsyncInvocation<Void> ai2 = dataStore2.invokeAsync(createIndex);
+    AsyncInvocation<Void> ai3 = dataStore3.invokeAsync(createIndex);
+    AsyncInvocation<Void> ai4 = dataStore4.invokeAsync(createIndex);
 
     aiRebalancer.join();
     aiRebalancer.checkException();

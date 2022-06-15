@@ -94,9 +94,9 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
     closeCache(vm1);
     closeCache(vm2);
 
-    AsyncInvocation a1 = createPRAsync(vm0, redundancy);
-    AsyncInvocation a2 = createPRAsync(vm1, redundancy);
-    AsyncInvocation a3 = createPRAsync(vm2, redundancy);
+    AsyncInvocation<Void> a1 = createPRAsync(vm0, redundancy);
+    AsyncInvocation<Void> a2 = createPRAsync(vm1, redundancy);
+    AsyncInvocation<Void> a3 = createPRAsync(vm2, redundancy);
 
     a1.getResult(MAX_WAIT);
     a2.getResult(MAX_WAIT);

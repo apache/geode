@@ -60,7 +60,7 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testContainsKey() throws Exception {
-    AsyncInvocation ai1 = client1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = client1.invokeAsync(() -> {
       ClientCache cache = createClientCache("key1User", "1234567", server.getPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
       assertTrue(region.containsKeyOnServer("key1"));
@@ -68,7 +68,7 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
           "DATA:READ:AuthRegion:key3");
     });
 
-    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = client2.invokeAsync(() -> {
       ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
       region.containsKeyOnServer("key3");

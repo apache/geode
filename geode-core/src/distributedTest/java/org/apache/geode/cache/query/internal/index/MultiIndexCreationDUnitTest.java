@@ -67,7 +67,7 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
     final String name = SEPARATOR + regionName;
 
     // Start server1
-    AsyncInvocation a1 = server1.invokeAsync(new SerializableCallable("Create Server1") {
+    AsyncInvocation<Void> a1 = server1.invokeAsync(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
         Region r = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
@@ -93,7 +93,7 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
     final String[] queries = {"select * from " + name + " where status = 'active'",
         "select * from " + name + " where ID > 4"};
 
-    AsyncInvocation a2 = server1.invokeAsync(new SerializableCallable("Create Server1") {
+    AsyncInvocation<Void> a2 = server1.invokeAsync(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
         long giveupTime = System.currentTimeMillis() + 60000;

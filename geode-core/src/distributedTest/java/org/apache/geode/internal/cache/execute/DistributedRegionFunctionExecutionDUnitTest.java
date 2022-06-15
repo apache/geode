@@ -256,7 +256,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
     empty.invoke(() -> populateRegion(200));
 
-    AsyncInvocation executeFunctionInReplicate1 = replicate1.invokeAsync(() -> {
+    AsyncInvocation<Void> executeFunctionInReplicate1 = replicate1.invokeAsync(() -> {
       ResultCollector<String, List<String>> resultCollector = TypedFunctionService
           .<Void, String, List<String>>onRegion(getRegion())
           .withFilter(filter)

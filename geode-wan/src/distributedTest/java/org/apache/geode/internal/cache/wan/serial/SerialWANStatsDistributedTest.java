@@ -280,17 +280,17 @@ public class SerialWANStatsDistributedTest extends WANTestBase {
 
     int entries = entriesPerInvocation * clients;
 
-    List<AsyncInvocation<?>> invocations = new ArrayList<>(clients);
+    List<AsyncInvocation<Void>> invocations = new ArrayList<>(clients);
     for (int i = 0; i < clients; i++) {
       final int index = i;
-      AsyncInvocation<?> asyncInvocation =
+      AsyncInvocation<Void> asyncInvocation =
           vm4.invokeAsync(() -> WANTestBase.doPutsInsideTransactions(regionName, data.get(index),
               eventsPerTransaction));
       invocations.add(asyncInvocation);
     }
 
     try {
-      for (AsyncInvocation<?> invocation : invocations) {
+      for (AsyncInvocation<Void> invocation : invocations) {
         invocation.await();
       }
     } catch (InterruptedException e) {
@@ -568,7 +568,7 @@ public class SerialWANStatsDistributedTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation<?> inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR", 10000));
+    AsyncInvocation<Void> inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR", 10000));
     pause(2000);
     AsyncInvocation<Boolean> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
     Boolean isKilled = Boolean.FALSE;
@@ -578,7 +578,7 @@ public class SerialWANStatsDistributedTest extends WANTestBase {
       fail("Unexpected exception while killing a sender");
     }
     if (!isKilled) {
-      AsyncInvocation<?> inv3 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
+      AsyncInvocation<Boolean> inv3 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
       inv3.join();
     }
     inv1.join();
@@ -629,9 +629,9 @@ public class SerialWANStatsDistributedTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation<?> inv1 =
+    AsyncInvocation<Void> inv1 =
         vm6.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName + "_RR", 2, 5000, 0));
-    AsyncInvocation<?> inv2 =
+    AsyncInvocation<Void> inv2 =
         vm7.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName + "_RR", 2, 5000, 1));
 
     vm2.invoke(() -> await()
@@ -646,7 +646,7 @@ public class SerialWANStatsDistributedTest extends WANTestBase {
       fail("Unexpected exception while killing a sender");
     }
     if (!isKilled) {
-      AsyncInvocation<?> inv4 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
+      AsyncInvocation<Boolean> inv4 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
       inv4.join();
     }
     inv1.join();
@@ -783,7 +783,7 @@ public class SerialWANStatsDistributedTest extends WANTestBase {
     startSenderInVMs("ln", vm4, vm5);
 
     // start puts in RR_1 in another thread
-    AsyncInvocation<?> inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR_1", numEntries));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(testName + "_RR_1", 5));

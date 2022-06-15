@@ -176,7 +176,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
       });
     }
 
-    AsyncInvocation[] invokes = new AsyncInvocation[vmCount];
+    AsyncInvocation<?>[] invokes = new AsyncInvocation[vmCount];
     for (int i = 0; i < vmCount; i++) {
       invokes[i] = VM.getVM(i).invokeAsync("Start Threads and increment", () -> {
         final ThreadGroup group = new ThreadGroup("Incrementors") {

@@ -158,8 +158,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // to be invoked which will wait for the index to be destroyed before invoking the real
     // afterDataRegionCreated method and completing region creation. The registerIndex method will
     // realize the defined index has been destroyed and destroy the real one.
-    AsyncInvocation server1RegionCreationInvocation = server1.invokeAsync(this::createRegion);
-    AsyncInvocation server2RegionCreationInvocation = server2.invokeAsync(this::createRegion);
+    AsyncInvocation<Void> server1RegionCreationInvocation = server1.invokeAsync(this::createRegion);
+    AsyncInvocation<Void> server2RegionCreationInvocation = server2.invokeAsync(this::createRegion);
 
     // Wait for index creation to be in progress
     server1.invoke(this::waitForIndexCreationInProgress);
@@ -315,8 +315,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // to be invoked which will wait for the indexes to be destroyed before invoking the real
     // afterDataRegionCreated method and completing region creation. The registerIndex method will
     // realize the defined index has been destroyed and destroy the real one.
-    AsyncInvocation server1RegionCreationInvocation = server1.invokeAsync(this::createRegion);
-    AsyncInvocation server2RegionCreationInvocation = server2.invokeAsync(this::createRegion);
+    AsyncInvocation<Void> server1RegionCreationInvocation = server1.invokeAsync(this::createRegion);
+    AsyncInvocation<Void> server2RegionCreationInvocation = server2.invokeAsync(this::createRegion);
 
     // Wait for index creation to be in progress
     server1.invoke(this::waitForIndexCreationInProgress);

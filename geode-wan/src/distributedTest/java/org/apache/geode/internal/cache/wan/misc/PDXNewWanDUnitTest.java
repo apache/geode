@@ -527,7 +527,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 4,
         isOffHeap()));
 
-    AsyncInvocation deserializationFuture;
+    AsyncInvocation<Void> deserializationFuture;
     try {
       // Delay processing of sending type registry update from vm2
       vm2.invoke(() -> {

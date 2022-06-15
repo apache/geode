@@ -149,7 +149,7 @@ public class CompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   public void doQuery() throws InterruptedException {
     final String[] qarr = {"1", "519", "181"};
-    AsyncInvocation as0 = vm0.invokeAsync(new CacheSerializableRunnable("Executing query") {
+    AsyncInvocation<Void> as0 = vm0.invokeAsync(new CacheSerializableRunnable("Executing query") {
       @Override
       public void run2() throws CacheException {
         for (int i = 0; i < 50; i++) {

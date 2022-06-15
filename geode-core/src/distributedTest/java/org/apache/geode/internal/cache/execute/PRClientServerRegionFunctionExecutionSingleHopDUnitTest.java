@@ -349,7 +349,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
    * failover to other available server
    */
   @Test
-  public void testServerFailoverWithTwoServerAliveHA() {
+  public void testServerFailoverWithTwoServerAliveHA() throws InterruptedException {
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
@@ -359,20 +359,18 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::putOperation);
 
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = client.invokeAsync(
+    AsyncInvocation<List<Boolean>> async = client.invokeAsync(
         PRClientServerRegionFunctionExecutionSingleHopDUnitTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::startServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::startServerHA);
     server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::stopServerHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .verifyDeadAndLiveServers(2));
-    ThreadUtils.join(async[0], 6 * 60 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
+    ThreadUtils.join(async, 6 * 60 * 1000);
+    if (async.getException() != null) {
+      Assert.fail("UnExpected Exception Occurred : ", async.getException());
     }
-    List l = (List) async[0].getReturnValue();
+    List<Boolean> l = async.get();
 
     assertEquals(2, l.size());
   }
@@ -382,7 +380,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
    * failover to other available server
    */
   @Test
-  public void testServerCacheClosedFailoverWithTwoServerAliveHA() {
+  public void testServerCacheClosedFailoverWithTwoServerAliveHA() throws InterruptedException {
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
@@ -391,20 +389,19 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::stopServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::putOperation);
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = client.invokeAsync(
+
+    AsyncInvocation<List<Boolean>> async = client.invokeAsync(
         PRClientServerRegionFunctionExecutionSingleHopDUnitTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::startServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::startServerHA);
     server1.invoke(PRClientServerRegionFunctionExecutionSingleHopDUnitTest::closeCacheHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionSingleHopDUnitTest
         .verifyDeadAndLiveServers(2));
-    ThreadUtils.join(async[0], 5 * 60 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
+    ThreadUtils.join(async, 5 * 60 * 1000);
+    if (async.getException() != null) {
+      Assert.fail("UnExpected Exception Occurred : ", async.getException());
     }
-    List l = (List) async[0].getReturnValue();
+    List<Boolean> l = async.get();
     assertEquals(2, l.size());
   }
 
@@ -545,23 +542,6 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
       logger.info("Got an exception : " + e.getMessage());
       assertTrue(e instanceof CacheClosedException);
     }
-  }
-
-  private static Object executeFunctionHA() {
-    Region<String, Integer> region = cache.getRegion(PartitionedRegionName);
-    final HashSet<String> testKeysSet = new HashSet<>();
-    for (int i = (totalNumBuckets * 10); i > 0; i--) {
-      testKeysSet.add("execKey-" + i);
-    }
-    DistributedSystem.setThreadsSocketPolicy(false);
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
-    FunctionService.registerFunction(function);
-    Execution dataSet = FunctionService.onRegion(region);
-    ResultCollector rc1 =
-        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-    List l = ((List) rc1.getResult());
-    logger.info("Result size : " + l.size());
-    return l;
   }
 
   public Object executeFunctionOnPartitionedRegion(String regionName, String functionName,

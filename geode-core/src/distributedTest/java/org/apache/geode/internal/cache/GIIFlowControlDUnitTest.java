@@ -122,7 +122,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
 
     createData(vm0, 0, 50, "1234567890");
 
-    AsyncInvocation async1 = createRegionAsync(vm1);
+    AsyncInvocation<Void> async1 = createRegionAsync(vm1);
 
     async1.join(100);
     assertTrue(async1.isAlive());
@@ -199,7 +199,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
 
     createData(vm0, 0, 50, "1234567890");
 
-    AsyncInvocation async1 = createRegionAsync(vm1);
+    AsyncInvocation<Void> async1 = createRegionAsync(vm1);
 
     vm1.invoke(new SerializableRunnable("Wait to flow control messages") {
 
@@ -427,7 +427,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
     return createRegion;
   }
 
-  private AsyncInvocation createRegionAsync(VM vm) throws Throwable {
+  private AsyncInvocation<Void> createRegionAsync(VM vm) throws Throwable {
     SerializableRunnable createRegion = getCreateRegionRunnable();
     return vm.invokeAsync(createRegion);
   }

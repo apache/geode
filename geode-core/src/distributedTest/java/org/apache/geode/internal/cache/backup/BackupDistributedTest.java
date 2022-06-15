@@ -247,7 +247,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
           createTestHookToCreateRegionBeforeSendingPrepareBackupRequest());
     });
 
-    AsyncInvocation asyncVM1CreateRegion = vm1.invokeAsync(() -> {
+    AsyncInvocation<Void> asyncVM1CreateRegion = vm1.invokeAsync(() -> {
       getBlackboard().waitForGate("createRegion", 30, SECONDS);
       createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1), false, true);
       getBlackboard().signalGate("createdRegion");
@@ -277,11 +277,11 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
       getCache().getPartitionedRegionLockService().becomeLockGrantor();
     });
 
-    AsyncInvocation asyncVM1Region1 = vm1.invokeAsync(() -> {
+    AsyncInvocation<Void> asyncVM1Region1 = vm1.invokeAsync(() -> {
       createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm1), true, true);
     });
 
-    AsyncInvocation asyncVM1Region2 = vm1.invokeAsync(() -> {
+    AsyncInvocation<Void> asyncVM1Region2 = vm1.invokeAsync(() -> {
       createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1), false, true);
       getBlackboard().signalGate("createdRegionAfterRecovery");
     });
@@ -554,7 +554,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     restoreBackup(2);
 
     // in vm0, start doing a bunch of concurrent puts.
-    AsyncInvocation putsInVM0 = vm0.invokeAsync(() -> {
+    AsyncInvocation<Void> putsInVM0 = vm0.invokeAsync(() -> {
       Region region = getCache().getRegion(regionName1);
       try {
         for (int i = 0;; i++) {
@@ -569,8 +569,8 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
       }
     });
 
-    AsyncInvocation createRegionsInVM1 = vm1.invokeAsync(() -> createColocatedRegions(vm1));
-    AsyncInvocation createRegionsInVM2 = vm2.invokeAsync(() -> createColocatedRegions(vm2));
+    AsyncInvocation<Void> createRegionsInVM1 = vm1.invokeAsync(() -> createColocatedRegions(vm1));
+    AsyncInvocation<Void> createRegionsInVM2 = vm2.invokeAsync(() -> createColocatedRegions(vm2));
 
     createRegionsInVM1.await();
     createRegionsInVM2.await();
@@ -706,11 +706,11 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
 
   private void createPersistentRegions(final VM... vms)
       throws ExecutionException, InterruptedException {
-    Set<AsyncInvocation> createRegionAsyncs = new HashSet<>();
+    Set<AsyncInvocation<Void>> createRegionAsyncs = new HashSet<>();
     for (VM vm : vms) {
       createRegionAsyncs.add(vm.invokeAsync(() -> createRegions(vm)));
     }
-    for (AsyncInvocation createRegion : createRegionAsyncs) {
+    for (AsyncInvocation<?> createRegion : createRegionAsyncs) {
       createRegion.await();
     }
   }

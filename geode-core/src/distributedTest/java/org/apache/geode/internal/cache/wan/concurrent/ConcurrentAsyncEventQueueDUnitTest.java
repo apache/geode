@@ -163,11 +163,11 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
     vm4.invoke(() -> AsyncEventQueueTestBase
         .createReplicatedRegionWithAsyncEventQueue(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm1.invokeAsync(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 50));
-    AsyncInvocation inv2 = vm1.invokeAsync(
+    AsyncInvocation<Void> inv2 = vm1.invokeAsync(
         () -> AsyncEventQueueTestBase.doNextPuts(getTestMethodName() + "_RR", 50, 100));
-    AsyncInvocation inv3 = vm1.invokeAsync(
+    AsyncInvocation<Void> inv3 = vm1.invokeAsync(
         () -> AsyncEventQueueTestBase.doNextPuts(getTestMethodName() + "_RR", 100, 150));
 
     try {

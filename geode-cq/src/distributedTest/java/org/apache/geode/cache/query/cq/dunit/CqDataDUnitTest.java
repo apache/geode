@@ -880,74 +880,75 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Execute CQ while update is in progress.
-    AsyncInvocation processCqs = client.invokeAsync(new CacheSerializableRunnable("Execute CQ") {
-      @Override
-      public void run2() throws CacheException {
-        QueryService cqService = getCache().getQueryService();
-        // Get CqQuery object.
-        CqQuery cq1 = cqService.getCq(cqName);
-        if (cq1 == null) {
-          fail("Failed to get CQ " + cqName);
-        }
+    AsyncInvocation<Void> processCqs =
+        client.invokeAsync(new CacheSerializableRunnable("Execute CQ") {
+          @Override
+          public void run2() throws CacheException {
+            QueryService cqService = getCache().getQueryService();
+            // Get CqQuery object.
+            CqQuery cq1 = cqService.getCq(cqName);
+            if (cq1 == null) {
+              fail("Failed to get CQ " + cqName);
+            }
 
-        SelectResults cqResults = null;
+            SelectResults cqResults = null;
 
-        try {
-          cqResults = cq1.executeWithInitialResults();
-        } catch (Exception ex) {
-          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName, ex);
-          throw err;
-        }
+            try {
+              cqResults = cq1.executeWithInitialResults();
+            } catch (Exception ex) {
+              AssertionError err = new AssertionError("Failed to execute  CQ " + cqName, ex);
+              throw err;
+            }
 
-        // getLogWriter().info("initial result size = " + cqResults.size());
+            // getLogWriter().info("initial result size = " + cqResults.size());
 
-        CqQueryTestListener cqListener =
-            (CqQueryTestListener) cq1.getCqAttributes().getCqListener();
-        // Wait for the last key to arrive.
-        cqListener.waitForCreated("" + totalObjects);
+            CqQueryTestListener cqListener =
+                (CqQueryTestListener) cq1.getCqAttributes().getCqListener();
+            // Wait for the last key to arrive.
+            cqListener.waitForCreated("" + totalObjects);
 
-        // Check if the events from CqListener are in order.
-        int oldId = 0;
-        for (Object cqEvent : cqListener.events.toArray()) {
-          int newId = new Integer(cqEvent.toString());
-          if (oldId > newId) {
-            fail("Queued events for CQ Listener during execution with "
-                + "Initial results is not in the order in which they are created.");
+            // Check if the events from CqListener are in order.
+            int oldId = 0;
+            for (Object cqEvent : cqListener.events.toArray()) {
+              int newId = new Integer(cqEvent.toString());
+              if (oldId > newId) {
+                fail("Queued events for CQ Listener during execution with "
+                    + "Initial results is not in the order in which they are created.");
+              }
+              oldId = newId;
+            }
+
+            // Check if all the IDs are present as part of Select Results and CQ Events.
+            HashSet ids = new HashSet(cqListener.events);
+            for (Object o : cqResults.asList()) {
+              Struct s = (Struct) o;
+              ids.add(s.get("key"));
+            }
+
+            // Iterator iter = cqResults.asSet().iterator();
+            // while (iter.hasNext()) {
+            // Portfolio p = (Portfolio)iter.next();
+            // ids.add(p.getPk());
+            // //getLogWriter().info("Result set value : " + p.getPk());
+            // }
+
+            HashSet missingIds = new HashSet();
+            String key = "";
+            for (int i = 1; i <= totalObjects; i++) {
+              key = "" + i;
+              if (!(ids.contains(key))) {
+                missingIds.add(key);
+              }
+            }
+
+            if (!missingIds.isEmpty()) {
+              fail("Missing Keys in either ResultSet or the Cq Event list. "
+                  + " Missing keys : [size : " + missingIds.size() + "]" + missingIds
+                  + " Ids in ResultSet and CQ Events :" + ids);
+            }
+
           }
-          oldId = newId;
-        }
-
-        // Check if all the IDs are present as part of Select Results and CQ Events.
-        HashSet ids = new HashSet(cqListener.events);
-        for (Object o : cqResults.asList()) {
-          Struct s = (Struct) o;
-          ids.add(s.get("key"));
-        }
-
-        // Iterator iter = cqResults.asSet().iterator();
-        // while (iter.hasNext()) {
-        // Portfolio p = (Portfolio)iter.next();
-        // ids.add(p.getPk());
-        // //getLogWriter().info("Result set value : " + p.getPk());
-        // }
-
-        HashSet missingIds = new HashSet();
-        String key = "";
-        for (int i = 1; i <= totalObjects; i++) {
-          key = "" + i;
-          if (!(ids.contains(key))) {
-            missingIds.add(key);
-          }
-        }
-
-        if (!missingIds.isEmpty()) {
-          fail("Missing Keys in either ResultSet or the Cq Event list. "
-              + " Missing keys : [size : " + missingIds.size() + "]" + missingIds
-              + " Ids in ResultSet and CQ Events :" + ids);
-        }
-
-      }
-    });
+        });
 
     // Keep updating region (async invocation).
     server.invokeAsync(new CacheSerializableRunnable("Update Region") {
@@ -1040,7 +1041,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     });
 
     // the thread that validates all results and executes first
-    AsyncInvocation processCqs =
+    AsyncInvocation<Void> processCqs =
         client.invokeAsync(new CacheSerializableRunnable("Execute CQ first") {
           @Override
           public void run2() throws CacheException {

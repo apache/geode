@@ -142,7 +142,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     final int numIterations = 500;
 
-    AsyncInvocation[] asyncInvocations = new AsyncInvocation[clientVMs.length];
+    AsyncInvocation<?>[] asyncInvocations = new AsyncInvocation[clientVMs.length];
     for (int i = 0; i < clientVMs.length; i++) {
       final String clientGateName = "client" + i + "Ready";
       asyncInvocations[i] = clientVMs[i].invokeAsync("doOps Thread", () -> {
@@ -153,7 +153,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     getBlackboard().signalGate("proceed");
 
-    for (final AsyncInvocation asyncInvocation : asyncInvocations) {
+    for (final AsyncInvocation<?> asyncInvocation : asyncInvocations) {
       asyncInvocation.join();
     }
 

@@ -96,7 +96,7 @@ public class ConnectDisconnectDUnitTest extends JUnit4CacheTestCase {
       vms[i] = Host.getHost(0).getVM(i);
     }
 
-    AsyncInvocation[] asyncs = new AsyncInvocation[numVMs];
+    AsyncInvocation<?>[] asyncs = new AsyncInvocation[numVMs];
     for (int i = 0; i < numVMs; i++) {
       asyncs[i] = vms[i].invokeAsync(new SerializableRunnable("Create a cache") {
         @Override

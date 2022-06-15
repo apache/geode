@@ -101,7 +101,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
    * failover to other available server
    */
   @Test
-  public void testServerFailoverWithTwoServerAliveHA() {
+  public void testServerFailoverWithTwoServerAliveHA() throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
@@ -111,20 +111,18 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::putOperation);
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = client
+    AsyncInvocation<List<Boolean>> async = client
         .invokeAsync(PRClientServerRegionFunctionExecutionDUnitTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
     server1.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .verifyDeadAndLiveServers(2));
-    ThreadUtils.join(async[0], 6 * 60 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
+    ThreadUtils.join(async, 6 * 60 * 1000);
+    if (async.getException() != null) {
+      Assert.fail("UnExpected Exception Occurred : ", async.getException());
     }
-    List l = (List) async[0].getReturnValue();
+    List<Boolean> l = async.get();
     assertEquals(2, l.size());
   }
 
@@ -133,7 +131,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
    * failover to other available server
    */
   @Test
-  public void testServerCacheClosedFailoverWithTwoServerAliveHA() {
+  public void testServerCacheClosedFailoverWithTwoServerAliveHA() throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
     ArrayList commonAttributes =
         createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
@@ -143,20 +141,18 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::putOperation);
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = client
+    AsyncInvocation<List<Boolean>> async = client
         .invokeAsync(PRClientServerRegionFunctionExecutionDUnitTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
     server1.invoke(PRClientServerRegionFunctionExecutionDUnitTest::closeCacheHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .verifyDeadAndLiveServers(2));
-    ThreadUtils.join(async[0], 5 * 60 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
+    ThreadUtils.join(async, 5 * 60 * 1000);
+    if (async.getException() != null) {
+      Assert.fail("UnExpected Exception Occurred : ", async.getException());
     }
-    List l = (List) async[0].getReturnValue();
+    List<Boolean> l = async.get();
     assertEquals(2, l.size());
   }
 

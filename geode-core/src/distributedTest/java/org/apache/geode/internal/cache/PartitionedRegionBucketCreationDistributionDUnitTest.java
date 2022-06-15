@@ -61,7 +61,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
   private VM vm2;
   private VM vm3;
 
-  private transient List<AsyncInvocation> asyncInvocations;
+  private transient List<AsyncInvocation<Void>> asyncInvocations;
 
   @Before
   public void setUp() {
@@ -670,7 +670,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
   }
 
   private void awaitAllAsyncInvocations() throws ExecutionException, InterruptedException {
-    for (AsyncInvocation async : asyncInvocations) {
+    for (AsyncInvocation<Void> async : asyncInvocations) {
       async.await();
     }
   }

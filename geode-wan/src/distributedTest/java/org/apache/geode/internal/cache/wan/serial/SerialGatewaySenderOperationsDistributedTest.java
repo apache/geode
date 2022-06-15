@@ -233,7 +233,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm4.invoke(() -> validateSenderPausedState("ln"));
     vm5.invoke(() -> validateSenderPausedState("ln"));
 
-    AsyncInvocation doPutsInVm4 =
+    AsyncInvocation<Void> doPutsInVm4 =
         vm4.invokeAsync(() -> doPuts(className + "_RR", 10));
 
     vm4.invoke(() -> resumeSender("ln"));
@@ -315,8 +315,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm4.invoke(() -> validateSenderStoppedState("ln"));
     vm5.invoke(() -> validateSenderStoppedState("ln"));
 
-    AsyncInvocation startSenderInVm4 = vm4.invokeAsync(() -> startSender("ln"));
-    AsyncInvocation startSenderInVm5 = vm5.invokeAsync(() -> startSender("ln"));
+    AsyncInvocation<Void> startSenderInVm4 = vm4.invokeAsync(() -> startSender("ln"));
+    AsyncInvocation<Void> startSenderInVm5 = vm5.invokeAsync(() -> startSender("ln"));
 
     startSenderInVm4.await();
     startSenderInVm5.await();
@@ -392,10 +392,10 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
 
 
     // do a lot of puts while senders are restarting
-    AsyncInvocation doPutsInVm7 = vm7.invokeAsync(() -> doPuts(className + "_RR", 5000));
+    AsyncInvocation<Void> doPutsInVm7 = vm7.invokeAsync(() -> doPuts(className + "_RR", 5000));
 
-    AsyncInvocation startSenderInVm4 = vm4.invokeAsync(() -> startSender("ln"));
-    AsyncInvocation startSenderInVm5 = vm5.invokeAsync(() -> startSender("ln"));
+    AsyncInvocation<Void> startSenderInVm4 = vm4.invokeAsync(() -> startSender("ln"));
+    AsyncInvocation<Void> startSenderInVm5 = vm5.invokeAsync(() -> startSender("ln"));
 
     startSenderInVm4.await();
     startSenderInVm5.await();
@@ -455,8 +455,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
             .sum(),
             greaterThan(0));
 
-    AsyncInvocation resumeSenderInVm4 = vm4.invokeAsync(() -> resumeSender("ln"));
-    AsyncInvocation resumeSenderInVm5 = vm5.invokeAsync(() -> resumeSender("ln"));
+    AsyncInvocation<Void> resumeSenderInVm4 = vm4.invokeAsync(() -> resumeSender("ln"));
+    AsyncInvocation<Void> resumeSenderInVm5 = vm5.invokeAsync(() -> resumeSender("ln"));
 
     resumeSenderInVm4.await();
     resumeSenderInVm5.await();
@@ -511,7 +511,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm3.invoke(() -> validateRegionSize(className + "_RR", 200));
 
     // Do some puts from both vm4 and vm5 while restarting a sender
-    AsyncInvocation doPutsInVm4 =
+    AsyncInvocation<Void> doPutsInVm4 =
         vm4.invokeAsync(() -> doPuts(className + "_RR", 300));
 
     Thread.sleep(10);

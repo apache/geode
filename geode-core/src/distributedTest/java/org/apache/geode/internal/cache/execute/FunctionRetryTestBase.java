@@ -141,7 +141,7 @@ public class FunctionRetryTestBase implements Serializable {
 
     IgnoredException.addIgnoredException(FunctionException.class.getName());
 
-    AsyncInvocation clientExecuteAsync = client.invokeAsync(() -> {
+    AsyncInvocation<Void> clientExecuteAsync = client.invokeAsync(() -> {
 
       assertThat(executionTarget).isNotNull();
 

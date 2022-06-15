@@ -169,7 +169,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     vm0.invoke(helper.getCacheSerializableRunnableForPRIndexCreate(regionName, indexName,
         indexedExpression, fromClause, alias));
 
-    AsyncInvocation[] asyncInvs = new AsyncInvocation[2];
+    AsyncInvocation<?>[] asyncInvs = new AsyncInvocation[2];
 
     asyncInvs[0] =
         vm0.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, stepSize));
@@ -177,11 +177,11 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     asyncInvs[1] =
         vm0.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, stepSize));
 
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       ThreadUtils.join(inv, 30 * 000);
     }
 
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
         Assert.fail("Random region operation failed on VM_" + inv.getId(), inv.getException());
       }
@@ -217,7 +217,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     vm0.invoke(helper.getCacheSerializableRunnableForPRIndexCreate(regionName, rindexName,
         rindexedExpression, rfromClause, ralias));
 
-    AsyncInvocation[] asyncInvs = new AsyncInvocation[2];
+    AsyncInvocation<?>[] asyncInvs = new AsyncInvocation[2];
 
     asyncInvs[0] = vm0.invokeAsync(
         helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, totalDataSize));
@@ -225,10 +225,10 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     asyncInvs[1] = vm0.invokeAsync(
         helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, totalDataSize));
 
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       ThreadUtils.join(inv, 30 * 000);
     }
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
         Assert.fail("Random region operation failed on VM_" + inv.getId(), inv.getException());
       }
@@ -263,7 +263,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
         indexedExpression, fromClause, alias));
 
 
-    AsyncInvocation[] asyncInvs = new AsyncInvocation[12];
+    AsyncInvocation<?>[] asyncInvs = new AsyncInvocation[12];
 
     asyncInvs[0] =
         vm0.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, stepSize));
@@ -301,11 +301,11 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     asyncInvs[11] = vm3.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName,
         (3 * (stepSize)), totalDataSize));
 
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       ThreadUtils.join(inv, 60 * 000);
     }
 
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
         Assert.fail("Random region operation failed on VM_" + inv.getId(), inv.getException());
       }
@@ -344,7 +344,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
         rindexedExpression, rfromClause, ralias));
 
 
-    AsyncInvocation[] asyncInvs = new AsyncInvocation[12];
+    AsyncInvocation<?>[] asyncInvs = new AsyncInvocation[12];
 
     asyncInvs[0] =
         vm0.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName, 0, stepSize));
@@ -382,10 +382,10 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     asyncInvs[11] = vm3.invokeAsync(helper.getCacheSerializableRunnableForPRRandomOps(regionName,
         (3 * (stepSize)), totalDataSize));
 
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       ThreadUtils.join(inv, 60 * 000);
     }
-    for (AsyncInvocation inv : asyncInvs) {
+    for (AsyncInvocation<?> inv : asyncInvs) {
       if (inv.exceptionOccurred()) {
         Assert.fail("Random region operation failed on VM_" + inv.getId(), inv.getException());
       }

@@ -68,7 +68,7 @@ public class MultiGfshDUnitTest {
     VM vm2 = lsRule.getVM(2);
     // set up vm_2 as a gfsh vm, and then connect as "stranger" and try to execute the commands and
     // assert errors comes back are NotAuthorized
-    AsyncInvocation vm2Invoke = vm2.invokeAsync("run as guest", () -> {
+    AsyncInvocation<Void> vm2Invoke = vm2.invokeAsync("run as guest", () -> {
       GfshCommandRule gfsh = new GfshCommandRule();
       gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "guest", "guest");
 
@@ -93,7 +93,7 @@ public class MultiGfshDUnitTest {
     // set up vm_3 as another gfsh vm, and then connect as "super-user" and try to execute the
     // commands and assert we don't get a NotAuthorized Exception
     VM vm3 = lsRule.getVM(3);
-    AsyncInvocation vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
+    AsyncInvocation<Void> vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
       GfshCommandRule gfsh = new GfshCommandRule();
       gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "data,cluster", "data,cluster");
 

@@ -216,8 +216,8 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       vm1.invoke(ClearMultiVmDUnitTest.class, "getMethod", objArr);
     }
 
-    AsyncInvocation as1 = vm0.invokeAsync(ClearMultiVmDUnitTest::firstVM);
-    AsyncInvocation as2 = vm1.invokeAsync(ClearMultiVmDUnitTest::secondVM);
+    AsyncInvocation<Void> as1 = vm0.invokeAsync(ClearMultiVmDUnitTest::firstVM);
+    AsyncInvocation<Void> as2 = vm1.invokeAsync(ClearMultiVmDUnitTest::secondVM);
     ThreadUtils.join(as1, 30 * 1000);
     ThreadUtils.join(as2, 30 * 1000);
 
@@ -324,7 +324,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       });
 
       // now do the get initial image in vm1
-      AsyncInvocation async1 = vm1.invokeAsync(create);
+      AsyncInvocation<Void> async1 = vm1.invokeAsync(create);
 
       // try to time a distributed clear to happen in the middle of gii
       vm0.invoke(new SerializableRunnable("call clear when gii") {

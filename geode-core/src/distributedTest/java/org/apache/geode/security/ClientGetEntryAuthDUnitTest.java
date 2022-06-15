@@ -63,7 +63,7 @@ public class ClientGetEntryAuthDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testGetEntry() throws Exception {
     // client1 connects to server as a user not authorized to do any operations
-    AsyncInvocation ai1 = client1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = client1.invokeAsync(() -> {
       ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
 
       CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
@@ -77,7 +77,7 @@ public class ClientGetEntryAuthDUnitTest extends JUnit4DistributedTestCase {
 
     });
 
-    AsyncInvocation ai2 = client2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = client2.invokeAsync(() -> {
       ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
 
       CacheTransactionManager transactionManager = cache.getCacheTransactionManager();

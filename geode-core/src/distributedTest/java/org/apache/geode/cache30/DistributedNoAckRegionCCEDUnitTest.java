@@ -113,12 +113,12 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     vm0.invoke(DistributedNoAckRegionCCEDUnitTest::addBlockingListener);
     vm1.invoke(DistributedNoAckRegionCCEDUnitTest::addBlockingListener);
     vm2.invoke(DistributedNoAckRegionCCEDUnitTest::addBlockingListener);
-    AsyncInvocation vm0Ops = vm0.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
-    AsyncInvocation vm1Ops = vm1.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
-    AsyncInvocation vm2Ops = vm2.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
+    AsyncInvocation<Void> vm0Ops = vm0.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
+    AsyncInvocation<Void> vm1Ops = vm1.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
+    AsyncInvocation<Void> vm2Ops = vm2.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
     // pause to let a bunch of operations build up
     Wait.pause(5000);
-    AsyncInvocation a0 = vm3.invokeAsync(DistributedNoAckRegionCCEDUnitTest::clearRegion);
+    AsyncInvocation<Void> a0 = vm3.invokeAsync(DistributedNoAckRegionCCEDUnitTest::clearRegion);
     vm0.invoke(DistributedNoAckRegionCCEDUnitTest::unblockListener);
     vm1.invoke(DistributedNoAckRegionCCEDUnitTest::unblockListener);
     vm2.invoke(DistributedNoAckRegionCCEDUnitTest::unblockListener);

@@ -154,10 +154,10 @@ public class ParallelSerialAsyncEventListenerStopStartDistributedTest implements
     vm3.invoke(this::stopAsyncQueues);
 
     // Start all AEQs
-    AsyncInvocation startAeqsVm0 = vm0.invokeAsync(this::startAsyncQueues);
-    AsyncInvocation startAeqsVm1 = vm1.invokeAsync(this::startAsyncQueues);
-    AsyncInvocation startAeqsVm2 = vm2.invokeAsync(this::startAsyncQueues);
-    AsyncInvocation startAeqsVm3 = vm3.invokeAsync(this::startAsyncQueues);
+    AsyncInvocation<Void> startAeqsVm0 = vm0.invokeAsync(this::startAsyncQueues);
+    AsyncInvocation<Void> startAeqsVm1 = vm1.invokeAsync(this::startAsyncQueues);
+    AsyncInvocation<Void> startAeqsVm2 = vm2.invokeAsync(this::startAsyncQueues);
+    AsyncInvocation<Void> startAeqsVm3 = vm3.invokeAsync(this::startAsyncQueues);
 
     // Wait for async tasks to complete
     ThreadUtils.join(startAeqsVm0, 120 * 1000);

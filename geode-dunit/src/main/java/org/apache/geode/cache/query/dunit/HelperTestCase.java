@@ -189,7 +189,7 @@ public abstract class HelperTestCase extends JUnit4CacheTestCase {
     return cqa;
   }
 
-  protected AsyncInvocation executeCQ(VM vm, final String cqName) {
+  protected AsyncInvocation<Void> executeCQ(VM vm, final String cqName) {
     return vm.invokeAsync(new SerializableCallable() {
       @Override
       public Object call() throws CqException, RegionNotFoundException {

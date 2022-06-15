@@ -340,13 +340,13 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
 
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
     // create PR on local site
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase
+    AsyncInvocation<Void> inv2 = vm5.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase
+    AsyncInvocation<Void> inv3 = vm6.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv4 = vm7.invokeAsync(() -> WANTestBase
+    AsyncInvocation<Void> inv4 = vm7.invokeAsync(() -> WANTestBase
         .createPartitionedRegion(getTestMethodName() + "PR1", "ln", 1, 100, isOffHeap()));
 
     try {

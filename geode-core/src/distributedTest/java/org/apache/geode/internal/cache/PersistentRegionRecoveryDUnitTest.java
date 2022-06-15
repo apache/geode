@@ -235,7 +235,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
               getBlackboard()));
     });
 
-    AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createAsyncDiskRegion());
+    AsyncInvocation<Void> asyncVM1 = vm1.invokeAsync(() -> createAsyncDiskRegion());
 
     logger.info("##### After async create region in vm1");
 
@@ -293,7 +293,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
               getBlackboard()));
     });
 
-    AsyncInvocation asyncVM1 = vm1.invokeAsync(this::createSyncDiskRegion);
+    AsyncInvocation<Void> asyncVM1 = vm1.invokeAsync(this::createSyncDiskRegion);
 
     logger.info("##### After async create region in vm1");
 
@@ -439,7 +439,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
           });
     });
 
-    AsyncInvocation vm0createRegion = vm0.invokeAsync(() -> createAsyncDiskRegion(true));
+    AsyncInvocation<Void> vm0createRegion = vm0.invokeAsync(() -> createAsyncDiskRegion(true));
 
     vm1.invoke(() -> {
       await().until(() -> getBlackboard().isGateSignaled("GotRegionIIRequest"));

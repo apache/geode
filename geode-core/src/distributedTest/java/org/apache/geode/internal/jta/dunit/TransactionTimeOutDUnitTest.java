@@ -117,8 +117,8 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public void testTimeOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation async1 = vm0.invokeAsync(this::userTransactionCanBeTimedOut);
-    AsyncInvocation async2 = vm0.invokeAsync(this::userTransactionCanBeTimedOut);
+    AsyncInvocation<Void> async1 = vm0.invokeAsync(this::userTransactionCanBeTimedOut);
+    AsyncInvocation<Void> async2 = vm0.invokeAsync(this::userTransactionCanBeTimedOut);
 
     ThreadUtils.join(async1, 30 * 1000);
     ThreadUtils.join(async2, 30 * 1000);

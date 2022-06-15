@@ -620,7 +620,7 @@ public class ConcurrentParallelGatewaySenderDistributedTest extends WANTestBase 
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    AsyncInvocation putsToVM7 =
+    AsyncInvocation<Void> putsToVM7 =
         vm7.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
 
     vm2.invoke(() -> await()
@@ -628,18 +628,18 @@ public class ConcurrentParallelGatewaySenderDistributedTest extends WANTestBase 
             "Failure in waiting for at least 10 events to be received by the receiver", true,
             (getRegionSize(getTestMethodName() + "_PR") > 10))));
 
-    AsyncInvocation killsSenderFromVM4 = vm4.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation<Void> killsSenderFromVM4 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
     int prevRegionSize = vm2.invoke(() -> WANTestBase.getRegionSize(getTestMethodName() + "_PR"));
 
-    AsyncInvocation putsToVM6 =
+    AsyncInvocation<Void> putsToVM6 =
         vm6.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
     vm2.invoke(() -> await().untilAsserted(() -> assertEquals(
         "Failure in waiting for additional 20 events to be received by the receiver ", true,
         getRegionSize(getTestMethodName() + "_PR") > 20 + prevRegionSize)));
 
-    AsyncInvocation killsSenderFromVM5 = vm5.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation<Void> killsSenderFromVM5 = vm5.invokeAsync(() -> WANTestBase.killSender());
 
     putsToVM7.get();
     killsSenderFromVM4.get();

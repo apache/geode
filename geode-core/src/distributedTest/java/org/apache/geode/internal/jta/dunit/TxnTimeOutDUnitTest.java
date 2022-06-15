@@ -133,23 +133,23 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
       Object[] o = new Object[1];
       o[0] = 2;
-      AsyncInvocation asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o);
+      AsyncInvocation<Void> asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o);
 
       Object[] o1 = new Object[1];
       o1[0] = 2;
-      AsyncInvocation asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o1);
+      AsyncInvocation<Void> asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o1);
 
       Object[] o2 = new Object[1];
       o2[0] = 3;
-      AsyncInvocation asyncObj3 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o2);
+      AsyncInvocation<Void> asyncObj3 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o2);
 
       Object[] o3 = new Object[1];
       o3[0] = 3;
-      AsyncInvocation asyncObj4 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o3);
+      AsyncInvocation<Void> asyncObj4 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o3);
 
       Object[] o4 = new Object[1];
       o4[0] = 1;
-      AsyncInvocation asyncObj5 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o4);
+      AsyncInvocation<Void> asyncObj5 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o4);
 
       ThreadUtils.join(asyncObj1, 5 * 60 * 1000);
       if (asyncObj1.exceptionOccurred()) {
@@ -187,8 +187,8 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public void testLoginTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest2);
-    AsyncInvocation asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest1);
+    AsyncInvocation<Void> asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest2);
+    AsyncInvocation<Void> asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest1);
 
     ThreadUtils.join(asyncObj1, 5 * 60 * 1000);
     if (asyncObj1.exceptionOccurred()) {

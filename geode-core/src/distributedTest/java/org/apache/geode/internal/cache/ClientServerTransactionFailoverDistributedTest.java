@@ -424,7 +424,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
           });
     });
 
-    AsyncInvocation clientAsync = client.invokeAsync(() -> {
+    AsyncInvocation<Void> clientAsync = client.invokeAsync(() -> {
       {
         CacheTransactionManager transactionManager =
             clientCacheRule.getClientCache().getCacheTransactionManager();

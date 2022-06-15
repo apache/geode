@@ -73,7 +73,7 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), server1, server2);
 
       // async puts through server 2
-      AsyncInvocation asyncPutsThroughOld =
+      AsyncInvocation<Void> asyncPutsThroughOld =
           server2.invokeAsync(new CacheSerializableRunnable("async puts") {
             @Override
             public void run2() {
@@ -96,7 +96,7 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
       verifyValues(objectType, regionName, 0, 500, server1);
 
       // aync puts through server 1
-      AsyncInvocation asyncPutsThroughNew =
+      AsyncInvocation<Void> asyncPutsThroughNew =
           server1.invokeAsync(new CacheSerializableRunnable("async puts") {
             @Override
             public void run2() {

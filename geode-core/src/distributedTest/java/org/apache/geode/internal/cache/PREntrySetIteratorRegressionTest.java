@@ -65,14 +65,14 @@ public class PREntrySetIteratorRegressionTest extends CacheTestCase {
 
   @Test
   public void regionEntrySetIteratorNextShouldNeverReturnNull() throws Exception {
-    AsyncInvocation destroySomeEntries = vm1.invokeAsync(() -> {
+    AsyncInvocation<Void> destroySomeEntries = vm1.invokeAsync(() -> {
       Region<Integer, Object> region = getCache().getRegion(uniqueName);
       for (int j = 0; j < ENTRY_COUNT / ENTRY_DESTROY_SEQUENCE; j += ENTRY_DESTROY_SEQUENCE) {
         region.destroy(j);
       }
     });
 
-    AsyncInvocation validateEntrySetIteratorContainsNoNulls = vm2.invokeAsync(() -> {
+    AsyncInvocation<Void> validateEntrySetIteratorContainsNoNulls = vm2.invokeAsync(() -> {
       Region<Integer, Object> region = getCache().getRegion(uniqueName);
       for (Entry<Integer, Object> entry : region.entrySet()) {
         assertThat(entry).isNotNull();

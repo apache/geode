@@ -251,9 +251,9 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
     String fileName = "PRIndexCreation.xml";
     setCacheInVMsUsingXML(fileName, vm0, vm1);
 
-    AsyncInvocation async0 = vm0.invokeAsync(
+    AsyncInvocation<Void> async0 = vm0.invokeAsync(
         prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME));
-    AsyncInvocation async1 = vm1.invokeAsync(
+    AsyncInvocation<Void> async1 = vm1.invokeAsync(
         prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME));
 
     async0.await();
@@ -458,10 +458,10 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForCloseCache());
     setCacheInVMs(vm0);
 
-    AsyncInvocation regionCreateFuture =
+    AsyncInvocation<Void> regionCreateFuture =
         vm0.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForPersistentPRCreate(
             PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
-    AsyncInvocation indexCreateFuture =
+    AsyncInvocation<Void> indexCreateFuture =
         vm1.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
             PARTITIONED_REGION_NAME, "PrIndexOnId", "p.ID", null, "p"));
 

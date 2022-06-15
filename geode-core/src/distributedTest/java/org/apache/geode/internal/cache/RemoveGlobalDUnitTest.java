@@ -120,7 +120,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm0.invoke(createRegionWithWriter);
 
 
-    AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("put object") {
+    AsyncInvocation<Void> async = vm0.invokeAsync(new CacheSerializableRunnable("put object") {
       @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
@@ -210,7 +210,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       }
     });
 
-    AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("remove object") {
+    AsyncInvocation<Void> async = vm0.invokeAsync(new CacheSerializableRunnable("remove object") {
       @Override
       public void run2() throws CacheException {
         region.remove(2);

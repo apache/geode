@@ -138,10 +138,10 @@ public class GrantorFailoverDUnitTest {
         .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock2, 2, -1)))
             .isFalse();
 
-    final AsyncInvocation lock1FailsReleaseOnOtherVM =
+    final AsyncInvocation<Void> lock1FailsReleaseOnOtherVM =
         survivor2
             .invokeAsync(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).unlock(lock1));
-    final AsyncInvocation lock2FailsReleaseOnOtherVM =
+    final AsyncInvocation<Void> lock2FailsReleaseOnOtherVM =
         survivor1
             .invokeAsync(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).unlock(lock2));
 
@@ -155,15 +155,15 @@ public class GrantorFailoverDUnitTest {
         .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock3, 20_000, -1)))
             .isTrue();
 
-    final AsyncInvocation lock1SuccessfulRelease =
+    final AsyncInvocation<Void> lock1SuccessfulRelease =
         survivor1
             .invokeAsync(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).unlock(lock1));
 
-    final AsyncInvocation lock3SuccessfulRelease =
+    final AsyncInvocation<Void> lock3SuccessfulRelease =
         survivor1
             .invokeAsync(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).unlock(lock3));
 
-    final AsyncInvocation lock2SuccessfulRelease =
+    final AsyncInvocation<Void> lock2SuccessfulRelease =
         survivor2
             .invokeAsync(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).unlock(lock2));
 

@@ -776,13 +776,13 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         getRoleAPlayerForCacheInitializationRunnable(vm0, locPort, regionName,
             "starting roleAplayer, which will initialize, wait for "
                 + "vm0 to initialize, and then close its cache to cause role loss");
-    AsyncInvocation avkVm1 = vm1.invokeAsync(roleAPlayerForCacheInitialization);
+    AsyncInvocation<Void> avkVm1 = vm1.invokeAsync(roleAPlayerForCacheInitialization);
 
     CacheSerializableRunnable roleLoss =
         getRoleLossRunnable(vm1, locPort, regionName, myKey, myValue,
             "starting role loss vm.  When the role is lost it will start" + " trying to reconnect",
             file.getAbsolutePath());
-    final AsyncInvocation roleLossAsync = vm0.invokeAsync(roleLoss);
+    final AsyncInvocation<Void> roleLossAsync = vm0.invokeAsync(roleLoss);
 
     System.out.println("waiting for role loss vm to start reconnect attempts");
 

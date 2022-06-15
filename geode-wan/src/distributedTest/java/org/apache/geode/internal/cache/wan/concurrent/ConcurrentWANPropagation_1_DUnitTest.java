@@ -270,7 +270,7 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_2", "ln", isOffHeap()));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // do puts in RR_2 in main thread
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 500));
@@ -340,7 +340,7 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 100));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_1"));
@@ -429,7 +429,7 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
 
     try {
@@ -502,10 +502,10 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     IgnoredException.addIgnoredException(ServerOperationException.class.getName());
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 1000));
     // start puts in RR_2 in another thread
-    AsyncInvocation inv2 =
+    AsyncInvocation<Void> inv2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_2", 1000));
     // destroy RR_2 on remote site in the middle
     vm2.invoke(() -> WANTestBase.destroyRegion(getUniqueName() + "_RR_2"));

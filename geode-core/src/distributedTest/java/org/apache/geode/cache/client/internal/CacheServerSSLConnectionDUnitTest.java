@@ -479,7 +479,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
 
     String hostName = getHostName();
 
-    AsyncInvocation slowAsync = slowClientVM.invokeAsync(() -> connectToServer(hostName, port));
+    AsyncInvocation<Void> slowAsync =
+        slowClientVM.invokeAsync(() -> connectToServer(hostName, port));
     try {
       getBlackboard().waitForGate("serverIsBlocked", 60, TimeUnit.SECONDS);
 

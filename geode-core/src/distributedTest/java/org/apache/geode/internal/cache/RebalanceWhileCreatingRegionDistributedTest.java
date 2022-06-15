@@ -83,7 +83,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     server2.invoke(() -> createRegion(regionName, RegionShortcut.PARTITION));
 
     // Asynchronously wait to create the proxy region in the accessor
-    AsyncInvocation asyncInvocation =
+    AsyncInvocation<Void> asyncInvocation =
         accessor.invokeAsync(() -> waitToCreateProxyRegion(regionName));
 
     // Connect client1
@@ -180,7 +180,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     });
 
     // Asynchronously wait to create the proxy region in the accessor
-    AsyncInvocation asyncInvocation = accessor.invokeAsync(() -> {
+    AsyncInvocation<Void> asyncInvocation = accessor.invokeAsync(() -> {
       waitToCreateSingleBucketProxyRegion(regionName);
     });
 
