@@ -62,7 +62,7 @@ public class DistributedEventTrackerTest {
     RegionAttributes<?, ?> regionAttributes = mock(RegionAttributes.class);
     memberId = mock(ClientProxyMembershipID.class);
     when(region.getAttributes()).thenReturn(regionAttributes);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.NORMAL);
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
     when(region.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     when(region.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));

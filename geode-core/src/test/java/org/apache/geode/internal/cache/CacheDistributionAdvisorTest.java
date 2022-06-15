@@ -118,7 +118,7 @@ public class CacheDistributionAdvisorTest {
     when(profile.getId()).thenReturn(member);
     when(profile.cachedOrAllEventsWithListener()).thenReturn(true);
     when(profile.getDistributedMember()).thenReturn(member);
-    when(profile.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(profile.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
 
     advisor.putProfile(profile, true);
     Set<InternalDistributedMember> targets1 =
@@ -130,7 +130,7 @@ public class CacheDistributionAdvisorTest {
     Set<InternalDistributedMember> targets3 =
         ((CacheDistributionAdvisor) advisor).adviseUpdate(event);
 
-    verify(profile, times(1)).getDataPolicy();
+    verify(profile, times(1)).getDataPolicyEnum();
   }
 
   @Test
@@ -144,14 +144,14 @@ public class CacheDistributionAdvisorTest {
     when(profile.getId()).thenReturn(member);
     when(profile.cachedOrAllEventsWithListener()).thenReturn(true);
     when(profile.getDistributedMember()).thenReturn(member);
-    when(profile.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(profile.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
 
     CacheProfile profile2 = mock(CacheProfile.class);
     InternalDistributedMember member2 = mock(InternalDistributedMember.class);
     when(profile2.getId()).thenReturn(member2);
     when(profile2.cachedOrAllEventsWithListener()).thenReturn(true);
     when(profile2.getDistributedMember()).thenReturn(member2);
-    when(profile2.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(profile2.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
 
     when(event.hasNewValue()).thenReturn(false);
     when(event.getOperation()).thenReturn(Operation.CREATE);
@@ -167,8 +167,8 @@ public class CacheDistributionAdvisorTest {
     Set<InternalDistributedMember> targets3 =
         ((CacheDistributionAdvisor) advisor).adviseUpdate(event);
 
-    verify(profile, times(2)).getDataPolicy();
-    verify(profile2, times(1)).getDataPolicy();
+    verify(profile, times(2)).getDataPolicyEnum();
+    verify(profile2, times(1)).getDataPolicyEnum();
 
   }
 

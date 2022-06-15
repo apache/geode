@@ -59,7 +59,7 @@ public class ServerCQImplTest {
     doNothing().when(serverCq).validateCq();
     doReturn(mock(Query.class)).when(serverCq).constructServerSideQuery();
     LocalRegion mockLocalRegion = mock(LocalRegion.class);
-    when(mockLocalRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(mockLocalRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     when(mockCqService.getCache().getRegion(any())).thenReturn(mockLocalRegion);
     doNothing().when(serverCq).updateCqCreateStats();
     serverCq.registerCq(mockClientProxyMembershipID, null, CqStateImpl.INIT);

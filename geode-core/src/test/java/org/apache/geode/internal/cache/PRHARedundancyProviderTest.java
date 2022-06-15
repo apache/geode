@@ -97,7 +97,7 @@ public class PRHARedundancyProviderTest {
     when(cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
         .thenReturn(mock(DistributedRegion.class));
     when(partitionedRegion.getCache()).thenReturn(cache);
-    when(partitionedRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(partitionedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     when(partitionedRegion.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
     prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
         (a, b) -> spy(new ThreadlessPersistentBucketRecoverer(a, b)));

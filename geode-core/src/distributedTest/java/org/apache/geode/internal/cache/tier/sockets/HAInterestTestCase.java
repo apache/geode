@@ -624,7 +624,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     list.add(k1);
     list.add(k2);
     List serverKeys = srp.registerInterest(list, KEY, KEYS, false,
-        r.getAttributes().getDataPolicy());
+        r.getAttributes().getDataPolicyEnum());
     assertNotNull(serverKeys);
     List resultKeys = (List) serverKeys.get(0);
     assertEquals(2, resultKeys.size());
@@ -684,7 +684,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     list.add(k1);
     list.add(k2);
     List serverKeys = srp.registerInterest(list, KEY, KEYS, false,
-        r.getAttributes().getDataPolicy());
+        r.getAttributes().getDataPolicyEnum());
 
     assertNotNull(serverKeys);
     List resultKeys = (List) serverKeys.get(0);
@@ -721,7 +721,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     list.add(k1);
     list.add(k2);
     List serverKeys = srp.registerInterest(list, KEY, KEYS, false,
-        r.getAttributes().getDataPolicy());
+        r.getAttributes().getDataPolicyEnum());
 
     assertNotNull(serverKeys);
     List resultKeys = (List) serverKeys.get(0);
@@ -773,7 +773,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
 
     // Primary server
     List serverKeys1 = srp.registerInterestOn(primary, list, InterestType.KEY,
-        InterestResultPolicy.KEYS, false, r.getAttributes().getDataPolicy());
+        InterestResultPolicy.KEYS, false, r.getAttributes().getDataPolicyEnum());
     assertNotNull(serverKeys1);
     // expect serverKeys in response from primary
     List resultKeys = (List) serverKeys1.get(0);
@@ -783,7 +783,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
 
     // Secondary server
     List serverKeys2 = srp.registerInterestOn(secondary, list, InterestType.KEY,
-        InterestResultPolicy.KEYS, false, r.getAttributes().getDataPolicy());
+        InterestResultPolicy.KEYS, false, r.getAttributes().getDataPolicyEnum());
     // if the list is null then it is empty
     if (serverKeys2 != null) {
       // no serverKeys in response from secondary

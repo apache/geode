@@ -154,7 +154,7 @@ public class LuceneIndexForPartitionedRegionTest {
     InternalCache cache = Fakes.cache();
     final Region region = Fakes.region(regionPath, cache);
     RegionAttributes attributes = region.getAttributes();
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     AsyncEventQueueFactoryImpl aeqFactory = mock(AsyncEventQueueFactoryImpl.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(aeqFactory);
 
@@ -254,7 +254,7 @@ public class LuceneIndexForPartitionedRegionTest {
   private PartitionAttributes initializeAttributes(final Cache cache) {
     PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
     RegionAttributes attributes = mock(RegionAttributes.class);
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     when(attributes.getCacheListeners()).thenReturn(new CacheListener[0]);
     when(attributes.getRegionTimeToLive()).thenReturn(ExpirationAttributes.DEFAULT);
     when(attributes.getRegionIdleTimeout()).thenReturn(ExpirationAttributes.DEFAULT);
@@ -329,7 +329,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String regionPath = "regionName";
     GemFireCacheImpl cache = Fakes.cache();
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     PartitionAttributes partitionAttributes = initializeAttributes(cache);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);

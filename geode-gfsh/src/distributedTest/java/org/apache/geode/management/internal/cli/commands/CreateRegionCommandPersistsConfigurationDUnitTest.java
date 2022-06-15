@@ -784,7 +784,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
 
       RegionAttributesType attr = regionConfig.getRegionAttributes();
-      assertThat(attr.getDataPolicy())
+      assertThat(attr.getDataPolicyEnum())
           .describedAs("Data policy for partitioned region should be persisted correctly")
           .isEqualTo(RegionAttributesDataPolicy.PARTITION);
     });

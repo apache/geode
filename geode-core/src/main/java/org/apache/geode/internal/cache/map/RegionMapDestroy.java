@@ -129,7 +129,7 @@ public class RegionMapDestroy {
             logger.trace(LogMarker.LRU_TOMBSTONE_COUNT_VERBOSE,
                 "ARM.destroy() inTokenMode={}; duringRI={}; riLocalDestroy={}; withRepl={}; fromServer={}; concurrencyEnabled={}; isOriginRemote={}; isEviction={}; operation={}; re={}",
                 inTokenMode, duringRI, event.isFromRILocalDestroy(),
-                internalRegion.getDataPolicy().withReplication(), event.isFromServer(),
+                internalRegion.getDataPolicyEnum().withReplication(), event.isFromServer(),
                 internalRegion.getConcurrencyChecksEnabled(), event.isOriginRemote(), isEviction,
                 event.getOperation(), regionEntry);
           }
@@ -189,7 +189,7 @@ public class RegionMapDestroy {
       // a destroy from a peer or WAN gateway and we need to retain version
       // information for concurrency checks
       retainForConcurrency = (!haveTombstone
-          && (internalRegion.getDataPolicy().withReplication() || event.isFromServer())
+          && (internalRegion.getDataPolicyEnum().withReplication() || event.isFromServer())
           && internalRegion.getConcurrencyChecksEnabled()
           && (event.isOriginRemote() /* destroy received from other must create tombstone */
               || event.isFromWANAndVersioned() /* wan event must create a tombstone */

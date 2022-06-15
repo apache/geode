@@ -600,7 +600,7 @@ public class PartitionedRegionRebalanceOp {
     // also need to rebalance primaries
     return isRebalance || director.isRebalanceNecessary(
         leaderRegion.getRedundancyProvider().isRedundancyImpaired(),
-        leaderRegion.getDataPolicy().withPersistence());
+        leaderRegion.getDataPolicyEnum().withPersistence());
   }
 
   public PartitionedRegion getLeaderRegion() {

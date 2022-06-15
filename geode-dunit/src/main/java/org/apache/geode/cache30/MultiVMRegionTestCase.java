@@ -538,7 +538,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm1.invoke("Verify no update", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       Region.Entry entry = region.getEntry(key);
-      if (getRegionAttributes().getDataPolicy().withReplication()
+      if (getRegionAttributes().getDataPolicyEnum().withReplication()
           || getRegionAttributes().getPartitionAttributes() != null) {
         assertThat(region.get(key)).isEqualTo(value);
       } else {
@@ -572,7 +572,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     vm1.invoke("Define entry", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
-      if (!getRegionAttributes().getDataPolicy().withReplication()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()) {
         region.create(key, null);
       }
     });
@@ -704,7 +704,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // test not valid for persistBackup region since they have to be
     // mirrored KEYS_VALUES
-    if (getRegionAttributes().getDataPolicy().withPersistence()) {
+    if (getRegionAttributes().getDataPolicyEnum().withPersistence()) {
       return;
     }
 
@@ -1396,8 +1396,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // some tests use mirroring by default (e.g. persistBackup regions)
     // if so, then this test won't work right
-    assumeThat(getRegionAttributes().getDataPolicy().withReplication()).isFalse();
-    assumeThat(getRegionAttributes().getDataPolicy().withPreloaded()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withReplication()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withPreloaded()).isFalse();
 
     final String name = getUniqueName();
     final Object key = getUniqueName();
@@ -1465,8 +1465,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void testCacheLoaderWithNetLoad() {
     // replicated regions and partitioned regions make no sense for this
     // test
-    assumeThat(getRegionAttributes().getDataPolicy().withReplication()).isFalse();
-    assumeThat(getRegionAttributes().getDataPolicy().withPreloaded()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withReplication()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withPreloaded()).isFalse();
     assumeThat(getRegionAttributes().getPartitionAttributes())
         .withFailMessage("the region has partition attributes").isNull();
 
@@ -2174,7 +2174,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         try {
-          if (!getRegionAttributes().getDataPolicy().withReplication()
+          if (!getRegionAttributes().getDataPolicyEnum().withReplication()
               && getRegionAttributes().getPartitionAttributes() == null) {
             Region<?, ?> root = getRootRegion("root");
             Region<Object, Object> rgn = root.getSubregion(rgnName);
@@ -2198,7 +2198,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm.invoke("testDistributedPut: Create Region", () -> {
         createRegion(rgnName);
       });
-      if (!getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm.invoke("testDistributedPut: Create Key", newKey);
       }
     }
@@ -2593,7 +2593,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     vm0.invoke("Verify keys/values", () -> {
       final Region<Object, Object> region = getRootRegion().getSubregion(name);
       Region.Entry entry1 = region.getEntry(key1);
-      if (!getRegionAttributes().getDataPolicy().withReplication()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()) {
         if (entry1 != null) {
           logger.info("found entry " + entry1);
         }
@@ -2603,14 +2603,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
 
       Region.Entry entry2 = region.getEntry(key2);
-      if (!getRegionAttributes().getDataPolicy().withReplication()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()) {
         assertThat(entry2).isNull();
       } else {
         assertThat(entry2).isNotNull();
       }
 
       Region.Entry entry3 = region.getEntry(key3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()) {
         assertThat(entry3).isNull();
       } else {
         assertThat(entry3).isNotNull();
@@ -2720,7 +2720,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       Region<Object, Object> region = createRegion(name);
       // if this is a backup region, then it will find the data
       // otherwise it should not
-      if (region.getAttributes().getDataPolicy().withPersistence()) {
+      if (region.getAttributes().getDataPolicyEnum().withPersistence()) {
         assertThat(region.get(key)).isEqualTo(value);
       } else {
         assertThat(region.get(key)).isNull();
@@ -2760,7 +2760,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       RegionAttributes<?, ?> ra = getRegionAttributes();
       AttributesFactory<?, ?> factory = new AttributesFactory<>(ra);
       final boolean partitioned =
-          ra.getPartitionAttributes() != null || ra.getDataPolicy().withPartitioning();
+          ra.getPartitionAttributes() != null || ra.getDataPolicyEnum().withPartitioning();
       // MUST be non-mirrored, so turn off persistBackup if this is a disk region test
       if (!partitioned) {
         if (ra.getEvictionAttributes() == null
@@ -2831,7 +2831,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       RegionAttributes<?, ?> ra = getRegionAttributes();
       AttributesFactory<?, ?> factory = new AttributesFactory<>(ra);
       final boolean partitioned =
-          ra.getPartitionAttributes() != null || ra.getDataPolicy().withPartitioning();
+          ra.getPartitionAttributes() != null || ra.getDataPolicyEnum().withPartitioning();
       // MUST be nonmirrored, so turn off persistBackup if this is a disk region test
       if (!partitioned) {
         if (ra.getEvictionAttributes() == null
@@ -2923,7 +2923,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       factory.setStatisticsEnabled(true);
       ExpirationAttributes expire = new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
       factory.setEntryTimeToLive(expire);
-      if (!getRegionAttributes().getDataPolicy().withReplication()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()) {
         factory.setDataPolicy(DataPolicy.NORMAL);
         factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
       }
@@ -2988,9 +2988,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     assumeThat(getRegionAttributes().getPartitionAttributes())
         .withFailMessage("the region has partition attributes").isNull();
 
-    final boolean mirrored = getRegionAttributes().getDataPolicy().withReplication();
+    final boolean mirrored = getRegionAttributes().getDataPolicyEnum().withReplication();
     final boolean partitioned = getRegionAttributes().getPartitionAttributes() != null
-        || getRegionAttributes().getDataPolicy().withPartitioning();
+        || getRegionAttributes().getDataPolicyEnum().withPartitioning();
     if (!mirrored) {
       // This test fails intermittently because the DSClock we inherit from the existing
       // distributed system is stuck in the "stopped" state.
@@ -3146,7 +3146,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       ExpirationAttributes expire = new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
       regionFactory.setEntryIdleTimeout(expire);
       LocalRegion region = (LocalRegion) createRegion(name, regionFactory);
-      if (region.getDataPolicy().withPartitioning()) {
+      if (region.getDataPolicyEnum().withPartitioning()) {
         // Force all buckets to be created locally so the
         // test will know that the create happens in this vm
         // and the update (in vm1) is remote.
@@ -3252,7 +3252,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
           await("replicate count never reached " + expectedProfiles)
               .until(() -> {
-                DataPolicy currentPolicy = getRegionAttributes().getDataPolicy();
+                DataPolicy currentPolicy = getRegionAttributes().getDataPolicyEnum();
                 if (currentPolicy == DataPolicy.PRELOADED) {
                   return (adv.advisePreloadeds().size()
                       + adv.adviseReplicates().size()) >= expectedProfiles;
@@ -3261,7 +3261,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 }
               });
 
-          DataPolicy currentPolicy = getRegionAttributes().getDataPolicy();
+          DataPolicy currentPolicy = getRegionAttributes().getDataPolicyEnum();
           int numProfiles;
           if (currentPolicy == DataPolicy.PRELOADED) {
             numProfiles = adv.advisePreloadeds().size() + adv.adviseReplicates().size();
@@ -3345,7 +3345,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         {
           AttributesFactory<?, ?> factory = new AttributesFactory<>(getRegionAttributes());
           factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-          if (getRegionAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+          if (getRegionAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
             factory.setDataPolicy(DataPolicy.PRELOADED);
           }
           createRegion(name, factory.create());
@@ -3430,7 +3430,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // don't run this test if global scope since its too difficult to predict
     // how many concurrent operations will occur
     assumeThat(getRegionAttributes().getScope().isGlobal()).isFalse();
-    assumeThat(getRegionAttributes().getDataPolicy().withPersistence()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withPersistence()).isFalse();
 
     final String name = getUniqueName();
     final byte[][] values = new byte[NB1_NUM_ENTRIES][];
@@ -3453,7 +3453,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
         {
           AttributesFactory<?, ?> factory = new AttributesFactory<>(getRegionAttributes());
-          if (getRegionAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+          if (getRegionAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
             factory.setDataPolicy(DataPolicy.PRELOADED);
           }
           factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
@@ -3509,7 +3509,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
             await("replicate count never reached " + expectedProfiles)
                 .until(() -> {
-                  DataPolicy currentPolicy = getRegionAttributes().getDataPolicy();
+                  DataPolicy currentPolicy = getRegionAttributes().getDataPolicyEnum();
                   if (currentPolicy == DataPolicy.PRELOADED) {
                     return (adv.advisePreloadeds().size()
                         + adv.adviseReplicates().size()) >= expectedProfiles;
@@ -4359,7 +4359,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     CacheTransactionManager txMgr = getCache().getCacheTransactionManager();
 
     if (getRegionAttributes().getScope().isGlobal()
-        || getRegionAttributes().getDataPolicy().withPersistence()) {
+        || getRegionAttributes().getDataPolicyEnum().withPersistence()) {
       // just make sure transactions are not allowed on global or shared regions
       Region<String, String> rgn = createRegion(getUniqueName());
       txMgr.begin();
@@ -4422,8 +4422,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     for (int i = 1; i < vmCount; i++) {
       vm = VM.getVM(i);
       vm.invoke("testTXSimpleOps: Create Region", create);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm.invoke("testTXSimpleOps: Create Region & Create Key", newKey);
       }
     }
@@ -4471,7 +4471,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 {
                   Collection<EntryEvent<?, ?>> events;
                   RegionAttributes<String, String> attr = getRegionAttributes();
-                  if (!attr.getDataPolicy().withReplication()
+                  if (!attr.getDataPolicyEnum().withReplication()
                       || attr.getConcurrencyChecksEnabled()) {
                     events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                   } else {
@@ -4682,7 +4682,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void testTXUpdateLoadNoConflict() {
     assumeThat(supportsTransactions()).isTrue();
     assumeThat(getRegionAttributes().getScope().isGlobal()).isFalse();
-    assumeThat(getRegionAttributes().getDataPolicy().withPersistence()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withPersistence()).isFalse();
 
     assertThat(getRegionAttributes().getScope().isDistributed()).isTrue();
     CacheTransactionManager txMgr = getCache().getCacheTransactionManager();
@@ -4909,7 +4909,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void testTXMultiRegion() {
     assumeThat(supportsTransactions()).isTrue();
     assumeThat(getRegionAttributes().getScope().isGlobal()).isFalse();
-    assumeThat(getRegionAttributes().getDataPolicy().withPersistence()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withPersistence()).isFalse();
 
     assertThat(getRegionAttributes().getScope().isDistributed()).isTrue();
 
@@ -5028,7 +5028,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         {
           Collection<EntryEvent<?, ?>> events;
           RegionAttributes<String, String> attr = getRegionAttributes();
-          if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
+          if (!attr.getDataPolicyEnum().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
@@ -5071,7 +5071,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         {
           Collection<EntryEvent<?, ?>> events;
           RegionAttributes<String, String> attr = getRegionAttributes();
-          if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
+          if (!attr.getDataPolicyEnum().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
@@ -5105,7 +5105,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         {
           Collection<EntryEvent<?, ?>> events;
           RegionAttributes<String, String> attr = getRegionAttributes();
-          if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
+          if (!attr.getDataPolicyEnum().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
@@ -5144,7 +5144,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         {
           Collection<EntryEvent<?, ?>> events;
           RegionAttributes<String, String> attr = getRegionAttributes();
-          if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
+          if (!attr.getDataPolicyEnum().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
@@ -5183,7 +5183,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         {
           Collection<EntryEvent<?, ?>> events;
           RegionAttributes attr = getRegionAttributes();
-          if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
+          if (!attr.getDataPolicyEnum().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
@@ -5223,8 +5223,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       vm1.invoke("testTXMultiRegion: Create Region", create1);
       vm1.invoke(create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm1.invoke("testTXMultiRegion: Create Key", newKey1);
         vm1.invoke("testTXMultiRegion: Create Key", newKey3);
       }
@@ -5234,8 +5234,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       vm3.invoke("testTXMultiRegion: Create Region", create2);
       vm3.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm3.invoke("testTXMultiRegion: Create Key", newKey2);
         vm3.invoke("testTXMultiRegion: Create Key", newKey3);
       }
@@ -5284,8 +5284,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       vm1.invoke("testTXMultiRegion: Create Region", create1);
       vm1.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm1.invoke("testTXMultiRegion: Create Key", newKey1);
         vm1.invoke("testTXMultiRegion: Create Key", newKey3);
       }
@@ -5293,15 +5293,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm2.invoke("testTXMultiRegion: Create Region", create2);
       vm2.invoke("testTXMultiRegion: Create Key", newKey2);
       vm2.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm2.invoke("testTXMultiRegion: Create Key", newKey3);
       }
 
       vm3.invoke("testTXMultiRegion: Create Region", create2);
       vm3.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm3.invoke("testTXMultiRegion: Create Key", newKey2);
         vm3.invoke("testTXMultiRegion: Create Key", newKey3);
       }
@@ -5349,8 +5349,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       vm1.invoke("testTXMultiRegion: Create Region", create1);
       vm1.invoke(create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm1.invoke("testTXMultiRegion: Create Key", newKey1);
         vm1.invoke("testTXMultiRegion: Create Key", newKey3);
       }
@@ -5360,8 +5360,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       vm3.invoke("testTXMultiRegion: Create Region", create1);
       vm3.invoke(create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm3.invoke("testTXMultiRegion: Create Key", newKey1);
         vm3.invoke("testTXMultiRegion: Create Key", newKey3);
       }
@@ -5406,8 +5406,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm0.invoke("testTXMultiRegion: Create Key", newKey1);
 
       vm1.invoke("testTXMultiRegion: Create Region", create1);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm1.invoke("testTXMultiRegion: Create Key", newKey1);
       }
 
@@ -5460,20 +5460,20 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm1.invoke("testTXMultiRegion: Create Region", create2);
       vm1.invoke("testTXMultiRegion: Create Key", newKey2);
       vm1.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm1.invoke("testTXMultiRegion: Create Key", newKey3);
       }
 
       vm2.invoke("testTXMultiRegion: Create Region", create2);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm2.invoke("testTXMultiRegion: Create Key", newKey2);
       }
 
       vm3.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm3.invoke("testTXMultiRegion: Create Key", newKey3);
       }
 
@@ -5518,28 +5518,28 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm0.invoke("testTXMultiRegion: Create Key", newKey3);
 
       vm1.invoke("testTXMultiRegion: Create Region", create1);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm1.invoke("testTXMultiRegion: Create Key", newKey1);
       }
       vm1.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm1.invoke("testTXMultiRegion: Create Key", newKey3);
       }
 
       vm2.invoke("testTXMultiRegion: Create Region", create1);
       vm2.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm2.invoke("testTXMultiRegion: Create Key", newKey1);
         vm2.invoke("testTXMultiRegion: Create Key", newKey3);
       }
 
       vm3.invoke("testTXMultiRegion: Create Region", create1);
       vm3.invoke("testTXMultiRegion: Create Region", create3);
-      if (!getRegionAttributes().getDataPolicy().withReplication()
-          && !getRegionAttributes().getDataPolicy().withPreloaded()) {
+      if (!getRegionAttributes().getDataPolicyEnum().withReplication()
+          && !getRegionAttributes().getDataPolicyEnum().withPreloaded()) {
         vm3.invoke("testTXMultiRegion: Create Key", newKey1);
         vm3.invoke("testTXMultiRegion: Create Key", newKey3);
       }
@@ -5616,7 +5616,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void testTXRmtMirror() {
     assumeThat(supportsTransactions()).isTrue();
     assumeThat(getRegionAttributes().getScope().isGlobal()).isFalse();
-    assumeThat(getRegionAttributes().getDataPolicy().withPersistence()).isFalse();
+    assumeThat(getRegionAttributes().getDataPolicyEnum().withPersistence()).isFalse();
 
     assertThat(getRegionAttributes().getScope().isDistributed()).isTrue();
     CacheTransactionManager txMgr = getCache().getCacheTransactionManager();
@@ -6401,7 +6401,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           // from the empty member to *one* of the replicas, not all of them.
           sendSerialMessageToAll();
 
-          if (CCRegion.getAttributes().getDataPolicy().withReplication()) {
+          if (CCRegion.getAttributes().getDataPolicyEnum().withReplication()) {
             long events = CCRegion.getCachePerfStats().getConflatedEventsCount();
             assertThat(events > 0).describedAs("expected some event conflation").isTrue();
           }
@@ -6457,7 +6457,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               CCRegion.put(key, value);
               break;
             case 1:
-              if (CCRegion.getAttributes().getDataPolicy().withReplication()) {
+              if (CCRegion.getAttributes().getDataPolicyEnum().withReplication()) {
                 if (oldkey != null) {
                   CCRegion.replace(oldkey, oldvalue, value);
                 }
@@ -6478,7 +6478,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               }
               break;
             case 3:
-              if (CCRegion.getAttributes().getDataPolicy().withReplication()) {
+              if (CCRegion.getAttributes().getDataPolicyEnum().withReplication()) {
                 // since we have a known key/value pair that was used before,
                 // use the oldkey/oldvalue for remove(k,v)
                 if (oldkey != null) {
@@ -6495,7 +6495,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 CCRegion.clear();
                 break;
               } else {
-                if (CCRegion.getAttributes().getDataPolicy().withReplication()) {
+                if (CCRegion.getAttributes().getDataPolicyEnum().withReplication()) {
                   if (oldkey != null) {
                     CCRegion.putIfAbsent(oldkey, value);
                   }

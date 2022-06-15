@@ -83,7 +83,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
   protected boolean withPersistence() {
     RegionAttributes ra = dataRegion.getAttributes();
-    DataPolicy dp = ra.getDataPolicy();
+    DataPolicy dp = ra.getDataPolicyEnum();
     final boolean withPersistence = dp.withPersistence();
     return withPersistence;
   }
@@ -191,7 +191,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     factory.setDispatcherThreads(10);
     factory.setBatchSize(1000);
     factory.setIsMetaQueue(true);
-    if (attributes.getDataPolicy().withPersistence()) {
+    if (attributes.getDataPolicyEnum().withPersistence()) {
       factory.setPersistent(true);
     }
     factory.setDiskStoreName(attributes.getDiskStoreName());

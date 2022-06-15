@@ -603,7 +603,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
     return Gauge.builder("geode.cache.entries", region::getLocalSize)
         .description("Current number of entries in the region.")
         .tag("region", region.getName())
-        .tag("data.policy", region.getDataPolicy().toString())
+        .tag("data.policy", region.getDataPolicyEnum().toString())
         .baseUnit("entries")
         .register(meterRegistry);
   }

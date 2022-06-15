@@ -128,7 +128,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       LOG.debug("Retrieved session region: " + sessionRegion);
 
       // Register interest in case users provide their own client cache region
-      if (sessionRegion.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
+      if (sessionRegion.getAttributes().getDataPolicyEnum() != DataPolicy.EMPTY) {
         sessionRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS);
       }
     }

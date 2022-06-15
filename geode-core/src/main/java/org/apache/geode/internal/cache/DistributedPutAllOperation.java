@@ -247,7 +247,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       returnedEv = true;
       Object entryValue = entry.getValue(region.getCache());
       if (entryValue == null
-          && ev.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+          && ev.getRegion().getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
         ev.setLocalInvalid(true);
       }
       ev.setNewValue(entryValue);
@@ -933,9 +933,9 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     // can generate a version for the operation
 
     RegionAttributes attr = event.getRegion().getAttributes();
-    if (attr.getConcurrencyChecksEnabled() && !attr.getDataPolicy().withReplication()
+    if (attr.getConcurrencyChecksEnabled() && !attr.getDataPolicyEnum().withReplication()
         && attr.getScope() != Scope.GLOBAL) {
-      if (attr.getDataPolicy() == DataPolicy.EMPTY) {
+      if (attr.getDataPolicyEnum() == DataPolicy.EMPTY) {
         // all entries are without version tags
         boolean success = RemotePutAllMessage.distribute((EntryEventImpl) event,
             putAllData, putAllDataSize);
@@ -1159,7 +1159,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
           ev.context = context;
         }
         Object entryValue = entry.getValue(rgn.getCache());
-        if (entryValue == null && rgn.getDataPolicy() == DataPolicy.NORMAL) {
+        if (entryValue == null && rgn.getDataPolicyEnum() == DataPolicy.NORMAL) {
           ev.setLocalInvalid(true);
         }
         ev.setNewValue(entryValue);

@@ -16,7 +16,7 @@ package org.apache.geode.admin;
 
 import java.io.File;
 
-import org.apache.geode.cache.api.DataPolicy;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;

@@ -867,7 +867,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
           TestRegion.destroy("Object" + i, i);
         }
         assertEquals(0, TestRegion.size());
-        if (TestRegion.getDataPolicy() == DataPolicy.REPLICATE) {
+        if (TestRegion.getDataPolicyEnum() == DataPolicy.REPLICATE) {
           assertEquals(10, TestRegion.getTombstoneCount());
         }
         return null;

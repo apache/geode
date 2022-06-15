@@ -83,7 +83,7 @@ public class ImportClusterConfigurationCommandDUnitTest {
     server1.invoke(() -> {
       Region<?, ?> region = ClusterStartupRule.getCache().getRegion("regionForCluster");
       assertThat(region).isNotNull();
-      assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
+      assertThat(region.getAttributes().getDataPolicyEnum()).isEqualTo(DataPolicy.REPLICATE);
     });
 
     // you can not configure the servers because they are not vanilla servers

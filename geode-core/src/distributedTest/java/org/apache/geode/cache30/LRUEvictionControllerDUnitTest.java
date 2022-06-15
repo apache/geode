@@ -305,7 +305,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     Region r = createRegion(name, factory.create());
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
+    assertEquals(DataPolicy.PRELOADED, ra.getDataPolicyEnum());
     assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     r.destroyRegion();
   }

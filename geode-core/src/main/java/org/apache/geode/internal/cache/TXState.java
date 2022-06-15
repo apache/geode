@@ -1427,7 +1427,7 @@ public class TXState implements TXStateInterface {
     TXEntryState tx = txReadEntry(keyInfo, region, true, true/* create txEntry is absent */);
     if (tx != null) {
       /*
-       * Note that we don't consult this.getDataPolicy().isProxy() when setting this because in this
+       * Note that we don't consult this.getDataPolicyEnum().isProxy() when setting this because in this
        * context we don't want proxies to pretend they have a value.
        */
       boolean isProxy = false;

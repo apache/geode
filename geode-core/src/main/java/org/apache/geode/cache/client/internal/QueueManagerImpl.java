@@ -1215,7 +1215,7 @@ public class QueueManagerImpl implements QueueManager {
       List<Object> serverKeys;
       if (policy != InterestResultPolicy.KEYS_VALUES) {
         serverKeys = r.getServerProxy().registerInterestOn(recoveredConnection, keys, interestType,
-            policy, isDurable, !receiveValues, r.getAttributes().getDataPolicy());
+            policy, isDurable, !receiveValues, r.getAttributes().getDataPolicyEnum());
         // Restore keys based on server's response
         if (isFirstNewConnection) {
           // only if this recoveredEP becomes primaryEndpoint
@@ -1230,11 +1230,11 @@ public class QueueManagerImpl implements QueueManager {
           // need to use policy NONE or KEYS.
           r.getServerProxy().registerInterestOn(recoveredConnection, keys,
               interestType, InterestResultPolicy.NONE, isDurable, !receiveValues,
-              r.getAttributes().getDataPolicy());
+              r.getAttributes().getDataPolicyEnum());
         } else {
           serverKeys =
               r.getServerProxy().registerInterestOn(recoveredConnection, keys, interestType, policy,
-                  isDurable, !receiveValues, r.getAttributes().getDataPolicy());
+                  isDurable, !receiveValues, r.getAttributes().getDataPolicyEnum());
           r.refreshEntriesFromServerKeys(recoveredConnection, serverKeys, policy);
         }
       }

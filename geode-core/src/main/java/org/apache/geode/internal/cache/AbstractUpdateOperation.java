@@ -79,7 +79,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
 
   /** @return whether we should do a local create for a remote one */
   private static boolean shouldDoRemoteCreate(LocalRegion rgn, EntryEventImpl ev) {
-    DataPolicy dp = rgn.getAttributes().getDataPolicy();
+    DataPolicy dp = rgn.getAttributes().getDataPolicyEnum();
     // we are not accepting all events or we are a replicate and initialized and it was an update
     // (we exclude that latter to avoid resurrecting a key deleted in a replicate
     // misordered CREATE and UPDATE messages can cause inconsistencies
@@ -192,7 +192,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
               // key not here, blocked by DESTROYED token or ConcurrentCacheModificationException
               // thrown during second update attempt
               if (rgn.isUsedForPartitionedRegionBucket()
-                  || (rgn.getDataPolicy().withReplication() && rgn.getConcurrencyChecksEnabled())) {
+                  || (rgn.getDataPolicyEnum().withReplication() && rgn.getConcurrencyChecksEnabled())) {
                 ev.makeCreate();
                 boolean thirdBasicUpdateSuccess =
                     rgn.basicUpdate(ev, false, false, lastMod, true, invokeCallbacks, false);
@@ -313,7 +313,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
 
     protected void checkVersionTag(DistributedRegion rgn, VersionTag tag) {
       RegionAttributes<?, ?> attr = rgn.getAttributes();
-      if (attr.getConcurrencyChecksEnabled() && attr.getDataPolicy().withPersistence()
+      if (attr.getConcurrencyChecksEnabled() && attr.getDataPolicyEnum().withPersistence()
           && attr.getScope() != Scope.GLOBAL
           && (tag.getMemberID() == null || test_InvalidVersion)) {
 

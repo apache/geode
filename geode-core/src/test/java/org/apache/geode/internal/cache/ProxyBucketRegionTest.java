@@ -70,7 +70,7 @@ public class ProxyBucketRegionTest {
     when(cache.getInternalDistributedSystem()).thenReturn(ids);
 
     when(ids.getDistributionManager()).thenReturn(dm);
-    when(partitionedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(partitionedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(cache.getInternalDistributedSystem()).thenReturn(ids);
     when(partitionedRegion.getAttributes()).thenReturn(ra);
     when(ra.getEvictionAttributes()).thenReturn(null);

@@ -680,7 +680,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
     BucketAttributesFactory factory = new BucketAttributesFactory();
 
-    boolean isPersistent = partitionedRegion.getDataPolicy().withPersistence();
+    boolean isPersistent = partitionedRegion.getDataPolicyEnum().withPersistence();
     if (isPersistent) {
       factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
       setDiskAttributes(factory);
@@ -1639,7 +1639,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   private void waitForInProgressBackup() {
     BackupService backupService = getPartitionedRegion().getGemFireCache().getBackupService();
-    if (getPartitionedRegion().getDataPolicy().withPersistence()) {
+    if (getPartitionedRegion().getDataPolicyEnum().withPersistence()) {
       backupService.waitForBackup();
     }
 

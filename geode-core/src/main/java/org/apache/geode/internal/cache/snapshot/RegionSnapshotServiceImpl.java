@@ -182,7 +182,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
   }
 
   private boolean shouldRunInParallel(SnapshotOptions<K, V> options) {
-    return options.isParallelMode() && region.getAttributes().getDataPolicy().withPartitioning()
+    return options.isParallelMode() && region.getAttributes().getDataPolicyEnum().withPartitioning()
         && !(region instanceof LocalDataSet);
   }
 
@@ -409,10 +409,10 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       return new ClientExporter<>(PoolManager.find(pool));
 
     } else if (cache.getInternalDistributedSystem().isLoner()
-        || region.getAttributes().getDataPolicy().equals(DataPolicy.NORMAL)
-        || region.getAttributes().getDataPolicy().equals(DataPolicy.PRELOADED)
+        || region.getAttributes().getDataPolicyEnum().equals(DataPolicy.NORMAL)
+        || region.getAttributes().getDataPolicyEnum().equals(DataPolicy.PRELOADED)
         || region instanceof LocalDataSet || (options.isParallelMode()
-            && region.getAttributes().getDataPolicy().withPartitioning())) {
+            && region.getAttributes().getDataPolicyEnum().withPartitioning())) {
 
       // Avoid function execution:
       // for loner systems to avoid inlining fn execution

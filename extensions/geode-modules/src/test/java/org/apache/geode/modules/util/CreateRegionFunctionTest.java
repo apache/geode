@@ -35,7 +35,7 @@ public class CreateRegionFunctionTest {
   private RegionAttributes getRegionAttributesWithModifiedDiskDirs(final File[] diskDirs) {
     final RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.NORMAL);
     when(mockRegionAttributes.getCacheListeners()).thenReturn(new CacheListener[] {});
     when(mockRegionAttributes.getEvictionAttributes()).thenReturn(EvictionAttributes
         .createLRUEntryAttributes(10, EvictionAction.OVERFLOW_TO_DISK));
@@ -47,7 +47,7 @@ public class CreateRegionFunctionTest {
   private RegionAttributes getRegionAttributesWithModifiedDiskDirSize(final int[] diskDirSize) {
     final RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.NORMAL);
     when(mockRegionAttributes.getCacheListeners()).thenReturn(new CacheListener[] {});
     when(mockRegionAttributes.getEvictionAttributes()).thenReturn(EvictionAttributes
         .createLRUEntryAttributes(10, EvictionAction.OVERFLOW_TO_DISK));

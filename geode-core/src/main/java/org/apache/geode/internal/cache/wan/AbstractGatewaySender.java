@@ -1014,7 +1014,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    * @return boolean True if the event is allowed.
    */
   private boolean checkForDistribution(EntryEventImpl event, GatewaySenderStats stats) {
-    if (event.getRegion().getDataPolicy().equals(DataPolicy.NORMAL)) {
+    if (event.getRegion().getDataPolicyEnum().equals(DataPolicy.NORMAL)) {
       return false;
     }
     // Check for eviction and expiration events.

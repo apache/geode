@@ -236,7 +236,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         if (reply.profile != null) {
           if (newRegion instanceof DistributedRegion) {
             DistributedRegion dr = (DistributedRegion) newRegion;
-            if (!dr.getDataPolicy().withPersistence() && reply.profile.isPersistent) {
+            if (!dr.getDataPolicyEnum().withPersistence() && reply.profile.isPersistent) {
               dr.setGeneratedVersionTag(false);
             }
           }
@@ -479,7 +479,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             // #45934 need to set the generateVersionTag flag
             if (cda instanceof DistributedRegion) {
               DistributedRegion dr = (DistributedRegion) cda;
-              if (!dr.getDataPolicy().withPersistence()) {
+              if (!dr.getDataPolicyEnum().withPersistence()) {
                 dr.setGeneratedVersionTag(false);
               }
             }
@@ -525,11 +525,11 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         skippedCompatibilityChecks = true;
       }
 
-      if (!initializing && !skipCheckForAccessor && (rgn.getAttributes().getDataPolicy()
+      if (!initializing && !skipCheckForAccessor && (rgn.getAttributes().getDataPolicyEnum()
           .withPersistence() != profile.dataPolicy.withPersistence())) {
         // 45186: Do not allow a persistent replicate to be started if a
         // non-persistent replicate is running
-        if (!rgn.getAttributes().getDataPolicy().withPersistence()) {
+        if (!rgn.getAttributes().getDataPolicyEnum().withPersistence()) {
           result =
               String.format(
                   "Cannot create region %s DataPolicy withPersistence=true because another cache (%s) has the same region DataPolicy withPersistence=false. Persistent members must be started before non-persistent members",
@@ -594,7 +594,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
       final boolean otherIsOffHeap = rgn.getAttributes().getOffHeap();
 
-      boolean thisIsRemoteAccessor = !rgn.getAttributes().getDataPolicy().withStorage()
+      boolean thisIsRemoteAccessor = !rgn.getAttributes().getDataPolicyEnum().withStorage()
           || (pa != null && pa.getLocalMaxMemory() == 0);
 
       if (!isRemoteAccessor(profile) && !thisIsRemoteAccessor
@@ -713,7 +713,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     protected static boolean isLocalAccessor(CacheDistributionAdvisee region) {
-      if (!region.getAttributes().getDataPolicy().withStorage()) {
+      if (!region.getAttributes().getDataPolicyEnum().withStorage()) {
         return true;
       }
       return region.getAttributes().getPartitionAttributes() != null

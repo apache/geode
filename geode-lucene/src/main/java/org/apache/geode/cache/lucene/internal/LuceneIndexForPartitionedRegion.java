@@ -179,7 +179,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     RegionAttributes baseAttributes = cache.getRegionAttributes(regionShortCut.toString());
     RegionAttributesCreation attributes = new RegionAttributesCreation(baseAttributes, false);
     attributes.setPartitionAttributes(partitionAttributesFactory.create());
-    if (regionAttributes.getDataPolicy().withPersistence()) {
+    if (regionAttributes.getDataPolicyEnum().withPersistence()) {
       attributes.setDiskStoreName(regionAttributes.getDiskStoreName());
     }
 

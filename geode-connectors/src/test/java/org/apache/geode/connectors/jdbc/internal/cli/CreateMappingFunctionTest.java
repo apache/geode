@@ -90,7 +90,7 @@ public class CreateMappingFunctionTest {
     when(context.getArguments()).thenReturn(functionInputs);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
     attributes = mock(RegionAttributes.class);
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(region.getAttributes()).thenReturn(attributes);
     when(region.getAttributesMutator()).thenReturn(mock(AttributesMutator.class));
     asyncEventQueueFactory = mock(AsyncEventQueueFactory.class);
@@ -212,7 +212,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeCreatesSerialAsyncQueueForNonPartitionedRegion() throws Exception {
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     function.executeFunction(context);
 
     verify(asyncEventQueueFactory, times(1)).create(any(), any());
@@ -222,7 +222,7 @@ public class CreateMappingFunctionTest {
   @SuppressWarnings("unchecked")
   @Test
   public void shouldOnlyAddAEQIdForProxyPR() throws Exception {
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     PartitionedRegion pr = mock(PartitionedRegion.class);
     when(cache.getRegion(REGION_NAME)).thenReturn(pr);
     when(pr.getAttributes()).thenReturn(attributes);
@@ -243,7 +243,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void shouldOnlyAddAEQIdForProxyReplicate() throws Exception {
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.EMPTY);
     when(cache.getRegion(REGION_NAME)).thenReturn(region);
     LocalRegion lr = (LocalRegion) region;
     when(lr.getAttributes()).thenReturn(attributes);
@@ -261,7 +261,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeCreatesParallelAsyncQueueForPartitionedRegion() throws Exception {
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     function.executeFunction(context);
 
     verify(asyncEventQueueFactory, times(1)).create(any(), any());
@@ -270,7 +270,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeCreatesPartitionedProxyShouldNotContainWriterOrLoader() throws Exception {
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     function.executeFunction(context);
 
     verify(asyncEventQueueFactory, times(1)).create(any(), any());

@@ -25,7 +25,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
@@ -374,7 +373,7 @@ public class AttributesFactory<K, V> {
     this.regionAttributes.customEntryIdleTimeout = regionAttributes.getCustomEntryIdleTimeout();
 
     this.regionAttributes.scope = regionAttributes.getScope();
-    this.regionAttributes.dataPolicy = regionAttributes.getDataPolicy();
+    this.regionAttributes.dataPolicy = regionAttributes.getDataPolicyEnum();
     this.regionAttributes.statisticsEnabled = regionAttributes.getStatisticsEnabled();
     this.regionAttributes.ignoreJTA = regionAttributes.getIgnoreJTA();
     this.regionAttributes.keyConstraint = regionAttributes.getKeyConstraint();
@@ -667,13 +666,13 @@ public class AttributesFactory<K, V> {
     if (dp.withReplication()) {
       // requested a mirror type that has replication
       // if current data policy is not replicated change it
-      if (!regionAttributes.getDataPolicy().withReplication()) {
+      if (!regionAttributes.getDataPolicyEnum().withReplication()) {
         setDataPolicy(dp);
       }
     } else {
       // requested a mirror type none;
       // if current data policy is replicated change it
-      if (regionAttributes.getDataPolicy().withReplication()) {
+      if (regionAttributes.getDataPolicyEnum().withReplication()) {
         setDataPolicy(dp);
       }
     }
@@ -686,21 +685,32 @@ public class AttributesFactory<K, V> {
    * @param dataPolicy The data policy to use for the region
    * @throws IllegalArgumentException if dataPolicy is null
    */
+  @Deprecated
   public void setDataPolicy(DataPolicy dataPolicy) {
+    setDataPolicy(dataPolicy.toEnum());
+  }
+
+
+  /**
+   * Sets the data policy for the next {@code RegionAttributes} created. Default data policy is
+   * 'Normal'. Please refer gemfire documentation for more details on this.
+   *
+   * @param dataPolicy The data policy to use for the region
+   * @throws IllegalArgumentException if dataPolicy is null
+   */
+  public void setDataPolicy(org.apache.geode.cache.api.DataPolicy dataPolicy) {
     if (dataPolicy == null) {
-      throw new IllegalArgumentException(
-          "dataPolicy must not be null");
+      throw new IllegalArgumentException("dataPolicy must not be null");
     }
     if (regionAttributes.partitionAttributes != null) {
       if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(dataPolicy)) {
         throw new IllegalStateException(
-            String.format("Data policies other than %s are not supported for Partitioned Regions",
-                PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
+                String.format("Data policies other than %s are not supported for Partitioned Regions",
+                        PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
       }
     }
     regionAttributes.setDataPolicy(dataPolicy);
   }
-
 
 
   /**
@@ -814,8 +824,8 @@ public class AttributesFactory<K, V> {
   @Deprecated
   public void setPersistBackup(boolean persistBackup) {
     if (persistBackup) {
-      if (!regionAttributes.getDataPolicy().withPersistence()) {
-        if (regionAttributes.getDataPolicy().withPartitioning()) {
+      if (!regionAttributes.getDataPolicyEnum().withPersistence()) {
+        if (regionAttributes.getDataPolicyEnum().withPartitioning()) {
           setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         } else {
           setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -825,9 +835,9 @@ public class AttributesFactory<K, V> {
       // It is less clear what we should do here for backwards compat.
       // If the current data policy is persist then we need to change it
       // otherwise just leave it alone
-      if (regionAttributes.getDataPolicy().withReplication()) {
+      if (regionAttributes.getDataPolicyEnum().withReplication()) {
         setDataPolicy(DataPolicy.REPLICATE);
-      } else if (regionAttributes.getDataPolicy().withPartitioning()) {
+      } else if (regionAttributes.getDataPolicyEnum().withPartitioning()) {
         setDataPolicy(DataPolicy.PARTITION);
       }
     }
@@ -1350,7 +1360,7 @@ public class AttributesFactory<K, V> {
         // on statisticsEnabled.
         setStatisticsEnabled(true);
       }
-      if (attrs.getDataPolicy().withReplication() && !attrs.getDataPolicy().withPersistence()
+      if (attrs.getDataPolicyEnum().withReplication() && !attrs.getDataPolicyEnum().withPersistence()
           && attrs.getScope().isDistributed()) {
         RegionAttributesImpl<?, ?> rattr = attrs;
         if (!attrs.isForBucketRegion()) {
@@ -1396,7 +1406,7 @@ public class AttributesFactory<K, V> {
   public static void validateAttributes(RegionAttributes<?, ?> attrs) {
     // enforce the creation constraints
 
-    if (attrs.getDataPolicy().withReplication() && attrs.getScope().isDistributed()) {
+    if (attrs.getDataPolicyEnum().withReplication() && attrs.getScope().isDistributed()) {
       boolean isForBucketRegion = false;
       if (attrs instanceof RegionAttributesImpl) {
         RegionAttributesImpl<?, ?> regionAttributes = (RegionAttributesImpl<?, ?>) attrs;
@@ -1435,7 +1445,7 @@ public class AttributesFactory<K, V> {
 
     if (attrs.getDiskStoreName() != null) {
       EvictionAttributes ea = attrs.getEvictionAttributes();
-      if (!attrs.getDataPolicy().withPersistence()
+      if (!attrs.getDataPolicyEnum().withPersistence()
           && (ea != null && ea.getAction() != EvictionAction.OVERFLOW_TO_DISK)) {
         throw new IllegalStateException(
             "Only regions with persistence or overflow to disk can specify DiskStore");
@@ -1451,19 +1461,19 @@ public class AttributesFactory<K, V> {
           "Statistics must be enabled for expiration");
     }
 
-    if (attrs.getDataPolicy() == DataPolicy.EMPTY) {
+    if (attrs.getDataPolicyEnum() == org.apache.geode.cache.api.DataPolicy.EMPTY) {
       if (attrs.getEntryTimeToLive().getTimeout() != 0
           || attrs.getEntryIdleTimeout().getTimeout() != 0
           || attrs.getCustomEntryTimeToLive() != null
           || attrs.getCustomEntryIdleTimeout() != null) {
         throw new IllegalStateException(
             String.format("If the data policy is %s then entry expiration is not allowed.",
-                attrs.getDataPolicy()));
+                attrs.getDataPolicyEnum()));
       }
       if (!attrs.getEvictionAttributes().getAlgorithm().isNone()) {
         throw new IllegalStateException(
             String.format("If the data policy is %s then eviction is not allowed.",
-                attrs.getDataPolicy()));
+                attrs.getDataPolicyEnum()));
       }
     }
     if (attrs.getMembershipAttributes().hasRequiredRoles()) {
@@ -1513,7 +1523,7 @@ public class AttributesFactory<K, V> {
             "Total size of partition region must be > 0.");
       }
 
-      if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(attrs.getDataPolicy())) {
+      if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(attrs.getDataPolicyEnum())) {
         throw new IllegalStateException(
             String.format("Data policies other than %s are not allowed in  partitioned regions.",
                 PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
@@ -1531,7 +1541,7 @@ public class AttributesFactory<K, V> {
 
       // fix bug #52033 by invoking getLocalMaxMemoryForValidation here
       if (((PartitionAttributesImpl) pa).getLocalMaxMemoryForValidation() == 0
-          && attrs.getDataPolicy() == DataPolicy.PERSISTENT_PARTITION) {
+          && attrs.getDataPolicyEnum() == org.apache.geode.cache.api.DataPolicy.PERSISTENT_PARTITION) {
         throw new IllegalStateException(
             "Persistence is not allowed when local-max-memory is zero.");
       }
@@ -1563,7 +1573,7 @@ public class AttributesFactory<K, V> {
     CustomExpiry<K, V> customEntryIdleTimeout = null;
 
     Scope scope = AbstractRegion.DEFAULT_SCOPE;
-    DataPolicy dataPolicy = DataPolicy.DEFAULT;
+    org.apache.geode.cache.api.DataPolicy dataPolicy = org.apache.geode.cache.api.DataPolicy.DEFAULT;
     boolean statisticsEnabled = false;
     boolean ignoreJTA = false;
     boolean isLockGrantor = false;
@@ -1701,8 +1711,8 @@ public class AttributesFactory<K, V> {
 
     @Override
     public MirrorType getMirrorType() {
-      if (dataPolicy == DataPolicy.NORMAL || dataPolicy.withPreloaded()
-          || dataPolicy == DataPolicy.EMPTY || dataPolicy.withPartitioning()) {
+      if (dataPolicy == org.apache.geode.cache.api.DataPolicy.NORMAL || dataPolicy.withPreloaded()
+          || dataPolicy == org.apache.geode.cache.api.DataPolicy.EMPTY || dataPolicy.withPartitioning()) {
         return MirrorType.NONE;
       } else if (dataPolicy.withReplication()) {
         return MirrorType.KEYS_VALUES;
@@ -1713,13 +1723,27 @@ public class AttributesFactory<K, V> {
       }
     }
 
+    @Deprecated
     @Override
     public DataPolicy getDataPolicy() {
+      return DataPolicy.fromEnum(getDataPolicyEnum());
+    }
+
+    @Override
+    public org.apache.geode.cache.api.DataPolicy getDataPolicyEnum() {
       return dataPolicy;
     }
 
-    public void setDataPolicy(DataPolicy dp) {
-      dataPolicy = dp;
+    /**
+     * @deprecated Use {@link #setDataPolicy(org.apache.geode.cache.api.DataPolicy)}
+     */
+    @Deprecated
+    public void setDataPolicy(DataPolicy dataPolicy) {
+      setDataPolicy(dataPolicy.toEnum());
+    }
+
+    public void setDataPolicy(org.apache.geode.cache.api.DataPolicy dataPolicy) {
+      this.dataPolicy = dataPolicy;
       setHasDataPolicy(true);
     }
 
@@ -1877,7 +1901,7 @@ public class AttributesFactory<K, V> {
 
     @Override
     public boolean getPersistBackup() {
-      return getDataPolicy().withPersistence();
+      return getDataPolicyEnum().withPersistence();
     }
 
     @Override

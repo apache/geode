@@ -42,7 +42,7 @@ public class RegionInformation implements Serializable {
     name = region.getFullPath().substring(1);
     path = region.getFullPath().substring(1);
     scope = region.getAttributes().getScope();
-    dataPolicy = region.getAttributes().getDataPolicy();
+    dataPolicy = region.getAttributes().getDataPolicyEnum();
 
     if (region.getParentRegion() == null) {
       isRoot = true;
@@ -92,7 +92,7 @@ public class RegionInformation implements Serializable {
     return scope;
   }
 
-  public DataPolicy getDataPolicy() {
+  public DataPolicy getDataPolicyEnum() {
     return dataPolicy;
   }
 
@@ -106,7 +106,7 @@ public class RegionInformation implements Serializable {
       RegionInformation regionInfoObj = (RegionInformation) obj;
       return name.equals(regionInfoObj.getName()) && path.equals(regionInfoObj.getPath())
           && isRoot == regionInfoObj.isRoot
-          && dataPolicy.equals(regionInfoObj.getDataPolicy())
+          && dataPolicy.equals(regionInfoObj.getDataPolicyEnum())
           && scope.equals(regionInfoObj.getScope());
     } else {
       return false;
@@ -128,7 +128,7 @@ public class RegionInformation implements Serializable {
     sb.append("\nScope         :\t");
     sb.append(getScope().toString());
     sb.append("\nData Policy   :\t");
-    sb.append(getDataPolicy().toString());
+    sb.append(getDataPolicyEnum().toString());
 
     if (parentRegion != null) {
       sb.append("\nParent Region :\t");

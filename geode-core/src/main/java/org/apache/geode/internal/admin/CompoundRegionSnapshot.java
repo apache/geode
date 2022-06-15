@@ -106,7 +106,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
         allCacheLoaders.add(loader);
       }
 
-      allDataPolicies.add(ra.getDataPolicy());
+      allDataPolicies.add(ra.getDataPolicyEnum());
       allRegionTtl.add(ra.getRegionTimeToLive());
       allEntryTtl.add(ra.getEntryTimeToLive());
       allCustomTtl.add(ra.getCustomEntryTimeToLive().toString());

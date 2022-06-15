@@ -97,7 +97,7 @@ public class DescribeRegionCommand extends GfshCommand {
   }
 
   private String descriptionGrouper(RegionDescriptionPerMember perTypeDesc) {
-    return perTypeDesc.getName() + perTypeDesc.getScope() + perTypeDesc.getDataPolicy()
+    return perTypeDesc.getName() + perTypeDesc.getScope() + perTypeDesc.getDataPolicyEnum()
         + perTypeDesc.isAccessor();
   }
 
@@ -124,7 +124,7 @@ public class DescribeRegionCommand extends GfshCommand {
       regionSection.addData("Name", regionDescription.getName());
 
       String dataPolicy =
-          regionDescription.getDataPolicy().toString().toLowerCase().replace('_', ' ');
+          regionDescription.getDataPolicyEnum().toString().toLowerCase().replace('_', ' ');
       regionSection.addData("Data Policy", dataPolicy);
 
       String memberType;

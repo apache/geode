@@ -74,7 +74,7 @@ public class DistributedRemoveAllOperationTest {
     when(bucketRegion.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(bucketRegion.getCache()).thenReturn(internalCache);
     when(bucketRegion.getKeyInfo(any(), any(), any())).thenReturn(new KeyInfo(key, null, null));
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.DEFAULT);
     when(internalCache.getDistributedSystem()).thenReturn(internalDistributedSystem);
     when(internalCache.getCqService()).thenReturn(cqService);
     when(serverCQ.getFilterID()).thenReturn(1L);

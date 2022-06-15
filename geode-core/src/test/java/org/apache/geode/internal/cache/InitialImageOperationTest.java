@@ -140,7 +140,7 @@ public class InitialImageOperationTest {
     InternalDistributedMember server2 = new InternalDistributedMember("host2", 102);
     InternalDistributedMember server3 = new InternalDistributedMember("host3", 103);
     InternalDistributedMember server4 = new InternalDistributedMember("host4", 104);
-    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(distributedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(distributedRegion.getVersionMember()).thenReturn(server1);
 
     RegionEntry re1 = mock(RegionEntry.class);
@@ -222,7 +222,7 @@ public class InitialImageOperationTest {
     DiskStoreID server2 = new DiskStoreID(0, 1);
     DiskStoreID server3 = new DiskStoreID(0, 2);
     DiskStoreID server4 = new DiskStoreID(0, 3);
-    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(distributedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     when(distributedRegion.getVersionMember()).thenReturn(server1);
 
     RegionEntry re1 = mock(RegionEntry.class);

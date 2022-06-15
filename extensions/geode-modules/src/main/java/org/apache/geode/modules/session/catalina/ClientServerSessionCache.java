@@ -190,7 +190,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
         sessionRegion.getAttributesMutator().addCacheListener(new SessionExpirationCacheListener());
       }
 
-      if (sessionRegion.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
+      if (sessionRegion.getAttributes().getDataPolicyEnum() != DataPolicy.EMPTY) {
         sessionRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS);
       }
     }
@@ -227,7 +227,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
     // register interest are needed for caching proxy client:
     // to get updates from server if local cache is enabled;
-    if (region.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
+    if (region.getAttributes().getDataPolicyEnum() != DataPolicy.EMPTY) {
       region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
     }
 

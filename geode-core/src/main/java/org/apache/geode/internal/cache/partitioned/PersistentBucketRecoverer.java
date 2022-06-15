@@ -92,11 +92,11 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     List<PartitionedRegion> colocatedRegions =
         getColocatedChildRegions(baseRegion);
     List<RegionStatus> allRegions = new ArrayList<>(colocatedRegions.size() + 1);
-    if (baseRegion.getDataPolicy().withPersistence()) {
+    if (baseRegion.getDataPolicyEnum().withPersistence()) {
       allRegions.add(new RegionStatus(baseRegion));
     }
     for (PartitionedRegion region : colocatedRegions) {
-      if (region.getDataPolicy().withPersistence()) {
+      if (region.getDataPolicyEnum().withPersistence()) {
         allRegions.add(new RegionStatus(region));
       }
     }
@@ -286,9 +286,9 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
        * A non-persistent colocated region will not have a disk store so check the leader region if
        * this region does not have one.
        */
-      if (region.getAttributes().getDataPolicy().withPersistence()) {
+      if (region.getAttributes().getDataPolicyEnum().withPersistence()) {
         diskStore = region.getDiskStore();
-      } else if (ColocationHelper.getLeaderRegion(region).getAttributes().getDataPolicy()
+      } else if (ColocationHelper.getLeaderRegion(region).getAttributes().getDataPolicyEnum()
           .withPersistence()) {
         diskStore = ColocationHelper.getLeaderRegion(region).getDiskStore();
       }

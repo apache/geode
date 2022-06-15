@@ -50,7 +50,7 @@ public class RegionConfigRealizerIntegrationTest {
 
     org.apache.geode.cache.Region<Object, Object> region = server.getCache().getRegion("test");
     assertThat(region).isNotNull();
-    assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
+    assertThat(region.getAttributes().getDataPolicyEnum()).isEqualTo(DataPolicy.REPLICATE);
     assertThat(region.getAttributes().getScope()).isEqualTo(Scope.DISTRIBUTED_ACK);
   }
 

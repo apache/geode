@@ -69,7 +69,7 @@ public class CompiledRegion extends AbstractCompiledValue {
       int bucketID = br.getId();
       // Is current region a partitioned region
       rgn = cache.getRegion(regionPath);
-      if (rgn.getAttributes().getDataPolicy().withPartitioning()) {
+      if (rgn.getAttributes().getDataPolicyEnum().withPartitioning()) {
         // convert it into bucket region.
         PartitionedRegion prLocal = (PartitionedRegion) rgn;
         rgn = prLocal.getDataStore().getLocalBucketById(bucketID);

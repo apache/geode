@@ -66,7 +66,7 @@ public class DescribeRegionJUnitTest {
     when(descriptionPerMember.getNonDefaultRegionAttributes()).thenReturn(regionMap);
     when(descriptionPerMember.getHostingMember()).thenReturn(memberName);
     when(descriptionPerMember.getScope()).thenReturn(DISTRIBUTED_ACK);
-    when(descriptionPerMember.getDataPolicy()).thenReturn(NORMAL);
+    when(descriptionPerMember.getDataPolicyEnum()).thenReturn(NORMAL);
     when(descriptionPerMember.getName()).thenReturn(regionName);
 
     return descriptionPerMember;

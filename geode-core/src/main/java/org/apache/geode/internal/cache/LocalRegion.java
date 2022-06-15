@@ -655,8 +655,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     serverRegionProxy =
         getPoolName() != null ? serverRegionProxyConstructor.create(this) : null;
     imageState = new UnsharedImageState(getPoolName() != null,
-        getDataPolicy().withReplication() || getDataPolicy().withPreloaded(),
-        getAttributes().getDataPolicy().withPersistence(), stopper);
+        getDataPolicyEnum().withReplication() || getDataPolicyEnum().withPreloaded(),
+        getAttributes().getDataPolicyEnum().withPersistence(), stopper);
 
     // prevent internal regions from participating in a TX
     supportsTX = !isSecret() && !isUsedForPartitionedRegionAdmin() && !isUsedForMetaRegion()
@@ -737,12 +737,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private RegionVersionVector createVersionVector() {
     RegionVersionVector regionVersionVector = RegionVersionVector.create(getVersionMember(), this);
 
-    if (getDataPolicy().withPersistence()) {
+    if (getDataPolicyEnum().withPersistence()) {
       // copy the versions that we have recovered from disk into
       // the version vector.
       RegionVersionVector diskVector = diskRegion.getRegionVersionVector();
       regionVersionVector.recordVersions(diskVector.getCloneForTransmission());
-    } else if (!getDataPolicy().withStorage()) {
+    } else if (!getDataPolicyEnum().withStorage()) {
       // version vectors are currently only necessary in empty regions for
       // tracking canonical member IDs
       regionVersionVector.turnOffRecordingForEmptyRegion();
@@ -876,7 +876,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public VersionSource getVersionMember() {
-    if (getDataPolicy().withPersistence()) {
+    if (getDataPolicyEnum().withPersistence()) {
       return getDiskStore().getDiskStoreID();
     }
     return cache.getInternalDistributedSystem().getDistributedMember();
@@ -1066,7 +1066,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     // Only make create with null a local invalidate for
     // normal regions. Otherwise, it will become a distributed invalidate.
-    if (getDataPolicy() == DataPolicy.NORMAL) {
+    if (getDataPolicyEnum() == DataPolicy.NORMAL) {
       event.setLocalInvalid(true);
     }
     discoverJTA();
@@ -1461,7 +1461,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) {
     Object result;
-    boolean partitioned = getDataPolicy().withPartitioning();
+    boolean partitioned = getDataPolicyEnum().withPartitioning();
     if (!partitioned) {
       localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD,
           clientEvent, false, false);
@@ -2169,7 +2169,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void writeToDisk() {
     if (diskRegion == null) {
-      DataPolicy dp = getDataPolicy();
+      DataPolicy dp = getDataPolicyEnum();
       if (dp == DataPolicy.EMPTY) {
         throw new IllegalStateException(
             String.format("Cannot write a region with data-policy %s to disk.",
@@ -2765,7 +2765,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       } else {
         closeAllCallbacks();
       }
-      if (getConcurrencyChecksEnabled() && getDataPolicy().withReplication()
+      if (getConcurrencyChecksEnabled() && getDataPolicyEnum().withReplication()
           && !cache.isClosed()) {
         cache.getTombstoneService().unscheduleTombstones(this);
       }
@@ -3426,16 +3426,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * local regions do not perform versioning
    */
   boolean shouldGenerateVersionTag(RegionEntry entry, EntryEventImpl event) {
-    if (getDataPolicy().withPersistence()) {
+    if (getDataPolicyEnum().withPersistence()) {
       return true;
     }
     return getConcurrencyChecksEnabled()
-        && (entry.getVersionStamp().hasValidVersion() || getDataPolicy().withReplication());
+        && (entry.getVersionStamp().hasValidVersion() || getDataPolicyEnum().withReplication());
   }
 
   void enableConcurrencyChecks() {
     setConcurrencyChecksEnabled(true);
-    if (getDataPolicy().withStorage()) {
+    if (getDataPolicyEnum().withStorage()) {
       RegionEntryFactory versionedEntryFactory = entries.getEntryFactory().makeVersioned();
       Assert.assertTrue(entries.isEmpty(),
           "RegionMap should be empty but was of size:" + entries.size());
@@ -3641,7 +3641,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (isProxy()) {
       throw new UnsupportedOperationException(
           String.format("Regions with DataPolicy %s do not support saveSnapshot.",
-              getDataPolicy()));
+              getDataPolicyEnum()));
     }
     checkForNoAccess();
     try (DataOutputStream out = new DataOutputStream(outputStream)) {
@@ -3687,7 +3687,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (isProxy()) {
       throw new UnsupportedOperationException(
           String.format("Regions with DataPolicy %s do not support loadSnapshot.",
-              getDataPolicy()));
+              getDataPolicyEnum()));
     }
     if (inputStream == null) {
       throw new NullPointerException(
@@ -3778,7 +3778,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throw new SubscriptionNotEnabledException(msg);
     }
 
-    if (getAttributes().getDataPolicy().withReplication()
+    if (getAttributes().getDataPolicyEnum().withReplication()
         && !getAttributes().getScope().isLocal()) {
       throw new UnsupportedOperationException(
           "Interest registration not supported on replicated regions");
@@ -3809,7 +3809,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         bo.beforeInterestRegistration();
       } // Test Code Ends
 
-      final DataPolicy regionDataPolicy = getAttributes().getDataPolicy();
+      final DataPolicy regionDataPolicy = getAttributes().getDataPolicyEnum();
       List<List<Object>> serverKeys;
 
       switch (interestType) {
@@ -4949,7 +4949,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   void basicInvalidate(final EntryEventImpl event, boolean invokeCallbacks,
       final boolean forceNewEntry) throws EntryNotFoundException {
     if (!event.isOriginRemote() && !event.isDistributed() && getScope().isDistributed()
-        && getDataPolicy().withReplication() && invokeCallbacks) {
+        && getDataPolicyEnum().withReplication() && invokeCallbacks) {
       // catches case where being called by (distributed) invalidateRegion
       throw new IllegalStateException(
           "Cannot do a local invalidate on a replicated region");
@@ -5174,7 +5174,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
       // Only make create with null a local invalidate for
       // normal regions. Otherwise, it will become a distributed invalidate.
-      if (getDataPolicy() == DataPolicy.NORMAL) {
+      if (getDataPolicyEnum() == DataPolicy.NORMAL) {
         event.setLocalInvalid(true);
       }
 
@@ -5678,7 +5678,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // for EMPTY clients, see if a concurrent map operation had an entry on the server
     ServerRegionProxy mySRP = getServerProxy();
 
-    if (mySRP != null && getDataPolicy() == DataPolicy.EMPTY) {
+    if (mySRP != null && getDataPolicyEnum() == DataPolicy.EMPTY) {
       if (originalOp == Operation.PUT_IF_ABSENT) {
         return !event.hasOldValue();
       }
@@ -6193,7 +6193,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       for (GatewaySender sender : getCache().getAllGatewaySenders()) {
         if (allGatewaySenderIds.contains(sender.getId())) {
           // TODO: This is a BUG. Why return and not continue?
-          if (!getDataPolicy().withStorage() && sender.isParallel()) {
+          if (!getDataPolicyEnum().withStorage() && sender.isParallel()) {
             return;
           }
           if (logger.isDebugEnabled()) {
@@ -7422,7 +7422,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {
     // disallow local invalidation for replicated regions
-    if (getScope().isDistributed() && getDataPolicy().withReplication() && !event.isDistributed()
+    if (getScope().isDistributed() && getDataPolicyEnum().withReplication() && !event.isDistributed()
         && !isUsedForSerialGatewaySenderQueue()) {
       throw new IllegalStateException(
           "Not allowed to do a local destroy on a replicated region");
@@ -7532,13 +7532,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Returns true if this region's config indicates that it will use a disk store.
    */
   boolean usesDiskStore(RegionAttributes regionAttributes) {
-    return !isProxy() && (getAttributes().getDataPolicy().withPersistence() || isOverflowEnabled());
+    return !isProxy() && (getAttributes().getDataPolicyEnum().withPersistence() || isOverflowEnabled());
   }
 
   DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
       InternalRegionArguments internalRegionArgs) {
     // validate that persistent type registry is persistent
-    if (getAttributes().getDataPolicy().withPersistence()) {
+    if (getAttributes().getDataPolicyEnum().withPersistence()) {
       getCache().getPdxRegistry().creatingPersistentRegion();
     }
 
@@ -7617,7 +7617,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     // TODO: fix NO_PARTITITON typo
     return DiskRegion.create(diskStoreImpl, getFullPath(), false,
-        getDataPolicy().withPersistence(), isOverflowEnabled(), isDiskSynchronous(), stats,
+        getDataPolicyEnum().withPersistence(), isOverflowEnabled(), isDiskSynchronous(), stats,
         getCancelCriterion(), this, getAttributes(), diskFlags, "NO_PARTITITON", -1,
         getCompressor(), getOffHeap());
   }
@@ -8488,7 +8488,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   // TODO: what does cmn refer to?
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     RegionVersionVector rvv = null;
-    if (useRVV && getDataPolicy().withReplication() && getConcurrencyChecksEnabled()) {
+    if (useRVV && getDataPolicyEnum().withReplication() && getConcurrencyChecksEnabled()) {
       rvv = versionVector.getCloneForTransmission();
     }
     clearRegionLocally(regionEvent, cacheWrite, rvv);
@@ -8511,7 +8511,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // clients and local regions do not maintain a full RVV. can't use it with clear()
       rvv = null;
     }
-    if (rvv != null && getDataPolicy().withStorage()) {
+    if (rvv != null && getDataPolicyEnum().withStorage()) {
       if (isRvvDebugEnabled) {
         logger.trace(LogMarker.RVV_VERBOSE,
             "waiting for my version vector to dominate{}mine={}{} other={}", lineSeparator(),
@@ -8593,7 +8593,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // clear the disk region if present
     if (diskRegion != null) {
       // persist current rvv and rvvgc which contained version for clear() itself
-      if (getDataPolicy().withPersistence()) {
+      if (getDataPolicyEnum().withPersistence()) {
         // null means not to change dr.rvvTrust
         if (isRvvDebugEnabled) {
           logger.trace(LogMarker.RVV_VERBOSE, "Clear: Saved current rvv: {}",
@@ -8613,7 +8613,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       txClearRegion();
       // Now clear the map of committed entries
       Set<VersionSource> remainingIDs = clearEntries(rvv);
-      if (!getDataPolicy().withPersistence()) {
+      if (!getDataPolicyEnum().withPersistence()) {
         // persistent regions do not reap IDs
         if (myVector != null) {
           myVector.removeOldMembers(remainingIDs);
@@ -8822,7 +8822,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Return false if it will never store entry ekys and values locally; otherwise return true.
    */
   boolean hasStorage() {
-    return getDataPolicy().withStorage();
+    return getDataPolicyEnum().withStorage();
   }
 
   private void verifyPutAllMap(Map map) {
@@ -9067,7 +9067,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // generated at commit
     // so treat transactional putAll as if the server is not versioned
     final boolean serverIsVersioned = proxyResult != null && proxyResult.regionIsVersioned()
-        && !isTX() && getDataPolicy() != DataPolicy.EMPTY;
+        && !isTX() && getDataPolicyEnum() != DataPolicy.EMPTY;
     if (!serverIsVersioned && !partialResult) {
       // we don't need server information if it isn't versioned or if the region is empty
       proxyResult = null;
@@ -9113,7 +9113,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
                 logger.debug("putAll key {} -> {} version={}", key, value, versionTag);
               }
               if (versionTag == null && serverIsVersioned && getConcurrencyChecksEnabled()
-                  && getDataPolicy().withStorage()) {
+                  && getDataPolicyEnum().withStorage()) {
                 // server was unable to determine the version for this operation.
                 // I'm not sure this can still happen as described below on a pr.
                 // But it can happen on the server if NORMAL or PRELOADED.
@@ -9285,7 +9285,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // so treat transactional removeAll as if the server is not versioned.
     // If we have no storage then act as if the server is not versioned.
     final boolean serverIsVersioned = proxyResult != null && proxyResult.regionIsVersioned()
-        && !isTX() && getDataPolicy().withStorage();
+        && !isTX() && getDataPolicyEnum().withStorage();
     if (!serverIsVersioned && !partialResult) {
       // since the server is not versioned and we do not have a partial result
       // get rid of the proxyResult info returned by the server.
@@ -9450,7 +9450,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       testHook.beforeBulkLock(this);
     }
 
-    if (versionVector != null && getDataPolicy().withReplication()) {
+    if (versionVector != null && getDataPolicyEnum().withReplication()) {
       versionVector.lockForCacheModification(this);
     }
 
@@ -9465,7 +9465,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       testHook.beforeBulkRelease(this);
     }
 
-    if (versionVector != null && getDataPolicy().withReplication()) {
+    if (versionVector != null && getDataPolicyEnum().withReplication()) {
       versionVector.releaseCacheModificationLock(this);
     }
 
@@ -9635,7 +9635,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void postPutAllFireEvents(DistributedPutAllOperation putAllOp,
       VersionedObjectList successfulPuts) {
 
-    if (!getDataPolicy().withStorage() && getConcurrencyChecksEnabled()
+    if (!getDataPolicyEnum().withStorage() && getConcurrencyChecksEnabled()
         && putAllOp.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulPuts list for transmission back to the client
@@ -9670,7 +9670,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void postRemoveAllFireEvents(DistributedRemoveAllOperation removeAllOp,
       VersionedObjectList successfulOps) {
 
-    if (!getDataPolicy().withStorage() && getConcurrencyChecksEnabled()
+    if (!getDataPolicyEnum().withStorage() && getConcurrencyChecksEnabled()
         && removeAllOp.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulOps list for transmission back to the client
@@ -9803,7 +9803,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public boolean shouldSyncForCrashedMember(InternalDistributedMember id) {
-    return getConcurrencyChecksEnabled() && getDataPolicy().withReplication()
+    return getConcurrencyChecksEnabled() && getDataPolicyEnum().withReplication()
         && !isUsedForPartitionedRegionAdmin && !isUsedForMetaRegion
         && !isUsedForSerialGatewaySenderQueue;
   }
@@ -10001,7 +10001,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   protected boolean supportsConcurrencyChecks() {
-    return !isSecret() || getDataPolicy().withPersistence();
+    return !isSecret() || getDataPolicyEnum().withPersistence();
   }
 
   /**
@@ -10435,15 +10435,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private void checkIfConcurrentMapOpsAllowed() {
     // This check allows NORMAL with local scope
     if (serverRegionProxy == null
-        && (getDataPolicy() == DataPolicy.NORMAL && scope.isDistributed()
-            || getDataPolicy() == DataPolicy.EMPTY)) {
+        && (getDataPolicyEnum() == DataPolicy.NORMAL && scope.isDistributed()
+            || getDataPolicyEnum() == DataPolicy.EMPTY)) {
       // the functional spec says these data policies do not support concurrent map operations
       throw new UnsupportedOperationException();
     }
   }
 
   boolean canStoreDataLocally() {
-    return getDataPolicy().withStorage();
+    return getDataPolicyEnum().withStorage();
   }
 
   /**

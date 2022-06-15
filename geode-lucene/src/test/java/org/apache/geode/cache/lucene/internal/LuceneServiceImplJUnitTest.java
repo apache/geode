@@ -132,7 +132,7 @@ public class LuceneServiceImplJUnitTest {
 
     RegionAttributes ratts = mock(RegionAttributes.class);
     when(region.getAttributes()).thenReturn(ratts);
-    when(ratts.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(ratts.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     EvictionAttributes evictionAttrs = mock(EvictionAttributes.class);
     when(ratts.getEvictionAttributes()).thenReturn(evictionAttrs);
     when(evictionAttrs.getAlgorithm()).thenReturn(EvictionAlgorithm.NONE);

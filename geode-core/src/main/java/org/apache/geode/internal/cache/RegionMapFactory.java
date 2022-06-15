@@ -34,7 +34,7 @@ class RegionMapFactory {
   public static RegionMap createVM(LocalRegion owner, RegionMap.Attributes attrs,
       InternalRegionArguments internalRegionArgs) {
     // final boolean isNotPartitionedRegion = !(owner.getPartitionAttributes() != null || owner
-    // .getDataPolicy().withPartitioning());
+    // .getDataPolicyEnum().withPartitioning());
     if (owner.isProxy() /* || owner instanceof PartitionedRegion */) { // TODO enabling this causes
                                                                        // eviction tests to fail
       return new ProxyRegionMap(owner, attrs, internalRegionArgs);

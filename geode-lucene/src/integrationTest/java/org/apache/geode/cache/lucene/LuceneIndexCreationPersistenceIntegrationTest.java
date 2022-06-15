@@ -133,7 +133,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).setDiskSynchronous(synchronous)
         .create(REGION_NAME);
     verifyInternalRegions(region -> {
-      assertTrue(region.getDataPolicy().withPersistence());
+      assertTrue(region.getDataPolicyEnum().withPersistence());
       // Underlying region should always be synchronous
       assertTrue(region.isDiskSynchronous());
     });

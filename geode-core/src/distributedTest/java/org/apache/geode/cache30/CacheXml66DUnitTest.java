@@ -450,7 +450,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     cache.createRegion("parRoot", attrs);
 
     Region r = cache.getRegion("parRoot");
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, r.getAttributes().getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, r.getAttributes().getDataPolicyEnum());
 
     testXml(cache);
 
@@ -460,7 +460,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region region = c.getRegion("parRoot");
     assertNotNull(region);
 
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, region.getAttributes().getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, region.getAttributes().getDataPolicyEnum());
     // since CacheTestCase remoteTearDown does not destroy PartitionedRegion
     region.localDestroyRegion();
   }
@@ -593,7 +593,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     // verify templates
     assertNotNull(cache.getRegionAttributes("nack"));
     RegionAttributes attrs = cache.getRegionAttributes("persistent");
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, attrs.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, attrs.getDataPolicyEnum());
     assertEquals(false, attrs.isDiskSynchronous());
     assertEquals("persistentDiskStore1", attrs.getDiskStoreName());
 
@@ -601,7 +601,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertNotNull(region);
 
     attrs = region.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, attrs.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, attrs.getDataPolicyEnum());
     assertEquals(false, attrs.isDiskSynchronous());
     assertEquals("persistentDiskStore1", attrs.getDiskStoreName());
 
@@ -610,7 +610,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     // Make sure that attributes can be "overridden"
     attrs = region.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, attrs.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, attrs.getDataPolicyEnum());
     assertEquals(false, attrs.isDiskSynchronous());
     assertEquals("persistentDiskStore2", attrs.getDiskStoreName());
 
@@ -622,7 +622,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     PartitionAttributes pa = attrs.getPartitionAttributes();
     assertEquals(1, pa.getRedundantCopies());
     assertEquals(3, pa.getTotalNumBuckets());
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, attrs.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, attrs.getDataPolicyEnum());
   }
 
   @Test
@@ -674,7 +674,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("partition");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -688,7 +688,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("rpartition");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -702,7 +702,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("ppartition");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -717,7 +717,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("prpartition");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -736,7 +736,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("partitionoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -755,7 +755,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("rpartitionoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -777,7 +777,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("ppartitionoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -799,7 +799,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("prpartitionoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -816,7 +816,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("partitionlru");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -834,7 +834,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("rpartitionlru");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -851,7 +851,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("replicate");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
 
@@ -864,7 +864,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("preplicate");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
 
@@ -878,7 +878,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("replicateoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -896,7 +896,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("preplicateoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -913,7 +913,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("replicatelru");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
+    assertEquals(DataPolicy.PRELOADED, ra.getDataPolicyEnum());
     assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -930,7 +930,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("local");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
   }
 
@@ -943,7 +943,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("plocal");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
   }
 
@@ -956,7 +956,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("locallru");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
@@ -972,7 +972,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("localoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -990,7 +990,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("cpolocal");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -1007,7 +1007,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("partitionProxy");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(0, ra.getPartitionAttributes().getLocalMaxMemory());
@@ -1023,7 +1023,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("rpartitionProxy");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(0, ra.getPartitionAttributes().getLocalMaxMemory());
@@ -1038,7 +1038,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("replicateProxy");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.EMPTY, ra.getDataPolicy());
+    assertEquals(DataPolicy.EMPTY, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
 
@@ -1052,7 +1052,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("proxy");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.EMPTY, ra.getDataPolicy());
+    assertEquals(DataPolicy.EMPTY, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals("DEFAULT", ra.getPoolName());
   }
@@ -1067,7 +1067,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("cproxy");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals("DEFAULT", ra.getPoolName());
   }
@@ -1083,7 +1083,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("cproxylru");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals("DEFAULT", ra.getPoolName());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -1102,7 +1102,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("cproxyoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals("DEFAULT", ra.getPoolName());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -1121,7 +1121,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("local");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
   }
@@ -1136,7 +1136,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("locallru");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -1154,7 +1154,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("localoverflow");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -1173,7 +1173,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("cplocal");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
   }
@@ -1189,7 +1189,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     Region r = c.getRegion("cpolocal");
     assertNotNull(r);
     RegionAttributes ra = r.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),

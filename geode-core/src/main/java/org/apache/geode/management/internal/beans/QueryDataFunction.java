@@ -134,7 +134,7 @@ public class QueryDataFunction implements Function, InternalEntity {
 
       boolean noDataFound = true;
 
-      if (region.getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+      if (region.getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
         QueryService queryService = cache.getQueryService();
 
         Query query = queryService.newQuery(queryString);

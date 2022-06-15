@@ -913,7 +913,7 @@ public class RegionAttributesType implements Serializable {
    *
    * @return the value of the dataPolicy property
    */
-  public RegionAttributesDataPolicy getDataPolicy() {
+  public RegionAttributesDataPolicy getDataPolicyEnum() {
     return dataPolicy;
   }
 

@@ -185,7 +185,7 @@ public class RegionMBeanCompositeDataFactory {
     }
 
     boolean ignoreJTA = regAttrs.getIgnoreJTA();
-    String dataPolicy = regAttrs.getDataPolicy().toString();
+    String dataPolicy = regAttrs.getDataPolicyEnum().toString();
     String scope = regAttrs.getScope().toString();
     int initialCapacity = regAttrs.getInitialCapacity();
     float loadFactor = regAttrs.getLoadFactor();

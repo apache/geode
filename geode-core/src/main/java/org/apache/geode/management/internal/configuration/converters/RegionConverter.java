@@ -255,7 +255,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     if (regionAttributes == null) {
       return RegionType.LEGACY;
     }
-    RegionAttributesDataPolicy dataPolicy = regionAttributes.getDataPolicy();
+    RegionAttributesDataPolicy dataPolicy = regionAttributes.getDataPolicyEnum();
 
     if (dataPolicy == null) {
       return RegionType.LEGACY;

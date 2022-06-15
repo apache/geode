@@ -288,7 +288,7 @@ public class PartitionedRegionCreationJUnitTest {
       fail("testpartionedRegionInitialization() - the "
           + PartitionedRegionHelper.PR_ROOT_REGION_NAME + " scope is not distributed_ack");
     }
-    assertEquals(DataPolicy.REPLICATE, regionAttribs.getDataPolicy());
+    assertEquals(DataPolicy.REPLICATE, regionAttribs.getDataPolicyEnum());
 
   }
 

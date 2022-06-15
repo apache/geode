@@ -17,7 +17,7 @@ package org.apache.geode.cache;
 import java.io.File;
 import java.util.Set;
 
-import org.apache.geode.cache.api.DataPolicy;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.compression.Compressor;
 
@@ -147,8 +147,18 @@ public interface RegionAttributes<K, V> {
    *
    * @return the region's <code>DataPolicy</code>
    * @since GemFire 5.0
+   * @deprecated Use {@link #getDataPolicyEnum()}.
    */
+  @Deprecated
   DataPolicy getDataPolicy();
+
+  /**
+   * Returns the data policy for this region. Default value of DataPolicy is set to 'Normal'. Please
+   * refer the gemfire documentation for more details on this.
+   *
+   * @return the region's <code>DataPolicy</code>
+   */
+  org.apache.geode.cache.api.DataPolicy getDataPolicyEnum();
 
   /**
    * Returns the scope of the region. Default scope is DISTRIBUTED_NO_ACK. Please refer the gemfire

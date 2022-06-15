@@ -62,7 +62,7 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
   private <K, V> RegionAttributes<K, V> getBasicAttributes(
       RegionAttributes<K, V> regionAttributes) {
     AttributesFactory<K, V> factory = new AttributesFactory<>(regionAttributes);
-    if (!regionAttributes.getDataPolicy().withStorage()) {
+    if (!regionAttributes.getDataPolicyEnum().withStorage()) {
       factory.setOffHeap(true);
     }
     return factory.create();

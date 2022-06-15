@@ -288,11 +288,11 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     assertNotNull(c);
     Region r1 = c.getRegion(SEPARATOR + "r1");
     assertNotNull(r1);
-    assertTrue(r1.getAttributes().getDataPolicy().withPersistence());
-    assertTrue(r1.getAttributes().getDataPolicy().withPartitioning());
+    assertTrue(r1.getAttributes().getDataPolicyEnum().withPersistence());
+    assertTrue(r1.getAttributes().getDataPolicyEnum().withPartitioning());
     Region r2 = c.getRegion(SEPARATOR + "r2");
     assertNotNull(r2);
-    assertTrue(r2.getAttributes().getDataPolicy().withPersistence());
-    assertTrue(r2.getAttributes().getDataPolicy().withPartitioning());
+    assertTrue(r2.getAttributes().getDataPolicyEnum().withPersistence());
+    assertTrue(r2.getAttributes().getDataPolicyEnum().withPartitioning());
   }
 }

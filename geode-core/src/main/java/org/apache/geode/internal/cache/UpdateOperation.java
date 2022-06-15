@@ -221,7 +221,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
         // msg can be null when PR data store throws exception back to
         // accessor.
         UpdateMessage message = this;
-        if (!(message.hasBridgeContext() && message.getDataPolicy() == DataPolicy.EMPTY)) {
+        if (!(message.hasBridgeContext() && message.getDataPolicyEnum() == DataPolicy.EMPTY)) {
           final UpdateMessage updateMsg;
           final DistributionManager dm = event.getRegion().getDistributionManager();
           if (this instanceof UpdateWithContextMessage) {
@@ -275,7 +275,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
         // in an UpdateMessage this results from a create(key, null) call,
         // set local invalid flag in event if this is a normal region. Otherwise
         // it should be a distributed invalid.
-        if (event.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+        if (event.getRegion().getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
           event.setLocalInvalid(true);
         }
         event.setNewValue(newValue);
@@ -459,9 +459,9 @@ public class UpdateOperation extends AbstractUpdateOperation {
       return false;
     }
 
-    public DataPolicy getDataPolicy() {
+    public DataPolicy getDataPolicyEnum() {
       if (event != null) {
-        return event.getRegion().getAttributes().getDataPolicy();
+        return event.getRegion().getAttributes().getDataPolicyEnum();
       }
       return null;
     }

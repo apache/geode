@@ -87,12 +87,12 @@ public class ImportClusterConfigDistributedTest {
 
     Region replicateRegion = cache.getRegion("replicateRegion");
     assertThat(replicateRegion).isNotNull();
-    assertThat(replicateRegion.getAttributes().getDataPolicy()).isEqualTo(REPLICATE);
+    assertThat(replicateRegion.getAttributes().getDataPolicyEnum()).isEqualTo(REPLICATE);
 
     Region partitionRegion = cache.getRegion("partitionRegion");
     assertThat(partitionRegion).isNotNull();
 
-    assertThat(partitionRegion.getAttributes().getDataPolicy()).isEqualTo(PARTITION);
+    assertThat(partitionRegion.getAttributes().getDataPolicyEnum()).isEqualTo(PARTITION);
   }
 
 

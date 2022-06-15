@@ -119,7 +119,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     customEttlDesc = getDesc(attr.getCustomEntryTimeToLive());
     eIdleTimeout = attr.getEntryIdleTimeout();
     customEIdleDesc = getDesc(attr.getCustomEntryIdleTimeout());
-    dataPolicy = attr.getDataPolicy();
+    dataPolicy = attr.getDataPolicyEnum();
     scope = attr.getScope();
     statsEnabled = attr.getStatisticsEnabled();
     ignoreJTA = attr.getIgnoreJTA();
@@ -289,7 +289,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public boolean getPersistBackup() {
-    return getDataPolicy().withPersistence();
+    return getDataPolicyEnum().withPersistence();
   }
 
   @Override
@@ -374,8 +374,12 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   }
 
   @Override
-  public DataPolicy getDataPolicy() {
-    // checkReadiness();
+  public org.apache.geode.cache.DataPolicy getDataPolicy() {
+    return org.apache.geode.cache.DataPolicy.fromEnum(getDataPolicyEnum());
+  }
+
+  @Override
+  public DataPolicy getDataPolicyEnum() {
     return dataPolicy;
   }
 

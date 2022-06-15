@@ -662,7 +662,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       // the replayed event.
       synchronized (localExceptions) {
         if (localVersion.get() < tag.getRegionVersion() && region != null
-            && region.isInitialized() && region.getDataPolicy().withPersistence()) {
+            && region.isInitialized() && region.getDataPolicyEnum().withPersistence()) {
           Assert.fail(
               "recordVersion invoked for a local version tag that is higher than our local version. rvv="
                   + this + ", tag=" + tag + " " + region.getName());

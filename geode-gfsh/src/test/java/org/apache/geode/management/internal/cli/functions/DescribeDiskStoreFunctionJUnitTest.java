@@ -255,7 +255,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockUserRegion.getFullPath()).thenReturn(SEPARATOR + "UserRegion");
     when(mockUserRegion.getName()).thenReturn("UserRegion");
     when(mockUserRegion.subregions(false)).thenReturn(CollectionUtils.asSet(mockSessionRegion));
-    when(mockUserRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockUserRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockUserRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
     when(mockUserRegionAttributes.getEvictionAttributes()).thenReturn(mockUserEvictionAttributes);
     when(mockUserEvictionAttributes.getAction()).thenReturn(EvictionAction.LOCAL_DESTROY);
@@ -264,14 +264,14 @@ public class DescribeDiskStoreFunctionJUnitTest {
         .thenReturn(SEPARATOR + "UserRegion" + SEPARATOR + "SessionRegion");
     when(mockSessionRegion.getName()).thenReturn("SessionRegion");
     when(mockSessionRegion.subregions(false)).thenReturn(Collections.emptySet());
-    when(mockSessionRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(mockSessionRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(mockSessionRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
     when(mockSessionRegionAttributes.getEvictionAttributes())
         .thenReturn(mockSessionEvictionAttributes);
     when(mockSessionEvictionAttributes.getAction()).thenReturn(EvictionAction.OVERFLOW_TO_DISK);
     when(mockGuestRegion.getAttributes()).thenReturn(mockGuestRegionAttributes);
     when(mockGuestRegion.subregions(false)).thenReturn(Collections.emptySet());
-    when(mockGuestRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(mockGuestRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(mockGuestRegionAttributes.getDiskStoreName())
         .thenReturn(DiskStoreDetails.DEFAULT_DISK_STORE_NAME);
     when(mockGuestRegionAttributes.getEvictionAttributes()).thenReturn(mockGuestEvictionAttributes);
@@ -627,7 +627,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     assertThat(function.isPersistent(mockRegion)).isTrue();
@@ -641,7 +641,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     assertThat(function.isPersistent(mockRegion)).isTrue();
@@ -655,7 +655,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.NORMAL);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     assertThat(function.isPersistent(mockRegion)).isFalse();
@@ -669,7 +669,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     assertThat(function.isPersistent(mockRegion)).isFalse();
@@ -683,7 +683,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PRELOADED);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PRELOADED);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     assertThat(function.isPersistent(mockRegion)).isFalse();
@@ -697,7 +697,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
     assertThat(function.isPersistent(mockRegion)).isFalse();
@@ -712,7 +712,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
     when(mockDiskStore.getName()).thenReturn(DiskStoreDetails.DEFAULT_DISK_STORE_NAME);
 
@@ -731,7 +731,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
     when(mockDiskStore.getName()).thenReturn(diskStoreName);
 
@@ -752,7 +752,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final EvictionAttributes mockEvictionAttributes =
         mock(EvictionAttributes.class, "EvictionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
     when(mockRegionAttributes.getEvictionAttributes()).thenReturn(mockEvictionAttributes);
     when(mockEvictionAttributes.getAction()).thenReturn(EvictionAction.OVERFLOW_TO_DISK);
@@ -773,7 +773,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final RegionAttributes<Object, Object> mockRegionAttributes =
         mock(RegionAttributes.class, "RegionAttributes");
     when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-    when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockRegionAttributes.getDiskStoreName()).thenReturn("mockDiskStore");
     when(mockDiskStore.getName()).thenReturn("testDiskStore");
 
@@ -797,7 +797,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockCompanyRegion.getAttributes()).thenReturn(mockCompanyRegionAttributes);
     when(mockCompanyRegion.getFullPath()).thenReturn(SEPARATOR + "CompanyRegion");
     when(mockCompanyRegion.getName()).thenReturn("CompanyRegion");
-    when(mockCompanyRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockCompanyRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockCompanyRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
     when(mockCompanyRegionAttributes.getEvictionAttributes())
         .thenReturn(mockCompanyEvictionAttributes);
@@ -819,7 +819,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
         mock(RegionAttributes.class, "ProductsServicesRegionAttributes");
     when(mockProductsRegion.getAttributes()).thenReturn(mockProductsServicesRegionAttributes);
     when(mockProductsRegion.subregions(false)).thenReturn(Collections.emptySet());
-    when(mockProductsServicesRegionAttributes.getDataPolicy())
+    when(mockProductsServicesRegionAttributes.getDataPolicyEnum())
         .thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     when(mockProductsServicesRegionAttributes.getDiskStoreName())
         .thenReturn("productsServicesDiskStore");
@@ -842,7 +842,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockContractorsRegion.getFullPath())
         .thenReturn(SEPARATOR + "CompanyRegion" + SEPARATOR + "ContractorsRegion");
     when(mockContractorsRegion.getName()).thenReturn("ContractorsRegion");
-    when(mockContractorsRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(mockContractorsRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(mockContractorsRegionAttributes.getDiskStoreName()).thenReturn(diskStoreName);
     when(mockContractorsRegionAttributes.getEvictionAttributes())
         .thenReturn(mockContractorsEvictionAttributes);
@@ -866,7 +866,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
         mock(RegionAttributes.class, "PartnersRegionAttributes");
     when(mockPartnersRegion.getAttributes()).thenReturn(mockPartnersRegionAttributes);
     when(mockPartnersRegion.subregions(false)).thenReturn(Collections.emptySet());
-    when(mockPartnersRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(mockPartnersRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(mockPartnersRegionAttributes.getDiskStoreName()).thenReturn("");
 
     @SuppressWarnings("unchecked")
@@ -879,7 +879,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
         mock(EvictionAttributes.class, "CustomersEvictionAttributes");
     when(mockCustomersRegion.getAttributes()).thenReturn(mockCustomersRegionAttributes);
     when(mockCustomersRegion.subregions(false)).thenReturn(Collections.emptySet());
-    when(mockCustomersRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(mockCustomersRegionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(mockCustomersRegionAttributes.getDiskStoreName()).thenReturn(null);
     when(mockCustomersRegionAttributes.getEvictionAttributes())
         .thenReturn(mockCustomersEvictionAttributes);
@@ -916,17 +916,17 @@ public class DescribeDiskStoreFunctionJUnitTest {
     verify(mockCompanyRegion, times(5)).getAttributes();
     verify(mockEmployeeRegion, times(5)).getAttributes();
     verify(mockRolesRegion, times(5)).getAttributes();
-    verify(mockCompanyRegionAttributes, times(6)).getDataPolicy();
+    verify(mockCompanyRegionAttributes, times(6)).getDataPolicyEnum();
     verify(mockCompanyRegionAttributes, times(3)).getDiskStoreName();
     verify(mockCompanyRegionAttributes, times(6)).getEvictionAttributes();
     verify(mockCompanyEvictionAttributes, times(3)).getAction();
     verify(mockContractorsRegion, times(7)).getAttributes();
-    verify(mockContractorsRegionAttributes, times(2)).getDataPolicy();
+    verify(mockContractorsRegionAttributes, times(2)).getDataPolicyEnum();
     verify(mockContractorsRegionAttributes, times(4)).getEvictionAttributes();
     verify(mockContractorsEvictionAttributes, times(2)).getAction();
     verify(mockProductsRegion, times(2)).getAttributes();
     verify(mockServicesRegion, times(2)).getAttributes();
-    verify(mockProductsServicesRegionAttributes, times(2)).getDataPolicy();
+    verify(mockProductsServicesRegionAttributes, times(2)).getDataPolicyEnum();
     verify(mockProductsServicesRegionAttributes, times(2)).getDiskStoreName();
     verify(mockPartnersRegion, times(2)).getAttributes();
     verify(mockCustomersRegion, times(4)).getAttributes();

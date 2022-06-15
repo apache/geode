@@ -156,7 +156,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   @Override
   public <K, V> int[] getLocalBucketArray(Region<K, V> region) {
-    if (!region.getAttributes().getDataPolicy().withPartitioning()) {
+    if (!region.getAttributes().getDataPolicyEnum().withPartitioning()) {
       return null;
     }
     return localBucketArray;

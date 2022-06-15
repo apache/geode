@@ -195,7 +195,7 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
-    when(regionConfig.getRegionAttributes().getDataPolicy())
+    when(regionConfig.getRegionAttributes().getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
@@ -226,7 +226,7 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
-    when(regionConfig.getRegionAttributes().getDataPolicy())
+    when(regionConfig.getRegionAttributes().getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
@@ -263,7 +263,7 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
-    when(regionConfig.getRegionAttributes().getDataPolicy())
+    when(regionConfig.getRegionAttributes().getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(clusterConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(asyncEventQueue.getId())
@@ -302,7 +302,7 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
-    when(regionConfig.getRegionAttributes().getDataPolicy())
+    when(regionConfig.getRegionAttributes().getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     CommandResultAssert resultAssert =
@@ -340,7 +340,7 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
-    when(regionConfig.getRegionAttributes().getDataPolicy())
+    when(regionConfig.getRegionAttributes().getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(configurationPersistenceService.getCacheConfig("group1")).thenReturn(clusterConfig);
 
@@ -360,7 +360,7 @@ public class DescribeMappingCommandTest {
   @Test
   public void whenNoMappingFoundOnMember() {
     when(regionConfig.getCustomRegionElements()).thenReturn(new ArrayList<>());
-    when(regionConfig.getRegionAttributes().getDataPolicy())
+    when(regionConfig.getRegionAttributes().getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()

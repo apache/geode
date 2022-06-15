@@ -962,7 +962,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         LocalRegion lr = (LocalRegion) orderRegion;
-        assertEquals(DataPolicy.NORMAL, orderRegion.getAttributes().getDataPolicy());
+        assertEquals(DataPolicy.NORMAL, orderRegion.getAttributes().getDataPolicyEnum());
         CustId custId = new CustId(1);
         OrderId orderId = new OrderId(1, custId);
         Set setWithoutTX = orderRegion.keySet();

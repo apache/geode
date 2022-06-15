@@ -50,12 +50,12 @@ public class UpdateOperationJUnitTest {
     when(region.isAllEvents()).thenReturn(true);
     when(region.getAttributes()).thenReturn(attr);
     when(region.isUsedForPartitionedRegionBucket()).thenReturn(false);
-    when(region.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(region.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
     when(region.getCachePerfStats()).thenReturn(stats);
     when(region.getCache()).thenReturn(cache);
     // when(cache.getStatisticsClock()).thenReturn(disabledClock());
-    when(attr.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(attr.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(event.getOperation()).thenReturn(Operation.CREATE);
   }
 

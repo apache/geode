@@ -231,7 +231,7 @@ public class PartitionedRegionHADUnitTest extends CacheTestCase {
     PartitionedRegion regionOneRedundancy = (PartitionedRegion) cache.getRegion(prSingleRedundancy);
 
     for (Region bucket : regionOneRedundancy.getDataStore().getLocalBucket2RegionMap().values()) {
-      assertThat(bucket.getAttributes().getDataPolicy()).isSameAs(DataPolicy.REPLICATE);
+      assertThat(bucket.getAttributes().getDataPolicyEnum()).isSameAs(DataPolicy.REPLICATE);
     }
   }
 

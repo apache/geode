@@ -67,7 +67,7 @@ public class DistributedAckRegionCCEOffHeapDUnitTest extends DistributedAckRegio
   protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
     RegionAttributes<K, V> ra = super.getRegionAttributes(type);
     AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
-    if (ra.getDataPolicy().withStorage()) {
+    if (ra.getDataPolicyEnum().withStorage()) {
       factory.setOffHeap(true);
     }
     return factory.create();

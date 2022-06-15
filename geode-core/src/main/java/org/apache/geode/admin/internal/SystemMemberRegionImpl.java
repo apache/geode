@@ -24,7 +24,7 @@ import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.SystemMemberRegion;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheStatistics;
-import org.apache.geode.cache.api.DataPolicy;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
@@ -64,7 +64,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   private void refreshFields() {
     ra = r.getAttributes();
-    if (getStatisticsEnabled() && !ra.getDataPolicy().withPartitioning()) {
+    if (getStatisticsEnabled() && !ra.getDataPolicyEnum().withPartitioning()) {
       rs = r.getStatistics();
     } else {
       rs = null;
@@ -230,7 +230,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public DataPolicy getDataPolicy() {
-    return ra.getDataPolicy();
+    return DataPolicy.fromEnum(ra.getDataPolicyEnum());
   }
 
   @Override

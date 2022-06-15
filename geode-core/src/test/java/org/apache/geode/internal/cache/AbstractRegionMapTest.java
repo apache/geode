@@ -1204,7 +1204,7 @@ public class AbstractRegionMapTest {
       CachePerfStats cachePerfStats = mock(CachePerfStats.class);
       when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
       when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
-      when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+      when(owner.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
       when(owner.getScope()).thenReturn(Scope.LOCAL);
       when(owner.isInitialized()).thenReturn(true);
 
@@ -1259,7 +1259,7 @@ public class AbstractRegionMapTest {
       when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
       when(owner.getEvictionAttributes()).thenReturn(evictionAttributes);
       when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
-      when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+      when(owner.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
       doThrow(EntryNotFoundException.class).when(owner).checkEntryNotFound(any());
       return owner;
     }

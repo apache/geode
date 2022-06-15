@@ -1031,7 +1031,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     for (final BucketRegion bucketRegion : pr.getDataStore().getLocalBucket2RegionMap().values()) {
       Region bucket = (Region) bucketRegion;
       // assertIndexDetailsEquals(Scope.LOCAL, bucket.getAttributes().getScope());
-      // assertIndexDetailsEquals(DataPolicy.NORMAL, bucket.getAttributes().getDataPolicy());
+      // assertIndexDetailsEquals(DataPolicy.NORMAL, bucket.getAttributes().getDataPolicyEnum());
       assertEquals(BucketRegion.class, bucket.getClass());
     }
 

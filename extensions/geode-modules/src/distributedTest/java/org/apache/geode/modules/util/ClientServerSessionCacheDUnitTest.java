@@ -236,7 +236,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
 
     final RegionAttributes<String, HttpSession> attributes = region.getAttributes();
     assertThat(attributes.getScope()).isEqualTo(expectedAttributes.getScope());
-    assertThat(attributes.getDataPolicy()).isEqualTo(expectedAttributes.getDataPolicy());
+    assertThat(attributes.getDataPolicyEnum()).isEqualTo(expectedAttributes.getDataPolicyEnum());
     assertThat(attributes.getPartitionAttributes())
         .isEqualTo(expectedAttributes.getPartitionAttributes());
     assertThat(attributes.getCustomEntryIdleTimeout()).isInstanceOf(SessionCustomExpiry.class);
@@ -271,9 +271,9 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     assertThat(region).isNotNull();
 
     final RegionAttributes<String, RegionConfiguration> attributes = region.getAttributes();
-    assertThat(attributes.getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
+    assertThat(attributes.getDataPolicyEnum()).isEqualTo(DataPolicy.REPLICATE);
     assertThat(attributes.getScope()).isEqualTo(Scope.DISTRIBUTED_ACK);
-    assertThat(attributes.getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
+    assertThat(attributes.getDataPolicyEnum()).isEqualTo(DataPolicy.REPLICATE);
     assertThat(attributes.getCacheListeners())
         .filteredOn(listener -> listener instanceof RegionConfigurationCacheListener)
         .hasSize(1);

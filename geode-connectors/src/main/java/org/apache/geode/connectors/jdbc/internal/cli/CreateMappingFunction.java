@@ -61,7 +61,7 @@ public class CreateMappingFunction extends CliFunction<Object[]> {
           MappingConstants.THERE_IS_NO_JDBC_MAPPING_ON_PROXY_REGION);
     } else if (!synchronous) {
       createAsyncEventQueue(context.getCache(), queueName,
-          region.getAttributes().getDataPolicy().withPartitioning());
+          region.getAttributes().getDataPolicyEnum().withPartitioning());
     }
     createRegionMapping(service, regionMapping);
 
@@ -92,7 +92,7 @@ public class CreateMappingFunction extends CliFunction<Object[]> {
   }
 
   boolean isAccessor(Region<?, ?> region) {
-    if (!region.getAttributes().getDataPolicy().withStorage()) {
+    if (!region.getAttributes().getDataPolicyEnum().withStorage()) {
       return true;
     }
     return region.getAttributes().getPartitionAttributes() != null

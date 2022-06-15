@@ -19,7 +19,6 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.api.DataPolicy;
 
 /**
  * Enumerated type for region mirroring.

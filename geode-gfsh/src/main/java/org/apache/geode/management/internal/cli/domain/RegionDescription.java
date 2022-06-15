@@ -49,7 +49,7 @@ public class RegionDescription implements Serializable {
 
   public RegionDescription() {}
 
-  public DataPolicy getDataPolicy() {
+  public DataPolicy getDataPolicyEnum() {
     return dataPolicy;
   }
 
@@ -69,7 +69,7 @@ public class RegionDescription implements Serializable {
       regionDescPerMemberMap = new HashMap<>();
       regionDescPerMemberMap.put(regionDescPerMember.getHostingMember(), regionDescPerMember);
       scope = regionDescPerMember.getScope();
-      dataPolicy = regionDescPerMember.getDataPolicy();
+      dataPolicy = regionDescPerMember.getDataPolicyEnum();
       name = regionDescPerMember.getName();
       isPartition = dataPolicy.withPartitioning();
       isPersistent = dataPolicy.withPersistence();
@@ -83,7 +83,7 @@ public class RegionDescription implements Serializable {
       isAdded = true;
     } else if (scope.equals(regionDescPerMember.getScope())
         && name.equals(regionDescPerMember.getName())
-        && dataPolicy.equals(regionDescPerMember.getDataPolicy())
+        && dataPolicy.equals(regionDescPerMember.getDataPolicyEnum())
         && isAccessor == regionDescPerMember.isAccessor()) {
 
       regionDescPerMemberMap.put(regionDescPerMember.getHostingMember(), regionDescPerMember);
@@ -126,7 +126,7 @@ public class RegionDescription implements Serializable {
       RegionDescription regionDesc = (RegionDescription) obj;
 
       return getName().equals(regionDesc.getName()) && scope.equals(regionDesc.getScope())
-          && dataPolicy.equals(regionDesc.getDataPolicy());
+          && dataPolicy.equals(regionDesc.getDataPolicyEnum());
     }
     return true;
   }

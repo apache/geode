@@ -114,7 +114,7 @@ public class RegionConverterTest {
     assertThat(config.getName()).isEqualTo("test");
     assertThat(config.getType()).isEqualTo("PARTITION");
     RegionAttributesType regionAttributes = config.getRegionAttributes();
-    assertThat(regionAttributes.getDataPolicy()).isEqualTo(RegionAttributesDataPolicy.PARTITION);
+    assertThat(regionAttributes.getDataPolicyEnum()).isEqualTo(RegionAttributesDataPolicy.PARTITION);
     assertThat(regionAttributes.getKeyConstraint()).isEqualTo("bar");
     assertThat(regionAttributes.getValueConstraint()).isEqualTo("foo");
     assertThat(regionAttributes.getDiskStoreName()).isEqualTo("diskstore");

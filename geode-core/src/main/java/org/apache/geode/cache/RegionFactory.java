@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.Properties;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.api.DataPolicy;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.LeaseExpiredException;
@@ -432,8 +431,22 @@ public class RegionFactory<K, V> {
    * @return a reference to this RegionFactory object
    * @throws IllegalArgumentException if dataPolicy is null
    * @see AttributesFactory#setDataPolicy
+   * @deprecated Use {@link #setDataPolicy(org.apache.geode.cache.api.DataPolicy)}
    */
+  @Deprecated
   public RegionFactory<K, V> setDataPolicy(DataPolicy dataPolicy) {
+    attrsFactory.setDataPolicy(dataPolicy);
+    return this;
+  }
+
+  /**
+   * Sets the data policy for the next {@code RegionAttributes} created.
+   *
+   * @param dataPolicy The type of mirroring to use for the region
+   * @return a reference to this RegionFactory object
+   * @throws IllegalArgumentException if dataPolicy is null
+   */
+  public RegionFactory<K, V> setDataPolicy(org.apache.geode.cache.api.DataPolicy dataPolicy) {
     attrsFactory.setDataPolicy(dataPolicy);
     return this;
   }

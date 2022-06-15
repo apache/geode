@@ -1500,7 +1500,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       }
 
       if (r.getVersionVector() != null && r.getServerProxy() == null
-          && (r.getDataPolicy().withPersistence() || !r.getScope().isLocal())) {
+          && (r.getDataPolicyEnum().withPersistence() || !r.getScope().isLocal())) {
         // bug #45258 - perf degradation for local regions and RVV
         VersionSource who = tag.getMemberID();
         if (who == null) {

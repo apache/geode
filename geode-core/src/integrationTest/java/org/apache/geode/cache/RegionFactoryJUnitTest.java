@@ -490,7 +490,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -501,7 +501,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_REDUNDANT);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -512,7 +512,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_PERSISTENT);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -523,7 +523,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_REDUNDANT_PERSISTENT);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
   }
@@ -534,7 +534,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -549,7 +549,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_REDUNDANT_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -564,7 +564,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_PERSISTENT_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -579,7 +579,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_REDUNDANT_PERSISTENT_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
@@ -594,7 +594,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_HEAP_LRU);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -608,7 +608,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_REDUNDANT_HEAP_LRU);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -622,7 +622,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(REPLICATE);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
 
@@ -632,7 +632,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(REPLICATE_PERSISTENT);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
 
@@ -642,7 +642,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(REPLICATE_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -656,7 +656,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(REPLICATE_PERSISTENT_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -670,7 +670,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(REPLICATE_HEAP_LRU);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
+    assertEquals(DataPolicy.PRELOADED, ra.getDataPolicyEnum());
     assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
@@ -684,7 +684,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(LOCAL);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
   }
 
@@ -694,7 +694,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(LOCAL_PERSISTENT);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
   }
 
@@ -704,7 +704,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(LOCAL_HEAP_LRU);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
@@ -717,7 +717,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(LOCAL_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
+    assertEquals(DataPolicy.NORMAL, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -731,7 +731,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(LOCAL_PERSISTENT_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicyEnum());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
         ra.getEvictionAttributes());
@@ -745,7 +745,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_PROXY);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(0, ra.getPartitionAttributes().getLocalMaxMemory());
@@ -757,7 +757,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(PARTITION_PROXY_REDUNDANT);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(0, ra.getPartitionAttributes().getLocalMaxMemory());
@@ -769,7 +769,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(REPLICATE_PROXY);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.EMPTY, ra.getDataPolicy());
+    assertEquals(DataPolicy.EMPTY, ra.getDataPolicyEnum());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
 
@@ -899,7 +899,7 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = c.createRegionFactory(LOCAL);
     r1 = factory.setDataPolicy(DataPolicy.REPLICATE).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
+    assertEquals(DataPolicy.REPLICATE, ra.getDataPolicyEnum());
   }
 
   @Test
@@ -1085,7 +1085,7 @@ public class RegionFactoryJUnitTest {
     factory.setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(5).create());
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(5, ra.getPartitionAttributes().getTotalNumBuckets());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
@@ -1099,7 +1099,7 @@ public class RegionFactoryJUnitTest {
         new PartitionAttributesFactory().setTotalNumBuckets(5).setRedundantCopies(2).create());
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
+    assertEquals(DataPolicy.PARTITION, ra.getDataPolicyEnum());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(5, ra.getPartitionAttributes().getTotalNumBuckets());
     assertEquals(2, ra.getPartitionAttributes().getRedundantCopies());

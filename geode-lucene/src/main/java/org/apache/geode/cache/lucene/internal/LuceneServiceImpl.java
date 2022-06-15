@@ -350,7 +350,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   }
 
   static void validateRegionAttributes(RegionAttributes attrs) {
-    if (!attrs.getDataPolicy().withPartitioning()) {
+    if (!attrs.getDataPolicyEnum().withPartitioning()) {
       // replicated region
       throw new UnsupportedOperationException(
           "Lucene indexes on replicated regions are not supported");

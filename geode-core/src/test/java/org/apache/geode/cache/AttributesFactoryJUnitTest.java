@@ -73,7 +73,7 @@ public class AttributesFactoryJUnitTest {
     factory.setStatisticsEnabled(true);
     {
       RegionAttributes ra = factory.create();
-      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
+      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicyEnum());
       assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
 
@@ -85,7 +85,7 @@ public class AttributesFactoryJUnitTest {
     factory.setStatisticsEnabled(true);
     {
       RegionAttributes ra = factory.create();
-      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
+      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicyEnum());
       assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
 
@@ -97,7 +97,7 @@ public class AttributesFactoryJUnitTest {
     factory.setStatisticsEnabled(true);
     {
       RegionAttributes ra = factory.create();
-      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
+      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicyEnum());
       assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
 
@@ -109,7 +109,7 @@ public class AttributesFactoryJUnitTest {
     factory.setStatisticsEnabled(true);
     {
       RegionAttributes ra = factory.create();
-      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
+      assertEquals(DataPolicy.PRELOADED, ra.getDataPolicyEnum());
       assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
 
@@ -240,7 +240,7 @@ public class AttributesFactoryJUnitTest {
     assertEquals(0, attrs.getEntryIdleTimeout().getTimeout());
     assertEquals(null, attrs.getCustomEntryIdleTimeout());
     assertEquals(Scope.DISTRIBUTED_NO_ACK, attrs.getScope());
-    assertEquals(DataPolicy.DEFAULT, attrs.getDataPolicy());
+    assertEquals(DataPolicy.DEFAULT, attrs.getDataPolicyEnum());
     assertEquals(InterestPolicy.DEFAULT, attrs.getSubscriptionAttributes().getInterestPolicy());
     assertEquals(MirrorType.NONE, attrs.getMirrorType());
     assertEquals(null, attrs.getDiskStoreName());

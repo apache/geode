@@ -151,7 +151,7 @@ public class DescribeDiskStoreFunction implements InternalFunction<String> {
   }
 
   protected boolean isPersistent(final Region<?, ?> region) {
-    return region.getAttributes().getDataPolicy().withPersistence();
+    return region.getAttributes().getDataPolicyEnum().withPersistence();
   }
 
   protected boolean isUsingDiskStore(final Region<?, ?> region, final DiskStore diskStore) {

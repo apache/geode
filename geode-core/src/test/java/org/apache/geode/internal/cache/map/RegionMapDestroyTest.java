@@ -102,7 +102,7 @@ public class RegionMapDestroyTest {
 
     owner = mock(InternalRegion.class);
     when(owner.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
-    when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(owner.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
     // Instead of mocking checkEntryNotFound to throw an exception,
     // this test now just verifies that checkEntryNotFound was called.
@@ -1408,7 +1408,7 @@ public class RegionMapDestroyTest {
     DistributedRegion region = mock(DistributedRegion.class, RETURNS_DEEP_STUBS);
     when(region.isInitialized()).thenReturn(true);
     when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
-    when(region.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(region.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     RegionMapDestroy mapDestroy =
         new RegionMapDestroy(region, regionMap, mock(CacheModificationLock.class));
 
@@ -1426,7 +1426,7 @@ public class RegionMapDestroyTest {
     DistributedRegion region = mock(DistributedRegion.class, RETURNS_DEEP_STUBS);
     when(region.isInitialized()).thenReturn(false);
     when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
-    when(region.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(region.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     RegionMapDestroy mapDestroy =
         new RegionMapDestroy(region, regionMap, mock(CacheModificationLock.class));
 
@@ -1686,7 +1686,7 @@ public class RegionMapDestroyTest {
   }
 
   private void givenEmptyDataPolicy() {
-    when(owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    when(owner.getDataPolicyEnum()).thenReturn(DataPolicy.EMPTY);
   }
 
   private void givenEventWithConflict() {

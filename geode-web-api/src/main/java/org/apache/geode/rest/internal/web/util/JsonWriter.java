@@ -399,8 +399,8 @@ public class JsonWriter {
 
     generator.writeFieldName("type");
 
-    if (region.getAttributes().getDataPolicy() != null) {
-      generator.writeString(region.getAttributes().getDataPolicy().toString());
+    if (region.getAttributes().getDataPolicyEnum() != null) {
+      generator.writeString(region.getAttributes().getDataPolicyEnum().toString());
     } else {
       generator.writeNull();
     }

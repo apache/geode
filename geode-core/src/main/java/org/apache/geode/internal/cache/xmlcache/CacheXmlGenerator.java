@@ -1876,10 +1876,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if (attrs instanceof RegionAttributesCreation) {
         RegionAttributesCreation rac = (RegionAttributesCreation) attrs;
         isPartitionedRegion = rac.getPartitionAttributes() != null
-            || (rac.hasDataPolicy() && rac.getDataPolicy().withPartitioning());
+            || (rac.hasDataPolicy() && rac.getDataPolicyEnum().withPartitioning());
       } else {
         isPartitionedRegion =
-            attrs.getPartitionAttributes() != null || attrs.getDataPolicy().withPartitioning();
+            attrs.getPartitionAttributes() != null || attrs.getDataPolicyEnum().withPartitioning();
       }
 
       if (!isPartitionedRegion) {
@@ -1941,7 +1941,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasDataPolicy())) {
         String dpString;
-        DataPolicy dp = attrs.getDataPolicy();
+        DataPolicy dp = attrs.getDataPolicyEnum();
         if (dp == DataPolicy.EMPTY) {
           dpString = EMPTY_DP;
         } else if (dp == DataPolicy.NORMAL) {
@@ -1999,7 +1999,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasPersistBackup())) {
         atts.addAttribute("", "", PERSIST_BACKUP, "",
-            String.valueOf(attrs.getDataPolicy() == DataPolicy.PERSISTENT_REPLICATE));
+            String.valueOf(attrs.getDataPolicyEnum() == DataPolicy.PERSISTENT_REPLICATE));
       }
     } // GEMFIRE_5_0 < 0
 

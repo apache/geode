@@ -1872,7 +1872,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       synchronized (partitionedRegion.getRedundancyProvider()) {
         if (partitionedRegion.isDataStore()
             && partitionedRegion.getDataStore() != null
-            && partitionedRegion.getDataPolicy() == DataPolicy.PERSISTENT_PARTITION) {
+            && partitionedRegion.getDataPolicyEnum() == DataPolicy.PERSISTENT_PARTITION) {
           int numBuckets = partitionedRegion.getTotalNumberOfBuckets();
           Map<InternalDistributedMember, PersistentMemberID>[] bucketMaps =
               uncheckedCast(new Map[numBuckets]);
@@ -3234,11 +3234,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public boolean hasPersistentRegion() {
 
     for (InternalRegion region : rootRegions.values()) {
-      if (region.getDataPolicy().withPersistence()) {
+      if (region.getDataPolicyEnum().withPersistence()) {
         return true;
       }
       for (InternalRegion subRegion : region.basicSubregions(true)) {
-        if (subRegion.getDataPolicy().withPersistence()) {
+        if (subRegion.getDataPolicyEnum().withPersistence()) {
           return true;
         }
       }

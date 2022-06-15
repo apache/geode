@@ -279,7 +279,7 @@ public class PutAllOp {
     protected void initMessagePart() {
       int size = map.size();
       int flags = 0;
-      if (region.getDataPolicy() == DataPolicy.EMPTY) {
+      if (region.getDataPolicyEnum() == DataPolicy.EMPTY) {
         flags |= FLAG_EMPTY;
       }
       if (region.getConcurrencyChecksEnabled()) {

@@ -102,7 +102,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isNull();
   }
@@ -113,7 +113,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_HEAP_LRU);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isNull();
     assertThat(ra.getEvictionAttributes()).isEqualTo(EvictionAttributes.createLRUHeapAttributes());
@@ -127,7 +127,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isNull();
     assertThat(ra.getEvictionAttributes()).isEqualTo(
@@ -142,7 +142,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isNull();
   }
@@ -153,7 +153,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isNull();
     assertThat(ra.getEvictionAttributes()).isEqualTo(
@@ -168,7 +168,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(PROXY);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.EMPTY);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.EMPTY);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
   }
@@ -179,7 +179,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
     assertThat(c.getResourceManager().getEvictionHeapPercentage()).isEqualTo(0);
@@ -191,7 +191,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY_HEAP_LRU);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
     assertThat(ra.getEvictionAttributes())
@@ -206,7 +206,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY_OVERFLOW);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
     assertThat(ra.getEvictionAttributes()).isEqualTo(
@@ -443,14 +443,14 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(LOCAL);
     r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(ra.getPoolName()).isNull();
 
     String sr1Name = "sr1";
     sr1 = factory.createSubregion(r1, sr1Name);
     RegionAttributes sr1ra = sr1.getAttributes();
-    assertThat(sr1ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(sr1ra.getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
     assertThat(sr1ra.getScope()).isEqualTo(Scope.LOCAL);
     assertThat(sr1ra.getPoolName()).isNull();
     assertThatThrownBy(() -> factory.createSubregion(r1, sr1Name))

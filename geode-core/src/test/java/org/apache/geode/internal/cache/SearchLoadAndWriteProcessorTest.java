@@ -117,7 +117,7 @@ public class SearchLoadAndWriteProcessorTest {
     when(cache.getInternalDistributedSystem()).thenReturn(ds);
     when(cache.getSearchTimeout()).thenReturn(30);
     when(attrs.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
-    when(attrs.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    when(attrs.getDataPolicyEnum()).thenReturn(DataPolicy.EMPTY);
     when(attrs.getEntryTimeToLive()).thenReturn(expirationAttrs);
     when(attrs.getEntryIdleTimeout()).thenReturn(expirationAttrs);
     when(advisor.adviseInitializedReplicates()).thenReturn(replicates);

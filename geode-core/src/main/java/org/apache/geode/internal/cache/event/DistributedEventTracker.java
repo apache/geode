@@ -503,7 +503,7 @@ public class DistributedEventTracker implements EventTracker {
         return false; // version tags for client events are kept for retries by the client
       }
       boolean isEntry = event.getOperation().isEntry();
-      boolean isPr = event.getRegion().getAttributes().getDataPolicy().withPartitioning()
+      boolean isPr = event.getRegion().getAttributes().getDataPolicyEnum().withPartitioning()
           || ((LocalRegion) event.getRegion()).isUsedForPartitionedRegionBucket();
       return (!isClient && // ignore if it originated on a server, and
           isEntry && // it affects an entry and

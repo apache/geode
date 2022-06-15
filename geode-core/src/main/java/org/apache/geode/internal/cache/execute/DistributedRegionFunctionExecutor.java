@@ -164,7 +164,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
           String.format("Function named %s is not registered to FunctionService",
               functionName));
     }
-    if (region.getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+    if (region.getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
       throw new FunctionException(
           "Function execution on region with DataPolicy.NORMAL is not supported");
     }
@@ -187,7 +187,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "For Functions with isHA true, hasResult must also be true.");
     }
-    if (region.getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+    if (region.getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
       throw new FunctionException(
           "Function execution on region with DataPolicy.NORMAL is not supported");
     }

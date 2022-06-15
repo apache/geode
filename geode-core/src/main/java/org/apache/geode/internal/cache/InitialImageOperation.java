@@ -516,7 +516,7 @@ public class InitialImageOperation {
           processor.waitForRepliesUninterruptibly();
 
           // review unfinished keys and remove untouched entries
-          if (region.getDataPolicy().withPersistence() && keysOfUnfinishedOps != null
+          if (region.getDataPolicyEnum().withPersistence() && keysOfUnfinishedOps != null
               && !keysOfUnfinishedOps.isEmpty()) {
             final DiskRegion dr = region.getDiskRegion();
             assert dr != null;
@@ -581,7 +581,7 @@ public class InitialImageOperation {
             // TODO add localizedString
             logger.info("{} failed to get image from {}", region.getName(), recipient);
           }
-          if (region.getDataPolicy().withPersistence()) {
+          if (region.getDataPolicyEnum().withPersistence()) {
             logger.info("Region {} initialized persistent id: {} with data from {}.",
                 new Object[] {region.getName(), region.getPersistentID(),
                     recipient});
@@ -1065,7 +1065,7 @@ public class InitialImageOperation {
     // calculate keys for unfinished ops
     HashSet<Object> keys = new HashSet<>();
     Set<VersionSource> departedMemberSet = receivedRVV.getDepartedMembersSet();
-    boolean isPersistentRegion = region.getDataPolicy().withPersistence();
+    boolean isPersistentRegion = region.getDataPolicyEnum().withPersistence();
     Set<VersionSource> foundIds;
     if (!isPersistentRegion) {
       foundIds = new HashSet<>();
@@ -1139,7 +1139,7 @@ public class InitialImageOperation {
     // it might also reflect things that we recovered from disk that we are going
     // to remove. We'll need to remove those from the RVV somehow.
     region.getVersionVector().recordVersions(rvv);
-    if (region.getDataPolicy().withPersistence()) {
+    if (region.getDataPolicyEnum().withPersistence()) {
       region.getDiskRegion().writeRVV(region, false);
       region.getDiskRegion().writeRVVGC(region);
     }
@@ -1584,7 +1584,7 @@ public class InitialImageOperation {
     }
 
     public boolean goWithFullGII(DistributedRegion rgn, RegionVersionVector requesterRVV) {
-      if (!rgn.getDataPolicy().withPersistence()) {
+      if (!rgn.getDataPolicyEnum().withPersistence()) {
         // non-persistent regions always do full GII
         if (logger.isDebugEnabled()) {
           logger.debug("Region {} is not a persistent region, do full GII", rgn.getFullPath());

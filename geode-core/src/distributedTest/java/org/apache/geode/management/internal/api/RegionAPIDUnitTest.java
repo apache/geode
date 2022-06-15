@@ -131,6 +131,6 @@ public class RegionAPIDUnitTest {
     Cache cache = ClusterStartupRule.getCache();
     org.apache.geode.cache.Region region = cache.getRegion(regionName);
     assertThat(region).isNotNull();
-    assertThat(region.getAttributes().getDataPolicy().toString()).isEqualTo(type);
+    assertThat(region.getAttributes().getDataPolicyEnum().toString()).isEqualTo(type);
   }
 }

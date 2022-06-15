@@ -196,7 +196,7 @@ public class AlterRegionCommandTest {
             .getRegionAttributes();
     assertThat(regionAttributes.isCloningEnabled()).isFalse();
     assertThat(regionAttributes.getAsyncEventQueueIds()).isNull();
-    assertThat(regionAttributes.getDataPolicy()).isNull();
+    assertThat(regionAttributes.getDataPolicyEnum()).isNull();
     assertThat(regionAttributes.getGatewaySenderIds()).isNull();
     assertThat(regionAttributes.getCacheLoader()).isNull();
     assertThat(regionAttributes.getCacheWriter()).isNull();

@@ -91,7 +91,7 @@ public class ServerCQProxyImpl extends ServerProxy {
 
   private DataPolicy getDataPolicy(final ClientCQ cq) {
     return cq.getCqBaseRegion() == null ? DataPolicy.EMPTY
-        : cq.getCqBaseRegion().getAttributes().getDataPolicy();
+        : cq.getCqBaseRegion().getAttributes().getDataPolicyEnum();
   }
 
   /**

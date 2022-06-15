@@ -133,7 +133,7 @@ public class ParallelGatewaySenderHelper {
         (Answer<String>) invocation -> PartitionedRegionHelper
             .getBucketName(queueRegion.getFullPath(), bucketId));
 
-    when(queueRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(queueRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
 
     when(pa.getColocatedWith()).thenReturn(null);
 

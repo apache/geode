@@ -69,7 +69,7 @@ public class RegionListenerJUnitTest {
     cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
     cache.addRegionListener(listener);
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
-    assertEquals(DataPolicy.EMPTY, region.getAttributes().getDataPolicy());
+    assertEquals(DataPolicy.EMPTY, region.getAttributes().getDataPolicyEnum());
     assertTrue(afterCreateInvoked.get());
     region.destroyRegion();
     assertTrue(beforeDestroyedInvoked.get());

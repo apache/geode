@@ -448,7 +448,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     RegionAttributes attrs = region.getAttributes();
     Scope scope = attrs.getScope();
-    DataPolicy dataPolicy = attrs.getDataPolicy();
+    DataPolicy dataPolicy = attrs.getDataPolicyEnum();
 
     if (txState != null) {
       TXEntryState tx = txState.txReadEntry(event.getKeyInfo(), region, false,
@@ -1937,7 +1937,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
               }
             }
             authoritative =
-                region.getDataPolicy().withReplication() && initialized && !region.isDestroyed;
+                region.getDataPolicyEnum().withReplication() && initialized && !region.isDestroyed;
           } finally {
             removeClearCountReference(region);
           }

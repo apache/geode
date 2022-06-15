@@ -1421,8 +1421,8 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
       Region<Object, Object> region = regionFunctionContext.getDataSet();
       InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
 
-      assertThat(region.getAttributes().getDataPolicy().withStorage()).isTrue();
-      assertThat(region.getAttributes().getDataPolicy()).isNotEqualTo(DataPolicy.NORMAL);
+      assertThat(region.getAttributes().getDataPolicyEnum().withStorage()).isTrue();
+      assertThat(region.getAttributes().getDataPolicyEnum()).isNotEqualTo(DataPolicy.NORMAL);
       assertThat(regionFunctionContext.getFilter()).hasSize(20);
 
       // argument true indicates that CacheClose has to be done from the body itself

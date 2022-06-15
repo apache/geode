@@ -700,9 +700,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     // can generate a version for the operation
 
     RegionAttributes attr = event.getRegion().getAttributes();
-    if (attr.getConcurrencyChecksEnabled() && !attr.getDataPolicy().withReplication()
+    if (attr.getConcurrencyChecksEnabled() && !attr.getDataPolicyEnum().withReplication()
         && attr.getScope() != Scope.GLOBAL) {
-      if (attr.getDataPolicy() == DataPolicy.EMPTY) {
+      if (attr.getDataPolicyEnum() == DataPolicy.EMPTY) {
         // all entries are without version tags
         boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl) event,
             removeAllData, removeAllDataSize);

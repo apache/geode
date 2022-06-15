@@ -891,7 +891,7 @@ public class PartitionedRegion extends LocalRegion
     if ((getEvictionAttributes() != null
         && !getEvictionAttributes().getAlgorithm().isNone()
         && getEvictionAttributes().getAction().isOverflowToDisk())
-        || getDataPolicy().withPersistence()) {
+        || getDataPolicyEnum().withPersistence()) {
       StatisticsFactory sf = getCache().getDistributedSystem();
       diskRegionStats = new DiskRegionStats(sf, getFullPath());
     } else {
@@ -906,7 +906,7 @@ public class PartitionedRegion extends LocalRegion
     /*
      * Start persistent profile logging if we are a persistent region.
      */
-    if (getDataPolicy().withPersistence()) {
+    if (getDataPolicyEnum().withPersistence()) {
       startPersistenceProfileLogging();
     }
   }
@@ -981,14 +981,14 @@ public class PartitionedRegion extends LocalRegion
 
   private void createAndValidatePersistentConfig() {
     DiskStoreImpl diskStore = getDiskStore();
-    if (getDataPolicy().withPersistence() && !getConcurrencyChecksEnabled()
+    if (getDataPolicyEnum().withPersistence() && !getConcurrencyChecksEnabled()
         && supportsConcurrencyChecks()) {
       logger.info(
           "Turning on concurrency checks for region: {} since it has been configured to persist data to disk.",
           getFullPath());
       setConcurrencyChecksEnabled(true);
     }
-    if (diskStore != null && getDataPolicy().withPersistence()) {
+    if (diskStore != null && getDataPolicyEnum().withPersistence()) {
       String colocatedWith = colocatedWithRegion == null ? "" : colocatedWithRegion.getFullPath();
       PRPersistentConfig config = diskStore.getPersistentPRConfig(getFullPath());
       if (config != null) {
@@ -1422,7 +1422,7 @@ public class PartitionedRegion extends LocalRegion
       } else {
         node.setPRType(Node.ACCESSOR_DATASTORE);
       }
-      node.setPersistence(getAttributes().getDataPolicy() == DataPolicy.PERSISTENT_PARTITION);
+      node.setPersistence(getAttributes().getDataPolicyEnum() == DataPolicy.PERSISTENT_PARTITION);
       node.setLoaderAndWriter(getAttributes().getCacheLoader(),
           getAttributes().getCacheWriter());
     } else {
@@ -1614,7 +1614,7 @@ public class PartitionedRegion extends LocalRegion
 
       // Can't attach a non persistent parallel gateway / async-event-queue to a persistent
       // partitioned region.
-      if (getDataPolicy().withPersistence()) {
+      if (getDataPolicyEnum().withPersistence()) {
         if ((sender != null) && (!sender.isPersistenceEnabled())) {
           throw new GatewaySenderConfigurationException(String.format(
               "Non persistent gateway sender %s can not be attached to persistent region %s",
@@ -1688,7 +1688,7 @@ public class PartitionedRegion extends LocalRegion
    * Throw an exception if persistent data recovery from disk is not complete for this region.
    */
   public void checkPROffline() throws PartitionOfflineException {
-    if (getDataPolicy().withPersistence() && !recoveredFromDisk) {
+    if (getDataPolicyEnum().withPersistence() && !recoveredFromDisk) {
       Set<PersistentID> persistIds =
           new HashSet(getRegionAdvisor().advisePersistentMembers().values());
       persistIds.removeAll(getRegionAdvisor().adviseInitializedPersistentMembers().values());
@@ -5018,8 +5018,8 @@ public class PartitionedRegion extends LocalRegion
     CacheProfile profile = (CacheProfile) p;
     // set fields on CacheProfile...
     profile.isPartitioned = true;
-    profile.isPersistent = getDataPolicy().withPersistence();
-    profile.dataPolicy = getDataPolicy();
+    profile.isPersistent = getDataPolicyEnum().withPersistence();
+    profile.dataPolicy = getDataPolicyEnum();
     profile.hasCacheLoader = basicGetLoader() != null;
     profile.hasCacheWriter = basicGetWriter() != null;
     profile.hasCacheListener = hasListener();
@@ -5038,7 +5038,7 @@ public class PartitionedRegion extends LocalRegion
     profile.gatewaySenderIds = getGatewaySenderIds();
     profile.asyncEventQueueIds = getVisibleAsyncEventQueueIds();
 
-    if (getDataPolicy().withPersistence()) {
+    if (getDataPolicyEnum().withPersistence()) {
       profile.persistentID = getDiskStore().generatePersistentID();
     }
 
@@ -7023,7 +7023,7 @@ public class PartitionedRegion extends LocalRegion
   public String toString() {
     return "Partitioned Region " + "@"
         + Integer.toHexString(hashCode()) + " [" + "path='" + getFullPath()
-        + "'; dataPolicy=" + getDataPolicy() + "; prId="
+        + "'; dataPolicy=" + getDataPolicyEnum() + "; prId="
         + partitionedRegionId + "; isDestroyed=" + isDestroyed
         + "; isClosed=" + isClosed + "; retryTimeout="
         + retryTimeout + "; serialNumber=" + getSerialNumber()
@@ -7770,7 +7770,7 @@ public class PartitionedRegion extends LocalRegion
 
     if (destroyDiskRegion) {
       DiskStoreImpl dsi = getDiskStore();
-      if (dsi != null && getDataPolicy().withPersistence()) {
+      if (dsi != null && getDataPolicyEnum().withPersistence()) {
         dsi.removePersistentPR(getFullPath());
         // Fix for support issue 7870 - remove this regions
         // config from the parent disk store, if we are removing the region.
@@ -8383,7 +8383,7 @@ public class PartitionedRegion extends LocalRegion
         throw new IndexCreationException(
             String.format(
                 "Data Store on this vm is null and the local max Memory is not zero, the data policy is %s and the localMaxMemeory is : %s",
-                getDataPolicy(), (long) getLocalMaxMemory()));
+                getDataPolicyEnum(), (long) getLocalMaxMemory()));
       }
       // Not have to do anything since the region is just an Accessor and
       // does not store any data.
@@ -8523,7 +8523,7 @@ public class PartitionedRegion extends LocalRegion
         throw new IndexCreationException(
             String.format(
                 "Data Store on this vm is null and the local max Memory is not zero, the data policy is %s and the localMaxMemeory is : %s",
-                getDataPolicy(), (long) getLocalMaxMemory()));
+                getDataPolicyEnum(), (long) getLocalMaxMemory()));
       }
       // Not have to do anything since the region is just an Accessor and
       // does not store any data.

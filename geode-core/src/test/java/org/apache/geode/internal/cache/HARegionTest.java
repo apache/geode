@@ -43,7 +43,7 @@ public class HARegionTest {
 
   @Before
   public void setup() {
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(attributes.getEvictionAttributes()).thenReturn(evictionAttributes);
     when(attributes.getLoadFactor()).thenReturn(0.75f);
     when(attributes.getConcurrencyLevel()).thenReturn(16);

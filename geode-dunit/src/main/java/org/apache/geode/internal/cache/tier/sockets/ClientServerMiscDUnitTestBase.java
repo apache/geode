@@ -272,7 +272,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
         Cache cache = getCache();
         final Region pr = cache.getRegion(rName);
         assertNotNull(rName + " not created", pr);
-        boolean isEmpty = pr.getAttributes().getDataPolicy() == DataPolicy.EMPTY;
+        boolean isEmpty = pr.getAttributes().getDataPolicyEnum() == DataPolicy.EMPTY;
 
         // test successful putIfAbsent
         for (int i = putRange_1Start; i <= putRange_1End; i++) {

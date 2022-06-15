@@ -1709,7 +1709,7 @@ public class PRHARedundancyProvider {
   }
 
   private PartitionedRegion findPersistentRegionRecursively(PartitionedRegion partitionedRegion) {
-    if (partitionedRegion.getDataPolicy().withPersistence()) {
+    if (partitionedRegion.getDataPolicyEnum().withPersistence()) {
       return partitionedRegion;
     }
     for (PartitionedRegion child : ColocationHelper.getColocatedChildRegions(partitionedRegion)) {
@@ -1802,7 +1802,7 @@ public class PRHARedundancyProvider {
     Set<PersistentMemberID>[] offlineMembers = new Set[proxyBuckets.length];
     for (int i = 0; i < proxyBuckets.length; i++) {
       ProxyBucketRegion proxyBucket = proxyBuckets[i];
-      if (partitionedRegion.getDataPolicy().withPersistence()) {
+      if (partitionedRegion.getDataPolicyEnum().withPersistence()) {
         Set<PersistentMemberID> persistedMembers =
             proxyBucket.getPersistenceAdvisor().getMissingMembers();
         if (persistedMembers == null) {

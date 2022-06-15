@@ -475,7 +475,7 @@ public class ColocationHelper {
    */
   public static boolean hasPersistentChildRegion(PartitionedRegion region) {
     for (PartitionedRegion child : getColocatedChildRegions(region)) {
-      if (child.getDataPolicy().withPersistence()) {
+      if (child.getDataPolicyEnum().withPersistence()) {
         return true;
       }
     }

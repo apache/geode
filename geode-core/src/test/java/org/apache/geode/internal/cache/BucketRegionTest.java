@@ -98,7 +98,7 @@ public class BucketRegionTest {
     when(regionAttributes.getRegionIdleTimeout()).thenReturn(expirationAttributes);
     when(regionAttributes.getEntryTimeToLive()).thenReturn(expirationAttributes);
     when(regionAttributes.getEntryIdleTimeout()).thenReturn(expirationAttributes);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(regionAttributes.getDiskStoreName()).thenReturn("store");
     when(regionAttributes.getConcurrencyLevel()).thenReturn(16);
     when(regionAttributes.getLoadFactor()).thenReturn(0.75f);

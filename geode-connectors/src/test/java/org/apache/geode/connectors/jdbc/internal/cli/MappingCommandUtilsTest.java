@@ -141,7 +141,7 @@ public class MappingCommandUtilsTest {
 
   @Test
   public void testIsPartitionWithPartitionDataPolicyReturnsTrue() {
-    when(regionAttributesType.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.PARTITION);
+    when(regionAttributesType.getDataPolicyEnum()).thenReturn(RegionAttributesDataPolicy.PARTITION);
 
     boolean result = MappingCommandUtils.isPartition(regionAttributesType);
 
@@ -150,7 +150,7 @@ public class MappingCommandUtilsTest {
 
   @Test
   public void testIsPartitionWithPersistentPartitionDataPolicyReturnsTrue() {
-    when(regionAttributesType.getDataPolicy())
+    when(regionAttributesType.getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
 
     boolean result = MappingCommandUtils.isPartition(regionAttributesType);
@@ -178,7 +178,7 @@ public class MappingCommandUtilsTest {
 
   @Test
   public void testIsPartitionWithDataPolicyAndRefidIsNullReturnsFalse() {
-    when(regionAttributesType.getDataPolicy()).thenReturn(null);
+    when(regionAttributesType.getDataPolicyEnum()).thenReturn(null);
     when(regionAttributesType.getRefid()).thenReturn(null);
 
     boolean result = MappingCommandUtils.isPartition(regionAttributesType);
@@ -188,7 +188,7 @@ public class MappingCommandUtilsTest {
 
   @Test
   public void testIsPartitionWithReplicateDataPolicyReturnsFalse() {
-    when(regionAttributesType.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
+    when(regionAttributesType.getDataPolicyEnum()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     boolean result = MappingCommandUtils.isPartition(regionAttributesType);
 

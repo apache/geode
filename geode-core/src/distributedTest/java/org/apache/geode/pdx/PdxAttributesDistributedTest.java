@@ -94,7 +94,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
       // define a type
       defineAType();
       Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
-      assertEquals(DataPolicy.REPLICATE, pdxRegion.getAttributes().getDataPolicy());
+      assertEquals(DataPolicy.REPLICATE, pdxRegion.getAttributes().getDataPolicyEnum());
     }
 
     tearDown();
@@ -105,7 +105,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
       // define a type
       defineAType();
       Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
-      assertEquals(DataPolicy.PERSISTENT_REPLICATE, pdxRegion.getAttributes().getDataPolicy());
+      assertEquals(DataPolicy.PERSISTENT_REPLICATE, pdxRegion.getAttributes().getDataPolicyEnum());
     }
   }
 
@@ -258,7 +258,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
       // define a type
       defineAType();
       Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_NAME);
-      assertEquals(DataPolicy.PERSISTENT_REPLICATE, pdxRegion.getAttributes().getDataPolicy());
+      assertEquals(DataPolicy.PERSISTENT_REPLICATE, pdxRegion.getAttributes().getDataPolicyEnum());
       cache.close();
     }
   }

@@ -271,7 +271,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     // nodes is maintained for node pruning logic
     Set<InternalDistributedMember> nodes = new HashSet<>();
     for (Region region : regions) {
-      DataPolicy dp = region.getAttributes().getDataPolicy();
+      DataPolicy dp = region.getAttributes().getDataPolicyEnum();
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) region;
         Set<InternalDistributedMember> prMembers = pr.getRegionAdvisor().advisePrimaryOwners();

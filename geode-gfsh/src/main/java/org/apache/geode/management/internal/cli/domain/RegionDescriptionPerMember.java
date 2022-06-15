@@ -40,7 +40,7 @@ public class RegionDescriptionPerMember implements Serializable {
     name = region.getFullPath().substring(1);
 
     // For the replicated proxy
-    if ((regionAttributesInfo.getDataPolicy().equals(DataPolicy.EMPTY)
+    if ((regionAttributesInfo.getDataPolicyEnum().equals(DataPolicy.EMPTY)
         && regionAttributesInfo.getScope().equals(Scope.DISTRIBUTED_ACK))) {
       setAccessor(true);
     }
@@ -68,8 +68,8 @@ public class RegionDescriptionPerMember implements Serializable {
     return regionAttributesInfo.getScope();
   }
 
-  public DataPolicy getDataPolicy() {
-    return regionAttributesInfo.getDataPolicy();
+  public DataPolicy getDataPolicyEnum() {
+    return regionAttributesInfo.getDataPolicyEnum();
   }
 
   public Map<String, String> getNonDefaultRegionAttributes() {

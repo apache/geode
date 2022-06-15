@@ -769,7 +769,7 @@ public class RegionVersionVectorTest {
   public void recordVersionIntoLocalMemberShouldFailIfRegionIsPersistent() {
     LocalRegion mockRegion = mock(LocalRegion.class);
     when(mockRegion.isInitialized()).thenReturn(true);
-    when(mockRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(mockRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     final String local = getIPLiteral();
     DiskStoreID ownerId = new DiskStoreID();
 
@@ -787,7 +787,7 @@ public class RegionVersionVectorTest {
   public void recordVersionIntoLocalMemberShouldPassfRegionIsNonPersistent() {
     LocalRegion mockRegion = mock(LocalRegion.class);
     when(mockRegion.isInitialized()).thenReturn(true);
-    when(mockRegion.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(mockRegion.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     final String local = getIPLiteral();
     InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
     RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);

@@ -125,7 +125,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         // Syncing a region entry can lead to dead-lock (see bug 52078).
         // So if either of these conditions hold this message can not be
         // processed in the p2p msg reader.
-        if (pr.getAttributes().getDataPolicy().withPersistence()
+        if (pr.getAttributes().getDataPolicyEnum().withPersistence()
             || !pr.getAttributes().getEvictionAttributes().getAlgorithm().isNone()) {
           return OperationExecutors.PARTITIONED_REGION_EXECUTOR;
         }

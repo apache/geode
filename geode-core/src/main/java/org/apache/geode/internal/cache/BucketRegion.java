@@ -244,7 +244,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     } else {
       Assert.assertTrue(attrs.getScope().isDistributedAck());
     }
-    Assert.assertTrue(attrs.getDataPolicy().withReplication());
+    Assert.assertTrue(attrs.getDataPolicyEnum().withReplication());
     Assert.assertTrue(!attrs.getEarlyAck());
     Assert.assertTrue(isUsedForPartitionedRegionBucket());
     Assert.assertTrue(!isUsedForPartitionedRegionAdmin());

@@ -207,7 +207,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
             adviseSetforUpdate = Collections.unmodifiableSet(adviseFilter(profile -> {
               CacheProfile cp = (CacheProfile) profile;
-              DataPolicy dp = cp.getDataPolicy();
+              DataPolicy dp = cp.getDataPolicyEnum();
               return dp.withReplication()
                   || (cp.allEvents() && (dp.withStorage() || cp.hasCacheListener));
             }));
@@ -682,7 +682,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       inRecovery = recovery;
     }
 
-    public DataPolicy getDataPolicy() {
+    public DataPolicy getDataPolicyEnum() {
       return dataPolicy;
     }
 
@@ -1130,7 +1130,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     boolean isPersistent = false;
     DiskStoreID persistentId = null;
     CacheDistributionAdvisee advisee = (CacheDistributionAdvisee) getAdvisee();
-    if (advisee.getAttributes().getDataPolicy().withPersistence()) {
+    if (advisee.getAttributes().getDataPolicyEnum().withPersistence()) {
       isPersistent = true;
       CacheProfile profile = (CacheProfile) getProfile(memberId);
       if (profile != null && profile.persistentID != null) {

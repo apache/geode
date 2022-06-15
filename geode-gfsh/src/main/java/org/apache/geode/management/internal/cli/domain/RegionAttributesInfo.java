@@ -97,7 +97,7 @@ public class RegionAttributesInfo implements Serializable {
     cloningEnabled = ra.getCloningEnabled();
     concurrencyChecksEnabled = ra.getConcurrencyChecksEnabled();
     concurrencyLevel = ra.getConcurrencyLevel();
-    dataPolicy = ra.getDataPolicy();
+    dataPolicy = ra.getDataPolicyEnum();
     diskStoreName = ra.getDiskStoreName();
     enableAsyncConflation = ra.getEnableAsyncConflation();
     enableSubscriptionConflation = ra.getEnableSubscriptionConflation();
@@ -244,7 +244,7 @@ public class RegionAttributesInfo implements Serializable {
     return concurrencyLevel;
   }
 
-  public DataPolicy getDataPolicy() {
+  public DataPolicy getDataPolicyEnum() {
     return dataPolicy;
   }
 

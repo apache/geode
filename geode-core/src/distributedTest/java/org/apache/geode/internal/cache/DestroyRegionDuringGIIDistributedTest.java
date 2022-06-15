@@ -749,7 +749,7 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
       return scope;
     }
 
-    private DataPolicy getDataPolicy() {
+    private DataPolicy getDataPolicyEnum() {
       return dataPolicy;
     }
 

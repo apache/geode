@@ -48,7 +48,7 @@ public class PersistentBucketRecovererTest {
   @Before
   public void setUp() {
     partitionedRegion = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
-    when(partitionedRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(partitionedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     resourceManager = mock(InternalResourceManager.class);
     cache = mock(InternalCache.class);
     root = mock(DistributedRegion.class);
@@ -106,11 +106,11 @@ public class PersistentBucketRecovererTest {
     when(partitionAttributes.getColocatedWith()).thenReturn(null);
 
     DataPolicy dataPolicy = mock(DataPolicy.class);
-    when(baseRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(baseRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     when(dataPolicy.withPersistence()).thenReturn(true);
 
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     when(baseRegion.getAttributes()).thenReturn(regionAttributes);
 
     DiskStoreImpl diskStore = mock(DiskStoreImpl.class);

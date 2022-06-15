@@ -99,7 +99,7 @@ public class ProxyBucketRegion implements Bucket {
     bucketLock = this.partitionedRegion.getBucketLock(this.bid);
     recoverFromDiskCnt = 0;
 
-    if (this.partitionedRegion.getDataPolicy().withPersistence()) {
+    if (this.partitionedRegion.getDataPolicyEnum().withPersistence()) {
 
       String regionPath = getFullPath();
       PersistentMemberManager memberManager =
@@ -412,7 +412,7 @@ public class ProxyBucketRegion implements Bucket {
     List<PartitionedRegion> colocatedWithList =
         ColocationHelper.getColocatedChildRegions(partitionedRegion);
     for (PartitionedRegion childPR : colocatedWithList) {
-      if (childPR.getDataPolicy().withPersistence()) {
+      if (childPR.getDataPolicyEnum().withPersistence()) {
         ProxyBucketRegion[] childBucketArray = childPR.getRegionAdvisor().getProxyBucketArray();
         if (childBucketArray != null) {
           ProxyBucketRegion childBucket = childBucketArray[getBucketId()];
@@ -454,8 +454,8 @@ public class ProxyBucketRegion implements Bucket {
             PartitionedRegion colocatedRegion =
                 ColocationHelper.getColocatedRegion(partitionedRegion);
 
-            if (partitionedRegion.getDataPolicy().withPersistence()
-                && !Objects.requireNonNull(colocatedRegion).getDataPolicy().withPersistence()) {
+            if (partitionedRegion.getDataPolicyEnum().withPersistence()
+                && !Objects.requireNonNull(colocatedRegion).getDataPolicyEnum().withPersistence()) {
               result = colocatedRegion.getDataStore().grabBucket(bid,
                   getDistributionManager().getDistributionManagerId(), true, true, false, null,
                   true);

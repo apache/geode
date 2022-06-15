@@ -187,7 +187,7 @@ public class RegionDescriptionJUnitTest {
         .thenReturn(mockNonDefaultRegionAttributes);
     when(mockDescPerMember.getHostingMember()).thenReturn("mockMemberA");
     when(mockDescPerMember.getScope()).thenReturn(DISTRIBUTED_ACK);
-    when(mockDescPerMember.getDataPolicy()).thenReturn(NORMAL);
+    when(mockDescPerMember.getDataPolicyEnum()).thenReturn(NORMAL);
     when(mockDescPerMember.getName()).thenReturn(regionName);
 
     return mockDescPerMember;
@@ -216,7 +216,7 @@ public class RegionDescriptionJUnitTest {
         .thenReturn(mockNonDefaultRegionAttributes);
     when(mockDescPerMember.getHostingMember()).thenReturn("mockMemberB");
     when(mockDescPerMember.getScope()).thenReturn(DISTRIBUTED_ACK);
-    when(mockDescPerMember.getDataPolicy()).thenReturn(NORMAL);
+    when(mockDescPerMember.getDataPolicyEnum()).thenReturn(NORMAL);
     when(mockDescPerMember.getName()).thenReturn(regionName);
 
     return mockDescPerMember;
@@ -242,7 +242,7 @@ public class RegionDescriptionJUnitTest {
         .thenReturn(mockNonDefaultRegionAttributes);
     when(mockDescPerMember.getHostingMember()).thenReturn("mockMemberC");
     when(mockDescPerMember.getScope()).thenReturn(LOCAL);
-    when(mockDescPerMember.getDataPolicy()).thenReturn(NORMAL);
+    when(mockDescPerMember.getDataPolicyEnum()).thenReturn(NORMAL);
     when(mockDescPerMember.getName()).thenReturn(regionName);
 
     return mockDescPerMember;

@@ -446,7 +446,7 @@ public abstract class OffHeapRegionBase {
 
       r.put("key1", data);
       assertTrue(ma.getUsedMemory() > 0);
-      if (r.getAttributes().getDataPolicy().withPersistence()) {
+      if (r.getAttributes().getDataPolicyEnum().withPersistence()) {
         r.put("key2", 1234567890);
         r.put("key3", 0x007FFFFFL);
         r.put("key4", 0xFF8000000L);

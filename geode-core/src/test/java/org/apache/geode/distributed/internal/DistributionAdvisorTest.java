@@ -52,7 +52,7 @@ public class DistributionAdvisorTest {
 
     when(distributionAdvisor.getRegionForDeltaGII()).thenReturn(distributedRegion);
     when(distributionAdvisor.getDelay(distributedRegion)).thenReturn(delay);
-    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
+    when(distributedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.REPLICATE);
     when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     when(distributedRegion.isInitializedWithWait()).thenReturn(true);
   }
@@ -79,7 +79,7 @@ public class DistributionAdvisorTest {
     when(distributionAdvisor.getPersistentID((CacheDistributionAdvisor.CacheProfile) profile))
         .thenReturn(persistentMemberID);
     when(persistentMemberID.getVersionMember()).thenReturn(lostVersionID);
-    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(distributedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
 
     distributionAdvisor.syncForCrashedMember(member, profile);
@@ -90,7 +90,7 @@ public class DistributionAdvisorTest {
 
   @Test
   public void regionSyncNotInvokedIfLostMemberIsAnEmptyAccessorOfPersistentReplicateRegion() {
-    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(distributedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     when(distributedRegion.getPersistentID()).thenReturn(null);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
 

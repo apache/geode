@@ -91,7 +91,7 @@ public class MappingCommandUtils {
   }
 
   public static boolean isAccessor(RegionAttributesType attributesType) {
-    return attributesType.getDataPolicy() == RegionAttributesDataPolicy.EMPTY
+    return attributesType.getDataPolicyEnum() == RegionAttributesDataPolicy.EMPTY
         || (attributesType.getPartitionAttributes() != null
             && attributesType.getPartitionAttributes().getLocalMaxMemory() != null
             && attributesType.getPartitionAttributes().getLocalMaxMemory().equals("0"));
@@ -99,8 +99,8 @@ public class MappingCommandUtils {
 
   public static boolean isPartition(RegionAttributesType attributesType) {
     boolean isPartitioned = false;
-    if (attributesType.getDataPolicy() != null) {
-      isPartitioned = attributesType.getDataPolicy().isPartition();
+    if (attributesType.getDataPolicyEnum() != null) {
+      isPartitioned = attributesType.getDataPolicyEnum().isPartition();
     } else if (attributesType.getRefid() != null) {
       isPartitioned = RegionShortcut.valueOf(attributesType.getRefid()).isPartition();
     }

@@ -76,7 +76,7 @@ public class TombstoneServiceTest {
     when(region.isInitialized()).thenReturn(true);
     when(region.getRegionMap()).thenReturn(regionMap);
     when(region.getVersionVector()).thenReturn(regionVersionVector);
-    when(region.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
+    when(region.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     when(region.getDiskRegion()).thenReturn(mock(DiskRegion.class));
 
 

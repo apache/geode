@@ -1526,7 +1526,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     Region<Object, Object> region = createRegion(name, regionFactory);
 
     File diskDir = null;
-    if (getRegionAttributes().getDataPolicy().withPersistence()) {
+    if (getRegionAttributes().getDataPolicyEnum().withPersistence()) {
       diskDir = getCache().findDiskStore(getRegionAttributes().getDiskStoreName()).getDiskDirs()[0];
       // @todo We no longer start with a clean slate because the DiskStore hangs around.
       // If we want a clean slate then we need to destroy the DiskStore after each
@@ -1546,14 +1546,14 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     assertTrue(list.wasInvoked());
 
     // assert that if this is a disk region, the disk dirs are not empty
-    if (getRegionAttributes().getDataPolicy().withPersistence()) {
+    if (getRegionAttributes().getDataPolicyEnum().withPersistence()) {
       assertTrue(diskDir.list().length > 0);
     }
-    region.getAttributes().getDataPolicy().withPersistence();
+    region.getAttributes().getDataPolicyEnum().withPersistence();
     region.close();
 
     // assert that if this is a disk region, the disk dirs are not empty
-    if (getRegionAttributes().getDataPolicy().withPersistence()) {
+    if (getRegionAttributes().getDataPolicyEnum().withPersistence()) {
       assertTrue(diskDir.list().length > 0);
     }
 
@@ -1567,7 +1567,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         getCache().createRegionFactory(getRegionAttributes());
     region = createRegion(name, regionFactory2);
 
-    if (getRegionAttributes().getDataPolicy().withPersistence()) {
+    if (getRegionAttributes().getDataPolicyEnum().withPersistence()) {
       for (int i = 0; i < 1000; i++) {
         Region.Entry entry = region.getEntry(i);
         assertNotNull("entry " + i + " not found", entry);
@@ -3736,7 +3736,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     boolean expectData =
         isController || postSnapshotRegion.getAttributes().getMirrorType().isMirrored()
-            || postSnapshotRegion.getAttributes().getDataPolicy().withPreloaded();
+            || postSnapshotRegion.getAttributes().getDataPolicyEnum().withPreloaded();
 
     assertEquals(expectData ? MAX_KEYS : 0, postSnapshotRegion.keySet().size());
     // gets the data either locally or by netSearch

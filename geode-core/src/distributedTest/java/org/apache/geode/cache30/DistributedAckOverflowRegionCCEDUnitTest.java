@@ -48,7 +48,7 @@ public class DistributedAckOverflowRegionCCEDUnitTest extends DistributedAckRegi
     }
     AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     factory.setConcurrencyChecksEnabled(true);
-    if (ra.getDataPolicy().withStorage()) {
+    if (ra.getDataPolicyEnum().withStorage()) {
       factory.setEvictionAttributes(
           EvictionAttributes.createLRUEntryAttributes(5, EvictionAction.OVERFLOW_TO_DISK));
     }

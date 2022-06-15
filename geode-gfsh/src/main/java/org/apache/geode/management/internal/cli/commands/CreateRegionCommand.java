@@ -310,7 +310,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
     regionAttributes.setPartitionAttributes(partitionAttributes);
 
     // validate if partition args are supplied only for partitioned regions
-    if (!regionAttributes.getDataPolicy().isPartition() && partitionAttributes != null) {
+    if (!regionAttributes.getDataPolicyEnum().isPartition() && partitionAttributes != null) {
       return ResultModel.createError(
           String.format("Parameters %s can be used only for creating a Partitioned Region",
               Strings.join(PARTITION_ATTRIBUTES, ", ")));
@@ -387,7 +387,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
           }
         }
 
-        if (!regionAttributes.getDataPolicy().isPersistent()
+        if (!regionAttributes.getDataPolicyEnum().isPersistent()
             && tempEvictionAction != EnumActionDestroyOverflow.OVERFLOW_TO_DISK) {
           String subMessage =
               "Only regions with persistence or overflow to disk can specify DiskStore";
@@ -409,7 +409,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
     }
 
     // additional authorization
-    if (regionAttributes.getDataPolicy().isPersistent()) {
+    if (regionAttributes.getDataPolicyEnum().isPersistent()) {
       authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
           ResourcePermission.Target.DISK);
     }

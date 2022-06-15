@@ -162,7 +162,7 @@ public class RegionMBeanBridge<K, V> {
 
     configureRegionMetrics();
 
-    persistentEnabled = region.getAttributes().getDataPolicy().withPersistence();
+    persistentEnabled = region.getAttributes().getDataPolicyEnum().withPersistence();
 
     regionStats = ((LocalRegion) region).getRegionPerfStats();
     if (regionStats != null) {
@@ -196,7 +196,7 @@ public class RegionMBeanBridge<K, V> {
   }
 
   public String getRegionType() {
-    return region.getAttributes().getDataPolicy().toString();
+    return region.getAttributes().getDataPolicyEnum().toString();
   }
 
   public String getFullPath() {

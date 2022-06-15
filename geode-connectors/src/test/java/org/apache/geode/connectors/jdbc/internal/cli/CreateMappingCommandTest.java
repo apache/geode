@@ -125,7 +125,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getType()).thenReturn("PARTITION");
     when(matchingRegion.getName()).thenReturn(regionName);
     matchingRegionAttributes = mock(RegionAttributesType.class);
-    when(matchingRegionAttributes.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
+    when(matchingRegionAttributes.getDataPolicyEnum()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(matchingRegion.getRegionAttributes()).thenReturn(matchingRegionAttributes);
 
     arguments[0] = mapping;
@@ -628,7 +628,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(list);
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
-    when(matchingRegionAttributes.getDataPolicy())
+    when(matchingRegionAttributes.getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.PARTITION);
 
     createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
@@ -645,7 +645,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(list);
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
-    when(matchingRegionAttributes.getDataPolicy()).thenReturn(null);
+    when(matchingRegionAttributes.getDataPolicyEnum()).thenReturn(null);
     when(matchingRegionAttributes.getRefid()).thenReturn(RegionShortcut.PARTITION.name());
 
     createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
@@ -782,7 +782,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
     list.add(matchingRegion);
     RegionAttributesType attributesType = mock(RegionAttributesType.class);
-    when(matchingRegion.getRegionAttributes().getDataPolicy())
+    when(matchingRegion.getRegionAttributes().getDataPolicyEnum())
         .thenReturn(RegionAttributesDataPolicy.EMPTY);
     when(cacheConfig.getRegions()).thenReturn(list);
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();

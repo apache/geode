@@ -491,7 +491,7 @@ public class ProxyJUnitTest {
     assertEquals("r", r.getName());
     assertEquals(SEPARATOR + "r", r.getFullPath());
     assertEquals(null, r.getParentRegion());
-    assertEquals(DataPolicy.EMPTY, r.getAttributes().getDataPolicy());
+    assertEquals(DataPolicy.EMPTY, r.getAttributes().getDataPolicyEnum());
     r.getAttributesMutator();
     try {
       r.getStatistics();

@@ -1054,7 +1054,7 @@ public class TXEntryState implements Releasable {
   private void fetchRemoteVersionTag(EntryEventImpl event) {
     if (event.getRegion() instanceof DistributedRegion) {
       DistributedRegion dr = (DistributedRegion) event.getRegion();
-      if (dr.getDataPolicy() == DataPolicy.NORMAL || dr.getDataPolicy() == DataPolicy.PRELOADED) {
+      if (dr.getDataPolicyEnum() == DataPolicy.NORMAL || dr.getDataPolicyEnum() == DataPolicy.PRELOADED) {
         VersionTag tag = null;
         try {
           tag = dr.fetchRemoteVersionTag(event.getKey());
@@ -1893,7 +1893,7 @@ public class TXEntryState implements Releasable {
     if (sendVersionTag) {
       context.getSerializer().writeObject(getVersionTag(), out);
       assert getVersionTag() != null || !txRegionState.getRegion().getConcurrencyChecksEnabled()
-          || txRegionState.getRegion().getDataPolicy() != DataPolicy.REPLICATE : "tag:"
+          || txRegionState.getRegion().getDataPolicyEnum() != DataPolicy.REPLICATE : "tag:"
               + getVersionTag() + " r:" + txRegionState.getRegion() + " op:" + opToString()
               + " key:";
     }

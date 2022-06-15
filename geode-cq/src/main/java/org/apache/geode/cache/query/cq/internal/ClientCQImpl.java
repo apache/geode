@@ -569,7 +569,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   @Override
   public void createOn(Connection conn, boolean isDurable) {
     final DataPolicy regionDataPolicy = getCqBaseRegion() == null ? DataPolicy.EMPTY
-        : getCqBaseRegion().getAttributes().getDataPolicy();
+        : getCqBaseRegion().getAttributes().getDataPolicyEnum();
 
     int state = cqState.getState();
     cqProxy.createOn(getName(), conn, getQueryString(), state, isDurable, regionDataPolicy);

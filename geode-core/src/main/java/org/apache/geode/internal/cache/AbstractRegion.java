@@ -296,7 +296,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     isPdxTypesRegion = PeerTypeRegistration.REGION_NAME.equals(regionName);
     lastAccessedTime = new AtomicLong(cacheTimeMillis());
     lastModifiedTime = new AtomicLong(lastAccessedTime.get());
-    dataPolicy = attrs.getDataPolicy(); // do this one first
+    dataPolicy = attrs.getDataPolicyEnum(); // do this one first
     scope = attrs.getScope();
 
     offHeap = attrs.getOffHeap();
@@ -373,7 +373,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
                 poolName));
       }
       cp.attach();
-      if (cp.getMultiuserAuthentication() && getDataPolicy().withStorage()) {
+      if (cp.getMultiuserAuthentication() && getDataPolicyEnum().withStorage()) {
         throw new IllegalStateException(
             "Region must have empty data-policy " + "when multiuser-authentication is true.");
       }
@@ -390,7 +390,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
     compressor = attrs.getCompressor();
     // enable concurrency checks for persistent regions
-    if (!attrs.getConcurrencyChecksEnabled() && attrs.getDataPolicy().withPersistence()
+    if (!attrs.getConcurrencyChecksEnabled() && attrs.getDataPolicyEnum().withPersistence()
         && supportsConcurrencyChecks()) {
       throw new IllegalStateException(
           "Concurrency checks cannot be disabled for regions that use persistence");
@@ -539,7 +539,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     StringBuilder buf = new StringBuilder();
     buf.append(getClass().getName());
     buf.append("[path='").append(getFullPath()).append("';scope=").append(getScope())
-        .append("';dataPolicy=").append(getDataPolicy());
+        .append("';dataPolicy=").append(getDataPolicyEnum());
     if (getConcurrencyChecksEnabled()) {
       buf.append("; concurrencyChecksEnabled");
     }
@@ -660,17 +660,19 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return customEntryIdleTimeout;
   }
 
+  @Deprecated
   @Override
   public MirrorType getMirrorType() {
-    if (getDataPolicy() == DataPolicy.NORMAL || getDataPolicy().withPreloaded()
-        || getDataPolicy() == DataPolicy.EMPTY || getDataPolicy().withPartitioning()) {
+    final DataPolicy dataPolicy = getDataPolicyEnum();
+    if (dataPolicy == DataPolicy.NORMAL || dataPolicy.withPreloaded()
+        || dataPolicy == DataPolicy.EMPTY || dataPolicy.withPartitioning()) {
       return MirrorType.NONE;
-    } else if (getDataPolicy().withReplication()) {
+    } else if (getDataPolicyEnum().withReplication()) {
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
           String.format("No mirror type corresponds to data policy %s",
-              getDataPolicy()));
+              getDataPolicyEnum()));
     }
   }
 
@@ -679,8 +681,14 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return poolName;
   }
 
+  @Deprecated
   @Override
-  public DataPolicy getDataPolicy() {
+  public org.apache.geode.cache.DataPolicy getDataPolicy() {
+    return org.apache.geode.cache.DataPolicy.fromEnum(dataPolicy);
+  }
+
+  @Override
+  public DataPolicy getDataPolicyEnum() {
     return dataPolicy;
   }
 
@@ -845,7 +853,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public boolean getPersistBackup() {
-    return getDataPolicy().withPersistence();
+    return getDataPolicyEnum().withPersistence();
   }
 
   @Override
@@ -1222,7 +1230,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
-    if ((getDataPolicy().withReplication() || getDataPolicy().withPartitioning())
+    if ((getDataPolicyEnum().withReplication() || getDataPolicyEnum().withPartitioning())
         && (ea == ExpirationAction.LOCAL_DESTROY || ea == ExpirationAction.LOCAL_INVALIDATE)) {
       throw new IllegalArgumentException(
           String.format("%s action is incompatible with this region's data policy.",
@@ -1322,11 +1330,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       throw new IllegalArgumentException(
           "idleTimeout must not be null");
     }
-    if (getAttributes().getDataPolicy().withPartitioning()) {
+    if (getAttributes().getDataPolicyEnum().withPartitioning()) {
       validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && getDataPolicy().withReplication()) {
+        && getDataPolicyEnum().withReplication()) {
       throw new IllegalArgumentException(
           String.format("%s action is incompatible with this region's data policy.",
               "idleTimeout"));
@@ -1350,11 +1358,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       throw new IllegalArgumentException(
           "timeToLive must not be null");
     }
-    if (getAttributes().getDataPolicy().withPartitioning()) {
+    if (getAttributes().getDataPolicyEnum().withPartitioning()) {
       validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && getDataPolicy().withReplication()) {
+        && getDataPolicyEnum().withReplication()) {
       throw new IllegalArgumentException(
           String.format("%s action is incompatible with this region's data policy.",
               "timeToLive"));
@@ -1615,7 +1623,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public boolean isProxy() {
-    return !getDataPolicy().withStorage();
+    return !getDataPolicyEnum().withStorage();
   }
 
   /**
@@ -1636,7 +1644,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public boolean isAllEvents() {
-    return getDataPolicy().withReplication()
+    return getDataPolicyEnum().withReplication()
         || getSubscriptionAttributes().getInterestPolicy().isAll();
   }
 

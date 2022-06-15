@@ -285,7 +285,7 @@ public class PartitionRegionConfigValidator {
    */
   void validatePersistentMatchBetweenDataStores(PartitionRegionConfig prconf) {
     final boolean isPersistent =
-        pr.getAttributes().getDataPolicy() == DataPolicy.PERSISTENT_PARTITION;
+        pr.getAttributes().getDataPolicyEnum() == DataPolicy.PERSISTENT_PARTITION;
     if (pr.getLocalMaxMemory() == 0 || prconf == null) {
       return;
     }
@@ -295,7 +295,7 @@ public class PartitionRegionConfigValidator {
         continue;
       } else {
         if (n.isPersistent() != (pr.getAttributes()
-            .getDataPolicy() == DataPolicy.PERSISTENT_PARTITION)) {
+            .getDataPolicyEnum() == DataPolicy.PERSISTENT_PARTITION)) {
           throw new IllegalStateException(
               "DataPolicy for Datastore members should all be persistent or not.");
         }
@@ -329,8 +329,8 @@ public class PartitionRegionConfigValidator {
         throw new IllegalStateException("Colocated regions should have accessors at the same node");
       }
       if (!pr.isShadowPR()) {
-        if (pr.getAttributes().getDataPolicy().withPersistence()) {
-          if (!colocatedPR.getDataPolicy().withPersistence()) {
+        if (pr.getAttributes().getDataPolicyEnum().withPersistence()) {
+          if (!colocatedPR.getDataPolicyEnum().withPersistence()) {
             throw new IllegalStateException(
                 "Cannot colocate a persistent region with a non persistent region");
           }

@@ -269,7 +269,7 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
 
     RegionAttributes regionAttributes = root.getAttributes();
     assertThat(regionAttributes.getScope().isDistributedAck()).isTrue();
-    assertThat(regionAttributes.getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
+    assertThat(regionAttributes.getDataPolicyEnum()).isEqualTo(DataPolicy.REPLICATE);
   }
 
   private void validatePRRegistration(final String prPrefixName, final int count) {

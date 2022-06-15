@@ -621,7 +621,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     return getClass().getName()
         + "[path='" + getFullPath()
         + "';scope=" + proxy.getScope()
-        + "';dataPolicy=" + proxy.getDataPolicy()
+        + "';dataPolicy=" + proxy.getDataPolicyEnum()
         + " ;bucketIds=" + buckets
         + ']';
   }

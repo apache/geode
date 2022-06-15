@@ -116,7 +116,7 @@ public class QueuedOperation {
           }
         } else if (op.isInvalidate()) {
           ee.setOldValueFromRegion();
-          boolean forceNewEntry = lr.getDataPolicy().withReplication() && !lr.isInitialized();
+          boolean forceNewEntry = lr.getDataPolicyEnum().withReplication() && !lr.isInitialized();
           boolean invokeCallbacks = lr.isInitialized();
           try {
             lr.basicInvalidate(ee, invokeCallbacks, forceNewEntry);

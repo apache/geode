@@ -313,7 +313,7 @@ public class QueueManagerIntegrationTest {
     when(testRegion.getServerProxy()).thenReturn(serverRegionProxy);
     RegionAttributes<Object, Object> regionAttributes = mock(RegionAttributes.class);
     when(testRegion.getAttributes()).thenReturn(regionAttributes);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.DEFAULT);
 
     createRegisterInterestTracker(pool, testRegion);
 

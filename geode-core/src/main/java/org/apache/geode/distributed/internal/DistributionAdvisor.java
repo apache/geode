@@ -267,7 +267,7 @@ public class DistributionAdvisor {
     // retried operation to be mishandled. See GEODE-5505
     final long delay = getDelay(dr);
 
-    if (dr.getDataPolicy().withPersistence() && persistentId == null) {
+    if (dr.getDataPolicyEnum().withPersistence() && persistentId == null) {
       // Fix for GEODE-6886 (#46704). The lost member may be an empty accessor
       // of a persistent replicate region. We don't need to do a synchronization
       // in that case, because those members send their writes to a persistent member.

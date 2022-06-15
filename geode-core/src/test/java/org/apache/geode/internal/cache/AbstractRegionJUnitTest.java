@@ -103,7 +103,7 @@ public class AbstractRegionJUnitTest {
 
   private AbstractRegion createTestableAbstractRegion() {
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.DEFAULT);
     EvictionAttributes evictionAttributes = mock(EvictionAttributes.class);
     when(evictionAttributes.getAction()).thenReturn(EvictionAction.NONE);
     when(regionAttributes.getEvictionAttributes()).thenReturn(evictionAttributes);

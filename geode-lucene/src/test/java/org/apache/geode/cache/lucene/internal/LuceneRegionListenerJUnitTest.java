@@ -50,7 +50,7 @@ public class LuceneRegionListenerJUnitTest {
     InternalCache cache = Fakes.cache();
     final Region region = Fakes.region(regionPath, cache);
     RegionAttributes attributes = region.getAttributes();
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     EvictionAttributes evictionAttributes = mock(EvictionAttributes.class);
     when(attributes.getEvictionAttributes()).thenReturn(evictionAttributes);
     CopyOnWriteArraySet set = new CopyOnWriteArraySet();

@@ -146,7 +146,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     recordTXOperation(ServerRegionOperation.PUT, key, value, deltaBytes, event.getEventId(), op,
         requireOldValue, expectedOldValue, callbackArg, isCreate);
     Operation operation = op;
-    if (!isCreate && region.getDataPolicy() == DataPolicy.EMPTY && op.isCreate()
+    if (!isCreate && region.getDataPolicyEnum() == DataPolicy.EMPTY && op.isCreate()
         && op != Operation.PUT_IF_ABSENT) {
       operation = Operation.UPDATE;
     }

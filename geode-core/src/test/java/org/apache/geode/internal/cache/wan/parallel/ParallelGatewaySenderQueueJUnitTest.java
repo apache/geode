@@ -163,7 +163,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     PartitionAttributes<?, ?> pa = mock(PartitionAttributes.class);
     when(userPR.getPartitionAttributes()).thenReturn(pa);
     when(pa.getColocatedWith()).thenReturn(null);
-    when(userPR.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(userPR.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(userPR.getFullPath()).thenReturn(regionPath);
     when(cache.getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE", true)).thenReturn(prQ);
     when(cache.getRegion(regionPath, true)).thenReturn(userPR);
@@ -519,7 +519,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(pa.getStartupRecoveryDelay()).thenReturn(recoveryDelay);
     when(pa.getRecoveryDelay()).thenReturn(recoveryDelay);
 
-    when(region.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(region.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
 
     when(region.getTotalNumberOfBuckets()).thenReturn(11);
     when(region.getRedundantCopies()).thenReturn(1);
@@ -584,7 +584,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(pa.getStartupRecoveryDelay()).thenReturn(recoveryDelay);
     when(pa.getRecoveryDelay()).thenReturn(recoveryDelay);
 
-    when(region.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+    when(region.getDataPolicyEnum()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
 
     when(region.getTotalNumberOfBuckets()).thenReturn(11);
     when(region.getRedundantCopies()).thenReturn(1);
@@ -652,7 +652,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(region.getFullPath()).thenReturn(name);
     when(region.getPartitionAttributes()).thenReturn(new PartitionAttributesFactory<>().create());
     when(region.getTotalNumberOfBuckets()).thenReturn(113);
-    when(region.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    when(region.getDataPolicyEnum()).thenReturn(DataPolicy.PARTITION);
     return region;
   }
 

@@ -341,7 +341,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         PartitionAttributesFactory pfact = new PartitionAttributesFactory();
         pfact.setTotalNumBuckets(sender.getMaxParallelismForReplicatedRegion());
         int localMaxMemory =
-            userRegion.getDataPolicy().withStorage() ? sender.getMaximumQueueMemory() : 0;
+            userRegion.getDataPolicyEnum().withStorage() ? sender.getMaximumQueueMemory() : 0;
         pfact.setLocalMaxMemory(localMaxMemory);
         pfact.setRedundantCopies(3); // TODO:Kishor : THis need to be handled nicely
         pfact.setPartitionResolver(new RREventIDResolver());
@@ -466,7 +466,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         return;
       }
 
-      if ((childPR == null ? userPR : childPR).getDataPolicy().withPersistence()
+      if ((childPR == null ? userPR : childPR).getDataPolicyEnum().withPersistence()
           && !sender.isPersistenceEnabled()) {
         throw new GatewaySenderException(
             String.format(

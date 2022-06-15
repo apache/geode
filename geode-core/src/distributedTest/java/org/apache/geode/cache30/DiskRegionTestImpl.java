@@ -119,7 +119,7 @@ public class DiskRegionTestImpl implements Serializable {
         // set scope to be same as test region
         Scope scope = rtc.getRegionAttributes().getScope();
         factory.setScope(scope);
-        DataPolicy dataPolicy = rtc.getRegionAttributes().getDataPolicy();
+        DataPolicy dataPolicy = rtc.getRegionAttributes().getDataPolicyEnum();
         factory.setDataPolicy(dataPolicy);
         RegionAttributes attrs2 = factory.create();
         Region rgn = rtc.createRegion(name, attrs2);

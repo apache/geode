@@ -606,7 +606,7 @@ public class DiskStoreImpl implements DiskStore {
   void initializeOwner(LocalRegion lr) {
     DiskRegion dr = lr.getDiskRegion();
     // We don't need to do recovery for overflow regions.
-    if (!lr.getDataPolicy().withPersistence() || !dr.isRecreated()) {
+    if (!lr.getDataPolicyEnum().withPersistence() || !dr.isRecreated()) {
       return;
     }
 

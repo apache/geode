@@ -609,7 +609,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     boolean evReturned = false;
     try {
 
-      if (prdValue == null && ev.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
+      if (prdValue == null && ev.getRegion().getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL) {
         ev.setLocalInvalid(true);
       }
       ev.setNewValue(prdValue);

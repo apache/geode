@@ -262,7 +262,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     partitionAttributes = attrs.getPartitionAttributes();
     membershipAttributes = attrs.getMembershipAttributes();
     subscriptionAttributes = attrs.getSubscriptionAttributes();
-    dataPolicy = attrs.getDataPolicy();
+    dataPolicy = attrs.getDataPolicyEnum();
     evictionAttributes = (EvictionAttributesImpl) attrs.getEvictionAttributes();
     id = null;
     refid = null;
@@ -440,10 +440,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       throw new RuntimeException(
           "Disk Synchronous write is not the same.");
     }
-    if (dataPolicy != other.getDataPolicy()) {
+    if (dataPolicy != other.getDataPolicyEnum()) {
       throw new RuntimeException(
           String.format("Data Policies are not the same: this: %s other: %s",
-              getDataPolicy(), other.getDataPolicy()));
+              getDataPolicyEnum(), other.getDataPolicyEnum()));
     }
     if (earlyAck != other.getEarlyAck()) {
       throw new RuntimeException(
@@ -665,24 +665,29 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   }
 
   public void setMirrorType(MirrorType mirrorType) {
-    DataPolicy dp = mirrorType.getDataPolicy();
+    DataPolicy dp = mirrorType.getDataPolicy().toEnum();
     if (dp.withReplication()) {
       // requested a mirror type that has replication
       // if current data policy is not replicated change it
-      if (!getDataPolicy().withReplication()) {
+      if (!getDataPolicyEnum().withReplication()) {
         setDataPolicy(dp);
       }
     } else {
       // requested a mirror type none;
       // if current data policy is replicated change it
-      if (getDataPolicy().withReplication()) {
+      if (getDataPolicyEnum().withReplication()) {
         setDataPolicy(dp);
       }
     }
   }
 
   @Override
-  public DataPolicy getDataPolicy() {
+  public org.apache.geode.cache.DataPolicy getDataPolicy() {
+    return org.apache.geode.cache.DataPolicy.fromEnum(getDataPolicyEnum());
+  }
+
+  @Override
+  public DataPolicy getDataPolicyEnum() {
     return dataPolicy;
   }
 
@@ -836,13 +841,13 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
 
   @Override
   public boolean getPersistBackup() {
-    return getDataPolicy().withPersistence();
+    return getDataPolicyEnum().withPersistence();
   }
 
   public void setPersistBackup(boolean persistBackup) {
     if (persistBackup) {
-      if (!getDataPolicy().withPersistence()) {
-        if (getDataPolicy().withPartitioning()) {
+      if (!getDataPolicyEnum().withPersistence()) {
+        if (getDataPolicyEnum().withPartitioning()) {
           setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         } else {
           setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -852,9 +857,9 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       // It is less clear what we should do here for backwards compat.
       // If the current data policy is persist then we need to change it
       // otherwise just leave it alone
-      if (getDataPolicy().withReplication()) {
+      if (getDataPolicyEnum().withReplication()) {
         setDataPolicy(DataPolicy.REPLICATE);
-      } else if (getDataPolicy().withPartitioning()) {
+      } else if (getDataPolicyEnum().withPartitioning()) {
         setDataPolicy(DataPolicy.PARTITION);
       }
     }
@@ -1473,10 +1478,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     if (!hasDataPolicy()) {
       if (parentIsUserSpecified) {
         if (parentWithHas.hasDataPolicy()) {
-          setDataPolicy(parent.getDataPolicy());
+          setDataPolicy(parent.getDataPolicyEnum());
         }
       } else {
-        setDataPolicy(parent.getDataPolicy());
+        setDataPolicy(parent.getDataPolicyEnum());
       }
     }
 
@@ -1561,11 +1566,11 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       if (!hasDataPolicy()) {
         setDataPolicy(PartitionedRegionHelper.DEFAULT_DATA_POLICY);
         setHasDataPolicy(false);
-      } else if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(getDataPolicy())) {
+      } else if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(getDataPolicyEnum())) {
         throw new IllegalStateException(
             String.format(
                 "Data policy %s is not allowed for a partitioned region. DataPolicies other than %s are not allowed.",
-                getDataPolicy(), PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
+                getDataPolicyEnum(), PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
       }
 
       if (hasPartitionAttributes()
@@ -1695,7 +1700,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
         // on statisticsEnabled.
         setStatisticsEnabled(true);
       }
-      if (getDataPolicy().withReplication() && !getDataPolicy().withPersistence()
+      if (getDataPolicyEnum().withReplication() && !getDataPolicyEnum().withPersistence()
           && getScope().isDistributed()) {
         if (getEvictionAttributes().getAction().isLocalDestroy()
             || getEntryIdleTimeout().getAction().isLocal()
@@ -1709,7 +1714,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       }
       // enable concurrency checks for persistent regions
       if (!hasConcurrencyChecksEnabled() && !getConcurrencyChecksEnabled()
-          && getDataPolicy().withPersistence()) {
+          && getDataPolicyEnum().withPersistence()) {
         setConcurrencyChecksEnabled(true);
       }
     }

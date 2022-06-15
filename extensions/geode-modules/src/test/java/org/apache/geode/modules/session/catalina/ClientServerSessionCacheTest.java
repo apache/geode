@@ -236,7 +236,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.DEFAULT);
 
     sessionCache.initialize();
 
@@ -250,7 +250,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
-    when(attributes.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    when(attributes.getDataPolicyEnum()).thenReturn(DataPolicy.EMPTY);
 
     sessionCache.initialize();
 
@@ -359,7 +359,7 @@ public class ClientServerSessionCacheTest extends AbstractSessionCacheTest {
     final ClientServerSessionCache cache = spy(new ClientServerSessionCache(manager, clientCache));
     doReturn(region).when(cache).createLocalSessionRegion();
     doReturn(attributes).when(region).getAttributes();
-    doReturn(DataPolicy.EMPTY).when(attributes).getDataPolicy();
+    doReturn(DataPolicy.EMPTY).when(attributes).getDataPolicyEnum();
 
     cache.createLocalSessionRegionWithRegisterInterest();
 

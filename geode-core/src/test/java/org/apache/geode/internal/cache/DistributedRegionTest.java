@@ -165,7 +165,7 @@ public class DistributedRegionTest {
 
   @Test
   public void regionSyncInvokedInPerformSynchronizeForLostMemberTaskAfterRegionInitialized() {
-    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
+    when(distributedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.NORMAL);
     when(distributedRegion.isInitializedWithWait()).thenReturn(true);
     doCallRealMethod().when(distributedRegion).performSynchronizeForLostMemberTask(member,
         lostMemberVersionID);
@@ -179,7 +179,7 @@ public class DistributedRegionTest {
 
   @Test
   public void regionSyncNotInvokedInPerformSynchronizeForLostMemberTaskIfRegionNotInitialized() {
-    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
+    when(distributedRegion.getDataPolicyEnum()).thenReturn(DataPolicy.NORMAL);
     when(distributedRegion.isInitializedWithWait()).thenReturn(false);
     doCallRealMethod().when(distributedRegion).performSynchronizeForLostMemberTask(member,
         lostMemberVersionID);

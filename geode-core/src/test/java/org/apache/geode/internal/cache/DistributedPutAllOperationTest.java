@@ -71,7 +71,7 @@ public class DistributedPutAllOperationTest {
     when(filterInfo.getCQs()).thenReturn(hashMap);
     when(baseEvent.getRegion()).thenReturn(bucketRegion);
     when(bucketRegion.getAttributes()).thenReturn(regionAttributes);
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.DEFAULT);
     when(bucketRegion.getCache()).thenReturn(internalCache);
     when(bucketRegion.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(bucketRegion.getKeyInfo(any(), any(), any())).thenReturn(new KeyInfo(key, null, null));

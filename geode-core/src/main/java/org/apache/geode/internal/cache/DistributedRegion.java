@@ -213,13 +213,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
     if (getDistributionManager().getConfig().getEnableNetworkPartitionDetection()
         && !isInternalRegion() && !attrs.getScope().isAck() && !doesNotDistribute()
-        && attrs.getDataPolicy().withStorage()) {
+        && attrs.getDataPolicyEnum().withStorage()) {
       logger.warn(
           "Region {} is being created with scope {} but enable-network-partition-detection is enabled in the distributed system.  This can lead to cache inconsistencies if there is a network failure.",
           new Object[] {regionName, attrs.getScope()});
     }
     if (!getDistributionManager().getConfig().getEnableNetworkPartitionDetection()
-        && attrs.getDataPolicy().withPersistence()
+        && attrs.getDataPolicyEnum().withPersistence()
         && !loggedNetworkPartitionWarning.getAndSet(true)) {
       logger.warn(
           "Creating persistent region {}, but enable-network-partition-detection is set to false. Running with network partition detection disabled can lead to an unrecoverable system in the event of a network split.",
@@ -255,7 +255,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         // I can test the storage.
         DiskRegionStats diskStats;
         PersistentMemberView storage;
-        if (getDataPolicy().withPersistence()) {
+        if (getDataPolicyEnum().withPersistence()) {
           storage = getDiskRegion();
           diskStats = getDiskRegion().getStats();
         } else {
@@ -331,7 +331,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       return true;
     }
     return getConcurrencyChecksEnabled() && (getServerProxy() == null) && !isTX()
-        && scope.isDistributed() && !getDataPolicy().withReplication();
+        && scope.isDistributed() && !getDataPolicyEnum().withReplication();
   }
 
 
@@ -361,10 +361,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           // bug #45704: see if a one-hop must be done for this operation
           RegionEntry re = getRegionEntry(event.getKey());
           if (re == null /* || re.isTombstone() */ || !generateVersionTag
-              || getDataPolicy() == DataPolicy.NORMAL
-              || getDataPolicy() == DataPolicy.PRELOADED) {
+              || getDataPolicyEnum() == DataPolicy.NORMAL
+              || getDataPolicyEnum() == DataPolicy.PRELOADED) {
             // Let NORMAL and PRELOAD to behave the same as EMPTY
-            if (!event.isBulkOpInProgress() || getDataPolicy().withStorage()) {
+            if (!event.isBulkOpInProgress() || getDataPolicyEnum().withStorage()) {
               // putAll will send a single one-hop for empty regions. for other missing entries
               // we need to get a valid version number before modifying the local cache
               boolean didDistribute = RemotePutMessage.distribute(event, lastModified, false, false,
@@ -582,9 +582,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (logger.isTraceEnabled()) {
       logger.trace(
           "shouldGenerateVersionTag this.generateVersionTag={} ccenabled={} dataPolicy={} event:{}",
-          generateVersionTag, getConcurrencyChecksEnabled(), getDataPolicy(), event);
+          generateVersionTag, getConcurrencyChecksEnabled(), getDataPolicyEnum(), event);
     }
-    if (!getConcurrencyChecksEnabled() || getDataPolicy() == DataPolicy.EMPTY
+    if (!getConcurrencyChecksEnabled() || getDataPolicyEnum() == DataPolicy.EMPTY
         || !generateVersionTag) {
       return false;
     }
@@ -600,10 +600,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (event.getOperation().isLocal()) { // bug #45402 - localDestroy generated a version tag
       return false;
     }
-    if (!event.isOriginRemote() && getDataPolicy().withReplication()) {
+    if (!event.isOriginRemote() && getDataPolicyEnum().withReplication()) {
       return true;
     }
-    if (!getDataPolicy().withReplication() && !getDataPolicy().withPersistence()) {
+    if (!getDataPolicyEnum().withReplication() && !getDataPolicyEnum().withPersistence()) {
       // do not generate a version stamp in a region that has no replication if it's not based
       // on an existing version from a replicate region
       return entry.getVersionStamp().hasValidVersion();
@@ -1103,7 +1103,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         // Create OQL indexes before starting GII.
         createOQLIndexes(internalRegionArgs, recoverFromDisk);
 
-        if (getDataPolicy().withReplication() || getDataPolicy().withPreloaded()) {
+        if (getDataPolicyEnum().withReplication() || getDataPolicyEnum().withPreloaded()) {
           getInitialImageAndRecovery(snapshotInputStream, imageTarget, internalRegionArgs,
               recoverFromDisk, persistentMemberId);
         } else {
@@ -1159,7 +1159,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     ProfileExchangeProcessor targetProvider;
-    if (getDataPolicy().withPersistence()) {
+    if (getDataPolicyEnum().withPersistence()) {
       targetProvider =
           new CreatePersistentRegionProcessor(this, getPersistenceAdvisor(), recoverFromDisk);
     } else {
@@ -1168,7 +1168,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
     imgState.setInRecovery(false);
     RegionVersionVector recovered_rvv = null;
-    if (getDataPolicy().withPersistence()) {
+    if (getDataPolicyEnum().withPersistence()) {
       recovered_rvv = getVersionVector() == null ? null
           : getVersionVector().getCloneForTransmission();
     }
@@ -1221,7 +1221,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     while (!isDestroyed()) {
       advice = targetProvider.getInitialImageAdvice(advice);
       boolean attemptGetFromOne = imageSrc != null // we were given a specific member
-          || getDataPolicy().withPreloaded() && !advice.preloaded.isEmpty() // this is a
+          || getDataPolicyEnum().withPreloaded() && !advice.preloaded.isEmpty() // this is a
                                                                             // preloaded
           // region
           || (!advice.replicates.isEmpty());
@@ -1265,7 +1265,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           }
 
           // Plan D: if this is a PRELOADED region, fetch from another PRELOADED
-          if (getDataPolicy().withPreloaded()) {
+          if (getDataPolicyEnum().withPreloaded()) {
             GIIStatus ret_preload =
                 iiop.getFromOne(advice.preloaded, false, advice, recoverFromDisk, recovered_rvv);
             if (GIIStatus.didGII(ret_preload)) {
@@ -1594,7 +1594,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   private boolean isRecoveryNeeded() {
-    return getDataPolicy().withPersistence() && getDiskRegion().isRecreated();
+    return getDataPolicyEnum().withPersistence() && getDiskRegion().isRecreated();
   }
 
   // called by InitialImageOperation to clean up destroyed tokens
@@ -1712,9 +1712,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         if (re == null /* || re.isTombstone() */ || !generateVersionTag) {
           if (getServerProxy() == null) {
             // only assert for non-client regions.
-            Assert.assertTrue(!getDataPolicy().withReplication() || !generateVersionTag);
+            Assert.assertTrue(!getDataPolicyEnum().withReplication() || !generateVersionTag);
           }
-          if (!event.isBulkOpInProgress() || getDataPolicy().withStorage()) {
+          if (!event.isBulkOpInProgress() || getDataPolicyEnum().withStorage()) {
             // removeAll will send a single one-hop for empty regions. for other missing entries
             // we need to get a valid version number before modifying the local cache
             // TODO: deltaGII: verify that delegating to a peer when this region is also a client is
@@ -1805,7 +1805,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   void basicInvalidateRegion(RegionEventImpl event) {
     // disallow local invalidation for replicated regions
     if (!event.getOperation().isDistributed() && getScope().isDistributed()
-        && getDataPolicy().withReplication()) {
+        && getDataPolicyEnum().withReplication()) {
       throw new IllegalStateException(
           "Not allowed to do a local invalidation on a replicated region");
     }
@@ -1891,7 +1891,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     try {
       // disallow local invalidation for replicated regions
       if (event.isLocalInvalid() && !event.getOperation().isLocal() && getScope().isDistributed()
-          && getDataPolicy().withReplication()) {
+          && getDataPolicyEnum().withReplication()) {
         throw new IllegalStateException(
             "Not allowed to do a local invalidation on a replicated region");
       }
@@ -1901,7 +1901,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         if (re == null/* || re.isTombstone() */ || !generateVersionTag) {
           if (getServerProxy() == null) {
             // only assert for non-client regions.
-            Assert.assertTrue(!getDataPolicy().withReplication() || !generateVersionTag);
+            Assert.assertTrue(!getDataPolicyEnum().withReplication() || !generateVersionTag);
           }
           // TODO: deltaGII: verify that delegating to a peer when this region is also a client is
           // acceptable
@@ -2004,7 +2004,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
-    if (getConcurrencyChecksEnabled() && !getDataPolicy().withReplication()) {
+    if (getConcurrencyChecksEnabled() && !getDataPolicyEnum().withReplication()) {
       boolean retry = false;
       do {
         // non-replicate regions must defer to a replicate for clear/invalidate of region
@@ -2029,7 +2029,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
-    boolean enableRVV = useRVV && getDataPolicy().withReplication()
+    boolean enableRVV = useRVV && getDataPolicyEnum().withReplication()
         && getConcurrencyChecksEnabled() && !getDistributionManager().isLoner();
 
     // Fix for 46338 - apparently multiple threads from the same VM are allowed
@@ -2194,7 +2194,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void basicLocalClear(RegionEventImpl rEvent) {
-    if (getScope().isDistributed() && getDataPolicy().withReplication()) {
+    if (getScope().isDistributed() && getDataPolicyEnum().withReplication()) {
       throw new UnsupportedOperationException(
           "localClear is not supported on distributed replicated regions.");
     }
@@ -2233,7 +2233,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   public void fillInProfile(Profile profile) {
     assert profile instanceof CacheProfile;
     CacheProfile cacheProfile = (CacheProfile) profile;
-    cacheProfile.dataPolicy = getDataPolicy();
+    cacheProfile.dataPolicy = getDataPolicyEnum();
     cacheProfile.hasCacheLoader = basicGetLoader() != null;
     cacheProfile.hasCacheWriter = basicGetWriter() != null;
     cacheProfile.hasCacheListener = hasListener();
@@ -2245,7 +2245,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       distAdvisor.incInRecoveryVersion();
     }
     cacheProfile.setInRecovery(newInRecovery);
-    cacheProfile.isPersistent = getDataPolicy().withPersistence();
+    cacheProfile.isPersistent = getDataPolicyEnum().withPersistence();
     cacheProfile.setSubscriptionAttributes(getSubscriptionAttributes());
 
     // Below PDX check is added for rolling upgrade support. We are
@@ -2262,7 +2262,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       cacheProfile.persistenceInitialized = getPersistenceAdvisor().isOnline();
     }
     cacheProfile.hasCacheServer = !cache.getCacheServers().isEmpty();
-    cacheProfile.requiresOldValueInEvents = getDataPolicy().withReplication()
+    cacheProfile.requiresOldValueInEvents = getDataPolicyEnum().withReplication()
         && filterProfile != null && filterProfile.hasCQs();
     cacheProfile.gatewaySenderIds = getGatewaySenderIds();
     cacheProfile.asyncEventQueueIds = getVisibleAsyncEventQueueIds();
@@ -3671,8 +3671,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   @Override
   public DistributedMember getOwnerForKey(KeyInfo key) {
     assert !isInternalRegion() || isMetaRegionWithTransactions();
-    if (!getAttributes().getDataPolicy().withStorage() || (getConcurrencyChecksEnabled()
-        && getAttributes().getDataPolicy() == DataPolicy.NORMAL)) {
+    if (!getAttributes().getDataPolicyEnum().withStorage() || (getConcurrencyChecksEnabled()
+        && getAttributes().getDataPolicyEnum() == DataPolicy.NORMAL)) {
       // execute on random replicate
       return getRandomReplicate();
     }
@@ -3701,8 +3701,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         return executeLocally(execution, function, args, 0, rc, filter, sender);
       }
       return executeOnReplicate(execution, function, args, rc, filter, target);
-    } else if (getAttributes().getDataPolicy().withReplication()
-        || getAttributes().getDataPolicy().withPreloaded()) {
+    } else if (getAttributes().getDataPolicyEnum().withReplication()
+        || getAttributes().getDataPolicyEnum().withPreloaded()) {
       // execute locally
       final Set<InternalDistributedMember> singleMember = Collections.singleton(getMyId());
       execution.validateExecution(function, singleMember);
@@ -3940,7 +3940,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   protected VersionTag fetchRemoteVersionTag(Object key) {
     VersionTag tag = null;
-    assert getDataPolicy() != DataPolicy.REPLICATE;
+    assert getDataPolicyEnum() != DataPolicy.REPLICATE;
     final TXStateProxy tx = cache.getTXMgr().pauseTransaction();
     try {
       boolean retry = true;

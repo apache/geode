@@ -157,7 +157,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
     // Make sure that the region is partitioned or
     // replicated with distributed ack or global.
-    DataPolicy dp = cqBaseRegion.getDataPolicy();
+    DataPolicy dp = cqBaseRegion.getDataPolicyEnum();
     isPR = dp.withPartitioning();
     if (!(isPR || dp.withReplication())) {
       String errMsg;

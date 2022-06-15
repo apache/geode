@@ -355,7 +355,7 @@ public class QueryDataDUnitTest implements Serializable {
       regionFactory.create(normalRegionName2);
 
       Region region = cache.getRegion(SEPARATOR + normalRegionName1);
-      assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+      assertThat(region.getAttributes().getDataPolicyEnum()).isEqualTo(DataPolicy.NORMAL);
 
       RegionFactory regionFactory1 = cache.createRegionFactory(RegionShortcut.REPLICATE);
       regionFactory1.create(tempRegionName1);

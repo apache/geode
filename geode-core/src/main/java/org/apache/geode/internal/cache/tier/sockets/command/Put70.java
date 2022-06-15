@@ -479,7 +479,7 @@ public class Put70 extends BaseCommand {
   }
 
   boolean isRegionWithPersistence(LocalRegion region) {
-    if (region.getAttributes().getDataPolicy().withPersistence()) {
+    if (region.getAttributes().getDataPolicyEnum().withPersistence()) {
       return true;
     }
     if (region instanceof PartitionedRegion) {

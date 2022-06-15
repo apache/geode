@@ -71,7 +71,7 @@ public class RegionPerfStatsTest {
     statistics = mock(Statistics.class);
     region = mock(InternalRegion.class);
     when(region.getName()).thenReturn(REGION_NAME);
-    when(region.getDataPolicy()).thenReturn(DATA_POLICY);
+    when(region.getDataPolicyEnum()).thenReturn(DATA_POLICY);
     statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(statistics);
     statisticsClock = mock(StatisticsClock.class);

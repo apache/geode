@@ -261,7 +261,7 @@ public class RegionAttributesData {
    *
    * @return the data policy of the Region
    */
-  public String getDataPolicy() {
+  public String getDataPolicyEnum() {
     return dataPolicy;
   }
 

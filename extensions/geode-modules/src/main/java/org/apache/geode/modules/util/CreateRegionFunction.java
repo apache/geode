@@ -141,7 +141,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     RegionAttributesCreation requestedAttributesCreation =
         new RegionAttributesCreation(requestedRegionAttributes, false);
 
-    if (existingRegionAttributes.getDataPolicy().withPersistence() || (evictionAttributes != null
+    if (existingRegionAttributes.getDataPolicyEnum().withPersistence() || (evictionAttributes != null
         && evictionAttributes.getAction() == EvictionAction.OVERFLOW_TO_DISK)) {
       if (requestedRegionAttributes.getDiskStoreName() == null
           && existingRegionAttributes.getDiskStoreName() == null) {

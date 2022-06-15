@@ -346,7 +346,7 @@ public class LocalRegionDataView implements InternalDataView {
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       InternalRegion reg) {
-    if (!reg.getDataPolicy().withStorage() && reg.getConcurrencyChecksEnabled()
+    if (!reg.getDataPolicyEnum().withStorage() && reg.getConcurrencyChecksEnabled()
         && putallOp.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulPuts list for transmission back to the client
@@ -356,8 +356,8 @@ public class LocalRegionDataView implements InternalDataView {
     // BR & DR's putAll
     long token = -1;
     try {
-      if (reg.getServerProxy() != null || (reg.getDataPolicy() != DataPolicy.NORMAL
-          && reg.getDataPolicy() != DataPolicy.PRELOADED)) {
+      if (reg.getServerProxy() != null || (reg.getDataPolicyEnum() != DataPolicy.NORMAL
+          && reg.getDataPolicyEnum() != DataPolicy.PRELOADED)) {
         token = reg.postPutAllSend(putallOp, successfulPuts);
       }
       reg.postPutAllFireEvents(putallOp, successfulPuts);
@@ -371,7 +371,7 @@ public class LocalRegionDataView implements InternalDataView {
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
       InternalRegion reg) {
-    if (!reg.getDataPolicy().withStorage() && reg.getConcurrencyChecksEnabled()
+    if (!reg.getDataPolicyEnum().withStorage() && reg.getConcurrencyChecksEnabled()
         && op.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulOps list for transmission back to the client

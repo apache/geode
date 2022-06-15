@@ -86,7 +86,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
           // if this is a mirrored region and we're still initializing, or
           // concurrency conflict detection is enabled (requiring version #
           // retention) then force new entry creation
-          boolean forceNewEntry = rgn.getDataPolicy().withReplication()
+          boolean forceNewEntry = rgn.getDataPolicyEnum().withReplication()
               && (!rgn.isInitialized() || rgn.getConcurrencyChecksEnabled());
           boolean invokeCallbacks = rgn.isInitialized();
           rgn.basicInvalidate(ev, invokeCallbacks, forceNewEntry);

@@ -113,7 +113,7 @@ public class LocalRegionTest {
     when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
     when(evictionAttributes.getAction()).thenReturn(EvictionAction.NONE);
     when(internalDistributedSystem.getClock()).thenReturn(mock(DSClock.class));
-    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    when(regionAttributes.getDataPolicyEnum()).thenReturn(DataPolicy.DEFAULT);
     when(regionAttributes.getDiskWriteAttributes()).thenReturn(diskWriteAttributes);
     when(regionAttributes.getEntryIdleTimeout()).thenReturn(expirationAttributes);
     when(regionAttributes.getEntryTimeToLive()).thenReturn(expirationAttributes);

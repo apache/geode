@@ -143,7 +143,7 @@ public class HARegion extends DistributedRegion {
           "timeToLive must not be null");
     }
     if ((timeToLive.getAction() == ExpirationAction.LOCAL_DESTROY
-        && getDataPolicy().withReplication())) {
+        && getDataPolicyEnum().withReplication())) {
       throw new IllegalArgumentException(
           "timeToLive action is incompatible with this region's mirror type");
     }

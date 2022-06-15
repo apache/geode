@@ -199,7 +199,7 @@ public class TombstoneService {
 
   public TombstoneSweeper getSweeper(LocalRegion r) {
     if (r.getScope().isDistributed() && r.getServerProxy() == null
-        && r.getDataPolicy().withReplication()) {
+        && r.getDataPolicyEnum().withReplication()) {
       return replicatedTombstoneSweeper;
     } else {
       return nonReplicatedTombstoneSweeper;
@@ -283,7 +283,7 @@ public class TombstoneService {
       // the entries from map, to prevent us from removing a tombstone
       // from disk that has a version greater than the persisted
       // GV RVV.
-      if (r.getDataPolicy().withPersistence()) {
+      if (r.getDataPolicyEnum().withPersistence()) {
         // Update the version vector which reflects what has been persisted on disk.
         r.getDiskRegion().writeRVVGC(r);
       }
@@ -616,7 +616,7 @@ public class TombstoneService {
             // the entries from map, to prevent us from removing a tombstone
             // from disk that has a version greater than the persisted
             // GV RVV.
-            if (r.getDataPolicy().withPersistence()) {
+            if (r.getDataPolicyEnum().withPersistence()) {
               r.getDiskRegion().writeRVVGC(r);
             }
           }

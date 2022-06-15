@@ -318,7 +318,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
               CliStrings.REMOVE__MSG__KEY_NOT_FOUND_REGION, false);
         }
       } else {
-        DataPolicy policy = region.getAttributes().getDataPolicy();
+        DataPolicy policy = region.getAttributes().getDataPolicyEnum();
         if (!policy.withPartitioning()) {
           region.clear();
           if (logger.isDebugEnabled()) {
