@@ -33,13 +33,15 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.stream.Stream;
 
-import junitparams.Parameters;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionId;
@@ -61,18 +63,16 @@ import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(GeodeParamsRunner.class)
 public class GatewaySenderEventImplTest {
 
   private GemFireCacheImpl cache;
 
-  @Rule
-  public TestName testName = new TestName();
+  private String testName;
 
-  @Before
-  public void setUpGemFire() {
+  @BeforeEach
+  public void setUpGemFire(TestInfo testInfo) {
+    testName = testInfo.getDisplayName();
     createCache();
   }
 
@@ -110,8 +110,8 @@ public class GatewaySenderEventImplTest {
     assertThat(gatewaySenderEvent.getTransactionId()).isNotNull();
   }
 
-  @Test
-  @Parameters(method = "getVersionsAndExpectedInvocations")
+  @ParameterizedTest
+  @MethodSource("getVersionsAndExpectedInvocations")
   public void testSerializingDataFromCurrentVersionToOldVersion(VersionAndExpectedInvocations vaei)
       throws IOException {
     GatewaySenderEventImpl gatewaySenderEvent = spy(GatewaySenderEventImpl.class);
@@ -129,8 +129,8 @@ public class GatewaySenderEventImplTest {
         any());
   }
 
-  @Test
-  @Parameters(method = "getVersionsAndExpectedInvocations")
+  @ParameterizedTest
+  @MethodSource("getVersionsAndExpectedInvocations")
   public void testDeserializingDataFromOldVersionToCurrentVersion(
       VersionAndExpectedInvocations vaei)
       throws IOException, ClassNotFoundException {
@@ -151,18 +151,17 @@ public class GatewaySenderEventImplTest {
         any());
   }
 
-  private VersionAndExpectedInvocations[] getVersionsAndExpectedInvocations() {
-    return new VersionAndExpectedInvocations[] {
-        new VersionAndExpectedInvocations(GEODE_1_8_0, 1, 0, 0),
-        new VersionAndExpectedInvocations(GEODE_1_13_0, 1, 1, 0),
-        new VersionAndExpectedInvocations(GEODE_1_14_0, 1, 1, 1)
-    };
+  private static Stream<Arguments> getVersionsAndExpectedInvocations() {
+    return Stream.of(
+        Arguments.of(new VersionAndExpectedInvocations(GEODE_1_8_0, 1, 0, 0)),
+        Arguments.of(new VersionAndExpectedInvocations(GEODE_1_13_0, 1, 1, 0)),
+        Arguments.of(new VersionAndExpectedInvocations(GEODE_1_14_0, 1, 1, 1)));
   }
 
   @Test
   public void testEquality() throws Exception {
     LocalRegion region = mock(LocalRegion.class);
-    when(region.getFullPath()).thenReturn(testName.getMethodName() + "_region");
+    when(region.getFullPath()).thenReturn(testName + "_region");
     when(region.getCache()).thenReturn(cache);
     Object event = ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.CREATE,
         "key1", "value1", 0, 0, 0, 0);
@@ -209,7 +208,7 @@ public class GatewaySenderEventImplTest {
     assertThat(event).isNotEqualTo(eventDifferentValue);
 
     LocalRegion region2 = mock(LocalRegion.class);
-    when(region2.getFullPath()).thenReturn(testName.getMethodName() + "_region2");
+    when(region2.getFullPath()).thenReturn(testName + "_region2");
     when(region2.getCache()).thenReturn(cache);
     Object eventDifferentRegion =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region2, Operation.CREATE,
@@ -221,7 +220,7 @@ public class GatewaySenderEventImplTest {
   public void testSerialization() throws Exception {
     // Set up test
     LocalRegion region = mock(LocalRegion.class);
-    when(region.getFullPath()).thenReturn(testName.getMethodName() + "_region");
+    when(region.getFullPath()).thenReturn(testName + "_region");
     when(region.getCache()).thenReturn(cache);
     TXId txId = new TXId(cache.getMyId(), 0);
     when(region.getTXId()).thenReturn(txId);
@@ -348,12 +347,13 @@ public class GatewaySenderEventImplTest {
     return cacheEvent;
   }
 
-  @Parameters({"true, true", "true, false", "false, false"})
+  @ParameterizedTest
+  @CsvSource({"true,true", "true,false", "false,false"})
   public void testCreation_WithAfterUpdateWithGenerateCallbacks(boolean isGenerateCallbacks,
       boolean isCallbackArgumentNull)
       throws IOException {
-    InternalRegion region = mock(InternalRegion.class);
-    when(region.getFullPath()).thenReturn(testName.getMethodName() + "_region");
+    InternalRegion region = mock(LocalRegion.class);
+    when(region.getFullPath()).thenReturn(testName + "_region");
 
     Operation operation = mock(Operation.class);
     when(operation.isLocalLoad()).thenReturn(true);

@@ -20,11 +20,11 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.val
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -33,7 +33,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -58,6 +62,8 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
+
+  public static boolean ENTRY_CONFLICT_WINNER_HAS_REACHED_THE_REDUNDANT_SERVER;
 
   private MemberVM locator1Site2;
 
@@ -158,7 +164,7 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     startClientToServer2Site2(server2Site2Port);
 
     clientConnectedToServer2Site2.invoke(() -> executePutOperation(ENTRY_INITIAL));
-    checkEventIsConsistentlyReplicatedAcrossServers(ENTRY_INITIAL, server1Site2, server2Site2);
+    waitUntilEventIsConsistentlyReplicatedAcrossServers(ENTRY_INITIAL, server1Site2, server2Site2);
 
     // Configure cache writer on server to delay writing of entry in order to provoke
     // the internal conflict
@@ -173,37 +179,48 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
         ENTRY_CONFLICT_RESOLUTION_WINNER));
 
     server1Site2.invoke(() -> await().untilAsserted(() -> assertThat(
-        TestCacheWriterDelayWritingOfEntry.ENTRY_CONFLICT_WINNER_HAS_REACHED_THE_REDUNDANT_SERVER)
+        InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTest.ENTRY_CONFLICT_WINNER_HAS_REACHED_THE_REDUNDANT_SERVER)
             .isTrue()));
 
     clientConnectedToServer1Site2.invokeAsync(() -> executePutOperation(
         ENTRY_CONFLICT_RESOLUTION_LOSER));
 
     // Check that expected entry has won the internal conflict resolution
-    checkEventIsConsistentlyReplicatedAcrossServers(ENTRY_CONFLICT_RESOLUTION_WINNER, server1Site2,
+    waitUntilEventIsConsistentlyReplicatedAcrossServers(ENTRY_CONFLICT_RESOLUTION_WINNER,
+        server1Site2,
         server2Site2);
 
-    server2Site2.invoke(() -> checkQueueSize(GATEWAY_SENDER_ID, 3));
+    server2Site2.invoke(
+        InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTest::awaitQueueSize);
     executeGatewaySenderActionCommandSite2(CliStrings.RESUME_GATEWAYSENDER);
 
     // check that expected event is replicated to the remote cluster
-    checkEventIsConsistentlyReplicatedAcrossServers(ENTRY_CONFLICT_RESOLUTION_WINNER, server1Site1,
+    waitUntilEventIsConsistentlyReplicatedAcrossServers(ENTRY_CONFLICT_RESOLUTION_WINNER,
+        server1Site1,
         server2Site1);
   }
 
-  void checkEventIsConsistentlyReplicatedAcrossServers(final Map.Entry<Integer, Integer> entry,
+  private void waitUntilEventIsConsistentlyReplicatedAcrossServers(
+      final Map.Entry<Integer, Integer> entry,
+      MemberVM... servers) {
+    await().untilAsserted(() -> isEventIsConsistentlyReplicatedAcrossServers(entry, servers));
+  }
+
+  private static void isEventIsConsistentlyReplicatedAcrossServers(
+      final Map.Entry<Integer, Integer> entry,
       MemberVM... servers) {
     for (MemberVM server : servers) {
-      server.invoke(() -> {
-        Region<Integer, Integer> region =
-            ClusterStartupRule.getCache().getRegion("/" + REGION_NAME);
-        await().untilAsserted(
-            () -> assertThat(region.get(entry.getKey())).isEqualTo(entry.getValue()));
-      });
+      assertThat(server.invoke(() -> doesEventExistOnServer(entry))).isTrue();
     }
   }
 
-  void executeGatewaySenderActionCommandSite2(final String action) throws Exception {
+  private static boolean doesEventExistOnServer(Map.Entry<Integer, Integer> entry) {
+    Region<Integer, Integer> region =
+        ClusterStartupRule.getCache().getRegion("/" + REGION_NAME);
+    return Objects.equals(region.get(entry.getKey()), entry.getValue());
+  }
+
+  private void executeGatewaySenderActionCommandSite2(final String action) throws Exception {
     connectGfshToSite(locator1Site2);
     CommandStringBuilder regionCmd = new CommandStringBuilder(action);
     regionCmd.addOption(CliStrings.MEMBERS, server2Site2.getName());
@@ -219,40 +236,42 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     region.put(entry.getKey(), entry.getValue());
   }
 
-  public static void checkQueueSize(String senderId, int numQueueEntries) {
+  private static void awaitQueueSize() {
     await()
-        .untilAsserted(() -> testQueueSize(senderId, numQueueEntries));
+        .untilAsserted(() -> validateQueueSize(
+            InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTest.GATEWAY_SENDER_ID,
+            3));
   }
 
-  public static void testQueueSize(String senderId, int numQueueEntries) {
+  private static void validateQueueSize(String senderId, int numQueueEntries) {
     GatewaySender sender = ClusterStartupRule.getCache().getGatewaySender(senderId);
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
     int size = 0;
     for (RegionQueue q : queues) {
       size += q.size();
     }
-    assertEquals(numQueueEntries, size);
+    assertThat(size).isEqualTo(numQueueEntries);
   }
 
-  static void verifyReceiverState() {
+  private static void verifyReceiverState() {
     Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       assertThat(receiver.isRunning()).isEqualTo(true);
     }
   }
 
-  void verifyGatewaySenderState(MemberVM memberVM, boolean isPaused) {
+  private void verifyGatewaySenderState(MemberVM memberVM, boolean isPaused) {
     memberVM.invoke(() -> verifySenderState(GATEWAY_SENDER_ID, true, isPaused));
     locator1Site2.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(memberVM.getVM()), GATEWAY_SENDER_ID, true,
             isPaused));
   }
 
-  public static InternalDistributedMember getMember(final VM vm) {
+  private static InternalDistributedMember getMember(final VM vm) {
     return vm.invoke(() -> ClusterStartupRule.getCache().getMyId());
   }
 
-  void startClientToServer1Site2(final int serverPort) throws Exception {
+  private void startClientToServer1Site2(final int serverPort) throws Exception {
     clientConnectedToServer1Site2 =
         clusterStartupRule.startClientVM(8, c -> c.withServerConnection(serverPort));
     clientConnectedToServer1Site2.invoke(() -> {
@@ -260,7 +279,7 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     });
   }
 
-  void startClientToServer2Site2(final int serverPort) throws Exception {
+  private void startClientToServer2Site2(final int serverPort) throws Exception {
     clientConnectedToServer2Site2 =
         clusterStartupRule.startClientVM(4, c -> c.withServerConnection(serverPort));
     clientConnectedToServer2Site2.invoke(() -> {
@@ -268,10 +287,47 @@ public class InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTe
     });
   }
 
-  void connectGfshToSite(MemberVM locator) throws Exception {
+  private void connectGfshToSite(MemberVM locator) throws Exception {
     if (gfsh.isConnected()) {
       gfsh.disconnect();
     }
     gfsh.connectAndVerify(locator);
+  }
+
+  public static class TestCacheWriterDelayWritingOfEntry<K, V> implements CacheWriter<K, V> {
+    private final Map.Entry<Integer, Integer> entryToDelay;
+
+    private final Map.Entry<Integer, Integer> waitUntilEntry;
+
+    public TestCacheWriterDelayWritingOfEntry(Map.Entry<Integer, Integer> entryToDelay,
+        Map.Entry<Integer, Integer> waitUntilEntry) {
+      this.entryToDelay = entryToDelay;
+      this.waitUntilEntry = waitUntilEntry;
+    }
+
+    @Override
+    public void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException {
+      Region<Integer, Integer> region = ClusterStartupRule.getCache().getRegion("/" + REGION_NAME);
+      int value = (Integer) event.getNewValue();
+      int key = (Integer) event.getKey();
+      if (key == entryToDelay.getKey() && value == entryToDelay.getValue()) {
+        InternalConflictResolutionReplicateRegionWithSerialGwsDistributedTest.ENTRY_CONFLICT_WINNER_HAS_REACHED_THE_REDUNDANT_SERVER =
+            true;
+        await().untilAsserted(() -> assertThat(region.get(waitUntilEntry.getKey()))
+            .isEqualTo(waitUntilEntry.getValue()));
+      }
+    }
+
+    @Override
+    public void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException {}
+
+    @Override
+    public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException {}
+
+    @Override
+    public void beforeRegionDestroy(RegionEvent<K, V> event) throws CacheWriterException {}
+
+    @Override
+    public void beforeRegionClear(RegionEvent<K, V> event) throws CacheWriterException {}
   }
 }
