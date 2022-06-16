@@ -560,8 +560,7 @@ class StartServerCommandTest {
       final String heapSize = "1024m";
       expectedJvmOptions.add("-Xms" + heapSize);
       expectedJvmOptions.add("-Xmx" + heapSize);
-      expectedJvmOptions.add("-XX:+UseConcMarkSweepGC");
-      expectedJvmOptions.add("-XX:CMSInitiatingOccupancyFraction=60");
+      expectedJvmOptions.addAll(getGcJvmOptions(emptyList()));
 
       final String[] customJvmOptions = {
           "-verbose:gc",
