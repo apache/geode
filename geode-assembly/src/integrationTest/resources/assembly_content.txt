@@ -1061,7 +1061,7 @@ lib/spring-core-5.3.21.jar
 lib/spring-jcl-5.3.21.jar
 lib/spring-shell-1.2.0.RELEASE.jar
 lib/spring-web-5.3.21.jar
-lib/swagger-annotations-2.2.0.jar
+lib/swagger-annotations-2.2.1.jar
 tools/Extensions/geode-web-0.0.0.war
 tools/Extensions/geode-web-api-0.0.0.war
 tools/Extensions/geode-web-management-0.0.0.war
