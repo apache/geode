@@ -180,7 +180,7 @@
       <dependency>
         <groupId>io.github.classgraph</groupId>
         <artifactId>classgraph</artifactId>
-        <version>4.8.146</version>
+        <version>4.8.147</version>
       </dependency>
       <dependency>
         <groupId>io.github.resilience4j</groupId>
