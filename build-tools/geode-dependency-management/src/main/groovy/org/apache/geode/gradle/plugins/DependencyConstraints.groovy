@@ -170,7 +170,7 @@ class DependencyConstraints {
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
         api(group: 'xml-apis', name: 'xml-apis', version: '1.4.01')
-        api(group: 'org.junit-pioneer', name: 'junit-pioneer', version: '1.6.2')
+        api(group: 'org.junit-pioneer', name: 'junit-pioneer', version: '1.7.1')
       }
     }
 
