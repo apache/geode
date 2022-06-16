@@ -600,7 +600,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       } else {
         modulePath = getJBossModulePath(geodeHome);
       }
-      modulePath += File.pathSeparator + getJDeploymentsModulePath(workingDirectory);
+      modulePath += File.pathSeparator + getDeploymentsModulePath(workingDirectory);
       commandLine.add(modulePath);
 
       commandLine.add("geode");
@@ -640,10 +640,12 @@ public class StartServerCommand extends OfflineGfshCommand {
             .resolve("main")
             .resolve("module.xml").toFile();
 
-    try {
-      FileUtils.copyFile(applicationModuleDescriptor, tempApplicationModuleDescriptor);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    if (!tempApplicationModuleDescriptor.exists()) {
+      try {
+        FileUtils.copyFile(applicationModuleDescriptor, tempApplicationModuleDescriptor);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     return tempModuleDescriptorDirectory.toString();
@@ -687,7 +689,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     return Paths.get(moduleBase).resolve("moduleDescriptors").toString();
   }
 
-  private String getJDeploymentsModulePath(String moduleBase) {
+  private String getDeploymentsModulePath(String moduleBase) {
     return Paths.get(moduleBase).resolve("deployments").toString();
   }
 
