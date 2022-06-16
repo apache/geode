@@ -174,7 +174,7 @@ class DependencyConstraints {
       }
     }
 
-    dependencySet(group: 'org.mockito', version: '4.4.0') {
+    dependencySet(group: 'org.mockito', version: '4.6.1') {
       entry('mockito-core')
       entry('mockito-junit-jupiter')
     }
