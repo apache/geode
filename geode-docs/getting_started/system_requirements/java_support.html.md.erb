@@ -1,0 +1,151 @@
+---
+title:  Java Support
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This version of <%=vars.product_name%> requires Java 8 release <%=vars.min_java_update %> or
+a more recent version 8 update.  The same versions are supported with OpenJDK (HotSpot).
+
+<%=vars.product_name%> is also compatible with Open JDK 11 and JDK 17.
+
+The <%=vars.product_name%> product download does not include Java.
+Download and install a supported JRE or JDK on each system running <%=vars.product_name%>.
+VMware recommends the installation of a full JDK (and not just a JRE)
+to obtain better performance with `gfsh status` and `gfsh stop` commands.
+
+The IBM SDK, Java Technology Edition, Version 8 is supported for application clients only. Some
+client region eviction configurations such as `HEAP_LRU` are known to not function properly with
+this SDK.
+
+## <a id="java-modules-and-geode" class="no-quick-link"></a>Java Modules and <%=vars.product_name%>
+
+### <a id="how-jdk-encapsulation-affects-geode" class="no-quick-link"></a>How JDK 17 Encapsulation Affects <%=vars.product_name%>
+
+Beginning with Java 17, the JVM strongly enforces the encapsulation policies introduced in Java 9 by the Java Platform Module System.
+
+Several <%=vars.product_name%> features, such as serialization and eviction, use deep reflection to inspect the Java objects used as keys and values. In Java 17, this deep reflection requires that the object's type be made explicitly available for reflection.
+
+By default, each type declared in a named module is available for reflection only if the declaring module opens the type's package.
+
+As a result, <%=vars.product_name%>, by default, cannot inspect the following encapsulated types and fields:
+- The private and protected types declared in named modules.
+- The private and protected fields of types declared in named modules.
+
+In Java 17, every type defined by the JDK is declared in a named module, and none are opened for reflection by any code outside of the JDK. Therefore, any encapsulated type or field defined by the JDK is, by default, unavailable for reflection.
+
+See [Access Required by <%=vars.product_name%>](#access-required-by-geode) for ways to identify what access <%=vars.product_name%> needs, and [Granting Access to Encapsulated Types](#granting-access-to-encapsulated-types) for ways to grant that access.
+
+### <a id="access-required-by-geode" class="no-quick-link"></a>Access Required by <%=vars.product_name%>
+
+<%=vars.product_name%> may require reflective access to the types used in your application data. 
+
+If <%=vars.product_name%> does not have the access it requires, it throws an exception similar to the following:
+
+```
+java.lang.reflect.InaccessibleObjectException: Unable to make field private final
+java.math.BigInteger java.math.BigDecimal.intVal accessible: module java.base does not 
+"opens java.math" to unnamed module @23a5fd2
+```
+
+#### Access to the Types Used in Application Data
+
+Depending on the <%=vars.product_name%> features that you use, <%=vars.product_name%> may require reflective access to the types used in your application data. This includes:
+
+- The types that define your application data.
+- The types to which your application data holds a reference, whether directly or indirectly.
+
+If any object of your application data is represented by a type declared in a named module, or holds a reference (directly or indirectly) to a type declared in a named module, <%=vars.product_name%> may require explicit access to that type.
+
+> **Note:** Every type defined by the JDK is declared in a named module. Therefore, if any object of your application data is represented by a type defined by the JDK, or holds a reference (directly or indirectly) to a type defined by the JDK, <%=vars.product_name%> may require explicit access to that type.
+
+<%=vars.product_name%> can automatically access types declared in packages loaded from the classpath.
+
+#### Additional Access Required by All <%=vars.product_name%> Processes
+
+<%=vars.product_name%> always requires access to certain JDK packages, regardless of the types of objects used by your application. The following options must always be included when launching locators and servers, and when launching clients and other applications that depend on <%=vars.product_name%>:
+
+```
+--add-exports=java.base/sun.nio.ch=ALL-UNNAMED
+--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.base/java.nio=ALL-UNNAMED
+--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED
+```
+
+> **Note:** `gfsh` automatically supplies these options whenever it launches a locator or server process.
+
+### <a id="granting-access-to-encapsulated-types" class="no-quick-link"></a>Granting Access to Encapsulated Types
+
+#### Opening Specific Packages
+
+To give <%=vars.product_name%> access to the types in a specific package, use the `--add-opens` command line option when launching a locator, server, client, or other application that uses <%=vars.product_name%>. For example:
+
+```
+--add-opens=java.base/java.math=ALL-UNNAMED
+```
+
+This example allows <%=vars.product_name%> to inspect `BigDecimal` and other types declared in the `java.math` package in the `java.base` module.
+
+Because the JDK loads <%=vars.product_name%> code into an unnamed module, the `--add-opens` option must open the package to `ALL-UNNAMED`.
+
+#### Using an Argument File
+
+Starting with Java 9, the `java` command accepts argument files as an option. The `java` command treats the content of the argument file as arguments for the JVM.
+
+If you must use numerous JVM options to give <%=vars.product_name%> the access it needs, you can combine the arguments into an argument file. For example:
+
+```
+--add-opens=java.base/java.text=ALL-UNNAMED
+--add-opens=java.base/java.time=ALL-UNNAMED
+--add-opens=java.base/java.time.chrono=ALL-UNNAMED
+--add-opens=java.base/java.time.format=ALL-UNNAMED
+--add-opens=java.base/java.time.temporal=ALL-UNNAMED
+--add-opens=java.base/java.time.zone=ALL-UNNAMED
+```
+
+To use an argument file, add the `@` prefix to identify your argument file to the `java` command:
+
+```
+java @path/to/my-argument-file ...
+```
+
+#### Opening All JDK Packages
+
+The <%=vars.product_name%> distribution includes an argument file that opens every package in the Linux version of OpenJDK 17: `path_to_product/config/open-all-jdk-packages-linux-openjdk-17`.
+
+Use the JDK 17 argument file as follows:
+
+-   When launching <%=vars.product_name%> clients and other applications with <%=vars.product_name%> functionality:
+    
+    ```
+    java @path_to_product/config/open-all-jdk-packages-linux-openjdk-17 ...
+    ```
+    
+-   When launching <%=vars.product_name%> members with `gfsh`, add the argument file as a `--J` option:
+    
+    ```
+    start locator --J=@path_to_product/config/open-all-jdk-packages-linux-openjdk-17 ...
+    start server --J=@path_to_product/config/open-all-jdk-packages-linux-openjdk-17 ...
+    ```
+    
+If you use a different JDK, copy and edit this file to add or remove packages to match your JDK.
+
+### <a id="java-17-and-garbage-collection" class="no-quick-link"></a>Java 17 and Garbage Collection
+
+Java 17 does not include the CMS garbage collector. The default garbage collector is now G1. See [Managing Heap Memory](../../managing/heap_use/heap_management.html) for details about configuring <%=vars.product_name%>'s use of the garbage collector.
