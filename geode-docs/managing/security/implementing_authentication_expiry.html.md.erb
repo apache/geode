@@ -19,15 +19,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+Authentication expiry is supported only with client connections.
+The use of expirable credentials is most common when used in combination with token-based authentication and authorization.
 Authentication expiry makes it possible for cluster administrators to limit the life span of client
-and peer connections within the cluster. The use of expirable credentials is most common when used in
-combination with token based authentication and authorization.
+connections within the cluster.
 
-Client connections are notified of expiry through the throwing of an `AuthenticationExpiredException`
+Client connections are notified of expiry by `AuthenticationExpiredException`,
 which is thrown in the implementations of `SecurityManager.authenticate` or `SecurityManager.authorize`.
 
-Clients will do one automatic attempt to reconnect. Upon receiving a second `AuthenticationExpiredException`
-the exception will be propagated up the chain for the user to handle. There are some differences in
+Upon receiving the AuthenticationExpiredException, clients will make one automatic attempt to gather new credentials and reconnect (AuthInitialize.getCredentials()).
+Upon receiving a second `AuthenticationExpiredException`
+the exception is thrown back to the user to handle. There are some differences in
 behavior between older and newer clients.
 
 **Support for Automatic	Reconnect**
@@ -56,15 +58,9 @@ The common cycle for authentication and authorization is the following:
 AuthInitialize.getCredentials(...) -> SecurityManager.authenticate(...) -> SecurityManager.authorize(...)
 ```
 
-Where `AuthInitialize.getCredentials()` provides the `security properties` for `SecurityManager.authenticate()`
-which in turn provides the `principal object` for `SecurityManager.authorize()`. It's important to
-understand that some time will pass between the `AuthInitialize.getCredentials()` call and the
-`SecurityManager.authorize()` call. The specific amount of time depends on the implementation and
-runtime environment details.
-
 In case of the use of an external token provider we assume that this token provider will be asked for
-a token in the `AuthInitialize.getCredentials()` call. A token provider can return existing tokens for
-a given user so it is recommended that implementers of the `AuthInitialize` and `SecurityManager`
+a token in the `AuthInitialize.getCredentials()` call. A token provider can return existing tokens (which are about to expire) for
+a given user, so it is recommended that implementers of the `AuthInitialize` and `SecurityManager`
 interfaces take imminent timeout and token refresh in consideration to avoid receiving multiple
 unintended `AuthenticationExpiredException`s in a row and having to deal with the propagation of these
 exceptions.
