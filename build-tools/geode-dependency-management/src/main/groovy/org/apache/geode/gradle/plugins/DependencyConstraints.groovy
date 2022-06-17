@@ -40,14 +40,14 @@ class DependencyConstraints {
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.17.2")
-    deps.put("micrometer.version", "1.9.0")
+    deps.put("micrometer.version", "1.9.1")
     deps.put("shiro.version", "1.9.0")
     deps.put("slf4j-api.version", "1.7.32")
     deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.13.2")
-    deps.put("jackson.databind.version", "2.13.2.2")
+    deps.put("jackson.version", "2.13.3")
+    deps.put("jackson.databind.version", "2.13.3")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.20")
+    deps.put("springframework.version", "5.3.21")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -115,11 +115,11 @@ class DependencyConstraints {
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
-        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.146')
+        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.147')
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.0')
+        api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.1')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
@@ -149,7 +149,7 @@ class DependencyConstraints {
         api(group: 'org.assertj', name: 'assertj-core', version: '3.22.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.2.0')
         api(group: 'org.buildobjects', name: 'jproc', version: '2.8.0')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.10')
+        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.12')
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
@@ -163,18 +163,18 @@ class DependencyConstraints {
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.4.2')
-        api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.7.RELEASE')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.5.0')
+        api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.4.0')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.15.3')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
         api(group: 'xml-apis', name: 'xml-apis', version: '1.4.01')
-        api(group: 'org.junit-pioneer', name: 'junit-pioneer', version: '1.6.2')
+        api(group: 'org.junit-pioneer', name: 'junit-pioneer', version: '1.7.1')
       }
     }
 
-    dependencySet(group: 'org.mockito', version: '4.4.0') {
+    dependencySet(group: 'org.mockito', version: '4.6.1') {
       entry('mockito-core')
       entry('mockito-junit-jupiter')
     }

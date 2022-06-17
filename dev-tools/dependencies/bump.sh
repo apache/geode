@@ -28,7 +28,7 @@ if [ "$2" = "-l" ] ; then
   find . | grep build/dependencyUpdates/report.txt | xargs cat \
    | grep ' -> ' | egrep -v '(Gradle|antlr|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|springdoc|derby|selenium|jgroups|jmh|\[6.0.37|commons-collections|jaxb|testcontainers|gradle-tooling-api|slf4j|archunit)' \
    | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0 $1"' #'
-  echo "cd .. ; geode/dev-tools/release/license_review.sh -v HEAD && echo ':)' || echo 'ERROR(S) WERE FOUND, SEE ABOVE' ; cd $(pwd)"
+  echo "cd .. ; geode/dev-tools/release/license_review.sh -v HEAD ; cd $(pwd)"
   echo "#Also: manually check for newer version of plugins listed in build.gradle (search on https://plugins.gradle.org/)"
   echo "#Tip: prepend SKIP=true to some lines to bump a few dependencies at once between validation checks.  Push in small batches.  Add Windows label to PR before pushing final batch."
   exit 0
@@ -80,4 +80,4 @@ if [ $(git diff | wc -l) -gt 0 ] ; then
   git stash
   git stash drop
 fi
-[ -n "$SKIP" ] || ./gradlew devBuild checkPom :geode-assembly:integrationTest --tests AssemblyContentsIntegrationTest --tests GeodeDependencyJarIntegrationTest --tests BundledJarsJUnitTest --tests GemfireCoreClasspathTest --tests GfshDependencyJarIntegrationTest
+[ -n "$SKIP" ] || ./gradlew devBuild checkPom :geode-assembly:integrationTest --tests AssemblyContentsIntegrationTest --tests GeodeDependencyJarIntegrationTest --tests BundledJarsJUnitTest --tests GemfireCoreClasspathTest --tests GfshDependencyJarIntegrationTest -x srcDistTar
