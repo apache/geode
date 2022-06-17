@@ -41,7 +41,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -104,6 +103,28 @@ public class DistributionAdvisor {
    * This serial number indicates a "missing" serial number.
    */
   public static final int ILLEGAL_SERIAL = -1;
+
+  /**
+   * When we notice another member has crashed, we request its data. We delay that
+   * request so that any in-flight operations started on the crashed member, will
+   * be retried on the new primary before the sync. This constant determines that
+   * delay.
+   *
+   * This value was chosen empirically, to allow enough time for a new primary to
+   * be chosen after a member has crashed, and to allow any operations begun on
+   * the crashed member to be subsequently completed (and acknowledged) by the
+   * new primary.
+   *
+   * The current value may be too short to prevent apparent failure at the point of
+   * initiation e.g. EntryExistsException/EntryNotFoundException, in pathological
+   * situations like cascading member loss, or very slow members or networks.
+   *
+   * There is a tradeoff here. If the delay is too short, then the probability that
+   * the initiator sees spurious EntryExistsException/EntryNotFoundException
+   * increases. But this delay, delays consistency. It delays consistency though,
+   * only in the situation described above where primary changes mid-operation.
+   */
+  private static final long SYNC_DELAY_FOR_CRASHED_MEMBER_MILLISECONDS = 60_000L;
 
   /**
    * Used to compare profile versioning numbers against {@link Integer#MAX_VALUE} and
@@ -265,7 +286,7 @@ public class DistributionAdvisor {
     // interval. This allows client caches to retry an operation that might otherwise be recovered
     // through the sync operation. Without associated event information this could cause the
     // retried operation to be mishandled. See GEODE-5505
-    final long delay = getDelay(dr);
+    final long delay = getSyncDelayForCrashedMemberMilliseconds();
 
     if (dr.getDataPolicy().withPersistence() && persistentId == null) {
       // Fix for GEODE-6886 (#46704). The lost member may be an empty accessor
@@ -291,9 +312,8 @@ public class DistributionAdvisor {
   }
 
   @VisibleForTesting
-  long getDelay(DistributedRegion dr) {
-    return dr.getGemFireCache().getCacheServers().stream()
-        .mapToLong(CacheServer::getMaximumTimeBetweenPings).max().orElse(60_000L);
+  long getSyncDelayForCrashedMemberMilliseconds() {
+    return SYNC_DELAY_FOR_CRASHED_MEMBER_MILLISECONDS;
   }
 
   @VisibleForTesting
