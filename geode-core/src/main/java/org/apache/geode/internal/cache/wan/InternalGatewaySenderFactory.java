@@ -27,17 +27,7 @@ public interface InternalGatewaySenderFactory extends GatewaySenderFactory {
 
   GatewaySenderFactory setBucketSorted(boolean bucketSorted);
 
-  GatewaySender create(String senderIdFromAsyncEventQueueId);
-
   void configureGatewaySender(GatewaySender senderCreation);
 
   GatewaySenderFactory setLocatorDiscoveryCallback(LocatorDiscoveryCallback myLocatorCallback);
-
-  /**
-   * Sets the maximum number of retries to get events from the queue
-   * to complete a transaction when groupTransactionEvents is true.
-   *
-   * @param retries the maximum number of retries.
-   */
-  GatewaySenderFactory setRetriesToGetTransactionEventsFromQueue(int retries);
 }

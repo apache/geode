@@ -9,5 +9,11 @@
   "Method org.apache.geode.cache.query.IndexStatistics.getReadLockCountLong()": "Added new methods.",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFragments()": "Added new stat",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFreedChunks()": "Added new stat",
-  "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat"
+  "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat",
+  "Class org.apache.geode.cache.wan.GatewaySender":"Added to support new types of gatewaysenders",
+  "Method org.apache.geode.cache.wan.GatewaySender.getType()":"Added to support new types of gatewaysenders",
+  "Class org.apache.geode.cache.wan.GatewaySenderFactory":"Added to support new types of gatewaysenders",
+  "Method org.apache.geode.cache.wan.GatewaySenderFactory.setType(java.lang.String)":"Added to support new types of gatewaysenders",
+  "Class org.apache.geode.management.GatewaySenderMXBean":"Added to support new types of gatewaysenders",
+  "Method org.apache.geode.management.GatewaySenderMXBean.getType()":"Added to support new types of gatewaysenders"
 }

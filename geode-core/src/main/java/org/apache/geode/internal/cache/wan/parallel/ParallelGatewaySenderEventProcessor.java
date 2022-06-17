@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
@@ -77,8 +78,8 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
       logger.debug("The target Regions are(PGSEP) {}", targetRs);
     }
 
-    ParallelGatewaySenderQueue queue =
-        new ParallelGatewaySenderQueue(sender, targetRs, index, nDispatcher, cleanQueues);
+    final ParallelGatewaySenderQueue queue =
+        createParallelGatewaySenderQueue(sender, targetRs, index, nDispatcher, cleanQueues);
 
     queue.start();
     this.queue = queue;
@@ -86,6 +87,14 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     if (queue.localSize() > 0) {
       queue.notifyEventProcessorIfRequired();
     }
+  }
+
+  protected @NotNull ParallelGatewaySenderQueue createParallelGatewaySenderQueue(
+      final @NotNull AbstractGatewaySender sender,
+      final @NotNull Set<Region<?, ?>> targetRegions, final int index, final int dispatcherThreads,
+      final boolean cleanQueues) {
+    return new ParallelGatewaySenderQueue(sender, targetRegions, index, dispatcherThreads,
+        cleanQueues);
   }
 
   @Override

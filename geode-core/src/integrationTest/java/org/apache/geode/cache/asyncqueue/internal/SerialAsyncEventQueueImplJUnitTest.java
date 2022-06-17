@@ -24,7 +24,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.cache.wan.GatewaySenderAttributesImpl;
 import org.apache.geode.test.junit.categories.AEQTest;
 
 @Category({AEQTest.class})
@@ -55,7 +55,7 @@ public class SerialAsyncEventQueueImplJUnitTest {
   @Test
   public void testStopClearsStats() {
 
-    GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+    GatewaySenderAttributesImpl attrs = new GatewaySenderAttributesImpl();
     String tempId = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
     attrs.setId(tempId);
     SerialAsyncEventQueueImpl queue = new SerialAsyncEventQueueImpl(cache,
@@ -81,7 +81,7 @@ public class SerialAsyncEventQueueImplJUnitTest {
 
   @Test
   public void testStopStart() {
-    GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+    GatewaySenderAttributesImpl attrs = new GatewaySenderAttributesImpl();
     String tempId = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
     attrs.setId(tempId);
     SerialAsyncEventQueueImpl queue = new SerialAsyncEventQueueImpl(cache,
