@@ -45,7 +45,7 @@ GEODE_REPO=${GEODE_REPO:-$(cd geode && git remote get-url origin)}
 BENCHMARKS_REPO=${BENCHMARKS_REPO:-$(cd geode-benchmarks && git remote get-url origin)}
 BASELINE_REPO=${BASELINE_REPO:-${GEODE_REPO}}
 
-pushd geode
+pushd geode; GEODE_REPO=rsync:$(pwd); BASELINE_REPO=rsync:$(pwd)
 GEODE_SHA=$(git rev-parse --verify HEAD)
 popd
 

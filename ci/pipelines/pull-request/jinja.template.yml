@@ -16,6 +16,7 @@
 #
 
 {% from 'shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared_jinja.yml' import github_access with context %}
 {% from 'shared_jinja.yml' import init_retry with context %}
 
 groups:
@@ -31,16 +32,16 @@ resources:
 - name: geode
   type: pull-request
   source:
-    access_token: ((github-apachegeode-ci-read-only-token))
-    repository: {{repository.fork}}/geode
+    access_token: ((github-pr-access-token))
+    repository: {{repository.fork}}/{{repository.project}}
     disable_ci_skip: false
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
 - name: geode-windows-jdk8
   type: pull-request
   source:
-    access_token: ((github-apachegeode-ci-read-only-token))
-    repository: {{repository.fork}}/geode
+    access_token: ((github-pr-access-token))
+    repository: {{repository.fork}}/{{repository.project}}
     disable_ci_skip: false
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
@@ -48,8 +49,8 @@ resources:
 - name: geode-windows
   type: pull-request
   source:
-    access_token: ((github-apachegeode-ci-read-only-token))
-    repository: {{repository.fork}}/geode
+    access_token: ((github-pr-access-token))
+    repository: {{repository.fork}}/{{repository.project}}
     disable_ci_skip: false
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
@@ -57,8 +58,8 @@ resources:
 - name: geode-windows-jdk17
   type: pull-request
   source:
-    access_token: ((github-apachegeode-ci-read-only-token))
-    repository: {{repository.fork}}/geode
+    access_token: ((github-pr-access-token))
+    repository: {{repository.fork}}/{{repository.project}}
     disable_ci_skip: false
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
@@ -66,8 +67,8 @@ resources:
 - name: geode-jdk8
   type: pull-request
   source:
-    access_token: ((github-apachegeode-ci-read-only-token))
-    repository: {{repository.fork}}/geode
+    access_token: ((github-pr-access-token))
+    repository: {{repository.fork}}/{{repository.project}}
     disable_ci_skip: false
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
@@ -75,8 +76,8 @@ resources:
 - name: geode-jdk17
   type: pull-request
   source:
-    access_token: ((github-apachegeode-ci-read-only-token))
-    repository: {{repository.fork}}/geode
+    access_token: ((github-pr-access-token))
+    repository: {{repository.fork}}/{{repository.project}}
     disable_ci_skip: false
     skip_ssl_verification: false
     base_branch: {{repository.branch}}
@@ -85,7 +86,7 @@ resources:
   type: pull-request
   source:
     access_token: ((github-pr-access-token))
-    repository: {{repository.fork}}/geode
+    repository: {{repository.fork}}/{{repository.project}}
     disable_ci_skip: false
     skip_ssl_verification: false
 - name: geode-ci
@@ -95,7 +96,7 @@ resources:
     depth: 1
     paths:
     - ci/*
-    uri: https://github.com/{{repository.upstream_fork}}/geode.git
+    {{ github_access() | indent(4) }}
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}

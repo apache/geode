@@ -267,7 +267,6 @@ function enableFeature {
   NAME=$1
   driveToGreen $META_PIPELINE set-$NAME-pipeline
   unpausePipeline ${PIPELINE_PREFIX}$NAME
-  exposePipeline ${PIPELINE_PREFIX}$NAME
 }
 
 set -e
@@ -298,7 +297,6 @@ unpausePipeline ${PIPELINE_PREFIX}main
 
 if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   if [[ "${PUBLIC}" == "true" ]]; then
-    exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}images
     enableFeature examples
     enableFeature pr
   fi

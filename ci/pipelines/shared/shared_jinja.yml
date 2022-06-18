@@ -17,10 +17,9 @@
 
 
 {%- macro github_access(public) -%}
-uri: https://github.com/((geode-fork))/((geode-repo-name)).git
+uri: git@github.com:((geode-fork))/((geode-repo-name)).git
 {%- if not repository.public %}
-username: ((github-username))
-password: ((github-password))
+private_key: ((gemfire-ci-private-key))
 {%- endif %}
 {%- endmacro %}
 

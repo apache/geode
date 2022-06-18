@@ -17,7 +17,7 @@
 
 benchmarks:
   baseline_branch_default: ''
-  baseline_version_default: '1.14.4'
+  baseline_version_default: '1.15.0'
   benchmark_branch: ((geode-build-branch))
   flavors:
   - title: 'base'
@@ -76,7 +76,7 @@ java_test_versions:
   version: 17
 
 metadata:
-  initial_version: 1.16.0-((semver-prerelease-token)).0
+  initial_version: 10.0.0-((semver-prerelease-token)).400
   mass_test_run_iterations: 100
 
 publish_artifacts:
@@ -87,7 +87,7 @@ publish_artifacts:
   name: publish-artifacts
 
 repository:
-  project: geode
+  project: geode-support
 
 tests:
 - ARTIFACT_SLUG: unittestfiles
