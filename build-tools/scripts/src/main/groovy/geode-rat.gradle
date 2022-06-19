@@ -23,6 +23,10 @@ plugins {
 rat {
   inputDir = rootDir
 
+  substringMatcher("VMware", "VMware", "VMware, Inc.", "vmware-eula")
+  approvedLicense("VMware")
+  approvedLicense("Apache License Version 2.0")
+
   excludes = [
     // git
     '.git/**',
@@ -134,27 +138,9 @@ rat {
     // Public Domain http://meyerweb.com/eric/tools/css/reset/
     'geode-pulse/src/main/webapp/scripts/lib/tooltip.js',
 
-    // JSON License - permissive, used for Good, not Evil
-    'geode-json/src/main/java/org/json/CDL.java',
-    'geode-json/src/main/java/org/json/Cookie.java',
-    'geode-json/src/main/java/org/json/CookieList.java',
-    'geode-json/src/main/java/org/json/CDL.java',
-    'geode-json/src/main/java/org/json/Cookie.java',
-    'geode-json/src/main/java/org/json/CookieList.java',
-    'geode-json/src/main/java/org/json/HTTP.java',
-    'geode-json/src/main/java/org/json/HTTPTokener.java',
-    'geode-json/src/main/java/org/json/JSONArray.java',
-    'geode-json/src/main/java/org/json/JSONException.java',
-    'geode-json/src/main/java/org/json/JSONML.java',
-    'geode-json/src/main/java/org/json/JSONObject.java',
-    'geode-json/src/main/java/org/json/JSONString.java',
-    'geode-json/src/main/java/org/json/JSONStringer.java',
-    'geode-json/src/main/java/org/json/JSONTokener.java',
-    'geode-json/src/main/java/org/json/JSONWriter.java',
-    'geode-json/src/main/java/org/json/XML.java',
-    'geode-json/src/main/java/org/json/XMLTokener.java',
-
     // MIT License
+    'geode-pulse/src/main/webapp/scripts/lib/jit.js',
+    'geode-pulse/src/main/webapp/scripts/lib/split.js',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.jqGrid.src.js',
     'geode-pulse/src/main/webapp/scripts/lib/grid.locale-en.js',
     'geode-pulse/src/main/webapp/scripts/lib/html5.js',
