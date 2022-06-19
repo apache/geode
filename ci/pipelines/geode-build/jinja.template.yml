@@ -95,9 +95,6 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor -%}
   {%- endfor -%}
-  {%- for run_var in (benchmarks.flavors) %}
-- benchmark-{{ run_var.title }}
-  {%- endfor -%}
 {% endmacro %}
 
 groups:
@@ -183,7 +180,7 @@ resources:
   source:
     branch: {{benchmarks.benchmark_branch}}
     depth: 1
-    uri: https://github.com/((geode-fork))/geode-benchmarks.git
+    uri: https://github.com/apache/geode-benchmarks.git
 - name: geode-build-version
   type: semver
   source:

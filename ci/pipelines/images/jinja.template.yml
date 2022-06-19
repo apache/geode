@@ -68,10 +68,10 @@ resources:
 - name: geode-benchmarks-image
   type: git
   source:
-    branch: ((geode-build-branch))
+    branch: develop
     paths:
     - infrastructure/scripts/aws/image
-    uri: https://github.com/((geode-fork))/geode-benchmarks.git
+    uri: https://github.com/apache/geode-benchmarks.git
 
 - name: packer-145-image
   icon: docker
