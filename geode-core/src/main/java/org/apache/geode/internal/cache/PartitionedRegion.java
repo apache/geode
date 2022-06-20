@@ -556,6 +556,15 @@ public class PartitionedRegion extends LocalRegion
     return result;
   }
 
+
+  public void clearPREvictionControllerFromDiskInitialization() {
+    if (getDiskStore() != null) {
+      getDiskStore().clearExistingPREvictionContoller(this);
+    }
+  }
+
+
+
   @Override
   public boolean remove(Object key, Object value, Object callbackArg) {
     final long startTime = prStats.getTime();
