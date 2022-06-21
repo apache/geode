@@ -4106,6 +4106,13 @@ public class DiskStoreImpl implements DiskStore {
     return result;
   }
 
+  void clearExistingPREvictionContoller(PartitionedRegion pr) {
+    final String prName = pr.getFullPath();
+    synchronized (prEvictionControllerMap) {
+      prEvictionControllerMap.remove(prName);
+    }
+  }
+
   /**
    * Lock the disk store to prevent updates. This is the first step of the backup process. Once all
    * disk stores on all members are locked, we still move on to prepareBackup.

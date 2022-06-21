@@ -504,6 +504,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
       if ((prQ != null) && (this.index == 0) && this.cleanQueues) {
         cleanOverflowStats(cache);
+        prQ.clearPREvictionControllerFromDiskInitialization();
         prQ.destroyRegion(null);
         prQ = null;
       }
