@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.apache.geode.internal.offheap.MemoryAllocatorImpl.DummyNonRealTimeStatsUpdater;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -74,7 +75,7 @@ public class MemoryAllocatorJUnitTest {
       try {
         MemoryAllocatorImpl.create(listener, stats, 10, 950, 100, null, size -> {
           throw new OutOfMemoryError("expected");
-        }, null, () -> null);
+        }, null, () -> new DummyNonRealTimeStatsUpdater());
       } catch (OutOfMemoryError expected) {
       }
       assertTrue(listener.isClosed());
@@ -99,7 +100,7 @@ public class MemoryAllocatorJUnitTest {
           }
         };
         MemoryAllocatorImpl.create(listener, stats, 10, 950, MAX_SLAB_SIZE, null, factory, null,
-            () -> null);
+            () -> new MemoryAllocatorImpl.DummyNonRealTimeStatsUpdater());
       } catch (OutOfMemoryError expected) {
       }
       assertTrue(listener.isClosed());
@@ -111,7 +112,7 @@ public class MemoryAllocatorJUnitTest {
       SlabFactory factory = SlabImpl::new;
       MemoryAllocator ma =
           MemoryAllocatorImpl.create(listener, stats, 10, 950, 100, null, factory, null,
-              () -> null);
+              () -> new DummyNonRealTimeStatsUpdater());
       try {
         assertFalse(listener.isClosed());
         assertFalse(stats.isClosed());
@@ -138,7 +139,7 @@ public class MemoryAllocatorJUnitTest {
         stats2 = new NullOffHeapMemoryStats();
         MemoryAllocator ma2 =
             MemoryAllocatorImpl.create(listener, stats2, 10, 950, 100, null, factory, null,
-                () -> null);
+                () -> new DummyNonRealTimeStatsUpdater());
         assertSame(ma, ma2);
         assertTrue(stats.isClosed());
         assertFalse(listener.isClosed());

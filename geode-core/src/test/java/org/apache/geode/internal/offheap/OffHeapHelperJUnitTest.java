@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.apache.geode.internal.offheap.MemoryAllocatorImpl.DummyNonRealTimeStatsUpdater;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -46,7 +47,7 @@ public class OffHeapHelperJUnitTest extends AbstractStoredObjectTestBase {
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 
     ma = MemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
-        OffHeapStorage.MIN_SLAB_SIZE, null, () -> null);
+        OffHeapStorage.MIN_SLAB_SIZE, null, () -> new DummyNonRealTimeStatsUpdater());
   }
 
   /**
