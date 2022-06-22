@@ -72,9 +72,9 @@ public class MemoryAllocatorJUnitTest {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
       try {
-        MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, size -> {
+        MemoryAllocatorImpl.create(listener, stats, 10, 950, 100, null, size -> {
           throw new OutOfMemoryError("expected");
-        });
+        }, null, () -> null);
       } catch (OutOfMemoryError expected) {
       }
       assertTrue(listener.isClosed());
@@ -98,7 +98,8 @@ public class MemoryAllocatorJUnitTest {
             }
           }
         };
-        MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, MAX_SLAB_SIZE, factory);
+        MemoryAllocatorImpl.create(listener, stats, 10, 950, MAX_SLAB_SIZE, null, factory, null,
+            () -> null);
       } catch (OutOfMemoryError expected) {
       }
       assertTrue(listener.isClosed());
@@ -109,7 +110,8 @@ public class MemoryAllocatorJUnitTest {
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
       SlabFactory factory = SlabImpl::new;
       MemoryAllocator ma =
-          MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, factory);
+          MemoryAllocatorImpl.create(listener, stats, 10, 950, 100, null, factory, null,
+              () -> null);
       try {
         assertFalse(listener.isClosed());
         assertFalse(stats.isClosed());
@@ -135,7 +137,8 @@ public class MemoryAllocatorJUnitTest {
         listener = new NullOutOfOffHeapMemoryListener();
         stats2 = new NullOffHeapMemoryStats();
         MemoryAllocator ma2 =
-            MemoryAllocatorImpl.createForUnitTest(listener, stats2, 10, 950, 100, factory);
+            MemoryAllocatorImpl.create(listener, stats2, 10, 950, 100, null, factory, null,
+                () -> null);
         assertSame(ma, ma2);
         assertTrue(stats.isClosed());
         assertFalse(listener.isClosed());
