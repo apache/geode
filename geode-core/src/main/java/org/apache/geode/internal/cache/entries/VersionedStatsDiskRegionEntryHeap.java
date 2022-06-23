@@ -66,7 +66,7 @@ public abstract class VersionedStatsDiskRegionEntryHeap extends VersionedStatsDi
     }
 
     @Override
-    public Class getEntryClass() {
+    public Class<?> getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VersionedStatsDiskRegionEntryHeapObjectKey.class;

@@ -212,7 +212,7 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
     }
 
     @Override
-    public Class getEntryClass() {
+    public Class<?> getEntryClass() {
       return TestableDiskRegionEntry.class;
     }
 
