@@ -15,6 +15,7 @@
 package org.apache.geode.cache.wan.internal.parallel;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -42,6 +43,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 7.0
  */
 public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
+
+  public static final String TYPE = "ParallelGatewaySender";
 
   private static final Logger logger = LogService.getLogger();
 
@@ -81,9 +84,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        * "ParallelGatewaySenderEventProcessor" and "ParallelGatewaySenderQueue" as a utility classes
        * of Concurrent version of processor and queue.
        */
-      eventProcessor =
-          new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
-              cleanQueues);
+      eventProcessor = createEventProcessor(getThreadMonitorObj(), cleanQueues);
       if (isStartEventProcessorInPausedState()) {
         pauseEvenIfProcessorStopped();
       }
@@ -105,6 +106,12 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     } finally {
       getLifeCycleLock().writeLock().unlock();
     }
+  }
+
+  protected RemoteConcurrentParallelGatewaySenderEventProcessor createEventProcessor(
+      final @Nullable ThreadsMonitoring threadsMonitoring, final boolean cleanQueues) {
+    return new RemoteConcurrentParallelGatewaySenderEventProcessor(this, threadsMonitoring,
+        cleanQueues);
   }
 
   @Override
@@ -140,6 +147,11 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     } finally {
       getLifeCycleLock().writeLock().unlock();
     }
+  }
+
+  @Override
+  public String getType() {
+    return ParallelGatewaySenderImpl.TYPE;
   }
 
   @Override

@@ -156,8 +156,7 @@ public class ListGatewayCommand extends GfshCommand {
           gatewaySenders.accumulate(CliStrings.RESULT_HOST_MEMBER, memberToBean.getKey());
           gatewaySenders.accumulate(CliStrings.RESULT_REMOTE_CLUSTER,
               memberToBean.getValue().getRemoteDSId() + "");
-          gatewaySenders.accumulate(CliStrings.RESULT_TYPE, memberToBean.getValue().isParallel()
-              ? CliStrings.SENDER_PARALLEL : CliStrings.SENDER_SERIAL);
+          gatewaySenders.accumulate(CliStrings.RESULT_TYPE, memberToBean.getValue().getType());
           gatewaySenders.accumulate(CliStrings.RESULT_STATUS, getStatus(memberToBean.getValue()));
           gatewaySenders.accumulate(CliStrings.RESULT_QUEUED_EVENTS,
               memberToBean.getValue().getEventQueueSize() + "");

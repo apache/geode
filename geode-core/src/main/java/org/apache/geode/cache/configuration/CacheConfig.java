@@ -2706,6 +2706,7 @@ public class CacheConfig {
    *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
    *       &lt;attribute name="remote-distributed-system-id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
    *       &lt;attribute name="parallel" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+   *       &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
    *       &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
    *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
    *       &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
@@ -2746,6 +2747,8 @@ public class CacheConfig {
     protected String remoteDistributedSystemId;
     @XmlAttribute(name = "parallel")
     protected Boolean parallel;
+    @XmlAttribute(name = "type")
+    protected String type;
     @XmlAttribute(name = "manual-start")
     protected Boolean manualStart;
     @XmlAttribute(name = "socket-buffer-size")
@@ -2913,11 +2916,26 @@ public class CacheConfig {
       remoteDistributedSystemId = value;
     }
 
+    /**
+     * Gets the value of the mustGroupTransactionEvents property.
+     *
+     * possible object is
+     * {@link Boolean }
+     *
+     * @return the value of the property.
+     */
     public Boolean mustGroupTransactionEvents() {
       return groupTransactionEvents;
     }
 
-
+    /**
+     * Sets the value of the groupTransactionsEvent property.
+     *
+     * allowed object is
+     * {@link Boolean }
+     *
+     * @param value the value for the property.
+     */
     public void setGroupTransactionEvents(Boolean value) {
       groupTransactionEvents = value;
     }
@@ -2944,6 +2962,30 @@ public class CacheConfig {
      */
     public void setParallel(Boolean value) {
       parallel = value;
+    }
+
+    /**
+     * Gets the value of the type property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     * @return the type.
+     */
+    public String getType() {
+      return type;
+    }
+
+    /**
+     * Sets the value of the type property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     * @param value the type.
+     */
+    public void setType(String value) {
+      this.type = value;
     }
 
     /**

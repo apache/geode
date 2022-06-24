@@ -17,6 +17,7 @@
 package org.apache.geode.cache.asyncqueue.internal;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -54,7 +55,6 @@ public class SerialAsyncEventQueueImplTest {
   private StatisticsFactory statisticsFactory;
   private GatewaySenderAttributes gatewaySenderAttributes;
   private StatisticsClock statisticsClock;
-  private InternalRegionFactory regionFactory;
 
   AbstractGatewaySenderEventProcessor eventProcessor1;
   AbstractGatewaySenderEventProcessor eventProcessor2;
@@ -63,9 +63,9 @@ public class SerialAsyncEventQueueImplTest {
   public void setUp() throws Exception {
     cache = Fakes.cache();
     when(cache.getRegion(any())).thenReturn(null);
-    regionFactory = mock(InternalRegionFactory.class);
-    when(regionFactory.create(any())).thenReturn(mock(LocalRegion.class));
-    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
+    InternalRegionFactory<?, ?> regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(any())).thenReturn(mock(uncheckedCast(LocalRegion.class)));
+    when(cache.createInternalRegionFactory(any())).thenReturn(uncheckedCast(regionFactory));
 
     statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
@@ -121,7 +121,7 @@ public class SerialAsyncEventQueueImplTest {
   }
 
   @Test
-  public void whenStartedwithCleanShouldCreateEventProcessor() {
+  public void whenStartedWithCleanShouldCreateEventProcessor() {
     serialAsyncEventQueue = createSerialAsyncEventQueueImplSpy();
 
     serialAsyncEventQueue.startWithCleanQueue();

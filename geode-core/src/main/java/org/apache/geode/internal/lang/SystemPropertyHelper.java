@@ -100,13 +100,6 @@ public class SystemPropertyHelper {
   public static final String PARALLEL_DISK_STORE_RECOVERY = "parallelDiskStoreRecovery";
 
   /**
-   * Milliseconds to wait before retrying to get events for a transaction from the
-   * gateway sender queue when group-transaction-events is true.
-   */
-  public static final String GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
-      "get-transaction-events-from-queue-wait-time-ms";
-
-  /**
    * Milliseconds to wait for the client to re-authenticate back before unregister this client
    * proxy. If client re-authenticate back successfully within this period, messages will continue
    * to be delivered to the client

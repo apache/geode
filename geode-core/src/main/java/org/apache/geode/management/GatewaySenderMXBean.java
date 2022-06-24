@@ -325,6 +325,16 @@ public interface GatewaySenderMXBean {
    */
   boolean isParallel();
 
+  String getType();
+
+  /**
+   * Returns whether transaction events must be grouped for this GatewaySender.
+   *
+   * @return True if transaction events must be grouped, false otherwise.
+   *
+   * @deprecated Use {@link #getType()}.
+   */
+  @Deprecated
   boolean mustGroupTransactionEvents();
 
   /**

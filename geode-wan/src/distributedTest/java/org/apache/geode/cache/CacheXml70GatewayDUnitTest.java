@@ -34,6 +34,8 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderCreation;
+import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderCreation;
 import org.apache.geode.cache30.CacheXml70DUnitTestHelper;
 import org.apache.geode.cache30.CacheXmlTestCase;
 import org.apache.geode.cache30.MyGatewayEventFilter1;
@@ -41,9 +43,7 @@ import org.apache.geode.cache30.MyGatewayTransportFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})

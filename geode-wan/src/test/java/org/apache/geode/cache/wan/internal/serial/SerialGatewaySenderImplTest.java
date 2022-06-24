@@ -15,6 +15,7 @@
 package org.apache.geode.cache.wan.internal.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -46,24 +47,22 @@ public class SerialGatewaySenderImplTest {
   private InternalCache cache;
 
   private SerialGatewaySenderImpl serialGatewaySender;
-  private StatisticsFactory statisticsFactory;
   private GatewaySenderAttributes gatewaySenderAttributes;
   private StatisticsClock statisticsClock;
-  private InternalRegionFactory regionFactory;
 
   AbstractGatewaySenderEventProcessor eventProcessor1;
   AbstractGatewaySenderEventProcessor eventProcessor2;
 
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     cache = Fakes.cache();
     when(cache.getRegion(any())).thenReturn(null);
-    regionFactory = mock(InternalRegionFactory.class);
-    when(regionFactory.create(any())).thenReturn(mock(LocalRegion.class));
-    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
+    InternalRegionFactory<?, ?> regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(any())).thenReturn(uncheckedCast(mock(LocalRegion.class)));
+    when(cache.createInternalRegionFactory(any())).thenReturn(uncheckedCast(regionFactory));
 
-    statisticsFactory = mock(StatisticsFactory.class);
+    StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
 
     gatewaySenderAttributes = mock(GatewaySenderAttributes.class);
@@ -115,7 +114,7 @@ public class SerialGatewaySenderImplTest {
   }
 
   @Test
-  public void whenStartedwithCleanShouldCreateEventProcessor() {
+  public void whenStartedWithCleanShouldCreateEventProcessor() {
     serialGatewaySender = createSerialGatewaySenderImplSpy();
 
     serialGatewaySender.startWithCleanQueue();

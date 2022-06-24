@@ -51,6 +51,8 @@ public interface GatewaySenderFactory {
    */
   GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents);
 
+  GatewaySenderFactory setType(String type);
+
   /**
    * Adds a <code>GatewayEventFilter</code>
    *
@@ -212,7 +214,8 @@ public interface GatewaySenderFactory {
    * @param filter The <code>GatewayEventSubstitutionFilter</code>
    * @return this factory
    */
-  GatewaySenderFactory setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter);
+  GatewaySenderFactory setGatewayEventSubstitutionFilter(
+      GatewayEventSubstitutionFilter<?, ?> filter);
 
   /**
    * If true, receiver member id is checked by all dispatcher threads when the connection is

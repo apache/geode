@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.fake.Fakes;
 
@@ -169,9 +168,9 @@ public class BucketRegionQueueJUnitTest {
     bucketRegionQueue.addToQueue(8L, event7);
 
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
-        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx1);
+        x -> tx1.equals(x.getTransactionId());
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
-        ParallelGatewaySenderQueue.getIsLastEventInTransactionPredicate();
+        GatewaySenderEventImpl::isLastEventInTransaction;
     List<Object> objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
@@ -183,8 +182,7 @@ public class BucketRegionQueueJUnitTest {
     assertEquals(1, objects.size());
     assertEquals(objects, Arrays.asList(event7));
 
-    hasTransactionIdPredicate =
-        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx2);
+    hasTransactionIdPredicate = x -> tx2.equals(x.getTransactionId());
     objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
     assertEquals(2, objects.size());
