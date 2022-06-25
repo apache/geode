@@ -37,9 +37,6 @@ github:
         strict: false
         # contexts are the names of checks that must pass
         contexts:
-          - concourse-ci/api-check-test-openjdk11
-          - concourse-ci/build
-          - concourse-ci/unit-test-openjdk11
           - "Analyze (java)"
           - "Analyze (javascript)"
           - "Analyze (python)"
@@ -48,7 +45,7 @@ github:
 
       required_pull_request_reviews:
         dismiss_stale_reviews: false
-        require_code_owner_reviews: true
+        require_code_owner_reviews: false
         required_approving_review_count: 1
 
       required_signatures: false
