@@ -57,14 +57,23 @@ public class ServerLocation implements DataSerializable, Comparable<ServerLocati
   /**
    * For DataSerializer
    */
-  public ServerLocation() {
-
-  }
+  public ServerLocation() {}
 
   public ServerLocation(String hostName, int port) {
     this.hostName = hostName;
     this.port = port;
   }
+
+  public ServerLocation(ServerLocation other) {
+    this.hostName = other.hostName;
+    this.port = other.port;
+    this.userId = other.userId;
+    int tempRequiresCredentials = other.requiresCredentials.get();
+    if (tempRequiresCredentials != INITIAL_REQUIRES_CREDENTIALS) {
+      this.requiresCredentials.set(tempRequiresCredentials);
+    }
+  }
+
 
   public String getHostName() {
     return hostName;

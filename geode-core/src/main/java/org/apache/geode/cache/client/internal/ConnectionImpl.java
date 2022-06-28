@@ -33,6 +33,8 @@ import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.distributed.internal.ServerLocationExtension;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -111,7 +113,17 @@ public class ConnectionImpl implements Connection {
     }
     theSocket.setSoTimeout(readTimeout);
 
-    endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
+    Endpoint tempEndpoint = null;
+
+    if (location instanceof ServerLocationExtension) {
+      tempEndpoint = getEndpoint(endpointManager, (ServerLocationExtension) location);
+    }
+
+    if (tempEndpoint == null || tempEndpoint.isClosed()) {
+      tempEndpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
+    }
+
+    endpoint = tempEndpoint;
     connectFinished = true;
     endpoint.getStats().incConnections(1);
     return status;
@@ -201,6 +213,13 @@ public class ConnectionImpl implements Connection {
       commBufferForAsyncRead = null;
       ServerConnection.releaseCommBuffer(bb);
     }
+  }
+
+  Endpoint getEndpoint(EndpointManager endpointManager,
+      ServerLocationExtension serverLocationExtension) {
+    ServerLocationAndMemberId serverLocationAndMemberId =
+        serverLocationExtension.getServerLocationAndMemberId();
+    return endpointManager.getEndpointMap().get(serverLocationAndMemberId);
   }
 
   @Override

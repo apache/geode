@@ -55,6 +55,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.distributed.internal.ServerLocationExtension;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.tier.BatchException;
@@ -319,12 +320,14 @@ public class OpExecutorImpl implements ExecutablePool {
     if (op instanceof PingOp.PingOpImpl) {
       // currently for pings we prefer to queue clientToServer cnx so that we will
       // not create a pooled cnx when all we have is queue connections.
+      final ServerLocationAndMemberId serverLocationAndMemberId =
+          new ServerLocationAndMemberId(server,
+              ((PingOp.PingOpImpl) op).getServerID().getUniqueId());
+
       if (queueManager != null) {
         // see if our QueueManager has a connection to this server that we can send
         // the ping on.
-        final ServerLocationAndMemberId slAndMId = new ServerLocationAndMemberId(server,
-            ((PingOp.PingOpImpl) op).getServerID().getUniqueId());
-        final Endpoint endpoint = endpointManager.getEndpointMap().get(slAndMId);
+        final Endpoint endpoint = endpointManager.getEndpointMap().get(serverLocationAndMemberId);
         if (endpoint != null) {
           QueueConnections queueConnections = queueManager.getAllConnectionsNoWait();
           connection = queueConnections.getConnection(endpoint);
@@ -334,8 +337,12 @@ public class OpExecutorImpl implements ExecutablePool {
           }
         }
       }
-    }
-    if (connection == null) {
+      if (connection == null) {
+        ServerLocationExtension sle = new ServerLocationExtension(serverLocationAndMemberId);
+        connection = connectionManager.borrowConnection(sle, singleServerTimeout,
+            onlyUseExistingConnection);
+      }
+    } else {
       connection = connectionManager.borrowConnection(server, singleServerTimeout,
           onlyUseExistingConnection);
     }
