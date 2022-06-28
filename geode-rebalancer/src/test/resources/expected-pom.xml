@@ -17,7 +17,7 @@
   limitations under the License.
   -->
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.geode</groupId>
+  <groupId>com.vmware.gemfire</groupId>
   <artifactId>geode-rebalancer</artifactId>
   <version>${version}</version>
   <name>Apache Geode</name>
@@ -37,7 +37,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.geode</groupId>
+        <groupId>com.vmware.gemfire</groupId>
         <artifactId>geode-all-bom</artifactId>
         <version>${version}</version>
         <type>pom</type>
@@ -47,17 +47,17 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-core</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-serialization</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-logging</artifactId>
       <scope>runtime</scope>
     </dependency>

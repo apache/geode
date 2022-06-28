@@ -17,7 +17,7 @@
   limitations under the License.
   -->
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.geode</groupId>
+  <groupId>com.vmware.gemfire</groupId>
   <artifactId>geode-server-all</artifactId>
   <version>${version}</version>
   <name>Apache Geode</name>
@@ -37,7 +37,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.geode</groupId>
+        <groupId>com.vmware.gemfire</groupId>
         <artifactId>geode-all-bom</artifactId>
         <version>${version}</version>
         <type>pom</type>
@@ -47,87 +47,87 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-common</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-connectors</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-core</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-cq</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-gfsh</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-log4j</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-logging</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-management</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-lucene</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-rebalancer</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-serialization</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-memcached</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-old-client-support</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-wan</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-tcp-server</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-unsafe</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
+      <groupId>com.vmware.gemfire</groupId>
       <artifactId>geode-http-service</artifactId>
       <scope>runtime</scope>
     </dependency>

@@ -66,7 +66,7 @@ publishing {
           // Spring dependency-management plugin.  We remove version specification as injected by
           // project dependencies, e.g., compile project(':geode-core')
           asNode().dependencies.dependency.each { dep ->
-            if (dep.toString().contains("org.apache.geode")) {
+            if (dep.toString().contains("com.vmware.gemfire")) {
               dep.remove(dep["version"])
             }
           }

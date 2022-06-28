@@ -17,7 +17,7 @@
   limitations under the License.
   -->
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.geode</groupId>
+  <groupId>com.vmware.gemfire</groupId>
   <artifactId>geode-client-bom</artifactId>
   <version>${version}</version>
   <packaging>pom</packaging>
@@ -38,7 +38,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.geode</groupId>
+        <groupId>com.vmware.gemfire</groupId>
         <artifactId>geode-core</artifactId>
         <version>${version}</version>
         <exclusions>
@@ -53,7 +53,7 @@
         </exclusions>
       </dependency>
       <dependency>
-        <groupId>org.apache.geode</groupId>
+        <groupId>com.vmware.gemfire</groupId>
         <artifactId>geode-cq</artifactId>
         <version>${version}</version>
       </dependency>
