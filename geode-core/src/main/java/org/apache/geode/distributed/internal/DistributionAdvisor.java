@@ -41,7 +41,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -58,6 +57,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides advice on sending distribution messages. For a given operation, this advisor will
@@ -123,6 +123,33 @@ public class DistributionAdvisor {
    * rollover comparison.
    */
   private static final int ROLLOVER_THRESHOLD_LOWER = Integer.MIN_VALUE + ROLLOVER_THRESHOLD;
+
+  /**
+   * When we notice another member has crashed, we request its data. We delay that
+   * request so that any in-flight operations started on the crashed member, will
+   * be retried on the new primary before the sync. This constant determines that
+   * delay.
+   *
+   * The default value was chosen empirically, to allow enough time for a new
+   * primary to be chosen after a member has crashed, and to allow any operations
+   * begun on the crashed member to be subsequently completed (and acknowledged)
+   * by the new primary.
+   *
+   * There is a tradeoff here. If the delay is too short, then the probability that
+   * the initiator sees spurious EntryExistsException or EntryNotFoundException
+   * increases. But this delay, delays consistency. It delays consistency though,
+   * only in the situation described above where primary changes mid-operation.
+   *
+   * The default value might be too short in pathological situations like cascading
+   * member loss, or in the presence of very slow members or networks.
+   *
+   * The delay is expressed in milliseconds. The default is 60 seconds (60,000 ms).
+   * You can override the default by setting the Java system property
+   * <code>gemfire.DistributionAdvisor.syncDelayForCrashedMemberMilliseconds</code>.
+   */
+  private static final long SYNC_DELAY_FOR_CRASHED_MEMBER_MILLISECONDS =
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX +
+          "DistributionAdvisor.syncDelayForCrashedMemberMilliseconds", 60_000L);
 
   /**
    * Incrementing serial number used to identify order of region creation
@@ -265,7 +292,7 @@ public class DistributionAdvisor {
     // interval. This allows client caches to retry an operation that might otherwise be recovered
     // through the sync operation. Without associated event information this could cause the
     // retried operation to be mishandled. See GEODE-5505
-    final long delay = getDelay(dr);
+    final long delay = getSyncDelayForCrashedMemberMilliseconds();
 
     if (dr.getDataPolicy().withPersistence() && persistentId == null) {
       // Fix for GEODE-6886 (#46704). The lost member may be an empty accessor
@@ -291,9 +318,8 @@ public class DistributionAdvisor {
   }
 
   @VisibleForTesting
-  long getDelay(DistributedRegion dr) {
-    return dr.getGemFireCache().getCacheServers().stream()
-        .mapToLong(CacheServer::getMaximumTimeBetweenPings).max().orElse(0L);
+  long getSyncDelayForCrashedMemberMilliseconds() {
+    return SYNC_DELAY_FOR_CRASHED_MEMBER_MILLISECONDS;
   }
 
   @VisibleForTesting

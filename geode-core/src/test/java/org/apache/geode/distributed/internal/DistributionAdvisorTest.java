@@ -53,7 +53,7 @@ public class DistributionAdvisorTest {
     dataPolicy = mock(DataPolicy.class);
 
     when(distributionAdvisor.getRegionForDeltaGII()).thenReturn(distributedRegion);
-    when(distributionAdvisor.getDelay(distributedRegion)).thenReturn(delay);
+    when(distributionAdvisor.getSyncDelayForCrashedMemberMilliseconds()).thenReturn(delay);
     when(distributedRegion.getDataPolicy()).thenReturn(dataPolicy);
     when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     when(distributedRegion.isInitializedWithWait()).thenReturn(true);
