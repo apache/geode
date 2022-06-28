@@ -52,9 +52,9 @@ rat {
     '**/go.sum',
 
     // Geode examples
-    'geode-examples/.idea/**',
-    'geode-examples/gradlew*/**',
-    'geode-examples/gradle/wrapper/**',
+    'gemfire-examples/.idea/**',
+    'gemfire-examples/gradlew*/**',
+    'gemfire-examples/gradle/wrapper/**',
 
     // IDE
     'etc/eclipse-java-google-style.xml',
