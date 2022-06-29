@@ -310,9 +310,8 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     if (lastResultReceived) {
       return;
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("ServerToClientFunctionResultSender setting exception:", exception);
-    }
+
+    logger.debug("ServerToClientFunctionResultSender setting exception:", exception);
     synchronized (msg) {
       if (!sc.getTransientFlag(Command.RESPONDED)) {
         alreadySendException.set(true);
@@ -322,12 +321,12 @@ public class ServerToClientFunctionResultSender implements ResultSender {
           }
           String exceptionMessage = exception.getMessage() != null ? exception.getMessage()
               : "Exception occurred during function execution";
-          logger.warn(String.format("Exception on server while executing function : %s",
-              fn),
-              exception);
-          if (logger.isDebugEnabled()) {
-            logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
+          if (exception.getCause() instanceof InternalFunctionInvocationTargetException) {
+            logger.debug("Exception on server while executing function: {}", fn, exception);
+          } else {
+            logger.warn("Exception on server while executing function: {}", fn, exception);
           }
+          logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
           writeFunctionExceptionResponse(msg, exceptionMessage, exception);
           lastResultReceived = true;
         } catch (IOException ignored) {

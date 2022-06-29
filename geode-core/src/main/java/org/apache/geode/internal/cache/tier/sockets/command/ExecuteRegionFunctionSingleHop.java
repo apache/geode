@@ -289,18 +289,17 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         }
       }
     } catch (IOException ioe) {
-      logger.warn(String.format("Exception on server while executing function : %s",
-          function),
-          ioe);
+      logger.warn("Exception on server while executing function: {}",
+          function, ioe);
       final String message = "Server could not send the reply";
       sendException(hasResult, clientMessage, message, serverConnection, ioe);
     } catch (FunctionException fe) {
       String message = fe.getMessage();
 
       if (fe.getCause() instanceof FunctionInvocationTargetException) {
-        if (functionObject.isHA() && logger.isDebugEnabled()) {
+        if (functionObject.isHA()) {
           logger.debug("Exception on server while executing function: {}: {}", function, message);
-        } else if (logger.isDebugEnabled()) {
+        } else {
           logger.debug("Exception on server while executing function: {}: {}", function, message,
               fe);
         }
@@ -308,17 +307,13 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
           resultSender.setException(fe);
         }
       } else {
-        if (logger.isDebugEnabled()) {
-          logger.debug(String.format("Exception on server while executing function : %s",
-              function),
-              fe);
-        }
+        logger.debug("Exception on server while executing function: {}",
+            function, fe);
         sendException(hasResult, clientMessage, message, serverConnection, fe);
       }
     } catch (Exception e) {
-      logger.warn(String.format("Exception on server while executing function : %s",
-          function),
-          e);
+      logger.warn("Exception on server while executing function: {}",
+          function, e);
       String message = e.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, e);
     } finally {
