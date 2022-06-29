@@ -309,7 +309,7 @@ public class UpdatePropagationDistributedTest extends JUnit4CacheTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   protected RegionAttributes createCacheServerAttributes() {
