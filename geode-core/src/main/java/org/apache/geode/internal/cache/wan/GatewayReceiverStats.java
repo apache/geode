@@ -33,6 +33,12 @@ public class GatewayReceiverStats extends CacheServerStats {
   private static final String DUPLICATE_BATCHES_RECEIVED = "duplicateBatchesReceived";
 
   /**
+   * Name of the number of events with possible duplicate indication received statistic
+   */
+  private static final String POSSIBLE_DUPLICATE_EVENTS_RECEIVED =
+      "possibleduplicateEventsReceived";
+
+  /**
    * Name of the event queue time statistic
    */
   private static final String OUT_OF_ORDER_BATCHES_RECEIVED = "outoforderBatchesReceived";
@@ -85,6 +91,11 @@ public class GatewayReceiverStats extends CacheServerStats {
    * Id of the events not queued because conflated statistic
    */
   private final int duplicateBatchesReceivedId;
+
+  /**
+   * Id of the number of events with possible duplicate indication received statistic
+   */
+  private final int possibleduplicateEventsReceivedId;
 
   /**
    * Id of the event queue time statistic
@@ -159,7 +170,11 @@ public class GatewayReceiverStats extends CacheServerStats {
         f.createLongCounter(EXCEPTIONS_OCCURRED,
             "number of exceptions occurred while porcessing the batches", "operations"),
         f.createLongCounter(EVENTS_RETRIED,
-            "total number events retried by this GatewayReceiver due to exceptions", "operations")};
+            "total number events retried by this GatewayReceiver due to exceptions", "operations"),
+        f.createLongCounter(POSSIBLE_DUPLICATE_EVENTS_RECEIVED,
+            "total number of possible duplicate events received by this GatewayReceiver",
+            "operations")
+    };
     return new GatewayReceiverStats(f, ownerName, typeName, descriptors, meterRegistry);
 
   }
@@ -178,6 +193,7 @@ public class GatewayReceiverStats extends CacheServerStats {
     unknowsOperationsReceivedId = statType.nameToId(UNKNOWN_OPERATIONS_RECEIVED);
     exceptionsOccurredId = statType.nameToId(EXCEPTIONS_OCCURRED);
     eventsRetriedId = statType.nameToId(EVENTS_RETRIED);
+    possibleduplicateEventsReceivedId = statType.nameToId(POSSIBLE_DUPLICATE_EVENTS_RECEIVED);
 
     this.meterRegistry = meterRegistry;
     eventsReceivedCounter = LegacyStatCounter.builder(EVENTS_RECEIVED_COUNTER_NAME)
@@ -197,6 +213,19 @@ public class GatewayReceiverStats extends CacheServerStats {
   public long getDuplicateBatchesReceived() {
     return stats.getLong(duplicateBatchesReceivedId);
   }
+
+
+  /**
+   * Increments the number of duplicate events received by 1.
+   */
+  public void incPossibleDuplicateEventsReceived() {
+    stats.incLong(possibleduplicateEventsReceivedId, 1);
+  }
+
+  public long getPossibleDuplicateEventsReceived() {
+    return stats.getLong(possibleduplicateEventsReceivedId);
+  }
+
 
   /**
    * Increments the number of out of order batches received by 1.

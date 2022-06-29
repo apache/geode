@@ -556,10 +556,13 @@ public class ParallelGatewaySenderQueueJUnitTest {
     targetRs.add(region);
 
     PartitionedRegion shadowRegion = mock(PartitionedRegion.class);
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
 
     when(regionFactory.create(any())).thenReturn(shadowRegion);
 
     when(shadowRegion.getFullPath()).thenReturn("_PARALLEL_GATEWAY_SENDER_QUEUE");
+    when(shadowRegion.getDataStore()).thenReturn(dataStore);
+    when(dataStore.getAllLocalBucketRegions()).thenReturn(Collections.emptySet());
 
     mockGatewaySenderStats();
 
@@ -624,10 +627,13 @@ public class ParallelGatewaySenderQueueJUnitTest {
     targetRs.add(region);
 
     PartitionedRegion shadowRegion = mock(PartitionedRegion.class);
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
 
     when(regionFactory.create(any())).thenReturn(shadowRegion);
 
     when(shadowRegion.getFullPath()).thenReturn("_PARALLEL_GATEWAY_SENDER_QUEUE");
+    when(shadowRegion.getDataStore()).thenReturn(dataStore);
+    when(dataStore.getAllLocalBucketRegions()).thenReturn(Collections.emptySet());
 
     mockGatewaySenderStats();
 

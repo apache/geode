@@ -186,6 +186,10 @@ public class GatewayReceiverCommand extends BaseCommand {
           }
           boolean possibleDuplicate = possibleDuplicatePartBytes[0] == 0x01;
 
+          if (possibleDuplicate) {
+            stats.incPossibleDuplicateEventsReceived();
+          }
+
           // Retrieve the region name from the message parts
           Part regionNamePart = clientMessage.getPart(partNumber + 2);
           String regionName = regionNamePart.getCachedString();

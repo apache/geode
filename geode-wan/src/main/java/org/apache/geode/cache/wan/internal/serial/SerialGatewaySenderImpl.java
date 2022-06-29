@@ -130,6 +130,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
+  public void prepareForStop() {}
+
+  @Override
   public void stop() {
     if (logger.isDebugEnabled()) {
       logger.debug("Stopping Gateway Sender : {}", this);

@@ -593,6 +593,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     } finally {
       if (prQ != null) {
         userRegionNameToShadowPRMap.put(userPR.getFullPath(), prQ);
+        prQ.setSentGatewaySenderStoppedMessage(false);
+        if (prQ.getDataStore() != null) {
+          final Set<BucketRegion> buckets = prQ.getDataStore().getAllLocalBucketRegions();
+          for (BucketRegion br : buckets) {
+            br.setReceivedGatewaySenderStoppedMessage(false);
+          }
+        }
       }
       /*
        * Here, enqueueTempEvents need to be invoked when a sender is already running and userPR is

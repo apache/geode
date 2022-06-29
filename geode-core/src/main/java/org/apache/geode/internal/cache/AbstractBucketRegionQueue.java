@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage.LOAD_FROM_TEMP_QUEUE;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,14 +34,20 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage;
 import org.apache.geode.internal.offheap.OffHeapClearRequired;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -218,11 +227,12 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     if (queues != null) {
       ConcurrentParallelGatewaySenderQueue prq =
           (ConcurrentParallelGatewaySenderQueue) queues.toArray()[0];
-      // synchronized (prq.getBucketToTempQueueMap()) {
+
       BlockingQueue<GatewaySenderEventImpl> tempQueue = prq.getBucketTmpQueue(getId());
-      // .getBucketToTempQueueMap().get(getId());
       if (tempQueue != null && !tempQueue.isEmpty()) {
         synchronized (tempQueue) {
+          Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap =
+              new HashMap<>();
           try {
             // ParallelQueueRemovalMessage checks for the key in BucketRegionQueue
             // and if not found there, it removes it from tempQueue. When tempQueue
@@ -235,6 +245,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
               try {
                 event.setPossibleDuplicate(true);
                 if (addToQueue(event.getShadowKey(), event)) {
+                  if (notifyDuplicateSupported()) {
+                    addDuplicateEvent(regionToDuplicateEventsMap, event);
+                  }
                   event = null;
                 }
               } catch (ForceReattemptException e) {
@@ -257,11 +270,55 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             }
             getInitializationLock().writeLock().unlock();
           }
+          notifyDuplicateEvents(regionToDuplicateEventsMap);
         }
       }
-
-      // }
     }
+  }
+
+  private boolean notifyDuplicateSupported() {
+    return !(this.getPartitionedRegion().getParallelGatewaySender().getEventProcessor()
+        .getDispatcher() instanceof GatewaySenderEventCallbackDispatcher);
+  }
+
+  private void notifyDuplicateEvents(
+      Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap) {
+    if (regionToDuplicateEventsMap.isEmpty()) {
+      return;
+    }
+    if (getPartitionedRegion().getRegionAdvisor() == null) {
+      return;
+    }
+
+    Set<InternalDistributedMember> recipients =
+        getPartitionedRegion().getRegionAdvisor().adviseDataStore();
+
+    if (recipients.isEmpty()) {
+      return;
+    }
+
+    InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
+    DistributionManager dm = ids.getDistributionManager();
+    dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_15_0);
+
+    if (!recipients.isEmpty()) {
+      ParallelQueueSetPossibleDuplicateMessage possibleDuplicateMessage =
+          new ParallelQueueSetPossibleDuplicateMessage(LOAD_FROM_TEMP_QUEUE,
+              regionToDuplicateEventsMap);
+      possibleDuplicateMessage.setRecipients(recipients);
+      dm.putOutgoing(possibleDuplicateMessage);
+    }
+  }
+
+  private void addDuplicateEvent(Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap,
+      GatewaySenderEventImpl event) {
+    Map<Integer, List<Object>> bucketIdToDispatchedKeys = regionToDuplicateEventsMap
+        .computeIfAbsent(getPartitionedRegion().getFullPath(), k -> new HashMap<>());
+
+    List<Object> dispatchedKeys =
+        bucketIdToDispatchedKeys.computeIfAbsent(getId(), k -> new ArrayList<>());
+
+    dispatchedKeys.add(event.getShadowKey());
   }
 
   @Override

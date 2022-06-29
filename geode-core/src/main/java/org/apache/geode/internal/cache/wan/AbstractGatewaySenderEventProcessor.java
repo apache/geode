@@ -18,6 +18,9 @@ import static java.lang.Boolean.TRUE;
 import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
 import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE;
 import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE_LAST_EVENT;
+import static org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage.RESET_BATCH;
+import static org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage.STOPPED_GATEWAY_SENDER;
+import static org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage.UNSUCCESSFULLY_DISPATCHED;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.IOException;
@@ -29,10 +32,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -46,7 +51,11 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -58,8 +67,10 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
@@ -469,7 +480,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           boolean interrupted = Thread.interrupted();
           try {
             if (resetLastPeekedEvents) {
-              pendingEventsInBatchesMarkAsPossibleDuplicate();
+              notifyPossibleDuplicate(RESET_BATCH, pendingEventsInBatches());
               resetLastPeekedEvents();
               resetLastPeekedEvents = false;
             }
@@ -967,16 +978,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   private void handleUnSuccessfulBatchDispatch(List<?> events) {
     final GatewaySenderStats statistics = sender.getStatistics();
     statistics.incBatchesRedistributed();
-
     // Set posDup flag on each event in the batch
-    Iterator<?> it = events.iterator();
-    while (it.hasNext() && !isStopped) {
-      Object o = it.next();
-      if (o instanceof GatewaySenderEventImpl) {
-        GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
-        ge.setPossibleDuplicate(true);
-      }
-    }
+    notifyPossibleDuplicate(UNSUCCESSFULLY_DISPATCHED, events);
   }
 
   /**
@@ -1217,7 +1220,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         logger.warn("Destroying GatewayEventDispatcher with actively queued data.");
       }
       if (resetLastPeekedEvents) {
-        pendingEventsInBatchesMarkAsPossibleDuplicate();
+        notifyPossibleDuplicate(STOPPED_GATEWAY_SENDER, pendingEventsInBatches());
         resetLastPeekedEvents();
         resetLastPeekedEvents = false;
       }
@@ -1322,17 +1325,181 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   protected abstract void enqueueEvent(GatewayQueueEvent<?, ?> event);
 
-  private void pendingEventsInBatchesMarkAsPossibleDuplicate() {
-    if (!batchIdToEventsMap.isEmpty()) {
-      for (Map.Entry<Integer, List<GatewaySenderEventImpl>[]> entry : batchIdToEventsMap
-          .entrySet()) {
-        for (GatewaySenderEventImpl event : entry.getValue()[0]) {
-          if (!event.getPossibleDuplicate()) {
-            event.setPossibleDuplicate(true);
+  private void notifyPossibleDuplicate(int reason, List<?> events) {
+    Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap = new HashMap<>();
+    boolean pgwsender = (getSender().isParallel()
+        && !(getDispatcher() instanceof GatewaySenderEventCallbackDispatcher));
+
+    for (Object o : events) {
+      if (o instanceof GatewaySenderEventImpl) {
+        GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
+        if (!ge.getPossibleDuplicate()) {
+          if (pgwsender) {
+            addDuplicateEvent(regionToDispatchedKeysMap, ge);
           }
+          ge.setPossibleDuplicate(true);
         }
       }
     }
+
+    if (!pgwsender) {
+      return;
+    }
+
+    PartitionedRegion queueRegion;
+    if (queue instanceof ConcurrentParallelGatewaySenderQueue) {
+      queueRegion =
+          (PartitionedRegion) ((ConcurrentParallelGatewaySenderQueue) queue).getRegion();
+    } else {
+      queueRegion =
+          (PartitionedRegion) ((ParallelGatewaySenderQueue) queue).getRegion();
+    }
+
+    if (queueRegion == null || queueRegion.getRegionAdvisor() == null
+        || queueRegion.getDataStore() == null) {
+      return;
+    }
+
+    if (reason == STOPPED_GATEWAY_SENDER) {
+      final Set<Integer> buckets = queueRegion.getDataStore().getAllLocalPrimaryBucketIds();
+      if (regionToDispatchedKeysMap.isEmpty()) {
+        if (queueRegion.isSentGatewaySenderStoppedMessage()) {
+          return;
+        }
+        Map<Integer, List<Object>> bucketIdToDispatchedKeys = new HashMap<>();
+        for (Integer bId : buckets) {
+          bucketIdToDispatchedKeys.put(bId, Collections.emptyList());
+        }
+        regionToDispatchedKeysMap.put(queueRegion.getFullPath(), bucketIdToDispatchedKeys);
+
+      } else {
+        Map<Integer, List<Object>> bucketIdToDispatchedKeys =
+            regionToDispatchedKeysMap.get(queueRegion.getFullPath());
+        if (bucketIdToDispatchedKeys == null) {
+          return;
+        }
+        for (Integer bId : buckets) {
+          bucketIdToDispatchedKeys.putIfAbsent(bId, Collections.emptyList());
+        }
+      }
+    }
+
+    if (regionToDispatchedKeysMap.size() > 0) {
+      Set<InternalDistributedMember> recipients =
+          getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
+
+      if (recipients.isEmpty()) {
+        return;
+      }
+
+      if (reason == STOPPED_GATEWAY_SENDER) {
+        if (!queueRegion.isSentGatewaySenderStoppedMessage()) {
+          queueRegion.setSentGatewaySenderStoppedMessage(true);
+        }
+      }
+
+      InternalDistributedSystem ids = sender.getCache().getInternalDistributedSystem();
+      DistributionManager dm = ids.getDistributionManager();
+      dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_15_0);
+
+      if (!recipients.isEmpty()) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "notifyPossibleDuplicate send ParallelQueueSetPossibleDuplicateMessage recipients {}.",
+              recipients);
+        }
+
+        ParallelQueueSetPossibleDuplicateMessage pqspdm =
+            new ParallelQueueSetPossibleDuplicateMessage(reason, regionToDispatchedKeysMap);
+        pqspdm.setRecipients(recipients);
+        dm.putOutgoing(pqspdm);
+      }
+    }
+
+  }
+
+  protected void addDuplicateEvent(
+      Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap,
+      GatewaySenderEventImpl event) {
+    PartitionedRegion prQ = null;
+    int bucketId = -1;
+    Object key = null;
+    InternalCache cache = sender.getCache();
+    String regionPath = event.getRegionPath();
+
+    if (event.getRegion() != null) {
+      if (cache.getRegion(regionPath) instanceof DistributedRegion) {
+        prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(event.getRegion().getFullPath());
+        bucketId = event.getEventId().getBucketID();
+        key = event.getEventId();
+      } else {
+        prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(ColocationHelper
+            .getLeaderRegion((PartitionedRegion) event.getRegion()).getFullPath());
+        bucketId = event.getBucketId();
+        key = event.getShadowKey();
+      }
+    } else {
+      Region region = (PartitionedRegion) cache.getRegion(regionPath);
+      if (region != null && !region.isDestroyed()) {
+        if (region instanceof DistributedRegion) {
+          prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(region.getFullPath());
+          bucketId = event.getBucketId();
+          key = event.getEventId();
+        } else {
+          prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(
+              ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath());
+          bucketId = event.getBucketId();
+          key = event.getShadowKey();
+        }
+      }
+    }
+
+    if (prQ == null) {
+      return;
+    }
+
+    Map<Integer, List<Object>> bucketIdToDispatchedKeys =
+        regionToDispatchedKeysMap.get(prQ.getFullPath());
+    if (bucketIdToDispatchedKeys == null) {
+      bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
+      regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+    }
+
+    List<Object> dispatchedKeys = bucketIdToDispatchedKeys.get(bucketId);
+    if (dispatchedKeys == null) {
+      dispatchedKeys = new ArrayList<>();
+      bucketIdToDispatchedKeys.put(bucketId, dispatchedKeys);
+    }
+    dispatchedKeys.add(key);
+
+  }
+
+  public void prepareForStopProcessing() {
+    notifyPossibleDuplicate(STOPPED_GATEWAY_SENDER, pendingEventsInBatches());
+  }
+
+  private Set<InternalDistributedMember> getAllRecipients(InternalCache cache,
+      Map<String, Map<Integer, List<Object>>> map) {
+    Set<InternalDistributedMember> recipients = new ObjectOpenHashSet<>();
+    for (Object pr : map.keySet()) {
+      PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion((String) pr);
+      if (partitionedRegion != null && partitionedRegion.getRegionAdvisor() != null) {
+        recipients.addAll(partitionedRegion.getRegionAdvisor().adviseDataStore());
+      }
+    }
+    return recipients;
+  }
+
+
+  private List<GatewaySenderEventImpl> pendingEventsInBatches() {
+    List<GatewaySenderEventImpl> pendingEvents = new ArrayList<>();
+    if (!batchIdToEventsMap.isEmpty()) {
+      for (Map.Entry<Integer, List<GatewaySenderEventImpl>[]> entry : batchIdToEventsMap
+          .entrySet()) {
+        pendingEvents.addAll(entry.getValue()[0]);
+      }
+    }
+    return pendingEvents;
   }
 
   protected static class SenderStopperCallable implements Callable<Boolean> {

@@ -400,6 +400,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationOperation;
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueRemovalMessage;
+import org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage;
 import org.apache.geode.internal.cache.wan.serial.BatchDestroyOperation;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -985,6 +986,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.register(ABORT_BACKUP_REQUEST, AbortBackupRequest.class);
     serializer.register(HOST_AND_PORT, HostAndPort.class);
     serializer.register(DISTRIBUTED_PING_MESSAGE, DistributedPingMessage.class);
+    serializer.register(PARALLEL_QUEUE_SET_POSSIBLE_DUPLICATE_MESSAGE,
+        ParallelQueueSetPossibleDuplicateMessage.class);
   }
 
   /**

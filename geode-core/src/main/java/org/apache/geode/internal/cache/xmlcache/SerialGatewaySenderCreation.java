@@ -49,6 +49,9 @@ public class SerialGatewaySenderCreation extends AbstractGatewaySender implement
   public void startWithCleanQueue() {}
 
   @Override
+  public void prepareForStop() {}
+
+  @Override
   public void stop() {}
 
   @Override

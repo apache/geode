@@ -771,6 +771,8 @@ public class PartitionedRegion extends LocalRegion
 
   private boolean regionCreationNotified;
 
+  private boolean sentGatewaySenderStoppedMessage = false;
+
   public interface RegionAdvisorFactory {
     RegionAdvisor create(PartitionedRegion region);
   }
@@ -10169,5 +10171,13 @@ public class PartitionedRegion extends LocalRegion
 
   public boolean areRecoveriesInProgress() {
     return prStats.getRecoveriesInProgress() > 0;
+  }
+
+  public boolean isSentGatewaySenderStoppedMessage() {
+    return sentGatewaySenderStoppedMessage;
+  }
+
+  public void setSentGatewaySenderStoppedMessage(boolean notified) {
+    sentGatewaySenderStoppedMessage = notified;
   }
 }

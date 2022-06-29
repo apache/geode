@@ -136,6 +136,9 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
+  public void prepareForStop() {}
+
+  @Override
   public void stop() {
     if (logger.isDebugEnabled()) {
       logger.debug("Stopping Gateway Sender : {}", this);

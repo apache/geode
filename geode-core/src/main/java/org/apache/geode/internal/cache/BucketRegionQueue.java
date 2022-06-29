@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.persistence.query.mock.ByteComparator;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -202,6 +203,23 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
+    PartitionedRegion region = getPartitionedRegion();
+
+    if (region != null && region.getParallelGatewaySender() != null) {
+      AbstractGatewaySenderEventProcessor ep =
+          region.getParallelGatewaySender().getEventProcessor();
+
+      if (ep != null && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+        if (isReceivedGatewaySenderStoppedMessage()) {
+          setReceivedGatewaySenderStoppedMessage(false);
+          return;
+        }
+        BucketAdvisor parent = getParentAdvisor(getBucketAdvisor());
+        if (parent.getHasBecomePrimary()) {
+          return;
+        }
+      }
+    }
     markAsDuplicate.addAll(eventSeqNumDeque);
   }
 
@@ -660,4 +678,24 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
+  public void setAsPossibleDuplicate(Object key) {
+    Object object = optimalGet(key);
+    if (object != null) {
+      ((GatewaySenderEventImpl) object).setPossibleDuplicate(true);
+    }
+  }
+
+  public boolean checkIfQueueContainsKey(Object key) {
+    return eventSeqNumDeque.contains(key);
+  }
+
+  BucketAdvisor getParentAdvisor(BucketAdvisor advisor) {
+    BucketAdvisor parent = advisor.getParentAdvisor();
+    while (parent != null) {
+      advisor = parent;
+      parent = advisor.getParentAdvisor();
+    }
+    return advisor;
+
+  }
 }

@@ -586,6 +586,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public abstract void startWithCleanQueue();
 
   @Override
+  public abstract void prepareForStop();
+
+  @Override
   public abstract void stop();
 
   /**
@@ -1297,6 +1300,27 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       return false;
     }
   }
+
+  public boolean markAsDuplicateInTempQueueEvents(Object tailKey) {
+    synchronized (queuedEventsSync) {
+      final boolean isDebugEnabled = logger.isDebugEnabled();
+
+      for (TmpQueueEvent event : tmpQueuedEvents) {
+        if (tailKey.equals(event.getEvent().getTailKey())) {
+          if (isDebugEnabled) {
+            logger.debug(
+                "shadowKey {} is found in tmpQueueEvents at AbstractGatewaySender level. Marking it..",
+                tailKey);
+          }
+          event.getEvent().setPossibleDuplicate(true);
+          return true;
+        }
+      }
+
+      return false;
+    }
+  }
+
 
   /**
    * During sender is getting stopped, if there are any cache operation on queue then that event

@@ -233,6 +233,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
@@ -2182,9 +2183,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         return false;
       }
 
+      boolean isDebugEnabled = logger.isDebugEnabled();
+
+      for (GatewaySender sender : allGatewaySenders) {
+        try {
+          ((InternalGatewaySender) sender).prepareForStop();
+        } catch (Exception exception) {
+          if (isDebugEnabled) {
+            logger.debug("When calling Prepare for stop gw sender, ignore exception " + exception);
+          }
+        }
+      }
+
       CLOSING_THREAD.set(Thread.currentThread());
       try {
-        boolean isDebugEnabled = logger.isDebugEnabled();
 
         // First close the ManagementService
         system.handleResourceEvent(ResourceEvent.CACHE_REMOVE, this);

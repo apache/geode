@@ -217,6 +217,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  private boolean receivedGatewaySenderStoppedMessage = false;
+
   private final int redundancy;
 
   /** the partitioned region to which this bucket belongs */
@@ -2533,6 +2535,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // partitioned region, this is to avoid leaving stale bucket profile undeleted
     // on the member that is still in the process of creating the partitioned region
     return getSystem().getDistributionManager().getOtherDistributionManagerIds();
+  }
+
+  public boolean isReceivedGatewaySenderStoppedMessage() {
+    return receivedGatewaySenderStoppedMessage;
+  }
+
+  public void setReceivedGatewaySenderStoppedMessage(boolean notified) {
+    receivedGatewaySenderStoppedMessage = notified;
   }
 
 }
