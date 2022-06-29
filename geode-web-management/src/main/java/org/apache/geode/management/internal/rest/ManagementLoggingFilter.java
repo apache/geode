@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.rest;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.StringTokenizer;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -73,6 +74,10 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     }
     String payload = getContentAsString(wrappedRequest.getContentAsByteArray(),
         wrappedRequest.getCharacterEncoding());
+    String content_type = request.getContentType();
+    if (content_type != null && content_type.contains("multipart/form-data")) {
+      payload = stripMultiPartFileContent(payload);
+    }
     String message = String.format(requestPattern, request.getMethod(), requestUrl,
         request.getRemoteUser(), payload);
     logMessage(message);
@@ -102,18 +107,33 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
       return "";
     }
     int length = Math.min(buf.length, MAX_PAYLOAD_LENGTH);
-
-    for (int i = 0; i < length; i++) {
-      if (buf[i] != '\n' && buf[i] != '\r' &&
-          (buf[i] < ' ' || buf[i] > '~')) {
-        buf[i] = '?';
-      }
-    }
-
     try {
       return new String(buf, 0, length, encoding);
     } catch (UnsupportedEncodingException ex) {
       return "[unknown]";
     }
+  }
+
+  String stripMultiPartFileContent(String content) {
+    StringBuffer buffer = new StringBuffer();
+    StringTokenizer tokenizer = new StringTokenizer(content, "\n");
+    boolean skipLine = false;
+    while (tokenizer.hasMoreTokens()) {
+      String line = tokenizer.nextToken();
+      if (!skipLine) {
+        buffer.append(line + "\n");
+      }
+      if (line.contains("application/java-archive")) {
+        // skip the following lines
+        skipLine = true;
+      }
+      // skipped line until the next section border
+      else if (skipLine && line.startsWith("--")) {
+        buffer.append("{File Content Logging Skipped}\n");
+        buffer.append(line + "\n");
+        skipLine = false;
+      }
+    }
+    return buffer.toString();
   }
 }
