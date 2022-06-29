@@ -836,8 +836,6 @@ javadoc/org/apache/geode/modules/session/catalina/PeerToPeerCacheLifecycleListen
 javadoc/org/apache/geode/modules/session/catalina/PeerToPeerSessionCache.html
 javadoc/org/apache/geode/modules/session/catalina/SessionCache.html
 javadoc/org/apache/geode/modules/session/catalina/SessionManager.html
-javadoc/org/apache/geode/modules/session/catalina/Tomcat6CommitSessionValve.html
-javadoc/org/apache/geode/modules/session/catalina/Tomcat6DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat7CommitSessionValve.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat7DeltaSessionManager.html
 javadoc/org/apache/geode/modules/session/catalina/Tomcat8CommitSessionValve.html

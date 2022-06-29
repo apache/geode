@@ -148,7 +148,7 @@ public class DeltaSession extends StandardSession
         return null;
       }
 
-      principal = sp.getPrincipal(deltaSessionManager.getTheContext().getRealm());
+      principal = sp.getPrincipal();
 
       if (logger.isDebugEnabled()) {
         logger.debug(this + ": Deserialized principal: " + principal);

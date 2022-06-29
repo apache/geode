@@ -53,7 +53,6 @@ configurations {
   geodeLibdirJarsDeprecated
 
   // Configurations used to download and cache web application servers for session module testing
-  webServerTomcat6
   webServerTomcat7
   webServerTomcat8
   webServerTomcat9
@@ -95,16 +94,6 @@ artifacts {
 }
 
 repositories {
-  //This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
-  //not in a maven repo. Later versions of tomcat are.
-  ivy {
-    url 'https://archive.apache.org/'
-    patternLayout {
-      artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
-    }
-    // Infer the metadata from the presence of the artifact
-    metadataSources { artifact() }
-  }
   // For gradle tooling dependencies
   maven {
     url 'https://repo.gradle.org/gradle/libs-releases'
@@ -279,7 +268,6 @@ dependencies {
   upgradeTestRuntimeOnly files({ downloadWebServers } )
 
   //Web servers used for session module testing
-  webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')
   webServerTomcat7('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat7.version') + '@zip')
   webServerTomcat8('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat8.version') + '@zip')
   webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')

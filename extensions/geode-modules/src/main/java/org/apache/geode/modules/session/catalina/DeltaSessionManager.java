@@ -261,9 +261,10 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   @Deprecated
   @Override
   public void setPreferDeserializedForm(boolean enable) {
-    log.warn("Use of deprecated preferDeserializedForm property to be removed in future release.");
+    getLogger()
+        .warn("Use of deprecated preferDeserializedForm property to be removed in future release.");
     if (!enable) {
-      log.warn(
+      getLogger().warn(
           "Use of HttpSessionAttributeListener may result in serialized form in HttpSessionBindingEvent.");
     }
     preferDeserializedForm = enable;
@@ -452,11 +453,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   @Override
   public int getRejectedSessions() {
     return rejectedSessions.get();
-  }
-
-  @Override
-  public void setRejectedSessions(int rejectedSessions) {
-    this.rejectedSessions.set(rejectedSessions);
   }
 
   /**

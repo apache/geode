@@ -37,7 +37,7 @@ dependencies {
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')
-  compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat7.version'))
 
   implementation('org.apache.commons:commons-lang3')
 
@@ -47,19 +47,19 @@ dependencies {
   testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
-  testImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  testImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat7.version'))
 
 
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
-  integrationTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  integrationTestImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat7.version'))
 
 
   // distributedTest
   distributedTestImplementation(project(':geode-dunit'))
-  distributedTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  distributedTestImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat7.version'))
 }
 
 sonarqube {
