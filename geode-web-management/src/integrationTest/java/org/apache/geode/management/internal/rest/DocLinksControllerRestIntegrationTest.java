@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,6 +69,7 @@ public class DocLinksControllerRestIntegrationTest {
     webContext.perform(get("/"))
         .andDo(print())
         .andExpect(status().isOk())
+        .andExpect(header().doesNotExist("server"))
         .andExpect(jsonPath("$.latest", is(basePath + "/v3/api-docs")))
         .andExpect(jsonPath("$.supported", hasSize(1)))
         .andExpect(jsonPath("$.supported[0]", is(basePath + "/v3/api-docs")));

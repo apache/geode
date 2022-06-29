@@ -20,6 +20,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.assertj.core.api.Assertions;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,8 +50,11 @@ public class DevRestSwaggerVerificationIntegrationTest {
 
   @Test
   public void isSwaggerRunning() throws Exception {
-    // Check the UI
-    assertResponse(client.get("/geode/swagger-ui.html")).hasStatusCode(200);
+    // Check the UI connects and hides server info
+    HttpResponse response = client.get("/geode/swagger-ui.html");
+    Header server = response.getFirstHeader("server");
+    Assertions.assertThat(server).isNull();
+    assertResponse(response).hasStatusCode(200);
 
     // Check the JSON
     JsonNode json =

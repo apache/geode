@@ -16,7 +16,9 @@
 package org.apache.geode.tools.pulse;
 
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -45,8 +47,10 @@ public class PulseSecurityConfigDefaultProfileTest {
   }
 
   @Test
-  public void loginPage() throws Exception {
+  public void loginPageRevealsNoServerInfoAndResponds() throws Exception {
     HttpResponse response = client.get("/pulse/login.html");
+    Header server = response.getFirstHeader("server");
+    assertThat(server).isNull();
     assertResponse(response).hasStatusCode(200).hasResponseBody().contains("<html>");
   }
 
