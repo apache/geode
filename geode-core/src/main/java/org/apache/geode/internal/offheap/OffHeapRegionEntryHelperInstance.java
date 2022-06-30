@@ -183,6 +183,14 @@ class OffHeapRegionEntryHelperInstance {
     long oldAddress = TokenAddress.objectToAddress(expectedValue);
     final long newAddress = TokenAddress.objectToAddress(Token.REMOVED_PHASE2);
     if (regionEntry.setAddress(oldAddress, newAddress)) {
+      if (regionEntry instanceof DiskEntry) {
+        DiskId diskId = ((DiskEntry) regionEntry).getDiskId();
+        if (diskId != null && diskId.isPendingAsync()) {
+          synchronized (diskId) {
+            diskId.setPendingAsync(false);
+          }
+        }
+      }
       releaseAddress(oldAddress);
     }
   }
