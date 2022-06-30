@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Manager;
-import org.apache.catalina.ha.session.SerializablePrincipal;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.session.StandardSession;
@@ -138,17 +137,14 @@ public class DeltaSession extends StandardSession
     if (principal == null && serializedPrincipal != null) {
       final Log logger = deltaSessionManager.getLogger();
 
-      final SerializablePrincipal sp;
       try {
-        sp = (SerializablePrincipal) BlobHelper.deserializeBlob(serializedPrincipal);
+        principal = (GenericPrincipal) BlobHelper.deserializeBlob(serializedPrincipal);
       } catch (Exception e) {
         logger.warn(this
             + ": Serialized principal contains a byte[] that cannot be deserialized due to the following exception",
             e);
         return null;
       }
-
-      principal = sp.getPrincipal();
 
       if (logger.isDebugEnabled()) {
         logger.debug(this + ": Deserialized principal: " + principal);
@@ -177,12 +173,11 @@ public class DeltaSession extends StandardSession
     if (serializedPrincipal == null) {
       if (principal != null && principal instanceof GenericPrincipal) {
         GenericPrincipal gp = (GenericPrincipal) principal;
-        SerializablePrincipal sp = SerializablePrincipal.createPrincipal(gp);
-        serializedPrincipal = serialize(sp);
+        serializedPrincipal = serialize(gp);
         if (manager != null) {
           final Log logger = getDeltaSessionManager().getLogger();
           if (logger.isDebugEnabled()) {
-            logger.debug(this + ": Serialized principal: " + sp);
+            logger.debug(this + ": Serialized principal: " + gp);
           }
         }
       }

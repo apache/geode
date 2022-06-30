@@ -40,7 +40,7 @@ dependencies {
   integrationTestImplementation(project(':geode-logging'))
 
   implementation('javax.servlet:javax.servlet-api')
-  implementation('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat7.version'))
+  implementation('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat8.version'))
   implementation('org.slf4j:slf4j-api')
 
   integrationTestImplementation('com.mockrunner:mockrunner-servlet') {
@@ -50,7 +50,7 @@ dependencies {
   integrationTestImplementation('commons-io:commons-io')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.apache.tomcat:tomcat-jasper:' + DependencyConstraints.get('tomcat7.version'))
+  integrationTestImplementation('org.apache.tomcat:tomcat-jasper:' + DependencyConstraints.get('tomcat8.version'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('org.eclipse.jetty:jetty-http:' + DependencyConstraints.get('jetty.version') + ':tests')
   integrationTestImplementation('org.eclipse.jetty:jetty-server')

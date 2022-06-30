@@ -14,8 +14,10 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,8 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Session;
@@ -43,16 +43,12 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 import org.apache.geode.modules.util.ContextMapper;
-import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionHelper;
 
 public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCommitSessionValve<?>>
     extends ManagerBase
-    implements Lifecycle, PropertyChangeListener, SessionManager, DeltaSessionManagerConfiguration {
+    implements Lifecycle, SessionManager, DeltaSessionManagerConfiguration {
 
-  static final String catalinaBaseSystemProperty = "catalina.base";
-  static final String javaTempDirSystemProperty = "java.io.tmpdir";
-  static final String fileSeparatorSystemProperty = "file.separator";
   /**
    * The number of rejected sessions.
    */
@@ -149,8 +145,9 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   }
 
   @Override
-  public void setMaxInactiveInterval(final int interval) {
-    super.setMaxInactiveInterval(interval);
+  public int getMaxInactiveInterval() {
+    return (int) max(min(MINUTES.toSeconds(getContext().getSessionTimeout()), Integer.MAX_VALUE),
+        -1);
   }
 
   @Override
@@ -306,33 +303,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   public boolean isClientServer() {
     return getSessionCache().isClientServer();
-  }
-
-  /**
-   * This method was taken from StandardManager to set the default maxInactiveInterval based on the
-   * container (to 30 minutes).
-   * <p>
-   * Set the Container with which this Manager has been associated. If it is a Context (the usual
-   * case), listen for changes to the session timeout property.
-   *
-   * @param container The associated Container
-   */
-  @Override
-  public void setContainer(Container container) {
-    // De-register from the old Container (if any)
-    if ((this.container != null) && (this.container instanceof Context)) {
-      this.container.removePropertyChangeListener(this);
-    }
-
-    // Default processing provided by our superclass
-    super.setContainer(container);
-
-    // Register with the new Container (if any)
-    if ((this.container != null) && (this.container instanceof Context)) {
-      // Overwrite the max inactive interval with the context's session timeout.
-      setMaxInactiveInterval(((Context) this.container).getSessionTimeout() * 60);
-      this.container.addPropertyChangeListener(this);
-    }
   }
 
   @Override
@@ -585,7 +555,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   }
 
   Pipeline getPipeline() {
-    return getContainer().getPipeline();
+    return getContext().getPipeline();
   }
 
   protected void unregisterJvmRouteBinderValve() {
@@ -616,58 +586,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
     }
   }
 
-  // ------------------------------ Lifecycle Methods
-
-  /**
-   * Process property change events from our associated Context.
-   * <p>
-   * Part of this method implementation was taken from StandardManager. The sessionTimeout can be
-   * changed in the web.xml which is processed after the context.xml. The context (and the default
-   * session timeout) would already have been set in this Manager. This is the way to get the new
-   * session timeout value specified in the web.xml.
-   * <p>
-   * The precedence order for setting the session timeout value is:
-   * <ol>
-   * <li>the max inactive interval is set based on the Manager defined in the context.xml
-   * <li>the max inactive interval is then overwritten by the value of the Context's session timeout
-   * when setContainer is called
-   * <li>the max inactive interval is then overwritten by the value of the session-timeout specified
-   * in the web.xml (if any)
-   * </ol>
-   *
-   * @param event The property change event that has occurred
-   */
-  @Override
-  public void propertyChange(PropertyChangeEvent event) {
-
-    // Validate the source of this event
-    if (!(event.getSource() instanceof Context)) {
-      return;
-    }
-
-    // Process a relevant property change
-    if (event.getPropertyName().equals("sessionTimeout")) {
-      try {
-        int interval = (Integer) event.getNewValue();
-        if (interval < RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL) {
-          getLogger().warn("The configured session timeout of " + interval
-              + " minutes is invalid. Using the original value of " + event.getOldValue()
-              + " minutes.");
-          interval = (Integer) event.getOldValue();
-        }
-        // StandardContext.setSessionTimeout passes -1 if the configured timeout
-        // is 0; otherwise it passes the value set in web.xml. If the interval
-        // parameter equals the default, set the max inactive interval to the
-        // default (no expiration); otherwise set it in seconds.
-        setMaxInactiveInterval(interval == RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL
-            ? RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL : interval * 60);
-      } catch (NumberFormatException e) {
-        getLogger()
-            .error(sm.getString("standardManager.sessionTimeout", event.getNewValue().toString()));
-      }
-    }
-  }
-
   /**
    * Clear the local cache to avoid ClassCastException if container is being reloaded.
    */
@@ -690,21 +608,12 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
   @Override
   public String toString() {
     return getClass().getSimpleName() + "[" + "container="
-        + getTheContext() + "; regionName=" + regionName
+        + getContext() + "; regionName=" + regionName
         + "; regionAttributesId=" + regionAttributesId + "]";
   }
 
   String getContextName() {
-    return getTheContext().getName();
+    return getContext().getName();
   }
 
-  public Context getTheContext() {
-    if (getContainer() instanceof Context) {
-      return (Context) getContainer();
-    } else {
-      getLogger().error("Unable to unload sessions - container is of type "
-          + getContainer().getClass().getName() + " instead of StandardContext");
-      return null;
-    }
-  }
 }

@@ -36,12 +36,7 @@ To run <%=vars.product_name%> in a peer-to-peer configuration, add the following
 
 Depending on the version of Tomcat you are using, add one of the following lines to `$CATALINA_HOME$/conf/context.xml` within the `<Context>` tag:
 
-For Tomcat 7.0:
-
-``` pre
-<Manager className="org.apache.geode.modules.session.Tomcat7DeltaSessionManager"/> 
-```
-For Tomcat 8.0 and 8.5:
+For Tomcat 8.5:
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager"/> 
@@ -65,13 +60,7 @@ To run <%=vars.product_name%> in a client/server configuration, the application 
 
 Depending on the version of Tomcat you are using, add one of the following lines to `$CATALINA_HOME$/conf/context.xml` within the `<Context>` tag:
 
-For Tomcat 7.0:
-
-``` pre
-<Manager className="org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager"/> 
-```
-
-For Tomcat 8.0 and 8.5:
+For Tomcat 8.5:
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager"/> 

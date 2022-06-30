@@ -55,7 +55,6 @@ class DependencyConstraints {
     // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to play nicely when
     // specifying @zip in a dependency, the manner in which we consume them in custom configurations.
     // This would possibly be corrected if they were proper source sets.
-    deps.put("tomcat7.version", "7.0.109")
     deps.put("tomcat8.version", "8.5.66")
     deps.put("tomcat9.version", "9.0.62")
 

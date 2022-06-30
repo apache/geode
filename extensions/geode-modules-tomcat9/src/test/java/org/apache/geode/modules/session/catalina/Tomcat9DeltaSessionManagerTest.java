@@ -15,7 +15,6 @@
 
 package org.apache.geode.modules.session.catalina;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -28,8 +27,8 @@ import java.io.IOException;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
@@ -37,8 +36,8 @@ public class Tomcat9DeltaSessionManagerTest
     extends AbstractDeltaSessionManagerTest<Tomcat9DeltaSessionManager> {
   private Pipeline pipeline;
 
-  @Before
-  public void setup() {
+  @BeforeEach
+  void setup() {
     manager = spy(new Tomcat9DeltaSessionManager());
     initTest();
     pipeline = mock(Pipeline.class);
@@ -46,7 +45,7 @@ public class Tomcat9DeltaSessionManagerTest
   }
 
   @Test
-  public void startInternalSucceedsInitialRun()
+  void startInternalSucceedsInitialRun()
       throws LifecycleException, IOException, ClassNotFoundException {
     doNothing().when(manager).startInternalBase();
     doReturn(true).when(manager).isCommitValveEnabled();
@@ -68,7 +67,7 @@ public class Tomcat9DeltaSessionManagerTest
   }
 
   @Test
-  public void startInternalDoesNotReinitializeManagerOnSubsequentCalls()
+  void startInternalDoesNotReinitializeManagerOnSubsequentCalls()
       throws LifecycleException, IOException, ClassNotFoundException {
     doNothing().when(manager).startInternalBase();
     doReturn(true).when(manager).isCommitValveEnabled();
@@ -100,7 +99,7 @@ public class Tomcat9DeltaSessionManagerTest
   }
 
   @Test
-  public void stopInternal() throws LifecycleException, IOException {
+  void stopInternal() throws LifecycleException, IOException {
     doNothing().when(manager).startInternalBase();
     doNothing().when(manager).destroyInternalBase();
     doReturn(true).when(manager).isCommitValveEnabled();

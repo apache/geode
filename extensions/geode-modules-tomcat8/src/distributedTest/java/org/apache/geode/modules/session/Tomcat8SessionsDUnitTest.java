@@ -51,7 +51,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
     // Can only retrieve the region once the container has started up (& the cache has started too).
     region = sessionManager.getSessionCache().getSessionRegion();
 
-    sessionManager.getTheContext().setSessionTimeout(30);
+    sessionManager.getContext().setSessionTimeout(30);
     region.clear();
     basicConnectivityCheck();
   }

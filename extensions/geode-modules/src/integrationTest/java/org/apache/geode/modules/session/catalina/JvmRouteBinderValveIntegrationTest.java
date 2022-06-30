@@ -160,8 +160,8 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
     parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn("jvmRoute");
     when(deltaSessionManager.getContextName()).thenReturn(TEST_CONTEXT);
-    when(deltaSessionManager.getContainer()).thenReturn(mock(Context.class));
-    when(((Context) deltaSessionManager.getContainer()).getApplicationLifecycleListeners())
+    when(deltaSessionManager.getContext()).thenReturn(mock(Context.class));
+    when(deltaSessionManager.getContext().getApplicationLifecycleListeners())
         .thenReturn(new Object[] {});
     doCallRealMethod().when(deltaSessionManager).findSession(anyString());
 

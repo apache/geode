@@ -53,7 +53,6 @@ configurations {
   geodeLibdirJarsDeprecated
 
   // Configurations used to download and cache web application servers for session module testing
-  webServerTomcat7
   webServerTomcat8
   webServerTomcat9
   webServerJetty
@@ -147,7 +146,6 @@ dependencies {
   javadocOnly(project(':geode-server-all'))
   javadocOnly(project(':extensions:geode-modules'))
   javadocOnly(project(':extensions:geode-modules-session'))
-  javadocOnly(project(':extensions:geode-modules-tomcat7'))
   javadocOnly(project(':extensions:geode-modules-tomcat9'))
   javadocOnly(project(':extensions:geode-modules-tomcat8'))
 
@@ -268,7 +266,6 @@ dependencies {
   upgradeTestRuntimeOnly files({ downloadWebServers } )
 
   //Web servers used for session module testing
-  webServerTomcat7('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat7.version') + '@zip')
   webServerTomcat8('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat8.version') + '@zip')
   webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')

@@ -87,20 +87,17 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
   protected File oldBuild;
   protected File oldModules;
 
-  protected TomcatInstall tomcat7079AndOldModules;
-  protected TomcatInstall tomcat7079AndCurrentModules;
   protected TomcatInstall tomcat8AndOldModules;
   protected TomcatInstall tomcat8AndCurrentModules;
 
   protected int locatorPort;
-  protected String classPathTomcat7079;
   protected String classPathTomcat8;
   protected String serverDir;
   protected String locatorDir;
 
   protected TomcatSessionBackwardsCompatibilityTestBase(String version) {
     VersionManager versionManager = VersionManager.getInstance();
-    String installLocation = installLocation = versionManager.getInstall(version);
+    String installLocation = versionManager.getInstall(version);
     oldBuild = new File(installLocation);
     oldModules = new File(installLocation + "/tools/Modules/");
   }
@@ -140,17 +137,6 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   @Before
   public void setup() throws Exception {
-    tomcat7079AndOldModules =
-        new TomcatInstall("Tomcat7079AndOldModules", TomcatInstall.TomcatVersion.TOMCAT7,
-            ContainerInstall.ConnectionType.CLIENT_SERVER,
-            oldModules.getAbsolutePath(), oldBuild.getAbsolutePath() + "/lib",
-            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
-
-    tomcat7079AndCurrentModules =
-        new TomcatInstall("Tomcat7079AndCurrentModules", TomcatInstall.TomcatVersion.TOMCAT7,
-            ContainerInstall.ConnectionType.CLIENT_SERVER,
-            portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
-
     tomcat8AndOldModules =
         new TomcatInstall("Tomcat8AndOldModules", TomcatInstall.TomcatVersion.TOMCAT8,
             ContainerInstall.ConnectionType.CLIENT_SERVER,
@@ -163,16 +149,11 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort, TomcatInstall.CommitValve.DEFAULT);
 
-    classPathTomcat7079 = tomcat7079AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
-        + tomcat7079AndCurrentModules.getHome() + "/bin/*";
     classPathTomcat8 = tomcat8AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
         + tomcat8AndCurrentModules.getHome() + "/bin/*";
 
     // Get available port for the locator
     locatorPort = portSupplier.getAvailablePort();
-
-    tomcat7079AndOldModules.setDefaultLocatorPort(locatorPort);
-    tomcat7079AndCurrentModules.setDefaultLocatorPort(locatorPort);
 
     tomcat8AndOldModules.setDefaultLocatorPort(locatorPort);
     tomcat8AndCurrentModules.setDefaultLocatorPort(locatorPort);

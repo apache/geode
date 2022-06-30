@@ -31,13 +31,10 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener;
-import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SessionTest;
-
-
 
 @Category(SessionTest.class)
 public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Base {
@@ -63,7 +60,6 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     assertThat(port).isGreaterThan(0);
 
     server = new EmbeddedTomcat8(port, "JVM-1");
-    assertThat(server).isNotNull();
 
     ClientCacheFactory cacheFactory = new ClientCacheFactory();
     assertThat(cacheFactory).isNotNull();
@@ -72,17 +68,13 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     clientCache = cacheFactory.create();
     assertThat(clientCache).isNotNull();
 
-    DeltaSessionManager manager = new Tomcat8DeltaSessionManager();
-    assertThat(manager).isNotNull();
-
     ClientServerCacheLifecycleListener listener = new ClientServerCacheLifecycleListener();
-    assertThat(listener).isNotNull();
 
     listener.setProperty(MCAST_PORT, "0");
     listener.setProperty(LOG_LEVEL, "config");
     server.addLifecycleListener(listener);
 
-    sessionManager = manager;
+    sessionManager = new Tomcat8DeltaSessionManager();
     sessionManager.setEnableCommitValve(true);
     server.getRootContext().setManager(sessionManager);
 
@@ -96,7 +88,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     region = sessionManager.getSessionCache().getSessionRegion();
     assertThat(region).isNotNull();
 
-    sessionManager.getTheContext().setSessionTimeout(30);
+    sessionManager.getContext().setSessionTimeout(30);
     await().until(() -> sessionManager.getState() == LifecycleState.STARTED);
 
     basicConnectivityCheck();

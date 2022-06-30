@@ -15,9 +15,8 @@
 
 package org.apache.geode.modules.session.catalina;
 
-import static org.apache.geode.modules.util.RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -25,7 +24,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +33,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.catalina.Context;
 import org.apache.catalina.Session;
 import org.apache.juli.logging.Log;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -53,7 +51,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   protected DeltaSessionStatistics cacheStats;
   protected Region<String, HttpSession> operatingRegion;
 
-  public void initTest() {
+  void initTest() {
     sessionCache = mock(AbstractSessionCache.class);
     cache = mock(GemFireCacheImpl.class);
     logger = mock(Log.class);
@@ -64,14 +62,14 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
 
     doReturn(sessionCache).when(manager).getSessionCache();
     doReturn(logger).when(manager).getLogger();
-    doReturn(context).when(manager).getTheContext();
+    doReturn(context).when(manager).getContext();
     doReturn(managerStats).when(manager).getStatistics();
     doReturn(cacheStats).when(sessionCache).getStatistics();
     doReturn(operatingRegion).when(sessionCache).getOperatingRegion();
   }
 
   @Test
-  public void getRegionAttributesIdSetsIdFromSessionCacheWhenAttributesIdIsNull() {
+  void getRegionAttributesIdSetsIdFromSessionCacheWhenAttributesIdIsNull() {
     final String regionAttributesId = "attributesIdFromSessionCache";
 
     doReturn(regionAttributesId).when(sessionCache).getDefaultRegionAttributesId();
@@ -82,7 +80,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void getEnableLocalCacheSetsIdFromSessionCacheWhenEnableLocalCacheIsNull() {
+  void getEnableLocalCacheSetsIdFromSessionCacheWhenEnableLocalCacheIsNull() {
     final boolean isLocalCacheEnabled = true;
 
     doReturn(isLocalCacheEnabled).when(sessionCache).getDefaultEnableLocalCache();
@@ -93,14 +91,14 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void findSessionsReturnsNullWhenIdIsNull() throws IOException {
+  void findSessionsReturnsNullWhenIdIsNull() throws IOException {
     final Session session = manager.findSession(null);
 
     assertThat(session).isNull();
   }
 
   @Test
-  public void findSessionsReturnsNullAndLogsMessageWhenContextNameIsNotValid() throws IOException {
+  void findSessionsReturnsNullAndLogsMessageWhenContextNameIsNotValid() throws IOException {
     final String sessionId = "sessionId";
     final String contextName = "contextName";
     final String invalidContextName = "invalidContextName";
@@ -117,7 +115,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void findSessionsReturnsNullWhenIdIsNotFound() throws IOException {
+  void findSessionsReturnsNullWhenIdIsNotFound() throws IOException {
     final String sessionId = "sessionId";
 
     when(sessionCache.getSession(sessionId)).thenReturn(null);
@@ -128,7 +126,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void findSessionsReturnsProperSessionByIdWhenIdAndContextNameIsValid() throws IOException {
+  void findSessionsReturnsProperSessionByIdWhenIdAndContextNameIsValid() throws IOException {
     final String sessionId = "sessionId";
     final String contextName = "contextName";
 
@@ -143,7 +141,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void removeProperlyDestroysSessionFromSessionCacheWhenSessionIsNotExpired() {
+  void removeProperlyDestroysSessionFromSessionCacheWhenSessionIsNotExpired() {
     final DeltaSession sessionToDestroy = mock(DeltaSession.class);
     final String sessionId = "sessionId";
 
@@ -156,7 +154,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void removeDoesNotDestroySessionFromSessionCacheWhenSessionIsExpired() {
+  void removeDoesNotDestroySessionFromSessionCacheWhenSessionIsExpired() {
     final DeltaSession sessionToDestroy = mock(DeltaSession.class);
     final String sessionId = "sessionId";
 
@@ -169,7 +167,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void addPutsSessionIntoSessionCacheAndIncrementsStats() {
+  void addPutsSessionIntoSessionCacheAndIncrementsStats() {
     final DeltaSession sessionToPut = mock(DeltaSession.class);
 
     manager.add(sessionToPut);
@@ -179,7 +177,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void listIdsListsAllPresentIds() {
+  void listIdsListsAllPresentIds() {
     final Set<String> ids = new HashSet<>();
     ids.add("id1");
     ids.add("id2");
@@ -195,7 +193,7 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void successfulUnloadWithClientServerSessionCachePerformsLocalDestroy()
+  void successfulUnloadWithClientServerSessionCachePerformsLocalDestroy()
       throws IOException {
     when(sessionCache.getCache()).thenReturn(cache);
     when(context.getPath()).thenReturn("contextPath");
@@ -207,51 +205,17 @@ public abstract class AbstractDeltaSessionManagerTest<DeltaSessionManagerT exten
   }
 
   @Test
-  public void propertyChangeSetsMaxInactiveIntervalWithCorrectPropertyNameAndValue() {
-    final String propertyName = "sessionTimeout";
-    final PropertyChangeEvent event = mock(PropertyChangeEvent.class);
-    final Context eventContext = mock(Context.class);
-    final Integer newValue = 1;
+  void getMaxInactiveIntervalReturnsNegativeOneWhenSessionTimeoutIsNegativeOne() {
+    when(context.getSessionTimeout()).thenReturn(-1);
 
-    when(event.getSource()).thenReturn(eventContext);
-    when(event.getPropertyName()).thenReturn(propertyName);
-    when(event.getNewValue()).thenReturn(newValue);
-
-    manager.propertyChange(event);
-
-    verify(manager).setMaxInactiveInterval(newValue * 60);
+    assertThat(manager.getMaxInactiveInterval()).isEqualTo(-1);
   }
 
   @Test
-  public void propertyChangeDoesNotSetMaxInactiveIntervalWithIncorrectPropertyName() {
-    final String propertyName = "wrong name";
-    final PropertyChangeEvent event = mock(PropertyChangeEvent.class);
-    final Context eventContext = mock(Context.class);
+  void getMaxInactiveIntervalReturnsSeconds() {
+    when(context.getSessionTimeout()).thenReturn(20);
 
-    when(event.getSource()).thenReturn(eventContext);
-    when(event.getPropertyName()).thenReturn(propertyName);
-
-    manager.propertyChange(event);
-
-    verify(manager, times(0)).setMaxInactiveInterval(anyInt());
-  }
-
-  @Test
-  public void propertyChangeDoesNotSetNewMaxInactiveIntervalWithCorrectPropertyNameAndInvalidPropertyValue() {
-    final String propertyName = "sessionTimeout";
-    final PropertyChangeEvent event = mock(PropertyChangeEvent.class);
-    final Context eventContext = mock(Context.class);
-    final Integer newValue = -2;
-    final Integer oldValue = DEFAULT_MAX_INACTIVE_INTERVAL;
-
-    when(event.getSource()).thenReturn(eventContext);
-    when(event.getPropertyName()).thenReturn(propertyName);
-    when(event.getNewValue()).thenReturn(newValue);
-    when(event.getOldValue()).thenReturn(oldValue);
-
-    manager.propertyChange(event);
-
-    verify(manager).setMaxInactiveInterval(oldValue);
+    assertThat(manager.getMaxInactiveInterval()).isEqualTo(MINUTES.toSeconds(20));
   }
 
 }
