@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -174,7 +175,7 @@ class DependencyConstraints {
     }
 
     dependencySet(group: 'org.mockito', version: '4.6.1') {
-      entry('mockito-core')
+      entry('mockito-inline')
       entry('mockito-junit-jupiter')
     }
 

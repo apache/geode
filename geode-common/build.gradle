@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -43,7 +44,7 @@ dependencies {
   testImplementation('junit:junit')
   testImplementation('org.apache.commons:commons-lang3')
   testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
+  testImplementation('org.mockito:mockito-inline')
   testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine')
 

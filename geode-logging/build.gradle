@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -34,7 +35,7 @@ dependencies {
   }
   testImplementation(project(':geode-concurrency-test'))
 
-  testImplementation('org.mockito:mockito-core')
+  testImplementation('org.mockito:mockito-inline')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
 

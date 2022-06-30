@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -31,7 +32,7 @@ dependencies {
 
   implementation('org.apache.logging.log4j:log4j-api')
 
-  testImplementation('org.mockito:mockito-core')
+  testImplementation('org.mockito:mockito-inline')
   testImplementation(project(':geode-junit'))
 
   integrationTestImplementation(project(':geode-membership'))

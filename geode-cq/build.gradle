@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -57,7 +58,7 @@ dependencies {
   upgradeTestImplementation(project(':geode-junit'))
   upgradeTestImplementation('junit:junit')
   upgradeTestImplementation('org.awaitility:awaitility')
-  upgradeTestImplementation('org.mockito:mockito-core')
+  upgradeTestImplementation('org.mockito:mockito-inline')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

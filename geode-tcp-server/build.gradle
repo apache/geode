@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -43,7 +44,7 @@ dependencies {
   testImplementation('com.tngtech.archunit:archunit-junit4')
 
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('org.mockito:mockito-inline')
   integrationTestImplementation(project(':geode-junit'))
 
   upgradeTestImplementation(project(':geode-gfsh'))

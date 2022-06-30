@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -102,7 +103,7 @@ dependencies {
 
   distributedTestImplementation('junit:junit')
   distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.mockito:mockito-core')
+  distributedTestImplementation('org.mockito:mockito-inline')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestRuntimeOnly('org.apache.derby:derby')
 
@@ -112,7 +113,7 @@ dependencies {
   acceptanceTestImplementation('junit:junit')
   acceptanceTestImplementation('org.assertj:assertj-core')
   acceptanceTestImplementation('org.awaitility:awaitility')
-  acceptanceTestImplementation('org.mockito:mockito-core')
+  acceptanceTestImplementation('org.mockito:mockito-inline')
   acceptanceTestImplementation('pl.pragmatists:JUnitParams')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 

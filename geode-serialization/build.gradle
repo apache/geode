@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -47,7 +48,7 @@ dependencies {
 
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation('org.apache.bcel:bcel')
-  testImplementation('org.mockito:mockito-core')
+  testImplementation('org.mockito:mockito-inline')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
 

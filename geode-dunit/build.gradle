@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -58,7 +59,7 @@ dependencies {
   }
 
   implementation('org.assertj:assertj-core')
-  implementation('org.mockito:mockito-core')
+  implementation('org.mockito:mockito-inline')
   implementation('org.awaitility:awaitility')
   implementation('pl.pragmatists:JUnitParams')
 
