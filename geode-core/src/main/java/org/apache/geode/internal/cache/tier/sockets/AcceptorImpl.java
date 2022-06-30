@@ -117,7 +117,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private static final Logger logger = LogService.getLogger();
 
   private static final boolean isJRockit = System.getProperty("java.vm.name").contains("JRockit");
-  private static final int HANDSHAKER_DEFAULT_POOL_SIZE = 4;
+  private static final int HANDSHAKER_DEFAULT_POOL_SIZE = 50;
   private static final int CLIENT_QUEUE_INITIALIZATION_POOL_SIZE = 16;
 
   private final CacheServerStats stats;
