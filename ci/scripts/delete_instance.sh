@@ -77,16 +77,24 @@ case "${MACHINE_TYPE}" in
     RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".custom.ram")"
     ;;
   *-standard*)
-    CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
-    RAM=$(expr ${CPUS} \* 4 )
     MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
+    CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
+    if [[ "${MACHINE_FAMILY}" == "n1" ]]; then
+      RAM=$(echo "scale=0; (${CPUS} * 3.75) / 1" | bc)
+    else
+      RAM=$(expr ${CPUS} \* 4)
+    fi
     CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.cpu")"
     RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.ram")"
     ;;
   *-highcpu*)
-    CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
-    RAM=${CPUS}
     MACHINE_FAMILY="$(echo "${MACHINE_TYPE}" | cut -d'-' -f 1)"
+    CPUS="$(echo "${MACHINE_TYPE}" | rev | cut -d'-' -f 1 | rev)"
+    if [[ "${MACHINE_FAMILY}" == "n1" ]]; then
+      RAM=$(echo "scale=1; (${CPUS} * 0.9) / 1" | bc)
+    else
+      RAM=${CPUS}
+    fi
     CPU_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.cpu")"
     RAM_COST="$(echo "${INSTANCE_PRICING_JSON}" | jq -r ".\"${MACHINE_FAMILY}\".predefined.ram")"
     ;;
@@ -103,7 +111,7 @@ BUILD_NUMBER="$(cat instance-data/instance-information | jq -r '.[].labels."buil
 JOB_NAME="$(cat instance-data/instance-information | jq -r '.[].labels."job-name"')"
 PIPELINE_NAME="$(cat instance-data/instance-information | jq -r '.[].labels."pipeline-name"')"
 TOTAL_COST=$(echo "scale = 6; ((${CPUS} * ${CPU_COST}) + (${RAM} * ${RAM_COST})) * ${TOTAL_SECONDS} / 3600" | bc)
-echo "Total heavy lifter cost for ${PIPELINE_NAME}/${JOB_NAME} #${BUILD_NUMBER}: $ ${TOTAL_COST}"
+echo "Total heavy lifter (${MACHINE_TYPE}) cost for ${PIPELINE_NAME}/${JOB_NAME} #${BUILD_NUMBER}: $ ${TOTAL_COST}"
 cat <<EOF > instance-data/cost-data.json
 {
   "pipeline": "${PIPELINE_NAME}",
