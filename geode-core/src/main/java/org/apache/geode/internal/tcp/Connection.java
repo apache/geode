@@ -961,7 +961,7 @@ public class Connection implements Runnable {
       final ConnectionTable t,
       final boolean preserveOrder, final InternalDistributedMember remoteAddr,
       final boolean sharedResource,
-      final long startTime, final long ackTimeout, final long ackSATimeout)
+      final long startTime, final long ackTimeout, final long ackSATimeout, boolean doNotRetry)
       throws IOException, DistributedSystemDisconnectedException {
     boolean success = false;
     Connection conn = null;
@@ -1021,7 +1021,9 @@ public class Connection implements Runnable {
             // do not change the text of this exception - it is looked for in exception handlers
             throw new IOException("Cannot form connection to alert listener " + remoteAddr);
           }
-
+          if (doNotRetry) {
+            throw new IOException("Connection not created in first try to " + remoteAddr);
+          }
           // Wait briefly...
           interrupted = Thread.interrupted() || interrupted;
           try {
