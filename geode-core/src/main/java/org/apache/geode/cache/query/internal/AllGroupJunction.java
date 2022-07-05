@@ -137,9 +137,9 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
       } else {
         results[j] = filterResults;
         grpItrs = (gj instanceof CompositeGroupJunction)
-            ? QueryUtils.getDependentItrChainForIndpndntItrs(
+            ? QueryUtils.getDependentIteratorChainForIndependentIterators(
                 ((CompositeGroupJunction) gj).getIndependentIteratorsOfCJ(), context)
-            : context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(
+            : context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
                 ((AbstractGroupOrRangeJunction) gj).getIndependentIteratorForGroup()[0]);
         itrsForResultFields[j] = new RuntimeIterator[grpItrs.size()];
         Iterator grpItr = grpItrs.iterator();
@@ -208,9 +208,9 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
       gj = (CompiledValue) junctionItr.next();
       grpResults[0] = ((Filter) gj).filterEvaluate(context, null);
       grpItrs = (gj instanceof CompositeGroupJunction)
-          ? QueryUtils.getDependentItrChainForIndpndntItrs(
+          ? QueryUtils.getDependentIteratorChainForIndependentIterators(
               ((CompositeGroupJunction) gj).getIndependentIteratorsOfCJ(), context)
-          : context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(
+          : context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
               ((AbstractGroupOrRangeJunction) gj).getIndependentIteratorForGroup()[0]);
       itrsForResultFields[0] = new RuntimeIterator[grpItrs.size()];
       Iterator grpItr = grpItrs.iterator();

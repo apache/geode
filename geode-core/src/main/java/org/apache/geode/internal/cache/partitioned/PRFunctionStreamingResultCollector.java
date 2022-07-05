@@ -103,7 +103,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -128,7 +128,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
             clearResults();
             execution = execution.setIsReExecute();
             ResultCollector newRc = null;
-            if (execution.isFnSerializationReqd()) {
+            if (execution.isFunctionSerializationRequired()) {
               newRc = execution.execute(fn);
             } else {
               newRc = execution.execute(fn.getId());
@@ -154,7 +154,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
             clearResults();
             execution = execution.setIsReExecute();
             ResultCollector newRc = null;
-            if (execution.isFnSerializationReqd()) {
+            if (execution.isFunctionSerializationRequired()) {
               newRc = execution.execute(fn);
             } else {
               newRc = execution.execute(fn.getId());
@@ -180,7 +180,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
             clearResults();
             execution = execution.setIsReExecute();
             ResultCollector newRc = null;
-            if (execution.isFnSerializationReqd()) {
+            if (execution.isFunctionSerializationRequired()) {
               newRc = execution.execute(fn);
             } else {
               newRc = execution.execute(fn.getId());
@@ -206,7 +206,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -250,7 +250,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -272,7 +272,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -296,7 +296,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -320,7 +320,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -344,7 +344,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());

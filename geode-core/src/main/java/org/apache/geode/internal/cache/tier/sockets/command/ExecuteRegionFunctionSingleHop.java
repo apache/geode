@@ -78,9 +78,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     Set<Integer> buckets = null;
     byte hasResult = 0;
     byte functionState = 0;
-    int removedNodesSize = 0;
-    Set<Object> removedNodesSet = null;
-    int filterSize = 0, bucketIdsSize = 0, partNumber = 0;
+    Set<String> removedNodesSet = null;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     int functionTimeout = DEFAULT_CLIENT_FUNCTION_TIMEOUT;
     try {
@@ -109,9 +107,10 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         }
       }
       isExecuteOnAllBuckets = clientMessage.getPart(5).getSerializedForm()[0];
+      int partNumber;
       if (isExecuteOnAllBuckets == 1) {
-        filter = new HashSet();
-        bucketIdsSize = clientMessage.getPart(6).getInt();
+        filter = new HashSet<>();
+        int bucketIdsSize = clientMessage.getPart(6).getInt();
         if (bucketIdsSize != 0) {
           buckets = new HashSet<>();
           partNumber = 7;
@@ -121,7 +120,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         }
         partNumber = 7 + bucketIdsSize;
       } else {
-        filterSize = clientMessage.getPart(6).getInt();
+        int filterSize = clientMessage.getPart(6).getInt();
         if (filterSize != 0) {
           filter = new HashSet<>();
           partNumber = 7;
@@ -132,15 +131,14 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         partNumber = 7 + filterSize;
       }
 
-
-      removedNodesSize = clientMessage.getPart(partNumber).getInt();
+      int removedNodesSize = clientMessage.getPart(partNumber).getInt();
 
       if (removedNodesSize != 0) {
-        removedNodesSet = new HashSet<>();
+        removedNodesSet = new HashSet<>(removedNodesSize);
         partNumber = partNumber + 1;
 
         for (int i = 0; i < removedNodesSize; i++) {
-          removedNodesSet.add(clientMessage.getPart(partNumber + i).getStringOrObject());
+          removedNodesSet.add((String) clientMessage.getPart(partNumber + i).getStringOrObject());
         }
       }
 
@@ -171,7 +169,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       return;
     }
 
-    Region region = crHelper.getRegion(regionName);
+    Region<?, ?> region = crHelper.getRegion(regionName);
     if (region == null) {
       String message =
           String.format("The region named %s was not found during execute Function request.",
@@ -208,7 +206,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
           }
         }
       } else {
-        functionObject = (Function) function;
+        functionObject = (Function<?>) function;
       }
 
       // check if the caller is authorized to do this operation on server
@@ -223,7 +221,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       }
 
       // Construct execution
-      AbstractExecution execution = (AbstractExecution) FunctionService.onRegion(region);
+      final AbstractExecution<?, ?, ?> execution;
       ChunkedMessage m = serverConnection.getFunctionResponseMessage();
       m.setTransactionId(clientMessage.getTransactionId());
       resultSender =
@@ -240,11 +238,13 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         if (buckets.isEmpty()) {
           throw new FunctionException("Buckets are null");
         }
-        execution = new PartitionedRegionFunctionExecutor((PartitionedRegion) region, buckets, args,
-            memberMappedArg, resultSender, removedNodesSet, true, true);
+        execution =
+            new PartitionedRegionFunctionExecutor<>((PartitionedRegion) region, buckets, args,
+                memberMappedArg, resultSender, removedNodesSet, true, true);
       } else {
-        execution = new PartitionedRegionFunctionExecutor((PartitionedRegion) region, filter, args,
-            memberMappedArg, resultSender, removedNodesSet, false, true);
+        execution =
+            new PartitionedRegionFunctionExecutor<>((PartitionedRegion) region, filter, args,
+                memberMappedArg, resultSender, removedNodesSet, false, true);
       }
 
       if ((hasResult == 1) && filter != null && filter.size() == 1) {
@@ -259,14 +259,8 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         if (function instanceof String) {
           switch (functionState) {
             case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function).getResult();
-              break;
             case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function).getResult();
-              break;
             case AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE:
-              execution.execute((String) function).getResult();
-              break;
             case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
               execution.execute((String) function).getResult();
               break;
@@ -278,8 +272,6 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         if (function instanceof String) {
           switch (functionState) {
             case AbstractExecution.NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE:
-              execution.execute((String) function);
-              break;
             case AbstractExecution.NO_HA_NO_HASRESULT_OPTIMIZEFORWRITE:
               execution.execute((String) function);
               break;
@@ -347,7 +339,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       String message, ServerConnection serverConnection, Throwable e) throws IOException {
     ChunkedMessage functionResponseMsg = serverConnection.getFunctionResponseMessage();
     ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();
-    int numParts = 0;
+    final int numParts;
     if (functionResponseMsg.headerHasBeenSent()) {
       if (e instanceof FunctionException
           && e.getCause() instanceof InternalFunctionInvocationTargetException) {

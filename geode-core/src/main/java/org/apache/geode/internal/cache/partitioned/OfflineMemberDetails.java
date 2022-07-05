@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.partitioned;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -34,10 +33,10 @@ public interface OfflineMemberDetails extends DataSerializable {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    public void fromData(DataInput in) {}
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out) {}
   };
 
   Set<PersistentMemberID> getOfflineMembers(int bucketId);

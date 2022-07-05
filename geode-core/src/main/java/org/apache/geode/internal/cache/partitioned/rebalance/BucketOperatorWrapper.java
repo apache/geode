@@ -110,7 +110,7 @@ public class BucketOperatorWrapper implements BucketOperator {
         for (PartitionRebalanceDetailsImpl details : detailSet) {
           String regionPath = details.getRegionPath();
           Long lrb = colocatedRegionBytes.get(regionPath);
-          if (lrb != null) { // region could have gone away - esp during shutdow
+          if (lrb != null) { // region could have gone away - esp during shutdown
             long regionBytes = lrb;
             // Only add the elapsed time to the leader region.
             details.incCreates(regionBytes, details.getRegion().equals(leaderRegion) ? elapsed : 0);
@@ -167,7 +167,7 @@ public class BucketOperatorWrapper implements BucketOperator {
         for (PartitionRebalanceDetailsImpl details : detailSet) {
           String regionPath = details.getRegionPath();
           Long lrb = colocatedRegionBytes.get(regionPath);
-          if (lrb != null) { // region could have gone away - esp during shutdow
+          if (lrb != null) { // region could have gone away - esp during shutdown
             long regionBytes = lrb;
             // Only add the elapsed time to the leader region.
             details.incRemoves(regionBytes, details.getRegion().equals(leaderRegion) ? elapsed : 0);

@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminRequest;
 import org.apache.geode.internal.admin.remote.AdminResponse;
@@ -60,7 +61,7 @@ public class CompactRequest extends AdminRequest {
   private static String notExecutedMembers;
 
   public static Map<DistributedMember, PersistentID> send(DistributionManager dm,
-      String diskStoreName, Set<? extends DistributedMember> recipients) {
+      String diskStoreName, Set<InternalDistributedMember> recipients) {
     Map<DistributedMember, PersistentID> results = Collections.emptyMap();
 
     if (recipients != null && !recipients.isEmpty()) {

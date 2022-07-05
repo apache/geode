@@ -526,7 +526,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
      */
     private boolean responseRequired;
 
-    public RemoteOperationResponse(InternalDistributedSystem dm, Collection<?> initMembers,
+    public RemoteOperationResponse(InternalDistributedSystem dm,
+        Collection<InternalDistributedMember> initMembers,
         boolean register) {
       super(dm, initMembers);
       if (register) {

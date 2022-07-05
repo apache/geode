@@ -304,7 +304,7 @@ public class AttributeDescriptor {
   }
 
   private void updateClassToMethodsMap(String className, String field) {
-    Map<String, Set<String>> map = DefaultQuery.getPdxClasstoMethodsmap();
+    Map<String, Set<String>> map = DefaultQuery.getPdxClassToMethodsMap();
     Set<String> fields = map.get(className);
     if (fields == null) {
       fields = new HashSet<>();
@@ -315,7 +315,7 @@ public class AttributeDescriptor {
   }
 
   private boolean isMethodAlreadySearchedAndNotFound(String className, String field) {
-    Set<String> fields = DefaultQuery.getPdxClasstoMethodsmap().get(className);
+    Set<String> fields = DefaultQuery.getPdxClassToMethodsMap().get(className);
     if (fields != null) {
       return fields.contains(field);
     }

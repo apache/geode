@@ -72,7 +72,8 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
    * @param dm the DistributionManager to use for messaging and membership
    * @param initMembers the Set of members this processor wants replies from
    */
-  public DirectReplyProcessor(DistributionManager dm, Collection initMembers) {
+  public DirectReplyProcessor(DistributionManager dm,
+      Collection<InternalDistributedMember> initMembers) {
     this(dm, dm.getSystem(), initMembers, null);
   }
 
@@ -85,7 +86,8 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
    * @param system the DistributedSystem connection
    * @param initMembers the Set of members this processor wants replies from
    */
-  public DirectReplyProcessor(InternalDistributedSystem system, Collection initMembers) {
+  public DirectReplyProcessor(InternalDistributedSystem system,
+      Collection<InternalDistributedMember> initMembers) {
     this(system.getDistributionManager(), system, initMembers, null);
   }
 
@@ -100,13 +102,14 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
    * @param cancelCriterion optional CancelCriterion to use; will use the DistributedSystem's
    *        DistributionManager if null
    */
-  public DirectReplyProcessor(InternalDistributedSystem system, Collection initMembers,
+  public DirectReplyProcessor(InternalDistributedSystem system,
+      Collection<InternalDistributedMember> initMembers,
       CancelCriterion cancelCriterion) {
     this(system.getDistributionManager(), system, initMembers, cancelCriterion);
   }
 
   public DirectReplyProcessor(DistributionManager dm, InternalDistributedSystem system,
-      Collection initMembers, CancelCriterion cancelCriterion) {
+      Collection<InternalDistributedMember> initMembers, CancelCriterion cancelCriterion) {
     super(dm, system, initMembers, cancelCriterion, false);
   }
 

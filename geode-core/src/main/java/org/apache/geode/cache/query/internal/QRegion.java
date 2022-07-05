@@ -102,8 +102,8 @@ public class QRegion implements SelectResults {
     ResultsCollectionWrapper res = null;
     if (context.getBucketList() != null && region instanceof PartitionedRegion) {
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-      LocalDataSet localData =
-          new LocalDataSet(partitionedRegion, new HashSet(context.getBucketList()));
+      LocalDataSet<?, ?> localData =
+          new LocalDataSet<>(partitionedRegion, new HashSet<>(context.getBucketList()));
       this.region = localData;
       if (includeKeys) {
         res = new ResultsCollectionWrapper(TypeUtils.getObjectType(constraint),
@@ -156,7 +156,7 @@ public class QRegion implements SelectResults {
   public SelectResults getKeys() {
     ResultsCollectionWrapper res;
     if (region instanceof LocalDataSet) {
-      LocalDataSet localData = (LocalDataSet) region;
+      LocalDataSet<?, ?> localData = (LocalDataSet<?, ?>) region;
       res = new ResultsCollectionWrapper(getKeyType(), localData.localKeys());
     } else {
       res = new ResultsCollectionWrapper(getKeyType(), region.keySet());
@@ -188,7 +188,7 @@ public class QRegion implements SelectResults {
   public SelectResults getEntries() {
     ResultsCollectionWrapper res;
     if (region instanceof LocalDataSet) {
-      LocalDataSet localData = (LocalDataSet) region;
+      LocalDataSet<?, ?> localData = (LocalDataSet<?, ?>) region;
       res = new ResultsCollectionWrapper(TypeUtils.getRegionEntryType(region),
           localData.localEntrySet());
     } else {

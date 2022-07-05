@@ -49,8 +49,6 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
 
   private int replyMsgNum;
 
-  private Object result;
-
   private FunctionRemoteContext context;
 
   public PartitionedRegionFunctionStreamingMessage() {
@@ -153,7 +151,6 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
       boolean lastResult, boolean sendResultsInOrder) {
     // if there was an exception, then throw out any data
     if (ex != null) {
-      this.result = null;
       replyMsgNum = 0;
       replyLastMsg = true;
     }

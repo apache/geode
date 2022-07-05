@@ -64,14 +64,16 @@ public class DumpB2NRegion extends PartitionMessage {
 
   public DumpB2NRegion() {}
 
-  private DumpB2NRegion(Set recipients, int regionId, ReplyProcessor21 processor, int bId,
-      boolean justPrimaryInfo) {
+  private DumpB2NRegion(Set<InternalDistributedMember> recipients, int regionId,
+      ReplyProcessor21 processor, int bucketId,
+      boolean onlyReturnPrimaryInfo) {
     super(recipients, regionId, processor);
-    bucketId = bId;
-    onlyReturnPrimaryInfo = justPrimaryInfo;
+    this.bucketId = bucketId;
+    this.onlyReturnPrimaryInfo = onlyReturnPrimaryInfo;
   }
 
-  public static DumpB2NResponse send(Set recipients, PartitionedRegion r, int bId,
+  public static DumpB2NResponse send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
+      int bId,
       boolean justPrimaryInfo) {
     DumpB2NResponse p = new DumpB2NResponse(r.getSystem(), recipients);
     DumpB2NRegion m = new DumpB2NRegion(recipients, r.getPRId(), p, bId, justPrimaryInfo);
@@ -90,7 +92,6 @@ public class DumpB2NRegion extends PartitionMessage {
       for (;;) {
         dm.getCancelCriterion().checkCancelInProgress(null);
 
-        // pr = null; (redundant assignment)
         pr = PartitionedRegion.getPRFromId(regionId);
 
         if (pr != null) {
@@ -122,14 +123,8 @@ public class DumpB2NRegion extends PartitionMessage {
 
       // OK, now it's safe to process this.
       super.process(dm);
-    } catch (CancelException e) {
+    } catch (CancelException | PRLocallyDestroyedException | RegionDestroyedException e) {
       sendReply(sender, processorId, dm, new ReplyException(e), pr, 0);
-    } catch (PRLocallyDestroyedException e) {
-      sendReply(sender, processorId, dm, new ReplyException(e), pr, 0);
-      return;
-    } catch (RegionDestroyedException rde) {
-      sendReply(sender, processorId, dm, new ReplyException(rde), pr, 0);
-      return;
     }
   }
 
@@ -137,14 +132,14 @@ public class DumpB2NRegion extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
-    PrimaryInfo pinfo = null;
+    PrimaryInfo primaryInfo = null;
     if (onlyReturnPrimaryInfo) {
-      pinfo = new PrimaryInfo(pr.getRegionAdvisor().getBucket(bucketId).isHosting(),
+      primaryInfo = new PrimaryInfo(pr.getRegionAdvisor().getBucket(bucketId).isHosting(),
           pr.getRegionAdvisor().isPrimaryForBucket(bucketId), "");
     } else {
       pr.dumpB2NForBucket(bucketId);
     }
-    DumpB2NReplyMessage.send(getSender(), getProcessorId(), dm, pinfo);
+    DumpB2NReplyMessage.send(getSender(), getProcessorId(), dm, primaryInfo);
 
     return false;
   }
@@ -177,17 +172,17 @@ public class DumpB2NRegion extends PartitionMessage {
 
     public DumpB2NReplyMessage() {}
 
-    private DumpB2NReplyMessage(int procid, PrimaryInfo pinfo) {
+    private DumpB2NReplyMessage(int processorId, PrimaryInfo primaryInfo) {
       super();
-      setProcessorId(procid);
-      primaryInfo = pinfo;
+      setProcessorId(processorId);
+      this.primaryInfo = primaryInfo;
     }
 
     public static void send(InternalDistributedMember recipient, int processorId,
-        DistributionManager dm, PrimaryInfo pinfo) {
-      DumpB2NReplyMessage m = new DumpB2NReplyMessage(processorId, pinfo);
+        DistributionManager distributionManager, PrimaryInfo primaryInfo) {
+      DumpB2NReplyMessage m = new DumpB2NReplyMessage(processorId, primaryInfo);
       m.setRecipient(recipient);
-      dm.putOutgoing(m);
+      distributionManager.putOutgoing(m);
     }
 
 
@@ -257,7 +252,8 @@ public class DumpB2NRegion extends PartitionMessage {
   public static class DumpB2NResponse extends PartitionResponse {
     public final ArrayList<Object[]> primaryInfos = new ArrayList<>();
 
-    public DumpB2NResponse(InternalDistributedSystem dm, Set initMembers) {
+    public DumpB2NResponse(InternalDistributedSystem dm,
+        Set<InternalDistributedMember> initMembers) {
       super(dm, initMembers);
     }
 

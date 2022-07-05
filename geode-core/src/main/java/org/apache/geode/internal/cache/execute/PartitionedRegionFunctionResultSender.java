@@ -16,6 +16,8 @@
 package org.apache.geode.internal.cache.execute;
 
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.Logger;
@@ -42,8 +44,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * FunctionContext.
  *
  */
-
-public class PartitionedRegionFunctionResultSender implements InternalResultSender {
+public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
+    implements InternalResultSender<OUT> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -57,7 +59,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   private final boolean forwardExceptions;
 
-  private final ResultCollector rc;
+  private final ResultCollector<OUT, AGG> rc;
 
   private final ServerToClientFunctionResultSender serverSender;
 
@@ -69,15 +71,15 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   private boolean completelyDoneFromRemote = false;
 
-  private final Function function;
+  private final Function<IN> function;
 
-  private boolean enableOrderedResultStreming;
+  private boolean enableOrderedResultStreaming;
 
   private final int[] bucketArray;
 
   private BucketMovedException bme;
 
-  private BiFunction<String, InternalDistributedSystem, FunctionStats> functionStatsFunctionProvider;
+  private final BiFunction<String, InternalDistributedSystem, FunctionStats> functionStatsFunctionProvider;
 
   public KnownVersion getClientVersion() {
     if (serverSender != null && serverSender.sc != null) { // is a client-server connection
@@ -88,26 +90,26 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
       long time, PartitionedRegionFunctionStreamingMessage msg,
-      Function function, int[] bucketArray) {
+      Function<IN> function, int[] bucketArray) {
     this(dm, pr, time, null, null, false, false, false, function, bucketArray, msg,
-        (x, y) -> FunctionStatsManager.getFunctionStats((String) x, (InternalDistributedSystem) y));
+        FunctionStatsManager::getFunctionStats);
   }
 
   public PartitionedRegionFunctionResultSender(DistributionManager dm,
-      PartitionedRegion partitionedRegion, long time, ResultCollector rc,
+      PartitionedRegion partitionedRegion, long time, ResultCollector<OUT, AGG> rc,
       ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
-      boolean forwardExceptions, Function function, int[] bucketArray) {
+      boolean forwardExceptions, Function<IN> function, int[] bucketArray) {
     this(dm, partitionedRegion, time, rc, sender, onlyLocal, onlyRemote, forwardExceptions,
         function, bucketArray, null,
-        (x, y) -> FunctionStatsManager.getFunctionStats((String) x, (InternalDistributedSystem) y));
+        FunctionStatsManager::getFunctionStats);
   }
 
   PartitionedRegionFunctionResultSender(DistributionManager dm,
-      PartitionedRegion partitionedRegion, long time, ResultCollector rc,
+      PartitionedRegion partitionedRegion, long time, ResultCollector<OUT, AGG> rc,
       ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
-      boolean forwardExceptions, Function function, int[] bucketArray,
+      boolean forwardExceptions, Function<IN> function, int[] bucketArray,
       PartitionedRegionFunctionStreamingMessage msg,
-      BiFunction functionStatsFunctionProvider) {
+      BiFunction<String, InternalDistributedSystem, FunctionStats> functionStatsFunctionProvider) {
     this.dm = dm;
     pr = partitionedRegion;
     this.time = time;
@@ -139,7 +141,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   // this must be getting called directly from function
   @Override
-  public void lastResult(Object oneResult) {
+  public void lastResult(final OUT oneResult) {
     if (!function.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
@@ -174,16 +176,14 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
         try {
           if (bme != null) {
             msg.sendReplyForOneResult(dm, pr, time, oneResult, false,
-                enableOrderedResultStreming);
+                enableOrderedResultStreaming);
             throw bme;
           } else {
             msg.sendReplyForOneResult(dm, pr, time, oneResult, true,
-                enableOrderedResultStreming);
+                enableOrderedResultStreaming);
           }
 
-        } catch (ForceReattemptException e) {
-          throw new FunctionException(e);
-        } catch (InterruptedException e) {
+        } catch (ForceReattemptException | InterruptedException e) {
           throw new FunctionException(e);
         }
       } else {
@@ -194,7 +194,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           checkForBucketMovement(oneResult);
           if (bme != null) {
             rc.addResult(dm.getDistributionManagerId(), oneResult);
-            rc.addResult(dm.getDistributionManagerId(), bme);
+            rc.addResult(dm.getDistributionManagerId(), uncheckedCast(bme));
           } else {
             rc.addResult(dm.getDistributionManagerId(), oneResult);
           }
@@ -219,7 +219,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     }
   }
 
-  private synchronized void lastResult(Object oneResult, ResultCollector collector,
+  private synchronized void lastResult(OUT oneResult, ResultCollector<OUT, AGG> collector,
       boolean lastRemoteResult, boolean lastLocalResult, DistributedMember memberID) {
 
 
@@ -264,7 +264,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           checkForBucketMovement(oneResult);
           if (bme != null) {
             collector.addResult(memberID, oneResult);
-            collector.addResult(memberID, bme);
+            collector.addResult(memberID, uncheckedCast(bme));
           } else {
             collector.addResult(memberID, oneResult);
           }
@@ -277,7 +277,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           checkForBucketMovement(oneResult);
           if (bme != null) {
             collector.addResult(memberID, oneResult);
-            collector.addResult(memberID, bme);
+            collector.addResult(memberID, uncheckedCast(bme));
           } else {
             collector.addResult(memberID, oneResult);
           }
@@ -291,8 +291,8 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     }
   }
 
-  public synchronized void lastResult(Object oneResult, boolean completelyDoneFromRemote,
-      ResultCollector reply, DistributedMember memberID) {
+  public synchronized void lastResult(OUT oneResult, boolean completelyDoneFromRemote,
+      ResultCollector<OUT, AGG> reply, DistributedMember memberID) {
     logger.debug("PartitionedRegionFunctionResultSender Sending lastResult {}", oneResult);
 
     if (serverSender != null) { // Client-Server
@@ -336,7 +336,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   }
 
   @Override
-  public void sendResult(Object oneResult) {
+  public void sendResult(final OUT oneResult) {
     if (!function.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
@@ -353,10 +353,8 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
           logger.debug("PartitionedRegionFunctionResultSender sending result from remote node {}",
               oneResult);
           msg.sendReplyForOneResult(dm, pr, time, oneResult, false,
-              enableOrderedResultStreming);
-        } catch (ForceReattemptException e) {
-          throw new FunctionException(e);
-        } catch (InterruptedException e) {
+              enableOrderedResultStreaming);
+        } catch (ForceReattemptException | InterruptedException e) {
           throw new FunctionException(e);
         }
       } else {
@@ -392,9 +390,8 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   }
 
   @Override
-  public void sendException(Throwable exception) {
-    InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
-    lastResult(iFunxtionException);
+  public void sendException(final Throwable exception) {
+    lastResult(uncheckedCast(new InternalFunctionException(exception)));
     localLastResultReceived = true;
   }
 
@@ -403,7 +400,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     if (serverSender != null) {
       serverSender.setException(exception);
     } else {
-      ((LocalResultCollector) rc).setException(exception);
+      ((LocalResultCollector<?, ?>) rc).setException(exception);
       if (exception.getCause() instanceof InternalFunctionInvocationTargetException) {
         logger.debug(
             "Unexpected exception during function execution on local node Partitioned Region",
@@ -419,8 +416,8 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   }
 
   @Override
-  public void enableOrderedResultStreming(boolean enable) {
-    enableOrderedResultStreming = enable;
+  public void enableOrderedResultStreaming(boolean enable) {
+    enableOrderedResultStreaming = enable;
   }
 
   @Override

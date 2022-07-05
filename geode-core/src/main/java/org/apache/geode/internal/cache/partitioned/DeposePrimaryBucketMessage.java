@@ -77,14 +77,13 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
     Assert.assertTrue(recipient != null, "DeposePrimaryBucketMessage NULL recipient");
 
     DeposePrimaryBucketResponse response =
-        new DeposePrimaryBucketResponse(region.getSystem(), recipient, region);
+        new DeposePrimaryBucketResponse(region.getSystem(), recipient);
     DeposePrimaryBucketMessage msg =
         new DeposePrimaryBucketMessage(recipient, region.getPRId(), response, bucketId);
     msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
 
     Set<InternalDistributedMember> failures = region.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
-      // throw new ForceReattemptException("Failed sending <" + msg + ">");
       return null;
     }
     region.getPrStats().incPartitionMessagesSent();
@@ -213,7 +212,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return "DeposePrimaryBucketReplyMessage " + "processorid=" + processorId
+      return "DeposePrimaryBucketReplyMessage " + "processorId=" + processorId
           + " reply to sender " + getSender();
     }
   }
@@ -224,7 +223,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   public static class DeposePrimaryBucketResponse extends PartitionResponse {
 
     public DeposePrimaryBucketResponse(InternalDistributedSystem ds,
-        InternalDistributedMember recipient, PartitionedRegion theRegion) {
+        InternalDistributedMember recipient) {
       super(ds, recipient);
     }
 

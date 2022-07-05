@@ -46,7 +46,7 @@ public interface CacheDistributionAdvisee extends DistributionAdvisee {
    *
    * @return the <code>RegionAttributes</code> of this advisee
    */
-  RegionAttributes getAttributes();
+  RegionAttributes<?, ?> getAttributes();
 
   /**
    * notifies the advisee that a new remote member has registered a profile showing that it is now

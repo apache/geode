@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +31,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -39,18 +42,18 @@ import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * Executes Function with FunctionService#onRegion(Region region) in client server mode.
+ * Executes Function with {@link FunctionService#onRegion(Region)} in client server mode.
  *
  * @see FunctionService#onRegion(Region) *
  * @since GemFire 5.8 LA
  */
-public class ServerRegionFunctionExecutor extends AbstractExecution {
+public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
   private static final Logger logger = LogService.getLogger();
 
   private final LocalRegion region;
   private boolean executeOnBucketSet = false;
 
-  ServerRegionFunctionExecutor(Region r, ProxyCache proxyCache) {
+  ServerRegionFunctionExecutor(Region<?, ?> r, ProxyCache proxyCache) {
     if (r == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -60,8 +63,9 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     this.proxyCache = proxyCache;
   }
 
-  private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
-      Object args) {
+  private ServerRegionFunctionExecutor(
+      ServerRegionFunctionExecutor<IN, OUT, AGG> serverRegionFunctionExecutor,
+      IN args) {
     super(serverRegionFunctionExecutor);
 
     region = serverRegionFunctionExecutor.region;
@@ -71,41 +75,45 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
-  private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
-      MemberMappedArgument memberMapargs) {
+  private ServerRegionFunctionExecutor(
+      ServerRegionFunctionExecutor<IN, OUT, AGG> serverRegionFunctionExecutor,
+      MemberMappedArgument memberMappedArgument) {
     super(serverRegionFunctionExecutor);
 
     region = serverRegionFunctionExecutor.region;
     filter.clear();
     filter.addAll(serverRegionFunctionExecutor.filter);
-    memberMappedArg = memberMapargs;
+    memberMappedArg = memberMappedArgument;
     executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
 
-  private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
-      ResultCollector rc) {
+  private ServerRegionFunctionExecutor(
+      ServerRegionFunctionExecutor<IN, OUT, AGG> serverRegionFunctionExecutor,
+      ResultCollector<OUT, AGG> rc) {
     super(serverRegionFunctionExecutor);
 
     region = serverRegionFunctionExecutor.region;
     filter.clear();
     filter.addAll(serverRegionFunctionExecutor.filter);
-    this.rc = rc != null ? new SynchronizedResultCollector(rc) : null;
+    this.rc = rc != null ? new SynchronizedResultCollector<>(rc) : null;
     executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
-  private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
-      Set filter2) {
+  private ServerRegionFunctionExecutor(
+      ServerRegionFunctionExecutor<IN, OUT, AGG> serverRegionFunctionExecutor,
+      Set<?> filter2) {
 
     super(serverRegionFunctionExecutor);
 
     region = serverRegionFunctionExecutor.region;
     filter.clear();
-    filter.addAll(filter2);
+    filter.addAll(uncheckedCast(filter2));
     executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
-  private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
+  private ServerRegionFunctionExecutor(
+      ServerRegionFunctionExecutor<IN, OUT, AGG> serverRegionFunctionExecutor,
       Set<Integer> bucketsAsFilter, boolean executeOnBucketSet) {
 
     super(serverRegionFunctionExecutor);
@@ -117,28 +125,29 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public Execution withFilter(Set fltr) {
-    if (fltr == null) {
+  public Execution<IN, OUT, AGG> withFilter(Set<?> filter) {
+    if (filter == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "filter"));
     }
     executeOnBucketSet = false;
-    return new ServerRegionFunctionExecutor(this, fltr);
+    return new ServerRegionFunctionExecutor<>(this, filter);
   }
 
   @Override
-  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "buckets as filter"));
     }
-    return new ServerRegionFunctionExecutor(this, bucketIDs, true /* execute on bucketset */);
+    return new ServerRegionFunctionExecutor<>(this, bucketIDs, true /* execute on bucketset */);
   }
 
   @Override
-  protected ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
+  protected ResultCollector<OUT, AGG> executeFunction(final Function<IN> function, long timeout,
+      TimeUnit unit) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -152,21 +161,22 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
         final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
         hasResult = 1;
         if (rc == null) { // Default Result Collector
-          ResultCollector defaultCollector = new DefaultResultCollector();
+          ResultCollector<OUT, AGG> defaultCollector =
+              uncheckedCast(new DefaultResultCollector<>());
           return executeOnServer(function, defaultCollector, hasResult, timeoutMs);
-        } else { // Custome Result COllector
+        } else { // Custom Result Collector
           return executeOnServer(function, rc, hasResult, timeoutMs);
         }
       } else { // No results
         executeOnServerNoAck(function, hasResult);
-        return new NoResult();
+        return new NoResult<>();
       }
     } finally {
       UserAttributes.userAttributes.set(null);
     }
   }
 
-  protected ResultCollector executeFunction(final String functionId, boolean resultReq,
+  protected ResultCollector<OUT, AGG> executeFunction(final String functionId, boolean resultReq,
       boolean isHA, boolean optimizeForWrite, long timeout, TimeUnit unit) {
     try {
       if (proxyCache != null) {
@@ -180,22 +190,24 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
         hasResult = 1;
         final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
         if (rc == null) { // Default Result Collector
-          ResultCollector defaultCollector = new DefaultResultCollector();
+          ResultCollector<OUT, AGG> defaultCollector =
+              uncheckedCast(new DefaultResultCollector<>());
           return executeOnServer(functionId, defaultCollector, hasResult, isHA, optimizeForWrite,
               timeoutMs);
-        } else { // Custome Result COllector
+        } else { // Custom Result Collector
           return executeOnServer(functionId, rc, hasResult, isHA, optimizeForWrite, timeoutMs);
         }
       } else { // No results
         executeOnServerNoAck(functionId, hasResult, isHA, optimizeForWrite);
-        return new NoResult();
+        return new NoResult<>();
       }
     } finally {
       UserAttributes.userAttributes.set(null);
     }
   }
 
-  private ResultCollector executeOnServer(Function function, ResultCollector collector,
+  private ResultCollector<OUT, AGG> executeOnServer(Function<IN> function,
+      ResultCollector<OUT, AGG> collector,
       byte hasResult, int timeoutMs) throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats =
@@ -216,7 +228,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     }
   }
 
-  private ResultCollector executeOnServer(String functionId, ResultCollector collector,
+  private ResultCollector<OUT, AGG> executeOnServer(String functionId,
+      ResultCollector<OUT, AGG> collector,
       byte hasResult, boolean isHA, boolean optimizeForWrite, int timeoutMs)
       throws FunctionException {
 
@@ -239,7 +252,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
 
-  private void executeOnServerNoAck(Function function, byte hasResult) throws FunctionException {
+  private void executeOnServerNoAck(Function<IN> function, byte hasResult)
+      throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats =
         FunctionStatsManager.getFunctionStats(function.getId(), region.getSystem());
@@ -277,18 +291,19 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   private ServerRegionProxy getServerRegionProxy() throws FunctionException {
-    ServerRegionProxy srp = region.getServerProxy();
-    if (srp != null) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Found server region proxy on region. RegionName: {}", region.getName());
-      }
-      return srp;
-    } else {
-      String message = srp + ": "
-          + "No available connection was found. Server Region Proxy is not available for this region "
-          + region.getName();
-      throw new FunctionException(message);
+    final ServerRegionProxy srp = region.getServerProxy();
+
+    if (srp == null) {
+      throw new FunctionException(
+          "No available connection was found. Server Region Proxy is not available for this region "
+              + region.getName());
     }
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Found server region proxy on region. RegionName: {}", region.getName());
+    }
+
+    return srp;
   }
 
   public LocalRegion getRegion() {
@@ -302,42 +317,43 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public Execution setArguments(Object args) {
+  public Execution<IN, OUT, AGG> setArguments(IN args) {
     if (args == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new ServerRegionFunctionExecutor(this, args);
+    return new ServerRegionFunctionExecutor<>(this, args);
   }
 
   @Override
-  public Execution withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(IN args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution withCollector(ResultCollector rs) {
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rs) {
     if (rs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new ServerRegionFunctionExecutor(this, rs);
+    return new ServerRegionFunctionExecutor<>(this, rs);
   }
 
   @Override
-  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "MemberMappedArgument"));
     }
-    return new ServerRegionFunctionExecutor(this, argument);
+    return new ServerRegionFunctionExecutor<>(this, argument);
   }
 
   @Override
-  public void validateExecution(Function function, Set targetMembers) {
+  public void validateExecution(final Function<IN> function,
+      final Set<? extends DistributedMember> targetMembers) {
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null && cache.getTxManager().getTXState() != null) {
       TXStateProxyImpl tx = (TXStateProxyImpl) cache.getTxManager().getTXState();
@@ -347,24 +363,23 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public ResultCollector execute(final String functionName) {
+  public ResultCollector<OUT, AGG> execute(final String functionName) {
     return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
+  public ResultCollector<OUT, AGG> execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
-    int timeoutInMs = (int) TimeUnit.MILLISECONDS.convert(timeout, unit);
-    isFnSerializationReqd = false;
-    Function functionObject = FunctionService.getFunction(functionName);
+    isFunctionSerializationRequired = false;
+    Function<IN> functionObject = uncheckedCast(FunctionService.getFunction(functionName));
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
 
       if (functionAttributes == null) {
-        // GEODE-5618: Set authentication properties before executing the internal function.
+        // Set authentication properties before executing the internal function.
         try {
           if (proxyCache != null) {
             if (proxyCache.isClosed()) {

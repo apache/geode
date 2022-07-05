@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheWriterException;
@@ -195,7 +196,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
    * @return the processor used to await the potential {@link org.apache.geode.cache.CacheException}
    * @throws ForceReattemptException if the peer is no longer available
    */
-  public static DestroyResponse send(DistributedMember recipient, PartitionedRegion r,
+  public static @NotNull DestroyResponse send(DistributedMember recipient, PartitionedRegion r,
       EntryEventImpl event, Object expectedOldValue) throws ForceReattemptException {
     // Assert.assertTrue(recipient != null, "DestroyMessage NULL recipient"); recipient may be null
     // for event notification
@@ -462,7 +463,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
 
   @Override
   protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
-    return notifiesSerialGatewaySender(dm);
+    return notifiesSerialGatewaySender();
   }
 
   public static class DestroyReplyMessage extends ReplyMessage {

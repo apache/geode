@@ -33,7 +33,8 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRe
  * This uses a first fit decreasing strategy to choose which buckets to move. It sorts the buckets
  * by size, and then moves the largest bucket that is below the load we are trying to move.
  *
- * An improvement would be find the bucket that can be moved with the least cost for the most load
+ * An improvement would be to find the bucket that can be moved with the least cost for the most
+ * load
  * change, but because the load probe currently use the same value for load and cost, there's no
  * need to complicate things now.
  *
@@ -124,7 +125,7 @@ public class PercentageMoveDirector extends RebalanceDirectorAdapter {
 
     float load = bucket.getLoad();
 
-    // See if we can move this bucket to the taret node.
+    // See if we can move this bucket to the target node.
     if (targetMember.willAcceptBucket(bucket, sourceMember, model.enforceUniqueZones())
         .willAccept()) {
 

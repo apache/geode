@@ -123,7 +123,7 @@ public class ExecuteRegionFunctionNoAckOp {
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       getMessage().addBytesPart(new byte[] {functionState});
       getMessage().addStringPart(region, true);
-      if (serverRegionExecutor.isFnSerializationReqd()) {
+      if (serverRegionExecutor.isFunctionSerializationRequired()) {
         getMessage().addStringOrObjPart(function);
       } else {
         getMessage().addStringOrObjPart(function.getId());

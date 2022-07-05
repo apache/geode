@@ -84,7 +84,7 @@ public class MoveBucketMessage extends PartitionMessage {
 
     Assert.assertTrue(recipient != null, "MoveBucketMessage NULL recipient");
 
-    MoveBucketResponse response = new MoveBucketResponse(region.getSystem(), recipient, region);
+    MoveBucketResponse response = new MoveBucketResponse(region.getSystem(), recipient);
     MoveBucketMessage msg =
         new MoveBucketMessage(recipient, region.getPRId(), response, bucketId, source);
     msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
@@ -225,7 +225,7 @@ public class MoveBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return "MoveBucketReplyMessage " + "processorid=" + processorId
+      return "MoveBucketReplyMessage " + "processorId=" + processorId
           + " moved=" + moved + " reply to sender "
           + getSender();
     }
@@ -238,8 +238,7 @@ public class MoveBucketMessage extends PartitionMessage {
 
     private volatile boolean moved = false;
 
-    public MoveBucketResponse(InternalDistributedSystem ds, InternalDistributedMember recipient,
-        PartitionedRegion theRegion) {
+    public MoveBucketResponse(InternalDistributedSystem ds, InternalDistributedMember recipient) {
       super(ds, recipient);
     }
 

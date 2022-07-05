@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -299,7 +300,7 @@ public class LuceneIndexForPartitionedRegionTest {
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createRegion(any(), any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ(any(), any());
+    doNothing().when(spy).createAEQ(any(), any());
     spy.setupRepositoryManager(null);
     spy.createAEQ(region.getAttributes(), aeq);
     spy.initialize();
@@ -355,7 +356,7 @@ public class LuceneIndexForPartitionedRegionTest {
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createRegion(any(), any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ(any(), any());
+    doNothing().when(spy).createAEQ(any(), any());
     spy.setupRepositoryManager(null);
     spy.createAEQ(any(), any());
     spy.initialize();
@@ -380,7 +381,7 @@ public class LuceneIndexForPartitionedRegionTest {
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index = spy(index);
     when(index.getFieldNames()).thenReturn(fields);
-    doReturn(aeq).when(index).createAEQ(any(), any());
+    doNothing().when(index).createAEQ(any(), any());
     index.setupRepositoryManager(null);
     index.createAEQ(cache.getRegionAttributes(regionPath), aeq.getId());
     index.initialize();

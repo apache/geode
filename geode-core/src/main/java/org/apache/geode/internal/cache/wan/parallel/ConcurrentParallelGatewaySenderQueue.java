@@ -28,7 +28,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.size.SingleObjectSizer;
 
 /**
  * Queue built on top of {@link
@@ -50,9 +49,9 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   private final ParallelGatewaySenderEventProcessor[] processors;
 
   public ConcurrentParallelGatewaySenderQueue(AbstractGatewaySender sender,
-      ParallelGatewaySenderEventProcessor[] pro) {
+      ParallelGatewaySenderEventProcessor[] processors) {
     this.sender = sender;
-    processors = pro;
+    this.processors = processors;
   }
 
   @Override
@@ -70,7 +69,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public Region getRegion() {
+  public Region<?, ?> getRegion() {
     return processors[0].getQueue().getRegion();
   }
 
@@ -93,7 +92,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public List take(int batchSize) throws CacheException, InterruptedException {
+  public List<?> take(int batchSize) throws CacheException, InterruptedException {
     throw new UnsupportedOperationException("This method(take) is not supported");
   }
 
@@ -108,24 +107,22 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public List peek(int batchSize) throws InterruptedException, CacheException {
+  public List<?> peek(int batchSize) throws InterruptedException, CacheException {
     throw new UnsupportedOperationException("This method(peek) is not supported");
   }
 
   @Override
-  public List peek(int batchSize, int timeToWait) throws InterruptedException, CacheException {
+  public List<?> peek(int batchSize, int timeToWait) throws InterruptedException, CacheException {
     throw new UnsupportedOperationException("This method(peek) is not supported");
   }
 
   @Override
   public int size() {
-    // is that fine??
     return processors[0].getQueue().size();
   }
 
   public String displayContent() {
-    ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) (processors[0].getQueue());
-    return pgsq.displayContent();
+    return ((ParallelGatewaySenderQueue) (processors[0].getQueue())).displayContent();
   }
 
   public int localSize() {
@@ -148,20 +145,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   @Override
   public void remove(int top) throws CacheException {
-    throw new UnsupportedOperationException("This method(remove) is not suported");
-  }
-
-  /*
-   * public void resetLastPeeked(){ this.resetLastPeeked = true; }
-   */
-
-  public long estimateMemoryFootprint(SingleObjectSizer sizer) {
-    long size = 0;
-    for (final ParallelGatewaySenderEventProcessor processor : processors) {
-      size += ((ParallelGatewaySenderQueue) processor.getQueue())
-          .estimateMemoryFootprint(sizer);
-    }
-    return size;
+    throw new UnsupportedOperationException("This method(remove) is not supported");
   }
 
   public void removeShadowPR(String prRegionName) {
@@ -173,8 +157,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   public void addShadowPartitionedRegionForUserPR(PartitionedRegion pr) {
     // Reset enqueuedAllTempQueueEvents if the sender is running
     // This is done so that any events received while the shadow PR is added are queued in the
-    // tmpQueuedEvents
-    // instead of blocking the distribute call which could cause a deadlock. See GEM-801.
+    // tmpQueuedEvents instead of blocking the distributed call which could cause a deadlock.
     if (sender.isRunning()) {
       sender.setEnqueuedAllTempQueueEvents(false);
     }

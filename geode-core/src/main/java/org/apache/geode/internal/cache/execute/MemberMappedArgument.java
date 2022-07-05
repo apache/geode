@@ -48,20 +48,12 @@ public class MemberMappedArgument implements Serializable {
     this.memberToArgMap = memberToArgMap;
   }
 
-  public Object getArgumentsForMember(String memberId) {
-    if (memberToArgMap.containsKey(memberId)) {
-      return memberToArgMap.get(memberId);
-    } else {
-      return defaultArgument;
-    }
+  @SuppressWarnings("unchecked")
+  public <T> T getArgumentsForMember(String memberId) {
+    return (T) memberToArgMap.getOrDefault(memberId, defaultArgument);
   }
 
   public Object getDefaultArgument() {
     return defaultArgument;
-  }
-
-  // TODO:Asif: Not good to return the refernec of the mapping. Should we return a copy?
-  public Map<String, Object> getMemberSpecificArgumentsMap() {
-    return memberToArgMap;
   }
 }

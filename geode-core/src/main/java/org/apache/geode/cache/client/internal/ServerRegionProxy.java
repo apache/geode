@@ -124,10 +124,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   /**
-   * Do not call this method if the value is Delta instance. Exclicitly passing
+   * Do not call this method if the value is Delta instance. Explicitly passing
    * <code>Operation.CREATE</code> to the <code>PutOp.execute()</code> method as the caller of this
    * method does not put Delta instances as value.
-   *
    */
   public Object putForMetaRegion(Object key, Object value, byte[] deltaBytes, EntryEventImpl event,
       Object callbackArg) {
@@ -603,7 +602,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       return PutAllOp.execute(pool, uncheckedCast(region), map, eventId, skipCallbacks,
           pool.getRetryAttempts(), callbackArg);
     } else {
-      return PutAllOp.execute(pool, region, map, eventId, skipCallbacks, false,
+      return PutAllOp.execute(pool, uncheckedCast(region), map, eventId, skipCallbacks, false,
           callbackArg);
     }
   }
@@ -671,7 +670,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   public void executeFunction(Function<?> function,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       ResultCollector<?, ?> resultCollector,
       byte hasResult, final int timeoutMs) {
 
@@ -704,10 +703,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
           } else {
 
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), function, executor, resultCollector,
-                    hasResult, emptySet(), true, timeoutMs);
+                    emptySet(), true, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, serverRegionExecutor,
                 resultCollector, serverToBuckets, function.isHA(),
@@ -715,7 +714,8 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           }
         } else {
           boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-          Map<ServerLocation, Set> serverToFilterMap =
+          @SuppressWarnings("unchecked")
+          Map<ServerLocation, Set<Object>> serverToFilterMap =
               cms.getServerToFilterMap(serverRegionExecutor.getFilter(), region,
                   function.optimizeForWrite(), isBucketFilter);
 
@@ -730,10 +730,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
           } else {
 
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), function, executor, resultCollector,
-                    hasResult, emptySet(), isBucketFilter, timeoutMs);
+                    emptySet(), isBucketFilter, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToFilterMap,
@@ -759,7 +759,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
 
   public void executeFunction(String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       ResultCollector<?, ?> resultCollector,
       byte hasResult, boolean isHA, boolean optimizeForWrite,
       final int timeoutMs) {
@@ -791,7 +791,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), functionId, executor1, resultCollector, hasResult,
                     emptySet(), true, isHA, optimizeForWrite, timeoutMs);
@@ -803,7 +803,8 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
         } else {
           boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-          Map<ServerLocation, Set> serverToFilterMap = cms.getServerToFilterMap(
+          @SuppressWarnings("unchecked")
+          Map<ServerLocation, Set<Object>> serverToFilterMap = cms.getServerToFilterMap(
               serverRegionExecutor.getFilter(), region, optimizeForWrite, isBucketsAsFilter);
 
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
@@ -815,7 +816,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             cms.scheduleGetPRMetaData(region, false);
           } else {
 
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), functionId, executor, resultCollector, hasResult,
                     emptySet(), isBucketsAsFilter, isHA, optimizeForWrite, timeoutMs);
@@ -844,7 +845,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
 
   public void executeFunctionNoAck(String rgnName, Function<?> function,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       byte hasResult) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 3, function,
         serverRegionExecutor, hasResult);
@@ -853,7 +854,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   public void executeFunctionNoAck(String rgnName, String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       byte hasResult, boolean isHA,
       boolean optimizeForWrite) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 4, functionId,

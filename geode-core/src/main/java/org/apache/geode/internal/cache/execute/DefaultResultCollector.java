@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.execute.Function;
@@ -32,9 +33,9 @@ import org.apache.geode.distributed.DistributedMember;
  * @since GemFire 6.0
  *
  */
-public class DefaultResultCollector implements ResultCollector {
+public class DefaultResultCollector<T> implements ResultCollector<T, List<T>> {
 
-  private final ArrayList<Object> resultList = new ArrayList<>();
+  private final List<T> resultList = new ArrayList<>();
 
   public DefaultResultCollector() {}
 
@@ -44,7 +45,7 @@ public class DefaultResultCollector implements ResultCollector {
    */
   @Override
   public synchronized void addResult(DistributedMember distributedMember,
-      Object resultOfSingleExecution) {
+      T resultOfSingleExecution) {
     resultList.add(resultOfSingleExecution);
   }
 
@@ -57,7 +58,7 @@ public class DefaultResultCollector implements ResultCollector {
    * @throws FunctionException if something goes wrong while retrieving the result
    */
   @Override
-  public Object getResult() throws FunctionException {
+  public List<T> getResult() throws FunctionException {
     return resultList; // this is full result
   }
 
@@ -80,7 +81,7 @@ public class DefaultResultCollector implements ResultCollector {
    * @throws FunctionException if something goes wrong while retrieving the result
    */
   @Override
-  public Object getResult(long timeout, TimeUnit unit) throws FunctionException {
+  public List<T> getResult(long timeout, TimeUnit unit) throws FunctionException {
     return resultList;
   }
 

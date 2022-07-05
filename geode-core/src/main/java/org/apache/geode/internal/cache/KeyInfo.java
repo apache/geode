@@ -22,9 +22,6 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 
 public class KeyInfo {
 
-  // Rahul: This class should actually be renamed as RoutingInfo or BucketIdInfo
-  // since that is exactly what an instance of this class is.
-
   public static final int UNKNOWN_BUCKET = -1;
 
   private Object key;
@@ -37,17 +34,18 @@ public class KeyInfo {
   private final Object value;
 
   public KeyInfo(Object key, Object value, Object callbackArg) {
-    this.key = key;
-    this.callbackArg = callbackArg;
-    bucketId = UNKNOWN_BUCKET;
-    this.value = value;
+    this(key, value, callbackArg, UNKNOWN_BUCKET);
   }
 
   public KeyInfo(Object key, Object callbackArg, int bucketId) {
+    this(key, null, callbackArg, bucketId);
+  }
+
+  private KeyInfo(Object key, Object value, Object callbackArg, int bucketId) {
     this.key = key;
     this.callbackArg = callbackArg;
     this.bucketId = bucketId;
-    value = null;
+    this.value = value;
   }
 
   public KeyInfo(KeyInfo keyInfo) {
@@ -95,9 +93,6 @@ public class KeyInfo {
    */
   public boolean isCheckPrimary() throws UnsupportedOperationInTransactionException {
     return true;
-    // throw new UnsupportedOperationInTransactionException(
-    // String.format("precommit() operation %s meant for Dist Tx is not supported",
-    // "isCheckPrimary"));
   }
 
   /*

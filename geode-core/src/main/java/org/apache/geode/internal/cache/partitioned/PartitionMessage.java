@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
@@ -139,7 +138,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   public PartitionMessage(InternalDistributedMember recipient, int regionId,
       ReplyProcessor21 processor) {
-    Assert.assertTrue(recipient != null, "PartitionMesssage recipient can not be null");
+    Assert.assertTrue(recipient != null, "PartitionMessage recipient can not be null");
     setRecipient(recipient);
     this.regionId = regionId;
     processorId = processor == null ? 0 : processor.getProcessorId();
@@ -232,7 +231,7 @@ public abstract class PartitionMessage extends DistributionMessage
   }
 
   /**
-   * @return the {@link ReplyProcessor21}id associated with the message, null if no acknowlegement
+   * @return the {@link ReplyProcessor21}id associated with the message, null if no acknowledgement
    *         is required.
    */
   @Override
@@ -242,7 +241,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   /**
    * @param processorId1 the {@link org.apache.geode.distributed.internal.ReplyProcessor21} id
-   *        associated with the message, null if no acknowlegement is required.
+   *        associated with the message, null if no acknowledgement is required.
    */
   public void registerProcessor(int processorId1) {
     processorId = processorId1;
@@ -252,7 +251,8 @@ public abstract class PartitionMessage extends DistributionMessage
    * @return return the message that should be sent to listeners, or null if this message should not
    *         be relayed
    */
-  public PartitionMessage getMessageForRelayToListeners(EntryEventImpl event, Set recipients) {
+  public PartitionMessage getMessageForRelayToListeners(EntryEventImpl event,
+      Set<InternalDistributedMember> recipients) {
     return null;
   }
 
@@ -438,11 +438,11 @@ public abstract class PartitionMessage extends DistributionMessage
       DistributionManager distributionManager) {
     if ((pr == null || !pr.getDistributionAdvisor().isInitialized()) && failIfRegionMissing()) {
       // if the distributed system is disconnecting, don't send a reply saying
-      // the partitioned region can't be found (bug 36585)
-      Throwable thr = new ForceReattemptException(
+      // the partitioned region can't be found
+      return new ForceReattemptException(
           String.format("%s : could not find partitioned region with Id %s",
               distributionManager.getDistributionManagerId(), regionId));
-      return thr; // reply sent in finally block below
+      // reply sent in finally block below
     }
     return null;
   }
@@ -485,14 +485,16 @@ public abstract class PartitionMessage extends DistributionMessage
    * @param r the region being operated on
    * @param processor the reply processor to be notified
    */
-  public Set relayToListeners(Set cacheOpRecipients, Set adjunctRecipients,
+  public Set<InternalDistributedMember> relayToListeners(
+      Set<InternalDistributedMember> cacheOpRecipients,
+      Set<InternalDistributedMember> adjunctRecipients,
       FilterRoutingInfo filterRoutingInfo, EntryEventImpl event, PartitionedRegion r,
       DirectReplyProcessor processor) {
     processorId = processor == null ? 0 : processor.getProcessorId();
     notificationOnly = true;
 
     setFilterInfo(filterRoutingInfo);
-    Set failures1 = null;
+    Set<InternalDistributedMember> failures1 = null;
     if (!adjunctRecipients.isEmpty()) {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
@@ -510,14 +512,9 @@ public abstract class PartitionMessage extends DistributionMessage
    * return a new reply processor for this class, for use in relaying a response. This <b>must</b>
    * be an instance method so subclasses can override it properly.
    */
-  PartitionResponse createReplyProcessor(PartitionedRegion r, Set recipients) {
+  PartitionResponse createReplyProcessor(PartitionedRegion r,
+      Set<InternalDistributedMember> recipients) {
     return new PartitionResponse(r.getSystem(), recipients);
-  }
-
-
-  protected boolean operateOnRegion(ClusterDistributionManager dm, PartitionedRegion pr) {
-    throw new InternalGemFireError(
-        "Sorry, use operateOnPartitionedRegion for PR messages");
   }
 
   /**
@@ -629,8 +626,6 @@ public abstract class PartitionMessage extends DistributionMessage
   public String toString() {
     StringBuilder buff = new StringBuilder();
     String className = getClass().getName();
-    // className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); //
-    // partition.<foo> more generic version
     buff.append(className.substring(className.indexOf(PN_TOKEN) + PN_TOKEN.length())); // partition.<foo>
     buff.append("(prid="); // make sure this is the first one
     buff.append(regionId);
@@ -643,8 +638,6 @@ public abstract class PartitionMessage extends DistributionMessage
         name = pr.getFullPath();
       }
     } catch (Exception ignore) {
-      /* ignored */
-      name = null;
     }
     if (name != null) {
       buff.append(" (name = \"").append(name).append("\")");
@@ -723,16 +716,14 @@ public abstract class PartitionMessage extends DistributionMessage
     return true;
   }
 
-  protected boolean notifiesSerialGatewaySender(ClusterDistributionManager dm) {
+  protected boolean notifiesSerialGatewaySender() {
     try {
       PartitionedRegion pr = PartitionedRegion.getPRFromId(regionId);
       if (pr == null) {
         return false;
       }
       return pr.notifiesSerialGatewaySender();
-    } catch (PRLocallyDestroyedException ignore) {
-      return false;
-    } catch (RuntimeException ignore) {
+    } catch (PRLocallyDestroyedException | RuntimeException ignore) {
       return false;
     }
   }
@@ -760,11 +751,13 @@ public abstract class PartitionMessage extends DistributionMessage
      */
     boolean responseRequired;
 
-    public PartitionResponse(InternalDistributedSystem dm, Set initMembers) {
+    public PartitionResponse(InternalDistributedSystem dm,
+        Set<InternalDistributedMember> initMembers) {
       this(dm, initMembers, true);
     }
 
-    public PartitionResponse(InternalDistributedSystem dm, Set initMembers, boolean register) {
+    public PartitionResponse(InternalDistributedSystem dm,
+        Set<InternalDistributedMember> initMembers, boolean register) {
       super(dm, initMembers);
       if (register) {
         register();

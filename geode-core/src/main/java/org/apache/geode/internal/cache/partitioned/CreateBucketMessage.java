@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -109,8 +111,8 @@ public class CreateBucketMessage extends PartitionMessage {
 
     p.enableSevereAlertProcessing();
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
+    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(m);
+    if (!isEmpty(failures)) {
       throw new ForceReattemptException("Failed sending <" + m + ">");
     }
 
@@ -290,8 +292,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return "CreateBucketReplyMessage " + "processorid="
-          + processorId;
+      return "CreateBucketReplyMessage " + "processorId=" + processorId;
     }
   }
 

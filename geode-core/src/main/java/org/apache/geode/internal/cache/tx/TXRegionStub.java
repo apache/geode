@@ -29,7 +29,7 @@ public interface TXRegionStub {
 
   void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue);
 
-  Entry getEntry(KeyInfo keyInfo, boolean allowTombstone);
+  Entry<?, ?> getEntry(KeyInfo keyInfo, boolean allowTombstone);
 
   void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry);
@@ -48,9 +48,9 @@ public interface TXRegionStub {
 
   int entryCount();
 
-  Set getRegionKeysForIteration();
+  Set<?> getRegionKeysForIteration();
 
-  void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
+  void postPutAll(DistributedPutAllOperation putAllOp, VersionedObjectList successfulPuts,
       InternalRegion region);
 
   void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,

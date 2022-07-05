@@ -48,14 +48,15 @@ public class IndexRepositoryFactory {
 
   public IndexRepositoryFactory() {}
 
-  public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
+  public IndexRepository computeIndexRepository(final Integer bucketId,
+      LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, final IndexRepository oldRepository,
       PartitionedRepositoryManager partitionedRepositoryManager) throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
 
     // We need to ensure that all members have created the fileAndChunk region before continuing
-    Region prRoot = PartitionedRegionHelper.getPRRoot(fileRegion.getCache());
+    Region<?, ?> prRoot = PartitionedRegionHelper.getPRRoot(fileRegion.getCache());
     PartitionRegionConfig prConfig =
         (PartitionRegionConfig) prRoot.get(fileRegion.getRegionIdentifier());
     LuceneFileRegionColocationListener luceneFileRegionColocationCompleteListener =
@@ -74,14 +75,14 @@ public class IndexRepositoryFactory {
    * conditions.
    * This is a util function just to not let computeIndexRepository be a huge chunk of code.
    */
-  protected IndexRepository finishComputingRepository(Integer bucketId, LuceneSerializer serializer,
+  protected IndexRepository finishComputingRepository(Integer bucketId,
+      LuceneSerializer<?> serializer,
       PartitionedRegion userRegion, IndexRepository oldRepository, InternalLuceneIndex index)
       throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
     BucketRegion fileAndChunkBucket = getMatchingBucket(fileRegion, bucketId);
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
-    boolean success = false;
     if (fileAndChunkBucket == null) {
       if (oldRepository != null) {
         oldRepository.cleanup();
@@ -111,14 +112,14 @@ public class IndexRepositoryFactory {
     }
 
     final IndexRepository repo;
-    InternalCache cache = (InternalCache) userRegion.getRegionService();
-    boolean initialPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
+    final InternalCache cache = (InternalCache) userRegion.getRegionService();
+    final boolean initialPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
+    boolean success = false;
     try {
       IndexWriter writer = buildIndexWriter(bucketId, fileAndChunkBucket, indexForPR);
       repo = new IndexRepositoryImpl(fileAndChunkBucket, writer, serializer,
           indexForPR.getIndexStats(), dataBucket, lockService, lockName, indexForPR);
-      success = false;
 
       // fileRegion ops (get/put) need bucketId as a callbackArg for PartitionResolver
       if (null != fileRegion.get(APACHE_GEODE_INDEX_COMPLETE, bucketId)) {
@@ -200,7 +201,7 @@ public class IndexRepositoryFactory {
     return true;
   }
 
-  private Object getValue(Region.Entry entry) {
+  private Object getValue(Region.Entry<?, ?> entry) {
     final EntrySnapshot es = (EntrySnapshot) entry;
     Object value;
     try {
@@ -211,8 +212,9 @@ public class IndexRepositoryFactory {
     return value;
   }
 
+  @SuppressWarnings("unchecked")
   protected Map<Object, Object> getBucketTargetingMap(BucketRegion region, int bucketId) {
-    return new BucketTargetingMap<>(region, bucketId);
+    return new BucketTargetingMap<Object, Object>(region, bucketId);
   }
 
   protected String getLockName(final BucketRegion fileAndChunkBucket) {

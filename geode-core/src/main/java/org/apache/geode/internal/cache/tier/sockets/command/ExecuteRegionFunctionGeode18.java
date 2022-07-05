@@ -36,21 +36,16 @@ public class ExecuteRegionFunctionGeode18 extends ExecuteRegionFunction66 {
 
   @Override
   void executeFunctionWithResult(Object function, byte functionState,
-      Function<?> functionObject, AbstractExecution execution) {
+      Function<?> functionObject, AbstractExecution<?, ?, ?> execution) {
     if (function instanceof String) {
       switch (functionState) {
         case AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE:
+        case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
           execution.setWaitOnExceptionFlag(true);
           execution.execute((String) function).getResult();
           break;
         case AbstractExecution.HA_HASRESULT_NO_OPTIMIZEFORWRITE:
-          execution.execute((String) function).getResult();
-          break;
         case AbstractExecution.HA_HASRESULT_OPTIMIZEFORWRITE:
-          execution.execute((String) function).getResult();
-          break;
-        case AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE:
-          execution.setWaitOnExceptionFlag(true);
           execution.execute((String) function).getResult();
           break;
       }

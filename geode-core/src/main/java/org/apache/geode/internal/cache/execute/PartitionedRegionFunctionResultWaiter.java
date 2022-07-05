@@ -40,14 +40,15 @@ import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStre
  */
 public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOperation {
 
-  private ResultCollector reply;
+  private ResultCollector<?, ?> reply;
 
   private final int regionId;
 
   private Set<InternalDistributedMember> recipients = null;
 
   public PartitionedRegionFunctionResultWaiter(InternalDistributedSystem sys, int regionId,
-      ResultCollector rc, final Function function, PartitionedRegionFunctionResultSender sender) {
+      ResultCollector<?, ?> rc, final Function<?> function,
+      PartitionedRegionFunctionResultSender<?, ?, ?> sender) {
     super(sys, rc, function, sender);
     this.regionId = regionId;
   }
@@ -64,17 +65,15 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
    * Returns normally if succeeded to get data, otherwise throws an exception Have to wait outside
    * this function and when getResult() is called. For the time being get the correct results.
    */
-  public ResultCollector getPartitionedDataFrom(
+  public <IN, OUT, AGG> ResultCollector<OUT, AGG> getPartitionedDataFrom(
       Map<InternalDistributedMember, FunctionRemoteContext> recipMap, PartitionedRegion pr,
-      AbstractExecution execution) {
+      AbstractExecution<IN, OUT, AGG> execution) {
 
     if (recipMap.isEmpty()) {
       return rc;
     }
-    Set<InternalDistributedMember> recipientsSet = new HashSet<>();
-    for (InternalDistributedMember member : recipMap.keySet()) {
-      recipientsSet.add(member);
-    }
+
+    Set<InternalDistributedMember> recipientsSet = new HashSet<>(recipMap.keySet());
     recipients = recipientsSet;
 
     PRFunctionStreamingResultCollector processor = new PRFunctionStreamingResultCollector(this,
@@ -93,10 +92,7 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
 
   protected PartitionMessage createRequestMessage(InternalDistributedMember recipient,
       ReplyProcessor21 processor, FunctionRemoteContext context) {
-    PartitionedRegionFunctionStreamingMessage msg =
-        new PartitionedRegionFunctionStreamingMessage(recipient, regionId, processor, context);
-
-    return msg;
+    return new PartitionedRegionFunctionStreamingMessage(recipient, regionId, processor, context);
   }
 
   /**

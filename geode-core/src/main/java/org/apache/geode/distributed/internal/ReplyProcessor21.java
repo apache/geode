@@ -245,7 +245,8 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param dm the DistributionManager to use for messaging and membership
    * @param initMembers the Set of members this processor wants replies from
    */
-  public ReplyProcessor21(DistributionManager dm, Collection initMembers) {
+  public ReplyProcessor21(DistributionManager dm,
+      Collection<InternalDistributedMember> initMembers) {
     this(dm, initMembers, null);
   }
 
@@ -259,7 +260,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param initMembers the Set of members this processor wants replies from
    * @param cancelCriterion optional CancelCriterion to use; will use the dm if null
    */
-  public ReplyProcessor21(DistributionManager dm, Collection initMembers,
+  public ReplyProcessor21(DistributionManager dm, Collection<InternalDistributedMember> initMembers,
       CancelCriterion cancelCriterion) {
     this(dm, dm.getSystem(), initMembers, cancelCriterion);
   }
@@ -273,7 +274,8 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param system the DistributedSystem connection
    * @param initMembers the Set of members this processor wants replies from
    */
-  public ReplyProcessor21(InternalDistributedSystem system, Collection initMembers) {
+  public ReplyProcessor21(InternalDistributedSystem system,
+      Collection<InternalDistributedMember> initMembers) {
     this(system.getDistributionManager(), system, initMembers, null);
   }
 
@@ -288,7 +290,8 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param cancelCriterion optional CancelCriterion to use; will use the DistributedSystem's
    *        DistributionManager if null
    */
-  public ReplyProcessor21(InternalDistributedSystem system, Collection initMembers,
+  public ReplyProcessor21(InternalDistributedSystem system,
+      Collection<InternalDistributedMember> initMembers,
       CancelCriterion cancelCriterion) {
     this(system.getDistributionManager(), system, initMembers, cancelCriterion);
   }
@@ -302,7 +305,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param cancelCriterion optional CancelCriterion to use; will use the dm if null
    */
   private ReplyProcessor21(DistributionManager dm, InternalDistributedSystem system,
-      Collection initMembers, CancelCriterion cancelCriterion) {
+      Collection<InternalDistributedMember> initMembers, CancelCriterion cancelCriterion) {
 
     this(dm, system, initMembers, cancelCriterion, true);
   }
@@ -316,7 +319,8 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param cancelCriterion optional CancelCriterion to use; will use the dm if null
    */
   protected ReplyProcessor21(DistributionManager dm, InternalDistributedSystem system,
-      Collection initMembers, CancelCriterion cancelCriterion, boolean register) {
+      Collection<InternalDistributedMember> initMembers, CancelCriterion cancelCriterion,
+      boolean register) {
     if (!allowReplyFromSender()) {
       Assert.assertTrue(initMembers != null, "null initMembers");
       Assert.assertTrue(system != null, "null system");

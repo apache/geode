@@ -35,7 +35,7 @@ import org.apache.geode.distributed.DistributedMember;
  * @see Function#hasResult()
  *
  */
-public class NoResult implements ResultCollector, Serializable {
+public class NoResult<T, S> implements ResultCollector<T, S>, Serializable {
 
   private static final long serialVersionUID = -4901369422864228848L;
 
@@ -52,12 +52,12 @@ public class NoResult implements ResultCollector, Serializable {
   }
 
   @Override
-  public Object getResult() throws FunctionException {
+  public S getResult() throws FunctionException {
     throw new FunctionException("Cannot return any result as the Function#hasResult() is false");
   }
 
   @Override
-  public Object getResult(long timeout, TimeUnit unit)
+  public S getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     throw new FunctionException("Cannot return any result as the Function#hasResult() is false");
   }

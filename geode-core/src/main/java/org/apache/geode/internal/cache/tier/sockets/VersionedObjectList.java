@@ -235,7 +235,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    * save the current key/tag pairs in the given map
    *
    */
-  public void saveVersions(Map<Object, VersionTag> vault) {
+  public void saveVersions(Map<Object, VersionTag<? extends VersionSource<?>>> vault) {
     Iterator it = iterator();
     while (it.hasNext()) {
       Entry e = it.next();

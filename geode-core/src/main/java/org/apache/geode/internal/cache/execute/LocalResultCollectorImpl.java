@@ -133,7 +133,7 @@ public class LocalResultCollectorImpl implements CachedResultCollector, LocalRes
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(function);
           } else {
             newRc = execution.execute(function.getId());
@@ -182,7 +182,7 @@ public class LocalResultCollectorImpl implements CachedResultCollector, LocalRes
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(function);
           } else {
             newRc = execution.execute(function.getId());

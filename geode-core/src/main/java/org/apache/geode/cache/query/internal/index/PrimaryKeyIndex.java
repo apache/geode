@@ -172,7 +172,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
   @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
-      RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib,
+      RuntimeIterator independentIterator, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
 
@@ -200,8 +200,8 @@ public class PrimaryKeyIndex extends AbstractIndex {
             Object value = entry.getValue();
             if (value != null) {
               boolean ok = true;
-              if (runtimeItr != null) {
-                runtimeItr.setCurrent(value);
+              if (independentIterator != null) {
+                independentIterator.setCurrent(value);
                 ok = QueryUtils.applyCondition(iterOps, context);
               }
               if (ok) {
@@ -227,8 +227,8 @@ public class PrimaryKeyIndex extends AbstractIndex {
           // TODO: is this correct. What should be the behaviour of null values?
           if (val != null) {
             boolean ok = true;
-            if (runtimeItr != null) {
-              runtimeItr.setCurrent(val);
+            if (independentIterator != null) {
+              independentIterator.setCurrent(val);
               ok = QueryUtils.applyCondition(iterOps, context);
             }
             if (ok) {

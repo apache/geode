@@ -83,7 +83,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
   CompiledValue additionalProj = null;
 
-  ObjectType addnlProjType = null;
+  ObjectType additionalProjType = null;
 
   CompiledValue modifiedIndexExpr = null;
 
@@ -207,7 +207,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
         if (i == 0) {
           CompiledValue cv = iterDef.getCollectionExpr();
-          addnlProjType = rIter.getElementType();
+          additionalProjType = rIter.getElementType();
           String name = iterDef.getName();
           if (isEmpty(name)) {
             // In case the name of iterator is null or blank set it to index_internal_id

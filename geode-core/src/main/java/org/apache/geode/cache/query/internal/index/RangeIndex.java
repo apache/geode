@@ -562,15 +562,14 @@ public class RangeIndex extends AbstractIndex {
     internalIndexStats.incNumUpdates();
   }
 
-  // Asif TODO: Provide explanation of the method. Test this method
   @Override
-  public List queryEquijoinCondition(IndexProtocol indx, ExecutionContext context)
+  public List<Object[][]> queryEquijoinCondition(IndexProtocol indx, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
     // get a read lock when doing a lookup
     long start = updateIndexUseStats();
     ((AbstractIndex) indx).updateIndexUseStats();
-    List data = new ArrayList();
+    List<Object[][]> data = new ArrayList<>();
     Iterator inner = null;
     try {
       // We will iterate over each of the valueToEntries Map to obatin the keys
@@ -1079,10 +1078,11 @@ public class RangeIndex extends AbstractIndex {
     }
   }
 
-  private void addValuesToResult(final Object entriesMap, final Collection<?> result,
+  private void addValuesToResult(final Object entriesMap, final Collection<Object> result,
       final Object keyToRemove, final CompiledValue iterOps, final RuntimeIterator runtimeItr,
       final ExecutionContext context, final List<?> projAttrib,
-      final SelectResults<?> intermediateResults, final boolean isIntersection, final int limit)
+      final SelectResults<Object> intermediateResults, final boolean isIntersection,
+      final int limit)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     if (entriesMap == null || result == null) {
@@ -1108,9 +1108,10 @@ public class RangeIndex extends AbstractIndex {
   }
 
   private void addValuesToResultFromMap(final Map<Object, Object> entriesMap,
-      final Collection<?> result, final Object keyToRemove, final CompiledValue iterOps,
+      final Collection<Object> result, final Object keyToRemove, final CompiledValue iterOps,
       final RuntimeIterator runtimeItr, final ExecutionContext context, final List<?> projAttrib,
-      final SelectResults<?> intermediateResults, final boolean isIntersection, final int limit,
+      final SelectResults<Object> intermediateResults, final boolean isIntersection,
+      final int limit,
       final QueryObserver observer) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     // That means we aren't removing any keys (remember if we are matching for nulls, we have the
@@ -1159,7 +1160,7 @@ public class RangeIndex extends AbstractIndex {
 
   @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
-      RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib,
+      RuntimeIterator independentIterator, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
     int limit = -1;
@@ -1185,7 +1186,8 @@ public class RangeIndex extends AbstractIndex {
     if (key == null) {
       switch (operator) {
         case OQLLexerTokenTypes.TOK_EQ: {
-          nullMappedEntries.addValuesToCollection(results, iterOps, runtimeItr, context, projAttrib,
+          nullMappedEntries.addValuesToCollection(results, iterOps, independentIterator, context,
+              projAttrib,
               intermediateResults, isIntersection, limit);
           break;
         }
@@ -1197,9 +1199,10 @@ public class RangeIndex extends AbstractIndex {
 
           }
           // keysToRemove should be null, meaning we aren't removing any keys
-          addValuesToResult(sm, results, null, iterOps, runtimeItr, context, projAttrib,
+          addValuesToResult(sm, results, null, iterOps, independentIterator, context, projAttrib,
               intermediateResults, isIntersection, multiColOrderBy ? -1 : limit);
-          undefinedMappedEntries.addValuesToCollection(results, iterOps, runtimeItr, context,
+          undefinedMappedEntries.addValuesToCollection(results, iterOps, independentIterator,
+              context,
               projAttrib, intermediateResults, isIntersection, limit);
           break;
         }
@@ -1210,7 +1213,8 @@ public class RangeIndex extends AbstractIndex {
     } else if (key == QueryService.UNDEFINED) { // do nothing
       switch (operator) {
         case OQLLexerTokenTypes.TOK_EQ: {
-          undefinedMappedEntries.addValuesToCollection(results, iterOps, runtimeItr, context,
+          undefinedMappedEntries.addValuesToCollection(results, iterOps, independentIterator,
+              context,
               projAttrib, intermediateResults, isIntersection, limit);
           break;
         }
@@ -1222,9 +1226,10 @@ public class RangeIndex extends AbstractIndex {
             sm = sm.descendingMap();
           }
           // keysToRemove should be null
-          addValuesToResult(sm, results, null, iterOps, runtimeItr, context, projAttrib,
+          addValuesToResult(sm, results, null, iterOps, independentIterator, context, projAttrib,
               intermediateResults, isIntersection, multiColOrderBy ? -1 : limit);
-          nullMappedEntries.addValuesToCollection(results, iterOps, runtimeItr, context, projAttrib,
+          nullMappedEntries.addValuesToCollection(results, iterOps, independentIterator, context,
+              projAttrib,
               intermediateResults, isIntersection, limit);
           break;
         }
@@ -1238,7 +1243,7 @@ public class RangeIndex extends AbstractIndex {
         return;
       }
       key = getPdxStringForIndexedPdxKeys(key);
-      evaluate(key, operator, results, iterOps, runtimeItr, context, projAttrib,
+      evaluate(key, operator, results, iterOps, independentIterator, context, projAttrib,
           intermediateResults, isIntersection, limit, applyOrderBy, orderByAttrs);
     } // end else
   }

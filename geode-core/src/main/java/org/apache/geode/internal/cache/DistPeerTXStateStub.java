@@ -38,8 +38,8 @@ import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
  */
 public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordinatorInterface {
 
-  private ArrayList<DistTxEntryEvent> primaryTransactionalOperations = null;
-  private ArrayList<DistTxEntryEvent> secondaryTransactionalOperations = null;
+  private final ArrayList<DistTxEntryEvent> primaryTransactionalOperations = new ArrayList<>();
+  private final ArrayList<DistTxEntryEvent> secondaryTransactionalOperations = new ArrayList<>();
   private DistTXPrecommitMessage precommitDistTxMsg = null;
   private DistTXCommitMessage commitDistTxMsg = null;
   private DistTXRollbackMessage rollbackDistTxMsg = null;
@@ -48,8 +48,6 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   public DistPeerTXStateStub(TXStateProxy stateProxy, DistributedMember target,
       InternalDistributedMember onBehalfOfClient) {
     super(stateProxy, target, onBehalfOfClient);
-    primaryTransactionalOperations = new ArrayList<>();
-    secondaryTransactionalOperations = new ArrayList<>();
   }
 
   @Override
@@ -59,13 +57,11 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
           + " ,primaryTransactionalOperations=" + primaryTransactionalOperations
           + " ,secondaryTransactionalOperations=" + secondaryTransactionalOperations);
     }
-    assert target != null;
-    assert primaryTransactionalOperations != null || secondaryTransactionalOperations != null;
 
     // [DISTTX] TODO Handle Stats
 
     precommitDistTxMsg.setSecondaryTransactionalOperations(secondaryTransactionalOperations);
-    final Set<DistributedMember> recipients = Collections.singleton(target);
+    final Set<InternalDistributedMember> recipients = getRecipients();
     precommitDistTxMsg.setRecipients(recipients);
     dm.putOutgoing(precommitDistTxMsg);
     precommitDistTxMsg.resetRecipients();
@@ -82,7 +78,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
     // [DISTTX] TODO Handle Stats
     dm.getStats().incSentCommitMessages(1L);
 
-    final Set<DistributedMember> recipients = Collections.singleton(target);
+    final Set<InternalDistributedMember> recipients = getRecipients();
     commitDistTxMsg.setRecipients(recipients);
     dm.putOutgoing(commitDistTxMsg);
     commitDistTxMsg.resetRecipients();
@@ -94,12 +90,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
       logger.debug("DistPeerTXStateStub.rollback target=" + target);
     }
 
-    // [DISTTX] TODO Handle callbacks
-    // if (this.internalAfterSendRollback != null) {
-    // this.internalAfterSendRollback.run();
-    // }
-
-    final Set<DistributedMember> recipients = Collections.singleton(target);
+    final Set<InternalDistributedMember> recipients = getRecipients();
     rollbackDistTxMsg.setRecipients(recipients);
     dm.putOutgoing(rollbackDistTxMsg);
     rollbackDistTxMsg.resetRecipients();
@@ -226,8 +217,6 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
-    // logger
-    // .debug("DistPeerTXStateStub.invalidateExistingEntry", new Throwable());
     super.invalidateExistingEntry(event, invokeCallbacks, forceNewEntry);
     primaryTransactionalOperations.add(new DistTxEntryEvent(event));
   }
@@ -359,4 +348,9 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   public void finalCleanup() {
     cleanup();
   }
+
+  private Set<InternalDistributedMember> getRecipients() {
+    return Collections.singleton((InternalDistributedMember) target);
+  }
+
 }

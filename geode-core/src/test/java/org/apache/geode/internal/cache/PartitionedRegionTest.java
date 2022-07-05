@@ -365,8 +365,9 @@ public class PartitionedRegionTest {
     doReturn(primaryMember)
         .when(spyPartitionedRegion).getNodeForBucketWrite(anyInt(), isNull());
 
-    HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets = new HashMap<>();
-    HashMap<Integer, HashSet> bucketKeys = (HashMap) asMapOfSet(0, (HashSet) asSet(0, 1));
+    Map<InternalDistributedMember, Map<Integer, Set<Object>>> nodeToBuckets =
+        new HashMap<>();
+    Map<Integer, Set<Object>> bucketKeys = asMapOfSet(0, 0, 1);
 
     // ACT
     spyPartitionedRegion.updateNodeToBucketMap(nodeToBuckets, bucketKeys);

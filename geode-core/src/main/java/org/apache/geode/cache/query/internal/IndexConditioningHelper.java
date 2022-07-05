@@ -63,7 +63,7 @@ class IndexConditioningHelper {
   // The default is initialized as empty List rather than null to avoid
   // Null Pointer Exception in the function
   // getconditionedRelationshipIndexResults
-  List expansionList = Collections.emptyList();
+  List<RuntimeIterator> expansionList = Collections.emptyList();
 
   /**
    * The List containing RuntimeIterators which define the final SelectResults after the relevant
@@ -74,7 +74,7 @@ class IndexConditioningHelper {
   // do not need finalList , but it is used in relation ship index , even if
   // match level is zero.
   // So we should never leave it as null
-  List finalList = null;
+  List<RuntimeIterator> finalList = null;
 
   /**
    * This is the List of RuntimeIterators which gets created only if the index resulst require a
@@ -95,7 +95,7 @@ class IndexConditioningHelper {
   /*
    * Below Can be null or empty collections if the match level is exact & no shuffling needed
    */
-  List checkList = null;
+  List<RuntimeIterator> checkList = null;
 
   /**
    * This field is meaningful iff the match level is zero, no shuffling needed & there exists a
@@ -152,7 +152,8 @@ class IndexConditioningHelper {
         Support.Assert(indexInfo._index.getResultSetType() instanceof StructType,
             " If the match level is zero & the size of mapping array is 1 then Index is surely ResultBag else StructBag");
         // The independent iterator is added as the first element
-        grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr);
+        grpItrs = context
+            .getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indpndntItr);
         // Check if reshuffling is needed or just changing the struct
         // type will suffice
         boolean isReshufflingNeeded = false;
@@ -202,7 +203,8 @@ class IndexConditioningHelper {
       // There is some expansion or truncation needed on the data
       // obtained from index.Identify a the iterators belonging to this group
       // The independent iterator is added as the first element
-      grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr);
+      grpItrs = context
+          .getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indpndntItr);
       // Create an array of RuntimeIterators which map to the fields of the
       // Index set.
       // For those fields which do not have corresponding RuntimeIterator , keep

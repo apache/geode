@@ -39,8 +39,8 @@ public interface IndexedExpressionEvaluator {
 
   ObjectType getIndexResultSetType();
 
-  void expansion(List expandedResults, Object lowerBoundKey, Object upperBoundKey,
+  void expansion(List<?> expandedResults, Object lowerBoundKey, Object upperBoundKey,
       int lowerBoundOperator, int upperBoundOperator, Object value) throws IMQException;
 
-  List getAllDependentIterators();
+  List<?> getAllDependentIterators();
 }

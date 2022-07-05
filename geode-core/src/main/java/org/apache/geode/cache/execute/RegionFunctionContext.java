@@ -37,7 +37,7 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
  * @see FunctionContext
  * @see PartitionRegionHelper
  */
-public interface RegionFunctionContext extends FunctionContext {
+public interface RegionFunctionContext<T> extends FunctionContext<T> {
 
   /**
    * Returns subset of keys (filter) provided by the invoking thread (aka routing objects). The set

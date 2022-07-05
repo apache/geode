@@ -18,13 +18,14 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_REGION_FUNCTION;
 import static org.apache.geode.internal.cache.tier.MessageType.EXECUTE_REGION_FUNCTION_ERROR;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
@@ -50,7 +51,6 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a Execution of function on server region.<br>
@@ -59,8 +59,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 5.8Beta
  */
 public class ExecuteRegionFunctionOp {
-
-  private static final Logger logger = LogService.getLogger();
 
   private static final int MAX_RETRY_INITIAL_VALUE = -1;
 
@@ -73,7 +71,7 @@ public class ExecuteRegionFunctionOp {
    * the server.
    */
   static void execute(ExecutablePool pool,
-      ResultCollector resultCollector,
+      ResultCollector<?, ?> resultCollector,
       int retryAttempts, boolean isHA,
       ExecuteRegionFunctionOpImpl op, boolean isReexecute,
       Set<String> failedNodes) {
@@ -135,16 +133,16 @@ public class ExecuteRegionFunctionOp {
   static class ExecuteRegionFunctionOpImpl extends AbstractOpWithTimeout {
 
     // To collect the results from the server
-    private final ResultCollector resultCollector;
+    private final ResultCollector<Object, ?> resultCollector;
 
     // To get the instance of the Function Statistics we need the function name or instance
-    private Function function;
+    private Function<?> function;
 
     private byte isReExecute = 0;
 
     private final String regionName;
 
-    private final ServerRegionFunctionExecutor executor;
+    private final ServerRegionFunctionExecutor<?, ?, ?> executor;
 
     private final byte hasResult;
 
@@ -164,15 +162,15 @@ public class ExecuteRegionFunctionOp {
       return PART_COUNT + filterSize + removedNodesSize;
     }
 
-    private void fillMessage(String region, Function function, String functionId,
-        ServerRegionFunctionExecutor serverRegionExecutor,
+    private void fillMessage(String region, Function<?> function, String functionId,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
         Set<String> removedNodes, byte functionState, byte flags) {
-      Set routingObjects = serverRegionExecutor.getFilter();
+      Set<?> routingObjects = serverRegionExecutor.getFilter();
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
       getMessage().addStringPart(region, true);
-      if (function != null && serverRegionExecutor.isFnSerializationReqd()) {
+      if (function != null && serverRegionExecutor.isFunctionSerializationRequired()) {
         getMessage().addStringOrObjPart(function);
       } else {
         getMessage().addStringOrObjPart(functionId);
@@ -187,13 +185,13 @@ public class ExecuteRegionFunctionOp {
         getMessage().addStringOrObjPart(key);
       }
       getMessage().addIntPart(removedNodes.size());
-      for (Object nodes : removedNodes) {
+      for (String nodes : removedNodes) {
         getMessage().addStringOrObjPart(nodes);
       }
     }
 
-    ExecuteRegionFunctionOpImpl(String region, Function function,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc,
+    ExecuteRegionFunctionOpImpl(String region, Function<?> function,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor, ResultCollector<?, ?> rc,
         final int timeoutMs) {
       super(EXECUTE_REGION_FUNCTION,
           getMessagePartCount(serverRegionExecutor.getFilter().size(), 0), timeoutMs);
@@ -205,7 +203,7 @@ public class ExecuteRegionFunctionOp {
       fillMessage(region,
           function, function.getId(),
           serverRegionExecutor, failedNodes, functionState, flags);
-      resultCollector = rc;
+      resultCollector = uncheckedCast(rc);
       regionName = region;
       this.function = function;
       functionId = function.getId();
@@ -230,7 +228,8 @@ public class ExecuteRegionFunctionOp {
     }
 
     ExecuteRegionFunctionOpImpl(String region, String functionId,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor, ResultCollector<?, ?> rc,
+        byte hasResult,
         boolean isHA, boolean optimizeForWrite,
         boolean calculateFnState, final int timeoutMs) {
       super(EXECUTE_REGION_FUNCTION,
@@ -249,7 +248,7 @@ public class ExecuteRegionFunctionOp {
       fillMessage(region, null, functionId, serverRegionExecutor, failedNodes, functionState,
           flags);
 
-      resultCollector = rc;
+      resultCollector = uncheckedCast(rc);
       regionName = region;
       this.functionId = functionId;
       executor = serverRegionExecutor;
@@ -321,7 +320,7 @@ public class ExecuteRegionFunctionOp {
               Object resultResponse = executeFunctionResponseMsg.getPart(0).getObject();
               Object result;
               if (resultResponse instanceof ArrayList) {
-                result = ((ArrayList) resultResponse).get(0);
+                result = ((ArrayList<?>) resultResponse).get(0);
               } else {
                 result = resultResponse;
               }
@@ -333,7 +332,7 @@ public class ExecuteRegionFunctionOp {
                 if (ex instanceof InternalFunctionException) {
                   Throwable cause = ex.getCause();
                   DistributedMember memberID =
-                      (DistributedMember) ((ArrayList) resultResponse).get(1);
+                      (DistributedMember) ((List<?>) resultResponse).get(1);
                   resultCollector.addResult(memberID, cause);
                   FunctionStatsManager
                       .getFunctionStats(functionId, executor.getRegion().getSystem())
@@ -373,7 +372,7 @@ public class ExecuteRegionFunctionOp {
                     }
                     if (resultResponse instanceof ArrayList) {
                       DistributedMember memberID =
-                          (DistributedMember) ((ArrayList) resultResponse).get(1);
+                          (DistributedMember) ((ArrayList<?>) resultResponse).get(1);
                       failedNodes = ensureMutability(failedNodes);
                       failedNodes.add(memberID.getId());
                     }
@@ -388,8 +387,7 @@ public class ExecuteRegionFunctionOp {
                   functionException.addException(t);
                 }
               } else {
-                DistributedMember memberID =
-                    (DistributedMember) ((ArrayList) resultResponse).get(1);
+                DistributedMember memberID = (DistributedMember) ((List<?>) resultResponse).get(1);
                 resultCollector.addResult(memberID, result);
                 FunctionStatsManager
                     .getFunctionStats(functionId, executor.getRegion().getSystem())
