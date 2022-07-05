@@ -58,7 +58,9 @@ public class ReflectionObjectSizer implements ObjectSizer, Serializable {
         && !(object instanceof InternalDistributedSystem)
         && !(object instanceof ClassLoader)
         && !(object instanceof Logger)
-        && !(object instanceof StatisticsManager);
+        && !(object instanceof StatisticsManager)
+        && !(object instanceof Thread)
+        && !(object instanceof ThreadGroup);
   };
 
   @Override

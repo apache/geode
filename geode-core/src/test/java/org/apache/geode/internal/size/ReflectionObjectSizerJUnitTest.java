@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.size;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
@@ -27,33 +26,42 @@ public class ReflectionObjectSizerJUnitTest {
 
   @Test
   public void skipsSizingDistributedSystem() {
-    Object referenceObject = mock(InternalDistributedSystem.class);
-    checkSizeDoesNotChange(referenceObject);
+    checkSizingSkippedFor(mock(InternalDistributedSystem.class));
   }
 
   @Test
   public void skipsSizingClassLoader() {
-    checkSizeDoesNotChange(Thread.currentThread().getContextClassLoader());
+    checkSizingSkippedFor(Thread.currentThread().getContextClassLoader());
   }
 
   @Test
   public void skipsSizingLogger() {
-    checkSizeDoesNotChange(LogService.getLogger());
+    checkSizingSkippedFor(LogService.getLogger());
   }
 
-  private void checkSizeDoesNotChange(final Object referenceObject) {
+  @Test
+  public void skipSizingThread() {
+    checkSizingSkippedFor(new Thread(() -> {
+    }));
+  }
+
+  @Test
+  public void skipSizingThreadGroup() {
+    checkSizingSkippedFor(new ThreadGroup("test"));
+  }
+
+  private void checkSizingSkippedFor(final Object referenceObject) {
     final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
     final TestObject nullReference = new TestObject(null);
     int sizeWithoutReference = sizer.sizeof(nullReference);
-    final TestObject distributedSystemReference = new TestObject(referenceObject);
+    final TestObject objectReference = new TestObject(referenceObject);
     final TestObject stringReference = new TestObject("hello");
 
-    assertEquals(sizeWithoutReference, sizer.sizeof(distributedSystemReference));
-    assertNotEquals(sizeWithoutReference, sizer.sizeof(stringReference));
+    assertThat(sizer.sizeof(objectReference)).isEqualTo(sizeWithoutReference);
+    assertThat(sizer.sizeof(stringReference)).isNotEqualTo(sizeWithoutReference);
   }
 
   private static class TestObject {
-
     public TestObject(final Object reference) {
       this.reference = reference;
     }
