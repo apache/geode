@@ -1,4 +1,3 @@
-// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -42,7 +41,7 @@ dependencies {
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
   testImplementation('junit:junit')
-  testImplementation('org.mockito:mockito-inline')
+  testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('org.assertj:assertj-core')
@@ -57,7 +56,7 @@ dependencies {
   distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('junit:junit')
   distributedTestImplementation('org.hamcrest:hamcrest')
-  distributedTestImplementation('org.mockito:mockito-inline')
+  distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.apache.commons:commons-lang3')
   distributedTestImplementation('commons-io:commons-io')

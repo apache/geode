@@ -1,4 +1,3 @@
-// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -51,14 +50,14 @@ dependencies {
   }
   jmhImplementation('junit:junit')
   jmhImplementation('org.assertj:assertj-core')
-  jmhImplementation('org.mockito:mockito-inline')
+  jmhImplementation('org.mockito:mockito-core')
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-inline')
+  testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -77,6 +76,6 @@ dependencies {
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('org.hamcrest:hamcrest')
-  distributedTestImplementation('org.mockito:mockito-inline')
+  distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 }
