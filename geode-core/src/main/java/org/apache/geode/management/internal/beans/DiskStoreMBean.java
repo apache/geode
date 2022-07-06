@@ -121,6 +121,19 @@ public class DiskStoreMBean extends NotificationBroadcasterSupport implements Di
   }
 
   @Override
+  public int getTotalRecoveredEntryCreates() {
+    return bridge.getTotalRecoveredEntryCreates();
+  }
+
+  public int getTotalRecoveredEntryUpdates() {
+    return bridge.getTotalRecoveredEntryUpdates();
+  }
+
+  public int getTotalRecoveredEntryDestroys() {
+    return bridge.getTotalRecoveredEntryDestroys();
+  }
+
+  @Override
   public int getWriteBufferSize() {
     return bridge.getWriteBufferSize();
   }

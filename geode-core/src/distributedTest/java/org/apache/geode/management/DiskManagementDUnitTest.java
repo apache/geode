@@ -26,9 +26,12 @@ import java.util.concurrent.TimeoutException;
 
 import javax.management.ObjectName;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -39,8 +42,10 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.DiskRegionStats;
+import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.process.ProcessUtils;
@@ -49,12 +54,14 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Test cases to cover all test cases which pertains to disk from Management layer
  */
 
 @SuppressWarnings({"serial", "unused"})
+@RunWith(GeodeParamsRunner.class)
 public class DiskManagementDUnitTest implements Serializable {
 
   private static final String REGION_NAME =
@@ -194,6 +201,78 @@ public class DiskManagementDUnitTest implements Serializable {
   }
 
   /**
+   * Checks that after a restart of a server the JMX stats
+   * for oplog recovery are updated accordingly.
+   */
+  @Test
+  @Parameters({"true, false", "false, false", "true, true"})
+  @TestCaseName("{method}(useKrf={0}, expireTombstones={1})")
+  public void testRecoveryStats(boolean useKrf, boolean expireTombstones) throws Exception {
+    VM memberVM1 = memberVMs[0];
+
+    createPersistentRegionAsync(memberVM1, useKrf, expireTombstones).await();
+
+    String key1 = "key1";
+    String key2 = "key2";
+    String value11 = "value12";
+    String value12 = "value12";
+    String value2 = "value2";
+
+    putEntry(memberVM1, key1, value11);
+    putEntry(memberVM1, key2, value2);
+    updateEntry(memberVM1, key1, value11);
+    deleteEntry(memberVM1, key1);
+
+    if (expireTombstones) {
+      forceGC(memberVM1, 1);
+    }
+
+    memberVM1.invoke("stop server", () -> {
+      Cache cache = managementTestRule.getCache();
+      cache.close();
+    });
+
+    createPersistentRegionAsync(memberVM1, useKrf, expireTombstones).await();
+
+    verifyRecoveryStats(memberVM1, true);
+
+    verifyRecoveryEntriesStats(memberVM1, useKrf, expireTombstones);
+
+    // Check to make sure we recovered the old values of the entries.
+    memberVM1.invoke("check for the entries", () -> {
+      Cache cache = managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      assertThat(region.get(key1)).isEqualTo(null);
+      assertThat(region.get(key2)).isEqualTo(value2);
+    });
+  }
+
+  private void verifyRecoveryEntriesStats(VM memberVM1, boolean useKrf, boolean expireTombstones) {
+    memberVM1.invoke("verifyRecoveryEntriesStats", () -> {
+      Cache cache = managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      DistributedRegion distributedRegion = (DistributedRegion) region;
+
+      ManagementService service = managementTestRule.getManagementService();
+      DiskStoreMXBean diskStoreMXBean = service.getLocalDiskStoreMBean(REGION_NAME);
+
+      int recoveredEntryCreates = expireTombstones ? 1 : 2;
+      int recoveredEntryUpdates = useKrf ? 0 : 2;
+      int recoveredEntryDestroys = expireTombstones ? 1 : 0;
+
+      assertThat(diskStoreMXBean.getTotalRecoveredEntryCreates()).isEqualTo(recoveredEntryCreates);
+      assertThat(diskStoreMXBean.getTotalRecoveredEntryUpdates()).isEqualTo(recoveredEntryUpdates);
+      assertThat(diskStoreMXBean.getTotalRecoveredEntryDestroys())
+          .isEqualTo(recoveredEntryDestroys);
+    });
+  }
+
+  private void forceGC(VM vm, final int count) {
+    vm.invoke("force GC", () -> managementTestRule.getCache().getTombstoneService()
+        .forceBatchExpirationForTests(count));
+  }
+
+  /**
    * Invokes flush on the given disk store by MBean interface
    */
   private void invokeFlush(final VM memberVM) {
@@ -316,19 +395,40 @@ public class DiskManagementDUnitTest implements Serializable {
     });
   }
 
-  private void updateTheEntry(final VM memberVM, final String value) {
-    memberVM.invoke("updateTheEntry", () -> {
+  private void updateTheEntry(final VM memberVM, final Object value) {
+    updateEntry(memberVM, "A", value);
+  }
+
+  private void updateEntry(final VM memberVM, final Object key, final Object value) {
+    memberVM.invoke("updateEntry", () -> {
       Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
-      region.put("A", value);
+      region.put(key, value);
     });
   }
 
   private void putAnEntry(final VM memberVM) {
-    memberVM.invoke("putAnEntry", () -> {
+    putEntry(memberVM, "A", "B");
+  }
+
+  private void putEntry(final VM memberVM, Object key, Object value) {
+    memberVM.invoke("putEntry", () -> {
       Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
-      region.put("A", "B");
+      region.put(key, value);
+    });
+  }
+
+  private void deleteTheEntry(final VM memberVM) {
+    deleteEntry(memberVM, "A");
+
+  }
+
+  private void deleteEntry(final VM memberVM, Object key) {
+    memberVM.invoke("deleteEntry", () -> {
+      Cache cache = managementTestRule.getCache();
+      Region region = cache.getRegion(REGION_NAME);
+      region.remove(key);
     });
   }
 
@@ -346,7 +446,20 @@ public class DiskManagementDUnitTest implements Serializable {
   }
 
   private AsyncInvocation<Void> createPersistentRegionAsync(final VM memberVM) {
+    return createPersistentRegionAsync(memberVM, true, false);
+  }
+
+  private AsyncInvocation<Void> createPersistentRegionAsync(final VM memberVM, boolean useKrf,
+      boolean expireTombstones) {
     return memberVM.invokeAsync("createPersistentRegionAsync", () -> {
+      if (!useKrf) {
+        System.setProperty(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, "true");
+      }
+      if (expireTombstones) {
+        DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
+        TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT = 1;
+        TombstoneService.EXPIRED_TOMBSTONE_LIMIT = 1;
+      }
       File dir = new File(diskDir, String.valueOf(ProcessUtils.identifyPid()));
 
       Cache cache = managementTestRule.getCache();
