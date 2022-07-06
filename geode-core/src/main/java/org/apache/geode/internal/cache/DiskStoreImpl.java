@@ -184,11 +184,22 @@ public class DiskStoreImpl implements DiskStore {
       GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverValuesSync";
 
   /**
+   * When configured threshold value is reached, then server will overflow to
+   * the new hashmap during the recovery of .drf files
+   */
+  public static final String DRF_HASHMAP_OVERFLOW_THRESHOLD_NAME =
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.drfHashMapOverflowThreshold";
+
+  /**
    * Allows recovering values for LRU regions. By default values are not recovered for LRU regions
    * during recovery.
    */
   public static final String RECOVER_LRU_VALUES_PROPERTY_NAME =
       GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverLruValues";
+
+  static final long DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT = 805306368;
+  static final long DRF_HASHMAP_OVERFLOW_THRESHOLD =
+      Long.getLong(DRF_HASHMAP_OVERFLOW_THRESHOLD_NAME, DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT);
 
   boolean RECOVER_VALUES = getBoolean(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, true);
 
@@ -3546,31 +3557,49 @@ public class DiskStoreImpl implements DiskStore {
       }
 
       try {
-        if (id > 0 && id <= 0x00000000FFFFFFFFL) {
-          currentInts.get().add((int) id);
+        if (shouldOverflow(id)) {
+          overflowToNewHashMap(id);
         } else {
-          currentLongs.get().add(id);
+          if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+            this.currentInts.get().add((int) id);
+          } else {
+            this.currentLongs.get().add(id);
+          }
         }
       } catch (IllegalArgumentException illegalArgumentException) {
         // See GEODE-8029.
-        // Too many entries on the accumulated drf files, overflow and continue.
+        // Too many entries on the accumulated drf files, overflow next [Int|Long]OpenHashSet and
+        // continue.
+        overflowToNewHashMap(id);
+      }
+    }
+
+    boolean shouldOverflow(final long id) {
+      if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+        return currentInts.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
+      } else {
+        return currentLongs.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
+      }
+    }
+
+    void overflowToNewHashMap(final long id) {
+      if (DRF_HASHMAP_OVERFLOW_THRESHOLD == DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT) {
         logger.warn(
             "There is a large number of deleted entries within the disk-store, please execute an offline compaction.");
+      }
 
-        // Overflow to the next [Int|Long]OpenHashSet and continue.
-        if (id > 0 && id <= 0x00000000FFFFFFFFL) {
-          IntOpenHashSet overflownHashSet = new IntOpenHashSet((int) INVALID_ID);
-          allInts.add(overflownHashSet);
-          currentInts.set(overflownHashSet);
+      if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+        IntOpenHashSet overflownHashSet = new IntOpenHashSet((int) INVALID_ID);
+        allInts.add(overflownHashSet);
+        currentInts.set(overflownHashSet);
 
-          currentInts.get().add((int) id);
-        } else {
-          LongOpenHashSet overflownHashSet = new LongOpenHashSet((int) INVALID_ID);
-          allLongs.add(overflownHashSet);
-          currentLongs.set(overflownHashSet);
+        currentInts.get().add((int) id);
+      } else {
+        LongOpenHashSet overflownHashSet = new LongOpenHashSet((int) INVALID_ID);
+        allLongs.add(overflownHashSet);
+        currentLongs.set(overflownHashSet);
 
-          currentLongs.get().add(id);
-        }
+        currentLongs.get().add(id);
       }
     }
 
