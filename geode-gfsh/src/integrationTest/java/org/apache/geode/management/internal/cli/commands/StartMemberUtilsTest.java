@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.condition.JRE.JAVA_13;
 import static org.junit.jupiter.api.condition.JRE.JAVA_14;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -55,13 +55,12 @@ public class StartMemberUtilsTest {
 
   @Test
   public void workingDirCantBeCreatedThrowsException() {
-    File userSpecifiedDir = spy(new File("cantCreateDir"));
+    File userSpecifiedDir = mock(File.class, "cantCreateDir");
     when(userSpecifiedDir.exists()).thenReturn(false);
     when(userSpecifiedDir.mkdirs()).thenReturn(false);
-    assertThatThrownBy(
-        () -> StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Could not create directory");
+    assertThatThrownBy(() -> StartMemberUtils.resolveWorkingDirectory(userSpecifiedDir))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Could not create directory");
   }
 
   @Test
