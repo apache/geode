@@ -404,7 +404,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    */
   protected void info(final Object message, final Object... args) {
     if (args != null && args.length > 0) {
-      System.out.printf(message.toString(), args);
+      System.out.printf("%s %s", message, args);
     } else {
       System.out.print(message);
     }
