@@ -15,6 +15,8 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -38,6 +40,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.Instantiator;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.SessionAttributes;
 import org.apache.geode.modules.util.ClassLoaderObjectInputStream;
@@ -46,7 +49,7 @@ import org.apache.geode.modules.util.ClassLoaderObjectInputStream;
  * Class which implements a Gemfire persisted {@code HttpSession}
  */
 @SuppressWarnings("deprecation")
-public class GemfireHttpSession implements HttpSession, DataSerializable, Delta {
+public class GemfireHttpSession implements HttpSession, DataSerializable, Delta, Sizeable {
 
   private static final transient Logger LOG =
       LoggerFactory.getLogger(GemfireHttpSession.class.getName());
@@ -55,6 +58,8 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
    * Serial id
    */
   private static final long serialVersionUID = 238915238964017823L;
+
+  private static final int MEMORY_OVERHEAD = memoryOverhead(GemfireHttpSession.class);
 
   /**
    * Id for the session
@@ -450,5 +455,21 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
     }
 
     return null;
+  }
+
+  private static final int ATOMIC_BOOLEAN_SIZE = memoryOverhead(AtomicBoolean.class);
+
+  @Override
+  public int getSizeInBytes() {
+    // The 'manager' and 'context' field are not sized
+    // since they reference a shared instance.
+    int attributesSize = 0;
+    if (attributes != null) {
+      attributesSize = attributes.getSizeInBytes();
+    }
+    return MEMORY_OVERHEAD
+        + memoryOverhead(id)
+        + ATOMIC_BOOLEAN_SIZE // for the 'serialized' field
+        + attributesSize;
   }
 }

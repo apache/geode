@@ -15,6 +15,8 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 public class DeltaEvent implements DataSerializable {
 
   private static final Logger LOG = LoggerFactory.getLogger(DeltaEvent.class.getName());
+  public static final int MEMORY_OVERHEAD = memoryOverhead(DeltaEvent.class);
   /**
    * The event is either an update (true) or a remove (false)
    */

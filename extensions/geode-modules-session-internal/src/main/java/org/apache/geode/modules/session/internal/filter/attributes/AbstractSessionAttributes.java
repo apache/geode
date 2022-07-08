@@ -15,6 +15,10 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
+import static org.apache.geode.internal.JvmSizeUtils.getReferenceSize;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -27,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 
@@ -43,7 +48,7 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
   /**
    * Internal attribute store.
    */
-  protected Map<String, Object> attributes =
+  protected final Map<String, Object> attributes =
       Collections.synchronizedMap(new HashMap<>());
 
   /**
@@ -204,4 +209,36 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
   public String getJvmOwnerId() {
     return jvmOwnerId;
   }
+
+  @Override
+  public int getSizeInBytes() {
+    // Field size not accounted for here since
+    // this is done in non-abstract subclasses.
+    // jvmOwnerId is not sized since it is a shared object
+    // session is not sized since it is a shared object
+    return attributesSizeInBytes();
+  }
+
+  private int attributesSizeInBytes() {
+    int size = 0;
+    synchronized (attributes) {
+      for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+        size += HASH_MAP_ENTRY_OVERHEAD;
+        size += memoryOverhead(entry.getKey());
+        size += ObjectSizer.DEFAULT.sizeof(entry.getValue());
+      }
+    }
+    return size;
+  }
+
+  /**
+   * Memory overhead for a single entry in a HashMap
+   */
+  protected static final int HASH_MAP_ENTRY_OVERHEAD = getReferenceSize() // for ref to HashMap.Node
+      // the following are for the fields on HashMap.Node an internal JDK class
+      + roundUpSize(4 /* for int hash field */
+          + getReferenceSize() /* for key field */
+          + getReferenceSize() /* for value field */
+          + getReferenceSize() /* for next field */);
+
 }
