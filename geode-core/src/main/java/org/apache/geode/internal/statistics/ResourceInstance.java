@@ -35,6 +35,10 @@ public class ResourceInstance {
   private int[] updatedStats = null;
   private boolean statValuesNotified;
 
+  private long[] previousStatArchiveValues = null;
+
+  private long[] latestStatArchiveValues = null;
+
   public ResourceInstance(int id, Statistics statistics, ResourceType type) {
     this.id = id;
     this.statistics = statistics;
@@ -92,6 +96,22 @@ public class ResourceInstance {
 
   public void setUpdatedStats(int[] updatedStats) {
     this.updatedStats = updatedStats;
+  }
+
+  public long[] getLatestStatArchiveValues() {
+    return latestStatArchiveValues;
+  }
+
+  public void setLatestStatArchiveValues(long[] latestStatValues) {
+    this.latestStatArchiveValues = latestStatValues;
+  }
+
+  public long[] getPreviousStatArchiveValues() {
+    return previousStatArchiveValues;
+  }
+
+  public void setPreviousStatArchiveValues(long[] previousStatValues) {
+    this.previousStatArchiveValues = previousStatValues;
   }
 
   @Override

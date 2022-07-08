@@ -262,6 +262,7 @@ public class SampleCollector {
 
       ri.setUpdatedStats(updatedStats);
       ri.setLatestStatValues(statValues);
+      ri.setLatestStatArchiveValues(statValues);
       updatedResources.add(ri);
     }
 
