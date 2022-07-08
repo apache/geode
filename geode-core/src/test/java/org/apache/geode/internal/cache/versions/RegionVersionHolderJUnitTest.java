@@ -102,6 +102,16 @@ public class RegionVersionHolderJUnitTest {
   }
 
   @Test
+  public void initializeFromShouldCopyIfDepartedMember() {
+    RegionVersionHolder vh1 = new RegionVersionHolder(member);
+    vh1.isDepartedMember = true;
+    RegionVersionHolder vh2 = new RegionVersionHolder(member);
+    assertThat(vh2.isDepartedMember).isFalse();
+    vh2.initializeFrom(vh1);
+    assertThat(vh2.isDepartedMember).isTrue();
+  }
+
+  @Test
   public void test48066_1() {
     RegionVersionHolder vh1 = new RegionVersionHolder(member);
     for (int i = 1; i <= 3; i++) {

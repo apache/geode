@@ -446,7 +446,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     // initialize our version and exceptions to match the others
     exceptions = other.exceptions;
     version = other.version;
-
+    isDepartedMember = other.isDepartedMember;
 
 
     // Now if this.version/exceptions overlap with myVersion/myExceptions, use this'
