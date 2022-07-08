@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -16,23 +17,19 @@
 
 package org.apache.geode.jdk;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.size.ObjectTraverser;
-import org.apache.geode.internal.size.ObjectTraverser.Visitor;
 
-public class TraverseEncapsulatedJdkObject implements Function<Void> {
-  private static final Visitor TRAVERSE_ENTIRE_OBJECT_GRAPH = (parent, object) -> true;
-  private final ObjectTraverser traverser = new ObjectTraverser();
-
+public class ReflectEncapsulatedJdkObject implements Function<Void> {
   // OBJECT must have a JDK type with inaccessible fields, defined in a package that Gfsh does
   // not open by default.
   static final BigDecimal OBJECT = BigDecimal.ONE;
   // MODULE must be the module that defines OBJECT's type.
   static final String MODULE = "java.base";
-  static final String ID = "traverse-big-decimal";
+  static final String ID = "reflect-encapsulated-jdk-object";
 
   @Override
   public String getId() {
@@ -41,11 +38,10 @@ public class TraverseEncapsulatedJdkObject implements Function<Void> {
 
   @Override
   public void execute(FunctionContext<Void> context) {
-    try {
-      traverser.breadthFirstSearch(OBJECT, TRAVERSE_ENTIRE_OBJECT_GRAPH, false);
-    } catch (IllegalAccessException e) {
-      context.getResultSender().sendException(e);
-      return;
+    for (Field f : OBJECT.getClass().getDeclaredFields()) {
+      // Throws InaccessibleObjectException on JDK 17 if the field is inaccessible and the declaring
+      // class's package is not open to Geode.
+      f.setAccessible(true);
     }
     context.getResultSender().lastResult("OK");
   }
