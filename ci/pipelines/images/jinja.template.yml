@@ -71,7 +71,8 @@ resources:
     branch: develop
     paths:
     - infrastructure/scripts/aws/image
-    uri: https://github.com/apache/geode-benchmarks.git
+    uri: git@github.com:gemfire/gemfire-benchmarks.git
+    private_key: ((gemfire-ci-private-key))
 
 - name: packer-145-image
   icon: docker

@@ -180,7 +180,8 @@ resources:
   source:
     branch: {{benchmarks.benchmark_branch}}
     depth: 1
-    uri: https://github.com/apache/geode-benchmarks.git
+    private_key: ((gemfire-ci-private-key))
+    uri: git@github.com:gemfire/gemfire-benchmarks.git
 - name: geode-build-version
   type: semver
   source:
@@ -501,6 +502,10 @@ jobs:
           TAG_POSTFIX: -{{ run_var.title }}
           TEST_OPTIONS: {{ run_var.options }}
           PURPOSE: ((pipeline-prefix))geode-benchmarks
+          GITHUB_CREDENTIALS: ((gemfire-ci-private-key))
+          GCP_CREDENTIALS: ((maven-access-service-account))
+          ORG_GRADLE_PROJECT_mavenUser: ((commercial-repo-username))
+          ORG_GRADLE_PROJECT_mavenPassword: ((commercial-repo-password))
         run:
           path: geode-ci/ci/scripts/run_benchmarks.sh
         inputs:
