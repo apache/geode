@@ -1007,6 +1007,8 @@ lib/istack-commons-runtime-4.0.1.jar
 lib/jackson-annotations-2.13.3.jar
 lib/jackson-core-2.13.3.jar
 lib/jackson-databind-2.13.3.jar
+lib/jackson-datatype-joda-2.13.3.jar
+lib/jackson-datatype-jsr310-2.13.3.jar
 lib/javax.activation-api-1.2.0.jar
 lib/javax.mail-api-1.6.2.jar
 lib/javax.resource-api-1.7.1.jar
@@ -1027,6 +1029,7 @@ lib/jgroups-3.6.14.Final.jar
 lib/jline-2.12.jar
 lib/jna-5.11.0.jar
 lib/jna-platform-5.11.0.jar
+lib/joda-time-2.10.14.jar
 lib/jopt-simple-5.0.4.jar
 lib/log4j-api-2.17.2.jar
 lib/log4j-core-2.17.2.jar
@@ -1054,6 +1057,7 @@ lib/shiro-crypto-hash-1.9.1.jar
 lib/shiro-event-1.9.1.jar
 lib/shiro-lang-1.9.1.jar
 lib/slf4j-api-1.7.32.jar
+lib/slf4j-api-1.7.36.jar
 lib/snappy-0.4.jar
 lib/spring-beans-5.3.21.jar
 lib/spring-context-5.3.21.jar
@@ -1070,6 +1074,3 @@ tools/Modules/Apache_Geode_Modules-0.0.0-Tomcat.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer30.zip
 tools/Pulse/geode-pulse-0.0.0.war
-lib/jackson-datatype-joda-2.13.3.jar
-lib/jackson-datatype-jsr310-2.13.3.jar
-lib/joda-time-2.10.14.jar
