@@ -20,9 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.Set;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -30,6 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -37,6 +42,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  */
 @Category(MembershipTest.class)
 public class DistributedSystemIntegrationTest {
+
+  private DistributedSystem system;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -46,6 +53,13 @@ public class DistributedSystemIntegrationTest {
 
   @Rule
   public TestName testName = new TestName();
+
+  @After
+  public void tearDown() {
+    if (system != null) {
+      system.disconnect();
+    }
+  }
 
   @Test
   public void getPropertiesFileShouldUsePathInSystemProperty() throws Exception {
@@ -91,5 +105,16 @@ public class DistributedSystemIntegrationTest {
     URL value = DistributedSystem.getSecurityPropertiesFileURL();
 
     assertThat(value).isEqualTo(expectedPropertiesURL);
+  }
+
+  @Test
+  public void findDistributedMembersForLocalHostReturnsOneMember() throws UnknownHostException {
+    Properties properties = new Properties();
+    system = DistributedSystem.connect(properties);
+    InetAddress localHost = LocalHostUtil.getLocalHost();
+
+    Set<DistributedMember> members = system.findDistributedMembers(localHost);
+
+    assertThat(members).hasSize(1);
   }
 }
