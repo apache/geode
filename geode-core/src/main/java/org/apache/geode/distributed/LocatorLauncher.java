@@ -623,7 +623,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Displays help for the specified Locator launcher command to standard err. If the Locator
+   * Displays help for the specified Locator launcher command to standard output. If the Locator
    * launcher command is unspecified, then usage information is displayed instead.
    *
    * @param command the Locator launcher command in which to display help information.
@@ -648,7 +648,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Displays usage information on the proper invocation of the LocatorLauncher from the
-   * command-line to standard err.
+   * command-line to standard output.
    *
    * @see #help(org.apache.geode.distributed.LocatorLauncher.Command)
    */

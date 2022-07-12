@@ -356,13 +356,14 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
-   * Prints the specified debug message to standard err, replacing any placeholder values with the
+   * Prints the specified debug message to standard output, replacing any placeholder values with
+   * the
    * specified arguments on output, if debugging has been enabled.
    *
-   * @param message the String value written to standard err.
+   * @param message the String value written to standard output.
    * @param args an Object array containing arguments to replace the placeholder values in the
    *        message.
-   * @see java.lang.System#err
+   * @see java.lang.System#out
    * @see #isDebugging()
    * @see #debug(Throwable)
    * @see #info(Object, Object...)
@@ -370,9 +371,9 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   protected void debug(final String message, final Object... args) {
     if (isDebugging()) {
       if (args != null && args.length > 0) {
-        System.err.printf(message, args);
+        System.out.printf(message, args);
       } else {
-        System.err.print(message);
+        System.out.print(message);
       }
     }
   }
@@ -392,20 +393,20 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
-   * Prints the specified informational message to standard err, replacing any placeholder values
+   * Prints the specified informational message to standard out, replacing any placeholder values
    * with the specified arguments on output.
    *
-   * @param message the String value written to standard err.
+   * @param message the String value written to standard out.
    * @param args an Object array containing arguments to replace the placeholder values in the
    *        message.
-   * @see java.lang.System#err
+   * @see java.lang.System#out
    * @see #debug(String, Object...)
    */
   protected void info(final Object message, final Object... args) {
     if (args != null && args.length > 0) {
-      System.err.printf(message.toString(), args);
+      System.out.printf("%s %s", message, args);
     } else {
-      System.err.print(message);
+      System.out.print(message);
     }
   }
 
