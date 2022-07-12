@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -133,9 +134,9 @@ public class PRCustomPartitioningDistributedTest implements Serializable {
       Set<Object> bucketKeys = partitionedRegion.getBucketKeys(bucketId);
       for (Object key : bucketKeys) {
         EntryOperation<Date, Integer> entryOperation =
-            new EntryOperationImpl(partitionedRegion, null, key, null, null);
+            new EntryOperationImpl<>(partitionedRegion, null, key, null, null);
         PartitionResolver<Date, Integer> partitionResolver =
-            partitionedRegion.getPartitionResolver();
+            uncheckedCast(partitionedRegion.getPartitionResolver());
         Object routingObject = partitionResolver.getRoutingObject(entryOperation);
         int routingObjectHashCode = routingObject.hashCode() % TOTAL_NUM_BUCKETS;
         assertThat(routingObjectHashCode).isEqualTo(bucketId);

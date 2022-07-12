@@ -228,13 +228,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    */
   public void resetBatchId() {
     batchId = 0;
-    // dont reset first time when first batch is put for dispatch
-    // if (this.batchIdToEventsMap.size() == 1) {
-    // if (this.batchIdToEventsMap.containsKey(0)) {
-    // return;
-    // }
-    // }
-    // this.batchIdToEventsMap.clear();
     resetLastPeekedEvents = true;
   }
 
@@ -286,7 +279,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       return 0;
     }
 
-    // if parallel, get both primary and secondary queues' size, then substract primary queue's size
+    // if parallel, get both primary and secondary queues' size, then subtract primary queue's size
     if (queue instanceof ConcurrentParallelGatewaySenderQueue) {
       final ConcurrentParallelGatewaySenderQueue concurrentParallelGatewaySenderQueue =
           (ConcurrentParallelGatewaySenderQueue) queue;
@@ -312,8 +305,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     isPaused = true;
   }
 
-  // merge44957: WHile merging 44957, need this method hence picked up this method from revision
-  // 42024.
   public void waitForDispatcherToPause() {
     if (!isPaused) {
       throw new IllegalStateException("Should be trying to pause!");
@@ -377,7 +368,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   public boolean skipFailureLogging(Integer batchId) {
     boolean skipLogging = false;
-    // if map has become large then give up on new events but we don't expect
+    // if map has become large then give up on new events, but we don't expect
     // it to become too large in practise
     if (failureLogInterval.size() < FAILURE_MAP_MAXSIZE) {
       // first long in logInterval gives the last time when the log was done,
@@ -385,7 +376,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       // increases exponentially
       // multiple currentTimeMillis calls below may hinder performance
       // but not much to worry about since failures are expected to
-      // be an infrequent occurance (and if frequent then we have to skip
+      // be an infrequent occurrence (and if frequent then we have to skip
       // logging for quite a while in any case)
       long[] logInterval = failureLogInterval.get(batchId);
       if (logInterval == null) {
@@ -428,7 +419,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     }
     // list of the events peeked from queue
     List<GatewaySenderEventImpl> events = null;
-    // list of the PDX events which are peeked from pDX region and needs to go acrossthe site
+    // list of the PDX events which are peeked from pDX region and needs to go across the site
     List<GatewaySenderEventImpl> pdxEventsToBeDispatched = new ArrayList<>();
     // list of filteredList + pdxEventsToBeDispatched events
     List<GatewaySenderEventImpl> eventsToBeDispatched = new ArrayList<>();
@@ -473,31 +464,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
               resetLastPeekedEvents();
               resetLastPeekedEvents = false;
             }
-
-            {
-              // Below code was added to consider the case of queue region is
-              // destroyed due to userPRs localdestroy or destroy operation.
-              // In this case we were waiting for queue region to get created
-              // and then only peek from the region queue.
-              // With latest change of multiple PR with single ParalleSender, we
-              // cant wait for particular regionqueue to get recreated as there
-              // will be other region queue from which events can be picked
-
-              /*
-               * // Check if paused. If so, wait for resumption if (this.isPaused) {
-               * waitForResumption(); }
-               *
-               * synchronized (this.getQueue()) { // its quite possible that the queue region is //
-               * destroyed(userRegion // localdestroy destroys shadow region locally). In this case
-               * // better to // wait for shadows region to get recreated instead of keep loop //
-               * for peeking events if (this.getQueue().getRegion() == null ||
-               * this.getQueue().getRegion().isDestroyed()) { try { this.getQueue().wait();
-               * continue; // this continue is important to recheck the // conditions of stop/ pause
-               * after the wait of 1 sec } catch (InterruptedException e1) {
-               * Thread.currentThread().interrupt(); } } }
-               */
-            }
-            events = queue.peek(batchSize, batchTimeInterval);
+            events = uncheckedCast(queue.peek(batchSize, batchTimeInterval));
           } catch (InterruptedException e) {
             interrupted = true;
             sender.getCancelCriterion().checkCancelInProgress(e);
@@ -517,7 +484,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
             List<GatewaySenderEventImpl> filteredList = new ArrayList<>(events);
 
-            // If the exception has been set and its cause is an IllegalStateExcetption,
+            // If the exception has been set and its cause is an IllegalStateException,
             // remove all events whose serialized value is no longer available
             if (exception != null && exception.getCause() != null
                 && exception.getCause() instanceof IllegalStateException) {
@@ -606,7 +573,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
             eventsToBeDispatched.clear();
             if (!(dispatcher instanceof GatewaySenderEventCallbackDispatcher)) {
-              // store the batch before dispatching so it can be retrieved by the ack thread.
+              // store the batch before dispatching, so it can be retrieved by the ack thread.
               List<GatewaySenderEventImpl>[] eventsArr = uncheckedCast(new List[2]);
               eventsArr[0] = events;
               eventsArr[1] = filteredList;
@@ -838,15 +805,14 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       rebuildPdxList = false;
     }
 
-    // find out the list of the PDXEvents which needs to be send across remote
-    // site
-    // these events will be added to list pdxSenderEventsList. I am expecting
+    // find out the list of the PDXEvents which needs to be sent across remote
+    // site these events will be added to list pdxSenderEventsList. I am expecting
     // that PDX events will be only added to PDX region. no deletion happens on
     // PDX region
     if (pdxRegion != null && pdxRegion.size() != pdxEventsMap.size()) {
       for (Map.Entry<Object, Object> typeEntry : pdxRegion.entrySet()) {
         if (!pdxEventsMap.containsKey(typeEntry.getKey())) {
-          // event should never be off-heap so it does not need to be released
+          // event should never be off-heap, so it does not need to be released
           EntryEventImpl event = EntryEventImpl.create((LocalRegion) pdxRegion, Operation.UPDATE,
               typeEntry.getKey(), typeEntry.getValue(), null, false, cache.getMyId());
           event.disallowOffHeapValues();
@@ -858,7 +824,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           GatewaySenderEventCallbackArgument geCallbackArg = new GatewaySenderEventCallbackArgument(
               event.getRawCallbackArgument(), sender.getMyDSId(), allRemoteDSIds);
           event.setCallbackArgument(geCallbackArg);
-          // OFFHEAP: event for pdx type meta data so it should never be off-heap
+          // OFFHEAP: event for pdx type metadata, so it should never be off-heap
           GatewaySenderEventImpl pdxSenderEvent =
               new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, event, null);
 
@@ -872,15 +838,15 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     while (iterator.hasNext()) {
       GatewaySenderEventImpl pdxEvent = iterator.next();
       if (pdxEvent.isAcked) {
-        // Since this is acked, it means it has reached to remote site.Dont add
+        // Since this is acked, it means it has reached to remote site. Don't add
         // to pdxEventsToBeDispatched
         iterator.remove();
         continue;
       }
       if (pdxEvent.isDispatched) {
-        // Dispacther does not mean that event has reched remote site. We may
-        // need to send it agian if there is porblem while receiveing ack
-        // containing this event.Dont add to pdxEventsToBeDispatched
+        // Dispatcher does not mean that event has reached remote site. We may
+        // need to send it again if there is problem while receiving ack
+        // containing this event. Don't add to pdxEventsToBeDispatched
         continue;
       }
       pdxEventsToBeDispatched.add(pdxEvent);
@@ -930,11 +896,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     }
   }
 
-  private void handleSuccessfulBatchDispatch(List<?> filteredList,
-      List<GatewaySenderEventImpl> events) {
+  private void handleSuccessfulBatchDispatch(final List<?> filteredList,
+      final List<GatewaySenderEventImpl> events) {
     if (filteredList != null) {
-      for (GatewayEventFilter filter : sender.getGatewayEventFilters()) {
-        for (Object o : filteredList) {
+      for (final GatewayEventFilter filter : sender.getGatewayEventFilters()) {
+        for (final Object o : filteredList) {
           if (o instanceof GatewaySenderEventImpl) {
             try {
               filter.afterAcknowledgement((GatewaySenderEventImpl) o);
@@ -946,9 +912,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           }
         }
       }
+      filteredList.clear();
     }
 
-    filteredList.clear();
     eventQueueRemove(events.size());
 
     logThresholdExceededAlerts(events);

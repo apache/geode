@@ -531,8 +531,8 @@ However, if seeing these messages coincides with symptoms like client side timeo
 to an insufficient read-timeout in the client side pool configuration, or an insufficient accept
 queue on the server side. Another setting that warrants investigation is the
 BridgeServer.HANDSHAKE_POOL_SIZE.  If you have not altered this setting in your system properties,
-you are likely using the default value of 4, which has been seen to be insufficient for many
-environments.  Recommend increasing this <%=vars.product_name%> system property to at least 20.
+you are likely using the default value of 50.  If it's still insufficient, recommend increasing
+this <%=vars.product_name%> system property to a larger number.
 
 
 ## <a id="pccservicemetricscomponentfailingtoconnect"></a>PCC service metrics component failing to connect to locator/server

@@ -36,10 +36,10 @@ tasks.register('checkPom') {
 
   // We impose the following rules on our produced poms:
   // * Versions are to be specified in the <dependencyManagement> block, not the <dependency> block
-  // * org.apache.geode versions will be ignored, in favor of this build's version
+  // * com.vmware.gemfire versions will be ignored, in favor of this build's version
   // * <dependency> blocks in produced POMs are as expected (ordering ignored)
   // * <dependencyManagement> blocks in produced POMs are as expected (ordering ignored)
-  // * Published groupId = "org.apache.geode"
+  // * Published groupId = "com.vmware.gemfire"
   // * Published artifactId = project.artifactName if it exists, else project.name
 
   def anyVersionDefinitionNotInDependencyManagement = { pom ->
@@ -50,7 +50,7 @@ tasks.register('checkPom') {
 
   def ignoreGeodeVersionInExpectedPom = { pom ->
     pom.dependencyManagement.dependencies.dependency.each { dep ->
-      if (dep.toString().contains("org.apache.geode")) {
+      if (dep.toString().contains("com.vmware.gemfire")) {
         // since the project version is the source of truth, use that for comparison instead of
         // whatever is stored in the expected pom file
         dep.get("version")*.setValue([version])
@@ -94,7 +94,7 @@ tasks.register('checkPom') {
       if (pathologicalArtifactId || pathologicalGroupId || pathologicalVersionedDeps) {
         def errorSummary = ""
         errorSummary += pathologicalArtifactId ? "Expected POM header pathologically incorrect. Fix artifactId to match subproject name.\n" : ""
-        errorSummary += pathologicalGroupId ? "Expected POM header pathologically incorrect. Fix groupId to be 'org.apache.geode'.\n" : ""
+        errorSummary += pathologicalGroupId ? "Expected POM header pathologically incorrect. Fix groupId to be 'com.vmware.gemfire'.\n" : ""
         errorSummary += pathologicalVersionedDeps ? "Expected POM should not declare dependency versions outside the Spring dependency-management constraints." : ""
         throw new GradleException(errorSummary)
       }
@@ -158,7 +158,7 @@ tasks.register('updateExpectedPom', Copy) {
 
   doLast {
     def checkGroupIdAndSetVersion = { elem ->
-      if (elem.groupId.text().contains("org.apache.geode")) {
+      if (elem.groupId.text().contains("com.vmware.gemfire")) {
         elem.get("version")*.setValue('${version}')
       }
     }

@@ -112,21 +112,19 @@ public abstract class VMProvider {
     return getVM().invokeAsync(callable);
   }
 
-
   public <T> AsyncInvocation<T> invokeAsync(String name, final SerializableCallableIF<T> callable) {
     return getVM().invokeAsync(name, callable);
   }
 
-  public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {
+  public AsyncInvocation<Void> invokeAsync(final SerializableRunnableIF runnable) {
     return getVM().invokeAsync(runnable);
   }
 
-  public AsyncInvocation invokeAsync(String name, final SerializableRunnableIF runnable) {
+  public AsyncInvocation<Void> invokeAsync(String name, final SerializableRunnableIF runnable) {
     return getVM().invokeAsync(name, runnable);
   }
 
   public File getWorkingDir() {
     return getVM().getWorkingDirectory();
   }
-
 }

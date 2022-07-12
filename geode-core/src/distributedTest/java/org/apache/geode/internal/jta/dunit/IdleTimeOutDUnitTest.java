@@ -257,7 +257,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(IdleTimeOutDUnitTest::runTest1);
-    AsyncInvocation asyncObj = vm0.invokeAsync(IdleTimeOutDUnitTest::runTest2);
+    AsyncInvocation<Void> asyncObj = vm0.invokeAsync(IdleTimeOutDUnitTest::runTest2);
     ThreadUtils.join(asyncObj, 30 * 1000);
     if (asyncObj.exceptionOccurred()) {
       Assert.fail("asyncObj failed", asyncObj.getException());

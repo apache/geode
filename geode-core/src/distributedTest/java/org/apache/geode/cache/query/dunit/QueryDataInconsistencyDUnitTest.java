@@ -110,7 +110,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     // Invoke update from client and stop in updateIndex
     // firesultSett before updating the RegionEntry and second after updating
     // the RegionEntry.
-    AsyncInvocation putThread = server.invokeAsync("update a Region Entry", () -> {
+    AsyncInvocation<Void> putThread = server.invokeAsync("update a Region Entry", () -> {
       Region repRegion = cacheRule.getCache().getRegion(repRegionName);
       IndexManager.testHook = new IndexManagerTestHook();
       repRegion.put(new Integer("1"), new Portfolio(cntDest + 1));
@@ -196,7 +196,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     // Invoke update from client and stop in updateIndex
     // firesultSett before updating the RegionEntry and second after updating
     // the RegionEntry.
-    AsyncInvocation putThread = server.invokeAsync("update a Region Entry", () -> {
+    AsyncInvocation<Void> putThread = server.invokeAsync("update a Region Entry", () -> {
       Cache cache = cacheRule.getCache();
       Region repRegion = cache.getRegion(repRegionName);
       IndexManager.testHook = new IndexManagerTestHook();
@@ -281,7 +281,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     // Invoke update from client and stop in updateIndex
     // firesultSett before updating the RegionEntry and second after updating
     // the RegionEntry.
-    AsyncInvocation putThread = server.invokeAsync("update a Region Entry", () -> {
+    AsyncInvocation<Void> putThread = server.invokeAsync("update a Region Entry", () -> {
       Region repRegion = cacheRule.getCache().getRegion(repRegionName);
       IndexManager.testHook = new IndexManagerTestHook();
       // This portfolio with same ID must have different positions.
@@ -361,7 +361,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     // Invoke update from client and stop in updateIndex
     // firesultSett before updating the RegionEntry and second after updating
     // the RegionEntry.
-    AsyncInvocation putThread = server.invokeAsync("update a Region Entry", () -> {
+    AsyncInvocation<Void> putThread = server.invokeAsync("update a Region Entry", () -> {
       Cache cache = cacheRule.getCache();
       Region repRegion = cache.getRegion(repRegionName);
       IndexManager.testHook = new IndexManagerTestHook();
@@ -420,7 +420,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     await().until(joinThread(putThread));
   }
 
-  private Callable<Boolean> joinThread(AsyncInvocation thread) {
+  private Callable<Boolean> joinThread(AsyncInvocation<Void> thread) {
     return () -> {
       try {
         thread.join(100L);

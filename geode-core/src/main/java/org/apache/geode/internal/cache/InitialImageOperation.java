@@ -358,7 +358,7 @@ public class InitialImageOperation {
         // remote_rvv will be filled with the versions of unfinished keys
         // then if recoveredRVV is still newer than the filled remote_rvv, do fullGII
         remote_rvv = received_rvv.getCloneForTransmission();
-        keysOfUnfinishedOps = processReceivedRVV(remote_rvv, recoveredRVV, received_rvv);
+        keysOfUnfinishedOps = processReceivedRVV(remote_rvv, recoveredRVV);
         if (internalAfterCalculatedUnfinishedOps != null
             && internalAfterCalculatedUnfinishedOps.getRegionName().equals(region.getName())) {
           internalAfterCalculatedUnfinishedOps.run();
@@ -820,9 +820,13 @@ public class InitialImageOperation {
     // only once during GII life cycle & so it does not matter if the HTree ref changes after the
     // clear
     // whenever a conflict is detected in DiskRegion it is Ok to abort the operation
+    Set<VersionSource> foundIds;
     final DiskRegion diskRegion = region.getDiskRegion();
     if (diskRegion != null) {
       diskRegion.setClearCountReference();
+      foundIds = Collections.emptySet();
+    } else {
+      foundIds = new HashSet<>();
     }
     try {
       int entryCount = entries.size();
@@ -979,6 +983,9 @@ public class InitialImageOperation {
             }
             this.entries.initialImagePut(entry.key, lastModified, tmpValue, wasRecovered, false,
                 tag, sender, isSynchronizing);
+            if (diskRegion == null && tag != null) {
+              foundIds.add(tag.getMemberID());
+            }
             if (isSynchronizing) {
               entriesToSynchronize.add(entry);
             }
@@ -997,6 +1004,10 @@ public class InitialImageOperation {
         if (isDebugEnabled) {
           logger.debug("processed these initial image keys: {}", keys);
         }
+      }
+      if (diskRegion == null && region.getVersionVector() != null
+          && !region.getVersionVector().getDepartedMembersSet().isEmpty()) {
+        region.getVersionVector().removeOldMembers(foundIds);
       }
       if (internalBeforeCleanExpiredTombstones != null
           && internalBeforeCleanExpiredTombstones.getRegionName().equals(region.getName())) {
@@ -1054,29 +1065,19 @@ public class InitialImageOperation {
    *
    * @param remoteRVV RVV from provider to be filled with unfinished operations
    * @param localRVV RVV recovered from disk
-   * @param receivedRVV original RVV from provider to remove departed members
    * @return set for keys of unfinished operations.
    */
   protected Set<Object> processReceivedRVV(RegionVersionVector remoteRVV,
-      RegionVersionVector localRVV, RegionVersionVector receivedRVV) {
+      RegionVersionVector localRVV) {
     if (remoteRVV == null) {
       return null;
     }
     // calculate keys for unfinished ops
     HashSet<Object> keys = new HashSet<>();
-    Set<VersionSource> departedMemberSet = receivedRVV.getDepartedMembersSet();
     boolean isPersistentRegion = region.getDataPolicy().withPersistence();
-    Set<VersionSource> foundIds;
-    if (!isPersistentRegion) {
-      foundIds = new HashSet<>();
-    } else {
-      foundIds = Collections.emptySet();
-    }
-    if ((isPersistentRegion && localRVV.isNewerThanOrCanFillExceptionsFor(remoteRVV))
-        || !departedMemberSet.isEmpty()) {
+    if (isPersistentRegion && localRVV.isNewerThanOrCanFillExceptionsFor(remoteRVV)) {
       // Only search for unfinished keys when localRVV has something newer
       // and the region is persistent region.
-      // Search for departed members if region is not persistent region
       Iterator<RegionEntry> it = region.getBestIterator(false);
       int count = 0;
       VersionSource<?> myId = region.getVersionMember();
@@ -1087,9 +1088,7 @@ public class InitialImageOperation {
         if (id == null) {
           id = myId;
         }
-        if (!isPersistentRegion) {
-          foundIds.add(id);
-        } else if (!remoteRVV.contains(id, stamp.getRegionVersion())) {
+        if (!remoteRVV.contains(id, stamp.getRegionVersion())) {
           // found an unfinished operation
           keys.add(mapEntry.getKey());
           remoteRVV.recordVersion(id, stamp.getRegionVersion());
@@ -1111,13 +1110,6 @@ public class InitialImageOperation {
               region.getFullPath(), keys.size());
         }
       }
-    }
-    if (!departedMemberSet.isEmpty()) {
-      if (localRVV != null) {
-        localRVV.removeOldMembers(foundIds);
-      }
-      receivedRVV.removeOldMembers(foundIds);
-      remoteRVV.removeOldMembers(foundIds);
     }
     return keys;
   }

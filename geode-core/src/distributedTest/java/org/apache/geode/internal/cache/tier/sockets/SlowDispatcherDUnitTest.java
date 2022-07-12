@@ -115,7 +115,7 @@ public class SlowDispatcherDUnitTest {
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(false)
             .withLocatorConnection(locatorPort));
-    AsyncInvocation putAsync = putClient.invokeAsync(() -> {
+    AsyncInvocation<Void> putAsync = putClient.invokeAsync(() -> {
       UpdatableUserAuthInitialize.setUser("putter");
       Region<Object, Object> proxyRegion =
           ClusterStartupRule.clientCacheRule.createProxyRegion(PARTITION_REGION);

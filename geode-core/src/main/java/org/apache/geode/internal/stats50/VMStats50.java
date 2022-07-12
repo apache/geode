@@ -40,7 +40,6 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
@@ -63,18 +62,18 @@ public class VMStats50 implements VMStatsContract {
   private static final MemoryMXBean memBean;
   @Immutable
   private static final OperatingSystemMXBean osBean;
+  @Immutable
+  static final com.sun.management.OperatingSystemMXBean cpuBean;
   /**
    * This is actually an instance of UnixOperatingSystemMXBean but this class is not available on
    * Windows so needed to make this a runtime check.
    */
   @Immutable
-  private static final Object unixBean;
+  static final Object unixBean;
   @Immutable
   private static final Method getMaxFileDescriptorCount;
   @Immutable
   private static final Method getOpenFileDescriptorCount;
-  @Immutable
-  private static final Method getProcessCpuTime;
   @Immutable
   private static final ThreadMXBean threadBean;
 
@@ -103,7 +102,6 @@ public class VMStats50 implements VMStatsContract {
   private static final StatisticsType gcType;
   private static final int gc_collectionsId;
   private static final int gc_collectionTimeId;
-  @MakeNotStatic
   private final Map<GarbageCollectorMXBean, Statistics> gcMap =
       new HashMap<>();
 
@@ -121,7 +119,6 @@ public class VMStats50 implements VMStatsContract {
   private static final int mp_collectionUsageThresholdId;
   private static final int mp_usageExceededId;
   private static final int mp_collectionUsageExceededId;
-  @MakeNotStatic
   private final Map<MemoryPoolMXBean, Statistics> mpMap =
       new HashMap<>();
 
@@ -151,10 +148,14 @@ public class VMStats50 implements VMStatsContract {
     clBean = ManagementFactory.getClassLoadingMXBean();
     memBean = ManagementFactory.getMemoryMXBean();
     osBean = ManagementFactory.getOperatingSystemMXBean();
+    if (osBean instanceof com.sun.management.OperatingSystemMXBean) {
+      cpuBean = (com.sun.management.OperatingSystemMXBean) osBean;
+    } else {
+      cpuBean = null;
+    }
     {
       Method m1 = null;
       Method m2 = null;
-      Method m3 = null;
       Object bean = null;
       try {
         Class c =
@@ -165,11 +166,6 @@ public class VMStats50 implements VMStatsContract {
           bean = osBean;
         } else {
           // leave them null
-        }
-        // Always set ProcessCpuTime
-        m3 = osBean.getClass().getMethod("getProcessCpuTime");
-        if (m3 != null) {
-          m3.setAccessible(true);
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -188,12 +184,10 @@ public class VMStats50 implements VMStatsContract {
         bean = null;
         m1 = null;
         m2 = null;
-        m3 = null;
       } finally {
         unixBean = bean;
         getMaxFileDescriptorCount = m1;
         getOpenFileDescriptorCount = m2;
-        getProcessCpuTime = m3;
       }
     }
     threadBean = ManagementFactory.getThreadMXBean();
@@ -596,24 +590,8 @@ public class VMStats50 implements VMStatsContract {
     vmStats.setLong(totalMemoryId, rt.totalMemory());
     vmStats.setLong(maxMemoryId, rt.maxMemory());
 
-    // Compute processCpuTime separately, if not accessible ignore
-    try {
-      if (getProcessCpuTime != null) {
-        Object v = getProcessCpuTime.invoke(osBean);
-        vmStats.setLong(processCpuTimeId, (Long) v);
-      }
-    } catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error. We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    } catch (Throwable ex) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above). However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
+    if (cpuBean != null) {
+      vmStats.setLong(processCpuTimeId, cpuBean.getProcessCpuTime());
     }
 
     if (unixBean != null) {

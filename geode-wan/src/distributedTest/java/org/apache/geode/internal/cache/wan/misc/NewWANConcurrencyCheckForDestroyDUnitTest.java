@@ -179,7 +179,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     Wait.pause(2000);
 
     // Perform a put in vm1
-    AsyncInvocation asynch1 =
+    AsyncInvocation<Void> asynch1 =
         vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
 
           @Override
@@ -202,7 +202,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // wait for vm1 to propagate put to vm3
     Wait.pause(1000);
 
-    AsyncInvocation asynch2 =
+    AsyncInvocation<Void> asynch2 =
         vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
 
           @Override
@@ -289,7 +289,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     Wait.pause(2000);
 
     // Perform a put in vm1
-    AsyncInvocation asynch1 =
+    AsyncInvocation<Void> asynch1 =
         vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
 
           @Override
@@ -312,7 +312,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // wait for vm1 to propagate put to vm3
     Wait.pause(1000);
 
-    AsyncInvocation asynch2 =
+    AsyncInvocation<Void> asynch2 =
         vm1.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds1") {
 
           @Override
@@ -420,7 +420,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // wait for vm4 to have later timestamp before sending operation to vm1
     Wait.pause(300);
 
-    AsyncInvocation asynch =
+    AsyncInvocation<Void> asynch =
         vm4.invokeAsync(new CacheSerializableRunnable("Putting an entry in ds2 in vm4") {
 
           @Override

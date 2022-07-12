@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,7 +53,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -146,11 +147,7 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
-  public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
-    pdxClassToMethodsMap.set(map);
-  }
-
-  public static Map<String, Set<String>> getPdxClasstoMethodsmap() {
+  public static Map<String, Set<String>> getPdxClassToMethodsMap() {
     return pdxClassToMethodsMap.get();
   }
 
@@ -242,11 +239,11 @@ public class DefaultQuery implements Query {
         // For local queries returning pdx objects wrap the resultset with
         // ResultsCollectionPdxDeserializerWrapper
         // which deserializes these pdx objects.
-        if (needsPDXDeserializationWrapper(true /* is query on PR */)
+        if (needsPDXDeserializationWrapper( /* is query on PR */)
             && result instanceof SelectResults) {
           // we use copy on read false here because the copying has already taken effect earlier in
           // the PartitionedRegionQueryEvaluator
-          result = new ResultsCollectionPdxDeserializerWrapper((SelectResults) result, false);
+          result = new ResultsCollectionPdxDeserializerWrapper((SelectResults<?>) result, false);
         }
         return result;
       }
@@ -284,14 +281,14 @@ public class DefaultQuery implements Query {
       // For local queries returning pdx objects wrap the resultset with
       // ResultsCollectionPdxDeserializerWrapper
       // which deserializes these pdx objects.
-      if (needsPDXDeserializationWrapper(false /* is query on PR */)
+      if (needsPDXDeserializationWrapper( /* is query on PR */)
           && result instanceof SelectResults) {
-        result = new ResultsCollectionPdxDeserializerWrapper((SelectResults) result,
+        result = new ResultsCollectionPdxDeserializerWrapper((SelectResults<?>) result,
             needsCopyOnReadWrapper);
       } else if (!isRemoteQuery() && cache.getCopyOnRead()
           && result instanceof SelectResults) {
         if (needsCopyOnReadWrapper) {
-          result = new ResultsCollectionCopyOnReadWrapper((SelectResults) result);
+          result = new ResultsCollectionCopyOnReadWrapper((SelectResults<?>) result);
         }
       }
       return result;
@@ -310,7 +307,7 @@ public class DefaultQuery implements Query {
    * For Order by queries ,since they are already ordered by the comparator && it takes care of
    * conversion, we do not have to wrap it in a wrapper
    */
-  private boolean needsPDXDeserializationWrapper(boolean isQueryOnPR) {
+  private boolean needsPDXDeserializationWrapper() {
     return !isRemoteQuery() && !cache.getPdxReadSerialized();
   }
 
@@ -381,17 +378,16 @@ public class DefaultQuery implements Query {
     // 3) PR reference can only be in the first FROM clause
 
     List<QueryExecutor> prs = new ArrayList<>();
-    for (final Object o : getRegionsInQuery(parameters)) {
-      String regionPath = (String) o;
-      Region rgn = cache.getRegion(regionPath);
-      if (rgn == null) {
+    for (final String regionPath : getRegionsInQuery(parameters)) {
+      Region<?, ?> region = cache.getRegion(regionPath);
+      if (region == null) {
         cache.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionNotFoundException(
             String.format("Region not found: %s", regionPath));
       }
-      if (rgn instanceof QueryExecutor) {
-        ((PartitionedRegion) rgn).checkPROffline();
-        prs.add((QueryExecutor) rgn);
+      if (region instanceof QueryExecutor) {
+        ((PartitionedRegion) region).checkPROffline();
+        prs.add((QueryExecutor) region);
       }
     }
     if (prs.size() == 1) {
@@ -441,7 +437,7 @@ public class DefaultQuery implements Query {
       }
 
       // make sure the where clause references no regions
-      Set regions = new HashSet();
+      Set<String> regions = new HashSet<>();
       CompiledValue whereClause = select.getWhereClause();
       if (whereClause != null) {
         whereClause.getRegionsInQuery(regions, parameters);
@@ -450,10 +446,10 @@ public class DefaultQuery implements Query {
               "The WHERE clause cannot refer to a region when querying on a Partitioned Region");
         }
       }
-      List fromClause = select.getIterators();
+      List<?> fromClause = select.getIterators();
 
       // the first iterator in the FROM clause must be just a reference to the Partitioned Region
-      Iterator fromClauseIterator = fromClause.iterator();
+      Iterator<?> fromClauseIterator = fromClause.iterator();
       CompiledIteratorDef itrDef = (CompiledIteratorDef) fromClauseIterator.next();
 
       // By process of elimination, we know that the first iterator contains a reference
@@ -478,7 +474,7 @@ public class DefaultQuery implements Query {
         }
 
         // check the projections, must not reference any regions
-        List projs = select.getProjectionAttributes();
+        List<?> projs = select.getProjectionAttributes();
         if (projs != null) {
           for (Object proj1 : projs) {
             Object[] rawProj = (Object[]) proj1;
@@ -643,7 +639,7 @@ public class DefaultQuery implements Query {
     String usedIndexesString = null;
     if (observer instanceof IndexTrackingQueryObserver) {
       IndexTrackingQueryObserver indexObserver = (IndexTrackingQueryObserver) observer;
-      Map usedIndexes = indexObserver.getUsedIndexes();
+      Map<?, ?> usedIndexes = indexObserver.getUsedIndexes();
       indexObserver.reset();
       StringBuilder sb = new StringBuilder();
       sb.append(" indexesUsed(");
@@ -651,8 +647,9 @@ public class DefaultQuery implements Query {
       sb.append(')');
       if (usedIndexes.size() > 0) {
         sb.append(':');
-        for (Iterator itr = usedIndexes.entrySet().iterator(); itr.hasNext();) {
-          Map.Entry entry = (Map.Entry) itr.next();
+        for (final Iterator<Map.Entry<?, ?>> itr =
+            uncheckedCast(usedIndexes.entrySet().iterator()); itr.hasNext();) {
+          final Map.Entry<?, ?> entry = itr.next();
           sb.append(entry.getKey()).append(entry.getValue());
           if (itr.hasNext()) {
             sb.append(',');
@@ -670,43 +667,6 @@ public class DefaultQuery implements Query {
       rowCountString = " rowCount = " + resultSize + ';';
     }
     return "Query Executed in " + time + " ms;" + (rowCountString != null ? rowCountString : "")
-        + (usedIndexesString != null ? usedIndexesString : "") + " \"" + query + '"';
-  }
-
-  private static String getLogMessage(IndexTrackingQueryObserver indexObserver, long startTime,
-      String otherObserver, int resultSize, String query, BucketRegion bucket) {
-    float time = 0.0f;
-
-    if (startTime > 0L) {
-      time = (NanoTimer.getTime() - startTime) / 1.0e6f;
-    }
-
-    String usedIndexesString = null;
-    if (indexObserver != null) {
-      Map usedIndexes = indexObserver.getUsedIndexes(bucket.getFullPath());
-      StringBuilder sb = new StringBuilder();
-      sb.append(" indexesUsed(");
-      sb.append(usedIndexes.size());
-      sb.append(')');
-      if (!usedIndexes.isEmpty()) {
-        sb.append(':');
-        for (Iterator itr = usedIndexes.entrySet().iterator(); itr.hasNext();) {
-          Map.Entry entry = (Map.Entry) itr.next();
-          sb.append(entry.getKey()).append("(Results: ").append(entry.getValue())
-              .append(", Bucket: ").append(bucket.getId()).append(")");
-          if (itr.hasNext()) {
-            sb.append(',');
-          }
-        }
-      }
-      usedIndexesString = sb.toString();
-    } else if (DefaultQuery.QUERY_VERBOSE) {
-      usedIndexesString =
-          " indexesUsed(NA due to other observer in the way: " + otherObserver + ')';
-    }
-
-    String rowCountString = " rowCount = " + resultSize + ';';
-    return "Query Executed" + (startTime > 0L ? " in " + time + " ms;" : ";") + rowCountString
         + (usedIndexesString != null ? usedIndexesString : "") + " \"" + query + '"';
   }
 
@@ -744,8 +704,8 @@ public class DefaultQuery implements Query {
     try {
       indexObserver = startTrace();
       if (qe != null) {
-        LocalDataSet localDataSet =
-            (LocalDataSet) PartitionRegionHelper.getLocalDataForContext(context);
+        LocalDataSet<?, ?> localDataSet =
+            (LocalDataSet<?, ?>) PartitionRegionHelper.getLocalDataForContext(context);
         Set<Integer> buckets = localDataSet.getBucketSet();
         final ExecutionContext executionContext = new ExecutionContext(null, cache);
         result = qe.executeQuery(this, executionContext, params, buckets);
@@ -793,7 +753,7 @@ public class DefaultQuery implements Query {
       int resultSize = -1;
 
       if (result instanceof Collection) {
-        resultSize = ((Collection) result).size();
+        resultSize = ((Collection<?>) result).size();
       }
 
       String queryVerboseMsg =
@@ -802,11 +762,12 @@ public class DefaultQuery implements Query {
     }
   }
 
-  public void endTrace(QueryObserver indexObserver, long startTime, Collection<Collection> result) {
+  public void endTrace(QueryObserver indexObserver, long startTime,
+      Collection<Collection<?>> result) {
     if (logger.isInfoEnabled() && traceOn) {
       int resultSize = 0;
 
-      for (Collection aResult : result) {
+      for (Collection<?> aResult : result) {
         resultSize += aResult.size();
       }
 

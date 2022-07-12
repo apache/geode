@@ -103,7 +103,7 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
     // Execute same query remotely from client using 2 threads
     // Since this is a bind query, the query object will be shared
     // between the 2 threads.
-    AsyncInvocation a1 = client.invokeAsync(new SerializableCallable("Query from client") {
+    AsyncInvocation<Void> a1 = client.invokeAsync(new SerializableCallable("Query from client") {
       @Override
       public Object call() throws Exception {
         QueryService qs = null;
@@ -129,7 +129,7 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    AsyncInvocation a2 = client.invokeAsync(new SerializableCallable("Query from client") {
+    AsyncInvocation<Void> a2 = client.invokeAsync(new SerializableCallable("Query from client") {
       @Override
       public Object call() throws Exception {
 

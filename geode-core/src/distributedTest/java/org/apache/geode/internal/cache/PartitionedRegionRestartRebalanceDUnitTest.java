@@ -18,7 +18,6 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +41,7 @@ public class PartitionedRegionRestartRebalanceDUnitTest implements Serializable 
   private static final int TOTAL_NUM_BUCKETS = 12;
   private static final Logger logger = LogManager.getLogger();
 
-  private String REGION_NAME = getClass().getSimpleName();;
+  private String REGION_NAME = getClass().getSimpleName();
   private VM[] datastores;
 
   @Rule
@@ -57,9 +56,14 @@ public class PartitionedRegionRestartRebalanceDUnitTest implements Serializable 
     for (int i = 0; i < datastores.length; i++) {
       datastores[i] = getVM(i);
       datastores[i].invoke(() -> cacheRule.createCache());
-      datastores[i].invoke(() -> createRegion());
     }
-    datastores[0].invoke(() -> feedData());
+  }
+
+  private LocalRegion createReplicateRegion() {
+    RegionFactory<String, Integer> rf = cacheRule.getCache().createRegionFactory();
+    rf.setDataPolicy(DataPolicy.REPLICATE);
+    LocalRegion region = (LocalRegion) rf.create(REGION_NAME);
+    return region;
   }
 
   private void createRegion() {
@@ -102,18 +106,17 @@ public class PartitionedRegionRestartRebalanceDUnitTest implements Serializable 
           break;
         }
       }
-      Map map = br.getVersionVector().getMemberToVersion();
-      for (Object key : br.getVersionVector().getMemberToVersion().keySet()) {
-        logger.info(br.getFullPath() + ":" + key + ":"
-            + br.getVersionVector().getMemberToVersion().get(key));
-      }
-      // The test proved that departedMemberSet is not growing
-      assertThat(departedMemberSet.size()).isLessThanOrEqualTo(datastores.length);
+      // The test proved that departedMemberSet is not growing:
+      assertThat(departedMemberSet.size()).isLessThanOrEqualTo(datastores.length - 1);
     }
   }
 
   @Test
-  public void restartAndRebalanceShouldNotIncreaseMemberToVersionMap() {
+  public void restartAndRebalanceShouldNotIncreaseMemberToVersionMap() throws InterruptedException {
+    for (int i = 0; i < datastores.length; i++) {
+      datastores[i].invoke(() -> createRegion());
+    }
+    datastores[0].invoke(() -> feedData());
     for (int i = 0; i < datastores.length * 10; i++) {
       datastores[i % datastores.length].invoke(() -> {
         cacheRule.getCache().close();
@@ -129,5 +132,43 @@ public class PartitionedRegionRestartRebalanceDUnitTest implements Serializable 
         verify();
       });
     }
+  }
+
+  @Test
+  public void departedMembersShouldBeCleanedAfterGIIFinished() {
+    datastores[0].invoke(() -> { // member 89: <v1>:41001
+      LocalRegion region = createReplicateRegion();
+      region.put("key-0", "value-0");
+      region.put("key-1", "value-1");
+    });
+    datastores[1].invoke(() -> { // member 90: <v2>:41002
+      LocalRegion region = createReplicateRegion();
+    });
+    datastores[0].invoke(() -> cacheRule.getCache().close());
+    datastores[1].invoke(() -> {
+      // member 90: since all entries are from member 89; member 89 is departed but will stay in map
+      LocalRegion region = (LocalRegion) cacheRule.getCache().getRegion(REGION_NAME);
+      // There are 2 members: member 90 and departed member 89
+      assertThat(region.getVersionVector().getMemberToVersion().size()).isEqualTo(2);
+      assertThat(region.getVersionVector().getDepartedMembersSet().size()).isEqualTo(1);
+    });
+    datastores[0].invoke(() -> { // member 92: <v6>:41001
+      // member 92: GII entries from member 90. But departed member 89 will stay in map
+      cacheRule.createCache();
+      LocalRegion region = createReplicateRegion();
+      // There are 3 members: member 92, member 90, and departed member 89
+      assertThat(region.getVersionVector().getMemberToVersion().size()).isEqualTo(3);
+      assertThat(region.getVersionVector().getDepartedMembersSet().size()).isEqualTo(1);
+    });
+    datastores[1].invoke(() -> cacheRule.getCache().close());
+    datastores[1].invoke(() -> { // 94
+      // member 94: GII entries from member 92. But departed member 89 will stay in map
+      cacheRule.createCache();
+      LocalRegion region = createReplicateRegion();
+      // There are 3 members: member 94, member 92, and departed member 89. Member 90 is removed
+      // from map
+      assertThat(region.getVersionVector().getMemberToVersion().size()).isEqualTo(3);
+      assertThat(region.getVersionVector().getDepartedMembersSet().size()).isEqualTo(1);
+    });
   }
 }

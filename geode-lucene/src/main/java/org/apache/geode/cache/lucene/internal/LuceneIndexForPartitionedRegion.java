@@ -16,6 +16,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -49,7 +50,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
-  protected Region fileAndChunkRegion;
+  protected Region<Object, Object> fileAndChunkRegion;
   protected final FileSystemStats fileSystemStats;
 
   public static final String FILES_REGION_SUFFIX = ".files";
@@ -66,14 +67,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   @Override
-  protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
-    LuceneSerializer mapper = luceneSerializer;
+  protected RepositoryManager createRepositoryManager(LuceneSerializer<?> luceneSerializer) {
+    LuceneSerializer<?> mapper = luceneSerializer;
     if (mapper == null) {
       mapper = new HeterogeneousLuceneSerializer();
     }
-    PartitionedRepositoryManager partitionedRepositoryManager =
-        new PartitionedRepositoryManager(this, mapper, waitingThreadPoolFromDM);
-    return partitionedRepositoryManager;
+    return new PartitionedRepositoryManager(this, mapper, waitingThreadPoolFromDM);
   }
 
   @Override
@@ -94,15 +93,16 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   protected void createLuceneListenersAndFileChunkRegions(
       PartitionedRepositoryManager partitionedRepositoryManager) {
     partitionedRepositoryManager.setUserRegionForRepositoryManager((PartitionedRegion) dataRegion);
-    RegionShortcut regionShortCut;
     final boolean withPersistence = withPersistence();
-    RegionAttributes regionAttributes = dataRegion.getAttributes();
+    final RegionAttributes<Object, Object> regionAttributes =
+        uncheckedCast(dataRegion.getAttributes());
     final boolean withStorage = regionAttributes.getPartitionAttributes().getLocalMaxMemory() > 0;
 
     // TODO: 1) dataRegion should be withStorage
     // 2) Persistence to Persistence
     // 3) Replicate to Replicate, Partition To Partition
     // 4) Offheap to Offheap
+    final RegionShortcut regionShortCut;
     if (!withStorage) {
       regionShortCut = RegionShortcut.PARTITION_PROXY;
     } else if (withPersistence) {
@@ -114,7 +114,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
     // create PR fileAndChunkRegion, but not to create its buckets for now
     final String fileRegionName = createFileRegionName();
-    PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
+    PartitionAttributes<Object, Object> partitionAttributes =
+        uncheckedCast(dataRegion.getPartitionAttributes());
     DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
     LuceneBucketListener lucenePrimaryBucketListener =
         new LuceneBucketListener(partitionedRepositoryManager, dm);
@@ -145,30 +146,32 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return LuceneServiceImpl.getUniqueIndexRegionName(indexName, regionPath, FILES_REGION_SUFFIX);
   }
 
-  private PartitionAttributesFactory configureLuceneRegionAttributesFactory(
-      PartitionAttributesFactory attributesFactory,
-      PartitionAttributes<?, ?> dataRegionAttributes) {
+  private static <K, V> void configureLuceneRegionAttributesFactory(
+      PartitionAttributesFactory<K, V> attributesFactory,
+      PartitionAttributes<K, V> dataRegionAttributes) {
     attributesFactory.setTotalNumBuckets(dataRegionAttributes.getTotalNumBuckets());
     attributesFactory.setRedundantCopies(dataRegionAttributes.getRedundantCopies());
     attributesFactory.setPartitionResolver(getPartitionResolver(dataRegionAttributes));
     attributesFactory.setRecoveryDelay(dataRegionAttributes.getRecoveryDelay());
     attributesFactory.setStartupRecoveryDelay(dataRegionAttributes.getStartupRecoveryDelay());
-    return attributesFactory;
   }
 
-  private PartitionResolver getPartitionResolver(PartitionAttributes dataRegionAttributes) {
+  private static <K, V> PartitionResolver<K, V> getPartitionResolver(
+      PartitionAttributes<K, V> dataRegionAttributes) {
     if (dataRegionAttributes.getPartitionResolver() instanceof FixedPartitionResolver) {
-      return new BucketTargetingFixedResolver();
+      return new BucketTargetingFixedResolver<>();
     } else {
-      return new BucketTargetingResolver();
+      return new BucketTargetingResolver<>();
     }
   }
 
   protected <K, V> Region<K, V> createRegion(final String regionName,
       final RegionShortcut regionShortCut, final String colocatedWithRegionName,
-      final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes,
+      final PartitionAttributes<K, V> partitionAttributes,
+      final RegionAttributes<K, V> regionAttributes,
       PartitionListener lucenePrimaryBucketListener) {
-    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+    PartitionAttributesFactory<K, V> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
     if (lucenePrimaryBucketListener != null) {
       partitionAttributesFactory.addPartitionListener(lucenePrimaryBucketListener);
     }
@@ -176,21 +179,22 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
 
     // Create RegionAttributes based on input RegionShortcut
-    RegionAttributes baseAttributes = cache.getRegionAttributes(regionShortCut.toString());
+    RegionAttributes<K, V> baseAttributes = cache.getRegionAttributes(regionShortCut.toString());
     RegionAttributesCreation attributes = new RegionAttributesCreation(baseAttributes, false);
     attributes.setPartitionAttributes(partitionAttributesFactory.create());
     if (regionAttributes.getDataPolicy().withPersistence()) {
       attributes.setDiskStoreName(regionAttributes.getDiskStoreName());
     }
 
-    return createRegion(regionName, attributes);
+    return createRegion(regionName, uncheckedCast(attributes));
   }
 
   public void close() {}
 
   @Override
   public void dumpFiles(final String directory) {
-    ResultCollector results = FunctionService.onRegion(getDataRegion())
+    @SuppressWarnings("unchecked")
+    ResultCollector<?, ?> results = FunctionService.onRegion(getDataRegion())
         .setArguments(new String[] {directory, indexName}).execute(DumpDirectoryFiles.ID);
     results.getResult();
   }
@@ -259,7 +263,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       } catch (ReplyException e) {
         Throwable cause = e.getCause();
         if (cause instanceof IllegalArgumentException) {
-          // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
+          // If the IllegalArgumentException is index not found, then it's ok; otherwise rethrow it.
           String fullRegionPath =
               regionPath.startsWith(SEPARATOR) ? regionPath : SEPARATOR + regionPath;
           String indexNotFoundMessage = String.format("Lucene index %s was not found in region %s",

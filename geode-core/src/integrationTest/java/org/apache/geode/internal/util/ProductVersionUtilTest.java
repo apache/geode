@@ -45,7 +45,7 @@ public class ProductVersionUtilTest {
   @Test
   public void appendFullVersionAppendsGeodeVersionAndFakeVersion() throws IOException {
     assertThat(ProductVersionUtil.appendFullVersion(new StringBuilder()))
-        .contains("Apache Geode")
+        .contains("VMware Tanzu GemFire")
         .contains("Source-Revision")
         .contains("Build-Id")
         .contains("Fake Distribution")
@@ -55,7 +55,7 @@ public class ProductVersionUtilTest {
   @Test
   public void getFullVersionContainsGeodeVersionAndFakeVersion() {
     assertThat(ProductVersionUtil.getFullVersion())
-        .contains("Apache Geode")
+        .contains("VMware Tanzu GemFire")
         .contains("Source-Revision")
         .contains("Build-Id")
         .contains("Fake Distribution")

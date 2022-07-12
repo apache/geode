@@ -15,6 +15,8 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
+import static org.apache.geode.internal.JvmSizeUtils.getReferenceSize;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -41,7 +43,7 @@ public abstract class AbstractDeltaSessionAttributes extends AbstractSessionAttr
   /**
    * This map holds the updates to attributes
    */
-  protected transient Map<String, DeltaEvent> deltas =
+  protected final transient Map<String, DeltaEvent> deltas =
       Collections.synchronizedMap(new HashMap<>());
 
   @Override
@@ -92,5 +94,29 @@ public abstract class AbstractDeltaSessionAttributes extends AbstractSessionAttr
       }
     }
     jvmOwnerId = in.readUTF();
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    // Field size not accounted for here since
+    // this is done in non-abstract subclasses.
+    return deltasSizeInBytes() + super.getSizeInBytes();
+  }
+
+  /**
+   * Sizing the "deltas" map is a bit tricky.
+   * Both the key and value of the map refer
+   * to objects that are also referenced by the
+   * attributes field in our super class.
+   * But each entry's value is wrapped by a DeltaEvent
+   * so the size of that class is accounted for here.
+   * Also, the HashMap itself has overhead per entry
+   * (NODE_OVERHEAD) which accounted for here.
+   * HashMap does have extra overhead depending on its
+   * loadFactor and that is not accounted for here.
+   */
+  private int deltasSizeInBytes() {
+    return deltas.size() * (HASH_MAP_ENTRY_OVERHEAD
+        + getReferenceSize() + DeltaEvent.MEMORY_OVERHEAD);
   }
 }

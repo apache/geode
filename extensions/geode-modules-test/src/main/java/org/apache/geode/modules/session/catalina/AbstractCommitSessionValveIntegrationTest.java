@@ -64,8 +64,8 @@ public abstract class AbstractCommitSessionValveIntegrationTest<CommitSessionVal
     deltaSessionFacade = new DeltaSessionFacade(deltaSession);
 
     // Valve use the context to log messages
-    when(deltaSessionManager.getTheContext()).thenReturn(mock(Context.class));
-    when(deltaSessionManager.getTheContext().getLogger()).thenReturn(mock(Log.class));
+    when(deltaSessionManager.getContext()).thenReturn(mock(Context.class));
+    when(deltaSessionManager.getContext().getLogger()).thenReturn(mock(Log.class));
   }
 
   @Test

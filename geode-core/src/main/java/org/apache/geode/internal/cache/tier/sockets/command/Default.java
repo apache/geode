@@ -46,7 +46,7 @@ public class Default extends BaseCommand {
 
     logger.fatal("{}: Unknown message type ({}) with tx: {} from {}",
         new Object[] {serverConnection.getName(),
-            MessageType.getString(clientMessage.getMessageType()),
+            clientMessage.getMessageType(),
             clientMessage.getTransactionId(),
             serverConnection.getSocketString()});
     writeErrorResponse(clientMessage, MessageType.UNKNOWN_MESSAGE_TYPE_ERROR, serverConnection);

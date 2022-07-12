@@ -136,7 +136,7 @@ public interface CompiledValue {
    * object (CompiledRegion). The default implementation is provided in the AbstractCompiledValue &
    * overridden in the CompiledSelect as it can contain multiple iterators
    */
-  void getRegionsInQuery(Set regionNames, Object[] parameters);
+  void getRegionsInQuery(Set<String> regionNames, Object[] parameters);
 
   /** Get the CompiledValues that this owns */
   List getChildren();

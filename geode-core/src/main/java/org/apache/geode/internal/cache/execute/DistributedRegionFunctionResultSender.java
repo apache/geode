@@ -232,7 +232,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   }
 
   @Override
-  public void enableOrderedResultStreming(boolean enable) {
+  public void enableOrderedResultStreaming(boolean enable) {
     enableOrderedResultStreming = enable;
   }
 

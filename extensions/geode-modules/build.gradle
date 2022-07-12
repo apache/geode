@@ -27,39 +27,44 @@ evaluationDependsOn(":geode-core")
 dependencies {
   // main
   implementation(platform(project(':boms:geode-all-bom')))
-  api(project(':geode-logging'))
   implementation(project(':geode-membership'))
-  api(project(':geode-common'))
   implementation(project(':geode-serialization'))
   implementation('org.slf4j:slf4j-api')
+  implementation('org.apache.commons:commons-lang3')
 
+  api(project(':geode-logging'))
+  api(project(':geode-common'))
   api(project(':geode-core'))
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')
-  compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat8.version'))
 
-  implementation('org.apache.commons:commons-lang3')
 
   // test
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly('junit:junit')
+
   testImplementation('org.apache.bcel:bcel')
-  testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+  testImplementation('org.junit.jupiter:junit-jupiter-api')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
-  testImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  testImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat8.version'))
+
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+  testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine')
 
 
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
-  integrationTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  integrationTestImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat8.version'))
 
 
   // distributedTest
   distributedTestImplementation(project(':geode-dunit'))
-  distributedTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  distributedTestImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat8.version'))
 }
 
 sonarqube {

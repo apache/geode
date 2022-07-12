@@ -203,7 +203,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
                 executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     testSupport.getRegion().getFullPath(), function,
                     executor1, resultCollector,
-                    FUNCTION_HAS_RESULT, new HashSet<>(),
+                    new HashSet<>(),
                     ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING,
                     DEFAULT_CLIENT_FUNCTION_TIMEOUT),
                 () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(

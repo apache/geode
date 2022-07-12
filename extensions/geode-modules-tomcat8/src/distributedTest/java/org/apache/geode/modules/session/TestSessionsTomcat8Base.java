@@ -14,9 +14,9 @@
  */
 package org.apache.geode.modules.session;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.beans.PropertyChangeEvent;
 import java.io.PrintWriter;
 import java.io.Serializable;
 
@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.modules.session.catalina.DeltaSessionManager;
+import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
@@ -51,7 +51,7 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
   EmbeddedTomcat8 server;
   StandardWrapper servlet;
   Region<String, HttpSession> region;
-  DeltaSessionManager sessionManager;
+  Tomcat8DeltaSessionManager sessionManager;
 
   public void basicConnectivityCheck() throws Exception {
     WebConversation wc = new WebConversation();
@@ -177,8 +177,8 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
    */
   @Test
   public void testSessionExpiration1() throws Exception {
-    // TestSessions only live for a second
-    sessionManager.setMaxInactiveInterval(1);
+    // TestSessions only live for a minute
+    sessionManager.getContext().setSessionTimeout(1);
 
     String key = "value_testSessionExpiration1";
     String value = "Foo";
@@ -193,7 +193,7 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
     wc.getResponse(req);
 
     // Sleep a while
-    Thread.sleep(65000);
+    SECONDS.sleep(65);
 
     // The attribute should not be accessible now...
     req.setParameter("cmd", QueryCommand.GET.name());
@@ -201,20 +201,6 @@ public abstract class TestSessionsTomcat8Base implements Serializable {
 
     WebResponse response = wc.getResponse(req);
     assertThat(response.getText()).isEmpty();
-  }
-
-  /**
-   * Test setting the session expiration via a property change as would happen under normal
-   * deployment conditions.
-   */
-  @Test
-  public void testSessionExpiration2() {
-    // TestSessions only live for a minute
-    sessionManager
-        .propertyChange(new PropertyChangeEvent(server.getRootContext(), "sessionTimeout", 30, 1));
-
-    // Check that the value has been set to 60 seconds
-    assertThat(sessionManager.getMaxInactiveInterval()).isEqualTo(60);
   }
 
   /**

@@ -14,6 +14,10 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.MessageType.EXCEPTION;
+import static org.apache.geode.internal.cache.tier.MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR;
+import static org.apache.geode.internal.cache.tier.MessageType.RESPONSE_CLIENT_PARTITION_ATTRIBUTES;
+
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -86,18 +90,18 @@ public class GetClientPartitionAttributesOp {
     @Override
     protected Object processResponse(final @NotNull Message msg) throws Exception {
       switch (msg.getMessageType()) {
-        case MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR:
+        case GET_CLIENT_PARTITION_ATTRIBUTES_ERROR:
           String errorMsg = msg.getPart(0).getString();
           if (logger.isDebugEnabled()) {
             logger.debug(errorMsg);
           }
           throw new ServerOperationException(errorMsg);
-        case MessageType.RESPONSE_CLIENT_PARTITION_ATTRIBUTES:
+        case RESPONSE_CLIENT_PARTITION_ATTRIBUTES:
           final boolean isDebugEnabled = logger.isDebugEnabled();
           if (isDebugEnabled) {
             logger.debug(
                 "GetClientPartitionAttributesOpImpl#processResponse: received message of type : {}",
-                MessageType.getString(msg.getMessageType()));
+                msg.getMessageType());
           }
           int bucketCount;
           String colocatedWith;
@@ -126,7 +130,7 @@ public class GetClientPartitionAttributesOp {
               new ClientPartitionAdvisor(bucketCount, colocatedWith, partitionResolverName, fpaSet);
           return advisor;
 
-        case MessageType.EXCEPTION:
+        case EXCEPTION:
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "GetClientPartitionAttributesOpImpl#processResponse: received message of type EXCEPTION");
@@ -162,7 +166,7 @@ public class GetClientPartitionAttributesOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return false;
     }
 

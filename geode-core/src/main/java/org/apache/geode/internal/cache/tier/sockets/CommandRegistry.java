@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.KnownVersion;
 
 /**
@@ -38,7 +39,7 @@ public interface CommandRegistry {
    * @throws InternalGemFireError if a different command is already registered for given version or
    *         if no command was added to the registry.
    */
-  void register(int messageType, Map<KnownVersion, Command> versionToNewCommand);
+  void register(MessageType messageType, Map<KnownVersion, Command> versionToNewCommand);
 
-  Map<Integer, Command> get(KnownVersion version);
+  Map<MessageType, Command> get(KnownVersion version);
 }

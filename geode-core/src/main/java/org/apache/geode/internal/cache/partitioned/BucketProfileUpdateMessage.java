@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -49,7 +50,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
-  private int prId;
+  private int partitionedRegionId;
   private int bucketId;
   private int processorId = 0;
   private BucketAdvisor.BucketProfile profile;
@@ -61,11 +62,12 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
     return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
-  private BucketProfileUpdateMessage(Set recipients, int partitionedRegionId, int processorId,
+  private BucketProfileUpdateMessage(Set<InternalDistributedMember> recipients,
+      int partitionedRegionId, int processorId,
       int bucketId, BucketProfile profile) {
     setRecipients(recipients);
     this.processorId = processorId;
-    prId = partitionedRegionId;
+    this.partitionedRegionId = partitionedRegionId;
     this.bucketId = bucketId;
     this.profile = profile;
   }
@@ -83,7 +85,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   @Override
   protected void process(ClusterDistributionManager dm) {
     try {
-      PartitionedRegion pr = PartitionedRegion.getPRFromId(prId);
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(partitionedRegionId);
       // pr.waitOnBucketInitialization(); // While PR doesn't directly do GII, wait on this for
       // bucket initialization -- mthomas 5/17/2007
       pr.getRegionAdvisor().putBucketProfile(bucketId, profile);
@@ -130,7 +132,8 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
    * @return an instance of reply processor if requireAck is true on which the caller can wait until
    *         the event has finished.
    */
-  public static ReplyProcessor21 send(Set recipients, DistributionManager dm, int prId,
+  public static ReplyProcessor21 send(Set<InternalDistributedMember> recipients,
+      DistributionManager dm, int prId,
       int bucketId, BucketProfile bp, boolean requireAck) {
     if (recipients.isEmpty()) {
       return null;
@@ -156,7 +159,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    prId = in.readInt();
+    partitionedRegionId = in.readInt();
     bucketId = in.readInt();
     processorId = in.readInt();
     profile = DataSerializer.readObject(in);
@@ -166,7 +169,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(prId);
+    out.writeInt(partitionedRegionId);
     out.writeInt(bucketId);
     out.writeInt(processorId);
     DataSerializer.writeObject(profile, out);
@@ -174,12 +177,8 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
 
   @Override
   public String toString() {
-    StringBuilder buff = new StringBuilder();
-    String className = getClass().getName();
-    String shortName =
-        className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); // partition.<foo>
-    return buff.append(shortName).append("(prid=").append(prId).append("; bucketid=")
-        .append(bucketId).append("; sender=").append(getSender()).append("]; processorId=")
-        .append(processorId).append("; profile=").append(profile).append(")").toString();
+    return "BucketProfileUpdateMessage(partitionedRegionId=" + partitionedRegionId + "; bucketId="
+        + bucketId + "; sender=" + getSender() + "]; processorId=" + processorId + "; profile="
+        + profile + ")";
   }
 }

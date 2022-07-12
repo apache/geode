@@ -15,6 +15,8 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
 
@@ -23,6 +25,8 @@ import org.apache.geode.Instantiator;
  * propagated once the session goes out of scope - i.e. as the request is done being processed.
  */
 public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes {
+
+  private static final int MEMORY_OVERHEAD = memoryOverhead(DeltaQueuedSessionAttributes.class);
 
   private Trigger trigger = Trigger.SET;
 
@@ -82,4 +86,10 @@ public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes
     deltas.put(attr, new DeltaEvent(false, attr, null));
     return obj;
   }
+
+  @Override
+  public int getSizeInBytes() {
+    return MEMORY_OVERHEAD + super.getSizeInBytes();
+  }
+
 }

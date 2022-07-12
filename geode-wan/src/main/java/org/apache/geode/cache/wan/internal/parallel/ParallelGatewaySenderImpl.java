@@ -180,8 +180,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void setModifiedEventId(EntryEventImpl clonedEvent) {
-    int bucketId = -1;
-    // merged from 42004
+    final int bucketId;
     if (clonedEvent.getRegion() instanceof DistributedRegion) {
       bucketId = PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
           getMaxParallelismForReplicatedRegion());

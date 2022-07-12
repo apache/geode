@@ -1398,14 +1398,14 @@ public class IndexUseJUnitTest {
 
     // Get the first index entry in the PartitionedIndex bucketIndexes and delete the index from it
     // (to simulate what happens when a bucket is moved)
-    Map.Entry<Region, List<Index>> firstIndexEntry = index.getFirstBucketIndex();
+    Map.Entry<Region<?, ?>, List<Index>> firstIndexEntry = index.getFirstBucketIndex();
     assertTrue(!firstIndexEntry.getValue().isEmpty());
     index.removeFromBucketIndexes(firstIndexEntry.getKey(),
         firstIndexEntry.getValue().iterator().next());
 
     // Verify the index was removed from the entry and the entry was removed from the bucket indexes
     assertTrue(firstIndexEntry.getValue().isEmpty());
-    Map.Entry<Region, List<Index>> nextFirstIndexEntry = index.getFirstBucketIndex();
+    Map.Entry<Region<?, ?>, List<Index>> nextFirstIndexEntry = index.getFirstBucketIndex();
     assertTrue(!nextFirstIndexEntry.getValue().isEmpty());
 
     // Run query again

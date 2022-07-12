@@ -14,7 +14,6 @@ dev-tools/dependencies/bump.sh <jira you will be committing this work under> -l
 Step 2: In some cases, maven suggests beta releases, which Geode should not use.
 Manually search for those dependencies on mavencentral to see if there is a better choice.
 Special cases:
-- tomcat6 (do not upgrade)
 - tomcat (upgrade to latest patch only for each of 7, 8.5, and 9)
 
 Step 3: Create a PR and start bumping dependencies.  Push to the PR every few to run PR

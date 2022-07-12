@@ -239,7 +239,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
   }
 
   @Override
-  public void enableOrderedResultStreming(boolean enable) {
+  public void enableOrderedResultStreaming(boolean enable) {
     enableOrderedResultStreming = enable;
   }
 

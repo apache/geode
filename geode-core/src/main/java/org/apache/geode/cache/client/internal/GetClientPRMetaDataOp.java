@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.MessageType.GET_CLIENT_PR_METADATA;
+
 import java.util.List;
 import java.util.Set;
 
@@ -56,12 +58,12 @@ public class GetClientPRMetaDataOp {
 
   static class GetClientPRMetaDataOpImpl extends AbstractOp {
 
-    String regionFullPath = null;
+    private final String regionFullPath;
 
-    ClientMetadataService cms = null;
+    private final ClientMetadataService cms;
 
     public GetClientPRMetaDataOpImpl(String regionFullPath, ClientMetadataService cms) {
-      super(MessageType.GET_CLIENT_PR_METADATA, 1);
+      super(GET_CLIENT_PR_METADATA, 1);
       this.regionFullPath = regionFullPath;
       this.cms = cms;
       getMessage().addStringPart(regionFullPath, true);
@@ -82,17 +84,17 @@ public class GetClientPRMetaDataOp {
     @Override
     protected Object processResponse(final @NotNull Message msg) throws Exception {
       switch (msg.getMessageType()) {
-        case MessageType.GET_CLIENT_PR_METADATA_ERROR:
+        case GET_CLIENT_PR_METADATA_ERROR:
           String errorMsg = msg.getPart(0).getString();
           if (logger.isDebugEnabled()) {
             logger.debug(errorMsg);
           }
           throw new ServerOperationException(errorMsg);
-        case MessageType.RESPONSE_CLIENT_PR_METADATA:
+        case RESPONSE_CLIENT_PR_METADATA:
           final boolean isDebugEnabled = logger.isDebugEnabled();
           if (isDebugEnabled) {
             logger.debug("GetClientPRMetaDataOpImpl#processResponse: received message of type : {}"
-                + MessageType.getString(msg.getMessageType()));
+                + msg.getMessageType());
           }
           int numParts = msg.getNumberOfParts();
           ClientPartitionAdvisor advisor = cms.getClientPartitionAdvisor(regionFullPath);
@@ -125,7 +127,7 @@ public class GetClientPRMetaDataOp {
           }
           cms.setMetadataStable(true);
           return null;
-        case MessageType.EXCEPTION:
+        case EXCEPTION:
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "GetClientPRMetaDataOpImpl#processResponse: received message of type EXCEPTION");
@@ -135,8 +137,8 @@ public class GetClientPRMetaDataOp {
           String s = "While performing  GetClientPRMetaDataOp " + ((Throwable) obj).getMessage();
           throw new ServerOperationException(s, (Throwable) obj);
         default:
-          throw new InternalGemFireError(String.format("Unknown message type %s",
-              msg.getMessageType()));
+          throw new InternalGemFireError(
+              String.format("Unknown message type %s", msg.getMessageType()));
       }
     }
 
@@ -160,7 +162,7 @@ public class GetClientPRMetaDataOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return false;
     }
   }

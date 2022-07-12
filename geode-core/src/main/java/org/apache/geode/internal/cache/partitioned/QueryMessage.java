@@ -46,6 +46,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PRQueryProcessor;
@@ -63,13 +64,13 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   private volatile String queryString;
   private volatile boolean cqQuery;
   private volatile Object[] parameters;
-  private volatile List buckets;
+  private volatile List<Integer> buckets;
   private volatile boolean isPdxSerialized;
   private volatile boolean traceOn;
 
-  private final List<Collection> resultCollector = new ArrayList<>();
-  private Iterator currentResultIterator;
-  private Iterator<Collection> currentSelectResultIterator;
+  private final List<Collection<?>> resultCollector = new ArrayList<>();
+  private Iterator<?> currentResultIterator;
+  private Iterator<Collection<?>> currentSelectResultIterator;
   private boolean isTraceInfoIteration = false;
   private boolean isStructType = false;
 
@@ -81,7 +82,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   }
 
   public QueryMessage(InternalDistributedMember recipient, int regionId, ReplyProcessor21 processor,
-      DefaultQuery query, Object[] parameters, final List buckets) {
+      DefaultQuery query, Object[] parameters, final List<Integer> buckets) {
     super(recipient, regionId, processor);
     queryString = query.getQueryString();
     this.buckets = buckets;
@@ -91,11 +92,11 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   }
 
   /**
-   * Provide results to send back to requestor. terminate by returning END_OF_STREAM token object
+   * Provide results to send back to requester. terminate by returning END_OF_STREAM token object
    */
   @Override
   protected Object getNextReplyObject(PartitionedRegion pr)
-      throws CacheException, ForceReattemptException, InterruptedException {
+      throws CacheException, InterruptedException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (QueryMonitor.isLowMemory()) {
@@ -113,7 +114,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         if (isTraceInfoIteration && currentResultIterator != null) {
           isTraceInfoIteration = false;
         }
-        Collection results = currentSelectResultIterator.next();
+        Collection<?> results = currentSelectResultIterator.next();
         if (isDebugEnabled) {
           logger.debug("Query result size: {}", results.size());
         }
@@ -182,7 +183,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     query.setRemoteQuery(true);
     QueryObserver indexObserver = query.startTrace();
     boolean isQueryTraced = false;
-    List queryTraceList = null;
+    List<PRQueryTraceInfo> queryTraceList = null;
 
     try {
       query.setIsCqQuery(cqQuery);
@@ -208,7 +209,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       }
 
       isStructType = qp.executeQuery(resultCollector);
-      // Add the trace info list object after the NWayMergeResults is created so as to exclude it
+      // Add the trace info list object after the NWayMergeResults is created to exclude it
       // from the sorted collection of NWayMergeResults
       if (isQueryTraced) {
         resultCollector.add(0, queryTraceList);
@@ -216,7 +217,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       currentSelectResultIterator = resultCollector.iterator();
 
       // If trace is enabled, we will generate a trace object to send back. The time info will be
-      // slightly different than the one logged on this node due to generating the trace object
+      // slightly different from the one logged on this node due to generating the trace object
       // information here rather than the finally block.
       if (isQueryTraced) {
         if (DefaultQuery.testHook != null) {
@@ -234,13 +235,14 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
 
         // created the indexes used string
         if (indexObserver instanceof IndexTrackingQueryObserver) {
-          Map indexesUsed = ((IndexTrackingQueryObserver) indexObserver).getUsedIndexes();
+          Map<?, ?> indexesUsed = ((IndexTrackingQueryObserver) indexObserver).getUsedIndexes();
           StringBuilder sb = new StringBuilder();
           sb.append(" indexesUsed(").append(indexesUsed.size()).append(")");
           if (indexesUsed.size() > 0) {
             sb.append(":");
-            for (Iterator itr = indexesUsed.entrySet().iterator(); itr.hasNext();) {
-              Map.Entry entry = (Map.Entry) itr.next();
+            for (Iterator<? extends Map.Entry<?, ?>> itr = indexesUsed.entrySet().iterator(); itr
+                .hasNext();) {
+              Map.Entry<?, ?> entry = itr.next();
               sb.append(entry.getKey()).append(entry.getValue());
               if (itr.hasNext()) {
                 sb.append(",");
@@ -277,7 +279,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; query=").append(queryString).append("; bucketids=").append(buckets);
+    buff.append("; query=").append(queryString).append("; buckets=").append(buckets);
   }
 
   @Override
@@ -314,7 +316,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     queryString = DataSerializer.readString(in);
-    buckets = DataSerializer.readArrayList(in);
+    buckets = InternalDataSerializer.readList(in);
     parameters = DataSerializer.readObjectArray(in);
     cqQuery = DataSerializer.readBoolean(in);
     isPdxSerialized = DataSerializer.readBoolean(in);
@@ -326,7 +328,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeString(queryString, out);
-    DataSerializer.writeArrayList((ArrayList) buckets, out);
+    InternalDataSerializer.writeList(buckets, out);
     DataSerializer.writeObjectArray(parameters, out);
     DataSerializer.writeBoolean(cqQuery, out);
     DataSerializer.writeBoolean(true, out);

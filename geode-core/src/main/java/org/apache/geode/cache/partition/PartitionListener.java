@@ -24,7 +24,7 @@ import org.apache.geode.cache.Region;
  * created/deleted or any bucket in a partitioned region becomes primary.<br>
  * <br>
  * It is highly recommended that implementations of this listener should be quick and not try to
- * manipulate regions and data because the the callbacks are invoked while holding locks that may
+ * manipulate regions and data because the callbacks are invoked while holding locks that may
  * block region operations. <br>
  *
  * <pre>

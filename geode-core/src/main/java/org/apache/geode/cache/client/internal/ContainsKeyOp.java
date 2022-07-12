@@ -69,7 +69,7 @@ public class ContainsKeyOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.CONTAINS_KEY_DATA_ERROR;
     }
 

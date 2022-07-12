@@ -80,7 +80,7 @@ public class ExecutionContext {
    * final Independent RuntimeIterator or Iterators , ie. those referring to a Region or
    * BindArgument, on which the CompiledIteratorDef depends upon .
    */
-  private final Map<CompiledIteratorDef, Set<RuntimeIterator>> itrDefToIndpndtRuntimeItrMap =
+  private final Map<CompiledIteratorDef, Set<RuntimeIterator>> compiledIteratorDefToIndependentRuntimeIterators =
       new HashMap<>();
 
   /**
@@ -88,7 +88,8 @@ public class ExecutionContext {
    * this Map will be only for those RuntimeIterators which have an underlying Region as its
    * Collection Expression
    */
-  private final Map<RuntimeIterator, String> indpndtItrToRgnMap = new HashMap<>();
+  private final Map<RuntimeIterator, String> independentRuntimeIteratorsToRegionPath =
+      new HashMap<>();
 
   // used when querying on a PR: Substitute reference to PartitionedRegion with BucketRegion
   private BucketRegion bukRgn = null;
@@ -97,7 +98,7 @@ public class ExecutionContext {
   private Object currentProjectionField = null;
   private boolean isPRQueryNode = false;
 
-  private Optional<ScheduledFuture> cancellationTask;
+  private ScheduledFuture<?> cancellationTask;
   private volatile CacheRuntimeException canceledException;
   static final ThreadLocal<AtomicBoolean> isCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
@@ -132,17 +133,17 @@ public class ExecutionContext {
   public ExecutionContext(Object[] bindArguments, InternalCache cache) {
     this.cache = cache;
     this.bindArguments = bindArguments;
-    cancellationTask = Optional.empty();
+    cancellationTask = null;
     queryConfigurationService = cache.getService(QueryConfigurationService.class);
     methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
-  Optional<ScheduledFuture> getCancellationTask() {
-    return cancellationTask;
+  Optional<ScheduledFuture<?>> getCancellationTask() {
+    return Optional.ofNullable(cancellationTask);
   }
 
-  void setCancellationTask(final ScheduledFuture cancellationTask) {
-    this.cancellationTask = Optional.of(cancellationTask);
+  void setCancellationTask(final ScheduledFuture<?> cancellationTask) {
+    this.cancellationTask = cancellationTask;
   }
 
   public CachePerfStats getCachePerfStats() {
@@ -155,14 +156,14 @@ public class ExecutionContext {
    *
    * @return the dependency set as a shortcut
    */
-  Set addDependency(CompiledValue cv, RuntimeIterator itr) {
+  Set<RuntimeIterator> addDependency(CompiledValue cv, RuntimeIterator itr) {
     Set<RuntimeIterator> ds = getDependencySet(cv, false);
     ds.add(itr);
     return ds;
   }
 
   /** @return the dependency set as a shortcut */
-  public Set addDependencies(CompiledValue cv, Set<RuntimeIterator> set) {
+  public Set<RuntimeIterator> addDependencies(CompiledValue cv, Set<RuntimeIterator> set) {
     if (set.isEmpty()) {
       return getDependencySet(cv, true);
     }
@@ -176,22 +177,21 @@ public class ExecutionContext {
    */
   boolean isDependentOnCurrentScope(CompiledValue cv) {
     // return !getDependencySet(cv, true).isEmpty();
-    Set<RuntimeIterator> setRItr = getDependencySet(cv, true);
-    boolean isDependent = false;
-    if (!setRItr.isEmpty()) {
+    final Set<RuntimeIterator> iterators = getDependencySet(cv, true);
+    if (!iterators.isEmpty()) {
       int currScopeID = currentScope().getScopeID();
-      for (RuntimeIterator ritr : setRItr) {
-        if (currScopeID == ritr.getScopeID()) {
-          isDependent = true;
-          break;
+      for (final RuntimeIterator iterator : iterators) {
+        if (currScopeID == iterator.getScopeID()) {
+          return true;
         }
       }
     }
-    return isDependent;
+    return false;
   }
 
   /**
-   * Return true if given CompiledValue is dependent on any RuntimeIterator in all of the scopes
+   * @return {@code true} if given {@link CompiledValue} is dependent on any {@link RuntimeIterator}
+   *         in all the scopes, otherwise {@code false}.
    */
   boolean isDependentOnAnyIterator(CompiledValue cv) {
     return !getDependencySet(cv, true).isEmpty();
@@ -222,7 +222,7 @@ public class ExecutionContext {
    *
    * @return All {@link AbstractCompiledValue} dependencies.
    */
-  public Map getDependencyGraph() {
+  public Map<CompiledValue, Set<RuntimeIterator>> getDependencyGraph() {
     return dependencyGraph;
   }
 
@@ -264,12 +264,10 @@ public class ExecutionContext {
     return value;
   }
 
-  /** Return null if cannot be resolved as a variable in current scope */
+  /** @return {@code null} if name cannot be resolved as a variable in current scope */
   private CompiledValue resolveAsVariable(String name) {
-    CompiledValue value;
     for (int i = scopes.size() - 1; i >= 0; i--) {
-      QScope scope = scopes.get(i);
-      value = scope.resolve(name);
+      final CompiledValue value = scopes.get(i).resolve(name);
       if (value != null) {
         return value;
       }
@@ -297,7 +295,7 @@ public class ExecutionContext {
     return scopes.peek();
   }
 
-  public List getCurrentIterators() {
+  public List<RuntimeIterator> getCurrentIterators() {
     return currentScope().getIterators();
   }
 
@@ -311,21 +309,22 @@ public class ExecutionContext {
    * list. If an iterator is dependent on more than one independent iterator, it is not added to the
    * List
    * <p>
-   * TODO: If we are storing a single Iterator instead of Set , in the itrDefToIndpndtRuntimeItrMap
-   * , we need to take care of this function.
    *
-   * @param rIter Independent RuntimeIterator on which dependent iterators of current scope need to
+   * @param iterator Independent RuntimeIterator on which dependent iterators of current scope need
+   *        to
    *        identified
    * @return List containing the independent Runtime Iterator & its dependent iterators
    */
-  public List getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(RuntimeIterator rIter) {
+  public List<RuntimeIterator> getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
+      RuntimeIterator iterator) {
     List<RuntimeIterator> list = new ArrayList<>();
-    list.add(rIter);
+    list.add(iterator);
     for (RuntimeIterator iteratorInCurrentScope : currentScope().getIterators()) {
       Set<RuntimeIterator> itrSet =
-          itrDefToIndpndtRuntimeItrMap.get(iteratorInCurrentScope.getCmpIteratorDefn());
-      if (rIter != iteratorInCurrentScope && itrSet.size() == 1
-          && itrSet.iterator().next() == rIter) {
+          compiledIteratorDefToIndependentRuntimeIterators
+              .get(iteratorInCurrentScope.getCmpIteratorDefn());
+      if (iterator != iteratorInCurrentScope && itrSet.size() == 1
+          && itrSet.iterator().next() == iterator) {
         list.add(iteratorInCurrentScope);
       }
     }
@@ -474,7 +473,7 @@ public class ExecutionContext {
     Set<RuntimeIterator> dependencySet = getDependencySet(cv, true);
     for (RuntimeIterator rIter : dependencySet) {
       Set<RuntimeIterator> indRuntimeIterators =
-          itrDefToIndpndtRuntimeItrMap.get(rIter.getCmpIteratorDefn());
+          compiledIteratorDefToIndependentRuntimeIterators.get(rIter.getCmpIteratorDefn());
       if (indRuntimeIterators != null) {
         set.addAll(indRuntimeIterators);
       }
@@ -482,9 +481,11 @@ public class ExecutionContext {
   }
 
   /**
-   * This function populates the Map itrDefToIndpndtRuntimeItrMap. It creates a Set of
-   * RuntimeIterators to which the current CompilediteratorDef is dependent upon. Also it sets the
-   * index_internal_id for the RuntimeIterator, which is used for calculating the canonicalized
+   * This function populates the Map independentRuntimeIteratorsToRegionPath. It creates a Set of
+   * RuntimeIterators to which the current {@link CompiledIteratorDef} is dependent upon. It sets
+   * the
+   * index_internal_id for the {@link RuntimeIterator}, which is used for calculating the
+   * canonicalized
    * iterator definitions for identifying the available index.
    *
    * @param itrDef CompiledIteratorDef object representing iterator in the query from clause
@@ -505,23 +506,24 @@ public class ExecutionContext {
           QueryUtils.obtainTheBottomMostCompiledValue(itrDef.getCollectionExpr());
       if (startVal.getType() == OQLLexerTokenTypes.RegionPath) {
         rgnPath = ((QRegion) ((CompiledRegion) startVal).evaluate(this)).getFullPath();
-        indpndtItrToRgnMap.put(itr, rgnPath);
+        independentRuntimeIteratorsToRegionPath.put(itr, rgnPath);
       } else if (startVal.getType() == OQLLexerTokenTypes.QUERY_PARAM) {
         Object rgn;
         CompiledBindArgument cba = (CompiledBindArgument) startVal;
         if ((rgn = cba.evaluate(this)) instanceof Region) {
-          indpndtItrToRgnMap.put(itr, rgnPath = ((Region) rgn).getFullPath());
+          independentRuntimeIteratorsToRegionPath.put(itr,
+              rgnPath = ((Region<?, ?>) rgn).getFullPath());
         }
       }
     }
-    itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
+    compiledIteratorDefToIndependentRuntimeIterators.put(itrDef, set);
     IndexManager mgr = null;
     // Set the canonicalized index_internal_id if the condition is satisfied
     if (set.size() == 1) {
       if (itr == null) {
         itr = set.iterator().next();
         if (itr.getScopeID() == currentScope().getScopeID()) {
-          rgnPath = indpndtItrToRgnMap.get(itr);
+          rgnPath = independentRuntimeIteratorsToRegionPath.get(itr);
         }
       }
       if (rgnPath != null) {
@@ -540,10 +542,11 @@ public class ExecutionContext {
             ? currItr.getInternalId() : tempIndexID);
   }
 
-  List getAllIndependentIteratorsOfCurrentScope() {
-    List<RuntimeIterator> independentIterators = new ArrayList<>(indpndtItrToRgnMap.size());
+  List<RuntimeIterator> getAllIndependentIteratorsOfCurrentScope() {
+    List<RuntimeIterator> independentIterators = new ArrayList<>(
+        independentRuntimeIteratorsToRegionPath.size());
     int currentScopeId = currentScope().getScopeID();
-    for (RuntimeIterator rIter : indpndtItrToRgnMap.keySet()) {
+    for (RuntimeIterator rIter : independentRuntimeIteratorsToRegionPath.keySet()) {
       if (rIter.getScopeID() == currentScopeId) {
         independentIterators.add(rIter);
       }
@@ -560,7 +563,7 @@ public class ExecutionContext {
    * @return String containing region path
    */
   String getRegionPathForIndependentRuntimeIterator(RuntimeIterator riter) {
-    return indpndtItrToRgnMap.get(riter);
+    return independentRuntimeIteratorsToRegionPath.get(riter);
   }
 
   /**
@@ -577,7 +580,7 @@ public class ExecutionContext {
       RuntimeIterator itr = itrDef.getRuntimeIterator(this);
       set.add(itr);
     }
-    itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
+    compiledIteratorDefToIndependentRuntimeIterators.put(itrDef, set);
   }
 
   public void setBindArguments(Object[] bindArguments) {
@@ -624,7 +627,7 @@ public class ExecutionContext {
     return false;
   }
 
-  public List getBucketList() {
+  public List<Integer> getBucketList() {
     return null;
   }
 
@@ -644,7 +647,7 @@ public class ExecutionContext {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 
-  public void setBucketList(List list) {
+  public void setBucketList(List<Integer> list) {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 

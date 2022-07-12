@@ -98,7 +98,7 @@ public class MultiClientDUnitTest {
 
     // client 3 keeps logging in, do some successful put, and log out and keep doing it for multiple
     // times
-    AsyncInvocation vm3Invoke = client3.invokeAsync("run as data", () -> {
+    AsyncInvocation<Void> vm3Invoke = client3.invokeAsync("run as data", () -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < KEY_COUNT; j++) {
@@ -107,7 +107,7 @@ public class MultiClientDUnitTest {
     });
 
     // client 4 keeps logging in, do an unauthorized put, and log out
-    AsyncInvocation vm4Invoke = client4.invokeAsync("run as stranger", () -> {
+    AsyncInvocation<Void> vm4Invoke = client4.invokeAsync("run as stranger", () -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < KEY_COUNT; j++) {
@@ -118,7 +118,7 @@ public class MultiClientDUnitTest {
     });
 
     // client 5 keeps logging in, do some successful get, and log out
-    AsyncInvocation vm5Invoke = client5.invokeAsync("run as data", () -> {
+    AsyncInvocation<Void> vm5Invoke = client5.invokeAsync("run as data", () -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < KEY_COUNT; j++) {
@@ -127,7 +127,7 @@ public class MultiClientDUnitTest {
     });
 
     // // client 6 keeps logging in with incorrect
-    AsyncInvocation vm6Invoke = client6.invokeAsync("run as invalid user", () -> {
+    AsyncInvocation<Void> vm6Invoke = client6.invokeAsync("run as invalid user", () -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < 1; j++) {

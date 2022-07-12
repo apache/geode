@@ -191,7 +191,7 @@ public class GiiDiskAccessExceptionRegressionTest extends CacheTestCase {
     }
 
     @Override
-    public Class getEntryClass() {
+    public Class<?> getEntryClass() {
       return getClass();
     }
 

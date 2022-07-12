@@ -97,7 +97,7 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
         }
       };
 
-      AsyncInvocation future = vm0.invokeAsync(destroyParent);
+      AsyncInvocation<Void> future = vm0.invokeAsync(destroyParent);
       try {
         vm1.invoke(createChild);
       } catch (Exception e) {
@@ -160,7 +160,7 @@ public class ConcurrentDestroySubRegionDUnitTest extends JUnit4CacheTestCase {
         }
       };
 
-      AsyncInvocation future = vm0.invokeAsync(destroyParent);
+      AsyncInvocation<Void> future = vm0.invokeAsync(destroyParent);
       try {
         vm1.invoke(createChild);
       } catch (Exception e) {

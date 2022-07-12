@@ -442,7 +442,7 @@ org/apache/geode/management/internal/ManagementFunction,true,1,mbeanServer:javax
 org/apache/geode/management/internal/NotificationKey,true,2207984824068608930,currentTime:long,objectName:javax/management/ObjectName
 org/apache/geode/management/internal/beans/FileUploader$RemoteFile,false,filename:java/lang/String,outputStream:com/healthmarketscience/rmiio/RemoteOutputStream
 org/apache/geode/management/internal/beans/QueryDataFunction,true,1
-org/apache/geode/management/internal/beans/QueryDataFunction$LocalQueryFunction,true,1,id:java/lang/String,optimizeForWrite:boolean,regionName:java/lang/String,showMembers:boolean,this$0:org/apache/geode/management/internal/beans/QueryDataFunction
+org/apache/geode/management/internal/beans/QueryDataFunction$LocalQueryFunction,true,1,id:java/lang/String,optimizeForWrite:boolean,regionName:java/lang/String,showMembers:boolean
 org/apache/geode/management/internal/beans/stats/StatType,false
 org/apache/geode/management/internal/cli/functions/CacheRealizationFunction,true,6209080805559452304
 org/apache/geode/management/internal/cli/functions/RebalanceFunction,true,1

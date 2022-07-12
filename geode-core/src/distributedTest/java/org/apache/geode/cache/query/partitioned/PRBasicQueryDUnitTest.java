@@ -191,10 +191,10 @@ public class PRBasicQueryDUnitTest extends CacheTestCase {
         redundancy, PortfolioData.class, true));
 
     // Now start the child regions asynchronously so queries will happen during persistent recovery
-    AsyncInvocation async0 =
+    AsyncInvocation<Void> async0 =
         vm0.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForColocatedChildCreate(name,
             redundancy, PortfolioData.class, true));
-    AsyncInvocation async1 =
+    AsyncInvocation<Void> async1 =
         vm1.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForColocatedChildCreate(name,
             redundancy, PortfolioData.class, true));
 

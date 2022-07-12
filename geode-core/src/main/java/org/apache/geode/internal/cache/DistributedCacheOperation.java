@@ -631,10 +631,10 @@ public abstract class DistributedCacheOperation {
 
           if (isPutAll) {
             ((BucketRegion) region).performPutAllAdjunctMessaging((DistributedPutAllOperation) this,
-                recipients, adjunctRecipients, filterRouting, processor);
+                adjunctRecipients, processor);
           } else if (isRemoveAll) {
             ((BucketRegion) region).performRemoveAllAdjunctMessaging(
-                (DistributedRemoveAllOperation) this, recipients, adjunctRecipients, filterRouting,
+                (DistributedRemoveAllOperation) this, adjunctRecipients,
                 processor);
           } else {
             boolean calculateDelta =
@@ -725,7 +725,7 @@ public abstract class DistributedCacheOperation {
   }
 
   void doRemoveDestroyTokensFromCqResultKeys(FilterInfo filterInfo, ServerCQ cq) {
-    for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
+    for (Map.Entry<Long, MessageType> e : filterInfo.getCQs().entrySet()) {
       Long cqID = e.getKey();
       // For the CQs satisfying the event with destroy CQEvent, remove
       // the entry form CQ cache.

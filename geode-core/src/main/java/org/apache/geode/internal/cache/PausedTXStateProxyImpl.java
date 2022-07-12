@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionId;
@@ -84,7 +85,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   public void rollback() {}
 
   @Override
-  public List getEvents() {
+  public List<EntryEvent<?, ?>> getEvents() {
     return null;
   }
 
@@ -103,7 +104,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
       boolean forceNewEntry) {}
 
   @Override
-  public Entry getEntry(KeyInfo keyInfo, LocalRegion region, boolean allowTombstones) {
+  public Entry<?, ?> getEntry(KeyInfo keyInfo, LocalRegion region, boolean allowTombstones) {
     return null;
   }
 
@@ -240,7 +241,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Entry getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
+  public Entry<?, ?> getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
       throws DataLocationException {
     return null;
   }
@@ -300,7 +301,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Set getAdditionalKeysForIterator(LocalRegion currRgn) {
+  public Set<?> getAdditionalKeysForIterator(LocalRegion currRgn) {
     return null;
   }
 
@@ -326,12 +327,12 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   public void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException {}
 
   @Override
-  public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
     return null;
   }
 
   @Override
-  public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
+  public void postPutAll(DistributedPutAllOperation putAllOp, VersionedObjectList successfulPuts,
       InternalRegion reg) {}
 
   @Override
@@ -339,7 +340,7 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
       InternalRegion reg) {}
 
   @Override
-  public Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {
+  public Entry<?, ?> accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {
     return null;
   }
 

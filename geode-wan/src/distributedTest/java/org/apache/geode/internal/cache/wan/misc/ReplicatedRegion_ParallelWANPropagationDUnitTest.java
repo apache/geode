@@ -769,10 +769,11 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
     /*
      * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try {
      */
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-        .doPuts0(getTestMethodName() + "_RR", 1000));
+    AsyncInvocation<Void> inv1 =
+        vm4.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+            .doPuts0(getTestMethodName() + "_RR", 1000));
     Wait.pause(1000);
-    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase.killSender());
+    AsyncInvocation<Void> inv2 = vm5.invokeAsync(() -> WANTestBase.killSender());
     try {
       inv1.join();
       inv2.join();
@@ -845,15 +846,17 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
     /*
      * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try
      */ {
-      AsyncInvocation inv1 = vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-          .doPuts0(getTestMethodName() + "_RR", 10000));
+      AsyncInvocation<Void> inv1 =
+          vm7.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+              .doPuts0(getTestMethodName() + "_RR", 10000));
       Thread.sleep(1000);
-      AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
+      AsyncInvocation<Void> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
       Thread.sleep(2000);
-      AsyncInvocation inv3 = vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
-          .doPuts1(getTestMethodName() + "_RR", 10000));
+      AsyncInvocation<Void> inv3 =
+          vm6.invokeAsync(() -> ReplicatedRegion_ParallelWANPropagationDUnitTest
+              .doPuts1(getTestMethodName() + "_RR", 10000));
       Thread.sleep(1500);
-      AsyncInvocation inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
+      AsyncInvocation<Void> inv4 = vm5.invokeAsync(() -> WANTestBase.killSender());
       try {
         inv1.join();
         inv2.join();

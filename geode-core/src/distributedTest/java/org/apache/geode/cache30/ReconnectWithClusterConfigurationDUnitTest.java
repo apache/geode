@@ -174,15 +174,15 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
         system = cache.getDistributedSystem();
       });
     }
-    AsyncInvocation[] crashers = new AsyncInvocation[NUM_VMS];
+    AsyncInvocation<?>[] crashers = new AsyncInvocation[NUM_VMS];
     for (int i = 0; i < NUM_VMS; i++) {
       crashers[i] = VM.getVM(i).invokeAsync("crash",
           () -> MembershipManagerHelper.crashDistributedSystem(system));
     }
-    for (AsyncInvocation crasher : crashers) {
+    for (AsyncInvocation<?> crasher : crashers) {
       crasher.join();
     }
-    AsyncInvocation[] waiters = new AsyncInvocation[NUM_VMS];
+    AsyncInvocation<?>[] waiters = new AsyncInvocation[NUM_VMS];
     for (int i = NUM_VMS - 1; i >= 0; i--) {
       waiters[i] = VM.getVM(i).invokeAsync("wait for reconnect", () -> {
         system.waitUntilReconnected(GeodeAwaitility.getTimeout().toMillis(),
@@ -194,7 +194,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
             .isEqualTo(NUM_VMS - 1));
       });
     }
-    for (AsyncInvocation waiter : waiters) {
+    for (AsyncInvocation<?> waiter : waiters) {
       waiter.join();
     }
   }

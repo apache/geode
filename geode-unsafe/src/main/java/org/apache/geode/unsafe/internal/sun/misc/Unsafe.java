@@ -1,3 +1,4 @@
+// Copyright (c) VMware, Inc. 2022. All rights reserved.
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -20,12 +21,11 @@ import java.lang.reflect.Field;
 /**
  * This class wraps the sun.misc.Unsafe class which is only available on Sun JVMs. It is also
  * available on other JVMs (like IBM).
- *
- *
  */
 public class Unsafe {
 
   private final sun.misc.Unsafe unsafe;
+
   {
     sun.misc.Unsafe tmp;
     try {
@@ -40,6 +40,14 @@ public class Unsafe {
 
   public long objectFieldOffset(Field f) {
     return unsafe.objectFieldOffset(f);
+  }
+
+  public long staticFieldOffset(Field f) {
+    return unsafe.staticFieldOffset(f);
+  }
+
+  public Object staticFieldBase(Field f) {
+    return unsafe.staticFieldBase(f);
   }
 
   public int getInt(Object o, long offset) {
@@ -162,7 +170,6 @@ public class Unsafe {
   }
 
 
-
   public void copyMemory(Object o1, long addr1, Object o2, long addr2, long size) {
     unsafe.copyMemory(o1, addr1, o2, addr2, size);
   }
@@ -181,10 +188,6 @@ public class Unsafe {
 
   public int arrayScaleIndex(Class c) {
     return unsafe.arrayIndexScale(c);
-  }
-
-  public long fieldOffset(Field f) {
-    return unsafe.objectFieldOffset(f);
   }
 
   public int getPageSize() {

@@ -211,7 +211,7 @@ public class AuthenticateUserOp {
         final @NotNull Connection connection) throws Exception {
       byte[] bytes;
       Part part = msg.getPart(0);
-      final int msgType = msg.getMessageType();
+      final MessageType msgType = msg.getMessageType();
       long userId = -1;
       if (msgType == MessageType.RESPONSE) {
         bytes = (byte[]) part.getObject();
@@ -253,12 +253,12 @@ public class AuthenticateUserOp {
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
+        throw new InternalGemFireError("Unexpected message type " + msgType);
       }
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.REQUESTDATAERROR;
     }
 

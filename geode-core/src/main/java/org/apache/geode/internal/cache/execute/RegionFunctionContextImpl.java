@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.LocalDataSet;
 
 /**
  * Context available to data dependent functions. When function is executed using
- * {@link FunctionService#onRegion(Region)}, the FunctionContext can be type casted to
+ * {@link FunctionService#onRegion(Region)}, the FunctionContext can be type cast to
  * RegionFunctionContext. Methods provided to retrieve the Region and filter passed to the function
  * execution
  *
@@ -39,14 +39,14 @@ import org.apache.geode.internal.cache.LocalDataSet;
  *
  * @see FunctionContextImpl
  */
-public class RegionFunctionContextImpl extends FunctionContextImpl
-    implements InternalRegionFunctionContext {
+public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
+    implements InternalRegionFunctionContext<T> {
 
-  private final Region dataSet;
+  private final Region<?, ?> dataSet;
 
   private final Set<?> filter;
 
-  private final Map<String, LocalDataSet> colocatedLocalDataMap;
+  private final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap;
 
   private final int[] localBucketArray;
 
@@ -55,20 +55,20 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
   private final Object principal;
 
   public RegionFunctionContextImpl(final Cache cache, final String functionId,
-      final Region<?, ?> dataSet, final Object args, final Set<?> routingObjects,
-      final Map<String, LocalDataSet> colocatedLocalDataMap, int[] localBucketArray,
+      final Region<?, ?> dataSet, final T args, final Set<?> filter,
+      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, int[] localBucketArray,
       ResultSender<?> resultSender, boolean isPossibleDuplicate) {
-    this(cache, functionId, dataSet, args, routingObjects, colocatedLocalDataMap, localBucketArray,
+    this(cache, functionId, dataSet, args, filter, colocatedLocalDataMap, localBucketArray,
         resultSender, isPossibleDuplicate, null);
   }
 
   public RegionFunctionContextImpl(final Cache cache, final String functionId,
-      final Region<?, ?> dataSet, final Object args, final Set<?> routingObjects,
-      final Map<String, LocalDataSet> colocatedLocalDataMap, int[] localBucketArray,
+      final Region<?, ?> dataSet, final T args, final Set<?> filter,
+      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, int[] localBucketArray,
       ResultSender<?> resultSender, boolean isPossibleDuplicate, Object principal) {
     super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
-    filter = routingObjects;
+    this.filter = filter;
     this.colocatedLocalDataMap = colocatedLocalDataMap;
     this.localBucketArray = localBucketArray;
     this.isPossibleDuplicate = isPossibleDuplicate;
@@ -83,7 +83,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   private void setFunctionContexts() {
     if (colocatedLocalDataMap != null) {
-      for (LocalDataSet ls : colocatedLocalDataMap.values()) {
+      for (LocalDataSet<?, ?> ls : colocatedLocalDataMap.values()) {
         ls.setFunctionContext(this);
       }
     }
@@ -96,9 +96,10 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
    *
    * @return Returns the Region on which function is executed
    */
+  @SuppressWarnings("unchecked")
   @Override
   public <K, V> Region<K, V> getDataSet() {
-    return dataSet;
+    return (Region<K, V>) dataSet;
   }
 
   /**
@@ -117,31 +118,27 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
   @Override
   public String toString() {
     return "[RegionFunctionContextImpl:"
-        + "dataSet="
-        + dataSet
-        + ";filter="
-        + filter
-        + ";args="
-        + getArguments()
-        + ";principal="
-        + getPrincipal()
+        + "dataSet=" + dataSet
+        + ";filter=" + filter
+        + ";args=" + getArguments()
+        + ";principal=" + getPrincipal()
         + ']';
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Region getLocalDataSet(Region r) {
+  public <K, V> Region<K, V> getLocalDataSet(Region<K, V> region) {
     if (colocatedLocalDataMap != null) {
-      return colocatedLocalDataMap.get(r.getFullPath());
+      return (Region<K, V>) colocatedLocalDataMap.get(region.getFullPath());
     } else {
       return null;
     }
   }
 
   @Override
-  public Map<String, LocalDataSet> getColocatedLocalDataSets() {
+  public Map<String, Region<?, ?>> getColocatedLocalDataSets() {
     if (colocatedLocalDataMap != null) {
-      HashMap<String, LocalDataSet> ret =
-          new HashMap<>(colocatedLocalDataMap);
+      final HashMap<String, LocalDataSet<?, ?>> ret = new HashMap<>(colocatedLocalDataMap);
       ret.remove(dataSet.getFullPath());
       return Collections.unmodifiableMap(ret);
     } else {

@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache.execute;
 
 import org.apache.geode.cache.execute.ResultSender;
 
-public interface InternalResultSender extends ResultSender<Object> {
+public interface InternalResultSender<T> extends ResultSender<T> {
 
-  void enableOrderedResultStreming(boolean enable);
+  void enableOrderedResultStreaming(boolean enable);
 
   boolean isLocallyExecuted();
 

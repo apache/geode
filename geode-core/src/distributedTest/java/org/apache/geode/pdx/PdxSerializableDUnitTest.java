@@ -229,8 +229,8 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
 
     // Now recreate the region, recoverying from disk
-    AsyncInvocation future1 = vm1.invokeAsync(createRegion);
-    AsyncInvocation future2 = vm2.invokeAsync(createRegion);
+    AsyncInvocation<Void> future1 = vm1.invokeAsync(createRegion);
+    AsyncInvocation<Void> future2 = vm2.invokeAsync(createRegion);
 
     future1.getResult();
     future2.getResult();
@@ -311,7 +311,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
       });
     });
 
-    AsyncInvocation async0 = vm0.invokeAsync("propagate value with new pdx enum type", () -> {
+    AsyncInvocation<Void> async0 = vm0.invokeAsync("propagate value with new pdx enum type", () -> {
       Cache cache = getCache(properties);
       final Region pdxRegion = cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH);
       final DUnitBlackboard bb = getBlackboard();
@@ -343,7 +343,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
     // vm0 has sent a new TestObject but vm1 does not have the enum type needed to
     // deserialize it.
-    AsyncInvocation async1 = vm1.invokeAsync("try to read object w/o enum type", () -> {
+    AsyncInvocation<Void> async1 = vm1.invokeAsync("try to read object w/o enum type", () -> {
       DUnitBlackboard bb = getBlackboard();
       bb.waitForGate("pdxObjectPut", 10, TimeUnit.SECONDS);
       Region region = getCache(properties).getRegion("testRegion");

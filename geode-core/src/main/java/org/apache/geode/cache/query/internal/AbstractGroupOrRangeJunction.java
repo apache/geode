@@ -373,7 +373,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       return intermediateResults;
     }
     List currentIters = (completeExpansion) ? context.getCurrentIterators()
-        : QueryUtils.getDependentItrChainForIndpndntItrs(indpndntItr, context);
+        : QueryUtils.getDependentIteratorChainForIndependentIterators(indpndntItr, context);
     SelectResults resultSet = null;
     RuntimeIterator[] rIters = new RuntimeIterator[currentIters.size()];
     currentIters.toArray(rIters);

@@ -341,7 +341,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
       getCache().close();
     });
 
-    AsyncInvocation createRegionInVM0 = vm0.invokeAsync(() -> {
+    AsyncInvocation<Void> createRegionInVM0 = vm0.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
 

@@ -66,6 +66,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionQueueException;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ClientRegistrationEventQueueManager.ClientRegistrationEventQueue;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsManager;
@@ -340,8 +341,8 @@ public class CacheClientNotifierTest {
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     ServerCQ serverCQ = mock(ServerCQ.class);
 
-    HashMap<Long, Integer> cqs = new HashMap<>();
-    cqs.put(CQ_ID, 123);
+    HashMap<Long, MessageType> cqs = new HashMap<>();
+    cqs.put(CQ_ID, MessageType.RESPONSE);
 
     when(filterInfo.getCQs())
         .thenReturn(cqs);

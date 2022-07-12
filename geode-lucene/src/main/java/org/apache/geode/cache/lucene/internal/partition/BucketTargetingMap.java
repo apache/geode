@@ -20,16 +20,15 @@ import java.util.Set;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.BucketRegion;
 
 public class BucketTargetingMap<K, V> extends AbstractMap<K, V> {
 
   private final Region<K, V> region;
   public Object callbackArg;
 
-  public BucketTargetingMap(BucketRegion region, int bucketId) {
-    callbackArg = bucketId;
+  public BucketTargetingMap(Region<K, V> region, int bucketId) {
     this.region = region;
+    callbackArg = bucketId;
   }
 
   @Override
@@ -37,6 +36,7 @@ public class BucketTargetingMap<K, V> extends AbstractMap<K, V> {
     return region.keySet();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public V putIfAbsent(final K key, final V value) {
     try {

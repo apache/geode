@@ -573,7 +573,7 @@ public abstract class BaseCommand implements Command {
     return e;
   }
 
-  protected static void writeException(final @NotNull Message origMsg, final int msgType,
+  protected static void writeException(final @NotNull Message origMsg, final MessageType msgType,
       final @NotNull Throwable e, final boolean isSevere,
       final @NotNull ServerConnection serverConnection) throws IOException {
     Throwable theException = getClientException(serverConnection, e);
@@ -599,7 +599,7 @@ public abstract class BaseCommand implements Command {
     }
   }
 
-  protected static void writeErrorResponse(final Message origMsg, final int messageType,
+  protected static void writeErrorResponse(final Message origMsg, final MessageType messageType,
       final @NotNull ServerConnection serverConnection) throws IOException {
     Message errorMsg = serverConnection.getErrorResponseMessage();
     errorMsg.setMessageType(messageType);
@@ -610,7 +610,8 @@ public abstract class BaseCommand implements Command {
     errorMsg.send(serverConnection);
   }
 
-  protected static void writeErrorResponse(final @NotNull Message origMsg, final int messageType,
+  protected static void writeErrorResponse(final @NotNull Message origMsg,
+      final MessageType messageType,
       final @NotNull String msg,
       final @NotNull ServerConnection serverConnection) throws IOException {
     Message errorMsg = serverConnection.getErrorResponseMessage();
@@ -734,7 +735,7 @@ public abstract class BaseCommand implements Command {
   }
 
   protected static void writeChunkedErrorResponse(final @NotNull Message origMsg,
-      final int messageType, final @NotNull String message,
+      final @NotNull MessageType messageType, final @NotNull String message,
       final @NotNull ServerConnection serverConnection) throws IOException {
     // Send chunked response header identifying error message
     ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();
@@ -757,7 +758,7 @@ public abstract class BaseCommand implements Command {
   }
 
   protected static void writeFunctionResponseException(final @NotNull Message origMsg,
-      final int messageType,
+      final @NotNull MessageType messageType,
       final @NotNull ServerConnection serverConnection, final @NotNull Throwable exception)
       throws IOException {
     Throwable e = getClientException(serverConnection, exception);
@@ -792,7 +793,7 @@ public abstract class BaseCommand implements Command {
   }
 
   protected static void writeFunctionResponseError(final @NotNull Message origMsg,
-      final int messageType, final @NotNull String message,
+      final @NotNull MessageType messageType, final @NotNull String message,
       final @NotNull ServerConnection servConn) throws IOException {
     ChunkedMessage functionResponseMsg = servConn.getFunctionResponseMessage();
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
@@ -820,7 +821,7 @@ public abstract class BaseCommand implements Command {
   }
 
   protected static void writeKeySetErrorResponse(final @NotNull Message origMsg,
-      final int messageType, final @NotNull String message,
+      final @NotNull MessageType messageType, final @NotNull String message,
       final @NotNull ServerConnection servConn) throws IOException {
     // Send chunked response header identifying error message
     ChunkedMessage chunkedResponseMsg = servConn.getKeySetResponseMessage();
@@ -1251,7 +1252,7 @@ public abstract class BaseCommand implements Command {
 
   public static void appendNewRegisterInterestResponseChunk(final @NotNull LocalRegion region,
       final @NotNull VersionedObjectList values, final @NotNull Object riKeys,
-      final @NotNull Set<Map.Entry<?, ?>> set,
+      final @NotNull Set<Map.Entry<Object, ArrayList<Object>>> set,
       final @NotNull ServerConnection servConn)
       throws IOException {
     for (Entry<?, ?> entry : set) {

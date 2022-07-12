@@ -63,7 +63,7 @@ public class CreateCQWithIROp {
     public CreateCQWithIROpImpl(final @NotNull String cqName, final @NotNull String queryStr,
         final int cqState, final boolean isDurable,
         final @NotNull DataPolicy regionDataPolicy) {
-      super(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE, 5);
+      super(MessageType.EXECUTECQ_WITH_IR, 5);
       getMessage().addStringPart(cqName);
       getMessage().addStringPart(queryStr);
       getMessage().addIntPart(cqState);

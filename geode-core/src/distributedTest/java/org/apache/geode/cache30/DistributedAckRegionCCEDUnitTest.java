@@ -153,7 +153,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       return CCRegion.getDistributionManager().getDistributionManagerId();
     });
 
-    AsyncInvocation partialCreate =
+    AsyncInvocation<Void> partialCreate =
         vm2.invokeAsync("create region with stall", () -> {
 
           final GemFireCacheImpl cache = (GemFireCacheImpl) getCache();

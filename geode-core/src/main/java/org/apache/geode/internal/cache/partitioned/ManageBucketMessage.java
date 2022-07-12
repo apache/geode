@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -71,11 +73,11 @@ public class ManageBucketMessage extends PartitionMessage {
   public ManageBucketMessage() {}
 
   private ManageBucketMessage(InternalDistributedMember recipient, int regionId,
-      ReplyProcessor21 processor, int bucketId, int bucketSize, boolean hostItNow) {
+      ReplyProcessor21 processor, int bucketId, int bucketSize, boolean forceCreation) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
     this.bucketSize = bucketSize;
-    forceCreation = hostItNow;
+    this.forceCreation = forceCreation;
   }
 
   public ManageBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
@@ -108,10 +110,9 @@ public class ManageBucketMessage extends PartitionMessage {
 
     p.enableSevereAlertProcessing();
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
-      throw new ForceReattemptException(
-          String.format("Failed sending < %s >", m));
+    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(m);
+    if (!isEmpty(failures)) {
+      throw new ForceReattemptException(String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -136,17 +137,16 @@ public class ManageBucketMessage extends PartitionMessage {
     }
 
     // This is to ensure that initialization is complete before bucket creation request is
-    // serviced. BUGFIX for 35888
+    // serviced.
     r.waitOnInitialization();
-
-    r.checkReadiness(); // Don't allow closed PartitionedRegions that have datastores to host
-                        // buckets
+    // Don't allow closed PartitionedRegions that have data stores to host buckets
+    r.checkReadiness();
     PartitionedRegionDataStore prDs = r.getDataStore();
     boolean managingBucket = prDs.handleManageBucketRequest(bucketId, bucketSize,
         sender, forceCreation);
     r.getPrStats().endPartitionMessagesProcessing(startTime);
     if (managingBucket) {
-      // fix for bug 39356 - If the sender died while we were creating the bucket
+      // If the sender died while we were creating the bucket
       // notify other nodes that they should invoke grabBackupBuckets to
       // make copies of this bucket. Normally the sender would be responsible
       // for creating those copies.
@@ -192,12 +192,6 @@ public class ManageBucketMessage extends PartitionMessage {
     out.writeBoolean(forceCreation);
   }
 
-
-  /**
-   * Assists the toString method in reporting the contents of this message
-   *
-   * @see PartitionMessage#toString()
-   */
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
@@ -335,7 +329,7 @@ public class ManageBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return "ManageBucketReplyMessage " + "processorid="
+      return "ManageBucketReplyMessage " + "processorId="
           + processorId + " accepted bucket=" + acceptedBucket
           + " isInitializing=" + notYetInitialized;
     }

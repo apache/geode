@@ -74,7 +74,7 @@ public class StopCQ extends BaseCQCommand {
     if (cqName == null) {
       String err =
           "The cqName for the cq stop request is null";
-      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(), null,
+      sendCqResponse(MessageType.CQDATAERROR, err, clientMessage.getTransactionId(), null,
           serverConnection);
       return;
     }

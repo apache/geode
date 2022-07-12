@@ -230,7 +230,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2, false, 100, 10, false, true,
         null, secondDStore, true));
     logger.info("Created the sender.... in vm5 ");
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
     logger.info("Started the sender in vm 4");
 
     vm5.invoke(() -> WANTestBase.startSender("ln"));
@@ -314,7 +314,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm5.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
         isOffHeap()));
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
     logger.info("Started the sender in vm 4");
 
     vm5.invoke(() -> WANTestBase.startSender("ln"));
@@ -390,7 +390,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm5.invoke(() -> WANTestBase.startSender("ln"));
     logger.info("Started the sender in vm 5");
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(() -> WANTestBase
         .createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
     vm5.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
         isOffHeap()));
@@ -477,7 +477,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm5.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
         isOffHeap()));
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
     logger.info("Started the sender in vm 4");
 
     vm5.invoke(() -> WANTestBase.startSender("ln"));
@@ -544,7 +544,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
 
     logger.info("Stopped all the senders. ");
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
     logger.info("Started the sender in vm 4");
 
     vm5.invoke(() -> WANTestBase.startSender("ln"));
@@ -610,7 +610,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
 
     createReceiverInVMs(vm2, vm3);
 
-    AsyncInvocation<?> inv1 = vm4.invokeAsync("Starting sender with clean queues",
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync("Starting sender with clean queues",
         () -> WANTestBase.startSenderwithCleanQueues("ln"));
     vm5.invoke("Starting sender with clean queues",
         () -> WANTestBase.startSenderwithCleanQueues("ln"));

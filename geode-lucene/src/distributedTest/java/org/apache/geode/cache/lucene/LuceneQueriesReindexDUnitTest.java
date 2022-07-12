@@ -80,11 +80,11 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     dataStore1.invoke(this::destroyIndex);
 
     // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = dataStore1.invokeAsync(() -> {
       createIndex("text");
     });
 
-    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = dataStore2.invokeAsync(() -> {
       createIndex("text");
     });
 
@@ -115,15 +115,15 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     putDataInRegion(accessor);
 
     // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = dataStore1.invokeAsync(() -> {
       createIndex("text");
     });
 
-    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = dataStore2.invokeAsync(() -> {
       createIndex("text");
     });
 
-    AsyncInvocation ai3 = accessor.invokeAsync(() -> {
+    AsyncInvocation<Void> ai3 = accessor.invokeAsync(() -> {
       if (regionTestType != PARTITION_WITH_CLIENT) {
         createIndex("text");
       }
@@ -208,29 +208,29 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     putDataInRegion(accessor);
 
     // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = dataStore1.invokeAsync(() -> {
       createIndex("text");
     });
 
-    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = dataStore2.invokeAsync(() -> {
       createIndex(INDEX_NAME + "2", "text2");
     });
 
-    AsyncInvocation ai3 = dataStore1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai3 = dataStore1.invokeAsync(() -> {
       createIndex(INDEX_NAME + "2", "text2");
     });
 
-    AsyncInvocation ai4 = dataStore2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai4 = dataStore2.invokeAsync(() -> {
       createIndex("text");
     });
 
-    AsyncInvocation ai5 = accessor.invokeAsync(() -> {
+    AsyncInvocation<Void> ai5 = accessor.invokeAsync(() -> {
       if (getCache().getRegion(REGION_NAME) instanceof PartitionedRegion) {
         createIndex(INDEX_NAME + "1", "text");
       }
     });
 
-    AsyncInvocation ai6 = accessor.invokeAsync(() -> {
+    AsyncInvocation<Void> ai6 = accessor.invokeAsync(() -> {
       if (getCache().getRegion(REGION_NAME) instanceof PartitionedRegion) {
         createIndex(INDEX_NAME + "2", "text2");
       }
@@ -255,11 +255,11 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   private void verifyCreateIndexWithDifferentFieldShouldFail() throws Exception {
-    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = dataStore1.invokeAsync(() -> {
       createIndex("text");
     });
 
-    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = dataStore2.invokeAsync(() -> {
       createIndex("text2");
     });
 
@@ -309,12 +309,12 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     putDataInRegion(accessor);
 
     // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+    AsyncInvocation<Void> ai1 = dataStore1.invokeAsync(() -> {
       createIndex("text");
     });
 
     // re-index stored data
-    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+    AsyncInvocation<Void> ai2 = dataStore2.invokeAsync(() -> {
       createIndex("text");
     });
 

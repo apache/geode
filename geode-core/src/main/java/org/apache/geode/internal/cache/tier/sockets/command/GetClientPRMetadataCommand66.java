@@ -54,10 +54,9 @@ public class GetClientPRMetadataCommand66 extends BaseCommand {
       final @NotNull ServerConnection serverConnection,
       final @NotNull SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
-    String regionFullPath = null;
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    regionFullPath = clientMessage.getPart(0).getCachedString();
-    String errMessage = "";
+    final CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
+    final String regionFullPath = clientMessage.getPart(0).getCachedString();
+    final String errMessage;
     if (regionFullPath == null) {
       logger.warn("The input region path for the GetClientPRMetadata request is null");
       errMessage =
@@ -66,7 +65,7 @@ public class GetClientPRMetadataCommand66 extends BaseCommand {
           errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else {
-      Region region = crHelper.getRegion(regionFullPath);
+      Region<?, ?> region = crHelper.getRegion(regionFullPath);
       if (region == null) {
         logger.warn("Region was not found during GetClientPRMetadata request for region path : {}",
             regionFullPath);
@@ -81,9 +80,9 @@ public class GetClientPRMetadataCommand66 extends BaseCommand {
           responseMsg.setTransactionId(clientMessage.getTransactionId());
           responseMsg.setMessageType(MessageType.RESPONSE_CLIENT_PR_METADATA);
 
-          PartitionedRegion prRgion = (PartitionedRegion) region;
+          PartitionedRegion prRegion = (PartitionedRegion) region;
           Map<Integer, List<BucketServerLocation66>> bucketToServerLocations =
-              prRgion.getRegionAdvisor().getAllClientBucketProfiles();
+              prRegion.getRegionAdvisor().getAllClientBucketProfiles();
           responseMsg.setNumberOfParts(bucketToServerLocations.size());
           for (List<BucketServerLocation66> serverLocations : bucketToServerLocations.values()) {
             responseMsg.addObjPart(serverLocations);

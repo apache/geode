@@ -34,27 +34,27 @@ import org.apache.geode.internal.cache.InternalCache;
  * @see RegionFunctionContextImpl
  *
  */
-public class FunctionContextImpl implements FunctionContext {
+public class FunctionContextImpl<T> implements FunctionContext<T> {
 
-  private Object args = null;
+  private final T args;
 
-  private String functionId = null;
+  private final String functionId;
 
-  private Cache cache = null;
+  private final Cache cache;
 
-  private ResultSender resultSender = null;
+  private final ResultSender<?> resultSender;
 
   private final boolean isPossDup;
 
   private final Object principal;
 
-  public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
-      ResultSender resultSender) {
+  public FunctionContextImpl(final Cache cache, final String functionId, final T args,
+      ResultSender<?> resultSender) {
     this(cache, functionId, args, resultSender, false);
   }
 
-  public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
-      ResultSender resultSender, boolean isPossibleDuplicate) {
+  public FunctionContextImpl(final Cache cache, final String functionId, final T args,
+      ResultSender<?> resultSender, boolean isPossibleDuplicate) {
     this.cache = cache;
     this.functionId = functionId;
     this.args = args;
@@ -77,7 +77,7 @@ public class FunctionContextImpl implements FunctionContext {
    * @return the arguments or null if there are no arguments
    */
   @Override
-  public Object getArguments() {
+  public T getArguments() {
     return args;
   }
 
@@ -104,9 +104,10 @@ public class FunctionContextImpl implements FunctionContext {
         + ']';
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public ResultSender getResultSender() {
-    return resultSender;
+  public <R> ResultSender<R> getResultSender() {
+    return (ResultSender<R>) resultSender;
   }
 
   @Override

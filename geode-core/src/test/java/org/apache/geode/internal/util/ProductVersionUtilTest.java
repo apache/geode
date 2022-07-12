@@ -39,13 +39,14 @@ public class ProductVersionUtilTest {
 
   @Test
   public void appendFullVersionAppendsGeodeVersion() throws IOException {
-    assertThat(ProductVersionUtil.appendFullVersion(new StringBuilder())).contains("Apache Geode");
+    assertThat(ProductVersionUtil.appendFullVersion(new StringBuilder()))
+        .contains("VMware Tanzu GemFire");
   }
 
   @Test
   public void getFullVersionContainsGeodeVersion() {
     assertThat(ProductVersionUtil.getFullVersion())
-        .contains("Apache Geode")
+        .contains("VMware Tanzu GemFire")
         .contains("Source-Revision")
         .contains("Build-Id");
   }

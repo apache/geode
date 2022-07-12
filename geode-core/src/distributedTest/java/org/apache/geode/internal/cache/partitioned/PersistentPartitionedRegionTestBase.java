@@ -200,7 +200,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
     return attributesFactory.create();
   }
 
-  AsyncInvocation createPRAsync(final VM vm, final int redundancy) {
+  AsyncInvocation<Void> createPRAsync(final VM vm, final int redundancy) {
     return vm.invokeAsync(getCreatePRRunnable(redundancy, -1));
   }
 

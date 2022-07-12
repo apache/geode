@@ -40,12 +40,14 @@ public interface Message<ID extends MemberIdentifier> extends DataSerializableFi
   MemberIdentifier ALL_RECIPIENTS = null;
 
   /**
-   * Establishes the destination of a message
+   * Sets the intended recipient of the message. If recipient is Message.ALL_RECIPIENTS
+   * then the message will be sent to all distribution managers.
    */
   void setRecipient(ID member);
 
   /**
-   * Establishes one or more destinations of a message
+   * Sets the intended recipient of the message. If recipient set contains
+   * Message.ALL_RECIPIENTS then the message will be sent to all distribution managers.
    */
   void setRecipients(Collection<ID> recipients);
 
@@ -71,6 +73,8 @@ public interface Message<ID extends MemberIdentifier> extends DataSerializableFi
   /**
    * is this message intended for all members of the cluster? (note: this does not send
    * the message to the node initiating the message)
+   *
+   * @return {@code true} if message will be sent to everyone, otherwise {@code false}.
    */
   boolean forAll();
 

@@ -20,7 +20,6 @@ plugins {
   id 'maven-publish'
 }
 evaluationDependsOn(':extensions:geode-modules')
-evaluationDependsOn(':extensions:geode-modules-tomcat7')
 evaluationDependsOn(':extensions:geode-modules-tomcat8')
 evaluationDependsOn(':extensions:geode-modules-tomcat9')
 evaluationDependsOn(':extensions:geode-modules-session')
@@ -50,7 +49,6 @@ def configureTcServerAssembly = {
   // All client-server files
   into('geode-cs/lib') {
     from project(':extensions:geode-modules').tasks.named('jar')
-    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
     from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
     from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
@@ -88,7 +86,6 @@ def configureTcServerAssembly = {
   // All peer-to-peer files
   into('geode-p2p/lib') {
     from project(':extensions:geode-modules').tasks.named('jar')
-    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
     from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
     from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
@@ -173,7 +170,6 @@ tasks.register('distTomcat', Zip) {
   // All client-server files
   into('lib') {
     from project(':extensions:geode-modules').tasks.named('jar')
-    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
     from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
     from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps

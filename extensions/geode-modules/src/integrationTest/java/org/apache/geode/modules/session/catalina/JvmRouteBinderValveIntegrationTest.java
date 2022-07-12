@@ -17,6 +17,7 @@ package org.apache.geode.modules.session.catalina;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -51,6 +52,8 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Before
   public void setUp() {
     request = spy(Request.class);
+    doNothing().when(request).changeSessionId(anyString());
+
     response = spy(Response.class);
     testValve = new TestValve(false);
 
@@ -157,8 +160,8 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
     parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn("jvmRoute");
     when(deltaSessionManager.getContextName()).thenReturn(TEST_CONTEXT);
-    when(deltaSessionManager.getContainer()).thenReturn(mock(Context.class));
-    when(((Context) deltaSessionManager.getContainer()).getApplicationLifecycleListeners())
+    when(deltaSessionManager.getContext()).thenReturn(mock(Context.class));
+    when(deltaSessionManager.getContext().getApplicationLifecycleListeners())
         .thenReturn(new Object[] {});
     doCallRealMethod().when(deltaSessionManager).findSession(anyString());
 

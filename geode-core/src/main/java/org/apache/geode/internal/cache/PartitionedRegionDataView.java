@@ -49,7 +49,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   }
 
   @Override
-  public Entry getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones) {
+  public Entry<?, ?> getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones) {
     TXStateProxy tx = localRegion.cache.getTXMgr().pauseTransaction();
     try {
       PartitionedRegion pr = (PartitionedRegion) localRegion;
@@ -102,7 +102,6 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
       throws DataLocationException {
     PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     pr.getDataStore().destroyLocally(event.getKeyInfo().getBucketId(), event, expectedOldValue);
-    return;
   }
 
   @Override
@@ -113,13 +112,14 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   }
 
   @Override
-  public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
     PartitionedRegion pr = (PartitionedRegion) localRegion;
     return pr.getBucketKeys(bucketId, allowTombstones);
   }
 
   @Override
-  public Entry getEntryOnRemote(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones)
+  public Entry<?, ?> getEntryOnRemote(KeyInfo keyInfo, LocalRegion localRegion,
+      boolean allowTombstones)
       throws DataLocationException {
     PartitionedRegion pr = (PartitionedRegion) localRegion;
     return pr.getDataStore().getEntryLocally(keyInfo.getBucketId(), keyInfo.getKey(), false,
@@ -130,7 +130,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
   public Object getKeyForIterator(KeyInfo curr, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
     // do not perform a value check here, it will send out an
-    // extra message. Also BucketRegion will check to see if
+    // extra message. BucketRegion will check to see if
     // the value for this key is a removed token
     return curr.getKey();
   }

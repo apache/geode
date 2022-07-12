@@ -15,6 +15,8 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
 
@@ -23,6 +25,8 @@ import org.apache.geode.Instantiator;
  * immediately propagated.
  */
 public class DeltaSessionAttributes extends AbstractDeltaSessionAttributes {
+
+  private static final int MEMORY_OVERHEAD = memoryOverhead(DeltaSessionAttributes.class);
 
   // Register ourselves for de-serialization
   static {
@@ -66,4 +70,10 @@ public class DeltaSessionAttributes extends AbstractDeltaSessionAttributes {
     flush();
     return obj;
   }
+
+  @Override
+  public int getSizeInBytes() {
+    return MEMORY_OVERHEAD + super.getSizeInBytes();
+  }
+
 }

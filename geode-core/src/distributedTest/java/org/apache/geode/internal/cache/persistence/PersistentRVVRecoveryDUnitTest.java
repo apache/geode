@@ -427,7 +427,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     });
 
     // Do a DESTROY in vm0 when delta GII is in progress in vm1 (Hopefully, Not guaranteed).
-    AsyncInvocation destroyDuringDeltaGiiInVM0 = vm0.invokeAsync(() -> {
+    AsyncInvocation<Void> destroyDuringDeltaGiiInVM0 = vm0.invokeAsync(() -> {
       Region<String, String> region = getCache().getRegion("prRegion");
 
       await().until(() -> region.get("testKey").equals("testValue2"));
@@ -563,14 +563,14 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     vm1.invoke(() -> createRegionWithAsyncPersistence(vm1));
 
     // In two different threads, perform updates to the same key on the same region
-    AsyncInvocation doPutsInThread1InVM0 = vm1.invokeAsync(() -> {
+    AsyncInvocation<Void> doPutsInThread1InVM0 = vm1.invokeAsync(() -> {
       Region<String, String> region = getCache().getRegion(regionName);
       for (int i = 0; i < 500; i++) {
         region.put("A", "vm0-" + i);
       }
     });
 
-    AsyncInvocation doPutsInThread2InVM0 = vm1.invokeAsync(() -> {
+    AsyncInvocation<Void> doPutsInThread2InVM0 = vm1.invokeAsync(() -> {
       Region<String, String> region = getCache().getRegion(regionName);
       for (int i = 0; i < 500; i++) {
         region.put("A", "vm1-" + i);

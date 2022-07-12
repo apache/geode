@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance.model;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,23 +45,23 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * A model of the load on all of the members for a partitioned region. This model is used to find
- * the best members to create buckets on or move buckets or primaries too. All of the actual work of
+ * A model of the load on all the members for a partitioned region. This model is used to find
+ * the best members to create buckets on or move buckets or primaries too. All the actual work of
  * creating a copy, moving a primary, etc. Is performed by the BucketOperator that is passed to the
  * constructor.
  *
  * To use, create a model and populate it using the addMember method. addMember takes a region
- * argument, to indicate which region the data is for. All of the regions added to a single model
+ * argument, to indicate which region the data is for. All the regions added to a single model
  * are assumed to be colocated, and the model adds together the load from each of the individual
- * regions to balance all of the regions together.
+ * regions to balance all the regions together.
  *
  * Rebalancing operations are performed by repeatedly calling model.nextStep until it returns false.
  * Each call to nextStep should perform another operation. The model will make callbacks to the
- * BucketOperator you provide to the contructor perform the actual create or move.
+ * BucketOperator you provide to the constructor perform the actual create or move.
  *
  * While creating redundant copies our moving buckets, this model tries to minimize the standard
  * deviation in the weighted loads for the members. The weighted load for the member is the sum of
- * the load for all of the buckets on the member divided by that members weight.
+ * the load for all the buckets on the member divided by that members weight.
  *
  * This model is not threadsafe.
  *
@@ -179,8 +181,8 @@ public class PartitionedRegionLoadModel {
       OfflineMemberDetails offlineDetails, boolean enforceLocalMaxMemory) {
     allColocatedRegions.add(region);
     // build up a list of members and an array of buckets for this
-    // region. Each bucket has a reference to all of the members
-    // that host it and each member has a reference to all of the buckets
+    // region. Each bucket has a reference to all the members
+    // that host it and each member has a reference to all the buckets
     // it hosts
     Map<InternalDistributedMember, Member> regionMember = new HashMap<>();
     Bucket[] regionBuckets = new Bucket[buckets.length];
@@ -234,7 +236,7 @@ public class PartitionedRegionLoadModel {
     for (int i = 0; i < buckets.length; i++) {
       if (regionBuckets[i] == null) {
         // do nothing, this bucket is not hosted for this region.
-        // [sumedh] remove from buckets array too to be consistent since
+        // remove from buckets array too to be consistent since
         // this method will be invoked repeatedly for all colocated regions,
         // and then we may miss some colocated regions for a bucket leading
         // to all kinds of issues later
@@ -247,7 +249,7 @@ public class PartitionedRegionLoadModel {
         buckets[i] = new BucketRollup(i);
       }
 
-      // Add all of the members hosting the bucket to the rollup
+      // Add all the members hosting the bucket to the rollup
       for (Member member : regionBuckets[i].getMembersHosting()) {
         InternalDistributedMember memberId = member.getDistributedMember();
         buckets[i].addMember(members.get(memberId));
@@ -463,7 +465,7 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Determine if the passed in bucket is on more than one member in a zone and mark it as
-   * overredundant. If by marking a bucket over redundant, that would make the redundancy
+   * over-redundant. If by marking a bucket over redundant, that would make the redundancy
    * insufficient, add the bucket to lowRedundancy as well so a member in a different zone
    * can host it.
    *
@@ -488,7 +490,7 @@ public class PartitionedRegionLoadModel {
             lowRedundancyBuckets.add(bucketRollup);
           }
         } else {
-          // otherwise add the redundancy zone to the list of redundancy zones
+          // otherwise, add the redundancy zone to the list of redundancy zones
           redundancyZonesFound.add(redundancyZone);
         }
       }
@@ -603,11 +605,11 @@ public class PartitionedRegionLoadModel {
   public Move findBestTargetForFPR(Bucket bucket, boolean checkIPAddress) {
     InternalDistributedMember targetMemberID;
     Member targetMember;
-    List<FixedPartitionAttributesImpl> fpas =
+    List<FixedPartitionAttributesImpl> attributes =
         partitionedRegion.getFixedPartitionAttributesImpl();
 
-    if (fpas != null) {
-      for (FixedPartitionAttributesImpl fpaImpl : fpas) {
+    if (attributes != null) {
+      for (FixedPartitionAttributesImpl fpaImpl : attributes) {
         if (fpaImpl.hasBucket(bucket.getId())) {
           targetMemberID =
               partitionedRegion.getDistributionManager().getDistributionManagerId();
@@ -615,7 +617,7 @@ public class PartitionedRegionLoadModel {
             targetMember = members.get(targetMemberID);
             if (targetMember.willAcceptBucket(bucket, null, checkIPAddress).willAccept()) {
               // We should have just one move for creating
-              // all the buckets for a FPR on this node.
+              // all the buckets for an FPR on this node.
               return new Move(null, targetMember, bucket);
             }
           }
@@ -639,7 +641,7 @@ public class PartitionedRegionLoadModel {
 
     boolean entryAdded = attemptedPrimaryMoves.add(bestMove);
     Assert.assertTrue(entryAdded,
-        "PartitionedRegionLoadModel.movePrimarys - excluded set is not growing, so we probably would have an infinite loop here");
+        "PartitionedRegionLoadModel.movePrimary - excluded set is not growing, so we probably would have an infinite loop here");
 
     return successfulMove;
   }
@@ -706,7 +708,7 @@ public class PartitionedRegionLoadModel {
   }
 
   /**
-   * Calculate the minimum improvement in variance that will we consider worth while. Currently this
+   * Calculate the minimum improvement in variance that will we consider worthwhile. This
    * is calculated as the improvement in variance that would occur by removing the smallest bucket
    * from the member with the largest weight.
    */
@@ -734,7 +736,7 @@ public class PartitionedRegionLoadModel {
   }
 
   /**
-   * Calculate the minimum improvement in variance that will we consider worth while. Currently this
+   * Calculate the minimum improvement in variance that will we consider worthwhile. This
    * is calculated as the improvement in variance that would occur by removing the smallest bucket
    * from the member with the largest weight.
    */
@@ -856,7 +858,7 @@ public class PartitionedRegionLoadModel {
    * @return a set of partitioned member details.
    */
   public Set<PartitionMemberInfo> getPartitionedMemberDetails(String region) {
-    TreeSet<PartitionMemberInfo> result = new TreeSet<>();
+    TreeSet<InternalPartitionDetails> result = new TreeSet<>();
     for (MemberRollup member : members.values()) {
       Member colocatedMember = member.getColocatedMember(region);
       if (colocatedMember != null) {
@@ -865,7 +867,7 @@ public class PartitionedRegionLoadModel {
             colocatedMember.getBucketCount(), colocatedMember.getPrimaryCount()));
       }
     }
-    return result;
+    return uncheckedCast(result);
   }
 
   /**

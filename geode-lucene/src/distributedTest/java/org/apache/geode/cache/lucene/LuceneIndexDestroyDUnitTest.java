@@ -195,7 +195,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(this::verifyIndexCreated);
 
     // Start puts
-    AsyncInvocation putter = dataStore1.invokeAsync(this::doPutsUntilStopped);
+    AsyncInvocation<Void> putter = dataStore1.invokeAsync(this::doPutsUntilStopped);
 
     // Wait until puts have started
     dataStore1.invoke(this::waitUntilPutsHaveStarted);
@@ -236,7 +236,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(this::verifyIndexesCreated);
 
     // Start puts
-    AsyncInvocation putter = dataStore1.invokeAsync(this::doPutsUntilStopped);
+    AsyncInvocation<Void> putter = dataStore1.invokeAsync(this::doPutsUntilStopped);
 
     // Wait until puts have started
     dataStore1.invoke(this::waitUntilPutsHaveStarted);
@@ -284,7 +284,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> waitUntilFlushed(INDEX_NAME));
 
     // Start queries
-    AsyncInvocation querier = accessor
+    AsyncInvocation<Void> querier = accessor
         .invokeAsync(() -> doQueriesUntilException(INDEX_NAME, "field1Value", "field1", numPuts));
 
     // Wait until queries have started
@@ -329,7 +329,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> waitUntilFlushed(INDEX2_NAME));
 
     // Start queries
-    AsyncInvocation querier = accessor
+    AsyncInvocation<Void> querier = accessor
         .invokeAsync(() -> doQueriesUntilException(INDEX1_NAME, "field1Value", "field1", numPuts));
 
     // Wait until queries have started

@@ -80,20 +80,22 @@ resources:
     bucket: ((artifact-bucket))
     json_key: ((concourse-gcp-key))
     versioned_file: semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens.json
-- name: geode-examples
+- name: gemfire-examples
   icon: github-circle
   type: git
   source:
-    uri: https://github.com/{{repository.fork}}/geode-examples.git
+    uri: git@github.com:{{repository.fork}}/gemfire-examples.git
     branch: {{ repository.branch }}
+    private_key: ((gemfire-ci-private-key))
     depth: 10
 - name: geode-ci
   icon: github-circle
   type: git
   source:
     depth: 1
-    uri: https://github.com/{{repository.fork}}/geode.git
+    uri: git@github.com:{{repository.fork}}/geode-support.git
     branch: {{ repository.branch }}
+    private_key: ((gemfire-ci-private-key))
     paths:
     - ci/*
 - name: concourse-metadata-resource
@@ -129,7 +131,7 @@ jobs:
     - get: linux-builder-image-family
     - get: geode-passing-tokens
       trigger: true
-    - get: geode-examples
+    - get: gemfire-examples
       trigger: true
     - get: daily
       trigger: true
@@ -167,7 +169,7 @@ jobs:
         path: geode-ci/ci/scripts/rsync_code_up.sh
       inputs:
       - name: geode-ci
-      - name: geode-examples
+      - name: gemfire-examples
         path: geode
       - name: instance-data
     timeout: 5m
@@ -185,7 +187,7 @@ jobs:
           SSHKEY_FILE="instance-data/sshkey"
           SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
           INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
-          ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "set -x ; mv geode geode-examples"
+          ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "set -x ; mv geode gemfire-examples"
   - task: build
     image: alpine-tools-image
     config:
@@ -199,7 +201,7 @@ jobs:
         path: geode-ci/ci/scripts/execute_build_examples.sh
       inputs:
       - name: geode-ci
-      - name: geode-examples
+      - name: gemfire-examples
       - name: geode-passing-tokens
       - name: instance-data
       outputs:

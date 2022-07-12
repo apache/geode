@@ -34,7 +34,7 @@ public interface RegionEntryFactory {
   /**
    * @return the Class that each entry, of this factory, is an instance of
    */
-  Class getEntryClass();
+  Class<?> getEntryClass();
 
   /**
    * @return return the versioned equivalent of this RegionEntryFactory

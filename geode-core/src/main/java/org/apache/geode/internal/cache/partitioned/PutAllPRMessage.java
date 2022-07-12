@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -32,8 +34,6 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.client.PoolFactory;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -64,6 +64,7 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -99,8 +100,6 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
   protected static final short SKIP_CALLBACKS = (HAS_BRIDGE_CONTEXT << 1);
 
-  private transient InternalDistributedSystem internalDs;
-
   /** whether direct-acknowledgement is desired */
   private transient boolean directAck = false;
 
@@ -131,9 +130,9 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     putAllPRData[putAllPRDataSize++] = entry;
   }
 
-  public void initMessage(PartitionedRegion r, Set recipients, boolean notifyOnly,
+  public void initMessage(PartitionedRegion r, Set<InternalDistributedMember> recipients,
+      boolean notifyOnly,
       DirectReplyProcessor p) {
-    setInternalDs(r.getSystem());
     setDirectAck(false);
     resetRecipients();
     if (recipients != null) {
@@ -167,8 +166,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     return putAllPRDataSize;
   }
 
-  public Set getKeys() {
-    Set keys = new HashSet(getSize());
+  public Set<Object> getKeys() {
+    Set<Object> keys = new HashSet<>(getSize());
     for (final PutAllEntryData putAllPRDatum : putAllPRData) {
       if (putAllPRDatum != null) {
         keys.add(putAllPRDatum.getKey());
@@ -186,11 +185,9 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
    *         indicate that no acknowledgement will be sent
    * @throws ForceReattemptException if the peer is no longer available
    */
-  public PartitionResponse send(DistributedMember recipient, PartitionedRegion r)
+  public PartitionResponse send(InternalDistributedMember recipient, PartitionedRegion r)
       throws ForceReattemptException {
-    // Assert.assertTrue(recipient != null, "PutAllPRMessage NULL recipient"); recipient can be null
-    // for event notifications
-    Set recipients = Collections.singleton(recipient);
+    Set<InternalDistributedMember> recipients = Collections.singleton(recipient);
     PutAllResponse p = new PutAllResponse(r.getSystem(), recipients);
     initMessage(r, recipients, false, p);
     setTransactionDistributed(r.getCache().getTxManager().isDistributed());
@@ -198,8 +195,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       logger.debug("PutAllPRMessage.send: recipient is {}, msg is {}", recipient, this);
     }
 
-    Set failures = r.getDistributionManager().putOutgoing(this);
-    if (failures != null && failures.size() > 0) {
+    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(this);
+    if (!isEmpty(failures)) {
       throw new ForceReattemptException("Failed sending <" + this + ">");
     }
     return p;
@@ -267,7 +264,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
           hasTags = true;
         }
 
-        VersionTag<?> tag = putAllPRData[i].versionTag;
+        VersionTag<? extends VersionSource<?>> tag = putAllPRData[i].versionTag;
         versionTags.add(tag);
         putAllPRData[i].versionTag = null;
         putAllPRData[i].toData(out, context);
@@ -319,7 +316,6 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws EntryExistsException, DataLocationException {
-    boolean sendReply = true;
 
     InternalDistributedMember eventSender = getSender();
 
@@ -331,9 +327,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       return false;
     }
 
-    if (sendReply) {
-      sendReply(getSender(), getProcessorId(), dm, null, pr, startTime);
-    }
+    sendReply(getSender(), getProcessorId(), dm, null, pr, startTime);
     return false;
   }
 
@@ -371,11 +365,9 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   public boolean doLocalPutAll(PartitionedRegion r, InternalDistributedMember eventSender,
       long lastModified)
       throws EntryExistsException, DataLocationException {
-    boolean didPut = false;
-    long clientReadTimeOut = PoolFactory.DEFAULT_READ_TIMEOUT;
     if (r.hasServerProxy()) {
-      clientReadTimeOut = r.getServerProxy().getPool().getReadTimeout();
       if (logger.isDebugEnabled()) {
+        final long clientReadTimeOut = r.getServerProxy().getPool().getReadTimeout();
         logger.debug("PutAllPRMessage: doLocalPutAll: clientReadTimeOut is {}", clientReadTimeOut);
       }
     }
@@ -383,11 +375,10 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     DistributedPutAllOperation dpao = null;
     @Released
     EntryEventImpl baseEvent = null;
-    BucketRegion bucketRegion = null;
-    PartitionedRegionDataStore ds = r.getDataStore();
-    InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
+    final PartitionedRegionDataStore ds = r.getDataStore();
+    final InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
     try {
-
+      BucketRegion bucketRegion = null;
       if (!notificationOnly) {
         // bucketRegion is not null only when !notificationOnly
         bucketRegion = ds.getInitializedBucketForId(null, bucketId);
@@ -441,8 +432,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
           }
           locked = bucketRegion.waitUntilLocked(keys);
           boolean lockedForPrimary = false;
-          final HashMap succeeded = new HashMap();
-          PutAllPartialResult partialKeys = new PutAllPartialResult(putAllPRDataSize);
+          final HashMap<Object, Object> succeeded = new HashMap<>();
+          final PutAllPartialResult partialKeys = new PutAllPartialResult(putAllPRDataSize);
           Object key = keys[0];
           try {
             bucketRegion.doLockForPrimary(false);
@@ -470,6 +461,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
                 // ev will be added into dpao in putLocally()
                 // oldValue and real operation will be modified into ev in putLocally()
                 // then in basicPutPart3(), the ev is added into dpao
+                boolean didPut;
                 try {
                   didPut = r.getDataView().putEntryOnRemote(ev, false, false, null, false,
                       lastModified, true);
@@ -641,19 +633,10 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     }
   }
 
-  // override reply processor type from PartitionMessage
-  PartitionResponse createReplyProcessor(PartitionedRegion r, Set recipients, Object key) {
-    return new PutAllResponse(r.getSystem(), recipients);
-  }
-
   // override reply message type from PartitionMessage
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
       ReplyException ex, PartitionedRegion pr, long startTime) {
-    // if (!result && getOperation().isCreate()) {
-    // System.err.println("DEBUG: put returning false. ifNew=" + ifNew
-    // +" ifOld="+ifOld + " message=" + this);
-    // }
     if (pr != null) {
       if (startTime > 0) {
         pr.getPrStats().endPartitionMessagesProcessing(startTime);
@@ -683,17 +666,13 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     }
   }
 
-  public void setInternalDs(InternalDistributedSystem internalDs) {
-    this.internalDs = internalDs;
-  }
-
   public void setDirectAck(boolean directAck) {
     this.directAck = directAck;
   }
 
   @Override
   protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
-    return notifiesSerialGatewaySender(dm);
+    return notifiesSerialGatewaySender();
   }
 
   @Override
@@ -712,8 +691,6 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
         name = pr.getFullPath();
       }
     } catch (Exception ignore) {
-      /* ignored */
-      name = null;
     }
     if (name != null) {
       buff.append(" (name = \"").append(name).append("\")");
@@ -813,7 +790,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
     @Override
     public String toString() {
-      return "PutAllReplyMessage " + "processorid=" + processorId
+      return "PutAllReplyMessage " + "processorId=" + processorId
           + " returning " + result + " exception=" + getException()
           + " versions= " + versions;
     }
@@ -829,7 +806,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     private volatile boolean returnValue;
     private VersionedObjectList versions;
 
-    public PutAllResponse(InternalDistributedSystem ds, Set recipients) {
+    public PutAllResponse(InternalDistributedSystem ds, Set<InternalDistributedMember> recipients) {
       super(ds, recipients, false);
     }
 

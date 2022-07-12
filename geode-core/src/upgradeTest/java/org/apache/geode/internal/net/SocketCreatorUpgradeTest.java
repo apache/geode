@@ -221,7 +221,7 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewGeodeOnOldJavaWithProtocolsTLSv1_2() throws IOException {
-    assumeThat(testVersion).as("TODO")
+    assumeThat(testVersion).as("Geode versions less or equal to 1.12.0 can upgrade")
         .isLessThanOrEqualTo(TestVersion.valueOf("1.12.0"));
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
         trustStoreFile);
@@ -238,6 +238,8 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewGeodeOnOldJavaWithProtocolsTLSv1_2Hangs() throws IOException {
+    assumeThat(testVersion).as("GemFire 9.15.0 and upwards can upgrade with no issues")
+        .isLessThan(TestVersion.valueOf("1.15.0"));
     assumeThat(testVersion).as("Geode 1.12.0 and older can upgrade.")
         .isGreaterThan(TestVersion.valueOf("1.12.0"));
     assumeThat(testVersion).as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
@@ -352,6 +354,8 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsAnyHangs() throws IOException {
+    assumeThat(testVersion).as("GemFire 9.15.0 and upwards can upgrade with no issues")
+        .isLessThan(TestVersion.valueOf("1.15.0"));
     assumeThat(testVersion).as("Geode older than 1.13.0 can directly upgrade Java version.")
         .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
 
@@ -383,6 +387,8 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsTLSv1_2Hangs() throws IOException {
+    assumeThat(testVersion).as("GemFire 9.15.0 and upwards can upgrade with no issues")
+        .isLessThan(TestVersion.valueOf("1.15.0"));
     assumeThat(testVersion).as("Geode 1.12.0 and older can upgrade.")
         .isGreaterThan(TestVersion.valueOf("1.12.0"));
     assumeThat(testVersion)
@@ -422,6 +428,8 @@ public class SocketCreatorUpgradeTest {
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsTLSv1_2_SSLv2HelloHangs()
       throws IOException {
+    assumeThat(testVersion).as("GemFire 9.15.0 and upwards can upgrade with no issues")
+        .isLessThan(TestVersion.valueOf("1.15.0"));
     assumeThat(testVersion).as("Geode older than 1.13.0 can directly upgrade Java version.")
         .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
 
@@ -451,6 +459,8 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewGeodeAndNewJavaWithProtocolsTLSv1_2Hangs() throws IOException {
+    assumeThat(testVersion).as("GemFire 9.15.0 and upwards can upgrade with no issues")
+        .isLessThan(TestVersion.valueOf("1.15.0"));
     assumeThat(testVersion).as("Geode 1.12.0 and older can upgrade.")
         .isGreaterThan(TestVersion.valueOf("1.12.0"));
     assumeThat(testVersion).as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")

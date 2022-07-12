@@ -276,7 +276,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   }
 
   @Override
-  public void getRegionsInQuery(Set regionsInQuery, Object[] parameters) {
+  public void getRegionsInQuery(Set<String> regionsInQuery, Object[] parameters) {
     for (final Object o : getChildren()) {
       CompiledValue v = (CompiledValue) o;
       if (v == null) {

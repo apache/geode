@@ -51,35 +51,35 @@ public class CompiledRegion extends AbstractCompiledValue {
 
   @Override
   public Object evaluate(ExecutionContext context) throws RegionNotFoundException {
-    Region rgn;
+    Region<?, ?> region;
     Cache cache = context.getCache();
     // do PR bucketRegion substitution here for expressions that evaluate to a Region.
     PartitionedRegion pr = context.getPartitionedRegion();
 
 
     if (pr != null && pr.getFullPath().equals(regionPath)) {
-      rgn = context.getBucketRegion();
+      region = context.getBucketRegion();
     } else if (pr != null) {
       // Asif : This is a very tricky solution to allow equijoin queries on PartitionedRegion
       // locally
       // We have possibly got a situation of equijoin. it may be across PRs. so use the context's
       // bucket region
-      // to get ID and then retrieve the this region's bucket region
+      // to get ID and then retrieve this region's bucket region
       BucketRegion br = context.getBucketRegion();
       int bucketID = br.getId();
       // Is current region a partitioned region
-      rgn = cache.getRegion(regionPath);
-      if (rgn.getAttributes().getDataPolicy().withPartitioning()) {
+      region = cache.getRegion(regionPath);
+      if (region.getAttributes().getDataPolicy().withPartitioning()) {
         // convert it into bucket region.
-        PartitionedRegion prLocal = (PartitionedRegion) rgn;
-        rgn = prLocal.getDataStore().getLocalBucketById(bucketID);
+        PartitionedRegion prLocal = (PartitionedRegion) region;
+        region = prLocal.getDataStore().getLocalBucketById(bucketID);
       }
 
     } else {
-      rgn = cache.getRegion(regionPath);
+      region = cache.getRegion(regionPath);
     }
 
-    if (rgn == null) {
+    if (region == null) {
       // if we couldn't find the region because the cache is closed, throw
       // a CacheClosedException
       if (cache.isClosed()) {
@@ -90,9 +90,9 @@ public class CompiledRegion extends AbstractCompiledValue {
     }
 
     if (context.isCqQueryContext()) {
-      return new QRegion(rgn, true, context);
+      return new QRegion(region, true, context);
     } else {
-      return new QRegion(rgn, false, context);
+      return new QRegion(region, false, context);
     }
   }
 
@@ -105,7 +105,7 @@ public class CompiledRegion extends AbstractCompiledValue {
   }
 
   @Override
-  public void getRegionsInQuery(Set regionsInQuery, Object[] parameters) {
+  public void getRegionsInQuery(Set<String> regionsInQuery, Object[] parameters) {
     regionsInQuery.add(regionPath);
   }
 

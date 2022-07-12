@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
@@ -54,8 +53,10 @@ public class AbstractRegionJUnitTest {
    */
   @Test
   public void extensionPointIsSimpleExtensionPointByDefault() {
-    AbstractRegion region = spy(AbstractRegion.class);
+    AbstractRegion region = createTestableAbstractRegion();
+
     ExtensionPoint<Region<?, ?>> extensionPoint = region.getExtensionPoint();
+
     assertThat(extensionPoint).isNotNull().isInstanceOf(SimpleExtensionPoint.class);
   }
 
@@ -102,7 +103,7 @@ public class AbstractRegionJUnitTest {
   }
 
   private AbstractRegion createTestableAbstractRegion() {
-    RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    RegionAttributes<?, ?> regionAttributes = mock(RegionAttributes.class);
     when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
     EvictionAttributes evictionAttributes = mock(EvictionAttributes.class);
     when(evictionAttributes.getAction()).thenReturn(EvictionAction.NONE);
@@ -119,9 +120,8 @@ public class AbstractRegionJUnitTest {
         LocalRegion.ServerRegionProxyConstructor.class);
     Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory =
         (localRegion) -> mock(RegionPerfStats.class);
-    AbstractRegion region = new LocalRegion("regionName", regionAttributes, null, Fakes.cache(),
+    return new LocalRegion("regionName", regionAttributes, null, Fakes.cache(),
         new InternalRegionArguments(), null, regionMapConstructor, proxyConstructor, null, null,
         regionPerfStatsFactory, disabledClock());
-    return region;
   }
 }

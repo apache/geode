@@ -83,7 +83,7 @@ public class PartitionedTXRegionStubTest {
   public void destroyExistingEntryThrowsTransactionExceptionFromRemoteHost() throws Exception {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
-    doThrow(expectedException).when(partitionedRegion).destroyRemotely(remoteTransactionHost, 1,
+    doThrow(expectedException).when(partitionedRegion).destroyRemotely(remoteTransactionHost,
         event, expectedObject);
 
     Throwable caughtException = catchThrowable(() -> stub.destroyExistingEntry(event, true,
@@ -102,7 +102,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion).destroyRemotely(remoteTransactionHost,
-        1, event, expectedObject);
+        event, expectedObject);
 
     Throwable caughtException = catchThrowable(() -> stub.destroyExistingEntry(event, false,
         expectedObject));
@@ -120,7 +120,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion).destroyRemotely(remoteTransactionHost,
-        1, event, expectedObject);
+        event, expectedObject);
 
     Throwable caughtException = catchThrowable(() -> stub.destroyExistingEntry(event, true,
         expectedObject));
@@ -137,7 +137,7 @@ public class PartitionedTXRegionStubTest {
     when(event.getRegion()).thenReturn(partitionedRegion);
     when(partitionedRegion.getBucketPrimary(1))
         .thenReturn((InternalDistributedMember) remoteTransactionHost);
-    when(partitionedRegion.getEntryRemotely((InternalDistributedMember) remoteTransactionHost, 1,
+    when(partitionedRegion.getEntryRemotely((InternalDistributedMember) remoteTransactionHost,
         key, false, true)).thenReturn(entry);
 
     assertThat(stub.getEntryForIterator(keyInfo, true)).isEqualTo(entry);
@@ -164,7 +164,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     EntrySnapshot entry = mock(EntrySnapshot.class);
     when(event.getRegion()).thenReturn(partitionedRegion);
-    when(partitionedRegion.getEntryRemotely((InternalDistributedMember) remoteTransactionHost, 1,
+    when(partitionedRegion.getEntryRemotely((InternalDistributedMember) remoteTransactionHost,
         key, false, true)).thenReturn((entry));
 
     assertThat(stub.getEntry(keyInfo, true)).isEqualTo(entry);
@@ -202,7 +202,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
     doThrow(expectedException).when(partitionedRegion)
-        .getEntryRemotely((InternalDistributedMember) remoteTransactionHost, 1, key, false, true);
+        .getEntryRemotely((InternalDistributedMember) remoteTransactionHost, key, false, true);
 
     Throwable caughtException = catchThrowable(() -> stub.getEntry(keyInfo, true));
 
@@ -219,7 +219,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
-        .getEntryRemotely((InternalDistributedMember) remoteTransactionHost, 1, key, false, true);
+        .getEntryRemotely((InternalDistributedMember) remoteTransactionHost, key, false, true);
 
     Throwable caughtException = catchThrowable(() -> stub.getEntry(keyInfo, true));
 
@@ -237,7 +237,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
-        .getEntryRemotely((InternalDistributedMember) remoteTransactionHost, 1, key, false, false);
+        .getEntryRemotely((InternalDistributedMember) remoteTransactionHost, key, false, false);
 
     Throwable caughtException = catchThrowable(() -> stub.getEntry(keyInfo, false));
 
@@ -260,7 +260,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
     when(keyInfo.getBucketId()).thenReturn(1);
-    doThrow(expectedException).when(partitionedRegion).invalidateRemotely(remoteTransactionHost, 1,
+    doThrow(expectedException).when(partitionedRegion).invalidateRemotely(remoteTransactionHost,
         event);
 
     Throwable caughtException =
@@ -280,7 +280,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(true).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
-        .invalidateRemotely(remoteTransactionHost, 1, event);
+        .invalidateRemotely(remoteTransactionHost, event);
 
     Throwable caughtException =
         catchThrowable(() -> stub.invalidateExistingEntry(event, false, false));
@@ -299,7 +299,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(false).when(stub).isBucketNotFoundException(forceReattemptException);
     doNothing().when(stub).waitToRetry();
     doThrow(forceReattemptException).when(partitionedRegion)
-        .invalidateRemotely(remoteTransactionHost, 1, event);
+        .invalidateRemotely(remoteTransactionHost, event);
 
     Throwable caughtException =
         catchThrowable(() -> stub.invalidateExistingEntry(event, false, false));

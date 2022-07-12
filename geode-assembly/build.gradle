@@ -53,8 +53,6 @@ configurations {
   geodeLibdirJarsDeprecated
 
   // Configurations used to download and cache web application servers for session module testing
-  webServerTomcat6
-  webServerTomcat7
   webServerTomcat8
   webServerTomcat9
   webServerJetty
@@ -95,16 +93,6 @@ artifacts {
 }
 
 repositories {
-  //This "repository" only exists to download tomcat-6, because the zip for tomcat 6 is
-  //not in a maven repo. Later versions of tomcat are.
-  ivy {
-    url 'https://archive.apache.org/'
-    patternLayout {
-      artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
-    }
-    // Infer the metadata from the presence of the artifact
-    metadataSources { artifact() }
-  }
   // For gradle tooling dependencies
   maven {
     url 'https://repo.gradle.org/gradle/libs-releases'
@@ -158,7 +146,6 @@ dependencies {
   javadocOnly(project(':geode-server-all'))
   javadocOnly(project(':extensions:geode-modules'))
   javadocOnly(project(':extensions:geode-modules-session'))
-  javadocOnly(project(':extensions:geode-modules-tomcat7'))
   javadocOnly(project(':extensions:geode-modules-tomcat9'))
   javadocOnly(project(':extensions:geode-modules-tomcat8'))
 
@@ -279,8 +266,6 @@ dependencies {
   upgradeTestRuntimeOnly files({ downloadWebServers } )
 
   //Web servers used for session module testing
-  webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')
-  webServerTomcat7('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat7.version') + '@zip')
   webServerTomcat8('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat8.version') + '@zip')
   webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
@@ -442,14 +427,8 @@ distributions {
         exclude 'wrapper'
 
         // These exclude the 'build' and 'out' artifact directories from Gradle and IntelliJ for each project
-        exclude 'buildSrc/build'
-        exclude 'buildSrc/out'
-        rootProject.allprojects.each {
-          def relPath = Paths.get(rootDir.getPath()).relativize(Paths.get(it.projectDir.getPath()))
-          def relOut = relPath.resolve("out").toString()
-          def relBuild = relPath.resolve("build").toString()
-          exclude relOut
-          exclude relBuild
+        exclude { FileTreeElement details ->
+          details.directory && (details.name == "build" || details.name == "out")
         }
       }
     }

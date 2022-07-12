@@ -29,7 +29,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 public interface QueryExecutor {
   Object executeQuery(DefaultQuery query,
       ExecutionContext executionContext,
-      Object[] parameters, Set buckets)
+      Object[] parameters, Set<Integer> buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException;
 

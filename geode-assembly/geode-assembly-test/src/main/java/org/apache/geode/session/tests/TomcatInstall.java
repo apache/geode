@@ -43,8 +43,6 @@ public class TomcatInstall extends ContainerInstall {
    * version, and other properties or XML attributes needed to setup tomcat containers within Cargo
    */
   public enum TomcatVersion {
-    TOMCAT6(6, "tomcat-6.0.37.zip"),
-    TOMCAT7(7, "tomcat-7.0.109.zip"),
     TOMCAT8(8, "tomcat-8.5.66.zip"),
     TOMCAT9(9, "tomcat-9.0.62.zip");
 
@@ -80,10 +78,6 @@ public class TomcatInstall extends ContainerInstall {
 
     public String jarSkipPropertyName() {
       switch (this) {
-        case TOMCAT6:
-          return null;
-        case TOMCAT7:
-          return "tomcat.util.scan.DefaultJarScanner.jarsToSkip";
         case TOMCAT8:
         case TOMCAT9:
           return "tomcat.util.scan.StandardJarScanFilter.jarsToSkip";

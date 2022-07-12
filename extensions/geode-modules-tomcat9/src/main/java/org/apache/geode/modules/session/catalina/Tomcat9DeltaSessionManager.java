@@ -16,7 +16,6 @@ package org.apache.geode.modules.session.catalina;
 
 import java.io.IOException;
 
-import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
@@ -128,28 +127,13 @@ public class Tomcat9DeltaSessionManager extends DeltaSessionManager<Tomcat9Commi
   }
 
   @Override
-  public int getMaxInactiveInterval() {
-    return getContext().getSessionTimeout();
-  }
-
-  @Override
   protected Pipeline getPipeline() {
-    return getTheContext().getPipeline();
+    return getContext().getPipeline();
   }
 
   @Override
   protected Tomcat9CommitSessionValve createCommitSessionValve() {
     return new Tomcat9CommitSessionValve();
-  }
-
-  @Override
-  public Context getTheContext() {
-    return getContext();
-  }
-
-  @Override
-  public void setMaxInactiveInterval(final int interval) {
-    getContext().setSessionTimeout(interval);
   }
 
   @Override

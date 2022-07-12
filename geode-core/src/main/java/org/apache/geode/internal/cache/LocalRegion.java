@@ -1910,7 +1910,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public Set subregions(boolean recursive) {
+  public Set<Region<?, ?>> subregions(boolean recursive) {
     checkReadiness();
     return new SubregionsSet(recursive);
   }
@@ -3165,7 +3165,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+  public void cacheWriteBeforePut(EntryEventImpl event,
+      Set<InternalDistributedMember> netWriteRecipients,
       CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     Assert.assertTrue(netWriteRecipients == null);
@@ -3980,7 +3981,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public List getInterestList() {
+  public List<Object> getInterestList() {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       return proxy.getInterestList(InterestType.KEY);
@@ -3998,14 +3999,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param allowTombstones whether to return destroyed entries
    * @return a set of the keys matching the given criterion
    */
-  public Set getKeysWithInterest(final @NotNull InterestType interestType, Object interestArg,
+  public Set<Object> getKeysWithInterest(final @NotNull InterestType interestType,
+      Object interestArg,
       boolean allowTombstones) {
-    Set ret;
+    Set<Object> ret;
     if (interestType == InterestType.REGULAR_EXPRESSION) {
       if (interestArg == null || ".*".equals(interestArg)) {
-        ret = new HashSet(keySet(allowTombstones));
+        ret = new HashSet<>(keySet(allowTombstones));
       } else {
-        ret = new HashSet();
+        ret = new HashSet<>();
         // Handle the regex pattern
         if (!(interestArg instanceof String)) {
           throw new IllegalArgumentException(

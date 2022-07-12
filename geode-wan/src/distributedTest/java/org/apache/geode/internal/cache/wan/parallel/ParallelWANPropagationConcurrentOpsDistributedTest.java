@@ -75,13 +75,13 @@ public class ParallelWANPropagationConcurrentOpsDistributedTest extends WANTestB
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
-    AsyncInvocation<?> async1 =
+    AsyncInvocation<Void> async1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 700));
-    AsyncInvocation<?> async2 =
+    AsyncInvocation<Void> async2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    AsyncInvocation<?> async3 =
+    AsyncInvocation<Void> async3 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 800));
-    AsyncInvocation<?> async4 =
+    AsyncInvocation<Void> async4 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
     async1.join();
@@ -134,13 +134,13 @@ public class ParallelWANPropagationConcurrentOpsDistributedTest extends WANTestB
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    AsyncInvocation<?> async1 =
+    AsyncInvocation<Void> async1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 700));
-    AsyncInvocation<?> async2 =
+    AsyncInvocation<Void> async2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    AsyncInvocation<?> async3 =
+    AsyncInvocation<Void> async3 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 800));
-    AsyncInvocation<?> async4 =
+    AsyncInvocation<Void> async4 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
     async1.join();

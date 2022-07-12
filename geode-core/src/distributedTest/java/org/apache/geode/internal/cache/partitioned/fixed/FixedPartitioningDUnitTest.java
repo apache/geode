@@ -500,7 +500,7 @@ public class FixedPartitioningDUnitTest implements Serializable {
     datastore1.invoke(this::setPRObserverBeforeCalculateStartingBucketId);
 
     // Start datastore1 asynchronously. This will get stuck waiting in the PR observer
-    AsyncInvocation createRegionInDatastore1 =
+    AsyncInvocation<Void> createRegionInDatastore1 =
         datastore1.invokeAsync(() -> createRegionWithQuarter(QUARTER_1));
 
     // Make sure datastore 1 gets stuck waiting on the observer
@@ -508,9 +508,9 @@ public class FixedPartitioningDUnitTest implements Serializable {
 
     // Start two more data stores asynchronously. These will get stuck waiting for a dlock behind
     // datastore1
-    AsyncInvocation createRegionInDatastore2 =
+    AsyncInvocation<Void> createRegionInDatastore2 =
         datastore2.invokeAsync(() -> createRegionWithQuarter(QUARTER_2));
-    AsyncInvocation createRegionInDatastore3 =
+    AsyncInvocation<Void> createRegionInDatastore3 =
         datastore3.invokeAsync(() -> createRegionWithQuarter(QUARTER_3));
 
     // Make sure a put to datastore1, which is in the middle of pr initialization, fails correctly

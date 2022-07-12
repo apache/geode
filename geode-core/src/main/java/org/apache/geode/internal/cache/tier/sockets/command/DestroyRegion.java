@@ -78,7 +78,7 @@ public class DestroyRegion extends BaseCommand {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{} ignoring message of type {} from client {} because shutdown occurred during message processing.",
-              serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
+              serverConnection.getName(), clientMessage.getMessageType(),
               serverConnection.getProxyID());
         }
 
@@ -147,7 +147,7 @@ public class DestroyRegion extends BaseCommand {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{} ignoring message of type {} from client {} because shutdown occurred during message processing.",
-              serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
+              serverConnection.getName(), clientMessage.getMessageType(),
               serverConnection.getProxyID());
         }
         serverConnection.setFlagProcessMessagesAsFalse();

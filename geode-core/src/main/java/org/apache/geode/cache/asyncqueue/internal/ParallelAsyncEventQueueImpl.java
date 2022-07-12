@@ -154,7 +154,6 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
   @Override
   public void fillInProfile(Profile profile) {
-    assert profile instanceof GatewaySenderProfile;
     GatewaySenderProfile pf = (GatewaySenderProfile) profile;
     pf.Id = getId();
     pf.remoteDSId = getRemoteDSId();
@@ -181,8 +180,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
   @Override
   public void setModifiedEventId(EntryEventImpl clonedEvent) {
-    int bucketId = -1;
-    // merged from 42004
+    final int bucketId;
     if (clonedEvent.getRegion() instanceof DistributedRegion) {
       bucketId = PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
           getMaxParallelismForReplicatedRegion());

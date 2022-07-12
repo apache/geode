@@ -93,9 +93,6 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor -%}
   {%- endfor -%}
-  {%- for run_var in (benchmarks.flavors) %}
-- benchmark-{{ run_var.title }}
-  {%- endfor -%}
 {% endmacro %}
 
 groups:
@@ -181,7 +178,8 @@ resources:
   source:
     branch: {{benchmarks.benchmark_branch}}
     depth: 1
-    uri: https://github.com/((geode-fork))/geode-benchmarks.git
+    private_key: ((gemfire-ci-private-key))
+    uri: git@github.com:gemfire/gemfire-benchmarks.git
 - name: geode-build-version
   type: semver
   source:
@@ -441,26 +439,24 @@ jobs:
         args:
         - -cx
         - |
-          pushd geode
-            GEODE_SHA=$(git rev-parse HEAD)
-          popd
           GEODE_SEMVER=$(cat geode-build-version/number)
+          cd geode
+          GEODE_SHA=$(git rev-parse HEAD)
 
           GS_PATH=gs://((artifact-bucket))/semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens.json
           CURRENT_PASSING_SHA=$(gsutil cat ${GS_PATH} | jq -r .ref)
           set -e
           # Check that the incoming GEODE_SHA is a descendent of the currently stored value.
           # Keeps us from winding back the repository in the case of an out-of-order pipeline pass
-          if [ -n "${CURRENT_PASSING_SHA}" ]; then
-            cd geode
-            if git merge-base --is-ancestor ${CURRENT_PASSING_SHA} ${GEODE_SHA}; then
-              cat > ../geode-passing-tokens/passing-build-tokens.json <<JSON
+          if ( [ -n "${CURRENT_PASSING_SHA}" ] && git merge-base --is-ancestor ${CURRENT_PASSING_SHA} ${GEODE_SHA} ) || [ -z "${CURRENT_PASSING_SHA}" ] ; then
+            cat > ../geode-passing-tokens/passing-build-tokens.json <<JSON
           {
             "ref": "${GEODE_SHA}",
             "semver": "${GEODE_SEMVER}"
           }
           JSON
-            fi
+          else
+            gsutil cat ${GS_PATH} > ../geode-passing-tokens/passing-build-tokens.json
           fi
   - in_parallel:
     - put: geode-passing-tokens
@@ -504,6 +500,10 @@ jobs:
           TAG_POSTFIX: -{{ run_var.title }}
           TEST_OPTIONS: {{ run_var.options }}
           PURPOSE: ((pipeline-prefix))geode-benchmarks
+          GITHUB_CREDENTIALS: ((gemfire-ci-private-key))
+          GCP_CREDENTIALS: ((maven-access-service-account))
+          ORG_GRADLE_PROJECT_mavenUser: ((commercial-repo-username))
+          ORG_GRADLE_PROJECT_mavenPassword: ((commercial-repo-password))
         run:
           path: geode-ci/ci/scripts/run_benchmarks.sh
         inputs:

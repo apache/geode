@@ -130,7 +130,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
         });
 
     // Start changing the value in Region which should turn into a deadlock if the fix is not there
-    AsyncInvocation asyncInv1 =
+    AsyncInvocation<Void> asyncInv1 =
         vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
 
           @Override
@@ -155,7 +155,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           }
         });
 
-    AsyncInvocation asyncInv2 =
+    AsyncInvocation<Void> asyncInv2 =
         vm0.invokeAsync(new CacheSerializableRunnable("Run query on region") {
 
           @Override
@@ -235,7 +235,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
         });
 
     // Start changing the value in Region which should turn into a deadlock if the fix is not there
-    AsyncInvocation asyncInv1 =
+    AsyncInvocation<Void> asyncInv1 =
         vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
 
           @Override
@@ -260,7 +260,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           }
         });
 
-    AsyncInvocation asyncInv2 =
+    AsyncInvocation<Void> asyncInv2 =
         vm0.invokeAsync(new CacheSerializableRunnable("Run query on region") {
 
           @Override
@@ -341,7 +341,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
 
     // Start changing the value in Region which should turn into a deadlock if
     // the fix is not there
-    AsyncInvocation asyncInv1 =
+    AsyncInvocation<Void> asyncInv1 =
         vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
 
           @Override
@@ -364,7 +364,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           }
         });
 
-    AsyncInvocation asyncInv2 =
+    AsyncInvocation<Void> asyncInv2 =
         vm0.invokeAsync(new CacheSerializableRunnable("Run query on region") {
 
           @Override
@@ -443,7 +443,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
 
     // Start changing the value in Region which should turn into a deadlock if
     // the fix is not there
-    AsyncInvocation asyncInv1 =
+    AsyncInvocation<Void> asyncInv1 =
         vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
 
           @Override
@@ -466,7 +466,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           }
         });
 
-    AsyncInvocation asyncInv2 =
+    AsyncInvocation<Void> asyncInv2 =
         vm0.invokeAsync(new CacheSerializableRunnable("Run query on region") {
 
           @Override
@@ -535,7 +535,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
         });
 
     // Start changing the value in Region which should turn into a deadlock if the fix is not there
-    AsyncInvocation asyncInv1 =
+    AsyncInvocation<Void> asyncInv1 =
         vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
 
           @Override
@@ -560,7 +560,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           }
         });
 
-    AsyncInvocation asyncInv2 =
+    AsyncInvocation<Void> asyncInv2 =
         vm0.invokeAsync(new CacheSerializableRunnable("Run query on region") {
 
           @Override
@@ -631,7 +631,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
         });
 
     // Start changing the value in Region which should turn into a deadlock if the fix is not there
-    AsyncInvocation asyncInv1 =
+    AsyncInvocation<Void> asyncInv1 =
         vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
 
           @Override
@@ -654,7 +654,7 @@ public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4Ca
           }
         });
 
-    AsyncInvocation asyncInv2 =
+    AsyncInvocation<Void> asyncInv2 =
         vm0.invokeAsync(new CacheSerializableRunnable("Run query on region") {
 
           @Override

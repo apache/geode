@@ -25,19 +25,19 @@ import org.apache.geode.cache.Region;
  * @since GemFire 5.8
  *
  */
-public class EntryOperationImpl implements EntryOperation {
+public class EntryOperationImpl<K, V> implements EntryOperation<K, V> {
 
-  private final Region region;
+  private final Region<K, V> region;
 
   private final Operation operation;
 
-  private final Object value;
+  private final V value;
 
-  private final Object key;
+  private final K key;
 
   private final Object callbackArgument;
 
-  public EntryOperationImpl(Region region, Operation operation, Object key, Object value,
+  public EntryOperationImpl(Region<K, V> region, Operation operation, K key, V value,
       Object callbackArgument) {
     this.region = region;
     this.operation = operation;
@@ -53,7 +53,7 @@ public class EntryOperationImpl implements EntryOperation {
    * @return the region associated with this object or the region that raised this event.
    */
   @Override
-  public Region getRegion() {
+  public Region<K, V> getRegion() {
     return region;
   }
 
@@ -74,7 +74,7 @@ public class EntryOperationImpl implements EntryOperation {
    * @return the key
    */
   @Override
-  public Object getKey() {
+  public K getKey() {
     return key;
   }
 
@@ -97,7 +97,7 @@ public class EntryOperationImpl implements EntryOperation {
   }
 
   @Override
-  public Object getNewValue() {
+  public V getNewValue() {
     return value;
   }
 

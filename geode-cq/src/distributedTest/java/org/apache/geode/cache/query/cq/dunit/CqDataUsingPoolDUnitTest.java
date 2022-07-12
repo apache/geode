@@ -742,7 +742,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     client.invoke(setTestHook());
 
     // Execute CQ while update is in progress.
-    AsyncInvocation executeCq =
+    AsyncInvocation<Void> executeCq =
         client.invokeAsync(new CacheSerializableRunnable("Execute CQ AsyncInvoke") {
           @Override
           public void run2() throws CacheException {

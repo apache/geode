@@ -338,9 +338,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     server3.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::putOperation);
 
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation<?>[] async = new AsyncInvocation<?>[AsyncInvocationArrSize];
-    async[0] = client.invokeAsync(
+    AsyncInvocation<List<Boolean>> async = client.invokeAsync(
         PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::startServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::startServerHA);
@@ -348,7 +346,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .verifyDeadAndLiveServers(2));
 
-    List<?> l = (List<?>) async[0].get();
+    List<?> l = async.get();
 
     assertThat(l).hasSize(2);
   }
@@ -368,9 +366,8 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     server2.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::stopServerHA);
     client.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::putOperation);
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation<?>[] async = new AsyncInvocation<?>[AsyncInvocationArrSize];
-    async[0] = client.invokeAsync(
+
+    AsyncInvocation<List<Boolean>> async = client.invokeAsync(
         PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::executeFunctionHA);
     server2.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::startServerHA);
     server3.invoke(PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest::startServerHA);
@@ -378,7 +375,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
     client.invoke(() -> PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
         .verifyDeadAndLiveServers(2));
 
-    List<?> l = (List<?>) async[0].get();
+    List<?> l = async.get();
     assertThat(l).hasSize(2);
   }
 
@@ -550,23 +547,6 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDistributedTest
       logger.info("Got an exception : " + e.getMessage());
       assertThat(e).isInstanceOf(CacheClosedException.class);
     }
-  }
-
-  private static Object executeFunctionHA() {
-    Region<Object, Object> region = cache.getRegion(PartitionedRegionName);
-    final HashSet<String> testKeysSet = new HashSet<>();
-    for (int i = (totalNumBuckets * 10); i > 0; i--) {
-      testKeysSet.add("execKey-" + i);
-    }
-    DistributedSystem.setThreadsSocketPolicy(false);
-    Function<Object> function = new TestFunction<>(true, TestFunction.TEST_FUNCTION_HA);
-    FunctionService.registerFunction(function);
-    Execution dataSet = FunctionService.onRegion(region);
-    ResultCollector<?, ?> rc1 =
-        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-    List<?> l = ((List<?>) rc1.getResult());
-    logger.info("Result size : " + l.size());
-    return l;
   }
 
   private static void putOperation() {

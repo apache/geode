@@ -83,7 +83,7 @@ public class PingOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return false;
     }
 

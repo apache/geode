@@ -19,7 +19,6 @@ import static org.apache.geode.internal.util.CollectionUtils.asSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -34,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.junit.Before;
@@ -341,11 +339,7 @@ public class ClientRegistrationEventQueueManagerTest {
     when(internalRegion.getFilterProfile())
         .thenReturn(filterProfile);
 
-    ReentrantReadWriteLock readWriteLock = spy(new ReentrantReadWriteLock());
-    ReadLock readLock = spy(readWriteLock.readLock());
-
-    when(readWriteLock.readLock())
-        .thenReturn(readLock);
+    FakeReentrantReadWriteLock readWriteLock = new FakeReentrantReadWriteLock();
 
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
@@ -354,13 +348,8 @@ public class ClientRegistrationEventQueueManagerTest {
         clientRegistrationEventQueueManager.create(clientProxyMembershipId,
             new ConcurrentLinkedQueue<>(), readWriteLock);
 
-    doAnswer((Answer<Void>) invocation -> {
-      clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
-      invocation.callRealMethod();
-      return null;
-    })
-        .when(readLock)
-        .lock();
+    readWriteLock.readLock.beforeLock = () -> clientRegistrationEventQueueManager
+        .drain(clientRegistrationEventQueue, cacheClientNotifier);
 
     clientRegistrationEventQueueManager.add(internalCacheEvent, clientUpdateMessage,
         clientUpdateMessage, asSet(clientProxyMembershipId), cacheClientNotifier);
@@ -403,5 +392,32 @@ public class ClientRegistrationEventQueueManagerTest {
         .thenReturn(true);
 
     return operation;
+  }
+
+  private static class FakeReentrantReadWriteLock extends ReentrantReadWriteLock {
+    private final FakeReadLock readLock;
+
+    FakeReentrantReadWriteLock() {
+      readLock = new FakeReadLock(this);
+    }
+
+    @Override
+    public ReentrantReadWriteLock.ReadLock readLock() {
+      return readLock;
+    }
+  }
+
+  private static class FakeReadLock extends ReentrantReadWriteLock.ReadLock {
+    private Runnable beforeLock;
+
+    public FakeReadLock(ReentrantReadWriteLock outerLock) {
+      super(outerLock);
+    }
+
+    @Override
+    public void lock() {
+      beforeLock.run();
+      super.lock();
+    }
   }
 }

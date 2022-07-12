@@ -66,7 +66,7 @@ public abstract class AbstractDeltaSessionIntegrationTest {
     when(deltaSessionManager.getLogger()).thenReturn(mock(Log.class));
     when(deltaSessionManager.getRegionName()).thenReturn(REGION_NAME);
     when(deltaSessionManager.isBackingCacheAvailable()).thenReturn(true);
-    when(deltaSessionManager.getContainer()).thenReturn(mock(Context.class));
+    when(deltaSessionManager.getContext()).thenReturn(mock(Context.class));
     when(deltaSessionManager.getSessionCache()).thenReturn(mock(SessionCache.class));
     when(deltaSessionManager.getSessionCache().getOperatingRegion()).thenReturn(httpSessionRegion);
   }

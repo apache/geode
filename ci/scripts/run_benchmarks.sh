@@ -31,6 +31,12 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 source concourse-metadata-resource/concourse_metadata
 
+mkdir -p ${HOME}/.ssh
+cat <<EOF > ${HOME}/.ssh/config
+SendEnv ORG_GRADLE_PROJECT_mavenUser
+SendEnv ORG_GRADLE_PROJECT_mavenPassword
+EOF
+
 CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${TAG_POSTFIX}"
 RESULTS_DIR=$(pwd)/results/benchmarks-${CLUSTER_TAG}
 
@@ -45,14 +51,18 @@ GEODE_REPO=${GEODE_REPO:-$(cd geode && git remote get-url origin)}
 BENCHMARKS_REPO=${BENCHMARKS_REPO:-$(cd geode-benchmarks && git remote get-url origin)}
 BASELINE_REPO=${BASELINE_REPO:-${GEODE_REPO}}
 
-pushd geode
+pushd geode; GEODE_REPO=rsync:$(pwd); BASELINE_REPO=rsync:$(pwd)
 GEODE_SHA=$(git rev-parse --verify HEAD)
 popd
 
 input="$(pwd)/results/failedTests"
 
 pushd geode-benchmarks/infrastructure/scripts/aws/
-./launch_cluster.sh -t ${CLUSTER_TAG} -c ${CLUSTER_COUNT} ${PURPOSE_OPTION} --ci
+set +x
+echo "${GCP_CREDENTIALS}" > google-credentials.json
+echo "${GITHUB_CREDENTIALS}" > github-credentials.pem
+set -x
+./launch_cluster.sh -t ${CLUSTER_TAG} -c ${CLUSTER_COUNT} ${PURPOSE_OPTION} --ci --gh $(pwd)/github-credentials.pem --gc $(pwd)/google-credentials.json
 
 # test retry loop - Check if any tests have failed. If so, overwrite the TEST_OPTIONS with only the
 # failed tests. Test failures only result in an exit code of 1 when on the last iteration of loop.

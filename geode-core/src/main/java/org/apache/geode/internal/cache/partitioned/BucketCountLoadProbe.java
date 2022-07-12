@@ -27,11 +27,10 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
- * A load probe which calculates the load of a pr using the just the number of buckets on a member.
+ * A load probe which calculates the load of a pr using just the number of buckets on a member.
  *
  */
 public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID {
-  private static final long serialVersionUID = 7040814060882774875L;
 
   @Override
   public PRLoad getLoad(PartitionedRegion pr) {
@@ -40,15 +39,13 @@ public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID 
     PRLoad prLoad = new PRLoad(configuredBucketCount, pr.getLocalMaxMemory());
 
     // key: bid, value: size
-    for (Integer bidInt : ds.getAllLocalBucketIds()) {
-      int bid = bidInt;
-
-      BucketAdvisor bucketAdvisor = pr.getRegionAdvisor().getBucket(bid).getBucketAdvisor();
+    for (Integer bucketId : ds.getAllLocalBucketIds()) {
+      BucketAdvisor bucketAdvisor = pr.getRegionAdvisor().getBucket(bucketId).getBucketAdvisor();
       // Wait for a primary to exist for this bucket, because
       // it might be this member.
       bucketAdvisor.getPrimary();
-      boolean isPrimary = pr.getRegionAdvisor().getBucket(bid).getBucketAdvisor().isPrimary();
-      prLoad.addBucket(bid, 1, isPrimary ? 1 : 0);
+      boolean isPrimary = pr.getRegionAdvisor().getBucket(bucketId).getBucketAdvisor().isPrimary();
+      prLoad.addBucket(bucketId, 1, isPrimary ? 1 : 0);
     }
 
     return prLoad;

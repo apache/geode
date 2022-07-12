@@ -60,9 +60,9 @@ public class LuceneQueriesWithRegionCreatedBeforeReindexDUnitTest extends Lucene
     accessor.invoke(() -> initAccessor(regionTestType));
 
     // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(createIndex);
-    AsyncInvocation ai2 = dataStore2.invokeAsync(createIndex);
-    AsyncInvocation ai3 = accessor.invokeAsync(createIndex);
+    AsyncInvocation<Void> ai1 = dataStore1.invokeAsync(createIndex);
+    AsyncInvocation<Void> ai2 = dataStore2.invokeAsync(createIndex);
+    AsyncInvocation<Void> ai3 = accessor.invokeAsync(createIndex);
 
     ai1.join();
     ai2.join();

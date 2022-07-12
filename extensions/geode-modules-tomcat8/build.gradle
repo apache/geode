@@ -37,12 +37,17 @@ dependencies {
 
 
   // test
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly('junit:junit')
+
   testImplementation(project(':extensions:geode-modules-test'))
-  testImplementation('junit:junit')
+  testImplementation('org.junit.jupiter:junit-jupiter-api')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
 
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+  testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine')
 
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))

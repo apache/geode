@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -38,19 +40,15 @@ public class OfflineMemberDetailsImpl
     this.offlineMembers = offlineMembers;
   }
 
-
-
   @Override
   public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
     return offlineMembers[bucketId];
   }
 
-
-
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int offlineMembersLength = in.readInt();
-    offlineMembers = new Set[offlineMembersLength];
+    offlineMembers = uncheckedCast(new Set[offlineMembersLength]);
     for (int i = 0; i < offlineMembersLength; i++) {
       int setSize = in.readInt();
       Set<PersistentMemberID> set = new HashSet<>(setSize);
@@ -62,7 +60,6 @@ public class OfflineMemberDetailsImpl
       offlineMembers[i] = set;
     }
   }
-
 
   @Override
   public void toData(DataOutput out) throws IOException {

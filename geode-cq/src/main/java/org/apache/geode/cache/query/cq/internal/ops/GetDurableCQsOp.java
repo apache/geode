@@ -57,7 +57,7 @@ public class GetDurableCQsOp {
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     public GetDurableCQsOpImpl() {
-      super(MessageType.GETDURABLECQS_MSG_TYPE, 1 /* numparts */);
+      super(MessageType.GETDURABLECQS, 1 /* numparts */);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class GetDurableCQsOp {
       final Exception[] exceptionRef = new Exception[1];
 
       getDurableCQsResponseMsg.readHeader();
-      final int msgType = getDurableCQsResponseMsg.getMessageType();
+      final MessageType msgType = getDurableCQsResponseMsg.getMessageType();
       if (msgType == MessageType.RESPONSE) {
         do {
           getDurableCQsResponseMsg.receiveChunk();
@@ -122,7 +122,7 @@ public class GetDurableCQsOp {
           throw new ServerOperationException(part.getString());
         } else {
           throw new InternalGemFireError(
-              "Unexpected message type " + MessageType.getString(msgType));
+              "Unexpected message type " + msgType);
         }
       }
 
@@ -134,7 +134,7 @@ public class GetDurableCQsOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.GET_DURABLE_CQS_DATA_ERROR;
     }
   }

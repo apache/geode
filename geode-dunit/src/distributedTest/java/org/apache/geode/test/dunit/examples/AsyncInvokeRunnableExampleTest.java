@@ -40,13 +40,13 @@ public class AsyncInvokeRunnableExampleTest {
 
   @Test
   public void invokeAsyncHelloWorldInEachVMWithAwait() throws Exception {
-    List<AsyncInvocation> invocations = new ArrayList<>();
+    List<AsyncInvocation<Void>> invocations = new ArrayList<>();
     for (VM vm : getAllVMs()) {
-      AsyncInvocation invocation =
+      AsyncInvocation<Void> invocation =
           vm.invokeAsync(() -> System.out.println(vm + " says Hello World!"));
       invocations.add(invocation);
     }
-    for (AsyncInvocation invocation : invocations) {
+    for (AsyncInvocation<Void> invocation : invocations) {
       invocation.await();
     }
   }

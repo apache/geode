@@ -142,7 +142,7 @@ public class InterruptClientServerDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    AsyncInvocation async0 = vm2.invokeAsync(doPuts);
+    AsyncInvocation<Void> async0 = vm2.invokeAsync(doPuts);
 
     vm1.invoke(new SerializableCallable() {
       @Override

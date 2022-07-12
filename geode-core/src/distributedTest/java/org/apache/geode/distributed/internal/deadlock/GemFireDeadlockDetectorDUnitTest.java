@@ -124,10 +124,10 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     String gateOnMember2 = "gateOnMember2";
 
     // This thread locks the lock member1 first, then member2.
-    AsyncInvocation async1 = lockTheLocks(vm0, member2, gateOnMember1, gateOnMember2);
+    AsyncInvocation<Void> async1 = lockTheLocks(vm0, member2, gateOnMember1, gateOnMember2);
 
     // This thread locks the lock member2 first, then member1.
-    AsyncInvocation async2 = lockTheLocks(vm1, member1, gateOnMember2, gateOnMember1);
+    AsyncInvocation<Void> async2 = lockTheLocks(vm1, member1, gateOnMember2, gateOnMember1);
     try {
       final LinkedList<Dependency>[] deadlockHolder = new LinkedList[1];
       await("waiting for deadlock").until(() -> {
@@ -153,7 +153,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
 
 
 
-  private AsyncInvocation lockTheLocks(VM vm0, final InternalDistributedMember member,
+  private AsyncInvocation<Void> lockTheLocks(VM vm0, final InternalDistributedMember member,
       final String gateToSignal, final String gateToWaitOn) {
     return vm0.invokeAsync(new SerializableRunnable() {
 
@@ -186,8 +186,8 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     TypeRegistry.init();
 
     getSystem();
-    AsyncInvocation async1 = lockTheDLocks(vm0, "one", "two");
-    AsyncInvocation async2 = lockTheDLocks(vm1, "two", "one");
+    AsyncInvocation<Void> async1 = lockTheDLocks(vm0, "one", "two");
+    AsyncInvocation<Void> async2 = lockTheDLocks(vm1, "two", "one");
 
     await("waiting for locks to be acquired")
         .untilAsserted(() -> assertTrue(getBlackboard().isGateSignaled("one")));
@@ -211,7 +211,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private void waitForAsyncInvocation(AsyncInvocation async1, int howLong, TimeUnit units)
+  private void waitForAsyncInvocation(AsyncInvocation<Void> async1, int howLong, TimeUnit units)
       throws java.util.concurrent.ExecutionException, InterruptedException {
     try {
       async1.get(howLong, units);
@@ -220,7 +220,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private AsyncInvocation lockTheDLocks(VM vm, final String first, final String second) {
+  private AsyncInvocation<Void> lockTheDLocks(VM vm, final String first, final String second) {
     return vm.invokeAsync(new SerializableRunnable() {
 
       @Override

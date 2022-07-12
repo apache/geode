@@ -157,7 +157,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
             clearResults();
             execution = execution.setIsReExecute();
             ResultCollector newRc = null;
-            if (execution.isFnSerializationReqd()) {
+            if (execution.isFunctionSerializationRequired()) {
               newRc = execution.execute(fn);
             } else {
               newRc = execution.execute(fn.getId());
@@ -181,7 +181,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -203,7 +203,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -229,7 +229,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -288,7 +288,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
             clearResults();
             execution = execution.setIsReExecute();
             ResultCollector newRc = null;
-            if (execution.isFnSerializationReqd()) {
+            if (execution.isFunctionSerializationRequired()) {
               newRc = execution.execute(fn);
             } else {
               newRc = execution.execute(fn.getId());
@@ -314,7 +314,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -336,7 +336,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());
@@ -363,7 +363,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           clearResults();
           execution = execution.setIsReExecute();
           ResultCollector newRc = null;
-          if (execution.isFnSerializationReqd()) {
+          if (execution.isFunctionSerializationRequired()) {
             newRc = execution.execute(fn);
           } else {
             newRc = execution.execute(fn.getId());

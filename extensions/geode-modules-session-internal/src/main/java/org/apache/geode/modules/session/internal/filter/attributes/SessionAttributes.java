@@ -18,6 +18,7 @@ package org.apache.geode.modules.session.internal.filter.attributes;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 
 /**
@@ -25,7 +26,7 @@ import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
  * in the session which needs to be propagated for caching - as such it also includes other
  * 'attributes' such as maxInactiveInterval and lastAccessedTime
  */
-public interface SessionAttributes extends DataSerializable {
+public interface SessionAttributes extends DataSerializable, Sizeable {
 
   /**
    * Set the session to which these attributes belong.

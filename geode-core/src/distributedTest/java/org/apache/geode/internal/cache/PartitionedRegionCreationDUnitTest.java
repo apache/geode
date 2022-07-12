@@ -62,7 +62,7 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
   private int numberOfRegions;
   private String prNamePrefix;
 
-  private transient List<AsyncInvocation> asyncInvocations;
+  private transient List<AsyncInvocation<Void>> asyncInvocations;
 
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
@@ -419,7 +419,7 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
   }
 
   private void awaitAllAsyncInvocations() throws ExecutionException, InterruptedException {
-    for (AsyncInvocation async : asyncInvocations) {
+    for (AsyncInvocation<Void> async : asyncInvocations) {
       async.await();
     }
     asyncInvocations.clear();

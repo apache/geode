@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.wan.internal.client.locator;
 
+import static org.apache.geode.internal.cache.tier.MessageType.GATEWAY_RECEIVER_COMMAND;
+
 import java.net.SocketTimeoutException;
 import java.util.List;
 
@@ -77,7 +79,7 @@ public class GatewaySenderBatchOp {
      */
     public GatewaySenderGFEBatchOpImpl(List events, int batchId, boolean removeFromQueueOnException,
         int dsId, boolean isRetry) {
-      super(MessageType.GATEWAY_RECEIVER_COMMAND, calcPartCount(events));
+      super(GATEWAY_RECEIVER_COMMAND, calcPartCount(events));
       if (isRetry) {
         getMessage().setIsRetry();
       }
@@ -131,7 +133,7 @@ public class GatewaySenderBatchOp {
     }
 
     public GatewaySenderGFEBatchOpImpl() {
-      super(MessageType.GATEWAY_RECEIVER_COMMAND, 0);
+      super(GATEWAY_RECEIVER_COMMAND, 0);
     }
 
     @Override
@@ -230,7 +232,7 @@ public class GatewaySenderBatchOp {
       try {
         // Read the header which describes the type of message following
         switch (msg.getMessageType()) {
-          case MessageType.REPLY:
+          case REPLY:
             // Read the chunk
             Part part0 = msg.getPart(0);
             if (part0.isBytes() && part0.getLength() == 1 && part0.getSerializedForm()[0] == 0) {
@@ -241,7 +243,7 @@ public class GatewaySenderBatchOp {
             int numEvents = msg.getPart(1).getInt();
             ack = new GatewayAck(batchId, numEvents);
             break;
-          case MessageType.EXCEPTION:
+          case EXCEPTION:
             part0 = msg.getPart(0);
 
             Object obj = part0.getObject();
@@ -273,7 +275,7 @@ public class GatewaySenderBatchOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return false;
     }
 

@@ -57,7 +57,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
   /**
    * True when one or more buckets have reported a change in status.
    */
-  private volatile boolean membershipChanged = true;
+  private volatile boolean membershipChanged;
 
   /**
    * Sleep period between posting log entries.
@@ -328,7 +328,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
      */
     private Map<PersistentMemberID, Set<Integer>> getMembersToWaitFor(boolean offlineOnly)
         throws RegionDestroyedException {
-      Map<PersistentMemberID, Set<Integer>> waitingForMembers =
+      final Map<PersistentMemberID, Set<Integer>> waitingForMembers =
           new HashMap<>();
 
 
@@ -352,12 +352,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
 
         if (missingMembers != null) {
           for (PersistentMemberID missingMember : missingMembers) {
-            Set<Integer> buckets = waitingForMembers.get(missingMember);
-            if (buckets == null) {
-              buckets = new TreeSet<>();
-              waitingForMembers.put(missingMember, buckets);
-            }
-            buckets.add(bucketId);
+            waitingForMembers.computeIfAbsent(missingMember, k -> new TreeSet<>()).add(bucketId);
           }
         }
       }
@@ -438,7 +433,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     }
 
     /**
-     * Get a consolodated set of all buckets that are waiting.
+     * Get a consolidated set of all buckets that are waiting.
      */
     private Set<Integer> getAllWaitingBuckets(
         Map<PersistentMemberID, Set<Integer>> offlineMembers) {

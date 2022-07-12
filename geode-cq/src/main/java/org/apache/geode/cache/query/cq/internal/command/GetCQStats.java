@@ -70,7 +70,7 @@ public class GetCQStats extends BaseCQCommand {
     // Process the query request
     if (cqName == null) {
       String err = "The cqName for the cq stats request is null";
-      sendCqResponse(MessageType.CQDATAERROR_MSG_TYPE, err, clientMessage.getTransactionId(), null,
+      sendCqResponse(MessageType.CQDATAERROR, err, clientMessage.getTransactionId(), null,
           serverConnection);
       return;
     }

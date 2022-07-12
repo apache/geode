@@ -67,9 +67,10 @@ public class PutAllOp {
    * @param eventId the event id for this putAll
    * @param skipCallbacks true if no callbacks will be invoked
    */
-  public static VersionedObjectList execute(ExecutablePool pool, Region region, Map map,
+  public static <K, V> VersionedObjectList execute(ExecutablePool pool, Region<K, V> region,
+      Map<K, V> map,
       EventID eventId, boolean skipCallbacks, boolean isRetry, Object callbackArg) {
-    PutAllOpImpl op = new PutAllOpImpl(region, map, eventId,
+    PutAllOpImpl<K, V> op = new PutAllOpImpl<>(region, map, eventId,
         ((Pool) pool).getPRSingleHopEnabled(), skipCallbacks, callbackArg);
     op.initMessagePart();
     if (isRetry) {
@@ -87,24 +88,25 @@ public class PutAllOp {
    * @param map the Map of keys and values to put
    * @param eventId the event id for this putAll
    */
-  public static VersionedObjectList execute(ExecutablePool pool, Region<Object, Object> region,
-      Map<Object, Object> map, EventID eventId, boolean skipCallbacks, int retryAttempts,
+  public static <K, V> VersionedObjectList execute(ExecutablePool pool, Region<K, V> region,
+      Map<K, V> map, EventID eventId, boolean skipCallbacks, int retryAttempts,
       Object callbackArg) {
     ClientMetadataService clientMetadataService =
         ((RegionMapOwner) region).getCache().getClientMetadataService();
 
-    Map<ServerLocation, Set> serverToFilterMap =
+    Map<ServerLocation, Set<K>> serverToFilterMap =
         clientMetadataService.getServerToFilterMap(map.keySet(), region, true);
 
     if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
-      AbstractOp op = new PutAllOpImpl(region, map, eventId,
+      AbstractOp op = new PutAllOpImpl<>(region, map, eventId,
           ((Pool) pool).getPRSingleHopEnabled(), skipCallbacks, callbackArg);
       op.initMessagePart();
       return (VersionedObjectList) pool.execute(op);
     }
 
-    List callableTasks = constructAndGetPutAllTasks(region, map, eventId, skipCallbacks,
-        serverToFilterMap, (InternalPool) pool, callbackArg);
+    List<SingleHopOperationCallable> callableTasks =
+        constructAndGetPutAllTasks(region, map, eventId, skipCallbacks,
+            serverToFilterMap, (InternalPool) pool, callbackArg);
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -149,12 +151,12 @@ public class PutAllOp {
       // then we need to gather up the keys that we know have succeeded so far and
       // add them to the partial result set
       if (result.getSucceededKeysAndVersions().size() == 0) {
-        // if there're failed servers, we need to save the succeed keys in submitPutAll
+        // if there are failed servers, we need to save the succeed keys in submitPutAll
         // if retry succeeded, everything is ok, otherwise, the saved "succeeded
         // keys" should be consolidated into PutAllPartialResultException
         // succeedKeySet is used to send back to client in PartialResult case
         // so it's not a must to use LinkedHashSet
-        Set succeedKeySet = new LinkedHashSet();
+        Set<Object> succeedKeySet = new LinkedHashSet<>();
         Set<ServerLocation> serverSet = serverToFilterMap.keySet();
         for (ServerLocation server : serverSet) {
           if (!failedServers.containsKey(server)) {
@@ -180,9 +182,9 @@ public class PutAllOp {
           oneSubMapRetryFailed = true;
           continue;
         }
-        Map newMap = new LinkedHashMap();
-        Set keySet = serverToFilterMap.get(failedServer);
-        for (Object key : keySet) {
+        Map<K, V> newMap = new LinkedHashMap<>();
+        Set<K> keySet = serverToFilterMap.get(failedServer);
+        for (K key : keySet) {
           newMap.put(key, map.get(key));
         }
 
@@ -221,9 +223,10 @@ public class PutAllOp {
     // no instances allowed
   }
 
-  private static List constructAndGetPutAllTasks(Region region, final Map map,
+  private static <K, V> List<SingleHopOperationCallable> constructAndGetPutAllTasks(
+      Region<K, V> region, final Map<K, V> map,
       final EventID eventId,
-      boolean skipCallbacks, final Map<ServerLocation, Set> serverToFilterMap,
+      boolean skipCallbacks, final Map<ServerLocation, Set<K>> serverToFilterMap,
       final InternalPool pool, Object callbackArg) {
     final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     List<ServerLocation> servers = new ArrayList<>(serverToFilterMap.keySet());
@@ -232,14 +235,14 @@ public class PutAllOp {
       logger.debug("Constructing tasks for the servers {}", servers);
     }
     for (ServerLocation server : servers) {
-      Set filterSet = serverToFilterMap.get(server);
-      Map newKeysValuesMap = new LinkedHashMap();
+      Set<K> filterSet = serverToFilterMap.get(server);
+      Map<K, V> newKeysValuesMap = new LinkedHashMap<>();
       // iterator 1: for single hop, both iterator filterSet and newKeysValuesMap
-      for (Object key : filterSet) {
+      for (K key : filterSet) {
         newKeysValuesMap.put(key, map.get(key));
       }
       AbstractOp putAllOp =
-          new PutAllOpImpl(region, newKeysValuesMap, eventId, true, skipCallbacks, callbackArg);
+          new PutAllOpImpl<>(region, newKeysValuesMap, eventId, true, skipCallbacks, callbackArg);
 
       SingleHopOperationCallable task =
           new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
@@ -249,20 +252,23 @@ public class PutAllOp {
     return tasks;
   }
 
-  private static class PutAllOpImpl extends AbstractOp {
+  private static class PutAllOpImpl<K, V> extends AbstractOp {
 
-    private boolean prSingleHopEnabled = false;
+    private final boolean prSingleHopEnabled;
 
-    private LocalRegion region = null;
+    private final LocalRegion region;
 
-    private Map map = null;
+    private final Map<K, V> map;
+
     private final Object callbackArg;
-    private ArrayList keys = null;
+
+    private ArrayList<Object> keys = null;
 
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public PutAllOpImpl(Region region, Map map, EventID eventId, boolean prSingleHopEnabled,
+    public PutAllOpImpl(Region<K, V> region, Map<K, V> map, EventID eventId,
+        boolean prSingleHopEnabled,
         boolean skipCallbacks, Object callbackArg) {
       super(callbackArg != null ? MessageType.PUT_ALL_WITH_CALLBACK : MessageType.PUTALL,
           (callbackArg != null ? 6 : 5) + (map.size() * 2));
@@ -290,9 +296,8 @@ public class PutAllOp {
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);
       }
-      keys = new ArrayList(size);
-      for (final Object o : map.entrySet()) {
-        Map.Entry mapEntry = (Map.Entry) o;
+      keys = new ArrayList<>(size);
+      for (final Map.Entry<K, V> mapEntry : map.entrySet()) {
         Object key = mapEntry.getKey();
         keys.add(key);
         getMessage().addStringOrObjPart(key);
@@ -342,13 +347,15 @@ public class PutAllOp {
           for (int partNo = 0; partNo < numParts; partNo++) {
             Part part = cm.getPart(partNo);
             try {
-              Object o = part.getObject();
+              final Object o = part.getObject();
               if (isDebugEnabled) {
                 logger.debug("part({}) contained {}", partNo, o);
               }
               if (o == null) {
                 // no response is an okay response
-              } else if (o instanceof byte[]) {
+                continue;
+              }
+              if (o instanceof byte[]) {
                 if (prSingleHopEnabled) {
                   byte[] bytesReceived = part.getSerializedForm();
                   if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) { // nw hop
@@ -398,7 +405,7 @@ public class PutAllOp {
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.PUT_DATA_ERROR;
     }
 

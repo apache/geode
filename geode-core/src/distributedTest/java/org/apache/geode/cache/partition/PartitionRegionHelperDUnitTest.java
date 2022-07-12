@@ -98,9 +98,9 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    AsyncInvocation future1 = vm0.invokeAsync(assignBuckets);
-    AsyncInvocation future2 = vm1.invokeAsync(assignBuckets);
-    AsyncInvocation future3 = vm2.invokeAsync(assignBuckets);
+    AsyncInvocation<Void> future1 = vm0.invokeAsync(assignBuckets);
+    AsyncInvocation<Void> future2 = vm1.invokeAsync(assignBuckets);
+    AsyncInvocation<Void> future3 = vm2.invokeAsync(assignBuckets);
     future1.join(60 * 1000);
     future2.join(60 * 1000);
     future3.join(60 * 1000);
@@ -220,9 +220,9 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    AsyncInvocation future1 = vm0.invokeAsync(assignBuckets);
-    AsyncInvocation future2 = vm1.invokeAsync(assignBuckets);
-    AsyncInvocation future3 = vm2.invokeAsync(assignBuckets);
+    AsyncInvocation<Void> future1 = vm0.invokeAsync(assignBuckets);
+    AsyncInvocation<Void> future2 = vm1.invokeAsync(assignBuckets);
+    AsyncInvocation<Void> future3 = vm2.invokeAsync(assignBuckets);
     future1.join();
     future2.join();
     future3.join();

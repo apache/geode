@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.transaction.Synchronization;
 
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
@@ -89,7 +90,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   void rollback();
 
-  List getEvents();
+  List<EntryEvent<?, ?>> getEvents();
 
 
 
@@ -107,7 +108,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    *         otherwise returns null
    */
   @Override
-  Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
+  Entry<?, ?> getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
 
   TXEvent getEvent();
 

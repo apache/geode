@@ -1386,9 +1386,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // get a lock
     logger.info("[testSuspendLockingBehaves] line up vms for lock");
     vmOne.invoke(lockKey);
-    AsyncInvocation vmTwoLocking = vmTwo.invokeAsync(lockKey);
+    AsyncInvocation<Void> vmTwoLocking = vmTwo.invokeAsync(lockKey);
     Wait.pause(2000); // make sure vmTwo is first in line
-    AsyncInvocation vmThreeLocking = vmThree.invokeAsync(lockKey);
+    AsyncInvocation<Void> vmThreeLocking = vmThree.invokeAsync(lockKey);
     Wait.pause(2000);
 
     // make sure vmTwo and vmThree are still waiting for lock on key1
@@ -1404,9 +1404,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // start suspending in vmOne and vmTwo
     logger.info("[testSuspendLockingBehaves] start suspending requests");
-    AsyncInvocation vmOneSuspending = vmOne.invokeAsync(suspendLocking);
+    AsyncInvocation<Void> vmOneSuspending = vmOne.invokeAsync(suspendLocking);
     Wait.pause(2000); // make sure vmOne is first in line
-    AsyncInvocation vmTwoSuspending = vmTwo.invokeAsync(suspendLocking);
+    AsyncInvocation<Void> vmTwoSuspending = vmTwo.invokeAsync(suspendLocking);
     Wait.pause(2000);
 
     // let vmThree finish locking key
@@ -1416,7 +1416,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // have vmOne get back in line for locking key
     logger.info("[testSuspendLockingBehaves] start another lock request");
-    AsyncInvocation vmOneLockingAgain = vmOne.invokeAsync(lockKey);
+    AsyncInvocation<Void> vmOneLockingAgain = vmOne.invokeAsync(lockKey);
     Wait.pause(2000);
 
     // let vmOne suspend locking
@@ -1429,7 +1429,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // start suspending in vmThree
     logger
         .info("[testSuspendLockingBehaves] line up vmThree for suspending");
-    AsyncInvocation vmThreeSuspending = vmThree.invokeAsync(suspendLocking);
+    AsyncInvocation<Void> vmThreeSuspending = vmThree.invokeAsync(suspendLocking);
     Wait.pause(2000);
 
     // let vmTwo suspend locking
@@ -1473,7 +1473,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Get lock from other VM. Since same thread needs to lock and unlock,
     // invoke asynchronously, get lock, wait to be notified, then unlock.
     VM vm1 = getVM(1);
-    AsyncInvocation asyncInvocation =
+    AsyncInvocation<Void> asyncInvocation =
         vm1.invokeAsync(new SerializableRunnable("Lock & unlock in vm1") {
           @Override
           public void run() {
@@ -2575,7 +2575,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       }
     });
 
-    AsyncInvocation whileVM1Locks = null;
+    AsyncInvocation<Void> whileVM1Locks = null;
     try {
       // vm1 locks key1
       whileVM1Locks = vm1.invokeAsync(new SerializableRunnable() {

@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
   public static IndexRepositoryFactory indexRepositoryFactory = new RawIndexRepositoryFactory();
 
-  public RawLuceneRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer,
+  public RawLuceneRepositoryManager(LuceneIndexImpl index, LuceneSerializer<?> serializer,
       ExecutorService waitingThreadPool) {
     super(index, serializer, waitingThreadPool);
   }
@@ -42,7 +42,7 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
   }
 
   @Override
-  public IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
+  public IndexRepository computeRepository(Integer bucketId, LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,

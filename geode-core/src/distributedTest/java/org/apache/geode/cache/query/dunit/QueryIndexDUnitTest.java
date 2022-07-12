@@ -155,8 +155,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
 
-    AsyncInvocation ai1 = null;
-    AsyncInvocation ai2 = null;
+    AsyncInvocation<Void> ai1 = null;
+    AsyncInvocation<Void> ai2 = null;
 
     vm0.invoke(QueryIndexDUnitTest::createIndex);
     vm0.invoke(QueryIndexDUnitTest::validateIndexUsage);

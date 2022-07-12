@@ -21,13 +21,12 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.internal.cache.LocalDataSet;
 
 /**
  * Internal interface used to provide for some essential functionality for
  * {@link RegionFunctionContext} invoked by {@link PartitionRegionHelper}.
  */
-public interface InternalRegionFunctionContext extends RegionFunctionContext {
+public interface InternalRegionFunctionContext<T> extends RegionFunctionContext<T> {
 
   /**
    * Return a region providing read access limited to the local data set corresponding to the
@@ -47,13 +46,13 @@ public interface InternalRegionFunctionContext extends RegionFunctionContext {
    * with read access limited to the routing keys as specified by the {@link #getFilter()} method of
    * the function context.
    * <p>
-   * Writes using these Region have no constraints and behave the same as a partitioned Region.
+   * Writes using these Regions have no constraints and behave the same as a partitioned Region.
    * <p>
    * If there are no colocated regions, return an empty map.
    *
    * @return an unmodifiable map of {@linkplain Region#getFullPath() region name} to {@link Region}
    */
-  Map<String, LocalDataSet> getColocatedLocalDataSets();
+  Map<String, Region<?, ?>> getColocatedLocalDataSets();
 
   /**
    * Get the int array of bucket IDs for this node as specified by the {@link #getFilter()} method

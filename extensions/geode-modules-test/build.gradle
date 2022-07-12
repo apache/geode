@@ -32,5 +32,5 @@ dependencies {
   api(project(':extensions:geode-modules'))
 
   compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat8.version'))
 }

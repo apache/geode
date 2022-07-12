@@ -529,8 +529,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String rName = getUniqueName();
 
     // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d1 = replicate1.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
-    AsyncInvocation d2 = replicate2.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
+    AsyncInvocation<Void> d1 = replicate1.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
+    AsyncInvocation<Void> d2 = replicate2.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
     d1.join();
     assertFalse(d1.exceptionOccurred());
     d2.join();

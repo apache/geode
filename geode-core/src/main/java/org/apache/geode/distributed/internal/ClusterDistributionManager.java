@@ -12,9 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal;
-
 
 import java.io.NotSerializableException;
 import java.net.InetAddress;
@@ -71,6 +69,7 @@ import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.Message;
+import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
@@ -91,17 +90,14 @@ import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandl
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * The <code>DistributionManager</code> uses a {@link Membership} to distribute {@link
+ * The {@code DistributionManager} uses a {@link Membership} to distribute {@link
  * DistributionMessage messages}. It also reports on who is currently in the distributed system and
  * tracks the elder member for the distributed lock service. You may also register a membership
  * listener with the DistributionManager to receive notification of changes in membership.
  *
  * <p>
- * <p>
  * Code that wishes to send a {@link DistributionMessage} must get the
- * <code>DistributionManager</code> and invoke {@link #putOutgoing}.
- *
- * <p>
+ * {@code DistributionManager} and invoke {@link #putOutgoing}.
  *
  * @see DistributionMessage#process
  * @see IgnoredByManager
@@ -168,7 +164,7 @@ public class ClusterDistributionManager implements DistributionManager {
   private final int dmType;
 
   /**
-   * The <code>MembershipListener</code>s that are registered on this manager.
+   * The {@code MembershipListener}s that are registered on this manager.
    */
   private final ConcurrentMap<MembershipListener, Boolean> membershipListeners;
   private final ClusterElderManager clusterElderManager = new ClusterElderManager(this);
@@ -182,7 +178,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
 
   /**
-   * The <code>MembershipListener</code>s that are registered on this manager for ALL members.
+   * The {@code MembershipListener}s that are registered on this manager for ALL members.
    *
    * @since GemFire 5.7
    */
@@ -433,6 +429,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
   }
 
+  @Override
   public OperationExecutors getExecutors() {
     return executors;
   }
@@ -442,18 +439,40 @@ public class ClusterDistributionManager implements DistributionManager {
     return executors.getThreadMonitoring();
   }
 
-  /////////////////////// Constructors ///////////////////////
+  /**
+   * Creates a new distribution manager.
+   *
+   * @param system The distributed system to which this distribution manager will send messages
+   * @param transport The configuration for the communications transport
+   * @param alertingService Handles creation of Alerts
+   * @param membershipLocator The locator to use for membership
+   */
+  private ClusterDistributionManager(
+      InternalDistributedSystem system,
+      RemoteTransportConfig transport,
+      AlertingService alertingService,
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
+    this(system, transport, alertingService, membershipLocator, DistributionStats::new,
+        DistributionImpl::createDistribution);
+  }
 
   /**
-   * Creates a new <code>DistributionManager</code> by initializing itself, creating the membership
-   * manager and executors
+   * Creates a new distribution manager.
    *
+   * @param system The distributed system to which this distribution manager will send messages
    * @param transport The configuration for the communications transport
+   * @param alertingService Handles creation of Alerts
+   * @param membershipLocator The locator to use for membership
+   * @param distributionStatsFactory Creates DistributionStats for recording distribution stats
+   * @param distributionFactory Creates Distribution for membership and messaging
    */
-  private ClusterDistributionManager(RemoteTransportConfig transport,
+  ClusterDistributionManager(
       InternalDistributedSystem system,
+      RemoteTransportConfig transport,
       AlertingService alertingService,
-      MembershipLocator<InternalDistributedMember> locator) {
+      final MembershipLocator<InternalDistributedMember> membershipLocator,
+      DistributionStatsFactory distributionStatsFactory,
+      DistributionFactory distributionFactory) {
 
     this.system = system;
     this.transport = transport;
@@ -464,11 +483,11 @@ public class ClusterDistributionManager implements DistributionManager {
     distributedSystemId = system.getConfig().getDistributedSystemId();
 
     long statId = OSProcess.getId();
-    stats = new DistributionStats(system, statId);
+    stats = distributionStatsFactory.create(system, statId);
     DistributionStats.enableClockStats = system.getConfig().getEnableTimeStatistics();
 
     exceptionInThreads = false;
-    boolean finishedConstructor = false;
+    boolean createdDistribution = false;
     try {
 
       executors = new ClusterOperationExecutors(stats, system);
@@ -484,9 +503,8 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       DMListener listener = new DMListener(this);
-      distribution = DistributionImpl
-          .createDistribution(this, transport, system, listener,
-              this::handleIncomingDMsg, locator);
+      distribution = distributionFactory.create(this, transport, system, listener,
+          this::handleIncomingDMsg, membershipLocator);
 
       sb.append(System.currentTimeMillis() - start);
 
@@ -501,26 +519,14 @@ public class ClusterDistributionManager implements DistributionManager {
       description = "Distribution manager on " + localAddress + " started at "
           + (new Date(System.currentTimeMillis()));
 
-      finishedConstructor = true;
+      createdDistribution = true;
     } finally {
-      if (!finishedConstructor && executors != null) {
+      if (!createdDistribution && executors != null) {
         askThreadsToStop(); // fix for bug 42039
       }
     }
-  }
 
-  /**
-   * Creates a new distribution manager
-   *
-   * @param system The distributed system to which this distribution manager will send messages.
-   */
-  private ClusterDistributionManager(InternalDistributedSystem system,
-      RemoteTransportConfig transport,
-      AlertingService alertingService,
-      final MembershipLocator<InternalDistributedMember> membershipLocator) {
-    this(transport, system, alertingService, membershipLocator);
-
-    boolean finishedConstructor = false;
+    boolean startedEventProcessing = false;
     try {
 
       setIsStartupThread();
@@ -544,9 +550,9 @@ public class ClusterDistributionManager implements DistributionManager {
         }
       }
 
-      finishedConstructor = true;
+      startedEventProcessing = true;
     } finally {
-      if (!finishedConstructor) {
+      if (!startedEventProcessing) {
         askThreadsToStop(); // fix for bug 42039
       }
     }
@@ -1095,7 +1101,7 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   /**
-   * Returns the identity of this <code>DistributionManager</code>
+   * Returns the identity of this {@code DistributionManager}
    */
   @Override
   public InternalDistributedMember getId() {
@@ -1363,7 +1369,7 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   /**
-   * Adds a <code>MembershipListener</code> to this distribution manager.
+   * Adds a {@code MembershipListener} to this distribution manager.
    */
   private void addAllMembershipListener(MembershipListener l) {
     synchronized (allMembershipListenersLock) {
@@ -1992,7 +1998,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * @param message the message to send
    * @return list of recipients that did not receive the message because they left the view (null if
    *         all received it or it was sent to {@link Message#ALL_RECIPIENTS}.
-   * @throws NotSerializableException If <code>message</code> cannot be serialized
+   * @throws NotSerializableException If {@code message} cannot be serialized
    */
   Set<InternalDistributedMember> sendOutgoing(DistributionMessage message)
       throws NotSerializableException {
@@ -2024,7 +2030,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   /**
    * @return recipients who did not receive the message
-   * @throws NotSerializableException If <codE>message</code> cannot be serialized
+   * @throws NotSerializableException If {@code message} cannot be serialized
    */
   private Set<InternalDistributedMember> sendMessage(DistributionMessage message)
       throws NotSerializableException {
@@ -2150,7 +2156,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * Returns a description of the distribution configuration used for this distribution manager. (in
    * ConsoleDistributionManager)
    *
-   * @return <code>null</code> if no admin {@linkplain #getAgent agent} is associated with this
+   * @return {@code null} if no admin {@linkplain #getAgent agent} is associated with this
    *         distribution manager
    */
   public String getDistributionConfigDescription() {
@@ -2172,7 +2178,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * Returns the health monitor for this distribution manager and owner.
    *
    * @param owner the agent that owns the returned monitor
-   * @return the health monitor created by the owner; <code>null</code> if the owner has now created
+   * @return the health monitor created by the owner; {@code null} if the owner has now created
    *         a monitor.
    * @since GemFire 3.5
    */
@@ -2822,6 +2828,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * test method to get the member IDs of all locators in the distributed system
    */
+  @Override
   public Set<InternalDistributedMember> getLocatorDistributionManagerIds() {
     return distribution.getMembersNotShuttingDown().stream()
         .filter((id) -> id.getVmKind() == LOCATOR_DM_TYPE).collect(
@@ -2942,4 +2949,19 @@ public class ClusterDistributionManager implements DistributionManager {
     }
   }
 
+  @FunctionalInterface
+  interface DistributionStatsFactory {
+    DistributionStats create(InternalDistributedSystem system, long statId);
+  }
+
+  @FunctionalInterface
+  interface DistributionFactory {
+    Distribution create(
+        ClusterDistributionManager clusterDistributionManager,
+        RemoteTransportConfig transport,
+        InternalDistributedSystem system,
+        org.apache.geode.distributed.internal.membership.api.MembershipListener<InternalDistributedMember> listener,
+        MessageListener<InternalDistributedMember> messageListener,
+        final MembershipLocator<InternalDistributedMember> locator);
+  }
 }

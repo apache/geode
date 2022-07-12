@@ -140,13 +140,13 @@ The default format displays commonly useful information about each test:
 Example:
 
 ```
-org.apache.geode.modules.session.catalina.Tomcat7CommitSessionValveTest.recycledResponseObjectDoesNotWrapAlreadyWrappedOutputBuffer
+org.apache.geode.modules.session.catalina.Tomcat8CommitSessionValveTest.recycledResponseObjectDoesNotWrapAlreadyWrappedOutputBuffer
     Iteration: 1
     Start:     2021-05-20 22:16:18.699 +0000
     End:       2021-05-20 22:16:20.585 +0000
     Duration:  1.886s
     Status:    success
-org.apache.geode.modules.session.catalina.Tomcat7CommitSessionValveTest.wrappedOutputBufferForwardsToDelegate
+org.apache.geode.modules.session.catalina.Tomcat8CommitSessionValveTest.wrappedOutputBufferForwardsToDelegate
     Iteration: 1
     Start:     2021-05-20 22:16:20.585 +0000
     End:       2021-05-20 22:16:20.589 +0000
@@ -199,14 +199,14 @@ description:
 
     progress -j
     progress -j | jq    # Use jq to pretty-print the JSON
-    progress -j -c Tomcat7CommitSessionValveTest
+    progress -j -c Tomcat8CommitSessionValveTest
 
 The output (if pretty-printed) looks like this:
 
 ```json
 {
-    "/path/to/geode/project/extensions/geode-modules-tomcat7/build/test/test-progress.txt": {
-        "org.apache.geode.modules.session.catalina.Tomcat7CommitSessionValveTest": {
+    "/path/to/geode/project/extensions/geode-modules-tomcat8/build/test/test-progress.txt": {
+        "org.apache.geode.modules.session.catalina.Tomcat8CommitSessionValveTest": {
             "recycledResponseObjectDoesNotWrapAlreadyWrappedOutputBuffer": [
                 {
                     "Iteration": 1,

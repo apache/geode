@@ -21,6 +21,7 @@ import org.apache.commons.lang3.JavaVersion;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.size.WellKnownClassSizer;
 import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
@@ -185,5 +186,13 @@ public class JvmSizeUtils {
    */
   public static int memoryOverhead(Class<?> clazz) {
     return (int) sizeof(clazz);
+  }
+
+  /**
+   * Returns the amount of memory used to store the given
+   * String instance.
+   */
+  public static int memoryOverhead(String string) {
+    return WellKnownClassSizer.sizeof(string);
   }
 }

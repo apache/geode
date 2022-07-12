@@ -53,7 +53,7 @@ public abstract class AbstractOp implements Op {
 
   private boolean allowDuplicateMetadataRefresh;
 
-  protected AbstractOp(int msgType, int msgParts) {
+  protected AbstractOp(MessageType msgType, int msgParts) {
     msg = new Message(msgParts, KnownVersion.CURRENT);
     getMessage().setMessageType(msgType);
   }
@@ -134,8 +134,7 @@ public abstract class AbstractOp implements Op {
         }
         userId = id;
       }
-      secureLogger.debug("{} Using userId {}: ",
-          MessageType.getString(getMessage().getMessageType()), userId);
+      secureLogger.debug("{} Using userId {}: ", getMessage().getMessageType(), userId);
       try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
@@ -246,7 +245,7 @@ public abstract class AbstractOp implements Op {
   /**
    * Return true of <code>messageType</code> indicates the operation had an error on the server.
    */
-  protected abstract boolean isErrorResponse(int msgType);
+  protected abstract boolean isErrorResponse(MessageType msgType);
 
   /**
    * Process a response that contains an ack.
@@ -257,7 +256,7 @@ public abstract class AbstractOp implements Op {
    *         exception.
    */
   protected void processAck(Message msg, String opName) throws Exception {
-    final int msgType = msg.getMessageType();
+    final MessageType msgType = msg.getMessageType();
     if (msgType != MessageType.REPLY) {
       Part part = msg.getPart(0);
       if (msgType == MessageType.EXCEPTION) {
@@ -273,7 +272,7 @@ public abstract class AbstractOp implements Op {
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
+        throw new InternalGemFireError("Unexpected message type " + msgType);
       }
     }
   }
@@ -289,7 +288,7 @@ public abstract class AbstractOp implements Op {
    */
   protected Object processObjResponse(Message msg, String opName) throws Exception {
     Part part = msg.getPart(0);
-    final int msgType = msg.getMessageType();
+    final MessageType msgType = msg.getMessageType();
     if (msgType == MessageType.RESPONSE) {
       return part.getObject();
     } else {
@@ -301,7 +300,7 @@ public abstract class AbstractOp implements Op {
       } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
       } else {
-        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
+        throw new InternalGemFireError("Unexpected message type " + msgType);
       }
     }
   }
@@ -338,7 +337,7 @@ public abstract class AbstractOp implements Op {
   void processChunkedResponse(ChunkedMessage msg, String opName, ChunkHandler callback)
       throws Exception {
     msg.readHeader();
-    final int msgType = msg.getMessageType();
+    final MessageType msgType = msg.getMessageType();
     if (msgType == MessageType.RESPONSE) {
       do {
         msg.receiveChunk();
@@ -357,7 +356,7 @@ public abstract class AbstractOp implements Op {
         Part part = msg.getPart(0);
         throw new ServerOperationException(part.getString());
       } else {
-        throw new IOException("Unexpected message type " + MessageType.getString(msgType));
+        throw new IOException("Unexpected message type " + msgType);
       }
     }
   }

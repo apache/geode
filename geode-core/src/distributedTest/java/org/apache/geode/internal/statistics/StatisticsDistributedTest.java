@@ -231,7 +231,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
     for (int i = 0; i < NUM_PUBS; i++) {
       final int pubVM = i;
-      AsyncInvocation[] publishers = new AsyncInvocation[NUM_PUB_THREADS];
+      AsyncInvocation<?>[] publishers = new AsyncInvocation[NUM_PUB_THREADS];
       for (int j = 0; j < NUM_PUB_THREADS; j++) {
         final int pubThread = j;
         publishers[pubThread] = pubs[pubVM]
@@ -290,7 +290,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
             });
       }
 
-      for (final AsyncInvocation publisher : publishers) {
+      for (final AsyncInvocation<?> publisher : publishers) {
         publisher.join();
         assertThat(publisher.exceptionOccurred()).isFalse();
       }

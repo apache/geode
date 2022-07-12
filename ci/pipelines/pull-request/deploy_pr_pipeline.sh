@@ -76,7 +76,7 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
 
   cat > repository.yml <<YML
 repository:
-  project: 'geode'
+  project: ${GEODE_REPO_NAME}
   fork: ${GEODE_FORK}
   branch: ${GEODE_BRANCH}
   upstream_fork: ${UPSTREAM_FORK}

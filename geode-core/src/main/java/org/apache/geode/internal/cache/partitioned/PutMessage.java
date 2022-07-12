@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -366,7 +367,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
    *         indicate that no acknowledgement will be sent
    * @throws ForceReattemptException if the peer is no longer available
    */
-  public static PartitionResponse send(DistributedMember recipient, PartitionedRegion r,
+  public static @NotNull PartitionResponse send(DistributedMember recipient, PartitionedRegion r,
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue) throws ForceReattemptException {
     // Assert.assertTrue(recipient != null, "PutMessage NULL recipient"); recipient can be null for
@@ -839,7 +840,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
   @Override
   protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
-    return notifiesSerialGatewaySender(dm);
+    return notifiesSerialGatewaySender();
   }
 
   public static class PutReplyMessage extends ReplyMessage implements OldValueImporter {

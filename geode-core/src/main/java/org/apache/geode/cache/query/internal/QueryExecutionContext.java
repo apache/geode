@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +27,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
- * This ExecutionContext will be used ONLY for querying because this is a bit heavt-weight context
+ * This ExecutionContext will be used ONLY for querying because this is a bit heavy-weight context
  * whose life is longer in JVM than {@link ExecutionContext} which will be used ONLY for index
  * updates.
  *
@@ -39,20 +41,20 @@ public class QueryExecutionContext extends ExecutionContext {
 
   private final boolean cqQueryContext;
 
-  private List bucketList;
+  private List<Integer> bucketList;
 
   private boolean indexUsed = false;
 
   /**
    * stack used to determine which execCache to currently be using
    */
-  private final Stack execCacheStack = new Stack();
+  private final Stack<Integer> execCacheStack = new Stack<>();
 
   /**
    * a map that stores general purpose maps for caching data that is valid for one query execution
    * only
    */
-  private final Map execCaches = new HashMap();
+  private final Map<Integer, Map<Object, Object>> execCaches = new HashMap<>();
 
   /**
    * This map stores PdxString corresponding to the bind argument
@@ -62,7 +64,7 @@ public class QueryExecutionContext extends ExecutionContext {
   /**
    * List of query index names that the user has hinted on using
    */
-  private ArrayList hints = null;
+  private ArrayList<String> hints = null;
 
   public QueryExecutionContext(Object[] bindArguments, InternalCache cache) {
     super(bindArguments, cache);
@@ -86,21 +88,16 @@ public class QueryExecutionContext extends ExecutionContext {
   @Override
   void cachePut(Object key, Object value) {
     if (key.equals(CompiledValue.QUERY_INDEX_HINTS)) {
-      setHints((ArrayList) value);
+      setHints(uncheckedCast(value));
       return;
     }
-    // execCache can be empty in cases where we are doing adds to indexes
+    // execCache can be empty in cases where we are doing adds to the indexes
     // in that case, we use a default execCache
     int scopeId = -1;
     if (!execCacheStack.isEmpty()) {
-      scopeId = (Integer) execCacheStack.peek();
+      scopeId = execCacheStack.peek();
     }
-    Map execCache = (Map) execCaches.get(scopeId);
-    if (execCache == null) {
-      execCache = new HashMap();
-      execCaches.put(scopeId, execCache);
-    }
-    execCache.put(key, value);
+    execCaches.computeIfAbsent(scopeId, k -> new HashMap<>()).put(key, value);
   }
 
   @Override
@@ -110,13 +107,13 @@ public class QueryExecutionContext extends ExecutionContext {
 
   @Override
   public Object cacheGet(Object key, Object defaultValue) {
-    // execCache can be empty in cases where we are doing adds to indexes
+    // execCache can be empty in cases where we are doing adds to the indexes
     // in that case, we use a default execCache
     int scopeId = -1;
     if (!execCacheStack.isEmpty()) {
-      scopeId = (Integer) execCacheStack.peek();
+      scopeId = execCacheStack.peek();
     }
-    Map execCache = (Map) execCaches.get(scopeId);
+    Map<Object, Object> execCache = execCaches.get(scopeId);
     if (execCache == null) {
       return defaultValue;
     }
@@ -161,12 +158,12 @@ public class QueryExecutionContext extends ExecutionContext {
   }
 
   @Override
-  public void setBucketList(List list) {
+  public void setBucketList(List<Integer> list) {
     bucketList = list;
   }
 
   @Override
-  public List getBucketList() {
+  public List<Integer> getBucketList() {
     return bucketList;
   }
 

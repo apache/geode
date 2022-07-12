@@ -105,7 +105,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
     vm.invoke(() -> getCache().close());
   }
 
-  AsyncInvocation closeCacheAsync(VM vm) {
+  AsyncInvocation<Void> closeCacheAsync(VM vm) {
     return vm.invokeAsync(() -> getCache().close());
   }
 
@@ -121,7 +121,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
     });
   }
 
-  AsyncInvocation createPersistentRegionWithWait(VM vm)
+  AsyncInvocation<Void> createPersistentRegionWithWait(VM vm)
       throws ExecutionException, InterruptedException {
     return createPersistentRegion(vm, true);
   }
@@ -130,9 +130,10 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
     createPersistentRegion(vm, false);
   }
 
-  private AsyncInvocation createPersistentRegion(VM vm, boolean createPersistentRegionWillWait)
+  private AsyncInvocation<Void> createPersistentRegion(VM vm,
+      boolean createPersistentRegionWillWait)
       throws ExecutionException, InterruptedException {
-    AsyncInvocation createPersistentRegionInVM = createPersistentRegionAsync(vm);
+    AsyncInvocation<Void> createPersistentRegionInVM = createPersistentRegionAsync(vm);
 
     if (createPersistentRegionWillWait) {
       createPersistentRegionInVM.join(500);
@@ -144,7 +145,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
     return createPersistentRegionInVM;
   }
 
-  AsyncInvocation createPersistentRegionAsync(VM vm) {
+  AsyncInvocation<Void> createPersistentRegionAsync(VM vm) {
     return vm.invokeAsync(() -> {
       getCache();
 

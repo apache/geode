@@ -179,7 +179,7 @@ public class ExecuteFunctionNoAckOp {
 
     @Override
     protected Object processResponse(final @NotNull Message msg) throws Exception {
-      final int msgType = msg.getMessageType();
+      final MessageType msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {
         return null;
       } else {
@@ -191,14 +191,14 @@ public class ExecuteFunctionNoAckOp {
           logger.warn("Function execution without result encountered an Exception on server.");
         } else {
           throw new InternalGemFireError(
-              "Unexpected message type " + MessageType.getString(msgType));
+              "Unexpected message type " + msgType);
         }
         return null;
       }
     }
 
     @Override
-    protected boolean isErrorResponse(int msgType) {
+    protected boolean isErrorResponse(MessageType msgType) {
       return msgType == MessageType.EXECUTE_FUNCTION_ERROR;
     }
 

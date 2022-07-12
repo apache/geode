@@ -207,17 +207,18 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(() -> AsyncEventQueueTestBase
         .createReplicatedRegionWithAsyncEventQueue(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<Void> inv1 =
         vm2.invokeAsync(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 10000));
     Wait.pause(2000);
-    AsyncInvocation inv2 = vm1.invokeAsync(() -> AsyncEventQueueTestBase.killAsyncEventQueue("ln"));
+    AsyncInvocation<Boolean> inv2 =
+        vm1.invokeAsync(() -> AsyncEventQueueTestBase.killAsyncEventQueue("ln"));
     Boolean isKilled = Boolean.FALSE;
     try {
-      isKilled = (Boolean) inv2.getResult();
+      isKilled = inv2.getResult();
     } catch (Throwable e) {
       fail("Unexpected exception while killing a AsyncEventQueue");
     }
-    AsyncInvocation inv3 = null;
+    AsyncInvocation<Boolean> inv3 = null;
     if (!isKilled) {
       inv3 = vm2.invokeAsync(() -> AsyncEventQueueTestBase.killSender("ln"));
       inv3.join();

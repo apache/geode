@@ -74,7 +74,6 @@ include 'geode-connectors'
 include 'geode-http-service'
 include 'extensions:geode-modules'
 include 'extensions:geode-modules-test'
-include 'extensions:geode-modules-tomcat7'
 include 'extensions:geode-modules-tomcat8'
 include 'extensions:geode-modules-tomcat9'
 include 'extensions:geode-modules-session-internal'
@@ -109,7 +108,8 @@ include 'geode-server-all'
  '1.13.1',
  '1.13.8',
  '1.14.0', // Include for SSL protocol configuration changes in 1.14.0
- '1.14.4'].each {
+ '1.14.4',
+ '1.15.0'].each {
   include 'geode-old-versions:'.concat(it)
 }
 

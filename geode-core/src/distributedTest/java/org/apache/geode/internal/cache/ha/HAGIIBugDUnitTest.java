@@ -181,7 +181,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
       }
     };
 
-    AsyncInvocation[] async = new AsyncInvocation[4];
+    AsyncInvocation<?>[] async = new AsyncInvocation[4];
     async[0] = vm0.invokeAsync(putFrmVm("vm0_2"));
     t1.start();
     ThreadUtils.join(t1, 30 * 1000);

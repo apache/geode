@@ -15,12 +15,16 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
@@ -105,11 +109,10 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
     /** reusable KeyInfo */
     protected final KeyInfo keyInfo = new KeyInfo(null, null, null);
 
-    @SuppressWarnings("unchecked")
     protected EntriesIterator() {
       if (recursive) {
         // FIFO queue of regions
-        regions = new ArrayList<>(topRegion.subregions(true));
+        regions = new ArrayList<>(uncheckedCast(topRegion.subregions(true)));
         numSubRegions = regions.size();
       } else {
         regions = null;
@@ -170,7 +173,7 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
               return result;
             }
           } else {
-            Region.Entry re = (Region.Entry) view.getEntryForIterator(keyInfo, currRgn,
+            Region.Entry<?, ?> re = (Region.Entry<?, ?>) view.getEntryForIterator(keyInfo, currRgn,
                 rememberReads, allowTombstones);
             if (re != null) {
               try {
@@ -242,22 +245,18 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
 
   @Override
   public Object[] toArray() {
-    return toArray(null);
+    return toArray(new Object[0]);
   }
 
   @Override
-  public Object[] toArray(final Object[] array) {
+  public Object[] toArray(final Object @NotNull [] array) {
     checkTX();
     final ArrayList<Object> temp = new ArrayList<>(size());
     final Iterator<Object> iter = new EntriesIterator();
     while (iter.hasNext()) {
       temp.add(iter.next());
     }
-    if (array == null) {
-      return temp.toArray();
-    } else {
-      return temp.toArray(array);
-    }
+    return temp.toArray(array);
   }
 
 
@@ -272,10 +271,6 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
 
   public void setIgnoreCopyOnReadForQuery(boolean ignoreCopyOnReadForQuery) {
     this.ignoreCopyOnReadForQuery = ignoreCopyOnReadForQuery;
-  }
-
-  public boolean isIgnoreCopyOnReadForQuery() {
-    return ignoreCopyOnReadForQuery;
   }
 
 }

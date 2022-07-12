@@ -15,228 +15,265 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.spy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TestName;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 
 /**
  * Testing recovery from failures writing OverflowOplog entries
  */
 public class OverflowOplogFlushTest extends DiskRegionTestingBase {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
-
-  // How many times to fake the write failures
-  private int nFakeChannelWrites = 0;
-  private OverflowOplog ol = null;
-  private ByteBuffer bb1 = null;
-  private ByteBuffer bb2 = null;
-  private final ByteBuffer[] bbArray = new ByteBuffer[2];
-  private FileChannel ch;
-  private FileChannel spyCh;
-
-  @Rule
-  public TestName name = new TestName();
-
-  class FakeChannelWriteBB implements Answer<Integer> {
-
-    @Override
-    public Integer answer(InvocationOnMock invocation) throws Throwable {
-      return fakeWriteBB(ol, bb1);
-    }
+  @Test
+  public void testAsyncChannelWriteRetriesOnFailureDuringFlush() throws Exception {
+    OverflowOplog oplog = getOverflowOplog();
+    int numberOfWriteFailures = 1;
+    doChannelFlushWithFailures(oplog, numberOfWriteFailures);
   }
 
-  private int fakeWriteBB(OverflowOplog ol, ByteBuffer bb) throws IOException {
-    if (nFakeChannelWrites > 0) {
-      bb.position(bb.limit());
-      --nFakeChannelWrites;
-      return 0;
-    }
-    doCallRealMethod().when(spyCh).write(bb);
-    return spyCh.write(bb);
+  @Test
+  public void testChannelWriteRetriesOnFailureDuringFlush() throws Exception {
+    OverflowOplog oplog = getOverflowOplog();
+    int numberOfWriteFailures = 1;
+    doChannelFlushWithFailures(oplog, numberOfWriteFailures);
   }
 
-  private void verifyBB(ByteBuffer bb, byte[] src) {
-    bb.flip();
-    for (int i = 0; i < src.length; ++i) {
-      assertEquals("Channel contents does not match expected at index " + i, src[i], bb.get());
-    }
+  @Test
+  public void testChannelRecoversFromWriteFailureRepeatedRetriesDuringFlush() throws Exception {
+    OverflowOplog oplog = getOverflowOplog();
+    int numberOfWriteFailures = 3;
+    doChannelFlushWithFailures(oplog, numberOfWriteFailures);
   }
 
-  class FakeChannelWriteArrayBB implements Answer<Long> {
-    @Override
-    public Long answer(InvocationOnMock invocation) throws Throwable {
-      System.out.println("### in FakeChannelWriteArrayBB.answer :");
-      return fakeWriteArrayBB(bbArray);
-    }
+  @Test
+  public void testOplogFlushThrowsIOExceptionWhenNumberOfChannelWriteRetriesExceedsLimit() {
+    OverflowOplog oplog = getOverflowOplog();
+    int numberOfFailures = 6; // exceeds the retry limit in Oplog
+    assertThatThrownBy(() -> doChannelFlushWithFailures(oplog, numberOfFailures))
+        .isInstanceOf(IOException.class);
   }
 
-  /**
-   * This method tries to write half of the byte buffer to the channel.
-   */
-  private long fakeWriteArrayBB(ByteBuffer[] bbArray) throws IOException {
-    nFakeChannelWrites++;
-    for (ByteBuffer b : bbArray) {
-      int numFakeWrite = b.limit() / 2;
-      if (b.position() <= 0) {
-        b.position(numFakeWrite);
-        return numFakeWrite;
-      } else if (b.position() == numFakeWrite) {
-        b.position(b.limit());
-        return b.limit() - numFakeWrite;
-      }
-    }
-    return 0;
+  @Test
+  public void testOverflowOplogByteArrayFlush() throws Exception {
+    OverflowOplog oplog = getOverflowOplog();
+    doPartialChannelByteArrayFlushForOverflowOpLog(oplog);
+  }
+
+  private OverflowOplog getOverflowOplog() {
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setOverFlowCapacity(1);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
+    region.put("K1", "v1"); // add two entries to make it overflow
+    region.put("K2", "v2");
+    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
+    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
+    assertThat(oplog)
+        .as("oplog")
+        .isNotNull();
+    return oplog;
   }
 
   private void doChannelFlushWithFailures(OverflowOplog oplog, int numFailures) throws IOException {
-    nFakeChannelWrites = numFailures;
-    ol = oplog;
-    ch = ol.getFileChannel();
-    spyCh = spy(ch);
-    ol.testSetCrfChannel(spyCh);
+    AtomicInteger numberOfRemainingFailures = new AtomicInteger(numFailures);
+    FileChannel fileChannelThatFails = new FileChannelWrapper(oplog.getFileChannel()) {
+      @Override
+      public int write(ByteBuffer buffer) throws IOException {
+        if (numberOfRemainingFailures.get() > 0) {
+          // Force channel.write() failure
+          buffer.position(buffer.limit());
+          numberOfRemainingFailures.getAndDecrement();
+          return 0;
+        }
+        return delegate.write(buffer);
+      }
+    };
+    oplog.testSetCrfChannel(fileChannelThatFails);
 
     byte[] entry1 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
     byte[] entry2 = {100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115,
         116, 117, 118, 119};
 
-    bb1 = ol.getWriteBuf();
+    ByteBuffer oplogWriteBuffer = oplog.getWriteBuf();
     try {
-      // Force channel.write() failures when writing the first entry
-      doAnswer(new FakeChannelWriteBB()).when(spyCh).write(bb1);
-      long chStartPos = ol.getFileChannel().position();
-      bb1.clear();
-      bb1.put(entry1);
-      ol.flush();
+      FileChannel fileChannel = oplog.getFileChannel();
+      long chStartPos = fileChannel.position();
+      oplogWriteBuffer.clear();
+      oplogWriteBuffer.put(entry1);
+      oplog.flush();
 
       // Write the 2nd entry without forced channel failures
-      nFakeChannelWrites = 0;
-      bb1 = ol.getWriteBuf();
-      bb1.clear();
-      bb1.put(entry2);
-      ol.flush();
-      long chEndPos = ol.getFileChannel().position();
-      assertEquals("Change in channel position does not equal the size of the data flushed",
-          entry1.length + entry2.length, chEndPos - chStartPos);
+      numberOfRemainingFailures.set(0);
+      oplogWriteBuffer = oplog.getWriteBuf();
+      oplogWriteBuffer.clear();
+      oplogWriteBuffer.put(entry2);
+      oplog.flush();
+      long chEndPos = fileChannel.position();
+      assertThat(chEndPos - chStartPos)
+          .as("change in channel position")
+          .isEqualTo(entry1.length + entry2.length);
       ByteBuffer dst = ByteBuffer.allocateDirect(entry1.length);
-      ol.getFileChannel().position(chStartPos);
-      ol.getFileChannel().read(dst);
+      fileChannel.position(chStartPos);
+      fileChannel.read(dst);
       verifyBB(dst, entry1);
     } finally {
       region.destroyRegion();
     }
   }
 
-  @Test
-  public void testAsyncChannelWriteRetriesOnFailureDuringFlush() throws Exception {
-    DiskRegionProperties props = new DiskRegionProperties();
-    props.setOverFlowCapacity(1);
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
-    region.put("K1", "v1"); // add two entries to make it overflow
-    region.put("K2", "v2");
-    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
-    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
-    doChannelFlushWithFailures(oplog, 1 /* write failure */);
-  }
-
-  @Test
-  public void testChannelWriteRetriesOnFailureDuringFlush() throws Exception {
-    DiskRegionProperties props = new DiskRegionProperties();
-    props.setOverFlowCapacity(1);
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
-    region.put("K1", "v1"); // add two entries to make it overflow
-    region.put("K2", "v2");
-    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
-    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
-    doChannelFlushWithFailures(oplog, 1 /* write failure */);
-  }
-
-  @Test
-  public void testChannelRecoversFromWriteFailureRepeatedRetriesDuringFlush() throws Exception {
-    DiskRegionProperties props = new DiskRegionProperties();
-    props.setOverFlowCapacity(1);
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
-    region.put("K1", "v1"); // add two entries to make it overflow
-    region.put("K2", "v2");
-    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
-    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
-
-    doChannelFlushWithFailures(oplog, 3 /* write failures */);
-  }
-
-  @Test
-  public void testOplogFlushThrowsIOExceptioniWhenNumberOfChannelWriteRetriesExceedsLimit()
-      throws Exception {
-    expectedException.expect(IOException.class);
-    DiskRegionProperties props = new DiskRegionProperties();
-    props.setOverFlowCapacity(1);
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
-    region.put("K1", "v1"); // add two entries to make it overflow
-    region.put("K2", "v2");
-    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
-    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
-
-    doChannelFlushWithFailures(oplog, 6 /* exceeds the retry limit in Oplog */);
-  }
-
   private void doPartialChannelByteArrayFlushForOverflowOpLog(OverflowOplog oplog)
       throws IOException {
-    OverflowOplog ol = oplog;
-    FileChannel ch = ol.getFileChannel();
-    FileChannel spyCh = spy(ch);
-    ol.testSetCrfChannel(spyCh);
+    AtomicInteger numberOfFakeWrites = new AtomicInteger();
+    FileChannel fileChannelThatFails = new FileChannelWrapper(oplog.getFileChannel()) {
+      // Pretend to write partial data from each buffer.
+      @Override
+      public long write(ByteBuffer[] buffers, int offset, int length) {
+        numberOfFakeWrites.incrementAndGet();
+        for (ByteBuffer buffer : buffers) {
+          int bufferPosition = buffer.position();
+          int bufferLimit = buffer.limit();
+          int halfOfBufferLimit = bufferLimit / 2;
+          if (bufferPosition <= 0) {
+            buffer.position(halfOfBufferLimit);
+            return halfOfBufferLimit;
+          } else if (bufferPosition == halfOfBufferLimit) {
+            buffer.position(bufferLimit);
+            return bufferLimit - halfOfBufferLimit;
+          }
+        }
+        return 0;
+      }
+    };
+    oplog.testSetCrfChannel(fileChannelThatFails);
 
     byte[] entry1 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
     byte[] entry2 = {100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115,
         116, 117, 118, 119};
 
-    bbArray[0] = bb1 = ByteBuffer.allocate(entry1.length).put(entry1);
-    bbArray[1] = bb2 = ByteBuffer.allocate(entry2.length).put(entry2);
+    ByteBuffer entry1Buffer = ByteBuffer.allocate(entry1.length).put(entry1);
+    ByteBuffer entry2Buffer = ByteBuffer.allocate(entry2.length).put(entry2);
 
     try {
-      // Set fake channel, that pretends to write partial data.
-      doAnswer(new FakeChannelWriteArrayBB()).when(spyCh).write(bbArray);
-
-      bb2.flip();
-      ol.flush(bb1, bb2);
-      assertEquals("Incomplete flush calls.", 4, nFakeChannelWrites);
+      entry2Buffer.flip();
+      oplog.flush(entry1Buffer, entry2Buffer);
+      assertThat(numberOfFakeWrites)
+          .as("number of incomplete flush calls")
+          .hasValue(4);
 
     } finally {
       region.destroyRegion();
     }
   }
 
-  @Test
-  public void testOverflowOplogByteArrayFlush() throws Exception {
-    DiskRegionProperties props = new DiskRegionProperties();
-    props.setOverFlowCapacity(1);
-    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
-    region.put("K1", "v1");
-    region.put("K2", "v2");
+  private static void verifyBB(ByteBuffer bb, byte[] src) {
+    bb.flip();
+    for (int i = 0; i < src.length; ++i) {
+      assertThat(bb.get())
+          .as("byte expected at position " + i)
+          .isEqualTo(src[i]);
+    }
+  }
 
-    DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
-    assertNotNull("Unexpected null Oplog", oplog);
+  static class FileChannelWrapper extends FileChannel {
+    protected final FileChannel delegate;
 
-    doPartialChannelByteArrayFlushForOverflowOpLog(oplog);
+    FileChannelWrapper(FileChannel delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public int read(ByteBuffer dst) throws IOException {
+      return delegate.read(dst);
+    }
+
+    @Override
+    public long read(ByteBuffer[] dsts, int offset, int length) throws IOException {
+      return delegate.read(dsts, offset, length);
+    }
+
+    @Override
+    public int write(ByteBuffer src) throws IOException {
+      return delegate.read(src);
+    }
+
+    @Override
+    public long write(ByteBuffer[] srcs, int offset, int length) throws IOException {
+      return delegate.write(srcs, offset, length);
+    }
+
+    @Override
+    public long position() throws IOException {
+      return delegate.position();
+    }
+
+    @Override
+    public FileChannel position(long newPosition) throws IOException {
+      return delegate.position(newPosition);
+    }
+
+    @Override
+    public long size() throws IOException {
+      return delegate.size();
+    }
+
+    @Override
+    public FileChannel truncate(long size) throws IOException {
+      return delegate.truncate(size);
+    }
+
+    @Override
+    public void force(boolean metaData) throws IOException {
+      delegate.force(metaData);
+    }
+
+    @Override
+    public long transferTo(long position, long count, WritableByteChannel target)
+        throws IOException {
+      return delegate.transferTo(position, count, target);
+    }
+
+    @Override
+    public long transferFrom(ReadableByteChannel src, long position, long count)
+        throws IOException {
+      return delegate.transferFrom(src, position, count);
+    }
+
+    @Override
+    public int read(ByteBuffer dst, long position) throws IOException {
+      return delegate.read(dst, position);
+    }
+
+    @Override
+    public int write(ByteBuffer src, long position) throws IOException {
+      return delegate.write(src, position);
+    }
+
+    @Override
+    public MappedByteBuffer map(MapMode mode, long position, long size) throws IOException {
+      return delegate.map(mode, position, size);
+    }
+
+    @Override
+    public FileLock lock(long position, long size, boolean shared) throws IOException {
+      return delegate.lock(position, size, shared);
+    }
+
+    @Override
+    public FileLock tryLock(long position, long size, boolean shared) throws IOException {
+      return delegate.tryLock(position, size, shared);
+    }
+
+    @Override
+    protected void implCloseChannel() throws IOException {
+      delegate.close();
+    }
   }
 }

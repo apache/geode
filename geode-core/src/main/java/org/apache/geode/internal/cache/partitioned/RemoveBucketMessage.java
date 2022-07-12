@@ -80,7 +80,7 @@ public class RemoveBucketMessage extends PartitionMessage {
 
     Assert.assertTrue(recipient != null, "RemoveBucketMessage NULL recipient");
 
-    RemoveBucketResponse response = new RemoveBucketResponse(region.getSystem(), recipient, region);
+    RemoveBucketResponse response = new RemoveBucketResponse(region.getSystem(), recipient);
     RemoveBucketMessage msg = new RemoveBucketMessage(recipient, region.getPRId(), response,
         bucketId, forceRemovePrimary);
     msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
@@ -220,7 +220,7 @@ public class RemoveBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return "RemoveBucketReplyMessage " + "processorid=" + processorId
+      return "RemoveBucketReplyMessage " + "processorId=" + processorId
           + " removed=" + removed + " reply to sender "
           + getSender();
     }
@@ -233,8 +233,7 @@ public class RemoveBucketMessage extends PartitionMessage {
 
     private volatile boolean removed = false;
 
-    public RemoveBucketResponse(InternalDistributedSystem ds, InternalDistributedMember recipient,
-        PartitionedRegion theRegion) {
+    public RemoveBucketResponse(InternalDistributedSystem ds, InternalDistributedMember recipient) {
       super(ds, recipient);
     }
 

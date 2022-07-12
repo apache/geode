@@ -754,7 +754,7 @@ public class CacheClientNotifier {
 
     // Add CQ info.
     if (filterInfo.getCQs() != null) {
-      for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
+      for (Map.Entry<Long, MessageType> e : filterInfo.getCQs().entrySet()) {
         Long cqID = e.getKey();
         String cqName = regionProfile.getRealCqID(cqID);
         if (cqName == null) {
@@ -834,7 +834,7 @@ public class CacheClientNotifier {
     FilterProfile regionProfile = ((InternalRegion) event.getRegion()).getFilterProfile();
     if (event.getOperation().isEntry() && filterInfo.getCQs() != null) {
       EntryEvent<?, ?> entryEvent = (EntryEvent<?, ?>) event;
-      for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
+      for (Map.Entry<Long, MessageType> e : filterInfo.getCQs().entrySet()) {
         Long cqID = e.getKey();
         String cqName = regionProfile.getRealCqID(cqID);
         if (cqName != null) {

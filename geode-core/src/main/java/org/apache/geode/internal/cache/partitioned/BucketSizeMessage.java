@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -55,7 +57,7 @@ public class BucketSizeMessage extends PartitionMessage {
   private int bucketId;
 
   /**
-   * Empty contstructor provided for {@link org.apache.geode.DataSerializer}
+   * Empty constructor provided for {@link org.apache.geode.DataSerializer}
    */
   public BucketSizeMessage() {
     super();
@@ -87,10 +89,9 @@ public class BucketSizeMessage extends PartitionMessage {
     BucketSizeResponse p = new BucketSizeResponse(r.getSystem(), Collections.singleton(recipient));
     BucketSizeMessage m = new BucketSizeMessage(recipient, r.getPRId(), p, bucketId);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
-      throw new ForceReattemptException(
-          String.format("Failed sending < %s >", m));
+    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(m);
+    if (!isEmpty(failures)) {
+      throw new ForceReattemptException(String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -161,7 +162,8 @@ public class BucketSizeMessage extends PartitionMessage {
     /** Send an ack */
     public static void send(InternalDistributedMember recipient, int processorId,
         DistributionManager dm, long size) {
-      Assert.assertTrue(recipient != null, "PRDistribuedGetReplyMessage NULL reply message");
+      Assert.assertTrue(recipient != null,
+          "PRDistributedBucketSizeReplyMessage NULL reply message");
       BucketSizeReplyMessage m = new BucketSizeReplyMessage(processorId, size);
       m.setRecipient(recipient);
       dm.putOutgoing(m);
@@ -220,7 +222,7 @@ public class BucketSizeMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return "PRDistributedBucketSizeReplyMessage " + "processorid="
+      return "PRDistributedBucketSizeReplyMessage " + "processorId="
           + processorId + " reply to sender " + getSender()
           + " returning numEntries=" + getSize();
     }
@@ -238,7 +240,8 @@ public class BucketSizeMessage extends PartitionMessage {
   public static class BucketSizeResponse extends ReplyProcessor21 {
     private volatile long returnValue;
 
-    public BucketSizeResponse(InternalDistributedSystem ds, Set recipients) {
+    public BucketSizeResponse(InternalDistributedSystem ds,
+        Set<InternalDistributedMember> recipients) {
       super(ds, recipients);
     }
 
@@ -259,7 +262,7 @@ public class BucketSizeMessage extends PartitionMessage {
     }
 
     /**
-     * @return Set the keys associated with the bucketid of the {@link BucketSizeMessage}
+     * @return Set the keys associated with the bucketId of the {@link BucketSizeMessage}
      * @throws ForceReattemptException if the peer is no longer available
      */
     public long waitForSize() throws ForceReattemptException {

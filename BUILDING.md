@@ -10,10 +10,7 @@ Set the JAVA\_HOME environment variable. For example:
 |  OSX     | ``export JAVA_HOME=`/usr/libexec/java_home -v 1.8` ``  |
 |  Windows | ``set JAVA_HOME="C:\Program Files\Java\jdk1.8.0_121"`` |
 
-Download the project source from the Releases page at
-[Apache Geode](http://geode.apache.org/releases/), and unpack the source code.
-
-Within the directory containing the unpacked source code, run the gradle build:
+Run the gradle build:
 
 ```console
 $ ./gradlew build
@@ -81,17 +78,17 @@ The following steps have been tested with **IntelliJ IDEA 2020.3.3**
         1. Enter **To:** *GeodeStyle*, check **Current scheme**, and press **OK**.
     1. Select *GeodeStyle* in **Scheme** drop-down box.
 
-1. Make Apache the default Copyright.
+1. Make VMware the default Copyright.
 
     1. Select **IntelliJ IDEA -> Preferences...** from the menu.
     1. Open the **Editor -> Copyright** section.
-    1. If *Apache* does not appear in the **Default project copyright** drop-down box:
+    1. If *VMware* does not appear in the **Default project copyright** drop-down box:
         1. Open the **Copyright Profiles** subsection.
         1. Select the "import" icon (the small arrow pointing down and to the left) from the
            Copyright Profiles section's toolbar.
-        1. Select `etc/intellij-apache-copyright-notice.xml` from the Geode repository root.
+        1. Select `etc/intellij-vmware-copyright-notice.xml` from the repository root.
         1. Return to the **Copyright** section.
-    1. Select *Apache* in the **Default project copyright** drop-down box.
+    1. Select *VMware* in the **Default project copyright** drop-down box.
     1. Open the **Formatting** subsection.
     1. Uncheck **Add blank line after** and select **OK**.
 

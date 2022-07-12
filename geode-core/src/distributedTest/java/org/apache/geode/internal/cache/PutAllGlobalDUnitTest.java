@@ -33,7 +33,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriter;
@@ -43,7 +42,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.test.dunit.Assert;
@@ -159,55 +157,53 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
     final int socketPort = vm0.invoke(PutAllGlobalDUnitTest::openSocket);
 
-    AsyncInvocation async1 = vm0.invokeAsync(PutAllGlobalDUnitTest::putAllMethod);
+    AsyncInvocation<Void> async1 = vm0.invokeAsync(PutAllGlobalDUnitTest::putAllMethod);
 
-    AsyncInvocation async2 = vm1.invokeAsync(new CacheSerializableRunnable("put from another vm") {
-      @Override
-      public void run2() throws CacheException {
-        long endTime = System.currentTimeMillis() + 5000;
-        boolean connected = false;
-        while (!connected && (System.currentTimeMillis() < endTime)) {
-          try {
-            Socket sock = new Socket(InetAddress.getLocalHost(), socketPort);
-            connected = true;
-            sock.close();
-          } catch (IOException ioe) {
-            // ignored - will time out using 'endTime'
+    AsyncInvocation<Void> async2 =
+        vm1.invokeAsync("put from another vm", () -> {
+          long endTime = System.currentTimeMillis() + 5000;
+          boolean connected = false;
+          while (!connected && (System.currentTimeMillis() < endTime)) {
             try {
-              Thread.sleep(500);
-            } catch (InterruptedException ie) {
-              fail("Interrupted while waiting for async1 invocation");
+              Socket sock = new Socket(InetAddress.getLocalHost(), socketPort);
+              connected = true;
+              sock.close();
+            } catch (IOException ioe) {
+              // ignored - will time out using 'endTime'
+              try {
+                Thread.sleep(500);
+              } catch (InterruptedException ie) {
+                fail("Interrupted while waiting for async1 invocation");
+              }
             }
           }
-        }
-        if (!connected) {
-          fail("unable to connect to async1 invocation");
-        }
-        long startTime = 0;
-        try {
-          Thread.sleep(500);
-          LogWriterUtils.getLogWriter().info("async2 proceeding with put operation");
-          startTime = System.currentTimeMillis();
-          region.put(1, "mapVal");
-          LogWriterUtils.getLogWriter().info("async2 done with put operation");
-          fail("Should have thrown TimeoutException");
-        } catch (TimeoutException Tx) {
-          // Tx.printStackTrace();
-          LogWriterUtils.getLogWriter().info("PASS: As expected Caught TimeoutException ");
-          if (startTime + TIMEOUT_PERIOD
-              + DLockGrantor.GRANTOR_THREAD_MAX_WAIT /* slop of grantor max wait ms */ < System
-                  .currentTimeMillis()) {
-            LogWriterUtils.getLogWriter()
-                .warning("though this test passed, the put() timed out in "
-                    + (System.currentTimeMillis() - startTime) + " instead of the expected "
-                    + TIMEOUT_PERIOD + " milliseconds");
+          if (!connected) {
+            fail("unable to connect to async1 invocation");
           }
-        } catch (Exception ex) {
-          Assert.fail("async2 threw unexpected exception", ex);
-          // ex.printStackTrace();
-        }
-      }
-    });
+          long startTime = 0;
+          try {
+            Thread.sleep(500);
+            LogWriterUtils.getLogWriter().info("async2 proceeding with put operation");
+            startTime = System.currentTimeMillis();
+            region.put(1, "mapVal");
+            LogWriterUtils.getLogWriter().info("async2 done with put operation");
+            fail("Should have thrown TimeoutException");
+          } catch (TimeoutException Tx) {
+            // Tx.printStackTrace();
+            LogWriterUtils.getLogWriter().info("PASS: As expected Caught TimeoutException ");
+            if (startTime + TIMEOUT_PERIOD
+                + DLockGrantor.GRANTOR_THREAD_MAX_WAIT /* slop of grantor max wait ms */ < System
+                    .currentTimeMillis()) {
+              LogWriterUtils.getLogWriter()
+                  .warning("though this test passed, the put() timed out in "
+                      + (System.currentTimeMillis() - startTime) + " instead of the expected "
+                      + TIMEOUT_PERIOD + " milliseconds");
+            }
+          } catch (Exception ex) {
+            Assert.fail("async2 threw unexpected exception", ex);
+            // ex.printStackTrace();
+          }
+        });
 
     ThreadUtils.join(async2, 30 * 1000);
     if (async2.exceptionOccurred()) {

@@ -81,15 +81,17 @@ public class BasicDistributedTest extends DistributedTestCase {
 
   @Test
   public void testInvokeAsyncOnClassTargetWithEmptyArgs() throws Exception {
-    AsyncInvocation<?> async =
-        vm0.invokeAsync(BasicDistributedTest.class, "booleanValue", new Object[] {}).join();
+    AsyncInvocation<Boolean> async =
+        vm0.<Boolean>invokeAsync(BasicDistributedTest.class, "booleanValue", new Object[] {})
+            .await();
     assertThat(async.getResult(), is(true));
   }
 
   @Test
   public void testInvokeAsyncOnObjectTargetWithEmptyArgs() throws Exception {
-    AsyncInvocation<?> async =
-        vm0.invokeAsync(new BasicDistributedTest(), "booleanValue", new Object[] {}).join();
+    AsyncInvocation<Boolean> async =
+        vm0.<Boolean>invokeAsync(new BasicDistributedTest(), "booleanValue", new Object[] {})
+            .await();
     assertThat(async.getResult(), is(true));
   }
 
@@ -105,15 +107,15 @@ public class BasicDistributedTest extends DistributedTestCase {
 
   @Test
   public void testInvokeAsyncOnClassTargetWithNullArgs() throws Exception {
-    AsyncInvocation<?> async =
-        vm0.invokeAsync(BasicDistributedTest.class, "booleanValue", null).join();
+    AsyncInvocation<Boolean> async =
+        vm0.<Boolean>invokeAsync(BasicDistributedTest.class, "booleanValue", null).await();
     assertThat(async.getResult(), is(true));
   }
 
   @Test
   public void testInvokeAsyncOnObjectTargetWithNullArgs() throws Exception {
-    AsyncInvocation<?> async =
-        vm0.invokeAsync(new BasicDistributedTest(), "booleanValue", null).join();
+    AsyncInvocation<Boolean> async =
+        vm0.<Boolean>invokeAsync(new BasicDistributedTest(), "booleanValue", null).await();
     assertThat(async.getResult(), is(true));
   }
 
@@ -154,21 +156,23 @@ public class BasicDistributedTest extends DistributedTestCase {
     String name = getUniqueName();
     String value = "Hello";
 
-    AsyncInvocation async1 = vm0.invokeAsync(() -> remoteBind(name, value)).join().checkException();
-    AsyncInvocation async2 =
-        vm0.invokeAsync(() -> remoteValidateBind(name, value)).join().checkException();
-    async1.join();
-    async2.join();
+    AsyncInvocation<Void> async1 =
+        vm0.<Void>invokeAsync(() -> remoteBind(name, value)).await();
+    AsyncInvocation<Void> async2 =
+        vm0.<Void>invokeAsync(() -> remoteValidateBind(name, value)).await();
+    async1.await();
+    async2.await();
   }
 
   @Test
   public void testRemoteInvokeAsyncWithException() throws Exception {
-    AsyncInvocation<?> async = vm0.invokeAsync(BasicDistributedTest::remoteThrowException).join();
+    AsyncInvocation<Void> async =
+        vm0.<Void>invokeAsync(BasicDistributedTest::remoteThrowException).join();
 
     assertThat(async.exceptionOccurred(), is(true));
     assertThat(async.getException(), instanceOf(BasicTestException.class));
 
-    Throwable thrown = catchThrowable(async::checkException);
+    Throwable thrown = catchThrowable(async::await);
 
     assertThat(thrown, instanceOf(AssertionError.class));
     assertThat(thrown.getCause(), notNullValue());
@@ -180,8 +184,7 @@ public class BasicDistributedTest extends DistributedTestCase {
   public void testInvokeNamedRunnableLambdaAsync() throws Exception {
     Throwable thrown =
         catchThrowable(
-            () -> vm0.invokeAsync("throwSomething", BasicDistributedTest::throwException).join()
-                .checkException());
+            () -> vm0.invokeAsync("throwSomething", BasicDistributedTest::throwException).await());
 
     assertThat(thrown, notNullValue());
     assertThat(thrown.getCause(), notNullValue());
