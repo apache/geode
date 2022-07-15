@@ -55,6 +55,7 @@ import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.entries.VersionedStatsDiskRegionEntryOffHeap;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl.DummyNonRealTimeStatsUpdater;
 import org.apache.geode.internal.serialization.DSCODE;
 
 public class OffHeapRegionEntryHelperInstanceTest {
@@ -81,7 +82,7 @@ public class OffHeapRegionEntryHelperInstanceTest {
 
     memoryAllocator =
         MemoryAllocatorImpl.create(listener, stats, 1, OffHeapStorage.MIN_SLAB_SIZE,
-            OffHeapStorage.MIN_SLAB_SIZE, null, () -> null);
+            OffHeapStorage.MIN_SLAB_SIZE, null, () -> new DummyNonRealTimeStatsUpdater());
 
     offHeapRegionEntryHelperInstance =
         spy(new OffHeapRegionEntryHelperInstance(ohAddress -> offHeapStoredObject,

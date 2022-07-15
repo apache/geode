@@ -187,7 +187,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
       }
     }
     return create(oooml, stats, slabCount, offHeapMemorySize, maxSlabSize, slabs, null,
-        null, () -> null);
+        null, () -> new DummyNonRealTimeStatsUpdater());
   }
 
   private void reuse(OutOfOffHeapMemoryListener oooml, OffHeapMemoryStats newStats,
@@ -240,9 +240,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   }
 
   void start() {
-    if (nonRealTimeStatsUpdater != null) {
-      nonRealTimeStatsUpdater.start(updateOffHeapStatsFrequencyMs);
-    }
+    nonRealTimeStatsUpdater.start(updateOffHeapStatsFrequencyMs);
   }
 
   public List<OffHeapStoredObject> getLostChunks(InternalCache cache) {
@@ -539,5 +537,17 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   @Override
   public MemoryInspector getMemoryInspector() {
     return memoryInspector;
+  }
+
+  public static class DummyNonRealTimeStatsUpdater extends NonRealTimeStatsUpdater {
+    public DummyNonRealTimeStatsUpdater() {
+      super(null);
+    }
+
+    @Override
+    void start(int frequency) {}
+
+    @Override
+    void stop() {};
   }
 }
