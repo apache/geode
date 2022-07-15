@@ -103,6 +103,8 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   private VM vm1;
   private VM vm2;
 
+  private static volatile Future<?> sleepingFuture;
+
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
@@ -469,6 +471,39 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     DistributedMember member =
         vm2.invoke("join the cluster", () -> getSystem().getDistributedMember());
     assertThat(member).isNotNull();
+  }
+
+  /**
+   * Tests that a thread stuck alert is generated if a thread is stuck for longer
+   * than the configured value.
+   */
+  @Test
+  public void testThreadStuckAlert() throws Exception {
+    Properties config = getDistributedSystemProperties();
+    config.setProperty(MCAST_PORT, "0");
+    getSystem(config);
+    createAlertListener();
+
+    vm1.invoke("Connect to distributed system", () -> {
+      addIgnoredException("has been stuck for");
+      config.setProperty(MCAST_PORT, "0");
+      System.setProperty(GEMFIRE_PREFIX + "max-thread-stuck-time-minutes", "1");
+      config.setProperty(NAME, "sleeper");
+      getSystem(config);
+
+      ExecutorService executor =
+          (getCache(config)).getDistributionManager().getExecutors().getThreadPool();
+
+      sleepingFuture = executor.submit(() -> {
+        try {
+          TimeUnit.MINUTES.sleep(2);
+        } catch (InterruptedException e) {
+        }
+      });
+    });
+
+    await().untilAsserted(() -> assertThat(alertReceived).isTrue());
+    vm1.invoke(() -> sleepingFuture.cancel(true));
   }
 
   private CacheListener<String, String> getSleepingListener(final boolean playDead) {

@@ -37,6 +37,7 @@ This section provides possible causes and suggested responses for system problem
 -   [PartitionedRegionStorageException](diagnosing_system_probs.html#diagnosing_system_probs__section_7DE15A6C99974821B6CA418BC2AF98F1)
 -   [Application crashes without producing an exception](diagnosing_system_probs.html#diagnosing_system_probs__section_AFA1D06BC3AA44A4AB0593FD1EF0B0B7)
 -   [Timeout alert](diagnosing_system_probs.html#diagnosing_system_probs__section_06C68EA0DACC46C58AA88E98C19AD2D8)
+-   [Thread stuck alert](diagnosing_system_probs.html#diagnosing_system_probs__section_06C68EA0DACC46C58AA88E98C19AD2D81)
 -   [Member produces SocketTimeoutException](diagnosing_system_probs.html#diagnosing_system_probs__section_66D11C8E84F941B58800EDB52194B087)
 -   [Member logs ForcedDisconnectException, Cache and DistributedSystem forcibly closed](diagnosing_system_probs.html#diagnosing_system_probs__section_8C7CB2EA0A274DAF90083FECE0BF3B1F)
 -   [Members cannot see each other](diagnosing_system_probs.html#diagnosing_system_probs__section_778D150443044847B1C73B9E02BE247B)
@@ -309,6 +310,17 @@ Response:
 
 -   If you’re seeing a lot of timeouts and you haven’t seen them before, check whether your network is flooded.
 -   If you see these alerts constantly during normal operation, consider raising the ack-wait-threshold above the default 15 seconds.
+
+
+## <a id="diagnosing_system_probs__section_06C68EA0DACC46C58AA88E98C19AD2D81" class="no-quick-link"></a>Thread stuck alert
+
+If a thread in a member has been stuck for longer than the configured time (max-thread-stuck-minutes System Property), it sends an alert to signal that something might be wrong with the member or with some other member. The alert is logged in the member’s log as fatal.
+
+A thread stuck timeout alert warns about a thread that is stuck in a member that would probably never progress. A possible cause would be a bug in the code.
+
+Response:
+
+-   If you see these alerts, consider bouncing the member at a convenient time to release the stuck thread.
 
 ## <a id="diagnosing_system_probs__section_66D11C8E84F941B58800EDB52194B087" class="no-quick-link"></a>Member produces SocketTimeoutException
 
