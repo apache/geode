@@ -30,6 +30,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl.DummyNonRealTimeStatsUpdater;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -168,7 +169,7 @@ public class OffHeapStorageJUnitTest {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     MemoryAllocator ma =
         OffHeapStorage.basicCreateOffHeapStorage(localStatsFactory, 1024 * 1024, ooohml, null,
-            () -> null);
+            () -> new DummyNonRealTimeStatsUpdater());
     try {
       OffHeapMemoryStats stats = ma.getStats();
       assertNotNull(stats.getStats());
