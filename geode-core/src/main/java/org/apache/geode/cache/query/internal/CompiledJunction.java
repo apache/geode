@@ -278,6 +278,15 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     List sortedConditionsList =
         getCondtionsSortedOnIncreasingEstimatedIndexResultSize(context);
 
+    Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
+
+    boolean modifiedApplyLimits = false;
+    if (applyLimit != null && applyLimit && sortedConditionsList.size() > 1
+        && _operator == LITERAL_and) {
+      context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, Boolean.FALSE);
+      modifiedApplyLimits = true;
+    }
+
     // Sort the operands in increasing order of resultset size
     Iterator sortedConditionsItr = sortedConditionsList.iterator();
     while (sortedConditionsItr.hasNext()) {
@@ -293,6 +302,12 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       // recursion being ended by evaluating auxIterEvaluate if any. The passing
       // of IntermediateResult in filterEvalaute causes AND junction evaluation
       // to be corrupted , if the intermediateResultset contains some value.
+
+      if (modifiedApplyLimits && sortedConditionsList.size() == 1) {
+        context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, Boolean.TRUE);
+        modifiedApplyLimits = false;
+      }
+
       SelectResults filterResults =
           ((Filter) sortedConditionsItr.next()).filterEvaluate(context, null);
       if (_operator == LITERAL_and) {

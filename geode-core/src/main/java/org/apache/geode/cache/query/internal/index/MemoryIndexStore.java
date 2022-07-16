@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  * The in-memory index storage
@@ -867,6 +868,65 @@ public class MemoryIndexStore implements IndexStore {
           + Integer.toHexString(System.identityHashCode(this)) + ' ' + key
           + ' ' + value;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (!(obj instanceof CachedEntryWrapper)) {
+        return false;
+      }
+      CachedEntryWrapper object = (CachedEntryWrapper) obj;
+      if (!getKey().equals(object.getKey())) {
+        if (!(getKey() instanceof PdxInstanceImpl)) {
+          return false;
+        }
+        if (!(object.getKey() instanceof PdxInstanceImpl)) {
+          return false;
+        }
+        PdxInstanceImpl pdxkey1 = (PdxInstanceImpl) getKey();
+        PdxInstanceImpl pdxkey2 = (PdxInstanceImpl) object.getKey();
+        if (!pdxkey1.equals(pdxkey2)) {
+          return false;
+        }
+      }
+      if (!getValue().equals(object.getValue())) {
+        if (!(getValue() instanceof PdxInstanceImpl)) {
+          return false;
+        }
+        if (!(object.getValue() instanceof PdxInstanceImpl)) {
+          return false;
+        }
+        PdxInstanceImpl pdxvalue1 = (PdxInstanceImpl) getValue();
+        PdxInstanceImpl pdxvalue2 = (PdxInstanceImpl) object.getValue();
+        if (!pdxvalue1.equals(pdxvalue2)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int keyhashcode = 0;
+      int valuehashcode = 0;
+      if (getKey() != null) {
+        keyhashcode = getKey().hashCode();
+      }
+      if (getValue() != null) {
+        valuehashcode = 31 * getValue().hashCode();
+      }
+
+      if (keyhashcode == 0) {
+        return valuehashcode;
+      }
+
+      if (valuehashcode == 0) {
+        return keyhashcode;
+      }
+
+      return keyhashcode ^ valuehashcode;
+    }
+
   }
 
 }
