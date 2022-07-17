@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static java.util.Objects.hash;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -907,24 +909,7 @@ public class MemoryIndexStore implements IndexStore {
 
     @Override
     public int hashCode() {
-      int keyhashcode = 0;
-      int valuehashcode = 0;
-      if (getKey() != null) {
-        keyhashcode = getKey().hashCode();
-      }
-      if (getValue() != null) {
-        valuehashcode = 31 * getValue().hashCode();
-      }
-
-      if (keyhashcode == 0) {
-        return valuehashcode;
-      }
-
-      if (valuehashcode == 0) {
-        return keyhashcode;
-      }
-
-      return keyhashcode ^ valuehashcode;
+      return hash(key, value);
     }
 
   }
