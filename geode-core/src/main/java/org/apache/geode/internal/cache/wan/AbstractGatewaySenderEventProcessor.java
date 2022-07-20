@@ -1216,9 +1216,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       logger.debug("Closing dispatcher");
     }
     try {
+      logger.info("toberal about to check queue size");
       if (sender.isPrimary() && queue.size() > 0) {
         logger.warn("Destroying GatewayEventDispatcher with actively queued data.");
       }
+      logger.info("toberal checked queue size");
       if (resetLastPeekedEvents) {
         notifyPossibleDuplicate(STOPPED_GATEWAY_SENDER, pendingEventsInBatches());
         resetLastPeekedEvents();

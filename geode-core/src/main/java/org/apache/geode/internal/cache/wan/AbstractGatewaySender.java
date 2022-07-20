@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
@@ -237,6 +238,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   private final StatisticsClock statisticsClock;
 
   protected boolean enforceThreadsConnectSameReceiver;
+
+  @MutableForTesting
+  public static final AtomicBoolean doSleepForTestingInDistribute = new AtomicBoolean(false);
 
   protected AbstractGatewaySender() {
     statisticsClock = disabledClock();
@@ -1135,6 +1139,14 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         return;
       }
 
+      if (AbstractGatewaySender.doSleepForTestingInDistribute.get()) {
+        try {
+          Thread.sleep(5);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      logger.info("toberal before trying lock1");
       if (!getLifeCycleLock().readLock().tryLock()) {
         synchronized (queuedEventsSync) {
           if (!enqueuedAllTempQueueEvents) {
@@ -1151,6 +1163,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           }
         }
         if (enqueuedAllTempQueueEvents) {
+          logger.info("toberal before getting lock");
           getLifeCycleLock().readLock().lock();
         }
       }

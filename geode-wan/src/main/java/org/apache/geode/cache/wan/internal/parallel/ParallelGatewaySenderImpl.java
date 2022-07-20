@@ -120,7 +120,9 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void stop() {
+    logger.info("toberal about to stop gateway sender");
     getLifeCycleLock().writeLock().lock();
+    logger.info("toberal obtained lock to stop gateway sender");
     try {
       if (!isRunning()) {
         return;
@@ -151,6 +153,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     } finally {
       getLifeCycleLock().writeLock().unlock();
     }
+    logger.info("toberal gateway sender stopped");
   }
 
   @Override
