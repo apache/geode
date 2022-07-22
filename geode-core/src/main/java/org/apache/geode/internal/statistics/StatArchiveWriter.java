@@ -506,8 +506,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       }
       writeTimeStamp(nanosTimeStamp);
       for (ResourceInstance ri : resourceInstances) {
-        ri.setStatValuesNotified(true);
         writeSample(ri);
+        ri.setPreviousStatArchiveValues(ri.getLatestStatArchiveValues());
       }
       writeResourceInst(ILLEGAL_RESOURCE_INST_ID);
       dataOut.flush();
@@ -555,7 +555,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       sampleWrittenForResources.add(ri);
     }
 
-    long[] previousStatValues = ri.getPreviousStatValues();
+    long[] previousStatValues = ri.getPreviousStatArchiveValues();
     if (isDebugEnabled_STATISTICS) {
       logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveWriter#writeSample checkForChange={}, previousStatValues={}, stats.length={}",
@@ -563,13 +563,13 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
     if (previousStatValues == null) {
       previousStatValues = new long[stats.length];
-      ri.setPreviousStatValues(previousStatValues);
+      ri.setPreviousStatArchiveValues(previousStatValues);
     }
 
     int statsWritten = 0;
     try {
       for (int i = 0; i < stats.length; i++) {
-        long value = ri.getLatestStatValues()[i];
+        long value = ri.getLatestStatArchiveValues()[i];
         if (!checkForChange || value != previousStatValues[i]) {
           long delta = checkForChange ? value - previousStatValues[i] : value;
           if (!wroteInstId) {
