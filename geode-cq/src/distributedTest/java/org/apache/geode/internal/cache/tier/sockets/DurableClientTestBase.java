@@ -35,6 +35,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -43,6 +44,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
@@ -115,48 +117,40 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   protected void preTearDownDurableClientTestBase() {}
 
 
-  void startupDurableClientAndServer(final int durableClientTimeout) {
+  void startupDurableClientAndServer(final int durableClientTimeout,
+      final boolean sendReadyForEvents) {
 
     server1Port = server1VM
         .invoke(() -> createCacheServer(regionName, Boolean.TRUE));
 
     durableClientId = getName() + "_client";
-    durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(), server1Port, true), regionName,
-        getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
-        Boolean.TRUE));
 
-    durableClientVM.invoke(() -> {
-      await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
-          .pollInterval(100, MILLISECONDS)
-          .until(CacheServerTestUtil::getCache, notNullValue());
-    });
-
-    // Send clientReady message
-    sendClientReady(durableClientVM);
+    startupDurableClient(durableClientTimeout, Boolean.TRUE, sendReadyForEvents);
     verifyDurableClientPresent(durableClientTimeout, durableClientId, server1VM);
-
   }
 
   // This exists so child classes can override the behavior and mock out network failures
   public void restartDurableClient(int durableClientTimeout, Pool clientPool,
       Boolean addControlListener) {
-    durableClientVM.invoke(() -> createCacheClient(clientPool, regionName,
-        getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
-        addControlListener));
-
-    durableClientVM.invoke(() -> {
-      await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
-          .pollInterval(100, MILLISECONDS)
-          .until(CacheServerTestUtil::getCache, notNullValue());
-    });
+    startupDurableClient(durableClientTimeout, clientPool, addControlListener, true);
   }
 
   // This exists so child classes can override the behavior and mock out network failures
   public void restartDurableClient(int durableClientTimeout, Boolean addControlListener) {
-    durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(), server1Port, true), regionName,
-        getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
+    startupDurableClient(durableClientTimeout, addControlListener, true);
+  }
+
+  public void restartDurableClient(int durableClientTimeout, Boolean addControlListener,
+      boolean readyForEvents) {
+    startupDurableClient(durableClientTimeout, addControlListener, readyForEvents);
+  }
+
+
+  void startupDurableClient(int durableClientTimeout, Pool clientPool,
+      Boolean addControlListener, final boolean sendReadyForEvents) {
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+        clientPool,
+        regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
         addControlListener));
 
     durableClientVM.invoke(() -> {
@@ -165,8 +159,17 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
           .until(CacheServerTestUtil::getCache, notNullValue());
     });
 
-    // Send clientReady message
-    sendClientReady(durableClientVM);
+    if (sendReadyForEvents) {
+      // Send clientReady message
+      sendClientReady(durableClientVM);
+    }
+  }
+
+  private void startupDurableClient(int durableClientTimeout, Boolean addControlListener,
+      boolean sendReadyForEvents) {
+    startupDurableClient(durableClientTimeout,
+        getClientPool(NetworkUtils.getServerHostName(), server1Port, true), addControlListener,
+        sendReadyForEvents);
   }
 
   void verifyDurableClientPresent(int durableClientTimeout, String durableClientId,
@@ -187,6 +190,19 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         CacheClientProxy proxy = getClientProxy();
         return proxy != null && durableClientId.equals(proxy.getDurableId());
       });
+    });
+  }
+
+  void verifyEntryPresentInCache(Map.Entry<String, String> expectedEntry) {
+    this.durableClientVM.invoke(() -> {
+      ClientCache clientCache = CacheServerTestUtil.getClientCache();
+      Region<String, String> region = clientCache.getRegion(regionName);
+
+      Map<String, String> entriesMap = new HashMap<>();
+      for (Map.Entry entry : region.entrySet()) {
+        entriesMap.put((String) entry.getKey(), (String) entry.getValue());
+      }
+      await().untilAsserted(() -> assertThat(entriesMap).contains(expectedEntry));
     });
   }
 
@@ -521,6 +537,30 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     }
   }
 
+
+  protected void registerInterestAll(VM vm, final String regionName, final boolean durable,
+      final InterestResultPolicy interestResultPolicy) {
+    vm.invoke(new CacheSerializableRunnable("Register interest on region : " + regionName) {
+      @Override
+      public void run2() throws CacheException {
+
+        Region<Object, Object> region = CacheServerTestUtil.getCache().getRegion(regionName);
+        assertThat(region).isNotNull();
+
+        // Register interest in all keys
+        region.registerInterestForAllKeys(interestResultPolicy, durable);
+      }
+    });
+
+    // This seems to be necessary for the queue to start up. Ideally should be replaced with
+    // Awaitility if possible.
+    try {
+      java.lang.Thread.sleep(5000);
+    } catch (java.lang.InterruptedException ex) {
+      fail("interrupted");
+    }
+  }
+
   void createCq(VM vm, final String cqName, final String cqQuery, final boolean durable) {
     vm.invoke("Register cq " + cqName, new CacheSerializableRunnable() {
       @Override
@@ -551,6 +591,18 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         }
 
         assertThat(region.get(String.valueOf(startingValue))).isNotNull();
+      }
+    });
+  }
+
+  void publishEntry(Map.Entry<String, String> entry) {
+    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entry") {
+      @Override
+      public void run2() throws CacheException {
+        Region<String, String> region = CacheServerTestUtil.getCache().getRegion(
+            regionName);
+        assertThat(region).isNotNull();
+        region.put(entry.getKey(), entry.getValue());
       }
     });
   }

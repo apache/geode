@@ -26,6 +26,8 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -62,7 +64,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
    */
   @Test
   public void testSimpleDurableClient() {
-    startupDurableClientAndServer(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT);
+    startupDurableClientAndServer(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT, true);
 
     // Stop the server
     server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
@@ -143,13 +145,113 @@ public class DurableClientTestCase extends DurableClientTestBase {
   }
 
   /**
+   * Test bug fix where all events received between registerInterests and readyForEvents are
+   * discarded by the client.
+   */
+  @Test
+  public void testEventsReceivedBetweenRegisterInterestsAndReadyForEventsAreStoredInClientCache() {
+    Map.Entry<String, String> entry = new AbstractMap.SimpleEntry<>("1", "1");
+
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS, false);
+
+    registerInterest(this.durableClientVM, regionName, true, InterestResultPolicy.NONE);
+
+    // Start normal publisher client
+    this.publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+        getClientPool(NetworkUtils.getServerHostName(), server1Port,
+            false),
+        regionName));
+
+    publishEntry(entry);
+
+    // Wait until queue count is 1 on server1VM
+    waitUntilQueueContainsRequiredNumberOfEvents(this.server1VM, 1);
+
+    sendClientReady(durableClientVM);
+
+    // Wait until queue count is 0 on server1VM
+    waitUntilQueueContainsRequiredNumberOfEvents(this.server1VM, 0);
+
+    // Verify the durable client received the updates
+    this.checkListenerEvents(1, 1, -1, this.durableClientVM);
+
+    verifyEntryPresentInCache(entry);
+
+    // Stop the durable client
+    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+    // Stop the server
+    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+  }
+
+  @Test
+  public void testEventsConflictResolution() throws InterruptedException {
+    Map.Entry<String, String> entryOld = new AbstractMap.SimpleEntry<>("1", "1");
+    Map.Entry<String, String> entryNew = new AbstractMap.SimpleEntry<>("1", "2");
+
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS, false);
+
+    registerInterestAll(this.durableClientVM, regionName, true, InterestResultPolicy.KEYS_VALUES);
+
+    // Start normal publisher client
+    this.publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+        getClientPool(NetworkUtils.getServerHostName(), server1Port,
+            false),
+        regionName));
+
+    // Publish some entries
+    publishEntry(entryOld);
+    publishEntry(entryNew);
+
+    // Wait until queue count is 0 on server1VM
+    waitUntilQueueContainsRequiredNumberOfEvents(this.server1VM, 2);
+
+    // Stop the durable client
+    this.disconnectDurableClient(true);
+
+    // Re-start the durable client
+    this.restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE, false);
+
+    // Verify durable client on server
+    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
+
+    // Start normal publisher client
+    this.publisherClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+        getClientPool(NetworkUtils.getServerHostName(), server1Port,
+            false),
+        regionName));
+
+    registerInterestAll(this.durableClientVM, regionName, true, InterestResultPolicy.KEYS_VALUES);
+
+    // register interest will fetch current state of servers cache
+    verifyEntryPresentInCache(entryNew);
+
+    sendClientReady(durableClientVM);
+
+    // Wait until queue count is 1 on server1VM
+    waitUntilQueueContainsRequiredNumberOfEvents(this.server1VM, 0);
+
+    // Verify the durable client received the updates
+    this.checkListenerEvents(1, 1, -1, this.durableClientVM);
+
+    // verify that old events do not overwrite the new ones
+    verifyEntryPresentInCache(entryNew);
+
+    // Stop the durable client
+    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+    // Stop the server
+    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+  }
+
+  /**
    * Test that starting, stopping then restarting a durable client is correctly processed by the
    * server.
    */
   @Test
   public void testStartStopStartDurableClient() {
 
-    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS);
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS, true);
 
     // Stop the durable client
     disconnectDurableClient(true);
@@ -175,7 +277,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
    */
   @Test
   public void test39630() {
-    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS);
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS, true);
 
     // Stop the durable client
     disconnectDurableClient(true);
@@ -209,7 +311,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
   public void testStartStopTimeoutDurableClient() {
 
     final int durableClientTimeout = 5;
-    startupDurableClientAndServer(durableClientTimeout);
+    startupDurableClientAndServer(durableClientTimeout, true);
 
     // Stop the durable client
     disconnectDurableClient(true);
@@ -239,7 +341,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
    */
   @Test
   public void testDurableClientPrimaryUpdate() {
-    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS);
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS, true);
 
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
@@ -299,7 +401,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
    */
   @Test
   public void testStartStopStartDurableClientUpdate() {
-    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS);
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS, true);
     // Have the durable client register interest in all keys
     registerInterest(durableClientVM, regionName, true, InterestResultPolicy.NONE);
 
