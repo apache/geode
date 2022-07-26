@@ -347,7 +347,19 @@ public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase 
     vm2.invoke(() -> validateRegionSizeRemainsSame(getUniqueName() + "_PR", 100));
   }
 
-  // This test case failed most of the times (timeout) before the fix was added.
+  /**
+   * Verifies that no distributed deadlock occurs when stopping a gateway sender while receiving
+   * traffic.
+   * The distributed deadlock may occur when the gateway sender tries to get the
+   * size of the gateway sender queue (sending a size message to other members) while holding the
+   * lifeCycleLock lock. This lock is also taken when an event is to be distributed by the gateway
+   * sender.
+   * As this issue has only been observed in the field with a lot of traffic, in order to reproduce
+   * it in a test case, conserve-sockets is set to true (although the deadlock has also
+   * been seen with conserve-sockets=false), the size of the PartitionedRegion thread pool is set
+   * to a small value and an artificial timeout is added at a point in the distribute() call
+   * of the AbstractGatewaySeder class.
+   */
   @Test
   public void testNoDistributedDeadlockWithGatewaySenderStop() throws Exception {
     addIgnoredException("Broken pipe");
@@ -368,42 +380,32 @@ public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase 
       // make sure all the senders are running before doing any puts
       waitForSendersRunning();
 
-      final int MAX_ITER = 1;
-      for (int i = 0; i < MAX_ITER; i++) {
-        AsyncInvocation[] invocations = new AsyncInvocation[senders.length * 2];
-        System.out.println("toberal starting iteration: " + i);
-        for (int j = 0; j < senders.length; j++) {
-          invocations[j * 2] = senders[j].invokeAsync(() -> doPuts(getUniqueName() + "_PR", 100));
-          invocations[(j * 2) + 1] =
-              senders[j].invokeAsync(() -> doPuts(getUniqueName() + "_PR", 100));
-        }
-
-        // Wait for some elements to be replicated before stopping the senders
-        for (int j = 0; j < senders.length; j++) {
-          senders[j].invoke(() -> await()
-              .untilAsserted(() -> assertThat(getSenderStats("ln", -1).get(3)).isGreaterThan(1)));
-        }
-
-        stopSendersAsync();
-        System.out.println("toberal senders stopped i: " + i);
-
-        for (int j = 0; j < invocations.length; j++) {
-          invocations[j].await();
-        }
-
-        System.out.println("toberal puts finished");
-        if (i < MAX_ITER) {
-          startSenders();
-          System.out.println("toberal senders started: " + i);
+      // Send a fairly big amount of operations to provoke the deadlock
+      int invocationsPerServer = 4;
+      AsyncInvocation[] invocations = new AsyncInvocation[senders.length * invocationsPerServer];
+      for (int i = 0; i < senders.length; i++) {
+        for (int j = 0; j < invocationsPerServer; j++) {
+          invocations[i + (j * invocationsPerServer)] =
+              senders[i].invokeAsync(() -> doPuts(getUniqueName() + "_PR", 100));
         }
       }
+
+      // Wait for some elements to be replicated before stopping the senders
+      for (int i = 0; i < senders.length; i++) {
+        senders[i].invoke(() -> await()
+            .untilAsserted(() -> assertThat(getSenderStats("ln", -1).get(3)).isGreaterThan(1)));
+      }
+
+      stopSendersAsync();
+      for (int i = 0; i < invocations.length; i++) {
+        invocations[i].await();
+      }
     } finally {
-      for (int j = 0; j < senders.length; j++) {
-        senders[j].invoke(() -> AbstractGatewaySender.doSleepForTestingInDistribute.set(false));
+      for (int i = 0; i < senders.length; i++) {
+        senders[i].invoke(() -> AbstractGatewaySender.doSleepForTestingInDistribute.set(false));
       }
     }
   }
-
 
   /**
    * Normal scenario in which a sender is stopped and then started again.
@@ -1652,17 +1654,7 @@ public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase 
     inv2.await();
     inv3.await();
     inv4.await();
-
   }
-
-
-  private void startSenders() {
-    vm4.invoke(() -> startSender("ln"));
-    vm5.invoke(() -> startSender("ln"));
-    vm6.invoke(() -> startSender("ln"));
-    vm7.invoke(() -> startSender("ln"));
-  }
-
 
   private void waitForSendersRunning() {
     vm4.invoke(() -> waitForSenderRunningState("ln"));
