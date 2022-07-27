@@ -1081,11 +1081,12 @@ public class ClusterDistributionManager implements DistributionManager {
         handleConsoleStartup(member);
         break;
       case LOCATOR_DM_TYPE:
+        stats.setNodes(getDistributionManagerIds().size());
         addMemberEvent(new MemberJoinedEvent(member));
         break;
       case NORMAL_DM_TYPE:
         // Note test is under membersLock
-        stats.setNodes(getNormalDistributionManagerIds().size());
+        stats.setNodes(getDistributionManagerIds().size());
         addMemberEvent(new MemberJoinedEvent(member));
         break;
       default:
@@ -1916,7 +1917,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
     logger.info(msg, new Object[] {theId, prettifyReason(reason)});
     executors.handleManagerDeparture(theId);
-    stats.setNodes(getNormalDistributionManagerIds().size());
+    stats.setNodes(getDistributionManagerIds().size());
   }
 
   private void handleManagerSuspect(InternalDistributedMember suspect,
