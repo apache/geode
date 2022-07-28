@@ -46,8 +46,8 @@ public class DistributionStatsNodesDistributedTest {
 
   @Test
   public void testNodesStatistic() {
-    // Verify DistributionStats nodes is 1
-    server.invoke(() -> verifyNodesStatistic(1));
+    // Verify DistributionStats nodes is 2
+    server.invoke(() -> verifyNodesStatistic(2));
   }
 
   @Test
@@ -56,12 +56,12 @@ public class DistributionStatsNodesDistributedTest {
 
     DistributionManager distributionManager = internalCache.getDistributionManager();
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
-    assertThat(distributionStats.getNodes()).isEqualTo(2);
+    assertThat(distributionStats.getNodes()).isEqualTo(3);
 
     server.invoke(() -> ClusterStartupRule.getCache().getDistributionManager().getDistribution()
         .disconnect(false));
 
-    assertThat(distributionStats.getNodes()).isEqualTo(1);
+    assertThat(distributionStats.getNodes()).isEqualTo(2);
   }
 
   @Test
@@ -71,12 +71,12 @@ public class DistributionStatsNodesDistributedTest {
 
     DistributionManager distributionManager = internalCache.getDistributionManager();
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
-    assertThat(distributionStats.getNodes()).isEqualTo(2);
+    assertThat(distributionStats.getNodes()).isEqualTo(3);
 
     server.stop();
     cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
 
-    assertThat(distributionStats.getNodes()).isEqualTo(2);
+    assertThat(distributionStats.getNodes()).isEqualTo(3);
   }
 
   @Test
@@ -86,14 +86,14 @@ public class DistributionStatsNodesDistributedTest {
 
     DistributionManager distributionManager = internalCache.getDistributionManager();
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
-    assertThat(distributionStats.getNodes()).isEqualTo(2);
+    assertThat(distributionStats.getNodes()).isEqualTo(3);
 
     VM server2VM = VM.getVM(2);
     server2VM.invoke(() -> {
       InternalCache internalCache3 = createCache(locatorPort);
       DistributionManager distributionManager3 = internalCache3.getDistributionManager();
       DistributionStats distributionStats3 = (DistributionStats) distributionManager3.getStats();
-      assertThat(distributionStats3.getNodes()).isEqualTo(3);
+      assertThat(distributionStats3.getNodes()).isEqualTo(4);
     });
 
     // Verify DistributionStats nodes is updated
@@ -101,7 +101,7 @@ public class DistributionStatsNodesDistributedTest {
       InternalCache internalCache2 = ClusterStartupRule.getCache();
       DistributionManager distributionManager2 = internalCache2.getDistributionManager();
       DistributionStats distributionStats2 = (DistributionStats) distributionManager2.getStats();
-      assertThat(distributionStats2.getNodes()).isEqualTo(3);
+      assertThat(distributionStats2.getNodes()).isEqualTo(4);
     });
   }
 
