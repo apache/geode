@@ -59,6 +59,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterOperationExecutors;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -344,6 +345,66 @@ public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase 
     // verify region size remains on remote vm and is restricted below a specified limit (number of
     // puts in the first run)
     vm2.invoke(() -> validateRegionSizeRemainsSame(getUniqueName() + "_PR", 100));
+  }
+
+  /**
+   * Verifies that no distributed deadlock occurs when stopping a gateway sender while receiving
+   * traffic.
+   * The distributed deadlock may occur when the gateway sender tries to get the
+   * size of the gateway sender queue (sending a size message to other members) while holding the
+   * lifeCycleLock lock. This lock is also taken when an event is to be distributed by the gateway
+   * sender.
+   * As this issue has only been observed in the field with a lot of traffic, in order to reproduce
+   * it in a test case, conserve-sockets is set to true (although the deadlock has also
+   * been seen with conserve-sockets=false), the size of the PartitionedRegion thread pool is set
+   * to a small value and an artificial timeout is added at a point in the distribute() call
+   * of the AbstractGatewaySeder class.
+   */
+  @Test
+  public void testNoDistributedDeadlockWithGatewaySenderStop() throws Exception {
+    addIgnoredException("Broken pipe");
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+    VM[] senders = {vm4, vm5, vm6, vm7};
+    try {
+      for (VM sender : senders) {
+        sender.invoke(() -> AbstractGatewaySender.doSleepForTestingInDistribute.set(true));
+        sender.invoke(() -> ClusterOperationExecutors.maxPrThreadsForTest.set(2));
+      }
+      vm2.invoke(() -> ClusterOperationExecutors.maxPrThreadsForTest.set(2));
+      vm3.invoke(() -> ClusterOperationExecutors.maxPrThreadsForTest.set(2));
+
+      createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, true, true);
+
+      // make sure all the senders are running before doing any puts
+      waitForSendersRunning();
+
+      // Send a fairly big amount of operations to provoke the deadlock
+      int invocationsPerServer = 4;
+      AsyncInvocation[] invocations = new AsyncInvocation[senders.length * invocationsPerServer];
+      for (int i = 0; i < senders.length; i++) {
+        for (int j = 0; j < invocationsPerServer; j++) {
+          invocations[i + (j * invocationsPerServer)] =
+              senders[i].invokeAsync(() -> doPuts(getUniqueName() + "_PR", 100));
+        }
+      }
+
+      // Wait for some elements to be replicated before stopping the senders
+      for (int i = 0; i < senders.length; i++) {
+        senders[i].invoke(() -> await()
+            .untilAsserted(() -> assertThat(getSenderStats("ln", -1).get(3)).isGreaterThan(1)));
+      }
+
+      stopSendersAsync();
+      for (int i = 0; i < invocations.length; i++) {
+        invocations[i].await();
+      }
+    } finally {
+      for (int i = 0; i < senders.length; i++) {
+        senders[i].invoke(() -> AbstractGatewaySender.doSleepForTestingInDistribute.set(false));
+      }
+    }
   }
 
   /**
@@ -1271,7 +1332,13 @@ public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase 
 
   private void createSendersReceiversAndPartitionedRegion(Integer lnPort, Integer nyPort,
       boolean createAccessors, boolean startSenders) {
-    createSendersAndReceivers(lnPort, nyPort);
+    createSendersReceiversAndPartitionedRegion(lnPort, nyPort, createAccessors, startSenders,
+        false);
+  }
+
+  private void createSendersReceiversAndPartitionedRegion(Integer lnPort, Integer nyPort,
+      boolean createAccessors, boolean startSenders, boolean conserveSockets) {
+    createSendersAndReceivers(lnPort, nyPort, conserveSockets);
 
     createPartitionedRegions(createAccessors);
 
@@ -1280,11 +1347,11 @@ public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase 
     }
   }
 
-  private void createSendersAndReceivers(Integer lnPort, Integer nyPort) {
-    createCacheInVMs(nyPort, vm2, vm3);
+  private void createSendersAndReceivers(Integer lnPort, Integer nyPort, boolean conserveSockets) {
+    createCacheConserveSocketsInVMs(conserveSockets, nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
-    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+    createCacheConserveSocketsInVMs(conserveSockets, lnPort, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
     vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
@@ -1576,6 +1643,17 @@ public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase 
     vm5.invoke(() -> stopSender("ln"));
     vm6.invoke(() -> stopSender("ln"));
     vm7.invoke(() -> stopSender("ln"));
+  }
+
+  private void stopSendersAsync() throws InterruptedException {
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> stopSender("ln"));
+    AsyncInvocation inv2 = vm5.invokeAsync(() -> stopSender("ln"));
+    AsyncInvocation inv3 = vm6.invokeAsync(() -> stopSender("ln"));
+    AsyncInvocation inv4 = vm7.invokeAsync(() -> stopSender("ln"));
+    inv1.await();
+    inv2.await();
+    inv3.await();
+    inv4.await();
   }
 
   private void waitForSendersRunning() {

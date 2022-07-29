@@ -917,6 +917,13 @@ public class WANTestBase extends DistributedTestCase {
     createCache(true, locPort);
   }
 
+  public static void createCacheConserveSocketsInVMs(Boolean conserveSockets, Integer locPort,
+      VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> createCacheConserveSockets(conserveSockets, locPort));
+    }
+  }
+
   public static void createCacheConserveSockets(Boolean conserveSockets, Integer locPort) {
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
