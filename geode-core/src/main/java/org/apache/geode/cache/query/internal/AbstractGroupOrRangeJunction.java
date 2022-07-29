@@ -264,6 +264,15 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     List sortedConditionsList =
         getCondtionsSortedOnIncreasingEstimatedIndexResultSize(context);
 
+    Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
+
+    boolean modifiedApplyLimits = false;
+    if (applyLimit != null && applyLimit && sortedConditionsList.size() > 1
+        && _operator == LITERAL_and) {
+      context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, Boolean.FALSE);
+      modifiedApplyLimits = true;
+    }
+
     // Sort the operands in increasing order of resultset size
     Iterator i = sortedConditionsList.iterator();
     // SortedSet intersectionSet = new TreeSet(new SelectResultsComparator());
@@ -285,6 +294,12 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       // RangeJunction or a CompiledComparison. But if the parent Object is a
       // RangeJunction then the Filter is a RangeJunctionEvaluator
       SelectResults filterResults = null;
+
+      if (modifiedApplyLimits && sortedConditionsList.size() == 1) {
+        context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, Boolean.TRUE);
+        modifiedApplyLimits = false;
+      }
+
       Filter filter = (Filter) i.next();
       boolean isConditioningNeeded = filter.isConditioningNeededForIndex(
           indpndntItr.length == 1 ? indpndntItr[0] : null, context,
