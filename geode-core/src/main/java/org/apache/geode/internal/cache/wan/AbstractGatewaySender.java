@@ -238,6 +238,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean enforceThreadsConnectSameReceiver;
 
+  private boolean shadowRegionCreated = false;
+
   protected AbstractGatewaySender() {
     statisticsClock = disabledClock();
   }
@@ -1544,6 +1546,14 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   public String getExpectedReceiverUniqueId() {
     return expectedReceiverUniqueId;
+  }
+
+  public void setShadowRegionCreated() {
+    this.shadowRegionCreated = true;
+  }
+
+  public boolean isShadowRegionCreated() {
+    return this.shadowRegionCreated;
   }
 
   /**

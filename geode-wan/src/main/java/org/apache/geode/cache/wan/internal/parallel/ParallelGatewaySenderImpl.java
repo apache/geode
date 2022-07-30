@@ -125,6 +125,11 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       if (!isRunning()) {
         return;
       }
+
+      if (!isShadowRegionCreated()) {
+        return;
+      }
+
       // Stop the dispatcher
       stopProcessing();
 
