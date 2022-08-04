@@ -45,10 +45,13 @@ import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import org.apache.geode.internal.cache.DiskRegionStats;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager.MemberRevocationListener;
 import org.apache.geode.internal.cache.persistence.PersistentStateQueryMessage.PersistentStateQueryReplyProcessor;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -542,8 +545,22 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         if (copyOfReplicates == null) {
           copyOfReplicates = new HashSet<>(replicates);
         }
+
+        boolean gwRegion = false;
+
+        if (cacheDistributionAdvisor instanceof BucketAdvisor) {
+          BucketAdvisor ba = (BucketAdvisor) cacheDistributionAdvisor;
+          if (ba.getAdvisee() instanceof ProxyBucketRegion) {
+            ProxyBucketRegion pbr = (ProxyBucketRegion) ba.getAdvisee();
+            PartitionedRegion pr = pbr.getPartitionedRegion();
+            if (pr != null) {
+              gwRegion = pr.isShadowPR();
+            }
+          }
+        }
+
         copyOfReplicates.remove(member);
-        if (copyOfReplicates.isEmpty()) {
+        if (copyOfReplicates.isEmpty() && !gwRegion) {
           throw new ConflictingPersistentDataException(message);
         } else {
           logger.info(message);
