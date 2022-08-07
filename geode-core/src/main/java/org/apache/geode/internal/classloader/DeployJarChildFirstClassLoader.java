@@ -70,6 +70,13 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
       for (DeployJarChildFirstClassLoader sibling : artifactIdsToClassLoader.values().stream()
           .filter(Objects::nonNull).collect(Collectors.toList())) {
         try {
+          if (sibling.thisIsOld()) {
+            continue;
+          }
+          c = sibling.findLoadedClass(name);
+          if (c != null) {
+            break;
+          }
           c = sibling.findClass(name);
           if (c != null) {
             break;
