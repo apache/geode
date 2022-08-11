@@ -52,6 +52,8 @@ public class JarDeployerIntegrationTest {
   private static File plainJarVersion1, plainJarVersion1b, plainJarVersion2, semanticJarVersion1,
       semanticJarVersion2, semanticJarVersion1b, semanticJarVersion1c;
 
+  private static File baseJar;
+
   private File deployedDir;
 
   @BeforeClass
@@ -74,6 +76,10 @@ public class JarDeployerIntegrationTest {
     jarBuilder.buildJar(semanticJarVersion1b, createClassContent("version1b", "Def"));
     semanticJarVersion1c = new File(stagedTempDir.newFolder("v1c"), "def.jar");
     jarBuilder.buildJar(semanticJarVersion1c, createClassContent("version1c", "Def"));
+
+    baseJar = new File(stagedDir, "base.jar");
+    jarBuilder.buildJar(baseJar, create1ClassContent("ExceptionA"),
+        create2ClassContent("ExceptionB", "ExceptionA"));
   }
 
   @Before
@@ -202,6 +208,26 @@ public class JarDeployerIntegrationTest {
         .isInstanceOf(ClassNotFoundException.class);
   }
 
+  @Test
+  public void deploybaseJar() throws Exception {
+
+    // deploy abc-1.0.jar
+    // deploy base.jar
+    jarDeployer.deploy(plainJarVersion1b);
+    jarDeployer.deploy(semanticJarVersion1);
+    DeployedJar deployedJar = jarDeployer.deploy(baseJar);
+
+    assertThat(deployedJar).isNotNull();
+
+    ClassPathLoader oldLoader = ClassPathLoader.getLatest();
+
+    ClassLoader cl = oldLoader.getClassloaderForArtifact("def");
+    cl.loadClass("jddunit.function2.ExceptionB");
+    cl.loadClass("jddunit.function1.ExceptionA");
+
+  }
+
+
   private String getVersion(String classname) throws Exception {
     Class<?> def = ClassPathLoader.getLatest().forName(classname);
     assertThat(def).isNotNull();
@@ -216,4 +242,27 @@ public class JarDeployerIntegrationTest {
         + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
         + version + "\");}}";
   }
+
+  private static String create1ClassContent(String functionName1) {
+    return "package jddunit.function1;"
+        + "public class "
+        + functionName1 + " extends Exception {"
+        + "private static final long serialVersionUID = 1L;"
+        + "public " + functionName1 + "(String message) {"
+        + "  super(message);"
+        + "}"
+        + "}";
+  }
+
+  private static String create2ClassContent(String functionName1, String functionName2) {
+    return "package jddunit.function2;" + "import jddunit.function1." + functionName2 + ";"
+        + "public class "
+        + functionName1 + " extends " + functionName2 + " {"
+        + "private static final long serialVersionUID = 1L;"
+        + "public " + functionName1 + "(String message) {"
+        + "  super(message);"
+        + "}"
+        + "}";
+  }
+
 }
