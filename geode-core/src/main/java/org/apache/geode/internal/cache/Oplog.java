@@ -2303,6 +2303,7 @@ public class Oplog implements CompactableOplog, Flushable {
     int b = di.readByte();
     if (b != END_OF_RECORD_ID) {
       if (b == 0) {
+        parent.setDataCorrupted(true);
         logger.warn(
             "Detected a partial record in oplog file. Partial records can be caused by an abnormal shutdown in which case this warning can be safely ignored. They can also be caused by the oplog file being corrupted.");
 

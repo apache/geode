@@ -383,6 +383,8 @@ public class DiskStoreImpl implements DiskStore {
 
   private volatile Future<?> lastDelayedWrite;
 
+  private boolean dataCorrupted;
+
   private static int calcCompactionThreshold(int ct) {
     if (ct == DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD) {
       // allow the old sys prop for backwards compat.
@@ -447,6 +449,8 @@ public class DiskStoreImpl implements DiskStore {
     stats = new DiskStoreStats(statisticsFactory, getName());
 
     // start simple init
+
+    this.dataCorrupted = false;
 
     isCompactionPossible = isOfflineCompacting() || (!isOffline()
         && (getAutoCompact() || getAllowForceCompaction() || ENABLE_NOTIFY_TO_ROLL));
@@ -4738,5 +4742,13 @@ public class DiskStoreImpl implements DiskStore {
       return ManagementConstants.NOT_AVAILABLE_FLOAT;
     }
     return (100 - getDiskUsagePercentage());
+  }
+
+  public boolean isDataCorrupted() {
+    return dataCorrupted;
+  }
+
+  public void setDataCorrupted(boolean data) {
+    dataCorrupted = data;
   }
 }

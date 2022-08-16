@@ -458,6 +458,12 @@ public class InitialImageOperation {
                   MAXIMUM_UNFINISHED_OPERATIONS);
             }
             m.versionVector = null;
+
+          } else if (region.getDiskStore() != null && region.getDiskStore().isDataCorrupted()) {
+            if (isDebugEnabled) {
+              logger.debug("Data corrupted, do full GII instead");
+            }
+            m.versionVector = null;
           } else {
             if (recoveredRVV.isNewerThanOrCanFillExceptionsFor(remote_rvv)) {
               m.versionVector = null;
