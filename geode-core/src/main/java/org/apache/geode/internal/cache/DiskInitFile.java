@@ -1410,9 +1410,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         boolean success = false;
         try {
           // create the new file
-          openRAF();
+          openRAF(true);
           // fill the new file with data
           writeLiveData();
+
+          ifRAF.close();
+          openRAF(false);
           success = true;
 
           // delete the old file
@@ -1423,6 +1426,10 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         } catch (DiskAccessException e) {
           if (logger.isDebugEnabled()) {
             logger.debug("Exception compacting init file {}", this, e);
+          }
+        } catch (IOException e) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Exception when closing init file {}", this, e);
           }
         } finally {
           if (!success) {
@@ -1440,7 +1447,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
                   "could not rename file " + tmpFile + " to " + ifFile, parent);
             }
             // reopen the old file since we couldn't write the new one
-            openRAF();
+            openRAF(false);
             // reset the counts to 0 so we will try a compaction again
             // in the future but not right away.
             ifLiveRecordCount = 0;
@@ -1449,7 +1456,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       } else {
         // reopen the old file since we couldn't rename it
-        openRAF();
+        openRAF(false);
         // reset the counts to 0 so we will try a compaction again
         // in the future but not right away.
         ifLiveRecordCount = 0;
@@ -1461,14 +1468,14 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
-  private void openRAF() {
+  private void openRAF(boolean isCompaction) {
     if (DiskStoreImpl.PREALLOCATE_IF) {
-      openRAF2();
+      openRAF2(isCompaction);
       return;
     }
 
     try {
-      ifRAF = new RandomAccessFile(ifFile, getFileMode());
+      ifRAF = new RandomAccessFile(ifFile, isCompaction ? getCompactionFileMode() : getFileMode());
       long len = ifRAF.length();
       if (len != 0) {
         ifRAF.seek(len);
@@ -1484,9 +1491,13 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     return DiskStoreImpl.SYNC_IF_WRITES ? "rwd" : "rw";
   }
 
-  private void openRAF2() {
+  protected String getCompactionFileMode() {
+    return DiskStoreImpl.SYNC_IF_COMPACTION_WRITES ? "rwd" : "rw";
+  }
+
+  private void openRAF2(boolean isCompaction) {
     try {
-      ifRAF = new RandomAccessFile(ifFile, getFileMode());
+      ifRAF = new RandomAccessFile(ifFile, isCompaction ? getCompactionFileMode() : getFileMode());
       long len = ifRAF.length();
       if (len != 0) {
         // this.ifRAF.seek(len);
@@ -1810,7 +1821,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         && !this.parent.isOfflineModify()) {
       dump();
     }
-    openRAF();
+    openRAF(false);
     if (!this.parent.isOffline() || this.parent.isOfflineCompacting()) {
       if (didNotExist) {
         this.parent.setDiskStoreID(DiskStoreID.random());
