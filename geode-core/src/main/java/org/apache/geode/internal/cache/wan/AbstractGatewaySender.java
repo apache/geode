@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
@@ -237,6 +238,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   private final StatisticsClock statisticsClock;
 
   protected boolean enforceThreadsConnectSameReceiver;
+
+  @MutableForTesting
+  public static final AtomicBoolean doSleepForTestingInDistribute = new AtomicBoolean(false);
 
   protected AbstractGatewaySender() {
     statisticsClock = disabledClock();
@@ -1122,16 +1126,17 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
 
       // If this gateway is not running, return
-      if (!isRunning()) {
-        if (isPrimary()) {
-          recordDroppedEvent(clonedEvent);
-        }
-        if (isDebugEnabled) {
-          logger.debug("Returning back without putting into the gateway sender queue:" + event);
-        }
+      if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
         return;
       }
 
+      if (AbstractGatewaySender.doSleepForTestingInDistribute.get()) {
+        try {
+          Thread.sleep(5);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
       if (!getLifeCycleLock().readLock().tryLock()) {
         synchronized (queuedEventsSync) {
           if (!enqueuedAllTempQueueEvents) {
@@ -1148,19 +1153,22 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           }
         }
         if (enqueuedAllTempQueueEvents) {
-          getLifeCycleLock().readLock().lock();
+          try {
+            while (!getLifeCycleLock().readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
+              if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
+                return;
+              }
+            }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+          }
         }
       }
       try {
         // If this gateway is not running, return
         // The sender may have stopped, after we have checked the status in the beginning.
-        if (!isRunning()) {
-          if (isDebugEnabled) {
-            logger.debug("Returning back without putting into the gateway sender queue:" + event);
-          }
-          if (isPrimary()) {
-            recordDroppedEvent(clonedEvent);
-          }
+        if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
           return;
         }
 
@@ -1203,6 +1211,20 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.release(); // fix for bug 48035
       }
     }
+  }
+
+  private boolean getIsRunningAndDropEventIfNotRunning(EntryEventImpl event, boolean isDebugEnabled,
+      EntryEventImpl clonedEvent) {
+    if (isRunning()) {
+      return true;
+    }
+    if (isPrimary()) {
+      recordDroppedEvent(clonedEvent);
+    }
+    if (isDebugEnabled) {
+      logger.debug("Returning back without putting into the gateway sender queue:" + event);
+    }
+    return false;
   }
 
   private void recordDroppedEvent(EntryEventImpl event) {

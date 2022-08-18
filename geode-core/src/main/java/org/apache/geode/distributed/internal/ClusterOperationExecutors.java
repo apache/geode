@@ -25,12 +25,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
@@ -167,6 +169,8 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
   private SerialQueuedExecutorPool serialQueuedExecutorPool;
 
+  @MutableForTesting
+  public static final AtomicInteger maxPrThreadsForTest = new AtomicInteger(-1);
 
   ClusterOperationExecutors(DistributionStats stats,
       InternalDistributedSystem system) {
@@ -252,10 +256,11 @@ public class ClusterOperationExecutors implements OperationExecutors {
             this::doWaitingThread, stats.getWaitingPoolHelper(),
             threadMonitor);
 
-    if (MAX_PR_THREADS > 1) {
+    int maxPrThreads = maxPrThreadsForTest.get() > 0 ? maxPrThreadsForTest.get() : MAX_PR_THREADS;
+    if (maxPrThreads > 1) {
       partitionedRegionPool =
           CoreLoggingExecutors.newThreadPoolWithFeedStatistics(
-              MAX_PR_THREADS, INCOMING_QUEUE_LIMIT, stats.getPartitionedRegionQueueHelper(),
+              maxPrThreads, INCOMING_QUEUE_LIMIT, stats.getPartitionedRegionQueueHelper(),
               "PartitionedRegion Message Processor",
               thread -> stats.incPartitionedRegionThreadStarts(), this::doPartitionRegionThread,
               stats.getPartitionedRegionPoolHelper(),
