@@ -209,7 +209,7 @@ public class JarDeployerIntegrationTest {
   }
 
   @Test
-  public void deploybaseJar() throws Exception {
+  public void deploy3JarsSetCurrentClassloaderTo2ndAndLoadClassFrom3rd() throws Exception {
 
     // deploy abc-1.0.jar
     // deploy base.jar
@@ -221,9 +221,10 @@ public class JarDeployerIntegrationTest {
 
     ClassPathLoader oldLoader = ClassPathLoader.getLatest();
 
-    ClassLoader cl = oldLoader.getClassloaderForArtifact("def");
-    cl.loadClass("jddunit.function2.ExceptionB");
-    cl.loadClass("jddunit.function1.ExceptionA");
+    ClassLoader cl = oldLoader.getClassloaderForArtifact("def"); // set current classloader to 2nd
+
+    cl.loadClass("jddunit.function2.ExceptionB"); // load extended class and base class
+    cl.loadClass("jddunit.function1.ExceptionA"); // load base class
 
   }
 
