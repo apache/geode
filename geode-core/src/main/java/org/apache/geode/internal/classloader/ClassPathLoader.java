@@ -196,4 +196,10 @@ public class ClassPathLoader {
   public JarDeploymentService getJarDeploymentService() {
     return jarDeploymentService;
   }
+
+  public ClassLoader getClassloaderForArtifact(String artifactId) {
+    return classPathService.getClassloaderForArtifact(artifactId);
+  }
+
+
 }

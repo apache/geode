@@ -55,4 +55,7 @@ public interface ClasspathService {
   InputStream getResourceAsStream(final String name);
 
   Enumeration<URL> getResources(final String name) throws IOException;
+
+  ClassLoader getClassloaderForArtifact(String artifactId);
+
 }

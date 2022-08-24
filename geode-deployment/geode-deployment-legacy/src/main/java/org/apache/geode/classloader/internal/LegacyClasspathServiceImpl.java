@@ -247,6 +247,10 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
     return null;
   }
 
+  public ClassLoader getClassloaderForArtifact(String artifactId) {
+    return artifactIdsToClassLoader.get(artifactId);
+  }
+
   private synchronized void rebuildClassLoaderForDeployedJars() {
     leafLoader = null;
     List<Deployment> deployments = jarDeploymentService.listDeployed();
