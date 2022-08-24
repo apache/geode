@@ -212,18 +212,23 @@ public class JarDeployerIntegrationTest {
   public void deploy2JarsSetCurrentClassloaderTo1stAndLoadClassFrom2nd() throws Exception {
 
     // deploy def-1.0.jar
-    // deploy base.jar
     jarDeployer.deploy(semanticJarVersion1);
+
+    // deploy base.jar
     DeployedJar deployedJar = jarDeployer.deploy(baseJar);
 
     assertThat(deployedJar).isNotNull();
 
     ClassPathLoader oldLoader = ClassPathLoader.getLatest();
 
-    ClassLoader cl = oldLoader.getClassloaderForArtifact("def"); // set current classloader to 1st
+    // set current classloader to 1st
+    ClassLoader cl = oldLoader.getClassloaderForArtifact("def");
 
-    cl.loadClass("jddunit.function2.ExceptionB"); // load extended class and base class
-    cl.loadClass("jddunit.function1.ExceptionA"); // load base class
+    // load extended class and base class
+    cl.loadClass("jddunit.function2.ExceptionB");
+
+    // load base class
+    cl.loadClass("jddunit.function1.ExceptionA");
 
   }
 
@@ -243,23 +248,23 @@ public class JarDeployerIntegrationTest {
         + version + "\");}}";
   }
 
-  private static String create1ClassContent(String functionName1) {
+  private static String create1ClassContent(String className1) {
     return "package jddunit.function1;"
         + "public class "
-        + functionName1 + " extends Exception {"
+        + className1 + " extends Exception {"
         + "private static final long serialVersionUID = 1L;"
-        + "public " + functionName1 + "(String message) {"
+        + "public " + className1 + "(String message) {"
         + "  super(message);"
         + "}"
         + "}";
   }
 
-  private static String create2ClassContent(String functionName1, String functionName2) {
-    return "package jddunit.function2;" + "import jddunit.function1." + functionName2 + ";"
+  private static String create2ClassContent(String className1, String className2) {
+    return "package jddunit.function2;" + "import jddunit.function1." + className2 + ";"
         + "public class "
-        + functionName1 + " extends " + functionName2 + " {"
+        + className1 + " extends " + className2 + " {"
         + "private static final long serialVersionUID = 1L;"
-        + "public " + functionName1 + "(String message) {"
+        + "public " + className1 + "(String message) {"
         + "  super(message);"
         + "}"
         + "}";
