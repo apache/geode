@@ -13,12 +13,6 @@
  * the License.
  *
  */
-/**
- * This test class contains automated tests for Pulse application related to 1. Different grid data
- * validations for example - Topology, Server Group, Redundancy Zone 2. Data Browser 3.
- *
- * @since GemFire 2014-04-02
- */
 package org.apache.geode.tools.pulse.tests.ui;
 
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.assertMemberSortingByCpuUsage;
@@ -59,13 +53,16 @@ import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.verifyElement
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.verifyTextPresrntById;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.verifyTextPresrntByXpath;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.waitForElementWithId;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -84,6 +81,12 @@ import org.apache.geode.tools.pulse.tests.rules.ScreenshotOnFailureRule;
 import org.apache.geode.tools.pulse.tests.rules.ServerRule;
 import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 
+/**
+ * This test class contains automated tests for Pulse application related to 1. Different grid data
+ * validations for example - Topology, Server Group, Redundancy Zone 2. Data Browser 3.
+ *
+ * @since GemFire 2014-04-02
+ */
 public class PulseAutomatedTest extends PulseBase {
 
   @ClassRule
@@ -851,7 +854,7 @@ public class PulseAutomatedTest extends PulseBase {
     clickElementUsingXpath(PulseTestLocators.DataBrowser.btnClearXpath);
     String editorTextAfterClear = getTextUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId);
 
-    assertFalse(PulseTestData.DataBrowser.query1Text.equals(editorTextAfterClear));
+    assertNotEquals(PulseTestData.DataBrowser.query1Text, editorTextAfterClear);
   }
 
   @Ignore("WIP") // Data Browser's Query History not showing any data on button click, therefore
@@ -892,10 +895,50 @@ public class PulseAutomatedTest extends PulseBase {
     System.out.println("Query Text from History Table: " + queryText);
     System.out.println("Query Time from History Table: " + historyDateTime);
     // verify the query text, query datetime in history panel
-    assertTrue(DataBrowserResultLoader.QUERY_TYPE_ONE.equals(queryText));
-    assertTrue(historyDateTime.contains(queryTime[0]));
-
+    assertThat(queryText).isEqualTo(DataBrowserResultLoader.QUERY_TYPE_ONE);
+    assertThat(historyDateTime).contains(queryTime[0]);
   }
 
+  @Test
+  public void testDataBrowserHTMLEncode() {
+    // navigate to Data browser page
+    loadDataBrowserpage();
 
+    WebDriver driver = webDriverRule.getDriver();
+    List<WebElement> numOfReg = driver
+        .findElements(By.xpath(PulseTestLocators.DataBrowser.divDataRegions));
+
+    for (int i = 1; i <= numOfReg.size(); i++) {
+      if (getTextUsingId("treeDemo_" + i + "_span").equals(PulseTestData.DataBrowser.regName)) {
+        searchByIdAndClick("treeDemo_" + i + "_check"); // driver.findElement(By.id("treeDemo_" + i
+        // + "_check")).click();
+      }
+    }
+
+    sendKeysUsingId(PulseTestLocators.DataBrowser.queryEditorTxtBoxId,
+        DataBrowserResultLoader.QUERY_TYPE_EIGHT);
+    clickElementUsingId(PulseTestLocators.DataBrowser.btnExecuteQueryId);
+
+    clickElementUsingId(PulseTestLocators.DataBrowser.historyIcon);
+    String queryText = findElementByXpath(PulseTestLocators.DataBrowser.historyLst)
+        .findElement(By.cssSelector(PulseTestLocators.DataBrowser.queryText)).getText();
+
+    assertThat(queryText).isEqualTo(DataBrowserResultLoader.QUERY_TYPE_EIGHT);
+
+    List<WebElement> elements =
+        driver.findElements(By.xpath(PulseTestData.DataBrowser.resultClusterHeadingsXPath));
+    List<WebElement> filteredElements = elements.stream().filter(webElement -> webElement.getText()
+        .equals("org.apache.geode.cache.query.data.Portfolio")).collect(
+        Collectors.toList());
+    List<WebElement> finalElements = filteredElements.stream().map(webElement -> {
+      webElement.click();
+      return webElement.findElements(By.xpath(PulseTestData.DataBrowser.resultClusterCellXPath));
+    }).flatMap(Collection::stream).collect(Collectors.toList());
+
+    // confirm script text is displayed
+    assertThat(finalElements).hasSize(2);
+    finalElements.forEach(webElement -> {
+      assertThat(webElement.getAttribute("title")).isEqualTo("<script>alert('xss')</script>");
+    });
+  }
 }

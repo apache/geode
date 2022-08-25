@@ -94,6 +94,9 @@ public class PulseTestData {
     public static final String partialRgnName = "R";
     public static final String chkRgnClassName = "bttn chk checkbox_true_full";
     public static final String notChkRgnClassName = "bttn chk checkbox_false_full";
+    public static final String resultClusterHeadingsXPath = "//div[@id='clusterDetails']/div/div";
+    public static final String resultClusterCellXPath =
+        "//tr/td[contains(@title, '<script>alert')]";
 
     public static final String regName = "R1";
     public static final String query1Text = "select * from " + SEPARATOR + "R1";
@@ -101,6 +104,4 @@ public class PulseTestData {
     public static final String datePattern = "EEE, MMM dd yyyy, HH:mm:ss z";
 
   }
-
-
 }

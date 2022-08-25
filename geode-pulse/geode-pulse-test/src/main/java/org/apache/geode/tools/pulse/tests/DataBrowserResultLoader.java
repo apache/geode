@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 public class DataBrowserResultLoader {
   /* Constants for executing Data Browser queries */
@@ -33,7 +34,8 @@ public class DataBrowserResultLoader {
   public static final String QUERY_TYPE_FOUR = "query4";
   public static final String QUERY_TYPE_FIVE = "query5";
   public static final String QUERY_TYPE_SIX = "query6";
-  public static final String QUERY_TYPE_SEVENE = "query7";
+  public static final String QUERY_TYPE_SEVEN = "query7";
+  public static final String QUERY_TYPE_EIGHT = "query8";
 
   private static final DataBrowserResultLoader dbResultLoader = new DataBrowserResultLoader();
 
@@ -43,41 +45,46 @@ public class DataBrowserResultLoader {
 
   public String load(String queryString) throws IOException {
 
-    URL url = null;
-    InputStream inputStream = null;
-    BufferedReader streamReader = null;
-    String inputStr = null;
-    StringBuilder sampleQueryResultResponseStrBuilder = null;
+    String fileName;
+    String fileContent = "";
 
     try {
-      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-      if (queryString.equals(QUERY_TYPE_ONE)) {
-        url = classLoader.getResource("testQueryResultClusterSmall.txt");
-      } else if (queryString.equals(QUERY_TYPE_TWO)) {
-        url = classLoader.getResource("testQueryResultSmall.txt");
-      } else if (queryString.equals(QUERY_TYPE_THREE)) {
-        url = classLoader.getResource("testQueryResult.txt");
-      } else if (queryString.equals(QUERY_TYPE_FOUR)) {
-        url = classLoader.getResource("testQueryResultWithStructSmall.txt");
-      } else if (queryString.equals(QUERY_TYPE_FIVE)) {
-        url = classLoader.getResource("testQueryResultClusterWithStruct.txt");
-      } else if (queryString.equals(QUERY_TYPE_SIX)) {
-        url = classLoader.getResource("testQueryResultHashMapSmall.txt");
-      } else if (queryString.equals(QUERY_TYPE_SEVENE)) {
-        url = classLoader.getResource("testQueryResult1000.txt");
-      } else {
-        url = classLoader.getResource("testQueryResult.txt");
+      switch (queryString) {
+        case QUERY_TYPE_ONE:
+          fileName = "testQueryResultClusterSmall.txt";
+          break;
+        case QUERY_TYPE_TWO:
+          fileName = "testQueryResultSmall.txt";
+          break;
+        case QUERY_TYPE_THREE:
+          fileName = "testQueryResult.txt";
+          break;
+        case QUERY_TYPE_FOUR:
+          fileName = "testQueryResultWithStructSmall.txt";
+          break;
+        case QUERY_TYPE_FIVE:
+          fileName = "testQueryResultClusterWithStruct.txt";
+          break;
+        case QUERY_TYPE_SIX:
+          fileName = "testQueryResultHashMapSmall.txt";
+          break;
+        case QUERY_TYPE_SEVEN:
+          fileName = "testQueryResult1000.txt";
+          break;
+        case QUERY_TYPE_EIGHT:
+          fileName = "testQueryResultClusterSmallJSInject.txt";
+          break;
+        default:
+          fileName = "testQueryResult.txt";
+          break;
       }
 
-      File sampleQueryResultFile = new File(url.getPath());
-      inputStream = new FileInputStream(sampleQueryResultFile);
-      streamReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-      sampleQueryResultResponseStrBuilder = new StringBuilder();
-
-      while ((inputStr = streamReader.readLine()) != null) {
-        sampleQueryResultResponseStrBuilder.append(inputStr);
-      }
+      InputStream inputStream = getClass().getResourceAsStream("/" + fileName);
+      assert inputStream != null;
+      BufferedReader streamReader =
+          new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+      fileContent = streamReader.lines().collect(Collectors.joining(System.lineSeparator()));
 
       // close stream reader
       streamReader.close();
@@ -86,6 +93,6 @@ public class DataBrowserResultLoader {
       ex.printStackTrace();
     }
 
-    return sampleQueryResultResponseStrBuilder.toString();
+    return fileContent;
   }
 }
