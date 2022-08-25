@@ -929,7 +929,7 @@ public class PulseAutomatedTest extends PulseBase {
         driver.findElements(By.xpath(PulseTestData.DataBrowser.resultClusterHeadingsXPath));
     List<WebElement> filteredElements = elements.stream().filter(webElement -> webElement.getText()
         .equals("org.apache.geode.cache.query.data.Portfolio")).collect(
-        Collectors.toList());
+            Collectors.toList());
     List<WebElement> finalElements = filteredElements.stream().map(webElement -> {
       webElement.click();
       return webElement.findElements(By.xpath(PulseTestData.DataBrowser.resultClusterCellXPath));
