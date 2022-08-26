@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,7 +41,9 @@ public class TombstoneServiceTest {
   DistributedRegion region;
   VersionTag destroyedVersion;
   private TombstoneService.ReplicateTombstoneSweeper replicateTombstoneSweeper;
-  private TombstoneService.Tombstone tombstone;
+  private TombstoneService.Tombstone tombstone1;
+
+  private TombstoneService.Tombstone tombstone2;
 
 
   @Before
@@ -55,8 +58,9 @@ public class TombstoneServiceTest {
     destroyedVersion = mock(VersionTag.class);
     replicateTombstoneSweeper = new TombstoneService.ReplicateTombstoneSweeper(cacheTime, stats,
         cancelCriterion, executor);
-    tombstone = new TombstoneService.Tombstone(entry, region, destroyedVersion);
-    tombstone.entry = entry;
+    tombstone1 = new TombstoneService.Tombstone(entry, region, destroyedVersion);
+    tombstone2 = new TombstoneService.Tombstone(entry, region, destroyedVersion);
+    tombstone1.entry = entry;
   }
 
   @Test
@@ -64,9 +68,9 @@ public class TombstoneServiceTest {
     when(region.isInitialized()).thenReturn(false);
     when(region.getRegionMap()).thenReturn(regionMap);
 
-    replicateTombstoneSweeper.expireTombstone(tombstone);
+    replicateTombstoneSweeper.expireTombstone(tombstone1);
     replicateTombstoneSweeper.expireBatch();
-    verify(regionMap, Mockito.never()).removeTombstone(tombstone.entry, tombstone);
+    verify(regionMap, Mockito.never()).removeTombstone(tombstone1.entry, tombstone1);
   }
 
   @Test
@@ -80,8 +84,37 @@ public class TombstoneServiceTest {
     when(region.getDiskRegion()).thenReturn(mock(DiskRegion.class));
 
 
-    replicateTombstoneSweeper.expireTombstone(tombstone);
+    replicateTombstoneSweeper.expireTombstone(tombstone1);
     replicateTombstoneSweeper.expireBatch();
-    verify(regionMap).removeTombstone(tombstone.entry, tombstone);
+    verify(regionMap).removeTombstone(tombstone1.entry, tombstone1);
   }
+
+  @Test
+  public void validateThatTheExpiredTombstonesAreCleared() {
+    when(region.getRegionMap()).thenReturn(regionMap);
+    replicateTombstoneSweeper.expireTombstone(tombstone1);
+    assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isOne();
+    replicateTombstoneSweeper.unscheduleTombstones(region);
+    assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isZero();
+  }
+
+  @Test
+  public void validateThatTheNoneExpiredTombstonesAreCleared() {
+    when(region.getRegionMap()).thenReturn(regionMap);
+    replicateTombstoneSweeper.scheduleTombstone(tombstone1);
+    assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isOne();
+    replicateTombstoneSweeper.unscheduleTombstones(region);
+    assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isZero();
+  }
+
+  @Test
+  public void validateThatTheNoneExpiredAndExpiredTombstonesAreCleared() {
+    when(region.getRegionMap()).thenReturn(regionMap);
+    replicateTombstoneSweeper.scheduleTombstone(tombstone1);
+    replicateTombstoneSweeper.expireTombstone(tombstone2);
+    assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isEqualTo(2);
+    replicateTombstoneSweeper.unscheduleTombstones(region);
+    assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isZero();
+  }
+
 }
