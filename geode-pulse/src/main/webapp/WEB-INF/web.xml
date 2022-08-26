@@ -51,6 +51,14 @@
     <param-name>spring.profiles.default</param-name>
     <param-value>pulse.authentication.default</param-value>
   </context-param>
+
+  <session-config>
+    <cookie-config>
+      <http-only>true</http-only>
+      <comment>__SAME_SITE_STRICT__</comment>
+    </cookie-config>
+  </session-config>
+
   <filter>
     <filter-name>springSecurityFilterChain</filter-name>
     <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
