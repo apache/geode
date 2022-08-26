@@ -21,25 +21,25 @@
 // updateQueryHistory()
 function updateQueryHistory(action,queryId) {
   
-  requestData = {
-    action:action,
-    queryId:queryId
+  let requestData = {
+    action: action,
+    queryId: queryId
   };
 
   $.getJSON("dataBrowserQueryHistory", requestData, function(data) {
-    
-    var queries = new Array();
-    if(data.queryHistory != undefined && data.queryHistory != null){
+
+    let queries = [];
+    if(data.queryHistory !== undefined && data.queryHistory != null){
       queries = data.queryHistory;
     }
-    var refHistoryConatiner = $("#detailsHistoryList");
-    var queryListHTML = "";
-    if(queries.length == 0){
+    const refHistoryContainer = $("#detailsHistoryList");
+    let queryListHTML = "";
+    if(queries.length === 0){
       // no queries found
       queryListHTML = "No Query Found";
     }else{
       queries.sort(dynamicSort("queryId", "desc"));
-      for(var i=0; i<queries.length && i<20; i++){
+      for(let i=0; i < queries.length && i < 20; i++){
         // add query item
         queryListHTML += "" +
           "<div class=\"container\">" +
@@ -50,7 +50,7 @@ function updateQueryHistory(action,queryId) {
               "<div class=\"remove\">" +
                 "<a href=\"#\" onclick=\"updateQueryHistory('delete','"+ queries[i].queryId +"');\">&nbsp;</a>" +
               "</div>" +
-              "<div class=\"wrapHistoryContent\"  ondblclick=\"queryHistoryItemClicked(this);\">" + queries[i].queryText +
+              "<div class=\"wrapHistoryContent\"  ondblclick=\"queryHistoryItemClicked(this);\">" + queries[i].queryText.replaceAll("\"", "") +
               "</div>" +
               "<div class=\"dateTimeHistory\">" + queries[i].queryDateTime +
               "</div>" +
@@ -59,7 +59,7 @@ function updateQueryHistory(action,queryId) {
       }
     }
     
-    refHistoryConatiner.html(queryListHTML);
+    refHistoryContainer.html(queryListHTML);
     //$('.queryHistoryScroll-pane').jScrollPane();/*Custome scroll*/    
 
     // Set eventsAdded = false as list is refreshed and slide events 
@@ -73,13 +73,13 @@ function updateQueryHistory(action,queryId) {
 // This function displays error if occurred 
 function resErrHandler(data){
   // Check for unauthorized access
-  if (data.status == 401) {
+  if (data.status === 401) {
     // redirect user on Login Page
     window.location.href = "login.html?error=UNAUTH_ACCESS";
   }else{
     console.log(data);
   }
-};
+}
 
 // This function is called when any query from history list is double clicked 
 function queryHistoryItemClicked(divElement){
