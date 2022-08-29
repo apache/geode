@@ -302,8 +302,8 @@ public class PartitionedRegionRebalanceOp {
     // anywhere I think. We need to make sure we don't do a rebalance unless we have
     // all of the colocated regions others do.
     Map<String, PartitionedRegion> colocatedRegionsMap =
-        ColocationHelper.getAllColocationRegions(targetRegion);
-    colocatedRegionsMap.put(targetRegion.getFullPath(), targetRegion);
+        ColocationHelper.getAllColocationRegions(leaderRegion);
+    colocatedRegionsMap.put(leaderRegion.getFullPath(), leaderRegion);
     final LinkedList<PartitionedRegion> colocatedRegions = new LinkedList<>();
     for (PartitionedRegion colocatedRegion : colocatedRegionsMap.values()) {
 
