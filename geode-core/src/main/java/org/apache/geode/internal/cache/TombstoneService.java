@@ -926,7 +926,11 @@ public class TombstoneService {
      * @return true if predicate ever returned true
      */
     private boolean removeIf(Predicate<Tombstone> predicate) {
-      return removeUnexpiredIf(predicate) || removeExpiredIf(predicate);
+      boolean isTombstoneRemoved = removeUnexpiredIf(predicate);
+      if (removeExpiredIf(predicate)) {
+        isTombstoneRemoved = true;
+      }
+      return isTombstoneRemoved;
     }
 
     synchronized void start() {
