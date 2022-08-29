@@ -68,10 +68,10 @@ function executeDBQuery(){
   }
   
   // Determine selected members query to be execute on 
-  if($("#membersList").html() != ""){
+  if($("#membersList").html() !== ""){
     var selectedMembers = $( "input[type=checkbox][name=Member]:checked" );
     for(var i=0; i< selectedMembers.length; i++){
-      if(selectedMemberNames == ""){
+      if(selectedMemberNames === ""){
         selectedMemberNames = selectedMembers[i].value;
       }else{
         selectedMemberNames += ","+selectedMembers[i].value;
@@ -169,7 +169,7 @@ function executeDBQuery(){
 
   }).error(resErrHandler);
   
-  return;
+
 }
 
 // This function displays error if occurred 
@@ -181,7 +181,7 @@ function resErrHandler(data){
   }else{
     console.log(data);
   }
-};
+}
 
 // This function creates complete result panel html
 function createHtmlForQueryResults(){
@@ -458,8 +458,8 @@ function createResultGrid(member, memberResultObject){
   }*/
   
   // Determine table columns
-  var columnName = new Array();
-  var columnModel = new Array();
+  var columnName = [];
+  var columnModel = [];
   for(var cnt=0; cnt<objectResults.length; cnt++){
     for(key in objectResults[cnt]){
       if(-1 == columnName.indexOf(key)){
@@ -803,14 +803,14 @@ function formDataForPopUpGrid(data){
 //Function for converting raw response into expected format
 function convertRawResponseToExpectedFormat(rawResponeData){
   
-  if(rawResponeData == null || rawResponeData == undefined){
+  if(rawResponeData === null || rawResponeData === undefined){
     return;
   }
   
   var finalResponseData = {};
-  var finalResponseResults = new Array();
+  var finalResponseResults = [];
   
-  if(rawResponeData.result != null || rawResponeData.result != undefined){
+  if(rawResponeData.result != null || rawResponeData.result !== undefined){
     var rawResponeDataResult = rawResponeData.result;
     
     for(var i=0; i<rawResponeDataResult.length; i++){
@@ -821,7 +821,7 @@ function convertRawResponseToExpectedFormat(rawResponeData){
             finalResponseResults = convertToExpectedObjectsFormat(rawResponeDataResult, "");
             break;
             
-          }else if(rawResponeDataResult[i].member != null && rawResponeDataResult[i].member != undefined){
+          }else if(rawResponeDataResult[i].member != null && rawResponeDataResult[i].member !== undefined){
             
             var responseForMember = {};
             responseForMember.member = rawResponeDataResult[i].member[0];
@@ -842,31 +842,25 @@ function convertRawResponseToExpectedFormat(rawResponeData){
 
 // Function for converting raw response into expected object wise results format
 function convertToExpectedObjectsFormat(rawResponseResult, prefixForId){
-  
-  var expResponseResult = new Array();
-  
-  if(rawResponseResult != null && rawResponseResult != undefined ){
+
+  let entry;
+  let objectResults;
+  const expResponseResult = [];
+
+  if(rawResponseResult != null ){
     
-    for(var i=0; i< rawResponseResult.length; i++){
+    for(let i=0; i < rawResponseResult.length; i++){
       if(rawResponseResult[i] != null){
         
         if(expResponseResult.length > 0){
           // search expected object type in expResponseResult
-          var flagObjectFound = false;
-          for(var j=0 ; j < expResponseResult.length ; j++){
-            if(expResponseResult[j].objectType == rawResponseResult[i][0]){
+          let flagObjectFound = false;
+          for(let j=0 ; j < expResponseResult.length ; j++){
+            if(expResponseResult[j].objectType === rawResponseResult[i][0]){
               // required object found
               flagObjectFound = true;
-              var objectResults = expResponseResult[j].objectResults;
-              var type = rawResponseResult[i][0];
-              var entry = rawResponseResult[i][1];
-
-              // if entry is not object then convert it into object
-              if(typeof(entry) != "object" ){
-                var entryObj = {};
-                entryObj[type] = rawResponseResult[i][1];
-                entry = entryObj;
-              }
+              objectResults = expResponseResult[j].objectResults;
+              entry = htmlEncodeEntry(rawResponseResult[i]);
 
               // add unique id for new entry
               entry.uid = generateEntryUID(prefixForId, expResponseResult[j].objectType, objectResults.length);
@@ -875,62 +869,65 @@ function convertToExpectedObjectsFormat(rawResponseResult, prefixForId){
               break;
             }
           }
-          
-          if(!flagObjectFound){  // required object not found in expResponseResult 
-            
-            var objectResults = new Array();
-            var type = rawResponseResult[i][0];
-            var entry = rawResponseResult[i][1];
-
-            // if entry is not object then convert it into object
-            if(typeof(entry) != "object" ){
-              var entryObj = {};
-              entryObj[type] = rawResponseResult[i][1];
-              entry = entryObj;
-            }
-
-            // add unique id for new entry
-            entry.uid = generateEntryUID(prefixForId, type, objectResults.length);
-            
-            objectResults.push(entry);
-            
-            var newResultObject = {};
-            newResultObject.objectType = type;
-            newResultObject.objectResults = objectResults;
-            
-            expResponseResult.push(newResultObject);
+          if(!flagObjectFound){  // required object not found in expResponseResult
+            expResponseResult.push(addToExpResponseResult(rawResponseResult[i], prefixForId));
           }
-          
         }else{  // expResponseResult is empty
-          
-          var objectResults = new Array();
-          var type = rawResponseResult[i][0];
-          var entry = rawResponseResult[i][1];
-
-          // if entry is not object then convert it into object
-          if(typeof(entry) != "object" ){
-            var entryObj = {};
-            entryObj[type] = rawResponseResult[i][1];
-            entry = entryObj;
-          }
-
-          // add unique id for new entry
-          entry.uid = generateEntryUID(prefixForId, type, objectResults.length);
-          
-          objectResults.push(entry);
-          
-          var newResultObject = {};
-          newResultObject.objectType = type;
-          newResultObject.objectResults = objectResults;
-          
-          expResponseResult.push(newResultObject);
+          expResponseResult.push(addToExpResponseResult(rawResponseResult[i], prefixForId));
         }
-        
       }
     }
   }
-  
+
   return expResponseResult;
+}
+
+// Add results to the expected responseResults
+function addToExpResponseResult(rawResponseResultEntry, prefixForId) {
+  let objectResults = [];
+  let type = rawResponseResultEntry[0];
+  let entry = htmlEncodeEntry(rawResponseResultEntry, prefixForId);
+
+  // add unique id for new entry
+  entry.uid = generateEntryUID(prefixForId, type, objectResults.length);
+
+  objectResults.push(entry);
+
+  let newResultObject = {};
+  newResultObject.objectType = type;
+  newResultObject.objectResults = objectResults;
+
+  return newResultObject;
+}
+
+// Ensure that strings are HTML encoded to reduce likelihood of XSS attacks
+function htmlEncodeEntry(rawResponseResultEntry, prefixForId) {
+  let type = htmlEncodeStringsAndObjects(rawResponseResultEntry[0]);
+  let entry = rawResponseResultEntry[1];
+
+  let entryObj = {};
+
+  // if entry is not object then convert it into object
+  if(typeof(entry) == "object" ){
+    entryObj = htmlEncodeStringsAndObjects(entry);
+  } else {
+    entryObj[type] = htmlEncodeStringsAndObjects(entry)
+  }
+
+  return entryObj;
+}
+
+function htmlEncodeStringsAndObjects(raw) {
+  switch(typeof(raw)) {
+    case "string":
+      return $('<pre/>').text(raw).html();
+    case "object":
+      let objectAsString = JSON.stringify(raw);
+      objectAsString = $('<pre/>').text(objectAsString).html();
+      return JSON.parse(objectAsString);
+    default:
+      return raw
+  }
 }
 
 // Function to generate unique idetifier for entry
