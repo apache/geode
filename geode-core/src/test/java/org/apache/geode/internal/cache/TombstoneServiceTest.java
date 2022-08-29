@@ -99,7 +99,7 @@ public class TombstoneServiceTest {
   }
 
   @Test
-  public void validateThatTheNoneExpiredTombstonesAreCleared() {
+  public void validateThatTheNonExpiredTombstonesAreCleared() {
     when(region.getRegionMap()).thenReturn(regionMap);
     replicateTombstoneSweeper.scheduleTombstone(tombstone1);
     assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isOne();
@@ -108,7 +108,7 @@ public class TombstoneServiceTest {
   }
 
   @Test
-  public void validateThatTheNoneExpiredAndExpiredTombstonesAreCleared() {
+  public void validateThatTheNonExpiredAndExpiredTombstonesAreCleared() {
     when(region.getRegionMap()).thenReturn(regionMap);
     replicateTombstoneSweeper.scheduleTombstone(tombstone1);
     replicateTombstoneSweeper.expireTombstone(tombstone2);
@@ -116,5 +116,4 @@ public class TombstoneServiceTest {
     replicateTombstoneSweeper.unscheduleTombstones(region);
     assertThat(replicateTombstoneSweeper.getScheduledTombstoneCount()).isZero();
   }
-
 }
