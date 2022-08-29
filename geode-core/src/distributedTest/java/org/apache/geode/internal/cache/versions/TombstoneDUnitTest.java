@@ -14,11 +14,13 @@
  */
 package org.apache.geode.internal.cache.versions;
 
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType.DuringApplyDelta;
 import static org.apache.geode.internal.cache.InitialImageOperation.resetAllGIITestHooks;
+import static org.apache.geode.internal.cache.TombstoneService.EXPIRED_TOMBSTONE_LIMIT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -121,6 +123,35 @@ public class TombstoneDUnitTest implements Serializable {
     });
   }
 
+  @Test
+  public void testTombstoneExpiredAndNonExpiredAreClearedAfterRegionIsDestroyed() {
+    VM vm0 = VM.getVM(0);
+
+    vm0.invoke(() -> {
+      // reduce timeout so that tombstone is immediately marked as expired
+      TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT = 100;
+      createCacheAndRegion(PARTITION_PERSISTENT);
+      region.put("K1", "V1");
+      region.destroy("K1");
+    });
+
+    vm0.invoke(() -> {
+      waitForScheduledTombstoneCount(0);
+      // increase timeout so that next tombstone doesn't expire
+      TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT = 150000;
+      region.put("K1", "V1");
+      region.destroy("K1");
+
+      region.destroyRegion();
+      // force expiry of batch - there is only one expired tombstone at this moment
+      EXPIRED_TOMBSTONE_LIMIT = 1;
+    });
+
+    vm0.invoke(() -> {
+      createCacheAndRegion(PARTITION_PERSISTENT);
+      checkExpiredTombstones(0);
+    });
+  }
 
   @Test
   public void testWhenAnOutOfRangeTimeStampIsSeenWeExpireItInReplicateTombstoneSweeper() {
@@ -560,6 +591,17 @@ public class TombstoneDUnitTest implements Serializable {
     } catch (Exception e) {
       // The caller to throw exception with proper message.
     }
+  }
+
+  private void waitForScheduledTombstoneCount(int count) {
+    LocalRegion region = (LocalRegion) cache.getRegion(REGION_NAME);
+    await().until(() -> ((InternalCache) cache).getTombstoneService().getSweeper(region).tombstones
+        .size() == count);
+  }
+
+  private void checkExpiredTombstones(int count) {
+    await().until(
+        () -> ((InternalCache) cache).getTombstoneService().getScheduledTombstoneCount() == count);
   }
 
   private void performGC(int count) throws Exception {
