@@ -131,26 +131,23 @@ class MemberRollup extends Member {
 
   @Override
   public RefusalReason willAcceptBucket(Bucket bucket, Member source, boolean checkIPAddress) {
-    RefusalReason reason = super.willAcceptBucket(bucket, source, checkIPAddress);
-    if (reason.willAccept()) {
-      BucketRollup bucketRollup = (BucketRollup) bucket;
-      MemberRollup sourceRollup = (MemberRollup) source;
-      for (Map.Entry<String, Member> entry : getColocatedMembers().entrySet()) {
-        String region = entry.getKey();
-        Member member = entry.getValue();
-        Bucket colocatedBucket = bucketRollup.getColocatedBuckets().get(region);
-        Member colocatedSource =
-            sourceRollup == null ? null : sourceRollup.getColocatedMembers().get(region);
-        if (colocatedBucket != null) {
-          reason = member.willAcceptBucket(colocatedBucket, colocatedSource, checkIPAddress);
-          if (!reason.willAccept()) {
-            return reason;
-          }
+    RefusalReason reason;
+    BucketRollup bucketRollup = (BucketRollup) bucket;
+    MemberRollup sourceRollup = (MemberRollup) source;
+    for (Map.Entry<String, Member> entry : getColocatedMembers().entrySet()) {
+      String region = entry.getKey();
+      Member member = entry.getValue();
+      Bucket colocatedBucket = bucketRollup.getColocatedBuckets().get(region);
+      Member colocatedSource =
+          sourceRollup == null ? null : sourceRollup.getColocatedMembers().get(region);
+      if (colocatedBucket != null) {
+        reason = member.willAcceptBucket(colocatedBucket, colocatedSource, checkIPAddress);
+        if (!reason.willAccept()) {
+          return reason;
         }
       }
-      return RefusalReason.NONE;
     }
-    return reason;
+    return RefusalReason.NONE;
   }
 
   Map<String, Member> getColocatedMembers() {
