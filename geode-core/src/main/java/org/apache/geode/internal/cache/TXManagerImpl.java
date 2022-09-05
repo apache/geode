@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
 import org.apache.logging.log4j.Logger;
@@ -88,7 +89,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   private final ThreadLocal<Boolean> pauseJTA;
 
   @MakeNotStatic
-  private static TXManagerImpl currentInstance = null;
+  private static final AtomicReference<TXManagerImpl> currentInstance = new AtomicReference<>();
 
   // The unique transaction ID for this Manager
   private final AtomicInteger uniqId;
@@ -202,16 +203,16 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     isTXDistributed = new ThreadLocal<>();
     transactionTimeToLive = Integer
         .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
-    currentInstance = this;
+    currentInstance.set(this);
     this.statisticsClock = statisticsClock;
   }
 
   public static TXManagerImpl getCurrentInstanceForTest() {
-    return currentInstance;
+    return currentInstance.get();
   }
 
   public static void setCurrentInstanceForTest(TXManagerImpl instance) {
-    currentInstance = instance;
+    currentInstance.set(instance);
   }
 
   InternalCache getCache() {
@@ -687,6 +688,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     for (final TransactionListener listener : listeners) {
       closeListener(listener);
     }
+    TXManagerImpl instance = currentInstance.get();
+    if (instance != null) {
+      currentInstance.set(null);
+    }
   }
 
   private void closeListener(TransactionListener tl) {
@@ -855,17 +860,19 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   public static int getCurrentTXUniqueId() {
-    if (currentInstance == null) {
+    TXManagerImpl instance = currentInstance.get();
+    if (instance == null) {
       return NOTX;
     }
-    return currentInstance.getMyTXUniqueId();
+    return instance.getMyTXUniqueId();
   }
 
   public static TXStateProxy getCurrentTXState() {
-    if (currentInstance == null) {
+    TXManagerImpl instance = currentInstance.get();
+    if (instance == null) {
       return null;
     }
-    return currentInstance.getTXState();
+    return instance.getTXState();
   }
 
   public int getMyTXUniqueId() {
@@ -1633,7 +1640,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
     @Override
     public void run2() {
-      TXManagerImpl mgr = TXManagerImpl.currentInstance;
+      TXManagerImpl mgr = TXManagerImpl.currentInstance.get();
+      if (mgr == null) {
+        return;
+      }
       TXStateProxy tx = mgr.suspendedTXs.remove(txId);
       if (tx != null) {
         try {
@@ -1781,7 +1791,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       };
 
   public static void incRefCount(AbstractRegionEntry re) {
-    TXManagerImpl mgr = currentInstance;
+    TXManagerImpl mgr = currentInstance.get();
     if (mgr != null) {
       mgr.refCountMap.create(re, incCallback, null, null, true);
     }
@@ -1791,7 +1801,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * Return true if refCount went to zero.
    */
   public static boolean decRefCount(AbstractRegionEntry re) {
-    TXManagerImpl mgr = currentInstance;
+    TXManagerImpl mgr = currentInstance.get();
     if (mgr != null) {
       return mgr.refCountMap.removeConditionally(re, decCallback, null, null) != null;
     } else {
