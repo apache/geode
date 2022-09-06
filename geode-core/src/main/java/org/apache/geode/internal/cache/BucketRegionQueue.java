@@ -484,6 +484,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       List<Object> elementsMatching = new ArrayList<>();
       for (final Object key : eventSeqNumDeque) {
         Object object = optimalGet(key);
+        if (object == null) {
+          continue;
+        }
+
         if (matchingPredicate.test(object)) {
           elementsMatching.add(object);
           eventSeqNumDeque.remove(key);

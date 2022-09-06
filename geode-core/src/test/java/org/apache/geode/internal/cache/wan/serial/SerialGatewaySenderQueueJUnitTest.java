@@ -218,22 +218,21 @@ public class SerialGatewaySenderQueueJUnitTest {
     List<AsyncEvent<?, ?>> peeked = queue.peek(3, -1);
     assertEquals(4, peeked.size());
     assertThat(queue.getLastPeekedId()).isEqualTo(2);
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
-
+    assertThat(queue.getExtraPeekedIds()).contains(5L);
 
     for (Object ignored : peeked) {
       queue.remove();
     }
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
+    assertThat(queue.getExtraPeekedIds()).contains(5L);
 
     peeked = queue.peek(3, -1);
     assertEquals(3, peeked.size());
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
+    assertThat(queue.getExtraPeekedIds()).contains(5L);
 
     for (Object ignored : peeked) {
       queue.remove();
     }
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isFalse();
+    assertThat(queue.getExtraPeekedIds()).doesNotContain(5L);
   }
 
   private GatewaySenderEventImpl createMockGatewaySenderEventImpl(int transactionId,
