@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -111,9 +110,9 @@ public class SerialGatewaySenderQueueJUnitTest {
     queue.setGroupTransactionEvents(true);
 
     List<AsyncEvent<?, ?>> peeked = queue.peek(3, 100);
-    assertEquals(4, peeked.size());
+    assertThat(peeked.size()).isEqualTo(4);
     List<AsyncEvent<?, ?>> peekedAfter = queue.peek(3, 100);
-    assertEquals(3, peekedAfter.size());
+    assertThat(peekedAfter.size()).isEqualTo(3);
   }
 
   @Test
@@ -146,7 +145,7 @@ public class SerialGatewaySenderQueueJUnitTest {
             .when(queue).getElementsMatching(any(), any(), anyLong());
 
     List<AsyncEvent<?, ?>> peeked = queue.peek(-1, 1);
-    assertEquals(4, peeked.size());
+    assertThat(peeked.size()).isEqualTo(4);
   }
 
   @Test
@@ -155,11 +154,11 @@ public class SerialGatewaySenderQueueJUnitTest {
         QUEUE_REGION, metaRegionFactory);
 
     List<AsyncEvent<?, ?>> peeked = queue.peek(3, 100);
-    assertEquals(3, peeked.size());
+    assertThat(peeked.size()).isEqualTo(3);
     List<AsyncEvent<?, ?>> peekedAfter = queue.peek(3, 100);
-    assertEquals(3, peekedAfter.size());
+    assertThat(peekedAfter.size()).isEqualTo(3);
     peekedAfter = queue.peek(1, 100);
-    assertEquals(1, peekedAfter.size());
+    assertThat(peekedAfter.size()).isEqualTo(1);
   }
 
   @Test
@@ -192,7 +191,7 @@ public class SerialGatewaySenderQueueJUnitTest {
             .when(queue).getElementsMatching(any(), any(), anyLong());
 
     List<AsyncEvent<?, ?>> peeked = queue.peek(-1, 1);
-    assertEquals(3, peeked.size());
+    assertThat(peeked.size()).isEqualTo(3);
   }
 
   @Test
@@ -216,24 +215,23 @@ public class SerialGatewaySenderQueueJUnitTest {
         QUEUE_REGION, metaRegionFactory);
     queue.setGroupTransactionEvents(true);
     List<AsyncEvent<?, ?>> peeked = queue.peek(3, -1);
-    assertEquals(4, peeked.size());
+    assertThat(peeked.size()).isEqualTo(4);
     assertThat(queue.getLastPeekedId()).isEqualTo(2);
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
-
+    assertThat(queue.getExtraPeekedIds()).contains(5L);
 
     for (Object ignored : peeked) {
       queue.remove();
     }
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
+    assertThat(queue.getExtraPeekedIds()).contains(5L);
 
     peeked = queue.peek(3, -1);
-    assertEquals(3, peeked.size());
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
+    assertThat(peeked.size()).isEqualTo(3);
+    assertThat(queue.getExtraPeekedIds()).contains(5L);
 
     for (Object ignored : peeked) {
       queue.remove();
     }
-    assertThat(queue.getExtraPeekedIds().contains(5L)).isFalse();
+    assertThat(queue.getExtraPeekedIds()).doesNotContain(5L);
   }
 
   private GatewaySenderEventImpl createMockGatewaySenderEventImpl(int transactionId,

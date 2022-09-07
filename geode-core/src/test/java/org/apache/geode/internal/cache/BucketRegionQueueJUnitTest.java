@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -175,21 +174,64 @@ public class BucketRegionQueueJUnitTest {
     List<Object> objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
-    assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(event1, event3));
+    assertThat(objects.size()).isEqualTo(2);
+    assertThat(objects).isEqualTo(Arrays.asList(event1, event3));
 
     objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
-    assertEquals(1, objects.size());
-    assertEquals(objects, Arrays.asList(event7));
+    assertThat(objects.size()).isEqualTo(1);
+    assertThat(objects).isEqualTo(Arrays.asList(event7));
 
     hasTransactionIdPredicate =
         ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx2);
     objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
-    assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(event2, event4));
+    assertThat(objects.size()).isEqualTo(2);
+    assertThat(objects).isEqualTo(Arrays.asList(event2, event4));
   }
+
+  @Test
+  public void testGetElementsMatchingWithParallelGatewaySenderQueuePredicatesObjectReadNullDoesNotThrowException()
+      throws ForceReattemptException {
+    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    TransactionId tx1 = new TXId(null, 1);
+    TransactionId tx2 = new TXId(null, 2);
+    TransactionId tx3 = new TXId(null, 3);
+
+    GatewaySenderEventImpl event1 = createMockGatewaySenderEvent(1, tx1, false);
+    GatewaySenderEventImpl eventNotInTransaction1 = createMockGatewaySenderEvent(2, null, false);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEvent(3, tx2, false);
+    GatewaySenderEventImpl event3 = null; // createMockGatewaySenderEvent(4, tx1, true);
+    GatewaySenderEventImpl event4 = createMockGatewaySenderEvent(5, tx2, true);
+    GatewaySenderEventImpl event5 = createMockGatewaySenderEvent(6, tx3, false);
+    GatewaySenderEventImpl event6 = createMockGatewaySenderEvent(7, tx3, false);
+    GatewaySenderEventImpl event7 = createMockGatewaySenderEvent(8, tx1, true);
+
+    this.bucketRegionQueue
+        .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
+
+    this.bucketRegionQueue.addToQueue(1L, event1);
+    this.bucketRegionQueue.addToQueue(2L, eventNotInTransaction1);
+    this.bucketRegionQueue.addToQueue(3L, event2);
+    this.bucketRegionQueue.addToQueue(4L, event3);
+    this.bucketRegionQueue.addToQueue(5L, event4);
+    this.bucketRegionQueue.addToQueue(6L, event5);
+    this.bucketRegionQueue.addToQueue(7L, event6);
+    this.bucketRegionQueue.addToQueue(8L, event7);
+
+    Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
+        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx1);
+    Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
+        ParallelGatewaySenderQueue.getIsLastEventInTransactionPredicate();
+    when(bucketRegionQueue.getValueInVMOrDiskWithoutFaultIn(4L)).thenReturn(null);
+    List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
+        isLastEventInTransactionPredicate);
+
+    assertThat(objects.size()).isEqualTo(2);
+    assertThat(objects).isEqualTo(Arrays.asList(new Object[] {event1, event7}));
+  }
+
 
   @Test
   public void testPeekedElementsArePossibleDuplicate()
