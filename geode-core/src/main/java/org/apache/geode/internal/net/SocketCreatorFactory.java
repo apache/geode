@@ -78,6 +78,10 @@ public class SocketCreatorFactory {
         sslConfigForComponent);
   }
 
+  static boolean checkInstanceIsNull() {
+    return instance == null;
+  }
+
   public static SocketCreator getSocketCreatorForComponent(
       SecurableCommunicationChannel sslEnabledComponent) {
     return getSocketCreatorForComponent(getInstance().getDistributionConfig(), sslEnabledComponent);
