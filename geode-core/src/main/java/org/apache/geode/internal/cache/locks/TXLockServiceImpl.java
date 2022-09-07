@@ -53,7 +53,7 @@ public class TXLockServiceImpl extends TXLockService {
   /**
    * List of active txLockIds
    */
-  protected List txLockIdList = new ArrayList();
+  protected final List<TXLockId> txLockIdList = new ArrayList<>();
 
   /**
    * True if grantor recovery is in progress; used to keep <code>release</code> from waiting for
@@ -129,10 +129,20 @@ public class TXLockServiceImpl extends TXLockService {
       if (gotLocks) { // ...otherwise race can occur between tryLocks and readLock
         acquireRecoveryReadLock();
       } else if (keyIfFail[0] != null) {
+        if (gotLocks) {
+          synchronized (txLockIdList) {
+            txLockIdList.remove(txLockId);
+          }
+        }
         throw new CommitConflictException(
             String.format("Concurrent transaction commit detected %s",
                 keyIfFail[0]));
       } else {
+        if (gotLocks) {
+          synchronized (txLockIdList) {
+            txLockIdList.remove(txLockId);
+          }
+        }
         throw new CommitConflictException(
             String.format("Failed to request try locks from grantor: %s",
                 dlock.getLockGrantorId()));
@@ -225,9 +235,7 @@ public class TXLockServiceImpl extends TXLockService {
                 txLockId));
       }
 
-      dlock.releaseTryLocks(txLockId, () -> {
-        return recovering;
-      });
+      dlock.releaseTryLocks(txLockId, () -> recovering);
 
       txLockIdList.remove(txLockId);
       releaseRecoveryReadLock();
