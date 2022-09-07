@@ -95,7 +95,7 @@ public class StartupMessageJUnitTest {
     startupMessage.process(distributionManager);
 
     assertThat(
-        startupMessage.getProcessorType()).isEqualTo( OperationExecutors.WAITING_POOL_EXECUTOR);
+        startupMessage.getProcessorType()).isEqualTo(OperationExecutors.WAITING_POOL_EXECUTOR);
   }
 
   @Test
