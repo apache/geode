@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -175,20 +174,20 @@ public class BucketRegionQueueJUnitTest {
     List<Object> objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
-    assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(event1, event3));
+    assertThat(objects.size()).isEqualTo(2);
+    assertThat(objects).isEqualTo(Arrays.asList(event1, event3));
 
     objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
-    assertEquals(1, objects.size());
-    assertEquals(objects, Arrays.asList(event7));
+    assertThat(objects.size()).isEqualTo(1);
+    assertThat(objects).isEqualTo(Arrays.asList(event7));
 
     hasTransactionIdPredicate =
         ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx2);
     objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
-    assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(event2, event4));
+    assertThat(objects.size()).isEqualTo(2);
+    assertThat(objects).isEqualTo(Arrays.asList(event2, event4));
   }
 
   @Test
@@ -229,8 +228,8 @@ public class BucketRegionQueueJUnitTest {
     List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
-    assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(new Object[] {event1, event7}));
+    assertThat(objects.size()).isEqualTo(2);
+    assertThat(objects).isEqualTo(Arrays.asList(new Object[] {event1, event7}));
   }
 
 
