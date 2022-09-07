@@ -54,10 +54,14 @@ public class SocketCreatorFactory {
   }
 
   private static synchronized SocketCreatorFactory getInstance(boolean closing) {
-    if (instance == null && !closing) {
-      instance = new SocketCreatorFactory();
+    SocketCreatorFactory result = instance;
+    if (result == null && !closing) {
+      result = new SocketCreatorFactory();
+      instance = result;
+    } else if (result != null && closing) {
+      instance = null;
     }
-    return instance;
+    return result;
   }
 
   private static synchronized SocketCreatorFactory getInstance() {
@@ -72,6 +76,10 @@ public class SocketCreatorFactory {
             sslEnabledComponent);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent,
         sslConfigForComponent);
+  }
+
+  static boolean checkInstanceIsNull() {
+    return instance == null;
   }
 
   public static SocketCreator getSocketCreatorForComponent(

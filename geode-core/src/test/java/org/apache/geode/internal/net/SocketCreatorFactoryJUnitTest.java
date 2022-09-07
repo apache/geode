@@ -72,8 +72,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -110,18 +109,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -131,18 +133,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isTrue();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -153,18 +158,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -175,18 +183,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -196,18 +207,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -217,18 +231,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -240,18 +257,21 @@ public class SocketCreatorFactoryJUnitTest {
 
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -263,18 +283,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -288,18 +311,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -319,18 +345,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isTrue();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -347,18 +376,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isTrue();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   private Properties configureSSLProperties(String sslComponents) throws IOException {
@@ -409,18 +441,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -443,18 +478,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isTrue();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -477,18 +515,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -511,18 +552,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertTrue(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isTrue();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -545,18 +589,21 @@ public class SocketCreatorFactoryJUnitTest {
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL());
-    assertFalse(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL());
-    assertTrue(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
-        .useSSL());
-    assertFalse(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL());
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX)
+        .useSSL()).isFalse();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER).useSSL()).isFalse();
+    assertThat(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB)
+        .useSSL()).isTrue();
+    assertThat(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR).useSSL()).isFalse();
+
+    SocketCreatorFactory.close();
+    assertThat(SocketCreatorFactory.checkInstanceIsNull()).isTrue();
   }
 
   private File findTestJKS() {

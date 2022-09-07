@@ -1642,6 +1642,7 @@ public class InternalDistributedSystem extends DistributedSystem
           removeSystem(this);
           if (!attemptingToReconnect) {
             loggingSession.shutdown();
+            SocketCreatorFactory.close();
           }
           alertingService.useAlertMessaging(new NullAlertMessaging());
           clusterAlertMessaging.get().close();
