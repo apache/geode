@@ -1026,6 +1026,11 @@ public class ConnectionTable {
     return receivers.size();
   }
 
+  static boolean checkLastInstanceIsNull() {
+    ConnectionTable ct = lastInstance.get();
+    return ct == null;
+  }
+
   private class PendingConnection {
 
     /**
