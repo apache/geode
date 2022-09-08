@@ -14,101 +14,43 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
-import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
-import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
+import org.apache.geode.internal.cache.partitioned.rebalance.MoveBuckets;
+import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 
 
 public class PartitionedRegionRebalanceOpTest {
   private PartitionedRegion leaderRegion;
   private PartitionedRegion colocRegion1;
   private PartitionedRegion colocRegion2;
-  private static final long MB = 1024 * 1024;
 
   @Test
-  public void testAllCollocatedRegionsSetWhenRebalanceTargetIsLeaderRegion() {
-    leaderRegion = (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("leader");
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes pa = paf.setColocatedWith("/leader").create();
-    colocRegion1 =
-        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("colo1", pa);
-    colocRegion2 =
-        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("colo2", pa);
-
-    try {
-      PartitionedRegionRebalanceOp part_op =
-          new PartitionedRegionRebalanceOp(leaderRegion, false, null, false, false, null, null);
-      part_op.checkAndSetColocatedRegions();
-      assertEquals(3, part_op.colocatedRegions.size());
-    } finally {
-      colocRegion1.destroyRegion();
-      colocRegion2.destroyRegion();
-      leaderRegion.destroyRegion();
-    }
-  }
-
-  @Test
-  public void testAllCollocatedRegionsSetWhenRebalanceTargetIsCollocatedRegion() {
-    leaderRegion = (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("leader");
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes pa = paf.setColocatedWith("/leader").create();
-    colocRegion1 =
-        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("colo1", pa);
-    colocRegion2 =
-        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("colo2", pa);
-
-    try {
-      PartitionedRegionRebalanceOp part_op =
-          new PartitionedRegionRebalanceOp(colocRegion1, false, null, false, false, null, null);
-      part_op.checkAndSetColocatedRegions();
-      assertEquals(3, part_op.colocatedRegions.size());
-    } finally {
-      colocRegion1.destroyRegion();
-      colocRegion2.destroyRegion();
-      leaderRegion.destroyRegion();
-    }
-  }
-
-  @Test
-  public void testRebalanceModelWhenRebalanceTargetIsCollocatedRegion() {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes pa = paf.setLocalMaxMemory(4).create();
+  public void testRebalanceModelContainsAllColocatedRegionsWhenRebalanceTargetIsNotLeaderRegion() {
     leaderRegion =
-        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("leader", pa);
-    paf = new PartitionAttributesFactory();
-    pa = paf.setColocatedWith("/leader").setLocalMaxMemory(4).create();
+        (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("leader");
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    PartitionAttributes pa = paf.setColocatedWith("/leader").create();
     colocRegion1 =
         (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("colo1", pa);
     colocRegion2 =
         (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("colo2", pa);
-
-    try {
-      PartitionedRegionRebalanceOp part_op =
-          new PartitionedRegionRebalanceOp(colocRegion1, false, null, false, false, null, null);
-      part_op.checkAndSetColocatedRegions();
-      InternalCache cache = leaderRegion.getCache();
-      Map<PartitionedRegion, InternalPRInfo> detailsMap = part_op.fetchDetails(cache);
-      InternalResourceManager resourceMgr =
-          InternalResourceManager.getInternalResourceManager(cache);
-      PartitionedRegionLoadModel model = part_op.buildModel(null, detailsMap, resourceMgr);
-      System.out.println(model.toString());
-      Member member = model.getMember(leaderRegion.getDistributionManager().getId());
-      assertEquals(member.getConfiguredMaxMemory() / MB, 12);
-    } finally {
-      colocRegion1.destroyRegion();
-      colocRegion2.destroyRegion();
-      leaderRegion.destroyRegion();
-    }
+    RebalanceDirector director = new MoveBuckets();
+    PartitionedRegionRebalanceOp part_op =
+        new PartitionedRegionRebalanceOp(colocRegion1, false, director, false, true,
+            new AtomicBoolean(false), null);
+    Set<PartitionRebalanceInfo> rebalanceInfo = part_op.execute();
+    // 3 regions include the leader region and 2 colocated regions.
+    assertThat(rebalanceInfo.size()).isEqualTo(3);
   }
 }

@@ -89,7 +89,7 @@ public class PartitionedRegionRebalanceOp {
   private final boolean replaceOfflineData;
   private final PartitionedRegion leaderRegion;
   private final PartitionedRegion targetRegion;
-  protected Collection<PartitionedRegion> colocatedRegions;
+  private Collection<PartitionedRegion> colocatedRegions;
   private final AtomicBoolean cancelled;
   private final ResourceManagerStats stats;
   private final boolean isRebalance; // true indicates a rebalance instead of recovery
@@ -397,7 +397,7 @@ public class PartitionedRegionRebalanceOp {
     }
   }
 
-  protected Map<PartitionedRegion, InternalPRInfo> fetchDetails(InternalCache cache) {
+  private Map<PartitionedRegion, InternalPRInfo> fetchDetails(InternalCache cache) {
     LoadProbe probe = cache.getInternalResourceManager().getLoadProbe();
     Map<PartitionedRegion, InternalPRInfo> detailsMap =
         new LinkedHashMap<>(colocatedRegions.size());
@@ -430,7 +430,7 @@ public class PartitionedRegionRebalanceOp {
    * etc.
    *
    */
-  protected PartitionedRegionLoadModel buildModel(BucketOperator operator,
+  private PartitionedRegionLoadModel buildModel(BucketOperator operator,
       Map<PartitionedRegion, InternalPRInfo> detailsMap, InternalResourceManager resourceManager) {
     PartitionedRegionLoadModel model;
 
