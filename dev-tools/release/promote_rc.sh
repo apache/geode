@@ -347,7 +347,7 @@ echo "============================================================"
 echo "Building Native docker image"
 echo "============================================================"
 set -x
-cd ${GEODE_NATIVE}/docker
+cd ${GEODE_NATIVE}/docker/ubuntu-20.04
 docker build . || docker build . || docker build .
 docker build -t apachegeode/geode-native-build:${VERSION} .
 [ -n "$LATER" ] || docker build -t apachegeode/geode-native-build:latest .
