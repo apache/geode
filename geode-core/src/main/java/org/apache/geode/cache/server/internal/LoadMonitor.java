@@ -49,6 +49,7 @@ public class LoadMonitor implements ConnectionListener {
   private final PollingThread pollingThread;
   protected volatile ServerLoad lastLoad;
   protected CacheServerStats stats;
+  private boolean isGatewayReceiver;
 
   public LoadMonitor(ServerLoadProbe probe, int maxConnections, long pollInterval,
       int forceUpdateFrequency, CacheServerAdvisor advisor) {
@@ -63,12 +64,14 @@ public class LoadMonitor implements ConnectionListener {
    * Start the load monitor. Starts the background thread which polls the load monitor and sends
    * updates about load.
    */
-  public void start(ServerLocation location, CacheServerStats cacheServerStats) {
+  public void start(ServerLocation location, CacheServerStats cacheServerStats,
+      boolean isGatewayReceiver) {
     probe.open();
     this.location = location;
     pollingThread.start();
     stats = cacheServerStats;
     stats.setLoad(lastLoad);
+    this.isGatewayReceiver = isGatewayReceiver;
   }
 
   /**
@@ -87,7 +90,7 @@ public class LoadMonitor implements ConnectionListener {
 
   @Override
   public void connectionClosed(boolean lastConnection, CommunicationMode communicationMode) {
-    if (communicationMode.isClientOperations()) {
+    if (communicationMode.isClientOperations() || communicationMode.isWAN()) {
       metrics.decConnectionCount();
     }
     if (lastConnection) {
@@ -101,7 +104,7 @@ public class LoadMonitor implements ConnectionListener {
 
   @Override
   public void connectionOpened(boolean firstConnection, CommunicationMode communicationMode) {
-    if (communicationMode.isClientOperations()) {
+    if (communicationMode.isClientOperations() || communicationMode.isWAN()) {
       metrics.incConnectionCount();
     }
     if (firstConnection) {
@@ -159,13 +162,33 @@ public class LoadMonitor implements ConnectionListener {
       }
     }
 
+    /**
+     * This function calculates next interval absolute time that is same on all servers in
+     * the cluster if following conditions are fulfilled:
+     * - same pollInterval value is used
+     * - time is synchronized on servers
+     *
+     * @return absolute time of next interval
+     */
+    private long getNextIntervalSynchronizedAbsoluteTime(final long currentTime,
+        final long pollInterval) {
+      return (currentTime - (currentTime % pollInterval)) + pollInterval;
+    }
+
     @Override
     public void run() {
       while (alive) {
         try {
           synchronized (signal) {
-            long end = System.currentTimeMillis() + pollInterval;
-            long remaining = pollInterval;
+            long currentTime = System.currentTimeMillis();
+            long end, remaining;
+            if (isGatewayReceiver) {
+              end = getNextIntervalSynchronizedAbsoluteTime(currentTime, pollInterval);
+              remaining = end - currentTime;
+            } else {
+              end = currentTime + pollInterval;
+              remaining = pollInterval;
+            }
             while (alive && remaining > 0) {
               signal.wait(remaining);
               remaining = end - System.currentTimeMillis();

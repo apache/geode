@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -32,7 +33,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
  */
 public class QueueConnectionRequest extends ServerLocationRequest {
   private ClientProxyMembershipID proxyId;
-  private Set excludedServers;
+  private Set<ServerLocation> excludedServers;
   private int redundantCopies;
   private boolean findDurable = false;
 
@@ -41,7 +42,7 @@ public class QueueConnectionRequest extends ServerLocationRequest {
   }
 
   public QueueConnectionRequest(ClientProxyMembershipID proxyId, int redundantCopies,
-      Set excludedServers, String serverGroup, boolean findDurable) {
+      Set<ServerLocation> excludedServers, String serverGroup, boolean findDurable) {
     super(serverGroup);
     this.proxyId = proxyId;
     this.excludedServers = excludedServers;
@@ -70,7 +71,7 @@ public class QueueConnectionRequest extends ServerLocationRequest {
     out.writeBoolean(findDurable);
   }
 
-  public Set getExcludedServers() {
+  public Set<ServerLocation> getExcludedServers() {
     return excludedServers;
   }
 

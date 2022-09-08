@@ -54,6 +54,7 @@ import org.apache.geode.internal.cache.ControllerAdvisor;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
 import org.apache.geode.internal.cache.FindDurableQueueProcessor;
 import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -80,14 +81,9 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   @MakeNotStatic
   private static final AtomicInteger profileSN = new AtomicInteger();
 
-  private static final long SERVER_LOAD_LOG_INTERVAL = (60 * 60 * 1000); // log server load once an
-                                                                         // hour
-
   private final String logFile;
   private final String hostName;
   private final String memberName;
-
-  private volatile long lastLogTime;
 
   ServerLocator() throws IOException {
     port = 10334;
@@ -223,7 +219,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
 
 
   private GetAllServersResponse pickAllServers(GetAllServersRequest clientRequest) {
-    ArrayList servers = loadSnapshot.getServers(clientRequest.getServerGroup());
+    ArrayList<ServerLocation> servers = loadSnapshot.getServers(clientRequest.getServerGroup());
     return new GetAllServersResponse(servers);
   }
 
@@ -234,11 +230,11 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   }
 
   private Object pickQueueServers(QueueConnectionRequest clientRequest) {
-    Set excludedServers = new HashSet(clientRequest.getExcludedServers());
+    Set<ServerLocation> excludedServers = new HashSet<>(clientRequest.getExcludedServers());
 
     /* If this is a request to find durable queues, lets go find them */
 
-    ArrayList servers = new ArrayList();
+    List<ServerLocation> servers = new ArrayList<>();
     boolean durableQueueFound = false;
     if (clientRequest.isFindDurable() && clientRequest.getProxyId().isDurable()) {
       servers = FindDurableQueueProcessor.sendAndFind(this, clientRequest.getProxyId(),
@@ -248,7 +244,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
       durableQueueFound = servers.size() > 0;
     }
 
-    List candidates;
+    List<ServerLocation> candidates;
     if (clientRequest.getRedundantCopies() == -1) {
       /* We need all the servers we can get */
       candidates = loadSnapshot.getServersForQueue(clientRequest.getProxyId(),
@@ -371,8 +367,6 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     stats.endLocatorResponse(startTime);
   }
 
-
-
   private List<ServerLocation> getLocators() {
     if (cachedLocators != null) {
       return cachedLocators;
@@ -438,7 +432,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   }
 
   public void updateLoad(ServerLocation location, String memberId, ServerLoad load,
-      List clientIds) {
+      List<ClientProxyMembershipID> clientIds) {
     if (getLogWriter().fineEnabled()) {
       getLogWriter()
           .fine("ServerLocator: Received a load update from " + location + " at " + memberId + " , "
@@ -453,7 +447,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
    * with the current load on that server
    */
 
-  public Map getLoadMap() {
+  public Map<ServerLocation, ServerLoad> getLoadMap() {
     return loadSnapshot.getLoadMap();
   }
 
