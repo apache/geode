@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.tcp;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -74,7 +74,10 @@ public class ConnectionTableTest {
     when(connection.isSocketClosed()).thenReturn(true);
 
     connectionTable.acceptConnection(socket, factory);
-    assertEquals(0, connectionTable.getNumberOfReceivers());
+    assertThat(connectionTable.getNumberOfReceivers()).isEqualTo(0);
+
+    connectionTable.close();
+    assertThat(ConnectionTable.checkLastInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -86,7 +89,10 @@ public class ConnectionTableTest {
     when(connection.isReceiverStopped()).thenReturn(true);
 
     connectionTable.acceptConnection(socket, factory);
-    assertEquals(0, connectionTable.getNumberOfReceivers());
+    assertThat(connectionTable.getNumberOfReceivers()).isEqualTo(0);
+
+    connectionTable.close();
+    assertThat(ConnectionTable.checkLastInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -95,7 +101,10 @@ public class ConnectionTableTest {
     when(connection.isSocketClosed()).thenReturn(false);
 
     connectionTable.acceptConnection(socket, factory);
-    assertEquals(1, connectionTable.getNumberOfReceivers());
+    assertThat(connectionTable.getNumberOfReceivers()).isEqualTo(1);
+
+    connectionTable.close();
+    assertThat(ConnectionTable.checkLastInstanceIsNull()).isTrue();
   }
 
   @Test
@@ -106,11 +115,13 @@ public class ConnectionTableTest {
       Map<DistributedMember, Connection> threadConnectionMap = new HashMap<>();
       ConnectionTable.threadOrderedConnMap.set(threadConnectionMap);
       ConnectionTable.releaseThreadsSockets();
-      assertEquals(0, threadConnectionMap.size());
+      assertThat(threadConnectionMap.size()).isEqualTo(0);
     } finally {
       if (wantsResources != Boolean.FALSE) {
         ConnectionTable.threadWantsSharedResources();
       }
     }
+    connectionTable.close();
+    assertThat(ConnectionTable.checkLastInstanceIsNull()).isTrue();
   }
 }

@@ -655,6 +655,7 @@ public class ConnectionTable {
       map.clear();
     }
     socketCloser.close();
+    emergencyClose();
   }
 
   public void executeCommand(Runnable runnable) {
@@ -1023,6 +1024,11 @@ public class ConnectionTable {
 
   int getNumberOfReceivers() {
     return receivers.size();
+  }
+
+  static boolean checkLastInstanceIsNull() {
+    ConnectionTable ct = lastInstance.get();
+    return ct == null;
   }
 
   private class PendingConnection {
