@@ -72,7 +72,6 @@ public class TXManagerImplTest {
   public void setUp() {
     cache = Fakes.cache();
     dm = mock(ClusterDistributionManager.class);
-    txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache, disabledClock());
     txid = new TXId(null, 0);
     msg = mock(DestroyMessage.class);
     txCommitMsg = mock(TXCommitMessage.class);
@@ -94,6 +93,9 @@ public class TXManagerImplTest {
     spyTxMgr = spy(new TXManagerImpl(mock(CachePerfStats.class), spyCache, disabledClock()));
     timer = mock(SystemTimer.class);
     doReturn(timer).when(spyCache).getCCPTimer();
+
+    txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache, disabledClock());
+
   }
 
   @Test

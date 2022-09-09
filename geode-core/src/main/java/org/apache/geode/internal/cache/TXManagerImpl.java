@@ -688,10 +688,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     for (final TransactionListener listener : listeners) {
       closeListener(listener);
     }
-    TXManagerImpl instance = currentInstance.get();
-    if (instance != null) {
-      currentInstance.set(null);
-    }
+
+    currentInstance.compareAndSet(this, null);
   }
 
   private void closeListener(TransactionListener tl) {
