@@ -46,11 +46,11 @@ public class PartitionedRegionRebalanceOpTest {
     colocRegion2 =
         (PartitionedRegion) PartitionedRegionTestHelper.createPartionedRegion("colo2", pa);
     RebalanceDirector director = new MoveBuckets();
-    PartitionedRegionRebalanceOp part_op =
+    PartitionedRegionRebalanceOp rebalanceOp =
         new PartitionedRegionRebalanceOp(colocRegion1, false, director, false, true,
             new AtomicBoolean(false), null);
-    Set<PartitionRebalanceInfo> rebalanceInfo = part_op.execute();
+    Set<PartitionRebalanceInfo> rebalanceInfo = rebalanceOp.execute();
     // 3 regions include the leader region and 2 colocated regions.
-    assertThat(rebalanceInfo.size()).isEqualTo(3);
+    assertThat(rebalanceInfo).hasSize(3);
   }
 }
