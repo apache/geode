@@ -531,6 +531,14 @@ public class CliStrings {
   public static final String BACKUP_DISK_STORE_MSG_NO_DISKSTORES_BACKED_UP =
       "No disk store(s) were backed up.";
 
+  public static final String BACKUP_INCLUDE_DISK_STORES = "include-disk-stores";
+  public static final String BACKUP_INCLUDE_DISK_STORES__HELP = "List of disk-stores to include.";
+  public static final String BACKUP_DISK_STORE__MSG__SPECIFY_VALID_INCLUDE_DISKSTORE_UNKNOWN_DISKSTORE_0 =
+      "Specify valid include-disk-stores. Unknown Disk Store : \"{0}\".";
+
+  public static final String BACKUP_DISK_STORE__MSG__SPECIFY_VALID_INCLUDE_DISKSTORE_UNKNOWN_DISKSTORE_1 =
+      "Specify valid include-disk-stores. Blank name added in list of disk-stores";
+
   /* 'compact disk-store' command */
   public static final String COMPACT_DISK_STORE = "compact disk-store";
   public static final String COMPACT_DISK_STORE__HELP =

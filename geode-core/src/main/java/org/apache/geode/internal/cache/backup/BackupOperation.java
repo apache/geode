@@ -71,6 +71,14 @@ public class BackupOperation {
     return performBackup(properties);
   }
 
+  public BackupStatus backupAllMembers(String targetDirPath, String baselineDirPath,
+      String includeDiskStores) {
+    Properties properties = new BackupConfigFactory().withTargetDirPath(targetDirPath)
+        .withBaselineDirPath(baselineDirPath).withIncludeDiskStores(includeDiskStores)
+        .createBackupProperties();
+    return performBackup(properties);
+  }
+
   private BackupStatus performBackup(Properties properties) throws ManagementException {
     if (backupLockService.obtainLock(dm)) {
       try {

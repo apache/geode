@@ -15,12 +15,16 @@
 package org.apache.geode.internal.cache.backup;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
@@ -38,6 +42,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 class BackupTask {
   private static final Logger logger = LogService.getLogger();
 
+  private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
   private final Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
   private final RestoreScript restoreScript = new RestoreScript();
   private final InternalCache cache;
@@ -46,15 +51,25 @@ class BackupTask {
   private final CountDownLatch otherMembersReady = new CountDownLatch(1);
   private final HashSet<PersistentID> diskStoresWithData = new HashSet<>();
   private final BackupWriter backupWriter;
+  private final Set<String> includeDiskStoresSet = new HashSet<>();
 
   private volatile boolean isCancelled;
 
   private TemporaryBackupFiles temporaryFiles;
   private BackupFileCopier fileCopier;
 
-  BackupTask(InternalCache cache, BackupWriter backupWriter) {
+  BackupTask(InternalCache cache, BackupWriter backupWriter, String includeDiskStores) {
     this.cache = cache;
     this.backupWriter = backupWriter;
+    if (includeDiskStores != null) {
+      this.includeDiskStoresSet.addAll(Arrays.stream(includeDiskStores.split(","))
+          .filter(StringUtils::isNotBlank)
+          .collect(Collectors.toSet()));
+      if (!this.includeDiskStoresSet.isEmpty()) {
+        // add internal disk-store for shared configuration data
+        this.includeDiskStoresSet.add(CLUSTER_CONFIG_DISK_STORE_NAME);
+      }
+    }
   }
 
   HashSet<PersistentID> getPreparedDiskStores() throws InterruptedException {
@@ -86,7 +101,9 @@ class BackupTask {
   private void prepareForBackup() {
     for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
       DiskStoreImpl storeImpl = (DiskStoreImpl) store;
-
+      if (!isDiskStoreIncluded(store)) {
+        continue;
+      }
       storeImpl.lockStoreBeforeBackup();
       if (logger.isDebugEnabled()) {
         logger.debug("Acquired lock for backup on disk store {}", store.getName());
@@ -145,6 +162,9 @@ class BackupTask {
     Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
 
     for (DiskStore store : diskStores) {
+      if (!isDiskStoreIncluded(store)) {
+        continue;
+      }
       DiskStoreImpl diskStore = (DiskStoreImpl) store;
       try {
         if (diskStore.hasPersistedData()) {
@@ -159,6 +179,16 @@ class BackupTask {
       }
     }
     return backupByDiskStore;
+  }
+
+  boolean isDiskStoreIncluded(DiskStore store) {
+    if (includeDiskStoresSet.isEmpty()) {
+      return true;
+    }
+    if (includeDiskStoresSet.contains(store.getName())) {
+      return true;
+    }
+    return false;
   }
 
   void abort() {
