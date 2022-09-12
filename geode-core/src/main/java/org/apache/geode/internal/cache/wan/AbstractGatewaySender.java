@@ -1039,6 +1039,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       List<Integer> allRemoteDSIds, boolean isLastEventInTransaction) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
+    boolean wasInterrupted = false;
 
     // released by this method or transfers ownership to TmpQueueEvent
     @Released
@@ -1153,15 +1154,17 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           }
         }
         if (enqueuedAllTempQueueEvents) {
-          try {
-            while (!getLifeCycleLock().readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
-              if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
-                return;
+          while (true) {
+            try {
+              while (!getLifeCycleLock().readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
+                if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
+                  return;
+                }
               }
+              break;
+            } catch (InterruptedException e) {
+              wasInterrupted = true;
             }
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
           }
         }
       }
@@ -1209,6 +1212,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     } finally {
       if (freeClonedEvent) {
         clonedEvent.release(); // fix for bug 48035
+      }
+      if (wasInterrupted) {
+        Thread.currentThread().interrupt();
       }
     }
   }

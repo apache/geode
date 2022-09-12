@@ -340,8 +340,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     op = other.op;
     distributedMember = other.distributedMember;
     filterInfo = other.filterInfo;
-    keyInfo = other.keyInfo.isDistKeyInfo() ? new DistTxKeyInfo((DistTxKeyInfo) other.keyInfo)
-        : new KeyInfo(other.keyInfo);
+    keyInfo =
+        other.getKeyInfo().isDistKeyInfo() ? new DistTxKeyInfo((DistTxKeyInfo) other.getKeyInfo())
+            : new KeyInfo(other.getKeyInfo());
     if (other.getRawCallbackArgument() instanceof GatewaySenderEventCallbackArgument) {
       keyInfo.setCallbackArg((new GatewaySenderEventCallbackArgument(
           (GatewaySenderEventCallbackArgument) other.getRawCallbackArgument())));
