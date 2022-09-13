@@ -63,7 +63,7 @@ public class BackupDiskStoreCommandDUnitTest {
   }
 
   @Test
-  public void backupDiskStoresDoesNotDuplicateDiskStores() {
+  public void backupDiskStoresOfOneDiskStore() {
     MemberVM server1 = lsRule.startServerVM(1, locator.getPort());
     @SuppressWarnings("unused")
     MemberVM server2 = lsRule.startServerVM(2, locator.getPort());
@@ -96,6 +96,170 @@ public class BackupDiskStoreCommandDUnitTest {
     TabularResultModel tableSection = result.getTableSection("backed-up-diskstores");
     List<String> list = tableSection.getValuesInColumn("UUID");
     assertThat(list).hasSize(3);
+  }
+
+  @Test
+  public void backupDiskStoresTwoDiskStores() {
+    MemberVM server1 = lsRule.startServerVM(1, locator.getPort());
+    @SuppressWarnings("unused")
+    MemberVM server2 = lsRule.startServerVM(2, locator.getPort());
+    @SuppressWarnings("unused")
+
+    final String testRegionName = "regionA";
+    final String testRegionName2 = "regionB";
+
+    CommandStringBuilder csb;
+    csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
+        .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore")
+        .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
+
+    CommandStringBuilder createRegion = new CommandStringBuilder(CliStrings.CREATE_REGION)
+        .addOption(CliStrings.CREATE_REGION__REGION, testRegionName)
+        .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore")
+        .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
+            RegionShortcut.PARTITION_PERSISTENT.toString());
+    await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion.getCommandString())
+        .statusIsSuccess());
+
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
+        .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore2")
+        .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir2");
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
+
+    CommandStringBuilder createRegion2 = new CommandStringBuilder(CliStrings.CREATE_REGION)
+        .addOption(CliStrings.CREATE_REGION__REGION, testRegionName2)
+        .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore2")
+        .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
+            RegionShortcut.PARTITION_PERSISTENT.toString());
+    await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion2.getCommandString())
+        .statusIsSuccess());
+
+    // Add data to the region
+    addData(server1, testRegionName);
+    addData(server2, testRegionName2);
+
+    csb = new CommandStringBuilder(CliStrings.BACKUP_DISK_STORE)
+        .addOption(CliStrings.BACKUP_DISK_STORE__DISKDIRS, "backupDir");
+
+    @SuppressWarnings("deprecation")
+    ResultModel result =
+        gfshConnector.executeCommand(csb.getCommandString()).getResultData();
+    TabularResultModel tableSection = result.getTableSection("backed-up-diskstores");
+    List<String> list = tableSection.getValuesInColumn("UUID");
+    assertThat(list).hasSize(5);
+  }
+
+  @Test
+  public void backupDiskStoresTwoDiskStoresIncludeJustOne() {
+    MemberVM server1 = lsRule.startServerVM(1, locator.getPort());
+    @SuppressWarnings("unused")
+    MemberVM server2 = lsRule.startServerVM(2, locator.getPort());
+    @SuppressWarnings("unused")
+
+    final String testRegionName = "regionA";
+    final String testRegionName2 = "regionB";
+
+    CommandStringBuilder csb;
+    csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
+        .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore")
+        .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
+
+    CommandStringBuilder createRegion = new CommandStringBuilder(CliStrings.CREATE_REGION)
+        .addOption(CliStrings.CREATE_REGION__REGION, testRegionName)
+        .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore")
+        .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
+            RegionShortcut.PARTITION_PERSISTENT.toString());
+    await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion.getCommandString())
+        .statusIsSuccess());
+
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
+        .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore2")
+        .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir2");
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
+
+    CommandStringBuilder createRegion2 = new CommandStringBuilder(CliStrings.CREATE_REGION)
+        .addOption(CliStrings.CREATE_REGION__REGION, testRegionName2)
+        .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore2")
+        .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
+            RegionShortcut.PARTITION_PERSISTENT.toString());
+    await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion2.getCommandString())
+        .statusIsSuccess());
+
+    // Add data to the region
+    addData(server1, testRegionName);
+    addData(server2, testRegionName2);
+
+    csb = new CommandStringBuilder(CliStrings.BACKUP_DISK_STORE)
+        .addOption(CliStrings.BACKUP_DISK_STORE__DISKDIRS, "backupDir")
+        .addOption(CliStrings.BACKUP_INCLUDE_DISK_STORES, "diskStore");
+
+    @SuppressWarnings("deprecation")
+    ResultModel result =
+        gfshConnector.executeCommand(csb.getCommandString()).getResultData();
+    TabularResultModel tableSection = result.getTableSection("backed-up-diskstores");
+    List<String> list = tableSection.getValuesInColumn("UUID");
+    assertThat(list).hasSize(3);
+  }
+
+  @Test
+  public void backupDiskStoresInvalidIncludeDiskStores() {
+    MemberVM server1 = lsRule.startServerVM(1, locator.getPort());
+    @SuppressWarnings("unused")
+    MemberVM server2 = lsRule.startServerVM(2, locator.getPort());
+    @SuppressWarnings("unused")
+
+    final String testRegionName = "regionA";
+    final String testRegionName2 = "regionB";
+
+    CommandStringBuilder csb;
+    csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
+        .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore")
+        .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
+
+    CommandStringBuilder createRegion = new CommandStringBuilder(CliStrings.CREATE_REGION)
+        .addOption(CliStrings.CREATE_REGION__REGION, testRegionName)
+        .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore")
+        .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
+            RegionShortcut.PARTITION_PERSISTENT.toString());
+    await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion.getCommandString())
+        .statusIsSuccess());
+
+
+    csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
+        .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore2")
+        .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir2");
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
+
+    CommandStringBuilder createRegion2 = new CommandStringBuilder(CliStrings.CREATE_REGION)
+        .addOption(CliStrings.CREATE_REGION__REGION, testRegionName2)
+        .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore2")
+        .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
+            RegionShortcut.PARTITION_PERSISTENT.toString());
+    await().untilAsserted(() -> gfshConnector.executeAndAssertThat(createRegion2.getCommandString())
+        .statusIsSuccess());
+
+    // Add data to the region
+    addData(server1, testRegionName);
+    addData(server2, testRegionName2);
+
+    csb = new CommandStringBuilder(CliStrings.BACKUP_DISK_STORE)
+        .addOption(CliStrings.BACKUP_DISK_STORE__DISKDIRS, "backupDir")
+        .addOption(CliStrings.BACKUP_INCLUDE_DISK_STORES, "diskStore3");
+
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsError()
+        .containsOutput("Specify valid include-disk-stores.");
+
+    csb = new CommandStringBuilder(CliStrings.BACKUP_DISK_STORE)
+        .addOption(CliStrings.BACKUP_DISK_STORE__DISKDIRS, "backupDir")
+        .addOption(CliStrings.BACKUP_INCLUDE_DISK_STORES, "diskStore,diskStore4");
+
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsError()
+        .containsOutput("Specify valid include-disk-stores.");
   }
 
   private void addData(MemberVM server1, String testRegionName) {
