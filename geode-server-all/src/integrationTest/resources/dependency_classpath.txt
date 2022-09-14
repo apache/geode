@@ -17,7 +17,7 @@ javax.resource-api-1.7.1.jar
 LatencyUtils-2.0.3.jar
 jline-2.12.jar
 jetty-servlet-9.4.47.v20220610.jar
-spring-core-5.3.20.jar
+spring-core-5.3.21.jar
 jetty-util-ajax-9.4.47.v20220610.jar
 geode-cq-0.0.0.jar
 geode-old-client-support-0.0.0.jar
@@ -44,7 +44,7 @@ rmiio-2.1.2.jar
 geode-tcp-server-0.0.0.jar
 log4j-jcl-2.17.2.jar
 geode-connectors-0.0.0.jar
-jackson-core-2.13.2.jar
+jackson-core-2.13.3.jar
 jetty-util-9.4.47.v20220610.jar
 log4j-slf4j-impl-2.17.2.jar
 lucene-analyzers-common-6.6.6.jar
@@ -76,7 +76,7 @@ micrometer-core-1.9.1.jar
 shiro-config-ogdl-1.13.0.jar
 geode-log4j-0.0.0.jar
 lucene-analyzers-phonetic-6.6.6.jar
-spring-context-5.3.20.jar
+spring-context-5.3.21.jar
 jetty-security-9.4.47.v20220610.jar
 geode-logging-0.0.0.jar
 commons-io-2.11.0.jar
@@ -87,6 +87,6 @@ antlr-2.7.7.jar
 jetty-xml-9.4.47.v20220610.jar
 geode-rebalancer-0.0.0.jar
 jetty-server-9.4.47.v20220610.jar
-jackson-datatype-jsr310-2.13.2.jar
-jackson-datatype-joda-2.13.2.jar
+jackson-datatype-jsr310-2.13.3.jar
+jackson-datatype-joda-2.13.3.jar
 joda-time-2.10.14.jar
