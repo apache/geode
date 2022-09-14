@@ -54,8 +54,14 @@ public class BackupService {
 
   public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender, BackupWriter writer)
       throws IOException, InterruptedException {
+    return prepareBackup(sender, writer, null);
+  }
+
+  public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender, BackupWriter writer,
+      String includeDiskStores)
+      throws IOException, InterruptedException {
     validateRequestingSender(sender);
-    BackupTask backupTask = new BackupTask(cache, writer);
+    BackupTask backupTask = new BackupTask(cache, writer, includeDiskStores);
     if (!currentTask.compareAndSet(null, backupTask)) {
       throw new IOException("Another backup is already in progress");
     }

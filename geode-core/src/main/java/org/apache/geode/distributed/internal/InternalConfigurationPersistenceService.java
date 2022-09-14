@@ -95,7 +95,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    */
   public static final String CLUSTER_CONFIG_ARTIFACTS_DIR_NAME = "cluster_config";
 
-  private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
+  public static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
 
   public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
 

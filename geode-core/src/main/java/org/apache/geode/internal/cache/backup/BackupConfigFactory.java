@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.backup;
 import static org.apache.geode.internal.cache.backup.AbstractBackupWriterConfig.TIMESTAMP;
 import static org.apache.geode.internal.cache.backup.AbstractBackupWriterConfig.TYPE;
 import static org.apache.geode.internal.cache.backup.FileSystemBackupWriterConfig.BASELINE_DIR;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriterConfig.INCLUDE_DISK_STORES;
 import static org.apache.geode.internal.cache.backup.FileSystemBackupWriterConfig.TARGET_DIR;
 
 import java.text.SimpleDateFormat;
@@ -27,6 +28,7 @@ class BackupConfigFactory {
 
   private String targetDirPath;
   private String baselineDirPath;
+  private String includeDiskStores;
 
   BackupConfigFactory() {
     // nothing
@@ -42,6 +44,11 @@ class BackupConfigFactory {
     return this;
   }
 
+  BackupConfigFactory withIncludeDiskStores(String includeDiskStores) {
+    this.includeDiskStores = includeDiskStores;
+    return this;
+  }
+
   Properties createBackupProperties() {
     Properties properties = new Properties();
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -50,6 +57,9 @@ class BackupConfigFactory {
     properties.setProperty(TARGET_DIR, targetDirPath);
     if (baselineDirPath != null) {
       properties.setProperty(BASELINE_DIR, baselineDirPath);
+    }
+    if (includeDiskStores != null) {
+      properties.setProperty(INCLUDE_DISK_STORES, includeDiskStores);
     }
     return properties;
   }

@@ -15,9 +15,11 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -27,6 +29,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.management.BackupStatus;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -51,7 +55,9 @@ public class BackupDiskStoreCommand extends GfshCommand {
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__DISKDIRS,
           help = CliStrings.BACKUP_DISK_STORE__DISKDIRS__HELP, mandatory = true) String targetDir,
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__BASELINEDIR,
-          help = CliStrings.BACKUP_DISK_STORE__BASELINEDIR__HELP) String baselineDir) {
+          help = CliStrings.BACKUP_DISK_STORE__BASELINEDIR__HELP) String baselineDir,
+      @CliOption(key = CliStrings.BACKUP_INCLUDE_DISK_STORES,
+          help = CliStrings.BACKUP_INCLUDE_DISK_STORES__HELP) String[] includeDiskStores) {
 
     authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
         ResourcePermission.Target.DISK);
@@ -62,11 +68,30 @@ public class BackupDiskStoreCommand extends GfshCommand {
       DistributionManager dm = cache.getDistributionManager();
       BackupStatus backupStatus;
 
+      String includeDiskStoresString = null;
+      if (includeDiskStores != null && includeDiskStores.length > 0) {
+        for (String name : includeDiskStores) {
+          if (name != null && !name.isEmpty()) {
+            if (!diskStoreExists(name)) {
+              return ResultModel.createError(CliStrings.format(
+                  CliStrings.BACKUP_DISK_STORE__MSG__SPECIFY_VALID_INCLUDE_DISKSTORE_UNKNOWN_DISKSTORE_0,
+                  new Object[] {name}));
+            }
+          } else {
+            return ResultModel.createError(CliStrings.format(
+                CliStrings.BACKUP_DISK_STORE__MSG__SPECIFY_VALID_INCLUDE_DISKSTORE_UNKNOWN_DISKSTORE_1));
+          }
+        }
+        includeDiskStoresString = StringUtils.join(includeDiskStores, ",");
+      }
+
       if (baselineDir != null && !baselineDir.isEmpty()) {
         backupStatus =
-            new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, baselineDir);
+            new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, baselineDir,
+                includeDiskStoresString);
       } else {
-        backupStatus = new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, null);
+        backupStatus = new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, null,
+            includeDiskStoresString);
       }
 
       Map<DistributedMember, Set<PersistentID>> backedupMemberDiskstoreMap =
@@ -135,5 +160,14 @@ public class BackupDiskStoreCommand extends GfshCommand {
     table.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_UUID, UUID);
     table.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_DIRECTORY, directory);
     table.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_HOST, host);
+  }
+
+  private boolean diskStoreExists(String diskStoreName) {
+    ManagementService managementService = getManagementService();
+    DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
+
+    return Arrays.stream(dsMXBean.listMembers()).anyMatch(
+        member -> DiskStoreCommandsUtils.diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, member,
+            diskStoreName));
   }
 }

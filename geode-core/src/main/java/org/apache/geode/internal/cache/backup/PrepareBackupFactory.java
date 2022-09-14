@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import static org.apache.geode.internal.cache.backup.AbstractBackupWriterConfig.TYPE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriterConfig.INCLUDE_DISK_STORES;
 
 import java.util.HashSet;
 import java.util.Properties;
@@ -42,7 +43,9 @@ class PrepareBackupFactory {
     String memberId = cleanSpecialCharacters(member.toString());
     BackupWriter backupWriter = BackupWriterFactory.getFactoryForType(properties.getProperty(TYPE))
         .createWriter(properties, memberId);
-    return new PrepareBackup(member, cache, backupWriter);
+
+    String includeDiskStores = properties.getProperty(INCLUDE_DISK_STORES);
+    return new PrepareBackup(member, cache, backupWriter, includeDiskStores);
   }
 
   BackupResponse createBackupResponse(InternalDistributedMember sender,

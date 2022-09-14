@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
@@ -68,7 +69,6 @@ public class DistributedSystemBridgeIntegrationTest {
     backupService = mock(BackupService.class);
     when(cache.getBackupService()).thenReturn(backupService);
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
-    when(cache.getBackupService()).thenReturn(backupService);
 
     DLockService dlock = mock(DLockService.class);
     when(dlock.lock(any(), anyLong(), anyLong())).thenReturn(true);
@@ -114,7 +114,7 @@ public class DistributedSystemBridgeIntegrationTest {
 
     InOrder inOrder = inOrder(dm, backupService);
     inOrder.verify(dm).putOutgoing(isA(PrepareBackupRequest.class));
-    inOrder.verify(backupService).prepareBackup(any(), any());
+    inOrder.verify(backupService).prepareBackup(any(), any(), eq(null));
     inOrder.verify(dm).putOutgoing(isA(FinishBackupRequest.class));
     inOrder.verify(backupService).doBackup();
   }

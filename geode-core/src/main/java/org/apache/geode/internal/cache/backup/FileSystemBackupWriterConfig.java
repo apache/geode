@@ -22,6 +22,7 @@ class FileSystemBackupWriterConfig extends AbstractBackupWriterConfig {
 
   static final String TARGET_DIR = "TARGET_DIRECTORY";
   static final String BASELINE_DIR = "BASELINE_DIRECTORY";
+  static final String INCLUDE_DISK_STORES = "INCLUDE_DISK_STORES";
 
   FileSystemBackupWriterConfig(Properties properties) {
     super(properties);
