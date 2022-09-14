@@ -41,7 +41,7 @@ class DependencyConstraints {
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.17.2")
     deps.put("micrometer.version", "1.9.1")
-    deps.put("shiro.version", "1.9.0")
+    deps.put("shiro.version", "1.9.1")
     deps.put("slf4j-api.version", "1.7.32")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.13.3")
@@ -61,7 +61,7 @@ class DependencyConstraints {
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.46.v20220331")
+    deps.put("jetty.version", "9.4.47.v20220610")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
