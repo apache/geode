@@ -33,5 +33,7 @@ Optimize availability and performance by following the guidelines in this sectio
     ```
     start server --name=server1 --J=-Dgeode.parallelDiskStoreRecovery=false
     ```
-
+**Note:**
+In case using parallel disk store recovery, use different disk stores for the PDX and the region.
+Otherwise, it will run in the sequential recovery mode, regardless of the above flag.
 
