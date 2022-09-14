@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_STORE_NAME;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,8 +43,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 class BackupTask {
   private static final Logger logger = LogService.getLogger();
-
-  private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
   private final Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
   private final RestoreScript restoreScript = new RestoreScript();
   private final InternalCache cache;
