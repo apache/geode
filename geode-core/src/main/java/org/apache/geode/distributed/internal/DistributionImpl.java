@@ -647,7 +647,7 @@ public class DistributionImpl implements Distribution {
     }
   }
 
-  private void destroyMember(final InternalDistributedMember member, final String reason) {
+  void destroyMember(final InternalDistributedMember member, final String reason) {
     final DirectChannel dc = directChannel;
     if (dc != null) {
       // Bug 37944: make sure this is always done in a separate thread,

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -785,6 +786,12 @@ public class DirectChannel {
     }
     closeEndpointExecutor.schedule(new CloseEndpointRunnable(member, reason, notifyDisconnect),
         Integer.getInteger("p2p.disconnectDelay", 3000), TimeUnit.MILLISECONDS);
+  }
+
+  int getCloseEndpointExecutorQueueSize() {
+    ScheduledThreadPoolExecutor implementation =
+        (ScheduledThreadPoolExecutor) closeEndpointExecutor;
+    return implementation.getQueue().size();
   }
 
   public class CloseEndpointRunnable implements Runnable {
