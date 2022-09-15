@@ -269,8 +269,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * This system property turns on synchronous writes just the init file.
    */
-  static final boolean SYNC_IF_WRITES =
-      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "syncMetaDataWrites");
+  static final boolean SYNC_IF_WRITES = true;
 
 
   /**
