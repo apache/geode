@@ -79,21 +79,17 @@ public class StartGatewaySenderCommand extends GfshCommand {
 
     if (cleanQueues) {
 
-      Set<DistributedMember> allServers = findMembers(null, null);
-
-      if (dsMembers.size() != allServers.size()) {
-        return ResultModel.createError(CliStrings.EXECUTE_ON_ALL_MEMBERS);
-      }
-
       GatewaySenderMXBean bean;
-      boolean commmandRejected = false;
+      boolean commandRejected = false;
 
       ResultModel rejectResultModel =
           ResultModel.createError(CliStrings.START_GATEWAYSENDER_REJECTED);
       TabularResultModel rejectResultData =
           rejectResultModel.addTable(CliStrings.REJECT_START_GATEWAYSENDER_REASON);
 
-      for (DistributedMember member : dsMembers) {
+      Set<DistributedMember> allServers = findMembers(null, null);
+
+      for (DistributedMember member : allServers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
         } else {
@@ -101,21 +97,20 @@ public class StartGatewaySenderCommand extends GfshCommand {
           bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
         }
         if (bean != null) {
+          if (!dsMembers.contains(member)) {
+            return ResultModel.createError(CliStrings.EXECUTE_ON_ALL_GATEWAYSENDER_MEMBERS);
+          }
+
           if (bean.isRunning()) {
-            commmandRejected = true;
+            commandRejected = true;
             rejectResultData.addMemberStatusResultRow(member.getId(), CliStrings.GATEWAY_ERROR,
                 CliStrings.format(
                     CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1, id,
                     member.getId()));
           }
-        } else {
-          commmandRejected = true;
-          rejectResultData.addMemberStatusResultRow(member.getId(), CliStrings.GATEWAY_ERROR,
-              CliStrings.format(
-                  CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, id, member.getId()));
         }
       }
-      if (commmandRejected) {
+      if (commandRejected) {
         return rejectResultModel;
       }
     }
