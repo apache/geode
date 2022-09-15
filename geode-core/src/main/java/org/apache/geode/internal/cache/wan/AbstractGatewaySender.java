@@ -34,7 +34,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
@@ -49,6 +48,7 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.GatewayCancelledException;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -154,6 +154,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private int serialNumber;
 
+  protected GatewaySenderStartupAction startupAction;
+
   protected GatewaySenderStats statistics;
 
   private Stopper stopper;
@@ -186,6 +188,19 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected volatile ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
       new ConcurrentLinkedQueue<>();
+
+  /**
+   * Contains wan replication events that were dropped by parallel gateway senders.
+   * Activate this hook by setting system property <code>ENABLE_TEST_HOOK_TEMP_DROPPED_EVENTS</code>
+   */
+  private volatile ConcurrentLinkedQueue<EntryEventImpl> testHookTempDroppedEvents;
+
+  /**
+   * Only used for testing purpose. This property enables test hook which collects all
+   * wan replication events that are dropped by parallel gateway senders.
+   */
+  private static final boolean ENABLE_TEST_HOOK_TEMP_DROPPED_EVENTS =
+      Boolean.getBoolean("enable-test-hook-temp-dropped-events");
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
    */
@@ -270,7 +285,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     transFilters = Collections.unmodifiableList(attrs.getGatewayTransportFilters());
     listeners = attrs.getAsyncEventListeners();
     substitutionFilter = attrs.getGatewayEventSubstitutionFilter();
-    locatorDiscoveryCallback = attrs.getGatewayLocatoDiscoveryCallback();
+    locatorDiscoveryCallback = attrs.getGatewayLocatorDiscoveryCallback();
     isDiskSynchronous = attrs.isDiskSynchronous();
     policy = attrs.getOrderPolicy();
     dispatcherThreads = attrs.getDispatcherThreads();
@@ -293,8 +308,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
       initializeEventIdIndex();
     }
+
     isBucketSorted = attrs.isBucketSorted();
     forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
+    startupAction = attrs.getStartupAction();
   }
 
   public GatewaySenderAdvisor getSenderAdvisor() {
@@ -413,6 +430,31 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public int getSocketReadTimeout() {
     return socketReadTimeout;
+  }
+
+  @Override
+  public GatewaySenderStartupAction getStartupAction() {
+    return startupAction;
+  }
+
+  /**
+   * This method returns startup action of gateway-sender. The startup action is calculated
+   * based on the startup-action (please check <code>{@link GatewaySenderStartupAction}</code>) and
+   * manual-start parameters. If set, then startup-action parameter has advantage over
+   * the manual-start parameter.
+   *
+   * @see GatewaySenderStartupAction
+   */
+  public GatewaySenderStartupAction calculateStartupActionForGatewaySender() {
+    // If startup-action parameter is not available, then use manual-start parameter
+    // to determine initial state of gateway-sender
+    if (this.getStartupAction() == GatewaySenderStartupAction.NONE) {
+      if (!this.isManualStart()) {
+        return GatewaySenderStartupAction.START;
+      }
+      return GatewaySenderStartupAction.STOP;
+    }
+    return this.getStartupAction();
   }
 
   @Override
@@ -585,6 +627,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public abstract void start();
+
+  @Override
+  public abstract void recoverInStoppedState();
 
   @Override
   public abstract void startWithCleanQueue();
@@ -922,8 +967,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public void setStartEventProcessorInPausedState() {
-    startEventProcessorInPausedState = true;
+  public void setStartEventProcessor(boolean isPaused) {
+    startEventProcessorInPausedState = isPaused;
   }
 
   /**
@@ -1059,7 +1104,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
 
       // this filter is defined by Asif which exist in old wan too. new wan has
-      // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
+      // other GatewayEventFilter. Do we need to get rid of this filter. Cheetah is
       // not considering this filter
       if (!filter.enqueueEvent(event)) {
         stats.incEventsFiltered();
@@ -1241,15 +1286,24 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       eventProcessor.registerEventDroppedInPrimaryQueue(event);
     } else {
       tmpDroppedEvents.add(event);
+      if (ENABLE_TEST_HOOK_TEMP_DROPPED_EVENTS) {
+        if (testHookTempDroppedEvents == null) {
+          testHookTempDroppedEvents = new ConcurrentLinkedQueue<>();
+        }
+        testHookTempDroppedEvents.add(event);
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
       }
     }
   }
 
-  @VisibleForTesting
-  int getTmpDroppedEventSize() {
+  protected int getTempDroppedEventSize() {
     return tmpDroppedEvents.size();
+  }
+
+  protected int getTempDroppedEventsHookSize() {
+    return testHookTempDroppedEvents.size();
   }
 
   /**
@@ -1267,10 +1321,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public void enqueueTempEvents() {
     if (eventProcessor != null) {// Fix for defect #47308
       // process tmpDroppedEvents
-      EntryEventImpl droppedEvent;
-      while ((droppedEvent = tmpDroppedEvents.poll()) != null) {
-        eventProcessor.registerEventDroppedInPrimaryQueue(droppedEvent);
-      }
+      processTempDroppedEvents();
 
       TmpQueueEvent nextEvent = null;
       final GatewaySenderStats stats = getStatistics();
@@ -1300,6 +1351,22 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
             "%s: An Exception occurred while queueing %s to perform operation %s for %s",
             this, getId(), nextEvent.getOperation(), nextEvent),
             e);
+      }
+    }
+  }
+
+  /**
+   * During sender is recovered in stopped state, if there are any cache operations while
+   * queue and event processor is being created then these events should be stored in
+   * tmpDroppedEvents temporary queue. Once event processor is created then queue will be
+   * drained and ParallelQueueRemovalMessage will be sent.
+   */
+  public void processTempDroppedEvents() {
+    if (this.eventProcessor != null) {
+      // process tmpDroppedEvents
+      EntryEventImpl droppedEvent;
+      while ((droppedEvent = tmpDroppedEvents.poll()) != null) {
+        this.eventProcessor.registerEventDroppedInPrimaryQueue(droppedEvent);
       }
     }
   }

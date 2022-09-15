@@ -33,6 +33,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.classloader.ClassPathLoader;
@@ -85,6 +86,24 @@ public class CliUtils {
       nameOrId = nameOrId != null && !nameOrId.isEmpty() ? nameOrId : distributedMember.getId();
     }
     return nameOrId;
+  }
+
+  public static boolean updateGatewaySenderStartupAction(CacheConfig config, Object configObject) {
+    boolean gatewaySenderConfigUpdated = false;
+    List<CacheConfig.GatewaySender> gatewaySenders = config.getGatewaySenders();
+    if (gatewaySenders.isEmpty() || configObject == null) {
+      return false;
+    }
+
+    CacheConfig.GatewaySender gatewaySenderConfig = ((CacheConfig.GatewaySender) configObject);
+    String gatewaySenderId = gatewaySenderConfig.getId();
+    for (CacheConfig.GatewaySender gatewaySender : gatewaySenders) {
+      if (gatewaySender.getId().equals(gatewaySenderId)) {
+        gatewaySender.setStartupAction(gatewaySenderConfig.getStartupAction());
+        gatewaySenderConfigUpdated = true;
+      }
+    }
+    return gatewaySenderConfigUpdated;
   }
 
   public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,

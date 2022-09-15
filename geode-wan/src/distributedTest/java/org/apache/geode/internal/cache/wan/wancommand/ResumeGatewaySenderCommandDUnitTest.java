@@ -38,14 +38,15 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({WanTest.class})
-@SuppressWarnings("serial")
 public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
 
   @Rule
@@ -55,7 +56,6 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private MemberVM locatorSite1;
-  private MemberVM locatorSite2;
   private MemberVM server1;
   private MemberVM server2;
   private MemberVM server3;
@@ -70,14 +70,14 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
+    clusterStartupRule.startLocatorVM(2, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
   }
 
   @Test
-  public void testResumeGatewaySender_ErrorConditions() throws Exception {
+  public void testResumeGatewaySender_ErrorConditions() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -86,15 +86,17 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
 
     DistributedMember vm1Member = getMember(server1.getVM());
-    String command = CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId() + " --" + CliStrings.GROUP
-        + "=SenderGroup1";
+    String command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER)
+        .addOption(CliStrings.RESUME_GATEWAYSENDER__ID, "ln")
+        .addOption(CliStrings.MEMBER, vm1Member.getId())
+        .addOption(CliStrings.GROUP, "SenderGroup1")
+        .getCommandString();
     gfsh.executeAndAssertThat(command).statusIsError()
         .containsOutput(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
   }
 
   @Test
-  public void testResumeGatewaySender() throws Exception {
+  public void testResumeGatewaySender() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -129,16 +131,15 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", true, true));
 
-    String command =
-        CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    // Resume gateway-sender on all members
+    String command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER)
+        .addOption(CliStrings.RESUME_GATEWAYSENDER__ID, "ln")
+        .getCommandString();
 
-    TabularResultModel resultData = cmdResult.getResultData()
-        .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
-    List<String> status = resultData.getValuesInColumn("Result");
-    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput("Cluster configuration for group 'cluster' is not updated")
+        .hasTableSection().hasColumn("Result")
+        .containsExactlyInAnyOrder("OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
@@ -156,7 +157,7 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a member
    */
   @Test
-  public void testResumeGatewaySender_onMember() throws Exception {
+  public void testResumeGatewaySender_onMember() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -174,18 +175,53 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, true));
 
     DistributedMember vm1Member = getMember(server1.getVM());
-    String command = CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId();
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
+    String command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER)
+        .addOption(CliStrings.RESUME_GATEWAYSENDER__ID, "ln")
+        .addOption(CliStrings.MEMBER, vm1Member.getId())
+        .getCommandString();
 
-    String strCmdResult = cmdResult.toString();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResultAssert resultAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    resultAssert.containsOutput(
+        "Configuration change is not persisted because the command is executed on specific member.");
+    resultAssert.hasTableSection().hasColumn("Message").asList().element(0).asString()
+        .contains("is resumed on member");
 
-    TabularResultModel resultData = cmdResult.getResultData()
-        .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
-    List<String> messages = resultData.getValuesInColumn("Message");
-    assertThat(messages.get(0)).contains("is resumed on member");
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+  }
+
+  /**
+   * test to validate that the start gateway sender starts the gateway sender on a member
+   */
+  @Test
+  public void testResumeGatewaySenderOnMemberWithClusterConfigurationService() {
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server1.invoke(() -> startSender("ln"));
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server1.invoke(() -> pauseSender("ln"));
+    server1.invoke(() -> verifySenderState("ln", true, true));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, true));
+
+    DistributedMember vm1Member = getMember(server1.getVM());
+    String command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER)
+        .addOption(CliStrings.RESUME_GATEWAYSENDER__ID, "ln")
+        .addOption(CliStrings.MEMBER, vm1Member.getId())
+        .getCommandString();
+
+    CommandResultAssert resultAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    resultAssert.containsOutput(
+        "Configuration change is not persisted because the command is executed on specific member.");
+    resultAssert.hasTableSection().hasColumn("Message").asList().element(0).asString()
+        .contains("is resumed on member");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
@@ -197,8 +233,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a group of members
    */
   @Test
-  public void testResumeGatewaySender_Group() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testResumeGatewaySender_Group() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -260,8 +296,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
    * to multiple groups
    */
   @Test
-  public void testResumeGatewaySender_MultipleGroup() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testResumeGatewaySender_MultipleGroup() {
+    int locator1Port = locatorSite1.getPort();
 
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
     server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
@@ -310,16 +346,17 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server5.getVM()), "ln", true, true));
 
-    String command = CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID
-        + "=ln --" + CliStrings.GROUP + "=SenderGroup1,SenderGroup2";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = cmdResult.getResultData()
-        .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
-    List<String> status = resultData.getValuesInColumn("Result");
-    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK", "OK");
+    String command = new CommandStringBuilder(CliStrings.RESUME_GATEWAYSENDER)
+        .addOption(CliStrings.RESUME_GATEWAYSENDER__ID, "ln")
+        .addOption(CliStrings.GROUP, "SenderGroup1,SenderGroup2")
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput("Cluster configuration for group 'SenderGroup1' is not updated.")
+        .containsOutput("Cluster configuration for group 'SenderGroup2' is not updated.")
+        .hasTableSection().hasColumn("Result")
+        .containsExactlyInAnyOrder("OK", "OK", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
@@ -339,7 +376,7 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     server5.invoke(() -> verifySenderState("ln", true, true));
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);

@@ -188,7 +188,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     return getQueue().size();
   }
 
-  protected abstract void initializeMessageQueue(String id, boolean cleanQueues);
+  protected abstract void initializeMessageQueue(String id, boolean cleanQueues, boolean isStopped);
 
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent<?, ?> event,
       Object substituteValue) throws IOException, CacheException {

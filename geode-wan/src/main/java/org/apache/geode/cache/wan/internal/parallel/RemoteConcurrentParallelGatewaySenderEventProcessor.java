@@ -34,20 +34,21 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
     extends ConcurrentParallelGatewaySenderEventProcessor {
 
   public RemoteConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super(sender, tMonitoring, cleanQueues);
+      ThreadsMonitoring tMonitoring, boolean cleanQueues, boolean recoverQueuesOnly) {
+    super(sender, tMonitoring, cleanQueues, recoverQueuesOnly);
   }
 
   @Override
   protected void createProcessors(int dispatcherThreads, Set<Region<?, ?>> targetRs,
-      boolean cleanQueues) {
+      boolean cleanQueues, boolean recoverQueuesOnly) {
     processors = new RemoteParallelGatewaySenderEventProcessor[sender.getDispatcherThreads()];
     if (logger.isDebugEnabled()) {
       logger.debug("Creating GatewaySenderEventProcessor");
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors[i] = new RemoteParallelGatewaySenderEventProcessor(sender, targetRs, i,
-          sender.getDispatcherThreads(), getThreadMonitorObj(), cleanQueues);
+          sender.getDispatcherThreads(), getThreadMonitorObj(), cleanQueues,
+          recoverQueuesOnly);
     }
   }
 

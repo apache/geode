@@ -109,6 +109,7 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.Assert;
@@ -126,6 +127,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
 import org.apache.geode.management.internal.configuration.utils.XmlConstants;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -413,7 +415,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   @Override
   public void parse(InputSource input) throws SAXException {
     Assert.assertTrue(handler != null);
-
     boolean isClientCache = creation instanceof ClientCacheCreation;
 
     handler.startDocument();
@@ -1433,6 +1434,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     // alert-threshold
     if (generateDefaults() || sender.getAlertThreshold() != GatewaySender.DEFAULT_ALERT_THRESHOLD) {
       atts.addAttribute("", "", ALERT_THRESHOLD, "", String.valueOf(sender.getAlertThreshold()));
+    }
+
+    // gateway-sender startup action
+    InternalGatewaySender internalGatewaySender = (InternalGatewaySender) sender;
+    if (internalGatewaySender.getStartupAction() != GatewaySenderStartupAction.NONE) {
+      atts.addAttribute("", "", STARTUP_ACTION, "",
+          internalGatewaySender.getStartupAction().name());
     }
 
     // dispatcher-threads

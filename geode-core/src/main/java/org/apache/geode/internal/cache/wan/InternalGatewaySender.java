@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -46,7 +47,37 @@ public interface InternalGatewaySender extends GatewaySender {
 
   void destroy(boolean initiator);
 
-  void setStartEventProcessorInPausedState();
+  void setStartEventProcessor(boolean isPaused);
+
+  /**
+   * Recovers partition region used by parallel gateway-sender queue. Parallel gateway sender
+   * queue region is colocated with partition region on which is collecting events. It is necessary
+   * to recover colocated gateway sender queue region, so it doesn't block the colocated data
+   * region to reach the online status.
+   */
+  void recoverInStoppedState();
+
+  /**
+   * Returns the startup-action of the <code>GatewaySender</code>. This action parameter is set
+   * after start, stop, pause and resume gateway-sender gfsh commands.
+   *
+   * @return startup action parameter value
+   *
+   * @see GatewaySenderStartupAction
+   */
+  GatewaySenderStartupAction getStartupAction();
+
+  /**
+   * This method returns startup action of gateway-sender. The startup action is calculated
+   * based on the startup-action (please check <code>{@link GatewaySenderStartupAction}</code>) and
+   * manual-start parameters. If set, then startup-action parameter has advantage over
+   * the manual-start parameter.
+   *
+   * @return startup action
+   *
+   * @see GatewaySenderStartupAction
+   */
+  GatewaySenderStartupAction calculateStartupActionForGatewaySender();
 
   int getEventQueueSize();
 

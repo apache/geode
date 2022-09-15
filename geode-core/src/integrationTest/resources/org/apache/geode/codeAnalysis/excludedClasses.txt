@@ -106,3 +106,4 @@ org/apache/geode/internal/net/ByteBufferVendor$OpenAttemptTimedOut
 org/apache/geode/internal/cache/wan/GatewaySenderEventImpl$TransactionMetadataDisposition
 org/apache/geode/internal/cache/tier/InterestType
 org/apache/geode/internal/cache/tier/MessageType
+org/apache/geode/cache/wan/GatewaySenderStartupAction

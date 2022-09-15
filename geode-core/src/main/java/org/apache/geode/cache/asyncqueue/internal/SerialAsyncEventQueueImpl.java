@@ -60,6 +60,9 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
+  public void recoverInStoppedState() {}
+
+  @Override
   public void start() {
     start(false);
   }

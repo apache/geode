@@ -71,6 +71,11 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
+    this(sender, tMonitoring, cleanQueues, false);
+  }
+
+  public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring, boolean cleanQueues, boolean recoverQueuesOnly) {
     super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     logger.info("ConcurrentParallelGatewaySenderEventProcessor: dispatcher threads {}",
         sender.getDispatcherThreads());
@@ -99,26 +104,26 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       logger.debug("The target PRs are {} Dispatchers: {}", targetRs, nDispatcher);
     }
 
-    createProcessors(sender.getDispatcherThreads(), targetRs, cleanQueues);
+    createProcessors(sender.getDispatcherThreads(), targetRs, cleanQueues, recoverQueuesOnly);
 
-    // this.queue = parallelQueue;
     queue = new ConcurrentParallelGatewaySenderQueue(sender, processors);
   }
 
   protected void createProcessors(int dispatcherThreads, Set<Region<?, ?>> targetRs,
-      boolean cleanQueues) {
+      boolean cleanQueues, boolean recoverQueuesOnly) {
     processors = new ParallelGatewaySenderEventProcessor[sender.getDispatcherThreads()];
     if (logger.isDebugEnabled()) {
       logger.debug("Creating AsyncEventProcessor");
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors[i] = new ParallelGatewaySenderEventProcessor(sender, i,
-          sender.getDispatcherThreads(), getThreadMonitorObj(), cleanQueues);
+          sender.getDispatcherThreads(), getThreadMonitorObj(), cleanQueues,
+          recoverQueuesOnly);
     }
   }
 
   @Override
-  protected void initializeMessageQueue(String id, boolean cleanQueues) {
+  protected void initializeMessageQueue(String id, boolean cleanQueues, boolean isStopped) {
     // nothing
   }
 

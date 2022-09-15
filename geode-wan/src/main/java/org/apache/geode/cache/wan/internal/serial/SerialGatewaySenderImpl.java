@@ -59,6 +59,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
+  public void recoverInStoppedState() {}
+
+  @Override
   public void startWithCleanQueue() {
     start(true);
   }
@@ -108,8 +111,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
       InternalDistributedSystem system = cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
-      logger
-          .info("Started  {}", this);
+      logger.info("Started  {}", this);
 
       enqueueTempEvents();
     } finally {

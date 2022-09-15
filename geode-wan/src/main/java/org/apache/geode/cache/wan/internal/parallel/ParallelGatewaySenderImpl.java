@@ -14,8 +14,12 @@
  */
 package org.apache.geode.cache.wan.internal.parallel;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -28,6 +32,7 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -53,6 +58,43 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   @Override
   public void start() {
     start(false);
+  }
+
+  @Override
+  public void recoverInStoppedState() {
+    this.getLifeCycleLock().writeLock().lock();
+    try {
+      if (eventProcessor != null) {
+        // Already recovered in stopped state
+        return;
+      }
+
+      Set<Region<?, ?>> targetRs = new HashSet<>();
+      for (InternalRegion pr : this.getCache().getApplicationRegions()) {
+        if (pr.getAllGatewaySenderIds().contains(this.getId())) {
+          targetRs.add(pr);
+        }
+      }
+      if (targetRs.isEmpty()) {
+        // Don't do anything if data region for which gateway-sender is configured is not
+        // available. Gateway-sender queue will be recovered during creation of that data region.
+        return;
+      }
+
+      eventProcessor =
+          new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
+              false, true);
+
+      InternalDistributedSystem system =
+          (InternalDistributedSystem) this.cache.getDistributedSystem();
+      system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
+
+      logger.info("Stopped {}", this);
+
+      processTempDroppedEvents();
+    } finally {
+      this.getLifeCycleLock().writeLock().unlock();
+    }
   }
 
   @Override
@@ -83,7 +125,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        */
       eventProcessor =
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
-              cleanQueues);
+              cleanQueues, false);
       if (isStartEventProcessorInPausedState()) {
         pauseEvenIfProcessorStopped();
       }

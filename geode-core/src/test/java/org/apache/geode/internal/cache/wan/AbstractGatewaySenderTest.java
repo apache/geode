@@ -133,6 +133,9 @@ public class AbstractGatewaySenderTest {
     public void start() {}
 
     @Override
+    public void recoverInStoppedState() {}
+
+    @Override
     public boolean isPrimary() {
       return true;
     }
@@ -193,7 +196,9 @@ public class AbstractGatewaySenderTest {
     }
 
     @Override
-    protected void initializeMessageQueue(String id, boolean cleanQueues) {}
+    protected void initializeMessageQueue(String id, boolean cleanQueues, boolean isStopped) {
+
+    }
 
     @Override
     protected void rebalance() {}
@@ -220,6 +225,11 @@ public class AbstractGatewaySenderTest {
 
     @Override
     public void start() {}
+
+    @Override
+    public void recoverInStoppedState() {
+
+    }
 
     @Override
     public void startWithCleanQueue() {}
