@@ -77,6 +77,44 @@ public class StartGatewaySenderCommand extends GfshCommand {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
+    if (cleanQueues) {
+
+      GatewaySenderMXBean bean;
+      boolean commandRejected = false;
+
+      ResultModel rejectResultModel =
+          ResultModel.createError(CliStrings.START_GATEWAYSENDER_REJECTED);
+      TabularResultModel rejectResultData =
+          rejectResultModel.addTable(CliStrings.REJECT_START_GATEWAYSENDER_REASON);
+
+      Set<DistributedMember> allServers = findMembers(null, null);
+
+      for (DistributedMember member : allServers) {
+        if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
+          bean = service.getLocalGatewaySenderMXBean(senderId);
+        } else {
+          ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
+          bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+        }
+        if (bean != null) {
+          if (!dsMembers.contains(member)) {
+            return ResultModel.createError(CliStrings.EXECUTE_ON_ALL_GATEWAYSENDER_MEMBERS);
+          }
+
+          if (bean.isRunning()) {
+            commandRejected = true;
+            rejectResultData.addMemberStatusResultRow(member.getId(), CliStrings.GATEWAY_ERROR,
+                CliStrings.format(
+                    CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1, id,
+                    member.getId()));
+          }
+        }
+      }
+      if (commandRejected) {
+        return rejectResultModel;
+      }
+    }
+
     ExecutorService execService =
         LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
 

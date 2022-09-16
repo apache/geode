@@ -3007,6 +3007,13 @@ public class CliStrings {
   public static final String GATEWAY_RECEIVER_IS_NOT_AVAILABLE_ON_MEMBER_0 =
       "GatewayReceiver is not available on member {0}";
 
+  public static final String START_GATEWAYSENDER_REJECTED = "Command rejected. Reasons:";
+
+  public static final String REJECT_START_GATEWAYSENDER_REASON = "Reasons command is rejected";
+
+  public static final String EXECUTE_ON_ALL_GATEWAYSENDER_MEMBERS =
+      "Command must be executed on all members on which gateway sender is created";
+
   public static final String GATEWAY_SENDER_IS_NOT_AVAILABLE = "GatewaySender is not available";
   public static final String GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1 =
       "GatewaySender {0} is already started on member {1}";

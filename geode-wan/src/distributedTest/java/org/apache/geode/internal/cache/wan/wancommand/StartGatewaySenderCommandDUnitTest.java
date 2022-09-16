@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createSender;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMember;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.startSender;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewaySenderMXBeanProxy;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -430,6 +431,96 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
     server2.invoke(() -> verifySenderState("ln", true, false));
     server3.invoke(() -> verifySenderState("ln", true, false));
   }
+
+  @Test
+  public void testStartGatewaySender_clean_queues_sender_on_one_server_allready_started()
+      throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> startSender("ln"));
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", false, false));
+
+    String command =
+        CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID + "=ln --"
+            + CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE + "=true";
+    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
+    assertThat(cmdResult).isNotNull();
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.ERROR);
+
+    TabularResultModel resultData = cmdResult.getResultData()
+        .getTableSection(CliStrings.REJECT_START_GATEWAYSENDER_REASON);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("Error");
+
+  }
+
+
+  @Test
+  public void testStartGatewaySender_clean_queues_on_one_member() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+
+    DistributedMember vm1Member = getMember(server1.getVM());
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", false, false));
+
+    String command =
+        CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID + "=ln --"
+            + CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE + CliStrings.MEMBER + "="
+            + vm1Member.getId();
+    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
+    assertThat(cmdResult).isNotNull();
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.ERROR);
+
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", false, false));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+  }
+
 
 
   private CommandResult executeCommandWithIgnoredExceptions(String command) throws Exception {
