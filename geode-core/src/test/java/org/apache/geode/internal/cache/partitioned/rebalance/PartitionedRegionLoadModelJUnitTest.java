@@ -443,7 +443,7 @@ public class PartitionedRegionLoadModelJUnitTest {
    * lmm, it will prevent a bucket move
    */
   @Test
-  public void testColocationBothEnforceLocalMaxMemory() throws UnknownHostException {
+  public void testColocationTwoNoneEvictionRegions() throws UnknownHostException {
     PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(bucketOperator, 1, 4,
         getAddressComparor(false), Collections.emptySet(), partitionedRegion);
 
@@ -489,7 +489,7 @@ public class PartitionedRegionLoadModelJUnitTest {
    * a region that memory full with enforceLocalMaxMemory enabled will prevent a bucket move.
    */
   @Test
-  public void testColocationOneEnforceLocalMaxMemoryFull() throws UnknownHostException {
+  public void testColocationOneNoneEvictionRegionReachLocalMaxMemoryLimit() throws UnknownHostException {
     PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(bucketOperator, 1, 4,
         getAddressComparor(false), Collections.emptySet(), partitionedRegion);
     InternalDistributedMember member1 =
@@ -531,7 +531,7 @@ public class PartitionedRegionLoadModelJUnitTest {
    * bucket move.
    */
   @Test
-  public void testColocationOneIgnoreEnforceLocalMaxMemoryFull() throws UnknownHostException {
+  public void testColocationOneEvictionRegionReachLocalMaxMemoryLimit() throws UnknownHostException {
     PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(bucketOperator, 1, 4,
         getAddressComparor(false), Collections.emptySet(), partitionedRegion);
     InternalDistributedMember member1 =
