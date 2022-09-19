@@ -34,11 +34,13 @@ import static org.apache.geode.management.internal.cli.functions.WanCopyRegionFu
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -73,6 +75,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
@@ -1166,12 +1169,28 @@ public class WanCopyRegionCommandDistributedTest extends WANTestBase {
 
   private void createSender(boolean isParallelGatewaySender, List<VM> servers,
       String senderId, int remoteDsId) {
-    for (VM server : servers) {
-      server.invoke(() -> createSender(senderId, remoteDsId, isParallelGatewaySender,
-          100, 10, false,
-          false, null, true));
+    List<AsyncInvocation<Void>> tasks = new LinkedList<>();
+    for (VM vm : servers) {
+      tasks.add(vm.invokeAsync(
+          () -> vm.invoke(() -> {
+            IgnoredException ignoreInterruptedException =
+                addIgnoredException(InterruptedException.class.getName());
+            try {
+              createSender(senderId, remoteDsId, isParallelGatewaySender,
+                  100, 10, false,
+                  false, null, false);
+            } finally {
+              ignoreInterruptedException.remove();
+            }
+          })));
     }
-    startSenderInVMsAsync(senderId, servers.toArray(new VM[0]));
+    for (AsyncInvocation<Void> invocation : tasks) {
+      try {
+        invocation.await();
+      } catch (InterruptedException e) {
+        fail("Creating and starting senders was interrupted");
+      }
+    }
   }
 
   private void createReceivers(List<VM> serversInB, VM serverInC) {
