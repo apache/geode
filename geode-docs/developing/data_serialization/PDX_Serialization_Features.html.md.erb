@@ -31,6 +31,25 @@ When you serialize an object using PDX, <%=vars.product_name%> stores the object
 
 This centralization of object type information is advantageous for client/server installations in which clients and servers are written in different languages. Clients pass registry information to servers automatically when they store a PDX serialized object. Clients can run queries and functions against the data in the servers without compatibility between server and the stored objects. One client can store data on the server to be retrieved by another client, with no requirements on the part of the server.
 
+**Note:**
+When pdx registry is not persistent or persistent pdx registry is removed, if all the servers are stopped/crashed with clients still running, then the client with previous pdx type info connects to cluster with servers that are re-started, the client will see Unknown pdx type error.
+
+To fix this currently a system property is used to clear the pdx type on client side when client disconnects from servers.
+
+| Name                                      | Description                                             | Default |
+|-------------------------------------------|---------------------------------------------------------|---------|
+| `gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS`  | Clear pdxType ids when client disconnects from servers. | `false` |
+-   In the API, set the System properties before the cache creation call. Example:
+
+    ``` pre
+    System.setProperty(PoolImpl.ON_DISCONNECT_CLEAR_PDXTYPEIDS, "true");
+    ```
+-   At the java command line, pass in System properties using the -D switch. Example:
+
+    ``` pre
+    java -Dgemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS=true
+    ```
+
 ## <a id="concept_F02E40517C4B42F2A75B133BB507C626__section_08C901A3CF3E438C8778F09D482B9A63" class="no-quick-link"></a>Reduced Deserialization of Serialized Objects
 
 The access methods of PDX serialized objects allow you to examine specific fields of your domain object without deserializing the entire object. Depending on your object usage, you can reduce serialization and deserialization costs significantly.
