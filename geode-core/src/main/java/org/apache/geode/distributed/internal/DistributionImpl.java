@@ -74,7 +74,6 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.util.Breadcrumbs;
-import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -648,28 +647,13 @@ public class DistributionImpl implements Distribution {
     }
   }
 
-  private void destroyMember(final InternalDistributedMember member, final String reason) {
+  void destroyMember(final InternalDistributedMember member, final String reason) {
     final DirectChannel dc = directChannel;
     if (dc != null) {
       // Bug 37944: make sure this is always done in a separate thread,
       // so that shutdown conditions don't wedge the view lock
       // fix for bug 34010
-      new LoggingThread("disconnect thread for " + member, () -> {
-        try {
-          Thread.sleep(Integer.getInteger("p2p.disconnectDelay", 3000));
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-          // Keep going, try to close the endpoint.
-        }
-        if (!dc.isOpen()) {
-          return;
-        }
-        if (logger.isDebugEnabled()) {
-          logger.debug("Membership: closing connections for departed member {}", member);
-        }
-        // close connections, but don't do membership notification since it's already been done
-        dc.closeEndpoint(member, reason, false);
-      }).start();
+      dc.scheduleCloseEndpoint(member, reason, false);
     }
   }
 

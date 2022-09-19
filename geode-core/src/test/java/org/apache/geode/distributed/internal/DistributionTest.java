@@ -15,13 +15,13 @@
 package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.internal.DistributionImpl.EMPTY_MEMBER_ARRAY;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -109,7 +109,7 @@ public class DistributionTest {
     m.setRecipients(recipients);
     Set<InternalDistributedMember> failures = distribution
         .directChannelSend(recipients, m);
-    assertTrue(failures == null);
+    assertThat(failures == null).isTrue();
     verify(dc).send(any(), any(),
         any(), anyLong(), anyLong());
   }
@@ -126,9 +126,9 @@ public class DistributionTest {
     when(dc.send(any(), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyLong(), anyLong())).thenThrow(exception);
     failures = distribution.directChannelSend(recipients, m);
-    assertTrue(failures != null);
-    assertEquals(1, failures.size());
-    assertEquals(recipients.get(0), failures.iterator().next());
+    assertThat(failures != null).isTrue();
+    assertThat(failures).hasSize(1);
+    assertThat(failures.iterator().next()).isEqualTo(recipients.get(0));
   }
 
   @Test
@@ -154,10 +154,10 @@ public class DistributionTest {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     when(membership.getAllMembers(EMPTY_MEMBER_ARRAY)).thenReturn(mockMembers);
     m.setRecipient(DistributionMessage.ALL_RECIPIENTS);
-    assertTrue(m.forAll());
+    assertThat(m.forAll()).isTrue();
     Set<InternalDistributedMember> failures = distribution
         .directChannelSend(null, m);
-    assertTrue(failures == null);
+    assertThat(failures == null).isTrue();
     verify(dc).send(any(), isA(mockMembers.getClass()),
         isA(DistributionMessage.class), anyLong(), anyLong());
   }
@@ -188,8 +188,8 @@ public class DistributionTest {
     Set<InternalDistributedMember> failures =
         distribution.send(Collections.singletonList(mockMembers[0]), m);
     verify(membership, never()).send(any(), any());
-    assertEquals(1, failures.size());
-    assertEquals(mockMembers[0], failures.iterator().next());
+    assertThat(failures).hasSize(1);
+    assertThat(failures.iterator().next()).isEqualTo(mockMembers[0]);
   }
 
   @Test
@@ -227,5 +227,14 @@ public class DistributionTest {
     assertThatThrownBy(() -> distribution.start())
         .isInstanceOf(SystemConnectException.class)
         .hasCause(exception);
+  }
+
+  @Test
+  public void testMemberDestroyed() throws Exception {
+    distribution.destroyMember(mockMembers[0], null);
+    distribution.destroyMember(mockMembers[1], null);
+
+    verify(dc).scheduleCloseEndpoint(eq(mockMembers[0]), eq(null), eq(false));
+    verify(dc).scheduleCloseEndpoint(eq(mockMembers[1]), eq(null), eq(false));
   }
 }

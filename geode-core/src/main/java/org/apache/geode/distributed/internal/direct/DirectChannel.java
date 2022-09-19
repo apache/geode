@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -56,6 +59,7 @@ import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MsgStreamer;
 import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.internal.util.Breadcrumbs;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -85,6 +89,11 @@ public class DirectChannel {
   private final InetAddress address;
 
   InternalDistributedMember localAddr;
+
+  private ScheduledExecutorService closeEndpointExecutor;
+
+  private final int CLOSE_ENDPOINT_POOL_SIZE =
+      Integer.getInteger("DirectChannel.CLOSE_ENDPOINT_POOL_SIZE", 1);
 
   /**
    * Callback to set the local address, must be done before this channel is used.
@@ -146,6 +155,9 @@ public class DirectChannel {
       disconnectCompleted = false;
       logger.info("GemFire P2P Listener started on {}",
           conduit.getSocketId());
+
+      closeEndpointExecutor = LoggingExecutors.newScheduledThreadPool(CLOSE_ENDPOINT_POOL_SIZE,
+          "DirectChannel.closeEndpoint", false);
 
     } catch (ConnectionException ce) {
       logger.fatal(String.format("Unable to initialize direct channel because: %s",
@@ -667,6 +679,7 @@ public class DirectChannel {
   public synchronized void disconnect(Exception cause) {
     disconnected = true;
     disconnectCompleted = false;
+    closeEndpointExecutor.shutdownNow();
     conduit.stop(cause);
     disconnectCompleted = true;
   }
@@ -764,5 +777,38 @@ public class DirectChannel {
    */
   public boolean hasReceiversFor(DistributedMember mbr) {
     return conduit.hasReceiversFor(mbr);
+  }
+
+  public void scheduleCloseEndpoint(InternalDistributedMember member, String reason,
+      boolean notifyDisconnect) {
+    if (disconnected) {
+      return;
+    }
+    closeEndpointExecutor.schedule(new CloseEndpointRunnable(member, reason, notifyDisconnect),
+        Integer.getInteger("p2p.disconnectDelay", 3000), TimeUnit.MILLISECONDS);
+  }
+
+  int getCloseEndpointExecutorQueueSize() {
+    ScheduledThreadPoolExecutor implementation =
+        (ScheduledThreadPoolExecutor) closeEndpointExecutor;
+    return implementation.getQueue().size();
+  }
+
+  public class CloseEndpointRunnable implements Runnable {
+
+    protected final InternalDistributedMember member;
+    protected final String reason;
+    protected final boolean notifyDisconnect;
+
+    public CloseEndpointRunnable(InternalDistributedMember member, String reason, boolean notify) {
+      this.member = member;
+      this.reason = reason;
+      this.notifyDisconnect = notify;
+    }
+
+    @Override
+    public void run() {
+      closeEndpoint(member, reason, notifyDisconnect);
+    }
   }
 }
