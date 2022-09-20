@@ -66,7 +66,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
   private static final int MAX_MOVES = 5000;
   private static final boolean DEBUG = true;
-
+  private static final long MB = 1024 * 1024;
   private MyBucketOperator bucketOperator;
   private final PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
   final ClusterDistributionManager clusterDistributionManager =
@@ -443,7 +443,8 @@ public class PartitionedRegionLoadModelJUnitTest {
    * lmm, it will prevent a bucket move
    */
   @Test
-  public void testColocationEnforceLocalMaxMemory() throws UnknownHostException {
+  public void testColocationTwoNonEvictionRegionsEnforceLocalMaxMemory()
+      throws UnknownHostException {
     PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(bucketOperator, 1, 4,
         getAddressComparor(false), Collections.emptySet(), partitionedRegion);
 
@@ -452,25 +453,27 @@ public class PartitionedRegionLoadModelJUnitTest {
     InternalDistributedMember member2 =
         new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 2);
 
-    // Create some buckets with low redundancy on member 1
+    // Create some buckets with low redundancy on member 1 and enough lmm for region a
     PartitionMemberInfoImpl details1 =
-        buildDetails(member1, new long[] {1, 1, 1, 1}, new long[] {1, 1, 1, 1});
+        buildDetails(member1, 500, 500 * MB, new long[] {1 * MB, 1 * MB, 1 * MB, 1 * MB},
+            new long[] {1, 1, 1, 1});
     PartitionMemberInfoImpl details2 =
-        buildDetails(member2, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
+        buildDetails(member2, 500, 500 * MB, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
     model.addRegion("a", Arrays.asList(details1, details2), new FakeOfflineDetails(), true);
 
 
-    // Member 2 has a lmm of 2, so it should only accept 2 buckets
+    // Region b has a lmm of 2MB, so member2 should only accept 2 buckets
     PartitionMemberInfoImpl bDetails1 =
-        buildDetails(member1, 2, 2, new long[] {1, 1, 1, 1}, new long[] {1, 1, 1, 1});
+        buildDetails(member1, 2, 2 * MB, new long[] {1 * MB, 1 * MB, 1 * MB, 1 * MB},
+            new long[] {1, 1, 1, 1});
     PartitionMemberInfoImpl bDetails2 =
-        buildDetails(member2, 2, 2, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
+        buildDetails(member2, 2, 2 * MB, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
     model.addRegion("b", Arrays.asList(bDetails1, bDetails2), new FakeOfflineDetails(), true);
 
 
     assertThat(doMoves(new CompositeDirector(true, true, false, true), model)).isEqualTo(4);
 
-    // Everything should be create on member2
+    // Only (2+2)MB data should be create on member2
     Set<Create> expectedCreates = new HashSet<>();
     expectedCreates.add(new Create(member2, 0));
     expectedCreates.add(new Create(member2, 1));
@@ -483,10 +486,12 @@ public class PartitionedRegionLoadModelJUnitTest {
   }
 
   /**
-   * Test that each region individually honors it's enforce local max memory flag.
+   * Test that a region with enforceLocalMaxMemory disabled colocated with
+   * a region with memory full and enforceLocalmaxMemory enabled will prevent a bucket move.
    */
   @Test
-  public void testColocationIgnoreEnforceLocalMaxMemory() throws UnknownHostException {
+  public void testColocationOneNonEvictionRegionReachesLocalMaxMemoryLimit()
+      throws UnknownHostException {
     PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(bucketOperator, 1, 4,
         getAddressComparor(false), Collections.emptySet(), partitionedRegion);
     InternalDistributedMember member1 =
@@ -494,19 +499,62 @@ public class PartitionedRegionLoadModelJUnitTest {
     InternalDistributedMember member2 =
         new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 2);
 
-    // Create some buckets with low redundancy on member 1
     PartitionMemberInfoImpl details1 =
-        buildDetails(member1, new long[] {1, 1, 1, 1}, new long[] {1, 1, 1, 1});
+        buildDetails(member1, 1, 8 * MB, new long[] {1 * MB, 1 * MB, 1 * MB, 1 * MB},
+            new long[] {1, 1, 1, 1});
     PartitionMemberInfoImpl details2 =
-        buildDetails(member2, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
+        buildDetails(member2, 1, 8 * MB, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
+    model.addRegion("a", Arrays.asList(details1, details2), new FakeOfflineDetails(), false);
+
+
+    PartitionMemberInfoImpl bDetails1 =
+        buildDetails(member1, 1, 2 * MB, new long[] {1 * MB, 1 * MB, 1 * MB, 1 * MB},
+            new long[] {1, 1, 1, 1});
+    PartitionMemberInfoImpl bDetails2 =
+        buildDetails(member2, 1, 2 * MB, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
+    model.addRegion("b", Arrays.asList(bDetails1, bDetails2), new FakeOfflineDetails(), true);
+
+
+    assertThat(doMoves(new CompositeDirector(true, true, false, true), model)).isEqualTo(4);
+
+    Set<Create> expectedCreates = new HashSet<>();
+    expectedCreates.add(new Create(member2, 0));
+    expectedCreates.add(new Create(member2, 1));
+    assertThat(new HashSet<>(bucketOperator.creates)).isEqualTo(expectedCreates);
+
+    Set<Move> expectedMoves = new HashSet<>();
+    expectedMoves.add(new Move(member1, member2));
+    expectedMoves.add(new Move(member1, member2));
+    assertThat(new HashSet<>(bucketOperator.primaryMoves)).isEqualTo(expectedMoves);
+  }
+
+  /**
+   * Test that a region with memory full and enforceLocalMaxMemory disabled will not prevent a
+   * bucket move.
+   */
+  @Test
+  public void testColocationOneEvictionRegionReachesLocalMaxMemoryLimit()
+      throws UnknownHostException {
+    PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(bucketOperator, 1, 4,
+        getAddressComparor(false), Collections.emptySet(), partitionedRegion);
+    InternalDistributedMember member1 =
+        new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 1);
+    InternalDistributedMember member2 =
+        new InternalDistributedMember(InetAddress.getByName("127.0.0.1"), 2);
+
+    PartitionMemberInfoImpl details1 =
+        buildDetails(member1, 1, 4 * MB, new long[] {1 * MB, 1 * MB, 1 * MB, 1 * MB},
+            new long[] {1, 1, 1, 1});
+    PartitionMemberInfoImpl details2 =
+        buildDetails(member2, 1, 4 * MB, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
     model.addRegion("a", Arrays.asList(details1, details2), new FakeOfflineDetails(), true);
 
 
-    // Member 2 has a lmm of 2, so it should only accept 2 buckets
     PartitionMemberInfoImpl bDetails1 =
-        buildDetails(member1, 2, 2, new long[] {1, 1, 1, 1}, new long[] {1, 1, 1, 1});
+        buildDetails(member1, 1, 2 * MB, new long[] {1 * MB, 1 * MB, 1 * MB, 1 * MB},
+            new long[] {1, 1, 1, 1});
     PartitionMemberInfoImpl bDetails2 =
-        buildDetails(member2, 2, 2, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
+        buildDetails(member2, 1, 2 * MB, new long[] {0, 0, 0, 0}, new long[] {0, 0, 0, 0});
     model.addRegion("b", Arrays.asList(bDetails1, bDetails2), new FakeOfflineDetails(), false);
 
 
