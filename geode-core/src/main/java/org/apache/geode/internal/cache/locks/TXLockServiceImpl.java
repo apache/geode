@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -69,6 +70,14 @@ public class TXLockServiceImpl extends TXLockService {
 
   /** The distributed system for cancellation checks. */
   private final InternalDistributedSystem system;
+
+  @VisibleForTesting
+  TXLockServiceImpl(InternalDistributedSystem sys, StoppableReentrantReadWriteLock recoveryLock,
+      DLockService dlock) {
+    system = sys;
+    this.recoveryLock = recoveryLock;
+    this.dlock = dlock;
+  }
 
   TXLockServiceImpl(String name, InternalDistributedSystem sys) {
     if (sys == null) {
@@ -129,19 +138,15 @@ public class TXLockServiceImpl extends TXLockService {
       if (gotLocks) { // ...otherwise race can occur between tryLocks and readLock
         acquireRecoveryReadLock();
       } else if (keyIfFail[0] != null) {
-        if (gotLocks) {
-          synchronized (txLockIdList) {
-            txLockIdList.remove(txLockId);
-          }
+        synchronized (txLockIdList) {
+          txLockIdList.remove(txLockId);
         }
         throw new CommitConflictException(
             String.format("Concurrent transaction commit detected %s",
                 keyIfFail[0]));
       } else {
-        if (gotLocks) {
-          synchronized (txLockIdList) {
-            txLockIdList.remove(txLockId);
-          }
+        synchronized (txLockIdList) {
+          txLockIdList.remove(txLockId);
         }
         throw new CommitConflictException(
             String.format("Failed to request try locks from grantor: %s",
@@ -283,6 +288,11 @@ public class TXLockServiceImpl extends TXLockService {
   @Override
   void basicDestroy() {
     dlock.destroyAndRemove();
+  }
+
+  @VisibleForTesting
+  public int getTxLockIdList() {
+    return this.txLockIdList.size();
   }
 
 }
