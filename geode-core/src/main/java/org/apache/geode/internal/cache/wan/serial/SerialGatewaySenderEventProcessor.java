@@ -885,6 +885,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     sendBatchDestroyOperationForDroppedEvent(droppedEvent, -1);
   }
 
+  @Override
+  protected boolean checkAndUpdateGatewayStatusOnReplicas(EntryEventImpl checkEvent) {
+    return true;
+  }
+
   private String printEventIdList(Set<EventID> eventIds) {
     return "["
         + eventIds.stream().map(EventID::expensiveToString)

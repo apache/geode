@@ -309,6 +309,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   protected abstract void registerEventDroppedInPrimaryQueue(EntryEventImpl droppedEvent);
 
+  protected abstract boolean checkAndUpdateGatewayStatusOnReplicas(EntryEventImpl checkEvent);
+
   /**
    * @return the sender
    */
@@ -361,6 +363,13 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   protected boolean stopped() {
     if (isStopped) {
+      return true;
+    }
+    return sender.getStopper().isCancelInProgress();
+  }
+
+  protected boolean isCacheClosing() {
+    if (sender.getCache().isClosed()) {
       return true;
     }
     return sender.getStopper().isCancelInProgress();
@@ -1489,7 +1498,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     }
     return recipients;
   }
-
 
   private List<GatewaySenderEventImpl> pendingEventsInBatches() {
     List<GatewaySenderEventImpl> pendingEvents = new ArrayList<>();

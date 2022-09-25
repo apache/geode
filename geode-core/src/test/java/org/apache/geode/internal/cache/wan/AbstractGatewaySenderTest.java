@@ -208,6 +208,11 @@ public class AbstractGatewaySenderTest {
     }
 
     @Override
+    protected boolean checkAndUpdateGatewayStatusOnReplicas(EntryEventImpl checkEvent) {
+      return true;
+    }
+
+    @Override
     public void initializeEventDispatcher() {}
 
     @Override

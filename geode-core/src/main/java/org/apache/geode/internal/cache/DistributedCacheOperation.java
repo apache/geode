@@ -1259,7 +1259,8 @@ public abstract class DistributedCacheOperation {
           if (gatewayMap != null && !gatewayMap.isEmpty()) {
             if (processorId != 0 || (!(getReplySender(dm) instanceof DistributionManager))
                 || directAck) {
-              ExtendedReplyMessage.send(getSender(), processorId, rex, dm, !appliedOperation,
+              ExtendedReplyMessage.send(getSender(), processorId, rex, getReplySender(dm),
+                  !appliedOperation,
                   closed, false,
                   isInternal());
             }

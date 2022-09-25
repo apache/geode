@@ -155,6 +155,13 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   }
 
   @Override
+  protected boolean checkAndUpdateGatewayStatusOnReplicas(EntryEventImpl checkEvent) {
+    logger.info("ParallelGatewaySenderEventProcessor should not check current event {}",
+        checkEvent);
+    return true;
+  }
+
+  @Override
   public void clear(PartitionedRegion pr, int bucketId) {
     ((ParallelGatewaySenderQueue) queue).clear(pr, bucketId);
   }

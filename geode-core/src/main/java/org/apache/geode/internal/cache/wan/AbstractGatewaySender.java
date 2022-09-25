@@ -854,6 +854,15 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return true;
   }
 
+  private boolean checkContinueWithGatewaySenderActions(EntryEventImpl event) {
+    if (eventProcessor != null) {
+      return eventProcessor.checkAndUpdateGatewayStatusOnReplicas(event);
+    } else {
+      return true;
+    }
+  }
+
+
   private class Stopper extends CancelCriterion {
     final CancelCriterion stper;
 
@@ -1190,6 +1199,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
               throw new GatewayCancelledException("Event processor thread is gone");
             }
           }
+          if (!checkContinueWithGatewaySenderActions(event)) {
+            if (isPrimary()) {
+              recordDroppedEvent(clonedEvent);
+            }
+            return;
+          }
 
           // Get substitution value to enqueue if necessary
           Object substituteValue = getSubstituteValue(clonedEvent, operation);
@@ -1227,6 +1242,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     if (isRunning()) {
       return true;
     }
+
+    if (!checkContinueWithGatewaySenderActions(event)) {
+      return false;
+    }
+
     if (isPrimary()) {
       recordDroppedEvent(clonedEvent);
     }

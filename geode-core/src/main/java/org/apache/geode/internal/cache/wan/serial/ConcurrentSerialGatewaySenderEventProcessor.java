@@ -420,6 +420,11 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   @Override
+  protected boolean checkAndUpdateGatewayStatusOnReplicas(EntryEventImpl checkEvent) {
+    return true;
+  }
+
+  @Override
   protected void enqueueEvent(GatewayQueueEvent<?, ?> event) {
     for (SerialGatewaySenderEventProcessor serialProcessor : processors) {
       serialProcessor.enqueueEvent(event);

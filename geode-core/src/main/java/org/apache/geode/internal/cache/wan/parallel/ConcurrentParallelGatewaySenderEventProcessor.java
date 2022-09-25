@@ -177,6 +177,75 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
+  protected boolean checkAndUpdateGatewayStatusOnReplicas(EntryEventImpl event) {
+    if (queue == null) {
+      return true;
+    }
+    ConcurrentParallelGatewaySenderQueue cpgsq = (ConcurrentParallelGatewaySenderQueue) queue;
+    PartitionedRegion prQ = cpgsq.getRegion(event.getRegion().getFullPath());
+    if (prQ == null) {
+      logger.info("shadow partitioned region " + event.getRegion().getFullPath()
+          + " is not created yet.");
+      return true;
+    }
+    int bucketId = PartitionedRegionHelper.getHashKey(event);
+    boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
+
+    int tempstatus;
+    if (isPrimary) {
+      if (!isStopped()) {
+        if (!event.getGatewayMap().isEmpty()) {
+          if (event.getGatewayMap().get(getSender().getId()) != null) {
+            tempstatus = event.getGatewayMap().get(getSender().getId());
+            if (tempstatus != 2) {
+              return false;
+            }
+          }
+        }
+        return true;
+      } else {
+        if (!event.getGatewayMap().isEmpty()) {
+          if (event.getGatewayMap().get(getSender().getId()) != null) {
+            tempstatus = event.getGatewayMap().get(getSender().getId());
+            if (tempstatus == 0) {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+    } else {
+
+      if (isCacheClosing()) {
+        return false;
+      }
+      if (!isStopped()) {
+        if (event.getGatewayMap().get(getSender().getId()) != null) {
+          tempstatus = event.getGatewayMap().get(getSender().getId());
+          if (tempstatus == 0) {
+            return false;
+          }
+        } else {
+          event.getGatewayMap().put(getSender().getId(), 2);
+        }
+      } else {
+        if (event.getGatewayMap().get(getSender().getId()) != null) {
+          tempstatus = event.getGatewayMap().get(getId());
+          if (tempstatus == 2) {
+            event.getGatewayMap().put(getSender().getId(), 1);
+          }
+        } else {
+          event.getGatewayMap().put(getSender().getId(), 0);
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+
+  @Override
   public void run() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
