@@ -58,6 +58,7 @@ import org.apache.geode.cache.query.internal.types.MapTypeImpl;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.ExtendedReplyMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
@@ -988,6 +989,9 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.register(DISTRIBUTED_PING_MESSAGE, DistributedPingMessage.class);
     serializer.register(PARALLEL_QUEUE_SET_POSSIBLE_DUPLICATE_MESSAGE,
         ParallelQueueSetPossibleDuplicateMessage.class);
+    serializer.register(EXTENDED_REPLYMESSAGE,
+        ExtendedReplyMessage.class);
+
   }
 
   /**

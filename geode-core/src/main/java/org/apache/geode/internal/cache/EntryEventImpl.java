@@ -20,6 +20,8 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.EN
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
@@ -186,6 +188,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   private transient boolean hasRetried = false;
 
   public static final Object SUSPECT_TOKEN = new Object();
+
+  private final transient Map<String, Integer> gatewayMap = new HashMap<>();
 
   public EntryEventImpl() {
     offHeapLock = null;
@@ -2299,6 +2303,10 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     InternalDataSerializer.invokeToData(distributedMember, out);
     context.getSerializer().writeObject(getContext(), out);
     DataSerializer.writeLong(tailKey, out);
+  }
+
+  public Map<String, Integer> getGatewayMap() {
+    return gatewayMap;
   }
 
   private abstract static class EventFlags {

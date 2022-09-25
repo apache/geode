@@ -50,11 +50,11 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
 
   protected boolean closed = false;
 
-  private boolean returnValueIsException;
+  protected boolean returnValueIsException;
 
-  private Object returnValue;
+  protected Object returnValue;
 
-  private transient boolean sendViaJGroups;
+  protected transient boolean sendViaJGroups;
 
   protected transient boolean internal;
 

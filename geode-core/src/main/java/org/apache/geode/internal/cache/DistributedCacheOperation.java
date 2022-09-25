@@ -49,6 +49,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ExtendedReplyMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -1002,6 +1003,14 @@ public abstract class DistributedCacheOperation {
       return true;
     }
 
+
+    boolean processExtendedReply(ExtendedReplyMessage reply,
+        CacheOperationReplyProcessor processor) {
+      // notification that a reply has been received. Most messages
+      // don't do anything special here
+      return true;
+    }
+
     /**
      * Add the cache event's old value to this message. We must propagate the old value when the
      * receiver is doing GII and has listeners (CQs) that require the old value.
@@ -1139,6 +1148,7 @@ public abstract class DistributedCacheOperation {
     protected void basicProcess(ClusterDistributionManager dm, LocalRegion lclRgn) {
       Throwable thr = null;
       boolean sendReply = true;
+      Map<String, Integer> gatewayMap = null;
 
       if (logger.isTraceEnabled()) {
         logger.trace("DistributedCacheOperation.basicProcess: {}", this);
@@ -1196,6 +1206,7 @@ public abstract class DistributedCacheOperation {
           sendReply = operateOnRegion(event, dm);
         } finally {
           if (event instanceof EntryEventImpl) {
+            gatewayMap = ((EntryEventImpl) event).getGatewayMap();
             ((Releasable) event).release();
           }
         }
@@ -1244,7 +1255,17 @@ public abstract class DistributedCacheOperation {
           if (thr != null) {
             rex = new ReplyException(thr);
           }
-          sendReply(getSender(), processorId, rex, getReplySender(dm));
+
+          if (gatewayMap != null && !gatewayMap.isEmpty()) {
+            if (processorId != 0 || (!(getReplySender(dm) instanceof DistributionManager))
+                || directAck) {
+              ExtendedReplyMessage.send(getSender(), processorId, rex, dm, !appliedOperation,
+                  closed, false,
+                  isInternal());
+            }
+          } else {
+            sendReply(getSender(), processorId, rex, getReplySender(dm));
+          }
         } else if (thr != null) {
           logger.error(String.format("Exception occurred while processing %s",
               this),
@@ -1590,7 +1611,18 @@ public abstract class DistributedCacheOperation {
 
     @Override
     protected void process(final DistributionMessage dmsg, boolean warn) {
-      if (dmsg instanceof ReplyMessage) {
+      if (dmsg instanceof ExtendedReplyMessage) {
+        ExtendedReplyMessage extendedReplyMessage = (ExtendedReplyMessage) dmsg;
+        if (msg != null) {
+          boolean discard = !msg.processExtendedReply(extendedReplyMessage, this);
+          if (discard) {
+            return;
+          }
+        }
+        if (extendedReplyMessage.getClosed()) {
+          closedMembers.add(extendedReplyMessage.getSender());
+        }
+      } else if (dmsg instanceof ReplyMessage) {
         ReplyMessage replyMessage = (ReplyMessage) dmsg;
         if (msg != null) {
           boolean discard = !msg.processReply(replyMessage, this);

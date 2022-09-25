@@ -170,6 +170,10 @@ org/apache/geode/distributed/internal/DistributionMessage,2
 fromData,1
 toData,1
 
+org/apache/geode/distributed/internal/ExtendedReplyMessage,2
+fromData,31
+toData,35
+
 org/apache/geode/distributed/internal/HighPriorityAckedMessage,2
 fromData,52
 toData,48
