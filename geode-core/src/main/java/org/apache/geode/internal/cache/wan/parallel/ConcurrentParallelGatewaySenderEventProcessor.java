@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Parallel processor which constitutes of multiple {@link ParallelGatewaySenderEventProcessor}.
@@ -68,6 +69,10 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   private GemFireException ex = null;
 
   final int nDispatcher;
+
+  public static final boolean SYNC_EVENTS_IN_REPLICAS =
+      Boolean
+          .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ParallelGatewaySender.syncEventsInReplicas");
 
   public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {

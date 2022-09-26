@@ -31,7 +31,6 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.ExtendedReplyMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.Assert;
@@ -264,34 +263,6 @@ public class UpdateOperation extends AbstractUpdateOperation {
         }
       }
       return true;
-    }
-
-    boolean processExtendedReply(final ExtendedReplyMessage extendedReplyMessage,
-        CacheOperationReplyProcessor processor) {
-      ReplyException ex = extendedReplyMessage.getException();
-      if (ex == null) {
-        if (extendedReplyMessage.getGatewayMap() != null
-            && !extendedReplyMessage.getGatewayMap().isEmpty()) {
-          int newStatus;
-          int oldStatus;
-          synchronized (event.getGatewayMap()) {
-            for (String key : extendedReplyMessage.getGatewayMap().keySet()) {
-              newStatus = extendedReplyMessage.getGatewayMap().get(key);
-              if (event.getGatewayMap().get(key) != null) {
-                oldStatus = event.getGatewayMap().get(key);
-                if (oldStatus != newStatus) {
-                  event.getGatewayMap().put(key, 1);
-                }
-              } else {
-                event.getGatewayMap().put(key, newStatus);
-              }
-            }
-          }
-        }
-        return true;
-      } else {
-        return processReply(extendedReplyMessage, processor);
-      }
     }
 
     /**

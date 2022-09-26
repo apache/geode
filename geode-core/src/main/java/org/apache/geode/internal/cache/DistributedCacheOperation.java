@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_16_0;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -501,9 +502,10 @@ public abstract class DistributedCacheOperation {
           if (reliableOp) {
             departedMembers = new HashSet<>();
             processor = new ReliableCacheReplyProcessor(region.getSystem(), waitForMembers,
-                departedMembers);
+                departedMembers, entryEvent);
           } else {
-            processor = new CacheOperationReplyProcessor(region.getSystem(), waitForMembers);
+            processor =
+                new CacheOperationReplyProcessor(region.getSystem(), waitForMembers, entryEvent);
           }
         }
 
@@ -1003,14 +1005,6 @@ public abstract class DistributedCacheOperation {
       return true;
     }
 
-
-    boolean processExtendedReply(ExtendedReplyMessage reply,
-        CacheOperationReplyProcessor processor) {
-      // notification that a reply has been received. Most messages
-      // don't do anything special here
-      return true;
-    }
-
     /**
      * Add the cache event's old value to this message. We must propagate the old value when the
      * receiver is doing GII and has listeners (CQs) that require the old value.
@@ -1256,13 +1250,17 @@ public abstract class DistributedCacheOperation {
             rex = new ReplyException(thr);
           }
 
-          if (gatewayMap != null && !gatewayMap.isEmpty()) {
+          boolean senderSupportsExtendedReplyMessage =
+              getSender().getVersion().isNotOlderThan(GEODE_1_16_0);
+
+          if (senderSupportsExtendedReplyMessage && gatewayMap != null
+              && !gatewayMap.isEmpty()) {
             if (processorId != 0 || (!(getReplySender(dm) instanceof DistributionManager))
                 || directAck) {
               ExtendedReplyMessage.send(getSender(), processorId, rex, getReplySender(dm),
                   !appliedOperation,
                   closed, false,
-                  isInternal());
+                  isInternal(), gatewayMap);
             }
           } else {
             sendReply(getSender(), processorId, rex, getReplySender(dm));
@@ -1572,8 +1570,8 @@ public abstract class DistributedCacheOperation {
 
     public ReliableCacheReplyProcessor(InternalDistributedSystem system,
         Collection<InternalDistributedMember> initMembers,
-        Set<InternalDistributedMember> departedMembers) {
-      super(system, initMembers);
+        Set<InternalDistributedMember> departedMembers, EntryEventImpl event) {
+      super(system, initMembers, event);
       failedMembers = departedMembers;
     }
 
@@ -1603,22 +1601,24 @@ public abstract class DistributedCacheOperation {
   static class CacheOperationReplyProcessor extends DirectReplyProcessor {
     public CacheOperationMessage msg;
 
+    private EntryEventImpl event;
+
     public CopyOnWriteHashSet<InternalDistributedMember> closedMembers = new CopyOnWriteHashSet<>();
 
     public CacheOperationReplyProcessor(InternalDistributedSystem system,
-        Collection<InternalDistributedMember> initMembers) {
+        Collection<InternalDistributedMember> initMembers, EntryEventImpl event) {
       super(system, initMembers);
+      this.event = event;
     }
 
     @Override
     protected void process(final DistributionMessage dmsg, boolean warn) {
+      boolean discard;
       if (dmsg instanceof ExtendedReplyMessage) {
         ExtendedReplyMessage extendedReplyMessage = (ExtendedReplyMessage) dmsg;
-        if (msg != null) {
-          boolean discard = !msg.processExtendedReply(extendedReplyMessage, this);
-          if (discard) {
-            return;
-          }
+        discard = !processExtendedReply(extendedReplyMessage);
+        if (discard) {
+          return;
         }
         if (extendedReplyMessage.getClosed()) {
           closedMembers.add(extendedReplyMessage.getSender());
@@ -1626,7 +1626,7 @@ public abstract class DistributedCacheOperation {
       } else if (dmsg instanceof ReplyMessage) {
         ReplyMessage replyMessage = (ReplyMessage) dmsg;
         if (msg != null) {
-          boolean discard = !msg.processReply(replyMessage, this);
+          discard = !msg.processReply(replyMessage, this);
           if (discard) {
             return;
           }
@@ -1637,6 +1637,34 @@ public abstract class DistributedCacheOperation {
       }
 
       super.process(dmsg, warn);
+    }
+
+    boolean processExtendedReply(final ExtendedReplyMessage extendedReplyMessage) {
+      if (extendedReplyMessage.getException() == null) {
+        if (extendedReplyMessage.getGatewayMap() != null
+            && !extendedReplyMessage.getGatewayMap().isEmpty() && event != null) {
+          int newStatus;
+          int oldStatus;
+          synchronized (event.getGatewayMap()) {
+            for (String key : extendedReplyMessage.getGatewayMap().keySet()) {
+              newStatus = extendedReplyMessage.getGatewayMap().get(key);
+              if (event.getGatewayMap().get(key) != null) {
+                oldStatus = event.getGatewayMap().get(key);
+                if (oldStatus != newStatus) {
+                  event.getGatewayMap().put(key, 1);
+                }
+              } else {
+                event.getGatewayMap().put(key, newStatus);
+              }
+            }
+          }
+        }
+      } else {
+        if (msg != null) {
+          return msg.processReply(extendedReplyMessage, this);
+        }
+      }
+      return true;
     }
 
   }
