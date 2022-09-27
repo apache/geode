@@ -183,6 +183,10 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   @Override
   protected boolean checkAndUpdateGatewayStatusOnReplicas(EntryEventImpl event) {
+    if (!SYNC_EVENTS_IN_REPLICAS) {
+      return true;
+    }
+
     if (queue == null) {
       return true;
     }
