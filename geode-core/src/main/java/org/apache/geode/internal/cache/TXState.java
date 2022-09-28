@@ -42,6 +42,8 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.ProxyClientRequestObserver;
+import org.apache.geode.cache.ProxyClientRequestObserverHolder;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;

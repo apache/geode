@@ -740,6 +740,9 @@ public class CacheServerBridge extends ServerBridge {
     return null;
   }
 
+  public long getRejectedProxyRequests() {
+    return cacheServer.getRejectedProxyRequests();
+  }
 
   private static String getClientIdFromCacheClientProxy(CacheClientProxy p) {
     if (p == null) {

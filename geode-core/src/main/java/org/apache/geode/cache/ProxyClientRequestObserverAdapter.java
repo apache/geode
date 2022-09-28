@@ -12,15 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.cache;
 
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-public interface ProxyClientRequestObserver {
-  void beforeSendRequest(Set<InternalDistributedMember> members);
+public class ProxyClientRequestObserverAdapter implements ProxyClientRequestObserver {
+  @Override
+  public void beforeSendRequest(Set<InternalDistributedMember> members) {}
 
-  void afterReceiveResponse(Set<InternalDistributedMember> members);
-
+  @Override
+  public void afterReceiveResponse(Set<InternalDistributedMember> members) {}
 }

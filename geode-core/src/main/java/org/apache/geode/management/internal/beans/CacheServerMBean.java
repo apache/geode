@@ -311,4 +311,9 @@ public class CacheServerMBean extends NotificationBroadcasterSupport implements 
   public ClientQueueDetail showClientQueueDetails(String clientId) throws Exception {
     return bridge.getClientQueueDetail(clientId);
   }
+
+  @Override
+  public long getRejectedProxyRequests() {
+    return bridge.getRejectedProxyRequests();
+  }
 }

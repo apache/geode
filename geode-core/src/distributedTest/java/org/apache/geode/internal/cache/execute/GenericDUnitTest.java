@@ -38,9 +38,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.ProxyClientRequestObserver;
+import org.apache.geode.cache.ProxyClientRequestObserverHolder;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Execution;
@@ -56,8 +59,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.ProxyClientRequestObserver;
-import org.apache.geode.internal.cache.ProxyClientRequestObserverHolder;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -77,7 +78,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class GenericDUnitTest implements Serializable {
 
-  private static final int MAX_THREADS = 8;
+  private static final int MAX_THREADS = 4;
 
   private static final String regionName = "GenericDUnitTest";
 
@@ -105,7 +106,6 @@ public class GenericDUnitTest implements Serializable {
   @Before
   public void setUp() throws Exception {
     locator = clusterStartupRule.startLocatorVM(0);
-    server1 = startServer(1, MAX_THREADS);
   }
 
   @After
@@ -280,8 +280,10 @@ public class GenericDUnitTest implements Serializable {
     Object[] args = {useTransaction, invocation, key, value};
     Set filter = new HashSet();
     filter.add(key);
-    // without filter, results are weird. Check, toberal
+    // without filter, results are weird. Check, toberal.
+    // I have retested without filter and have not seen anything strange.
     resultCollector =
+        // execution.setArguments(args).execute(function.getId());
         execution.setArguments(args).withFilter(filter).execute(function.getId());
     Object result = resultCollector.getResult();
     return result;
@@ -344,7 +346,7 @@ public class GenericDUnitTest implements Serializable {
         cacheRule -> cacheRule
             .withProperty(SERIALIZABLE_OBJECT_FILTER,
                 "org.apache.geode.internal.cache.execute.GenericDUnitTest*")
-            // .withMaxThreads(maxThreads)
+            .withMaxThreads(maxThreads)
             .withConnectionToLocator(locator.getPort()));
   }
 
@@ -496,6 +498,7 @@ public class GenericDUnitTest implements Serializable {
           || Thread.currentThread().getName().startsWith("Function Execution Processor")) {
         for (InternalDistributedMember member : members) {
           if (threadsToDestination.getOrDefault(member, 0) >= maxThreadsToDestination) {
+            CacheFactory.getAnyInstance().getCacheServers().get(0).incRejectedProxyRequests();
             logger.info("toberal Max number of threads reached for " + member, new Exception("kk"));
             throw new IllegalStateException("Max number of threads reached");
           }

@@ -2952,9 +2952,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem());
     long start = stats.startFunctionExecution(function.hasResult());
     try {
-      logger.info("toberal Executing Function: {} on Remote Node with context: {}, bucketArray: {}",
-          function.getId(),
-          prContext, bucketArray);
 
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function:{} on Remote Node with context:{}", function.getId(),

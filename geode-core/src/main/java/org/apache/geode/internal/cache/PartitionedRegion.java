@@ -83,6 +83,8 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.PartitionedRegionDistributionException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
+import org.apache.geode.cache.ProxyClientRequestObserver;
+import org.apache.geode.cache.ProxyClientRequestObserverHolder;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -4187,8 +4189,7 @@ public class PartitionedRegion extends LocalRegion
             }
           }
 
-          // toberal
-          ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();;
+          ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
           try {
             if (observer != null) {
               observer.beforeSendRequest(Collections.singleton(retryNode));
