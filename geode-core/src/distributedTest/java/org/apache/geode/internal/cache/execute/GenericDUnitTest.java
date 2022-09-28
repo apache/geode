@@ -22,9 +22,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 import junitparams.Parameters;
@@ -38,13 +36,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.ProxyClientRequestObserver;
-import org.apache.geode.cache.ProxyClientRequestObserverHolder;
+import org.apache.geode.cache.ProxyRequestObserverHolder;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.ThreadLimitingProxyRequestObserver;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -58,7 +55,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -324,8 +320,8 @@ public class GenericDUnitTest implements Serializable {
       FunctionService.registerFunction(function);
       // DistributionMessageObserver.setInstance(new MyMessageObserver());
       int maxThreadsPerDestination = MAX_THREADS / 4;
-      ProxyClientRequestObserverHolder
-          .setInstance(new ThreadLimitingProxyClientRequestObserver(maxThreadsPerDestination));
+      ProxyRequestObserverHolder
+          .setInstance(new ThreadLimitingProxyRequestObserver(maxThreadsPerDestination));
     });
   }
 
@@ -474,55 +470,6 @@ public class GenericDUnitTest implements Serializable {
      */
     public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
       logger.info("toberal beforeSendMessage dm: {}, message: {}", dm, message, new Exception());
-    }
-  }
-
-  public static class ThreadLimitingProxyClientRequestObserver
-      implements ProxyClientRequestObserver {
-    private final int maxThreadsToDestination;
-
-    public ThreadLimitingProxyClientRequestObserver(int maxThreadsToDestination) {
-      this.maxThreadsToDestination = maxThreadsToDestination;
-    }
-
-    private static final Logger logger = LogService.getLogger();
-    private final Map<InternalDistributedMember, Integer> threadsToDestination =
-        new ConcurrentHashMap();
-
-    @Override
-    public void beforeSendRequest(Set<InternalDistributedMember> members) {
-      logger.info(
-          "toberal beforeSendRequest members: {}, threadsToDestination: size:{}, contents:{}",
-          members, threadsToDestination.size(), threadsToDestination);
-      if (Thread.currentThread().getName().startsWith("ServerConnection on")
-          || Thread.currentThread().getName().startsWith("Function Execution Processor")) {
-        for (InternalDistributedMember member : members) {
-          if (threadsToDestination.getOrDefault(member, 0) >= maxThreadsToDestination) {
-            CacheFactory.getAnyInstance().getCacheServers().get(0).incRejectedProxyRequests();
-            logger.info("toberal Max number of threads reached for " + member, new Exception("kk"));
-            throw new IllegalStateException("Max number of threads reached");
-          }
-        }
-        for (InternalDistributedMember member : members) {
-          threadsToDestination.merge(member, 1, Integer::sum);
-        }
-      }
-    }
-
-    @Override
-    public void afterReceiveResponse(Set<InternalDistributedMember> members) {
-      logger.info(
-          "toberal afterReceiveResponse removing members: {}, threadsToDestination: size:{}, contents:{}",
-          members, threadsToDestination.size(), threadsToDestination);
-      for (InternalDistributedMember member : members) {
-        if (Thread.currentThread().getName().startsWith("ServerConnection on")
-            || Thread.currentThread().getName().startsWith("Function Execution Processor")) {
-          threadsToDestination.merge(member, -1, Integer::sum);
-          logger.info(
-              "toberal afterReceiveResponse removing member: {}, threadsToDestination: size:{}, contents:{}",
-              member, threadsToDestination.size(), threadsToDestination);
-        }
-      }
     }
   }
 }

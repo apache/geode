@@ -16,10 +16,12 @@ package org.apache.geode.cache;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class is intended to hold a single 'observer' which will receive callbacks from the
@@ -46,31 +48,30 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
  * observer.startMethod(arguments); doSomething(); } finally { observer.stopMethod(arguments); }
  *
  */
-public class ProxyClientRequestObserverHolder {
+public class ProxyRequestObserverHolder {
+  private static final Logger logger = LogService.getLogger();
 
-  /**
-   * The default 'do-nothing' observer *
-   */
   @Immutable
-  private static final ProxyClientRequestObserver NO_OBSERVER =
-      new ProxyClientRequestObserverAdapter();
+  private static final ProxyRequestObserver NO_OBSERVER =
+      new ProxyRequestObserverAdapter();
   /**
    * The current observer which will be notified of all query events.
    */
   @MakeNotStatic
-  private static final AtomicReference<ProxyClientRequestObserver> _instance =
+  private static final AtomicReference<ProxyRequestObserver> _instance =
       new AtomicReference<>(NO_OBSERVER);
 
   /**
-   * Set the given observer to be notified of query events. Returns the current observer.
+   * Set the given observer to be notified of proxy requests. Returns the current observer.
    */
-  public static ProxyClientRequestObserver setInstance(
-      @NotNull ProxyClientRequestObserver observer) {
+  public static ProxyRequestObserver setInstance(
+      @NotNull ProxyRequestObserver observer) {
+    logger.info("Setting ProxyRequestObserver with: {}", observer);
     return _instance.getAndSet(observer);
   }
 
   /** Return the current observer instance */
-  public static ProxyClientRequestObserver getInstance() {
+  public static ProxyRequestObserver getInstance() {
     return _instance.get();
   }
 }

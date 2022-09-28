@@ -42,8 +42,8 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.ProxyClientRequestObserver;
-import org.apache.geode.cache.ProxyClientRequestObserverHolder;
+import org.apache.geode.cache.ProxyRequestObserver;
+import org.apache.geode.cache.ProxyRequestObserverHolder;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -514,7 +514,7 @@ public class TXState implements TXStateInterface {
 
         lockTXRegions(regions);
 
-        ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
+        ProxyRequestObserver observer = ProxyRequestObserverHolder.getInstance();
         msg = buildMessage();
         Set<InternalDistributedMember> txCommitRecipients = msg.getTxCommitRecipients();
         try {

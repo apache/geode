@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-public interface ProxyClientRequestObserver {
+public interface ProxyRequestObserver {
   void beforeSendRequest(Set<InternalDistributedMember> members);
 
   void afterReceiveResponse(Set<InternalDistributedMember> members);

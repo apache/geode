@@ -83,8 +83,8 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.PartitionedRegionDistributionException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
-import org.apache.geode.cache.ProxyClientRequestObserver;
-import org.apache.geode.cache.ProxyClientRequestObserverHolder;
+import org.apache.geode.cache.ProxyRequestObserver;
+import org.apache.geode.cache.ProxyRequestObserverHolder;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -2982,7 +2982,7 @@ public class PartitionedRegion extends LocalRegion
           event.getKey().hashCode(), targetNode, bucketStringForLogs(bucketId), retryTimeout);
     }
 
-    ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
+    ProxyRequestObserver observer = ProxyRequestObserverHolder.getInstance();
     Set<InternalDistributedMember> bucketOwners = null;
     try {
       if (observer != null) {
@@ -4189,7 +4189,7 @@ public class PartitionedRegion extends LocalRegion
             }
           }
 
-          ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
+          ProxyRequestObserver observer = ProxyRequestObserverHolder.getInstance();
           try {
             if (observer != null) {
               observer.beforeSendRequest(Collections.singleton(retryNode));
@@ -4914,7 +4914,7 @@ public class PartitionedRegion extends LocalRegion
       final Function function, final Object object, final Set routingKeys, ResultCollector rc,
       int[] bucketArray, ServerToClientFunctionResultSender sender, AbstractExecution execution) {
 
-    ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
+    ProxyRequestObserver observer = ProxyRequestObserverHolder.getInstance();
     if (observer != null) {
       observer.beforeSendRequest(Collections.singleton(targetNode));
     }
