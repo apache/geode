@@ -63,6 +63,10 @@ public class ProxyRequestObserverHolder {
 
   /**
    * Set the given observer to be notified of proxy requests. Returns the current observer.
+   *
+   * @param observer the observer to be set
+   *
+   * @return the current observer instance
    */
   public static ProxyRequestObserver setInstance(
       @NotNull ProxyRequestObserver observer) {
@@ -70,7 +74,11 @@ public class ProxyRequestObserverHolder {
     return _instance.getAndSet(observer);
   }
 
-  /** Return the current observer instance */
+  /**
+   * Return the current observer instance
+   *
+   * @return the current observer instance
+   */
   public static ProxyRequestObserver getInstance() {
     return _instance.get();
   }
