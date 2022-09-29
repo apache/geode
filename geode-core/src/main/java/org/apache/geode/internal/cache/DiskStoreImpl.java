@@ -143,6 +143,9 @@ public class DiskStoreImpl implements DiskStore {
   public static final int MAX_OPEN_INACTIVE_OPLOGS =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7);
 
+  static final boolean SKIP_KRF_GENERATION =
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disk.SKIP_KRF_GENERATION");
+
   /*
    * If less than 20MB (default - configurable through this property) of the available space is left
    * for logging and other misc stuff then it is better to bail out.
@@ -4406,7 +4409,7 @@ public class DiskStoreImpl implements DiskStore {
    * @return true if KRF files are used on this disk store's oplogs
    */
   boolean couldHaveKrf() {
-    return !isOffline();
+    return !isOffline() && !SKIP_KRF_GENERATION;
   }
 
   @Override
