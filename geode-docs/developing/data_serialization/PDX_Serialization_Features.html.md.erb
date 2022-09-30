@@ -32,6 +32,7 @@ When you serialize an object using PDX, <%=vars.product_name%> stores the object
 This centralization of object type information is advantageous for client/server installations in which clients and servers are written in different languages. Clients pass registry information to servers automatically when they store a PDX serialized object. Clients can run queries and functions against the data in the servers without compatibility between server and the stored objects. One client can store data on the server to be retrieved by another client, with no requirements on the part of the server.
 
 **Note:**
+
 There are situations where some of the information in the central registry of the PDX domain object metadata is lost, e.g. when restoring an old backup with an outdated central registry.
 
 When that happens, new clients connecting to the cluster for the first time will get outdated PDX type information from the central registry, but, since information in the central registry is cached by clients, old clients may have fresher information about PDX types than the central registry does. That will result into inconsistent information about PDX types spread across the system:
@@ -44,19 +45,10 @@ If old clients write entries of a PDX type they know but the central registry do
 
 To avoid this problem, clients may be configured with the system property in the table below to clear their PDX type cache when they disconnect from the cluster. After clearing their cache, old clients will re-generate type information for all PDX types, including the types the central registry "forgot". Since new PDX type information will be written in the central registry before entries of that type are written in the cluster, the central registry and all clients, old and new, will store consistent PDX type information.
 
-| Name                                      | Description                                             | Default |
-|-------------------------------------------|---------------------------------------------------------|---------|
-| `gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS`  | Clear pdxType ids when client disconnects from servers. | `false` |
--   In the API, set the System properties before the cache creation call. Example:
-
-    ``` pre
-    System.setProperty(PoolImpl.ON_DISCONNECT_CLEAR_PDXTYPEIDS, "true");
-    ```
--   At the java command line, pass in System properties using the -D switch. Example:
-
-    ``` pre
-    java -Dgemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS=true
-    ```
+| Name                                      | Default | Applies to (Java Client, Native Client)|
+|-------------------------------------------|---------|----------------------------------------|
+| `gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS`  | `false` | Java Client                            |
+| `on-client-disconnect-clear-pdxType-Ids`  | `false` | Native Client                          |
 
 ## <a id="concept_F02E40517C4B42F2A75B133BB507C626__section_08C901A3CF3E438C8778F09D482B9A63" class="no-quick-link"></a>Reduced Deserialization of Serialized Objects
 
