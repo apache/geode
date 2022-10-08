@@ -45,10 +45,10 @@ If old clients write entries of a PDX type they know but the central registry do
 
 To avoid this problem, clients may be configured with the system property in the table below to clear their PDX type cache when they disconnect from the cluster. After clearing their cache, old clients will re-generate type information for all PDX types, including the types the central registry "forgot". Since new PDX type information will be written in the central registry before entries of that type are written in the cluster, the central registry and all clients, old and new, will store consistent PDX type information.
 
-| Name                                      | Default | Applies to (Java Client, Native Client)|
-|-------------------------------------------|---------|----------------------------------------|
-| `gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS`  | `false` | Java Client                            |
-| `on-client-disconnect-clear-pdxType-Ids`  | `false` | Native Client                          |
+| Name                                      | Default | Client type   |
+|-------------------------------------------|---------|---------------|
+| `gemfire.ON_DISCONNECT_CLEAR_PDXTYPEIDS`  | `false` | Java Client   |
+| `on-client-disconnect-clear-pdxType-Ids`  | `false` | Native Client |
 
 ## <a id="concept_F02E40517C4B42F2A75B133BB507C626__section_08C901A3CF3E438C8778F09D482B9A63" class="no-quick-link"></a>Reduced Deserialization of Serialized Objects
 
