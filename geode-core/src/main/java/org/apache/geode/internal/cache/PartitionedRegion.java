@@ -6213,7 +6213,7 @@ public class PartitionedRegion extends LocalRegion
 
     @Override
     public Object[] toArray() {
-      return toArray(null);
+      return toArray((Object[]) null);
     }
 
     @Override
