@@ -36,10 +36,19 @@ pipeline {
             doTest(env, ":geode-unsafe:test")
           }
         }
+        stage('Unit Tests - Java 11') {
+          agent { label 'ubuntu' }
+          tools {
+            jdk 'jdk_11_latest'
+          }
+          steps {
+            doTest(env)
+          }
+        }
         stage('Unit Tests - Java 17') {
           agent { label 'ubuntu' }
           tools {
-            jdk 'openjdk_17_35'
+            jdk 'jdk_17_latest'
           }
           steps {
             doTest(env)
