@@ -25,35 +25,13 @@ def doTest(env, target = "test") {
 pipeline {
   agent none
   stages {
-    stage('Unit Tests') {
-      parallel {
-        stage('Unit Tests - Java 8') {
-          agent { label 'ubuntu' }
-          tools {
-                jdk 'jdk_1.8_latest'
-          }
-          steps {
-            doTest(env, ":geode-unsafe:test")
-          }
-        }
-        stage('Unit Tests - Java 11') {
-          agent { label 'ubuntu' }
-          tools {
-            jdk 'jdk_11_latest'
-          }
-          steps {
-            doTest(env)
-          }
-        }
-        stage('Unit Tests - Java 17') {
-          agent { label 'ubuntu' }
-          tools {
-            jdk 'jdk_17_latest'
-          }
-          steps {
-            doTest(env)
-          }
-        }
+    stage('Unit Tests - Java 8') {
+      agent { label 'ubuntu' }
+      tools {
+            jdk 'jdk_1.8_latest'
+      }
+      steps {
+        doTest(env, ":geode-unsafe:test")
       }
     }
   }
