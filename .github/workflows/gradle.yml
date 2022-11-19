@@ -19,9 +19,9 @@ name: develop
 
 on:
   push:
-    branches: [ "feature/gha" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "feature/gha" ]
+    branches: [ "develop" ]
 
 permissions:
   contents: read
@@ -35,9 +35,9 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '8'
-        distribution: 'temurin'
+        distribution: 'adopt'
     - name: Run rat with Gradle
-      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+      uses: gradle/gradle-build-action@v2
       with:
         arguments: rat
 
@@ -53,9 +53,9 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '8'
-        distribution: 'temurin'
+        distribution: 'adopt'
     - name: Run unit tests with Gradle
-      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+      uses: gradle/gradle-build-action@v2
       with:
         arguments: test
     - uses: actions/upload-artifact@v3
