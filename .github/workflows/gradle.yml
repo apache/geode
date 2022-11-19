@@ -41,8 +41,8 @@ jobs:
       with:
         arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
-  unittests:
-    needs: rat
+  unit:
+    needs: build
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
