@@ -27,7 +27,7 @@ permissions:
   contents: read
 
 jobs:
-  rat:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -39,7 +39,7 @@ jobs:
     - name: Run rat with Gradle
       uses: gradle/gradle-build-action@v2
       with:
-        arguments: rat
+        arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
   unittests:
     needs: rat
@@ -58,7 +58,3 @@ jobs:
       uses: gradle/gradle-build-action@v2
       with:
         arguments: test
-    - uses: actions/upload-artifact@v3
-      with:
-        name: test-reports
-        path: build/reports
