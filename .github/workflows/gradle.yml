@@ -28,9 +28,7 @@ permissions:
 
 jobs:
   rat:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 8
@@ -44,9 +42,11 @@ jobs:
         arguments: rat
 
   unittests:
-
-    runs-on: ubuntu-latest
-
+    needs: rat
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 8
@@ -58,3 +58,7 @@ jobs:
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: test
+    - uses: actions/upload-artifact@v3
+      with:
+        name: test-reports
+        path: build/reports
