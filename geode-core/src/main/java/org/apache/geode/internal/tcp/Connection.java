@@ -55,6 +55,7 @@ import javax.net.ssl.SSLHandshakeException;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SerializationException;
@@ -550,6 +551,12 @@ public class Connection implements Runnable {
     }
     IS_P2P_CONNECT_TIMEOUT_INITIALIZED = true;
     return P2P_CONNECT_TIMEOUT;
+  }
+
+  @TestOnly
+  static void clearP2PConnectTimeout() {
+    IS_P2P_CONNECT_TIMEOUT_INITIALIZED = false;
+    P2P_CONNECT_TIMEOUT = 0;
   }
 
   /**

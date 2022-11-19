@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -58,6 +59,11 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
 public class ConnectionTransmissionTest {
+
+  @After
+  public void tearDown() {
+    Connection.clearP2PConnectTimeout();
+  }
 
   /**
    * Create a sender connection and a receiver connection and pass data from

@@ -56,7 +56,7 @@ import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 
-public class DistributionTest {
+public class DistributionIntegrationTest {
 
 
   private DirectChannel dc;
