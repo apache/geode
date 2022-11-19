@@ -83,7 +83,7 @@ jobs:
            japicmp --console=plain --no-daemon
 
   unitTest:
-   needs: apiCheck
+   needs: build
    strategy:
      fail-fast: false
      matrix:
@@ -138,3 +138,49 @@ jobs:
        name: unit-test-reports-${{ matrix.os }}-${{ matrix.java }}
        path: build/reports
        retention-days: 5
+
+  integrationTest:
+     needs: [apiCheck, unitTest]
+     strategy:
+       matrix:
+         os: [ubuntu-latest]
+         distribution: ['liberica']
+         java: ['8']
+     runs-on: ${{ matrix.os }}
+     steps:
+     - uses: actions/checkout@v3
+     - name: Set up JDK
+       uses: actions/setup-java@v3
+       with:
+         distribution: ${{ matrix.distribution }}
+         java-version: |
+           8
+           11
+           17
+     - name: Setup Gradle
+       uses: gradle/gradle-build-action@v2
+     - name: Run integration tests
+       run: |
+         GRADLE_JVM_PATH=${JAVA_HOME_8_X64}
+         JAVA_BUILD_PATH=${JAVA_HOME_8_X64}
+         JAVA_BUILD_VERSION=8
+         JAVA_TEST_VERSION=${{ matrix.java }}
+         cp gradlew gradlewStrict
+         sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
+         GRADLE_JVM=${GRADLE_JVM_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict \
+           --no-parallel \
+           --max-workers=12 \
+           -PcompileJVM=${JAVA_BUILD_PATH} \
+           -PcompileJVMVer=${JAVA_BUILD_VERSION} \
+           -PtestJVM=${JAVA_TEST_PATH} \
+           -PtestJVMVer=${JAVA_TEST_VERSION} \
+           -PtestJava8Home=${JAVA_HOME_8_X64} \
+           -PtestJava11Home=${JAVA_HOME_11_X64} \
+           -PtestJava17Home=${JAVA_HOME_17_X64} \
+           integrationTest --console=plain --no-daemon
+     - uses: actions/upload-artifact@v3
+       if: failure()
+       with:
+         name: integration-test-reports-${{ matrix.os }}-${{ matrix.java }}
+         path: build/reports
+         retention-days: 5
