@@ -41,7 +41,7 @@ jobs:
       with:
         arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
-  unit:
+  unitTest:
     needs: build
     strategy:
       matrix:
@@ -58,3 +58,57 @@ jobs:
       uses: gradle/gradle-build-action@v2
       with:
         arguments: test
+
+  acceptanceTest:
+    needs: build
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+    - name: Run acceptance tests with Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: acceptanceTest
+
+  integrationTest:
+    needs: build
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+    - name: Run integration tests with Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: integrationTest
+
+  upgradeTest:
+    needs: build
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+    - name: Run upgrade tests with Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: upgradeTest
