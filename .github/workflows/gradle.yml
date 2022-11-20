@@ -44,6 +44,7 @@ jobs:
   unitTest:
     needs: build
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         java: ['8', '11', '17']
@@ -62,7 +63,8 @@ jobs:
       uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
       run: |
-        echo "java is ${{ matrix.java }}"
+        echo "java is ${{ matrix }}"
+        echo "java home is ${{matrix.path }}"
         cp gradlew gradlewStrict
         sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
         GRADLE_JVM=${JAVA_HOME_8_X64} JAVA_TEST_PATH=${JAVA_HOME_8_X64} ./gradlewStrict \
