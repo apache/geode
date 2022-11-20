@@ -52,63 +52,80 @@ jobs:
     - name: Set up JDK 8
       uses: actions/setup-java@v3
       with:
-        java-version: '8'
         distribution: 'adopt'
-    - name: Run unit tests with Gradle
+        java-version: |
+          8
+          11
+          17
+    - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
-      with:
-        arguments: test
+    - name: Execute Gradle build
+      run: |
+        echo $JAVA_HOME_8_x64
+        echo $JAVA_HOME_11_x64
+        echo $JAVA_HOME_17_x64
+        cp gradlew gradlewStrict $SEP
+        sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewScript $SEP
+        GRADLE_JVM=${JAVA_HOME_8_x64} JAVA_TEST_PATH=${JAVA_HOME_8_x64} ./gradlewStrict \
+          -PcompileJVM=${JAVA_HOME_8_x64} \
+          -PcompileJVMVer=8 \
+          -PtestJVM=${JAVA_HOME_8_x64} \
+          -PtestJVMVer=8 \
+          -PtestJava8Home=${JAVA_HOME_8_x64} \
+          -PtestJava11Home=${JAVA_HOME_11_x64} \
+          -PtestJava17Home=${JAVA_HOME_17_x64} \
+          test --console=plain --no-daemon
 
-  acceptanceTest:
-    needs: build
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'adopt'
-    - name: Run acceptance tests with Gradle
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: acceptanceTest
+  # acceptanceTest:
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up JDK 8
+  #     uses: actions/setup-java@v3
+  #     with:
+  #       java-version: '8'
+  #       distribution: 'adopt'
+  #   - name: Run acceptance tests with Gradle
+  #     uses: gradle/gradle-build-action@v2
+  #     with:
+  #       arguments: acceptanceTest
 
-  integrationTest:
-    needs: build
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'adopt'
-    - name: Run integration tests with Gradle
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: integrationTest
+  # integrationTest:
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up JDK 8
+  #     uses: actions/setup-java@v3
+  #     with:
+  #       java-version: '8'
+  #       distribution: 'adopt'
+  #   - name: Run integration tests with Gradle
+  #     uses: gradle/gradle-build-action@v2
+  #     with:
+  #       arguments: integrationTest
 
-  upgradeTest:
-    needs: build
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'adopt'
-    - name: Run upgrade tests with Gradle
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: upgradeTest
+  # upgradeTest:
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up JDK 8
+  #     uses: actions/setup-java@v3
+  #     with:
+  #       java-version: '8'
+  #       distribution: 'adopt'
+  #   - name: Run upgrade tests with Gradle
+  #     uses: gradle/gradle-build-action@v2
+  #     with:
+  #       arguments: upgradeTest
