@@ -61,19 +61,17 @@ jobs:
       uses: gradle/gradle-build-action@v2
     - name: Execute Gradle build
       run: |
-        echo $JAVA_HOME_8_x64
-        echo $JAVA_HOME_11_x64
-        echo $JAVA_HOME_17_x64
-        cp gradlew gradlewStrict $SEP
-        sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewScript $SEP
-        GRADLE_JVM=${JAVA_HOME_8_x64} JAVA_TEST_PATH=${JAVA_HOME_8_x64} ./gradlewStrict \
-          -PcompileJVM=${JAVA_HOME_8_x64} \
+        pwd
+        cp gradlew gradlewStrict
+        sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewScript
+        GRADLE_JVM=${JAVA_HOME_8_X64} JAVA_TEST_PATH=${JAVA_HOME_8_X64} ./gradlewStrict \
+          -PcompileJVM=${JAVA_HOME_8_X64} \
           -PcompileJVMVer=8 \
-          -PtestJVM=${JAVA_HOME_8_x64} \
+          -PtestJVM=${JAVA_HOME_8_X64} \
           -PtestJVMVer=8 \
-          -PtestJava8Home=${JAVA_HOME_8_x64} \
-          -PtestJava11Home=${JAVA_HOME_11_x64} \
-          -PtestJava17Home=${JAVA_HOME_17_x64} \
+          -PtestJava8Home=${JAVA_HOME_8_X64} \
+          -PtestJava11Home=${JAVA_HOME_11_X64} \
+          -PtestJava17Home=${JAVA_HOME_17_X64} \
           test --console=plain --no-daemon
 
   # acceptanceTest:
