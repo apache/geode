@@ -62,7 +62,11 @@ jobs:
     - name: Execute Gradle build
       run: |
         pwd
+        echo "before copying the gradlewScript....."
+        ls
         cp gradlew gradlewStrict
+        echo "before copying the gradlewScript....."
+        ls
         sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewScript
         GRADLE_JVM=${JAVA_HOME_8_X64} JAVA_TEST_PATH=${JAVA_HOME_8_X64} ./gradlewStrict \
           -PcompileJVM=${JAVA_HOME_8_X64} \
