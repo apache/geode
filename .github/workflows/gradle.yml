@@ -36,17 +36,17 @@ jobs:
       with:
         java-version: '8'
         distribution: 'adopt'
-    - name: Run rat with Gradle
+    - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
       uses: gradle/gradle-build-action@v2
       with:
         arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
   unitTest:
-    needs: build
+    #needs: build
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
         java: ['8', '11', '17']
     runs-on: ${{ matrix.os }}
     steps:
@@ -61,21 +61,22 @@ jobs:
           17
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
+    - name: Set JAVA_TEST_PATH to 8
+      run: |
+        echo "JAVA_TEST_PATH=${JAVA_HOME_8_X64}" >> $GITHUB_ENV
+      if: matrix.java == '8'
+    - name: Set JAVA_TEST_PATH to 11
+      run: |
+        echo "JAVA_TEST_PATH=${JAVA_HOME_11_X64}" >> $GITHUB_ENV
+      if: matrix.java == '11'
+    - name: Set JAVA_TEST_PATH to 17
+      run: |
+        echo "JAVA_TEST_PATH=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
+      if: matrix.java == '17'
     - name: Execute Gradle build
       run: |
-        echo "java is ${{ matrix }}"
-        echo "java home is ${{matrix.path }}"
-        cp gradlew gradlewStrict
-        sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
-        GRADLE_JVM=${JAVA_HOME_8_X64} JAVA_TEST_PATH=${JAVA_HOME_8_X64} ./gradlewStrict \
-          -PcompileJVM=${{ matrix.java }} \
-          -PcompileJVMVer=${{ matrix.java }} \
-          -PtestJVM=${JAVA_HOME_8_X64} \
-          -PtestJVMVer=8 \
-          -PtestJava8Home=${JAVA_HOME_8_X64} \
-          -PtestJava11Home=${JAVA_HOME_11_X64} \
-          -PtestJava17Home=${JAVA_HOME_17_X64} \
-          test --console=plain --no-daemon
+        echo "java is ${{ matrix.java }}"
+        echo "JAVA_TEST_PATH is ${JAVA_TEST_PATH}"
 
   # acceptanceTest:
   #   needs: build
