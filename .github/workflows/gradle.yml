@@ -49,6 +49,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         java: ['8', '11', '17']
     runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_JVM_PATH=${JAVA_HOME_8_X64}
+      JAVA_BUILD_PATH=${JAVA_HOME_8_X64}
+      JAVA_BUILD_VERSION='8'
+      JAVA_TEST_VERSION=${{ matrix.java }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 8
@@ -75,9 +80,12 @@ jobs:
       if: matrix.java == '17'
     - name: Execute Gradle build
       run: |
-        echo "java is ${{ matrix.java }}"
-        echo "JAVA_TEST_PATH is ${JAVA_TEST_PATH}"
-
+        echo "JAVA_TEST_VERSION=${JAVA_TEST_VERSION}"
+        echo "JAVA_TEST_PATH=${JAVA_TEST_PATH}"
+        echo "JAVA_BUILD_PATH=${JAVA_BUILD_PATH}"
+        echo "JAVA_BUILD_VERSION=${JAVA_BUILD_VERSION}"
+        echo "GRADLE_JVM_PATH=${GRADLE_JVM_PATH}"
+  
   # acceptanceTest:
   #   needs: build
   #   strategy:
