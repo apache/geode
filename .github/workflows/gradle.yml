@@ -42,16 +42,16 @@ jobs:
         arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
   unitTest:
-    #needs: build
+    needs: build
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         java: ['8', '11', '17']
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
-    - name: Set up JDK 8
+    - name: Set up JDK for build
       uses: actions/setup-java@v3
       with:
         distribution: 'adopt'
@@ -73,7 +73,7 @@ jobs:
       run: |
         echo "JAVA_TEST_PATH=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
       if: matrix.java == '17'
-    - name: Execute Gradle build
+    - name: Run unit tests
       run: |
         GRADLE_JVM_PATH=${JAVA_HOME_8_X64}
         JAVA_BUILD_PATH=${JAVA_HOME_8_X64}
@@ -114,23 +114,54 @@ jobs:
   #     with:
   #       arguments: acceptanceTest
 
-  # integrationTest:
-  #   needs: build
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest]
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Set up JDK 8
-  #     uses: actions/setup-java@v3
-  #     with:
-  #       java-version: '8'
-  #       distribution: 'adopt'
-  #   - name: Run integration tests with Gradle
-  #     uses: gradle/gradle-build-action@v2
-  #     with:
-  #       arguments: integrationTest
+  integrationTest:
+    needs: build
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        java: ['8', '11', '17']
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK for build
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'adopt'
+        java-version: |
+          8
+          11
+          17'
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+    - name: Set JAVA_TEST_PATH to 8
+      run: |
+        echo "JAVA_TEST_PATH=${JAVA_HOME_8_X64}" >> $GITHUB_ENV
+      if: matrix.java == '8'
+    - name: Set JAVA_TEST_PATH to 11
+      run: |
+        echo "JAVA_TEST_PATH=${JAVA_HOME_11_X64}" >> $GITHUB_ENV
+      if: matrix.java == '11'
+    - name: Set JAVA_TEST_PATH to 17
+      run: |
+        echo "JAVA_TEST_PATH=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
+      if: matrix.java == '17'
+    - name: Run integration tests
+      run: |
+        GRADLE_JVM_PATH=${JAVA_HOME_8_X64}
+        JAVA_BUILD_PATH=${JAVA_HOME_8_X64}
+        JAVA_BUILD_VERSION=8
+        JAVA_TEST_VERSION=${{ matrix.java }}
+        cp gradlew gradlewStrict
+        sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
+        GRADLE_JVM=${GRADLE_JVM_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict \
+          -PcompileJVM=${JAVA_BUILD_PATH} \
+          -PcompileJVMVer=${JAVA_BUILD_VERSION} \
+          -PtestJVM=${JAVA_TEST_PATH} \
+          -PtestJVMVer=${JAVA_TEST_VERSION} \
+          -PtestJava8Home=${JAVA_HOME_8_X64} \
+          -PtestJava11Home=${JAVA_HOME_11_X64} \
+          -PtestJava17Home=${JAVA_HOME_17_X64} \
+          integrationTest --console=plain --no-daemon
 
   # upgradeTest:
   #   needs: build
