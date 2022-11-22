@@ -212,44 +212,22 @@ jobs:
   #     with:
   #       arguments: upgradeTest
 
-  unitTestBellsoftJDK:
+
+  unitTest:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        java: ['8']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        distribution: ['liberica', 'temurin', 'adopt']
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
-    - run: |
-        download_url="https://download.bell-sw.com/java/8u352+8/bellsoft-jdk8u352+8-linux-ppc64le.tar.gz"
-        wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
     - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        distribution: 'jdkfile'
-        jdkFile: ${{ runner.temp }}/java_package.tar.gz
+        distribution: ${{ mastrix.distribution }}
         java-version: '8'
-        architecture: x64
-    - run: |
-        echo $JAVA_HOME
-        java -version
-
-  # unitTestAdoptJDK:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest, windows-latest]
-  #       java: ['8']
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: Set up JDK
-  #     uses: actions/setup-java@v3
-  #     with:
-  #       distribution: 'adopt'
-  #       java-version: '8'
-  #   - name: Run unit tests
-  #     uses: gradle/gradle-build-action@v2
-  #     with:
-  #       arguments: test --console=plain --no-daemon
+    - name: Run unit tests
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: test --console=plain --no-daemon
