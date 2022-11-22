@@ -231,26 +231,25 @@ jobs:
         jdkFile: ${{ runner.temp }}/java_package.tar.gz
         java-version: '8'
         architecture: x64
-    - name: Run unit tests
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: test --console=plain --no-daemon
+    - run: |
+        echo $JAVA_HOME
+        java -version
 
-  unitTestAdoptJDK:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        java: ['8']
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'adopt'
-        java-version: '8'
-    - name: Run unit tests
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: test --console=plain --no-daemon
+  # unitTestAdoptJDK:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest, windows-latest]
+  #       java: ['8']
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up JDK
+  #     uses: actions/setup-java@v3
+  #     with:
+  #       distribution: 'adopt'
+  #       java-version: '8'
+  #   - name: Run unit tests
+  #     uses: gradle/gradle-build-action@v2
+  #     with:
+  #       arguments: test --console=plain --no-daemon
