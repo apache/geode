@@ -225,7 +225,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        distribution: ${{ mastrix.distribution }}
+        distribution: ${{ matrix.distribution }}
         java-version: '8'
     - name: Run unit tests
       uses: gradle/gradle-build-action@v2
