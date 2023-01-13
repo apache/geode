@@ -230,4 +230,4 @@ jobs:
     - name: Run unit tests
       uses: gradle/gradle-build-action@v2
       with:
-        arguments: geode-core:test --console=plain --no-daemon --tests org.apache.geode.internal.cache.OplogEntryIdSetTest
+        arguments: test --console=plain --no-daemon
