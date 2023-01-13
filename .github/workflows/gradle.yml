@@ -39,8 +39,7 @@ jobs:
     - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
       uses: gradle/gradle-build-action@v2
       with:
-        #arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
-        arguments: geode-core:test --tests org.apache.geode.internal.cache.OplogEntryIdSetTest
+        arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
   # unitTest:
   #   needs: build
@@ -231,4 +230,4 @@ jobs:
     - name: Run unit tests
       uses: gradle/gradle-build-action@v2
       with:
-        arguments: test --console=plain --no-daemon
+        arguments: geode-core:test --console=plain --no-daemon --tests org.apache.geode.internal.cache.OplogEntryIdSetTest
