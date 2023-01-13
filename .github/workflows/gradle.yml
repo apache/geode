@@ -40,7 +40,7 @@ jobs:
       uses: gradle/gradle-build-action@v2
       with:
         #arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
-        arguments: test --tests "org.apache.geode.internal.cache.OplogEntryIdSetTest.addMethodOverflowsWhenInternalAddThrowsIllegalArgumentException"
+        arguments: geode-core:test --tests org.apache.geode.internal.cache.OplogEntryIdSetTest
 
   # unitTest:
   #   needs: build
