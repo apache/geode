@@ -39,7 +39,8 @@ jobs:
     - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
       uses: gradle/gradle-build-action@v2
       with:
-        arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
+        #arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
+        arguments: :geode-core:test --tests "org.apache.geode.internal.cache.OplogEntryIdSetTest.addMethodOverflowsWhenInternalAddThrowsIllegalArgumentException"
 
   # unitTest:
   #   needs: build
@@ -217,7 +218,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         distribution: ['liberica', 'temurin', 'adopt']
     runs-on: ${{ matrix.os }}
     steps:

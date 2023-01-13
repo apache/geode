@@ -80,6 +80,7 @@ public class OplogEntryIdSetTest {
     Answer<Void> answer = invocationOnMock -> {
       Number value = invocationOnMock.getArgument(0);
       if ((value.intValue() == magicInt) || (value.longValue() == magicLong)) {
+        System.out.println("Throwing IllegalArgumentException for value:" + value);
         throw new IllegalArgumentException(
             "Too large (XXXXXXXX expected elements with load factor Y.YY)");
       }
