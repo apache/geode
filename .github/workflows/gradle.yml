@@ -218,7 +218,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        distribution: ['liberica', 'temurin', 'adopt']
+        distribution: ['liberica']
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3

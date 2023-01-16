@@ -2586,6 +2586,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return the action to run
      */
     Runnable getStartupCompletionAction() {
+      System.out.println(">>>>>>>>>>>>> ServerLauncher::getStartupCompletionAction - startupCompletionAction is null?" + (startupCompletionAction == null));
       return startupCompletionAction;
     }
 
