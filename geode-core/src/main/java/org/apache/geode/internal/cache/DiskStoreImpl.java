@@ -3562,7 +3562,6 @@ public class DiskStoreImpl implements DiskStore {
 
       try {
         if (shouldOverflow(id)) {
-          System.out.println(">>>>>>>>>>>>> Should overflow for id:" + id);
           overflowToNewHashMap(id);
         } else {
           if (id > 0 && id <= 0x00000000FFFFFFFFL) {
@@ -3575,13 +3574,14 @@ public class DiskStoreImpl implements DiskStore {
         // See GEODE-8029.
         // Too many entries on the accumulated drf files, overflow next [Int|Long]OpenHashSet and
         // continue.
-        System.out.println(">>>>>>>>>>>>> Overflowing because of exception");
         overflowToNewHashMap(id);
       }
     }
 
     boolean shouldOverflow(final long id) {
       if (id > 0 && id <= 0x00000000FFFFFFFFL) {
+        if(currentInts.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD)
+          System.out.println(">>>>>>>> DRF_HASHMAP_OVERFLOW_THRESHOLD:" + DRF_HASHMAP_OVERFLOW_THRESHOLD);
         return currentInts.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
       } else {
         return currentLongs.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
