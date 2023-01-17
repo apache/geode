@@ -539,18 +539,14 @@ public class Connection implements Runnable {
     if (AlertingAction.isThreadAlerting()) {
       return config.getMemberTimeout();
     }
-    System.out.println(">>>>>>>>>>>>> ConnectionTest:getP2PConnectTimeout - IS_P2P_CONNECT_TIMEOUT_INITIALIZED: " + IS_P2P_CONNECT_TIMEOUT_INITIALIZED);
-    System.out.println(">>>>>>>>>>>>> ConnectionTest:getP2PConnectTimeout - P2P_CONNECT_TIMEOUT: " + P2P_CONNECT_TIMEOUT);
 
     if (IS_P2P_CONNECT_TIMEOUT_INITIALIZED) {
-      System.out.println(">>>>>>>>>>>>> ConnectionTest:getP2PConnectTimeout::returning from if - P2P_CONNECT_TIMEOUT: " + P2P_CONNECT_TIMEOUT);
       return P2P_CONNECT_TIMEOUT;
     }
     String connectTimeoutStr = System.getProperty("p2p.connectTimeout");
     if (connectTimeoutStr != null) {
       P2P_CONNECT_TIMEOUT = Integer.parseInt(connectTimeoutStr);
     } else {
-      System.out.println(">>>>>>>>>>>>> ConnectionTest:getP2PConnectTimeout::returning from 6 * getMemberTimeout() - P2P_CONNECT_TIMEOUT: " + P2P_CONNECT_TIMEOUT);
       P2P_CONNECT_TIMEOUT = 6 * config.getMemberTimeout();
     }
     IS_P2P_CONNECT_TIMEOUT_INITIALIZED = true;
