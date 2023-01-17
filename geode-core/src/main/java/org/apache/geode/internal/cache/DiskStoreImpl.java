@@ -3580,8 +3580,6 @@ public class DiskStoreImpl implements DiskStore {
 
     boolean shouldOverflow(final long id) {
       if (id > 0 && id <= 0x00000000FFFFFFFFL) {
-        if(currentInts.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD)
-          System.out.println(">>>>>>>> DRF_HASHMAP_OVERFLOW_THRESHOLD:" + DRF_HASHMAP_OVERFLOW_THRESHOLD);
         return currentInts.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
       } else {
         return currentLongs.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
