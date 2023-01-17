@@ -539,7 +539,6 @@ public class Connection implements Runnable {
     if (AlertingAction.isThreadAlerting()) {
       return config.getMemberTimeout();
     }
-
     if (IS_P2P_CONNECT_TIMEOUT_INITIALIZED) {
       return P2P_CONNECT_TIMEOUT;
     }
