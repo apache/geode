@@ -35,9 +35,9 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.jupiter.api.Disabled;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
@@ -109,7 +109,7 @@ public class ConnectionTest {
   }
 
   @Test
-  @Disabled
+  @Ignore
   public void connectTimeoutIsShortWhenAlerting() throws UnknownHostException {
     ConnectionTable connectionTable = mock(ConnectionTable.class);
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
