@@ -412,6 +412,12 @@ dependencies {
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
+test {
+  testLogging {
+    showStandardStreams = true
+  }
+}
+
 distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
