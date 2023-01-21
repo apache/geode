@@ -24,7 +24,6 @@ import java.net.UnknownHostException;
 
 import joptsimple.OptionException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -498,7 +497,6 @@ public class LocatorLauncherBuilderTest {
   }
 
   @Test
-  @Ignore
   public void buildUsesMemberNameSetInApiProperties() {
     LocatorLauncher launcher =
         new Builder().setCommand(LocatorLauncher.Command.START).set(NAME, "locatorABC").build();
@@ -508,7 +506,6 @@ public class LocatorLauncherBuilderTest {
   }
 
   @Test
-  @Ignore
   public void buildUsesMemberNameSetInSystemPropertiesOnStart() {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + NAME, "locatorXYZ");
 

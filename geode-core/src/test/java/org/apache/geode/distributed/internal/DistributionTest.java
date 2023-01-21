@@ -104,7 +104,6 @@ public class DistributionTest {
   }
 
   @Test
-  @Ignore
   public void testDirectChannelSend() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     List<InternalDistributedMember> recipients = Arrays.asList(mockMembers[2], mockMembers[3]);
@@ -117,7 +116,6 @@ public class DistributionTest {
   }
 
   @Test
-  @Ignore
   public void testDirectChannelSendFailureToOneRecipient() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     List<InternalDistributedMember> recipients = Arrays.asList(mockMembers[2], mockMembers[3]);
@@ -135,7 +133,6 @@ public class DistributionTest {
   }
 
   @Test
-  @Ignore
   public void testDirectChannelSendFailureToAll() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     List<InternalDistributedMember> recipients = Arrays.asList(mockMembers[2], mockMembers[3]);
@@ -154,7 +151,6 @@ public class DistributionTest {
   }
 
   @Test
-  @Ignore
   public void testDirectChannelSendAllRecipients() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     when(membership.getAllMembers(EMPTY_MEMBER_ARRAY)).thenReturn(mockMembers);
@@ -168,7 +164,6 @@ public class DistributionTest {
   }
 
   @Test
-  @Ignore
   public void testDirectChannelSendFailureDueToForcedDisconnect() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     when(membership.shutdownInProgress()).thenReturn(true);
@@ -208,7 +203,6 @@ public class DistributionTest {
   }
 
   @Test
-  @Ignore
   public void testSendToEmptyListIsRejected() throws Exception {
     List<InternalDistributedMember> emptyList = Collections.emptyList();
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();

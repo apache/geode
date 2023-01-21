@@ -26,7 +26,6 @@ import java.util.function.Supplier;
 
 import joptsimple.OptionException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -865,7 +864,6 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  @Ignore
   public void buildUsesMemberNameSetInApiProperties() {
     ServerLauncher launcher =
         new Builder().setCommand(ServerLauncher.Command.START).set(NAME, "serverABC").build();
@@ -875,7 +873,6 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  @Ignore
   public void buildUsesMemberNameSetInSystemProperties() {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + NAME, "serverXYZ");
 

@@ -35,7 +35,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -109,7 +108,6 @@ public class ConnectionTest {
   }
 
   @Test
-  @Ignore
   public void connectTimeoutIsShortWhenAlerting() throws UnknownHostException {
     ConnectionTable connectionTable = mock(ConnectionTable.class);
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
