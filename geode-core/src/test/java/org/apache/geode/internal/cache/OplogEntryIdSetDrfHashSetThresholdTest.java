@@ -25,6 +25,7 @@ import java.util.stream.LongStream;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
@@ -36,7 +37,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 public class OplogEntryIdSetDrfHashSetThresholdTest {
   @Test
   //@SetSystemProperty(key = "gemfire.disk.drfHashMapOverflowThreshold", value = "10")
-  @Ignore
+  @Disabled
   public void addMethodOverflowBasedOnDrfOverflowThresholdParameters() {
 
     int testEntries = 41;
