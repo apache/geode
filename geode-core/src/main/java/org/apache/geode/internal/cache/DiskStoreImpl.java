@@ -198,7 +198,7 @@ public class DiskStoreImpl implements DiskStore {
       GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverLruValues";
 
   static final long DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT = 805306368;
-  static final long DRF_HASHMAP_OVERFLOW_THRESHOLD =
+  final long DRF_HASHMAP_OVERFLOW_THRESHOLD =
       Long.getLong(DRF_HASHMAP_OVERFLOW_THRESHOLD_NAME, DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT);
 
   boolean RECOVER_VALUES = getBoolean(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, true);
