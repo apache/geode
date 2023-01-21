@@ -40,7 +40,6 @@ import java.util.Set;
 import org.assertj.core.api.Assertions;
 import org.jgroups.util.UUID;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.GemFireConfigException;
@@ -194,7 +193,6 @@ public class DistributionTest {
   }
 
   @Test
-  @Ignore
   public void testSendToNullListIsRejected() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     m.setRecipient(mockMembers[0]);
