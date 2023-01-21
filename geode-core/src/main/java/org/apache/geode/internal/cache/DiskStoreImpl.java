@@ -3532,6 +3532,7 @@ public class DiskStoreImpl implements DiskStore {
     private final List<LongOpenHashSet> allLongs;
     private final AtomicReference<IntOpenHashSet> currentInts;
     private final AtomicReference<LongOpenHashSet> currentLongs;
+    private final long drfHashMapOverFlowThreashold;
 
     // For testing purposes only.
     @VisibleForTesting
@@ -3541,9 +3542,10 @@ public class DiskStoreImpl implements DiskStore {
 
       this.allLongs = allLongs;
       currentLongs = new AtomicReference<>(this.allLongs.get(0));
+      drfHashMapOverFlowThreashold = DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT;
     }
 
-    public OplogEntryIdSet() {
+    public OplogEntryIdSet(long drfHashMapOverflowThreshold) {
       IntOpenHashSet intHashSet = new IntOpenHashSet((int) INVALID_ID);
       allInts = new ArrayList<>();
       allInts.add(intHashSet);
@@ -3553,6 +3555,11 @@ public class DiskStoreImpl implements DiskStore {
       allLongs = new ArrayList<>();
       allLongs.add(longHashSet);
       currentLongs = new AtomicReference<>(longHashSet);
+      this.drfHashMapOverFlowThreashold = drfHashMapOverflowThreshold;
+    }
+
+    public OplogEntryIdSet() {
+      this(DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT);
     }
 
     public void add(long id) {
@@ -3580,14 +3587,14 @@ public class DiskStoreImpl implements DiskStore {
 
     boolean shouldOverflow(final long id) {
       if (id > 0 && id <= 0x00000000FFFFFFFFL) {
-        return currentInts.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
+        return currentInts.get().size() == drfHashMapOverFlowThreashold;
       } else {
-        return currentLongs.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
+        return currentLongs.get().size() == drfHashMapOverFlowThreashold;
       }
     }
 
     void overflowToNewHashMap(final long id) {
-      if (DRF_HASHMAP_OVERFLOW_THRESHOLD == DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT) {
+      if (drfHashMapOverFlowThreashold == DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT) {
         logger.warn(
             "There is a large number of deleted entries within the disk-store, please execute an offline compaction.");
       }
