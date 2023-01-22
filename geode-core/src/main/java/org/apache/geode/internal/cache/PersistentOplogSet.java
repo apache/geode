@@ -440,7 +440,7 @@ public class PersistentOplogSet implements OplogSet {
   }
 
   private long recoverOplogs(long byteCount) {
-    OplogEntryIdSet deletedIds = new OplogEntryIdSet(parent.DRF_HASHMAP_OVERFLOW_THRESHOLD);
+    OplogEntryIdSet deletedIds = new OplogEntryIdSet();
     TreeSet<Oplog> oplogSet = getSortedOplogs();
 
     if (!getAlreadyRecoveredOnce().get()) {

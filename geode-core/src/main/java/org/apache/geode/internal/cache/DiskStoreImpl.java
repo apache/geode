@@ -71,7 +71,6 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -199,7 +198,7 @@ public class DiskStoreImpl implements DiskStore {
       GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverLruValues";
 
   static final long DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT = 805306368;
-  final long DRF_HASHMAP_OVERFLOW_THRESHOLD =
+  static final long DRF_HASHMAP_OVERFLOW_THRESHOLD =
       Long.getLong(DRF_HASHMAP_OVERFLOW_THRESHOLD_NAME, DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT);
 
   boolean RECOVER_VALUES = getBoolean(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, true);
@@ -3533,26 +3532,18 @@ public class DiskStoreImpl implements DiskStore {
     private final List<LongOpenHashSet> allLongs;
     private final AtomicReference<IntOpenHashSet> currentInts;
     private final AtomicReference<LongOpenHashSet> currentLongs;
-    private final long drfHashMapOverFlowThreashold;
 
     // For testing purposes only.
     @VisibleForTesting
-    OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs,
-        long drfHashMapOverflowThreshold) {
+    OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs) {
       this.allInts = allInts;
       currentInts = new AtomicReference<>(this.allInts.get(0));
 
       this.allLongs = allLongs;
       currentLongs = new AtomicReference<>(this.allLongs.get(0));
-      this.drfHashMapOverFlowThreashold = drfHashMapOverflowThreshold;
     }
 
-    @TestOnly
-    OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs) {
-      this(allInts, allLongs, DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT);
-    }
-
-    public OplogEntryIdSet(long drfHashMapOverflowThreshold) {
+    public OplogEntryIdSet() {
       IntOpenHashSet intHashSet = new IntOpenHashSet((int) INVALID_ID);
       allInts = new ArrayList<>();
       allInts.add(intHashSet);
@@ -3562,11 +3553,6 @@ public class DiskStoreImpl implements DiskStore {
       allLongs = new ArrayList<>();
       allLongs.add(longHashSet);
       currentLongs = new AtomicReference<>(longHashSet);
-      this.drfHashMapOverFlowThreashold = drfHashMapOverflowThreshold;
-    }
-
-    public OplogEntryIdSet() {
-      this(DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT);
     }
 
     public void add(long id) {
@@ -3594,14 +3580,14 @@ public class DiskStoreImpl implements DiskStore {
 
     boolean shouldOverflow(final long id) {
       if (id > 0 && id <= 0x00000000FFFFFFFFL) {
-        return currentInts.get().size() == drfHashMapOverFlowThreashold;
+        return currentInts.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
       } else {
-        return currentLongs.get().size() == drfHashMapOverFlowThreashold;
+        return currentLongs.get().size() == DRF_HASHMAP_OVERFLOW_THRESHOLD;
       }
     }
 
     void overflowToNewHashMap(final long id) {
-      if (drfHashMapOverFlowThreashold == DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT) {
+      if (DRF_HASHMAP_OVERFLOW_THRESHOLD == DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT) {
         logger.warn(
             "There is a large number of deleted entries within the disk-store, please execute an offline compaction.");
       }

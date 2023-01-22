@@ -25,6 +25,8 @@ import java.util.stream.LongStream;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetSystemProperty;
+import org.junitpioneer.jupiter.WritesSystemProperty;
 
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 
@@ -33,6 +35,8 @@ import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
  */
 public class OplogEntryIdSetDrfHashSetThresholdTest {
   @Test
+  @WritesSystemProperty
+  @SetSystemProperty(key = "gemfire.disk.drfHashMapOverflowThreshold", value = "10")
   public void addMethodOverflowBasedOnDrfOverflowThresholdParameters() {
     int testEntries = 41;
     IntOpenHashSet intOpenHashSet = new IntOpenHashSet();
@@ -43,7 +47,7 @@ public class OplogEntryIdSetDrfHashSetThresholdTest {
     List<LongOpenHashSet> longOpenHashSets =
         new ArrayList<>(Collections.singletonList(longOpenHashSet));
 
-    OplogEntryIdSet oplogEntryIdSet = new OplogEntryIdSet(intOpenHashSets, longOpenHashSets, 10);
+    OplogEntryIdSet oplogEntryIdSet = new OplogEntryIdSet(intOpenHashSets, longOpenHashSets);
     IntStream.range(1, testEntries).forEach(oplogEntryIdSet::add);
     LongStream.range(0x00000000FFFFFFFFL + 1, 0x00000000FFFFFFFFL + testEntries)
         .forEach(oplogEntryIdSet::add);
