@@ -163,8 +163,6 @@ public abstract class DistributedSystem implements StatisticsFactory {
   }
 
   protected static void addSystem(InternalDistributedSystem newSystem) {
-    if (true)
-      throw new RuntimeException("Don't allow distributed system to be created");
     synchronized (existingSystemsLock) {
       int size = existingSystems.size();
       if (size == 0) {
