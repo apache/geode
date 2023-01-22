@@ -29,9 +29,7 @@ import java.util.stream.LongStream;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ClearSystemProperty;
-import org.junitpioneer.jupiter.ReadsSystemProperty;
+import org.junit.Test;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
@@ -74,8 +72,6 @@ public class OplogEntryIdSetTest {
   }
 
   @Test
-  @ReadsSystemProperty
-  @ClearSystemProperty(key = "gemfire.disk.drfHashMapOverflowThreshold")
   public void addMethodOverflowsWhenInternalAddThrowsIllegalArgumentException() {
     int testEntries = 1000;
     int magicInt = testEntries + 1;
