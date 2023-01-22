@@ -3538,7 +3538,7 @@ public class DiskStoreImpl implements DiskStore {
     // For testing purposes only.
     @VisibleForTesting
     OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs,
-                    long drfHashMapOverflowThreshold) {
+        long drfHashMapOverflowThreshold) {
       this.allInts = allInts;
       currentInts = new AtomicReference<>(this.allInts.get(0));
 

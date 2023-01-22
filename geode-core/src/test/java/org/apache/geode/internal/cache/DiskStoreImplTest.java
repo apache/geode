@@ -42,7 +42,8 @@ class DiskStoreImplTest {
 
     when(internalDistributedSystem.getStatisticsManager()).thenReturn(statisticsManager);
     when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
-    when(diskStoreAttributes.getDiskDirs()).thenReturn(new File[] {mock(File.class), mock(File.class)});
+    when(diskStoreAttributes.getDiskDirs()).thenReturn(
+        new File[] {mock(File.class), mock(File.class)});
     when(diskStoreAttributes.getDiskDirSizes()).thenReturn(new int[] {1, 1});
     when(diskStoreAttributes.getDiskDirSizesUnit()).thenReturn(DiskDirSizesUnit.MEGABYTES);
     when(statisticsManager.createStatistics(any(), any())).thenReturn(mock(Statistics.class));
