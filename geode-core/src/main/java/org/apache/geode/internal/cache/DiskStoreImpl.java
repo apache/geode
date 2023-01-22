@@ -71,6 +71,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -3536,13 +3537,19 @@ public class DiskStoreImpl implements DiskStore {
 
     // For testing purposes only.
     @VisibleForTesting
-    OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs) {
+    OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs,
+                    long drfHashMapOverflowThreshold) {
       this.allInts = allInts;
       currentInts = new AtomicReference<>(this.allInts.get(0));
 
       this.allLongs = allLongs;
       currentLongs = new AtomicReference<>(this.allLongs.get(0));
-      drfHashMapOverFlowThreashold = DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT;
+      this.drfHashMapOverFlowThreashold = drfHashMapOverflowThreshold;
+    }
+
+    @TestOnly
+    OplogEntryIdSet(List<IntOpenHashSet> allInts, List<LongOpenHashSet> allLongs) {
+      this(allInts, allLongs, DRF_HASHMAP_OVERFLOW_THRESHOLD_DEFAULT);
     }
 
     public OplogEntryIdSet(long drfHashMapOverflowThreshold) {
