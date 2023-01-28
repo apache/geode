@@ -95,3 +95,16 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
+  result:
+    name: CodeQLCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [ analyze ]
+    if: always()
+    steps:
+      - name: Status
+        run: |
+          if [[ ${{ needs.analyze.result }} != 'success' ]]; then
+            echo "CodeQL Check Failed!"
+            exit -1
+          fi    

@@ -37,12 +37,7 @@ github:
         strict: false
         # contexts are the names of checks that must pass
         contexts:
-          - "Analyze (java)"
-          - "Analyze (javascript)"
-          - "Analyze (python)"
-          - "Analyze (go)"
-          - CodeQL
-
+          - CodeQLCheck
       required_pull_request_reviews:
         dismiss_stale_reviews: false
         require_code_owner_reviews: false
