@@ -45,8 +45,6 @@ jobs:
       matrix:
         language: [ 'api-check-test-openjdk11', 'unit-test-openjdk11', 'build', 'unit-test-openjdk8' ]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      run: |
-       echo pass
+     - run: |
+        echo pass
 
