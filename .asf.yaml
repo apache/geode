@@ -37,14 +37,11 @@ github:
         strict: false
         # contexts are the names of checks that must pass
         contexts:
-          - concourse-ci/api-check-test-openjdk11
-          - concourse-ci/build
-          - concourse-ci/unit-test-openjdk11
-          - concourse-ci/unit-test-openjdk8
-          - "LGTM analysis: Java"
-          - "LGTM analysis: Python"
-          - "LGTM analysis: JavaScript"
-
+          - "Analyze (java)"
+          - "Analyze (javascript)"
+          - "Analyze (python)"
+          - "Analyze (go)"
+          - CodeQL
       required_pull_request_reviews:
         dismiss_stale_reviews: false
         require_code_owner_reviews: true
