@@ -28,23 +28,27 @@
 #
 
 # todo : delete it when #7874 merged
-name: "tempoary flow"
+name: "concourse-ci"
 
 on:
   push:
     branches: [ develop ]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ develop ]
-
 jobs:
-  concourse-ci:
-    name: concourse-ci
+  api-check-test-openjdk11:
+    name: api-check-test-openjdk11
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        language: [ 'api-check-test-openjdk11', 'unit-test-openjdk11', 'build', 'unit-test-openjdk8' ]
     steps:
      - run: |
         echo pass
-
+  unit-test-openjdk11:
+    name: unit-test-openjdk11
+    runs-on: ubuntu-latest
+    steps:
+     - run: |
+        echo pass
+  build:
+    name: unit-test-openjdk8
+    runs-on: unit-test-openjdk8
+    steps:
+     - run: |
+        echo pass                
