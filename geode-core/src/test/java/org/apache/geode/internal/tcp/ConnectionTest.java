@@ -35,6 +35,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -53,6 +54,11 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
 public class ConnectionTest {
+
+  @After
+  public void tearDown() {
+    Connection.clearP2PConnectTimeout();
+  }
 
   @SuppressWarnings("ConstantConditions")
   @Test
