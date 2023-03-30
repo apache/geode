@@ -557,21 +557,12 @@ jobs:
      if: matrix.java == '17'
    - name: Run unit tests
      run: |
-       GRADLE_JVM_PATH=${JAVA_HOME_8_X64}
-       JAVA_BUILD_PATH=${JAVA_HOME_8_X64}
-       JAVA_BUILD_VERSION=11 # Use jdk 11 for build
-       JAVA_TEST_VERSION=${{ matrix.java }}
-       cp gradlew gradlewStrict
-       sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
-       GRADLE_JVM=${GRADLE_JVM_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict \
-         -PcompileJVM=${JAVA_BUILD_PATH} \
-         -PcompileJVMVer=${JAVA_BUILD_VERSION} \
-         -PtestJVM=${JAVA_TEST_PATH} \
-         -PtestJVMVer=${JAVA_TEST_VERSION} \
-         -PtestJava8Home=${JAVA_HOME_8_X64} \
-         -PtestJava11Home=${JAVA_HOME_11_X64} \
-         -PtestJava17Home=${JAVA_HOME_17_X64} \
-         test --console=plain --no-daemon
+       dir env:
+       $env:GRADLE_JVM_PATH=$env:JAVA_HOME_8_X64
+       $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
+       $env:JAVA_BUILD_VERSION=11 # Use jdk 11 for build
+       $env:JAVA_TEST_VERSION=${{ matrix.java }}
+       dir env:
    - uses: actions/upload-artifact@v3
      if: failure()
      with:
