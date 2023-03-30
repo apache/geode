@@ -184,3 +184,43 @@ jobs:
          name: integration-test-reports-${{ matrix.os }}-${{ matrix.java }}
          path: build/reports
          retention-days: 5
+
+  acceptanceTest:
+    needs: [apiCheck, unitTest]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        distribution: ['liberica']
+        java: ['8']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: ${{ matrix.java }}
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Run acceptance tests
+        run: |
+          GRADLE_JVM_PATH=${JAVA_HOME_8_X64}
+          JAVA_BUILD_PATH=${JAVA_HOME_8_X64}
+          JAVA_BUILD_VERSION=8
+          JAVA_TEST_VERSION=8
+          cp gradlew gradlewStrict
+          sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
+          GRADLE_JVM=${GRADLE_JVM_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict \
+            --no-parallel \
+            -PcompileJVM=${JAVA_BUILD_PATH} \
+            -PcompileJVMVer=${JAVA_BUILD_VERSION} \
+            -PtestJVM=${JAVA_TEST_PATH} \
+            -PtestJVMVer=${JAVA_TEST_VERSION} \
+            -PtestJava8Home=${JAVA_HOME_8_X64} \
+            acceptanceTest --console=plain --no-daemon
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: acceptance-test-reports-${{ matrix.os }}-${{ matrix.java }}
+          path: build/reports
+          retention-days: 5

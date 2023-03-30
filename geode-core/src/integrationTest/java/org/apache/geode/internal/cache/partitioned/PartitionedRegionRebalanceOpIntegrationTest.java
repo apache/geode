@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.partitioned.rebalance.MoveBuckets;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 
 
-public class PartitionedRegionRebalanceOpTest {
+public class PartitionedRegionRebalanceOpIntegrationTest {
   private PartitionedRegion leaderRegion;
   private PartitionedRegion colocRegion1;
   private PartitionedRegion colocRegion2;
