@@ -181,14 +181,7 @@ jobs:
           $env:JAVA_TEST_VERSION=${{ matrix.java }}
           $env:GRADLE_JVM=$env:GRADLE_JVM_PATH 
           $env:JAVA_TEST_PATH=$env:JAVA_TEST_PATH 
-          gradle -PcompileJVM=$env:JAVA_BUILD_PATH \
-                   -PcompileJVMVer=$env:JAVA_BUILD_VERSION \
-                   -PtestJVM=$env:JAVA_TEST_PATH \
-                   -PtestJVMVer=$env:JAVA_TEST_VERSION \
-                   -PtestJava8Home=$env:JAVA_HOME_8_X64 \
-                   -PtestJava11Home=$env:JAVA_HOME_11_X64 \
-                   -PtestJava17Home=$env:JAVA_HOME_17_X64 \
-                   test --console=plain --no-daemon
+          gradle test --console=plain --no-daemon
 
   integrationTest:
     needs: [apiCheck, unitTest]
