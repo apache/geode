@@ -162,6 +162,12 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: test --console=plain --no-daemon
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: windows-unit-test-reports-${{ matrix.os }}-${{ matrix.java }}
+          path: build/reports
+          retention-days: 5
 
   integrationTest:
     needs: [apiCheck, unitTest]
