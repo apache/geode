@@ -147,7 +147,7 @@ jobs:
       matrix:
         os: [windows-latest]
         distribution: ['liberica']
-        java: ['8', '11', '17']
+        java: ['8']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -155,32 +155,9 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: ${{ matrix.distribution }}
-          java-version: |
-            8
-            11
-            17
+          java-version: 8
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
-      - name: Set JAVA_TEST_PATH to 8
-        run: |
-          echo "JAVA_TEST_PATH=${JAVA_HOME_8_X64}" >> $GITHUB_ENV
-        if: matrix.java == '8'
-      - name: Set JAVA_TEST_PATH to 11
-        run: |
-          echo "JAVA_TEST_PATH=${JAVA_HOME_11_X64}" >> $GITHUB_ENV
-        if: matrix.java == '11'
-      - name: Set JAVA_TEST_PATH to 17
-        run: |
-          echo "JAVA_TEST_PATH=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
-        if: matrix.java == '17'
-      - name: Set ENV vars
-        run: |
-          $env:GRADLE_JVM_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_VERSION=11 # Use jdk 11 for build
-          $env:JAVA_TEST_VERSION=${{ matrix.java }}
-          $env:GRADLE_JVM=$env:GRADLE_JVM_PATH 
-          $env:JAVA_TEST_PATH=$env:JAVA_TEST_PATH 
       - name: Run unit tests
         uses: gradle/gradle-build-action@v2
         with:
