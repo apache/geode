@@ -173,7 +173,7 @@ jobs:
         run: |
           echo "JAVA_TEST_PATH=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
         if: matrix.java == '17'
-      - name: Run unit tests
+      - name: Set ENV vars
         run: |
           $env:GRADLE_JVM_PATH=$env:JAVA_HOME_8_X64
           $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
@@ -181,7 +181,10 @@ jobs:
           $env:JAVA_TEST_VERSION=${{ matrix.java }}
           $env:GRADLE_JVM=$env:GRADLE_JVM_PATH 
           $env:JAVA_TEST_PATH=$env:JAVA_TEST_PATH 
-          gradle test --console=plain --no-daemon
+      - name: Run unit tests
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: test --console=plain --no-daemon
 
   integrationTest:
     needs: [apiCheck, unitTest]
@@ -511,141 +514,5 @@ jobs:
         if: failure()
         with:
           name: assembly-distributed-test-reports-${{ matrix.os }}-${{ matrix.java }}
-          path: build/reports
-          retention-days: 5
-
-  windowsIntegrationTest:
-    needs: [apiCheck, unitTest]
-    strategy:
-      matrix:
-        os: [windows-latest]
-        distribution: ['liberica']
-        java: ['8']
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: ${{ matrix.distribution }}
-          java-version: |
-            8
-            11
-            17
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: Set JAVA_TEST_PATH to 8
-        run: |
-          $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
-        if: matrix.java == '8'
-      - name: Run integration tests
-        run: |
-          $env:GRADLE_JVM_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_VERSION=11 # Use jdk 11 for build
-          $env:JAVA_TEST_VERSION=${{ matrix.java }}
-          $env:GRADLE_JVM=$env:GRADLE_JVM_PATH 
-          gradle -PcompileJVM=$env:JAVA_BUILD_PATH \
-            -PcompileJVMVer=$env:JAVA_BUILD_VERSION \
-            -PtestJVM=$env:JAVA_TEST_PATH \
-            -PtestJVMVer=$env:JAVA_TEST_VERSION \
-            -PtestJava8Home=$env:JAVA_HOME_8_X64 \
-            -PtestJava11Home=$env:JAVA_HOME_11_X64 \
-            -PtestJava17Home=$env:JAVA_HOME_17_X64 \
-            integrationTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: integration-test-reports-${{ matrix.os }}-${{ matrix.java }}
-          path: build/reports
-          retention-days: 5
-
-  windowsAcceptanceTest:
-    needs: [apiCheck, unitTest]
-    strategy:
-      matrix:
-        os: [windows-latest]
-        distribution: ['liberica']
-        java: ['8']
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: ${{ matrix.distribution }}
-          java-version: ${{ matrix.java }}
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: Set JAVA_TEST_PATH to 8
-        run: |
-          $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
-        if: matrix.java == '8'
-      - name: Run acceptance tests
-        run: |
-          $env:GRADLE_JVM_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_VERSION=11 # Use jdk 11 for build
-          $env:JAVA_TEST_VERSION=${{ matrix.java }}
-          $env:GRADLE_JVM=$env:GRADLE_JVM_PATH 
-          gradle -PcompileJVM=$env:JAVA_BUILD_PATH \
-                -PcompileJVMVer=$env:JAVA_BUILD_VERSION \
-                -PtestJVM=$env:JAVA_TEST_PATH \
-                -PtestJVMVer=$env:JAVA_TEST_VERSION \
-                -PtestJava8Home=$env:JAVA_HOME_8_X64 \
-                -PtestJava11Home=$env:JAVA_HOME_11_X64 \
-                -PtestJava17Home=$env:JAVA_HOME_17_X64 \
-                acceptanceTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: acceptance-test-reports-${{ matrix.os }}-${{ matrix.java }}
-          path: build/reports
-          retention-days: 5
-
-  windowsGfshDistributedTest:
-    needs: [apiCheck, unitTest]
-    strategy:
-      matrix:
-        os: [windows-latest]
-        distribution: ['liberica']
-        java: ['8']
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: ${{ matrix.distribution }}
-          java-version: |
-            8
-            11
-            17
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: Set JAVA_TEST_PATH to 8
-        run: |
-          $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
-        if: matrix.java == '8'
-      - name: Run integration tests
-        run: |
-          $env:GRADLE_JVM_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_PATH=$env:JAVA_HOME_8_X64
-          $env:JAVA_BUILD_VERSION=11 # Use jdk 11 for build
-          $env:JAVA_TEST_VERSION=$env:JAVA_HOME_8_X64
-          $env:GRADLE_JVM=$env:GRADLE_JVM_PATH 
-          gradle -PcompileJVM=$env:JAVA_BUILD_PATH \
-                -PcompileJVMVer=$env:JAVA_BUILD_VERSION \
-                -PtestJVM=$env:JAVA_TEST_PATH \
-                -PtestJVMVer=$env:JAVA_TEST_VERSION \
-                -PtestJava8Home=$env:JAVA_HOME_8_X64 \
-                -PtestJava11Home=$env:JAVA_HOME_11_X64 \
-                -PtestJava17Home=$env:JAVA_HOME_17_X64 \
-                distributedTest -PtestCategory=org.apache.geode.test.junit.categories.GfshTest \
-                --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: windows-gfsh-test-reports-${{ matrix.os }}-${{ matrix.java }}
           path: build/reports
           retention-days: 5
