@@ -29,6 +29,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 8
@@ -50,6 +52,8 @@ jobs:
          distribution: [ 'liberica' ]
          java: ['11']
      runs-on: ${{ matrix.os }}
+     env:
+       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
      steps:
      - uses: actions/checkout@v3
      - name: Set up JDK (include all 3 JDKs in the env)
@@ -91,6 +95,8 @@ jobs:
        distribution: ['liberica']
        java: ['8', '11', '17']
    runs-on: ${{ matrix.os }}
+   env:
+     GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
    steps:
    - uses: actions/checkout@v3
    - name: Set up JDK (include all 3 JDKs in env)
@@ -148,6 +154,8 @@ jobs:
          distribution: ['liberica']
          java: ['8']
      runs-on: ${{ matrix.os }}
+     env:
+       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
      steps:
      - uses: actions/checkout@v3
      - name: Set up JDK
@@ -195,6 +203,8 @@ jobs:
         distribution: ['liberica']
         java: ['8']
     runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -235,6 +245,8 @@ jobs:
         distribution: ['liberica']
         java: ['8']
     runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -277,6 +289,8 @@ jobs:
         distribution: ['liberica']
         java: ['8']
     runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -319,6 +333,8 @@ jobs:
         distribution: ['liberica']
         java: ['8']
     runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -361,6 +377,8 @@ jobs:
         distribution: ['liberica']
         java: ['8']
     runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -405,6 +423,8 @@ jobs:
         distribution: [ 'liberica' ]
         java: [ '8' ]
     runs-on: ${{ matrix.os }}
+    env:
+      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
