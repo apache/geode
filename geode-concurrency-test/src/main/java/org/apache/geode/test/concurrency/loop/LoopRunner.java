@@ -46,7 +46,7 @@ public class LoopRunner implements Runner {
       ParallelExecutor executor = new DelegatingExecutor(executorService);
       for (int i = 0; i < count; i++) {
         try {
-          Object test = child.getDeclaringClass().newInstance();
+          Object test = child.getDeclaringClass().getDeclaredConstructor().newInstance();
           child.invoke(test, executor);
         } catch (InvocationTargetException ex) {
           Throwable exceptionToReturn = ex.getCause();
