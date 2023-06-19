@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.concurrency;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -81,8 +82,9 @@ public class ConcurrentTestRunner extends ParentRunner<FrameworkMethod> {
     }
 
     try {
-      runner = configuration.runner().newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
+      runner = configuration.runner().getDeclaredConstructor().newInstance();
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+        | NoSuchMethodException e) {
       throw new InitializationError(e);
     }
   }
