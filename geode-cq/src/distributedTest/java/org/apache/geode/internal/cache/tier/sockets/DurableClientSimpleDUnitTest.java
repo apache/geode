@@ -15,8 +15,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.lang.Thread.sleep;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.InterestResultPolicy.NONE;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.TYPE_CREATE;
@@ -866,19 +864,11 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
     // Start a durable client with the ControlListener
     durableClientId = getName() + "_client";
-    durableClientVM.invoke(() -> createCacheClient(
-        getClientPool(getServerHostName(), server1Port, server2Port, true), regionName,
-        getClientDistributedSystemProperties(durableClientId, VERY_LONG_DURABLE_TIMEOUT_SECONDS),
-        true));
 
-    durableClientVM.invoke(() -> {
-      await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
-          .pollInterval(100, MILLISECONDS)
-          .untilAsserted(() -> assertThat(getCache()).isNotNull());
-    });
-
-    // Send clientReady message
-    sendClientReady(durableClientVM);
+    startupDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS,
+        getClientPool(getServerHostName(), server1Port, server2Port,
+            true),
+        Boolean.TRUE, true);
 
     // Use ClientSession on the server to ` in entry key on behalf of durable client
     boolean server1IsPrimary = false;

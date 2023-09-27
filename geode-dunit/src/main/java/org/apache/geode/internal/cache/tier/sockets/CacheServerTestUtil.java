@@ -326,7 +326,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     new CacheServerTestUtil().createCache(props);
     AttributesFactory<Object, Object> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setEnableBridgeConflation(true);
+    factory.setEnableBridgeConflation(false);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes<Object, Object> attrs = factory.create();
     cache.createRegion(regionName, attrs);

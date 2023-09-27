@@ -619,9 +619,7 @@ public class CacheClientNotifier {
   public void readyForEvents(ClientProxyMembershipID proxyId) {
     CacheClientProxy proxy = getClientProxy(proxyId);
     if (proxy != null) {
-      // False signifies that a marker message has not already been processed.
-      // Generate and send one.
-      proxy.startOrResumeMessageDispatcher(false);
+      proxy.startOrResumeMessageDispatcher(true);
     }
   }
 

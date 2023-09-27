@@ -79,7 +79,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
   @Test
   public void testDurableClient() {
 
-    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS);
+    startupDurableClientAndServer(VERY_LONG_DURABLE_TIMEOUT_SECONDS, true);
 
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
 
