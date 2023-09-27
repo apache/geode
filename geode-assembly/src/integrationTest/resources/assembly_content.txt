@@ -223,6 +223,9 @@ javadoc/org/apache/geode/cache/PartitionAttributesFactory.html
 javadoc/org/apache/geode/cache/PartitionResolver.html
 javadoc/org/apache/geode/cache/PartitionedRegionDistributionException.html
 javadoc/org/apache/geode/cache/PartitionedRegionStorageException.html
+javadoc/org/apache/geode/cache/ProxyRequestObserver.html
+javadoc/org/apache/geode/cache/ProxyRequestObserverAdapter.html
+javadoc/org/apache/geode/cache/ProxyRequestObserverHolder.html
 javadoc/org/apache/geode/cache/Region.Entry.html
 javadoc/org/apache/geode/cache/Region.html
 javadoc/org/apache/geode/cache/RegionAccessException.html
@@ -248,6 +251,7 @@ javadoc/org/apache/geode/cache/SerializedCacheValue.html
 javadoc/org/apache/geode/cache/StatisticsDisabledException.html
 javadoc/org/apache/geode/cache/SubscriptionAttributes.html
 javadoc/org/apache/geode/cache/SynchronizationCommitConflictException.html
+javadoc/org/apache/geode/cache/ThreadLimitingProxyRequestObserver.html
 javadoc/org/apache/geode/cache/TimeoutException.html
 javadoc/org/apache/geode/cache/TransactionDataNodeHasDepartedException.html
 javadoc/org/apache/geode/cache/TransactionDataNotColocatedException.html

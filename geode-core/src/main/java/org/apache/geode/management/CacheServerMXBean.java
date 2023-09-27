@@ -498,4 +498,5 @@ public interface CacheServerMXBean {
    */
   ClientQueueDetail showClientQueueDetails(String clientId) throws Exception;
 
+  long getRejectedProxyRequests();
 }

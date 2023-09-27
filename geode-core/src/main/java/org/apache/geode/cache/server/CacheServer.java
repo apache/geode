@@ -519,4 +519,9 @@ public interface CacheServer {
    */
   Set<InterestRegistrationListener> getInterestRegistrationListeners();
 
+  default void incRejectedProxyRequests() {}
+
+  default long getRejectedProxyRequests() {
+    return 0;
+  }
 }

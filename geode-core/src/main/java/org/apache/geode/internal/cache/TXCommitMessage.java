@@ -327,6 +327,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       }
       return;
     }
+
     Assert.assertTrue(txState != null, "Send must have transaction state.");
     this.lockId = (TXLockIdImpl) lockId;
     updateLockMembers();
@@ -335,18 +336,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     IdentityHashMap<RegionCommitList, Set<InternalDistributedMember>> distMap =
         new IdentityHashMap<>();
     HashSet<InternalDistributedMember> ackReceivers = null;
-    for (final Map.Entry<InternalDistributedMember, RegionCommitList> entry : msgMap.entrySet()) {
-      final RegionCommitList rcl = entry.getValue();
-      if (rcl.getNeedsAck()) {
-        if (ackReceivers == null) {
-          ackReceivers = new HashSet<>();
-        }
-        ackReceivers.add(entry.getKey());
-      }
-      final Set<InternalDistributedMember> receivers =
-          distMap.computeIfAbsent(rcl, k -> new HashSet<>());
-      receivers.add(entry.getKey());
-    }
+    ackReceivers = getAckReceivers(distMap, ackReceivers);
 
     CommitReplyProcessor processor = null;
     {
@@ -420,6 +410,41 @@ public class TXCommitMessage extends PooledDistributionMessage
     if (hasReliableRegions) {
       checkDistributionReliability(distMap, processor);
     }
+  }
+
+  Set<InternalDistributedMember> getTxCommitRecipients() {
+    IdentityHashMap<RegionCommitList, Set<InternalDistributedMember>> distMap =
+        new IdentityHashMap<>();
+
+    getAckReceivers(distMap, null);
+    Set<InternalDistributedMember> recipients = new HashSet<>();
+    for (final Map.Entry<RegionCommitList, Set<InternalDistributedMember>> me : distMap
+        .entrySet()) {
+      recipients.addAll(me.getValue());
+    }
+    recipients.retainAll(dm.getDistributionManagerIds());
+    return recipients;
+  }
+
+  private HashSet<InternalDistributedMember> getAckReceivers(
+      IdentityHashMap<RegionCommitList, Set<InternalDistributedMember>> distMap,
+      HashSet<InternalDistributedMember> ackReceivers) {
+    if (msgMap == null) {
+      return null;
+    }
+    for (final Map.Entry<InternalDistributedMember, RegionCommitList> entry : msgMap.entrySet()) {
+      final RegionCommitList rcl = entry.getValue();
+      if (rcl.getNeedsAck()) {
+        if (ackReceivers == null) {
+          ackReceivers = new HashSet<>();
+        }
+        ackReceivers.add(entry.getKey());
+      }
+      final Set<InternalDistributedMember> receivers =
+          distMap.computeIfAbsent(rcl, k -> new HashSet<>());
+      receivers.add(entry.getKey());
+    }
+    return ackReceivers;
   }
 
   @Override

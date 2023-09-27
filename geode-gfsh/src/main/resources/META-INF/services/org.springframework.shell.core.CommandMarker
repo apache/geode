@@ -86,6 +86,7 @@ org.apache.geode.management.internal.cli.commands.RestoreRedundancyCommand
 org.apache.geode.management.internal.cli.commands.ResumeAsyncEventQueueDispatcherCommand
 org.apache.geode.management.internal.cli.commands.ResumeGatewaySenderCommand
 org.apache.geode.management.internal.cli.commands.RevokeMissingDiskStoreCommand
+org.apache.geode.management.internal.cli.commands.SetThreadLimitingProxyRequestCommand
 org.apache.geode.management.internal.cli.commands.SetVariableCommand
 org.apache.geode.management.internal.cli.commands.ShCommand
 org.apache.geode.management.internal.cli.commands.ShowDeadlockCommand

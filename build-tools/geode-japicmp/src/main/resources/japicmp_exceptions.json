@@ -13,5 +13,10 @@
   "Class org.apache.geode.management.DiskStoreMXBean": "Added new methods.",
   "Method org.apache.geode.management.DiskStoreMXBean.getTotalRecoveredEntryCreates()": "Added new stat",
   "Method org.apache.geode.management.DiskStoreMXBean.getTotalRecoveredEntryDestroys()": "Added new stat",
-  "Method org.apache.geode.management.DiskStoreMXBean.getTotalRecoveredEntryUpdates()": "Added new stat"
+  "Method org.apache.geode.management.DiskStoreMXBean.getTotalRecoveredEntryUpdates()": "Added new stat",
+  "Class org.apache.geode.cache.server.CacheServer": "Added two methods",
+  "Method org.apache.geode.cache.server.CacheServer.getRejectedProxyRequests()": "added new counter",
+  "Method org.apache.geode.cache.server.CacheServer.incRejectedProxyRequests()": "added new counter",
+  "Class org.apache.geode.management.CacheServerMXBean":"Added new counter",
+  "Method org.apache.geode.management.CacheServerMXBean.getRejectedProxyRequests()": "added new counter"
 }

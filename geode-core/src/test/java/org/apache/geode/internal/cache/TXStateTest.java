@@ -110,9 +110,9 @@ public class TXStateTest {
     txState.commit();
 
     InOrder inOrder = inOrder(txState, txCommitMessage);
+    inOrder.verify(txState).buildMessage();
     inOrder.verify(txState).applyChanges(any());
     inOrder.verify(txState).attachFilterProfileInformation(any());
-    inOrder.verify(txState).buildMessage();
     inOrder.verify(txCommitMessage).send(any());
     inOrder.verify(txState).firePendingCallbacks();
   }

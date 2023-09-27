@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -135,6 +136,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private final ClientHealthMonitorProvider clientHealthMonitorProvider;
   private final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider;
 
+  private final AtomicLong rejectedProxyRequests = new AtomicLong();
   public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
       GeodeGlossary.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
 
@@ -838,5 +840,15 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   @Override
   public ClientHealthMonitorProvider getClientHealthMonitorProvider() {
     return clientHealthMonitorProvider;
+  }
+
+  @Override
+  public long getRejectedProxyRequests() {
+    return rejectedProxyRequests.get();
+  }
+
+  @Override
+  public void incRejectedProxyRequests() {
+    rejectedProxyRequests.incrementAndGet();
   }
 }
