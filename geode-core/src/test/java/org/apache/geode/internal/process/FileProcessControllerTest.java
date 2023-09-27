@@ -50,6 +50,15 @@ public class FileProcessControllerTest {
   }
 
   @Test
+  public void noParamsSpecified_throwsNullPointerException() throws Exception {
+    pid = 0;
+
+    assertThatThrownBy(() -> new FileProcessController(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("Invalid parameters 'null' specified");
+  }
+
+  @Test
   public void pidLessThanOne_throwsIllegalArgumentException() throws Exception {
     pid = 0;
 

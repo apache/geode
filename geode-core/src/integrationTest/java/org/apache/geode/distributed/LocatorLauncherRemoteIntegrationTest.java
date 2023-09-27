@@ -14,12 +14,10 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.AbstractLauncher.Status.NOT_RESPONDING;
 import static org.apache.geode.distributed.AbstractLauncher.Status.ONLINE;
 import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.File;
 import java.net.BindException;
@@ -149,6 +147,13 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws Exception {
     givenRunningLocator(withPort(0));
 
+    // Keep it as we are going to overwrite it
+    int pid = readPidFile();
+
+    // Sets a fake PID to ensure that the request is going through FileProcessController,
+    // because if not, the request would fail due to the PID not existing
+    givenPidFile(fakePid);
+
     LocatorState locatorState = new Builder()
         .setWorkingDirectory(getWorkingDirectoryPath())
         .build()
@@ -161,60 +166,10 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
     assertThat(locatorState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(locatorState.getLogFile()).isEqualTo(getLogFile().getCanonicalPath());
     assertThat(locatorState.getMemberName()).isEqualTo(getUniqueName());
-    assertThat(locatorState.getPid().intValue()).isEqualTo(readPidFile());
+    assertThat(locatorState.getPid().intValue()).isEqualTo(pid);
     assertThat(locatorState.getStatus()).isEqualTo(ONLINE);
     assertThat(locatorState.getUptime()).isGreaterThan(0);
     assertThat(locatorState.getWorkingDirectory()).isEqualToIgnoringCase(getWorkingDirectoryPath());
-  }
-
-  @Test
-  public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
-    givenEmptyPidFile();
-    LocatorLauncher launcher = new Builder()
-        .setWorkingDirectory(getWorkingDirectoryPath())
-        .build();
-
-    Throwable thrown = catchThrowable(launcher::status);
-
-    assertThat(thrown)
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Invalid pid 'null' found in");
-  }
-
-  @Test
-  public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws Exception {
-    givenEmptyWorkingDirectory();
-
-    LocatorState locatorState = new Builder()
-        .setWorkingDirectory(getWorkingDirectoryPath())
-        .build()
-        .status();
-
-    assertThat(locatorState.getClasspath()).isNull();
-    assertThat(locatorState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(locatorState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
-    assertThat(locatorState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
-    assertThat(locatorState.getLogFile()).isNull();
-    assertThat(locatorState.getMemberName()).isNull();
-    assertThat(locatorState.getPid()).isNull();
-    assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
-    assertThat(locatorState.getUptime().intValue()).isEqualTo(0);
-    assertThat(locatorState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
-  }
-
-  /**
-   * This test takes > 1 minute to run in {@link LocatorLauncherRemoteFileIntegrationTest}.
-   */
-  @Test
-  public void statusWithStalePidFileReturnsNotResponding() {
-    givenPidFile(fakePid);
-
-    LocatorState locatorState = new Builder()
-        .setWorkingDirectory(getWorkingDirectoryPath())
-        .build()
-        .status();
-
-    assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
   }
 
   @Test

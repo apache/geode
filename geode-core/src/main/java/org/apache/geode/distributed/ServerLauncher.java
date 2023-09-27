@@ -88,6 +88,7 @@ import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.FileAlreadyExistsException;
 import org.apache.geode.internal.process.FileControllableProcess;
 import org.apache.geode.internal.process.MBeanInvocationFailedException;
+import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessController;
 import org.apache.geode.internal.process.ProcessControllerFactory;
@@ -1194,30 +1195,19 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private ServerState statusWithWorkingDirectory() {
     int parsedPid = 0;
     try {
-      final ProcessController controller =
-          new ProcessControllerFactory().createProcessController(controllerParameters,
-              new File(getWorkingDirectory()), ProcessType.SERVER.getPidFileName());
-      parsedPid = controller.getProcessId();
+      // This will ensure that if folder is not correct it will fail ASAP
+      new PidFile(new File(getWorkingDirectory()), ProcessType.SERVER.getPidFileName());
 
-      // note: in-process request will go infinite loop unless we do the following
-      if (parsedPid == identifyPid()) {
-        final ServerLauncher runningLauncher = getInstance();
-        if (runningLauncher != null) {
-          return runningLauncher.statusInProcess();
-        }
-      }
+      final ProcessController controller =
+          new ProcessControllerFactory().createProcessController(this.controllerParameters);
 
       final String statusJson = controller.status();
       return ServerState.fromJson(statusJson);
-    } catch (ConnectionFailedException handled) {
-      // failed to attach to server JVM
-      return createNoResponseState(handled,
-          "Failed to connect to server with process id " + parsedPid);
     } catch (FileNotFoundException handled) {
       // could not find pid file
       return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
+    } catch (IOException | UnableToControlProcessException
         | TimeoutException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with server with process id " + parsedPid);
@@ -1225,11 +1215,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
       Thread.currentThread().interrupt();
       return createNoResponseState(handled,
           "Interrupted while trying to communicate with server with process id " + parsedPid);
-    } catch (PidUnavailableException handled) {
-      // couldn't determine pid from within server JVM
-      return createNoResponseState(handled, "Failed to find usable process id within file "
-          + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
+    } catch (MBeanInvocationFailedException | ConnectionFailedException e) {
+      // This would never happen as controller will always be FileProcessController
     }
+
+    return null;
   }
 
   /**

@@ -59,6 +59,15 @@ public class ProcessControllerFactory {
     return new MBeanOrFileProcessController(parameters, pid);
   }
 
+  public ProcessController createProcessController(final ProcessControllerParameters parameters)
+      throws IOException, InterruptedException, TimeoutException {
+    notNull(parameters, "Invalid parameters '" + parameters + "' specified");
+    notNull(parameters.getDirectory(),
+        "Invalid workDir '" + parameters.getDirectory() + "' specified");
+
+    return new FileProcessController(parameters);
+  }
+
   public ProcessController createProcessController(final ProcessControllerParameters parameters,
       final File directory, final String pidFileName)
       throws IOException, InterruptedException, TimeoutException {

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.AbstractLauncher.Status.NOT_RESPONDING;
 import static org.apache.geode.distributed.AbstractLauncher.Status.ONLINE;
 import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
@@ -308,6 +307,13 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws UnknownHostException {
     givenRunningServer();
 
+    // Keep it as we are going to overwrite it
+    int pid = readPidFile();
+
+    // Sets a fake PID to ensure that the request is going through FileProcessController,
+    // because if not, the request would fail due to the PID not existing
+    givenPidFile(fakePid);
+
     ServerState serverState = new Builder()
         .setWorkingDirectory(getWorkingDirectoryPath())
         .build()
@@ -320,62 +326,10 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(serverState.getLogFile()).isEqualTo(getLogFilePath());
     assertThat(serverState.getMemberName()).isEqualTo(getUniqueName());
-    assertThat(serverState.getPid().intValue()).isEqualTo(readPidFile());
+    assertThat(serverState.getPid().intValue()).isEqualTo(pid);
     assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getUptime()).isGreaterThan(0);
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
-  }
-
-  @Test
-  public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
-    givenEmptyPidFile();
-    ServerLauncher launcher = new Builder()
-        .setWorkingDirectory(getWorkingDirectoryPath())
-        .build();
-
-    Throwable thrown = catchThrowable(launcher::status);
-
-    assertThat(thrown)
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Invalid pid 'null' found in");
-  }
-
-  @Test
-  public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails()
-      throws UnknownHostException {
-    givenEmptyWorkingDirectory();
-
-    ServerState serverState = new Builder()
-        .setWorkingDirectory(getWorkingDirectoryPath())
-        .build()
-        .status();
-
-    assertThat(serverState.getClasspath()).isNull();
-    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(serverState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
-    assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
-    assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
-    assertThat(serverState.getLogFile()).isNull();
-    assertThat(serverState.getMemberName()).isNull();
-    assertThat(serverState.getPid()).isNull();
-    assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
-    assertThat(serverState.getUptime().intValue()).isEqualTo(0);
-    assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
-  }
-
-  /**
-   * This test takes > 1 minute to run in {@link ServerLauncherLocalFileIntegrationTest}.
-   */
-  @Test
-  public void statusWithStalePidFileReturnsNotResponding() {
-    givenPidFile(fakePid);
-
-    ServerState serverState = new Builder()
-        .setWorkingDirectory(getWorkingDirectoryPath())
-        .build()
-        .status();
-
-    assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
   }
 
   @Test

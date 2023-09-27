@@ -81,6 +81,7 @@ import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.FileAlreadyExistsException;
 import org.apache.geode.internal.process.FileControllableProcess;
 import org.apache.geode.internal.process.MBeanInvocationFailedException;
+import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessController;
 import org.apache.geode.internal.process.ProcessControllerFactory;
@@ -1073,44 +1074,30 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   private LocatorState statusWithWorkingDirectory() {
-    int parsedPid = 0;
     try {
-      final ProcessController controller =
-          new ProcessControllerFactory().createProcessController(controllerParameters,
-              new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName());
-      parsedPid = controller.getProcessId();
+      new PidFile(new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName());
 
-      // note: in-process request will go infinite loop unless we do the following
-      if (parsedPid == ProcessUtils.identifyPid()) {
-        LocatorLauncher runningLauncher = getInstance();
-        if (runningLauncher != null) {
-          return runningLauncher.status();
-        }
-      }
+      final ProcessController controller =
+          new ProcessControllerFactory().createProcessController(this.controllerParameters);
 
       final String statusJson = controller.status();
       return LocatorState.fromJson(statusJson);
-    } catch (ConnectionFailedException handled) {
-      // failed to attach to locator JVM
-      return createNoResponseState(handled,
-          "Failed to connect to locator with process id " + parsedPid);
     } catch (FileNotFoundException handled) {
       // could not find pid file
       return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
-        | TimeoutException handled) {
+    } catch (IOException | UnableToControlProcessException | TimeoutException handled) {
       return createNoResponseState(handled,
-          "Failed to communicate with locator with process id " + parsedPid);
-    } catch (PidUnavailableException e) {
-      // couldn't determine pid from within locator JVM
-      return createNoResponseState(e, "Failed to find usable process id within file "
-          + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
+          "Failed to communicate with locator");
     } catch (InterruptedException handled) {
       Thread.currentThread().interrupt();
       return createNoResponseState(handled,
-          "Interrupted while trying to communicate with locator with process id " + parsedPid);
+          "Interrupted while trying to communicate with locator");
+    } catch (MBeanInvocationFailedException | ConnectionFailedException e) {
+      // This would never happen as controller will always be FileProcessController
     }
+
+    return null;
   }
 
   /**
