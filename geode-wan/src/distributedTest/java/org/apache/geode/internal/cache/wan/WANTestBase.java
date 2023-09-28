@@ -43,6 +43,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -3476,10 +3477,9 @@ public class WANTestBase extends DistributedTestCase {
     GatewaySender sender = getGatewaySender(senderId);
 
     AbstractGatewaySender ags = (AbstractGatewaySender) sender;
-    await().untilAsserted(() -> assertThat(ags.getTmpDroppedEventSize()).as(
-        "Expected tmpDroppedEvents size: " + size
-            + " but actual size: " + ags.getTmpDroppedEventSize())
-        .isEqualTo(size));
+    await().untilAsserted(() -> assertEquals("Expected tmpDroppedEvents size: " + size
+        + " but actual size: " + ags.getTempDroppedEventSize(), size,
+        ags.getTempDroppedEventSize()));
   }
 
   /**

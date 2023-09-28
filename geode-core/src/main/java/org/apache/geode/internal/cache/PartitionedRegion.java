@@ -137,6 +137,7 @@ import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -242,6 +243,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -1222,10 +1224,13 @@ public class PartitionedRegion extends LocalRegion
            * get the ParallelGatewaySender to create the colocated partitioned region for this
            * region.
            */
+          InternalGatewaySender senderImpl = (InternalGatewaySender) sender;
           if (sender.isRunning()) {
-            AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
             ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues()
                 .toArray(new RegionQueue[1])[0]).addShadowPartitionedRegionForUserPR(this);
+          } else if (GatewaySenderStartupAction.STOP == senderImpl
+              .calculateStartupActionForGatewaySender()) {
+            senderImpl.recoverInStoppedState();
           }
         }
       }

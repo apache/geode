@@ -246,12 +246,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region<?, ?>> userRegions,
       int idx,
-      int nDispatcher, boolean cleanQueues) {
-    this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory(), cleanQueues);
+      int nDispatcher, boolean cleanQueues, boolean recoverQueuesOnly) {
+    this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory(), cleanQueues,
+        recoverQueuesOnly);
   }
 
   ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region<?, ?>> userRegions, int idx,
-      int nDispatcher, MetaRegionFactory metaRegionFactory, boolean cleanQueues) {
+      int nDispatcher, MetaRegionFactory metaRegionFactory, boolean cleanQueues,
+      boolean recoverQueuesOnly) {
 
     this.metaRegionFactory = metaRegionFactory;
 
@@ -295,8 +297,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     queueEmptyLock = new StoppableReentrantLock(sender.getCancelCriterion());
     queueEmptyCondition = queueEmptyLock.newCondition();
 
-    // initialize the conflation thread pool if conflation is enabled
-    if (sender.isBatchConflationEnabled()) {
+    removalThread = new BatchRemovalThread(this.sender.getCache(), this);
+    // initialize the conflation thread pool if conflation is enabled and queues are started
+    if (sender.isBatchConflationEnabled() && !recoverQueuesOnly) {
       initializeConflationThreadPool();
     }
   }
@@ -306,10 +309,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     // at present, this won't be accessed by multiple threads,
     // still, it is safer approach to synchronize it
     synchronized (ParallelGatewaySenderQueue.class) {
-      if (removalThread == null) {
-        removalThread = new BatchRemovalThread(sender.getCache(), this);
-        removalThread.start();
-      }
+      removalThread.start();
     }
   }
 

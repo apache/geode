@@ -42,6 +42,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -113,7 +115,7 @@ public class StopGatewaySenderCommandTest {
     doReturn(managementService).when(command).getManagementService();
 
     // act
-    ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
+    ResultModel result = command.executeStopGatewaySender(senderId, cache, members, null);
 
     // assert
     assertThat(result.isSuccessful()).isTrue();
@@ -126,6 +128,11 @@ public class StopGatewaySenderCommandTest {
     List<String> message = resultData.getValuesInColumn("Message");
     assertThat(message).containsExactlyInAnyOrder(gatewaySenderIsStoppedMsg,
         gatewaySenderIsStoppedMsg, gatewaySenderIsStoppedMsg);
+
+    // check that cluster configuration is updated
+    CacheConfig.GatewaySender config = (CacheConfig.GatewaySender) result.getConfigObject();
+    assertThat(config.getStartupAction())
+        .isEqualTo(GatewaySenderStartupAction.STOP.name().toLowerCase());
 
     ArgumentCaptor<Collection> callablesCaptor =
         ArgumentCaptor.forClass(Collection.class);
@@ -144,12 +151,11 @@ public class StopGatewaySenderCommandTest {
     doReturn(managementService).when(command).getManagementService();
 
     // act
-    ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
+    ResultModel result = command.executeStopGatewaySender(senderId, cache, members, null);
 
     // assert
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getInfoSection("info").getContent().get(0)).isEqualTo(
         "Could not invoke stop gateway sender sender1 operation on members due to interruption2");
   }
-
 }

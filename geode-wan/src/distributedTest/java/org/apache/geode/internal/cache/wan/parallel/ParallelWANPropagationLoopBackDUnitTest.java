@@ -365,9 +365,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
    * Site-NY: dsid=1: senderId="ln": vm3, vm6
    * NY site's sender's manual-start=true
    *
-   * Make sure the events are sent from LN to NY and will not be added into tmpDroppedEvents
-   * while normal events put from NY site can still be added to tmpDroppedEvents
-   * Start the sender, make sure the events in tmpDroppedEvents are sent to LN finally
+   * Verify that events aren't added to tmpDroppedEvents after gateway-sender is recovered in
+   * stopped state with manual-start=true, and that none of the events are sent to remote site
+   * after sender is started.
    */
   @Test
   public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() {
@@ -410,9 +410,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
 
-    // verify tmpDroppedEvents should be 100 at site-ln, because the sender is not started yet
-    vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
-    vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
+    // verify tmpDroppedEvents should be 0 at site-ln, because the sender is not started yet
+    vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
+    vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
 
     // verify site-ln has not received the events from site-ny yet
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 0));

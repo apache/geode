@@ -26,8 +26,10 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -95,6 +97,12 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
     Boolean manualStart = gatewaySenderCreateArgs.isManualStart();
     if (manualStart != null) {
       gateway.setManualStart(manualStart);
+    }
+
+    String startupAction = gatewaySenderCreateArgs.getStartupAction();
+    if (startupAction != null) {
+      ((InternalGatewaySenderFactory) gateway)
+          .setStartupAction(GatewaySenderStartupAction.valueOf(startupAction.toUpperCase()));
     }
 
     Integer maxQueueMemory = gatewaySenderCreateArgs.getMaxQueueMemory();

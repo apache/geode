@@ -23,6 +23,7 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 
 public class GatewaySenderAttributes {
@@ -40,6 +41,8 @@ public class GatewaySenderAttributes {
   private int batchSize = GatewaySender.DEFAULT_BATCH_SIZE;
 
   private int batchTimeInterval = GatewaySender.DEFAULT_BATCH_TIME_INTERVAL;
+
+  private GatewaySenderStartupAction startupAction = GatewaySenderStartupAction.NONE;
 
   private boolean isBatchConflationEnabled = GatewaySender.DEFAULT_BATCH_CONFLATION;
 
@@ -132,8 +135,8 @@ public class GatewaySenderAttributes {
     diskStoreName = diskstorename;
   }
 
-  public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventsubstitutionfilter) {
-    eventSubstitutionFilter = eventsubstitutionfilter;
+  public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventSubstitutionFilter) {
+    this.eventSubstitutionFilter = eventSubstitutionFilter;
   }
 
   public void setId(String idString) {
@@ -248,7 +251,7 @@ public class GatewaySenderAttributes {
     return listeners;
   }
 
-  public LocatorDiscoveryCallback getGatewayLocatoDiscoveryCallback() {
+  public LocatorDiscoveryCallback getGatewayLocatorDiscoveryCallback() {
     return locatorDiscoveryCallback;
   }
 
@@ -310,6 +313,14 @@ public class GatewaySenderAttributes {
 
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
     return eventSubstitutionFilter;
+  }
+
+  public GatewaySenderStartupAction getStartupAction() {
+    return this.startupAction;
+  }
+
+  public void setStartupAction(GatewaySenderStartupAction startupAction) {
+    this.startupAction = startupAction;
   }
 
   public boolean isMetaQueue() {

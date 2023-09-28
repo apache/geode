@@ -18,6 +18,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 
 public interface InternalGatewaySenderFactory extends GatewaySenderFactory {
 
@@ -40,4 +41,15 @@ public interface InternalGatewaySenderFactory extends GatewaySenderFactory {
    * @param retries the maximum number of retries.
    */
   GatewaySenderFactory setRetriesToGetTransactionEventsFromQueue(int retries);
+
+  /**
+   * Sets startup-action of the <code>GatewaySender</code>. This action parameter is set after
+   * start, stop, pause and resume gateway-sender gfsh commands.
+   *
+   * @param gatewaySenderStartupAction Gateway-sender gatewaySenderStartupAction
+   *
+   * @see GatewaySenderStartupAction
+   */
+  GatewaySenderFactory setStartupAction(
+      GatewaySenderStartupAction gatewaySenderStartupAction);
 }

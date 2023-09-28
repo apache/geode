@@ -350,6 +350,4 @@ public interface GatewaySenderMXBean {
    */
   int getEventsExceedingAlertThreshold();
 
-
-
 }

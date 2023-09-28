@@ -87,7 +87,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(sender.getId()).thenReturn("");
     metaRegionFactory = mock(MetaRegionFactory.class);
     queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory,
-        false);
+        false, false);
   }
 
   @Test
@@ -568,7 +568,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
     ParallelGatewaySenderQueue queue1 =
         new ParallelGatewaySenderQueue(sender, targetRs, 0, 1, metaRegionFactory,
-            true);
+            true, false);
 
     verify(shadowRegion, times(1)).shadowPRWaitForBucketRecovery();
 
@@ -639,7 +639,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
     ParallelGatewaySenderQueue queue1 =
         new ParallelGatewaySenderQueue(sender, targetRs, 0, 1, metaRegionFactory,
-            true);
+            true, false);
 
     verify(cache, times(3)).getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE", true);
   }
@@ -704,7 +704,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     public TestableParallelGatewaySenderQueue(final AbstractGatewaySender sender,
         final Set<Region<?, ?>> userRegions, final int idx, final int nDispatcher,
         final MetaRegionFactory metaRegionFactory) {
-      super(sender, userRegions, idx, nDispatcher, metaRegionFactory, false);
+      super(sender, userRegions, idx, nDispatcher, metaRegionFactory, false, false);
     }
 
 

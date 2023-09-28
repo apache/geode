@@ -25,6 +25,7 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
@@ -34,6 +35,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
@@ -135,6 +137,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   @Override
   public GatewaySenderFactory setBatchSize(int batchSize) {
     attrs.setBatchSize(batchSize);
+    return this;
+  }
+
+  @Override
+  public GatewaySenderFactory setStartupAction(
+      GatewaySenderStartupAction gatewaySenderStartupAction) {
+    this.attrs.setStartupAction(gatewaySenderStartupAction);
     return this;
   }
 
@@ -286,12 +295,9 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
       if (cache instanceof GemFireCacheImpl) {
         sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
+        this.cache.addGatewaySender(sender);
+        executeConfiguredStartupActionOnGatewaySender(sender);
+      } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelGatewaySenderCreation(cache, attrs);
         cache.addGatewaySender(sender);
       }
@@ -313,16 +319,39 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
       if (cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
+        this.cache.addGatewaySender(sender);
+        executeConfiguredStartupActionOnGatewaySender(sender);
+      } else if (this.cache instanceof CacheCreation) {
         sender = new SerialGatewaySenderCreation(cache, attrs);
         cache.addGatewaySender(sender);
       }
     }
     return sender;
+  }
+
+  /**
+   * This method executes configured startup-action at startup of gateway-sender.
+   *
+   * @see GatewaySenderStartupAction
+   */
+  private void executeConfiguredStartupActionOnGatewaySender(GatewaySender sender) {
+    InternalGatewaySender internalGatewaySender = (InternalGatewaySender) sender;
+    GatewaySenderStartupAction startupAction =
+        internalGatewaySender.calculateStartupActionForGatewaySender();
+
+    switch (startupAction) {
+      case START:
+        internalGatewaySender.start();
+        break;
+      case PAUSE:
+        internalGatewaySender.setStartEventProcessor(true);
+        internalGatewaySender.start();
+        internalGatewaySender.setStartEventProcessor(false);
+        break;
+      default:
+        // GatewaySenderStartupAction.STOP and/or manual-start == true
+        internalGatewaySender.recoverInStoppedState();
+    }
   }
 
   @Override
@@ -418,5 +447,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     attrs.setGroupTransactionEvents(senderCreation.mustGroupTransactionEvents());
     attrs.setEnforceThreadsConnectSameReceiver(
         senderCreation.getEnforceThreadsConnectSameReceiver());
+    attrs.setStartupAction(((InternalGatewaySender) senderCreation).getStartupAction());
   }
 }
