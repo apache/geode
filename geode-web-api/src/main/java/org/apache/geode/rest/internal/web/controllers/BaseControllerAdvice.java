@@ -67,9 +67,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ResponseEntity<String> handle(final RuntimeException e) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(e.getMessage()));
+    return convertErrorAsJson(HttpStatus.NOT_FOUND, e.getMessage());
   }
 
   /**
@@ -84,9 +82,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<String> handleException(final RuntimeException e) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(e.getMessage()));
+    return convertErrorAsJson(HttpStatus.BAD_REQUEST, e.getMessage());
   }
 
   /**
@@ -101,9 +97,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ResponseEntity<String> handleException(final GemfireRestException ge) {
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(ge));
+    return convertErrorAsJson(HttpStatus.INTERNAL_SERVER_ERROR, ge);
   }
 
   /**
@@ -119,9 +113,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
   public ResponseEntity<String> handleException(final DataTypeNotSupportedException tns) {
-    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(tns.getMessage()));
+    return convertErrorAsJson(HttpStatus.NOT_ACCEPTABLE, tns.getMessage());
   }
 
   /**
@@ -137,9 +129,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
   public ResponseEntity<String> handleException(final HttpRequestMethodNotSupportedException e) {
-    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(e.getMessage()));
+    return convertErrorAsJson(HttpStatus.METHOD_NOT_ALLOWED, e.getMessage());
   }
 
   /**
@@ -154,9 +144,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ResponseEntity<String> handleException(final AccessDeniedException cause) {
-    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(cause.getMessage()));
+    return convertErrorAsJson(HttpStatus.FORBIDDEN, cause.getMessage());
   }
 
   /**
@@ -170,9 +158,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ResponseEntity<String> handleException(final NotAuthorizedException cause) {
-    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(cause.getMessage()));
+    return convertErrorAsJson(HttpStatus.FORBIDDEN, cause.getMessage());
   }
 
   /**
@@ -186,9 +172,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ResponseEntity<String> handleException(final EntityNotFoundException cause) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(cause.getMessage()));
+    return convertErrorAsJson(HttpStatus.NOT_FOUND, cause.getMessage());
   }
 
   /**
@@ -211,9 +195,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
       logger.debug(stackTrace);
     }
 
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .contentType(APPLICATION_JSON_UTF8)
-        .body(convertErrorAsJson(cause.getMessage()));
+    return convertErrorAsJson(HttpStatus.INTERNAL_SERVER_ERROR, cause.getMessage());
   }
 
 }

@@ -195,9 +195,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         if (maxLimit < 0) {
           String errorMessage =
               String.format("Negative limit param (%1$s) is not valid!", maxLimit);
-          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .contentType(APPLICATION_JSON_UTF8)
-              .body(convertErrorAsJson(errorMessage));
+          return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
         }
 
         int mapSize = keys.size();
@@ -212,9 +210,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         // limit param is not specified in proper format. set the HTTPHeader
         // for BAD_REQUEST
         String errorMessage = String.format("limit param (%1$s) is not valid!", limit);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .contentType(APPLICATION_JSON_UTF8)
-            .body(convertErrorAsJson(errorMessage));
+        return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
       }
     }
 
@@ -253,6 +249,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
     securityService.authorize("READ", region, keys);
     final HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(APPLICATION_JSON_UTF8);
     if (keys.length == 1) {
       /* GET op on single key */
       Object value = getValue(region, keys[0]);
@@ -282,9 +279,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         String errorMessage = String.format(
             "ignoreMissingKey param (%1$s) is not valid. valid usage is ignoreMissingKey=true!",
             ignoreMissingKey);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .contentType(APPLICATION_JSON_UTF8)
-            .body(convertErrorAsJson(errorMessage));
+        return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
       }
 
       final Map<Object, Object> valueObjs = getValues(region, keys);
@@ -372,9 +367,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       String errorMessage = String.format(
           "The op parameter (%1$s) is not valid. Valid values are PUT, REPLACE, or CAS.",
           opValue);
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .contentType(APPLICATION_JSON_UTF8)
-          .body(convertErrorAsJson(errorMessage));
+      return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
     }
     if (keys.length > 1) {
       updateMultipleKeys(region, keys, json);
@@ -444,9 +437,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       String errorMessage = String.format(
           "The op parameter (%1$s) is not valid. Valid values are PUT, CREATE, REPLACE, or CAS.",
           opValue);
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .contentType(APPLICATION_JSON_UTF8)
-          .body(convertErrorAsJson(errorMessage));
+      return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
     }
 
     if (decodedKeys.length > 1) {
