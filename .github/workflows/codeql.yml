@@ -42,7 +42,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     permissions:
       actions: read
       contents: read
