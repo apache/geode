@@ -39,6 +39,13 @@ public interface IndexStore {
   void removeMapping(Object indexKey, RegionEntry re) throws IMQException;
 
   /**
+   * Remove a mapping from the index store If entry at indexKey is not found, we must crawl the
+   * index to be sure the region entry does not exist
+   *
+   */
+  void removeMappingGII(Object indexKey, RegionEntry re) throws IMQException;
+
+  /**
    * Update a mapping in the index store. This method adds a new mapping and removes the old mapping
    *
    */

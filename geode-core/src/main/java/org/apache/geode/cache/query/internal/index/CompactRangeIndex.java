@@ -167,10 +167,10 @@ public class CompactRangeIndex extends AbstractIndex {
         if (oldKeyValue.get() == null) {
           return;
         }
-        indexStore.removeMapping(oldKeyValue.get().getOldKey(), entry);
+        indexStore.removeMappingGII(oldKeyValue.get().getOldKey(), entry);
       } else {
         // rely on reverse map in the index store to figure out the real key
-        indexStore.removeMapping(IndexManager.NULL, entry);
+        indexStore.removeMappingGII(IndexManager.NULL, entry);
       }
     } else if (opCode == CLEAN_UP_THREAD_LOCALS) {
       if (oldKeyValue != null) {

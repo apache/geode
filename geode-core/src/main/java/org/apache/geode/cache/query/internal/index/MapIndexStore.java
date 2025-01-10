@@ -59,6 +59,11 @@ public class MapIndexStore implements IndexStore {
   }
 
   @Override
+  public void removeMappingGII(Object indexKey, RegionEntry re) {
+    removeMapping(indexKey, re);
+  }
+
+  @Override
   public void removeMapping(Object indexKey, RegionEntry re) {
     indexMap.remove(indexKey, re.getKey());
   }

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static java.util.Objects.hash;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,7 +44,6 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
  * The in-memory index storage
@@ -296,9 +293,18 @@ public class MemoryIndexStore implements IndexStore {
   }
 
   @Override
+  public void removeMappingGII(Object indexKey, RegionEntry re) throws IMQException {
+    doRemoveMapping(indexKey, re, false);
+  }
+
+  @Override
   public void removeMapping(Object indexKey, RegionEntry re) throws IMQException {
+    doRemoveMapping(indexKey, re, true);
+  }
+
+  private void doRemoveMapping(Object indexKey, RegionEntry re, boolean findOldKey) throws IMQException {
     // Remove from forward map
-    boolean found = basicRemoveMapping(indexKey, re, true);
+    boolean found = basicRemoveMapping(indexKey, re, findOldKey);
     // Remove from reverse map.
     // We do NOT need to synchronize here as different RegionEntries will be
     // operating concurrently i.e. different keys in entryToValuesMap which
@@ -870,48 +876,6 @@ public class MemoryIndexStore implements IndexStore {
           + Integer.toHexString(System.identityHashCode(this)) + ' ' + key
           + ' ' + value;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (!(obj instanceof CachedEntryWrapper)) {
-        return false;
-      }
-      CachedEntryWrapper object = (CachedEntryWrapper) obj;
-      if (!getKey().equals(object.getKey())) {
-        if (!(getKey() instanceof PdxInstanceImpl)) {
-          return false;
-        }
-        if (!(object.getKey() instanceof PdxInstanceImpl)) {
-          return false;
-        }
-        PdxInstanceImpl pdxkey1 = (PdxInstanceImpl) getKey();
-        PdxInstanceImpl pdxkey2 = (PdxInstanceImpl) object.getKey();
-        if (!pdxkey1.equals(pdxkey2)) {
-          return false;
-        }
-      }
-      if (!getValue().equals(object.getValue())) {
-        if (!(getValue() instanceof PdxInstanceImpl)) {
-          return false;
-        }
-        if (!(object.getValue() instanceof PdxInstanceImpl)) {
-          return false;
-        }
-        PdxInstanceImpl pdxvalue1 = (PdxInstanceImpl) getValue();
-        PdxInstanceImpl pdxvalue2 = (PdxInstanceImpl) object.getValue();
-        if (!pdxvalue1.equals(pdxvalue2)) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return hash(key, value);
-    }
-
   }
 
 }
