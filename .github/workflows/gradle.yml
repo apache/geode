@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 8
@@ -53,7 +53,7 @@ jobs:
          java: ['11']
      runs-on: ${{ matrix.os }}
      env:
-       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
      steps:
      - uses: actions/checkout@v3
      - name: Set up JDK (include all 3 JDKs in the env)
@@ -96,7 +96,7 @@ jobs:
        java: ['8', '11', '17']
    runs-on: ${{ matrix.os }}
    env:
-     GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+     DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
    steps:
    - uses: actions/checkout@v3
    - name: Set up JDK (include all 3 JDKs in env)
@@ -155,7 +155,7 @@ jobs:
          java: ['8']
      runs-on: ${{ matrix.os }}
      env:
-       GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
      steps:
      - uses: actions/checkout@v3
      - name: Set up JDK
@@ -204,7 +204,7 @@ jobs:
         java: ['8']
     runs-on: ${{ matrix.os }}
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -246,7 +246,7 @@ jobs:
         java: ['8']
     runs-on: ${{ matrix.os }}
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -290,7 +290,7 @@ jobs:
         java: ['8']
     runs-on: ${{ matrix.os }}
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -334,7 +334,7 @@ jobs:
         java: ['8']
     runs-on: ${{ matrix.os }}
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -378,7 +378,7 @@ jobs:
         java: ['8']
     runs-on: ${{ matrix.os }}
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -424,7 +424,7 @@ jobs:
         java: [ '8' ]
     runs-on: ${{ matrix.os }}
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
