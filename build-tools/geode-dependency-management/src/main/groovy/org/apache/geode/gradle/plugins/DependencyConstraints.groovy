@@ -61,7 +61,7 @@ class DependencyConstraints {
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.47.v20220610")
+    deps.put("jetty.version", "9.4.57.v20241219")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
