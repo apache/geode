@@ -44,8 +44,8 @@ class DependencyConstraints {
     deps.put("shiro.version", "1.12.0")
     deps.put("slf4j-api.version", "1.7.32")
     deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.13.3")
-    deps.put("jackson.databind.version", "2.13.3")
+    deps.put("jackson.version", "2.17.0")
+    deps.put("jackson.databind.version", "2.17.0")
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.21")
 
