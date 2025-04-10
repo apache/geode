@@ -38,7 +38,7 @@ class DependencyConstraints {
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.8")
     deps.put("javax.transaction-api.version", "1.3")
-    deps.put("jgroups.version", "3.6.14.Final")
+    deps.put("jgroups.version", "3.6.20.Final")
     deps.put("log4j.version", "2.17.2")
     deps.put("micrometer.version", "1.9.0")
     deps.put("shiro.version", "1.9.1")

@@ -1025,7 +1025,7 @@ lib/jetty-util-9.4.47.v20220610.jar
 lib/jetty-util-ajax-9.4.47.v20220610.jar
 lib/jetty-webapp-9.4.47.v20220610.jar
 lib/jetty-xml-9.4.47.v20220610.jar
-lib/jgroups-3.6.14.Final.jar
+lib/jgroups-3.6.20.Final.jar
 lib/jline-2.12.jar
 lib/jna-5.11.0.jar
 lib/jna-platform-5.11.0.jar

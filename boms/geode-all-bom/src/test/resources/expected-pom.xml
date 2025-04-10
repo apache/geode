@@ -390,7 +390,7 @@
       <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
-        <version>3.6.14.Final</version>
+        <version>3.6.20.Final</version>
       </dependency>
       <dependency>
         <groupId>org.mortbay.jetty</groupId>
