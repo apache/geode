@@ -68,7 +68,7 @@ joda-time-2.10.14.jar
 jna-platform-5.11.0.jar
 jna-5.11.0.jar
 snappy-0.4.jar
-jgroups-3.6.14.Final.jar
+jgroups-3.6.20.Final.jar
 shiro-cache-1.12.0.jar
 shiro-crypto-hash-1.12.0.jar
 shiro-crypto-cipher-1.12.0.jar
