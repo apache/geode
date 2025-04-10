@@ -59,10 +59,10 @@ classgraph-4.8.146.jar
 micrometer-core-1.9.0.jar
 fastutil-8.5.8.jar
 javax.resource-api-1.7.1.jar
-jetty-webapp-9.4.47.v20220610.jar
-jetty-servlet-9.4.47.v20220610.jar
-jetty-security-9.4.47.v20220610.jar
-jetty-server-9.4.47.v20220610.jar
+jetty-webapp-9.4.57.v20241219.jar
+jetty-servlet-9.4.57.v20241219.jar
+jetty-security-9.4.57.v20241219.jar
+jetty-server-9.4.57.v20241219.jar
 javax.servlet-api-3.1.0.jar
 joda-time-2.10.14.jar
 jna-platform-5.11.0.jar
