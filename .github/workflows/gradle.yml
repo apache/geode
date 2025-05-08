@@ -139,7 +139,7 @@ jobs:
          -PtestJava11Home=${JAVA_HOME_11_X64} \
          -PtestJava17Home=${JAVA_HOME_17_X64} \
          test --console=plain --no-daemon
-   - uses: actions/upload-artifact@v3
+   - uses: actions/upload-artifact@v4
      if: failure()
      with:
        name: unit-test-reports-${{ matrix.os }}-${{ matrix.java }}
@@ -188,7 +188,7 @@ jobs:
            -PtestJava11Home=${JAVA_HOME_11_X64} \
            -PtestJava17Home=${JAVA_HOME_17_X64} \
            integrationTest --console=plain --no-daemon
-     - uses: actions/upload-artifact@v3
+     - uses: actions/upload-artifact@v4
        if: failure()
        with:
          name: integration-test-reports-${{ matrix.os }}-${{ matrix.java }}
@@ -230,7 +230,7 @@ jobs:
             -PtestJVMVer=${JAVA_TEST_VERSION} \
             -PtestJava8Home=${JAVA_HOME_8_X64} \
             acceptanceTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: acceptance-test-reports-${{ matrix.os }}-${{ matrix.java }}
@@ -274,7 +274,7 @@ jobs:
             -PtestJVMVer=${JAVA_TEST_VERSION} \
             -PtestJava8Home=${JAVA_HOME_8_X64} \
             geode-wan:distributedTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: wan-distributed-test-reports-${{ matrix.os }}-${{ matrix.java }}
@@ -318,7 +318,7 @@ jobs:
             -PtestJVMVer=${JAVA_TEST_VERSION} \
             -PtestJava8Home=${JAVA_HOME_8_X64} \
             geode-cq:distributedTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cq-distributed-test-reports-${{ matrix.os }}-${{ matrix.java }}
@@ -362,7 +362,7 @@ jobs:
             -PtestJVMVer=${JAVA_TEST_VERSION} \
             -PtestJava8Home=${JAVA_HOME_8_X64} \
             geode-lucene:distributedTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: lucene-distributed-test-reports-${{ matrix.os }}-${{ matrix.java }}
@@ -407,7 +407,7 @@ jobs:
             geode-gfsh:distributedTest \
             geode-web:distributedTest \
             geode-web-management:distributedTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: mgmt-distributed-test-reports-${{ matrix.os }}-${{ matrix.java }}
@@ -456,7 +456,7 @@ jobs:
             geode-old-client:distributedTest \
             extensions:geode-modules:distributedTest \
             extensions:geode-modules-tomcat8:distributedTest --console=plain --no-daemon
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: assembly-distributed-test-reports-${{ matrix.os }}-${{ matrix.java }}
