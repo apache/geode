@@ -79,7 +79,7 @@ lucene-analyzers-phonetic-6.6.6.jar
 spring-context-5.3.21.jar
 jetty-security-9.4.57.v20241219.jar
 geode-logging-0.0.0.jar
-commons-io-2.11.0.jar
+commons-io-2.15.1.jar
 shiro-lang-1.12.0.jar
 javax.transaction-api-1.3.jar
 geode-common-0.0.0.jar
