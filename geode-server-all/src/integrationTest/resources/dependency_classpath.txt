@@ -9,7 +9,7 @@ spring-jcl-5.3.21.jar
 commons-codec-1.15.jar
 classgraph-4.8.147.jar
 jackson-databind-2.13.3.jar
-commons-logging-1.2.jar
+commons-logging-1.3.5.jar
 geode-management-0.0.0.jar
 geode-core-0.0.0.jar
 javax.activation-api-1.2.0.jar
