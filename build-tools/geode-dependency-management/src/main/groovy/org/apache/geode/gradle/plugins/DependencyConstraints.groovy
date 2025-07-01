@@ -104,7 +104,7 @@ class DependencyConstraints {
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.15.0')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3')
-        api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
+        api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.11.0')
         api(group: 'commons-codec', name: 'commons-codec', version: '1.15')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
         api(group: 'commons-configuration', name: 'commons-configuration', version: '1.10')
