@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.lang.SystemUtils;
 
 public class WellKnownClassSizerJUnitTest {
 
@@ -52,7 +53,11 @@ public class WellKnownClassSizerJUnitTest {
         - ObjectSizer.SIZE_CLASS_ONCE.sizeof(new char[0]);
 
     assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 3 * 2), WellKnownClassSizer.sizeof(test1));
-    assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 9 * 2), WellKnownClassSizer.sizeof(test2));
+    if (SystemUtils.isAzulJVM()) {
+      assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 9 * 2 + 8), WellKnownClassSizer.sizeof(test2));
+    } else {
+      assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 9 * 2), WellKnownClassSizer.sizeof(test2));
+    }
   }
 
 }
