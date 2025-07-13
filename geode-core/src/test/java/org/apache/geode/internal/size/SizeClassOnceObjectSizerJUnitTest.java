@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.lang.SystemUtils;
 
 public class SizeClassOnceObjectSizerJUnitTest {
 
@@ -44,15 +45,26 @@ public class SizeClassOnceObjectSizerJUnitTest {
         - ObjectSizer.SIZE_CLASS_ONCE.sizeof(new char[0]);
 
     // Make sure that we actually size strings each time
-    assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 5 * 2),
-        ObjectSizer.SIZE_CLASS_ONCE.sizeof(s1));
-    assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 10 * 2),
-        ObjectSizer.SIZE_CLASS_ONCE.sizeof(s2));
+    if (SystemUtils.isAzulJVM()) {
+      assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 5 * 2 + 8),
+          ObjectSizer.SIZE_CLASS_ONCE.sizeof(s1));
+      assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 10 * 2 + 8),
+          ObjectSizer.SIZE_CLASS_ONCE.sizeof(s2));
+    } else {
+      assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 5 * 2),
+          ObjectSizer.SIZE_CLASS_ONCE.sizeof(s1));
+      assertEquals(emptySize + roundup(OBJECT_SIZE + 4 + 10 * 2),
+          ObjectSizer.SIZE_CLASS_ONCE.sizeof(s2));
+    }
 
     TestObject t1 = new TestObject(5);
     TestObject t2 = new TestObject(15);
     int t1Size = ObjectSizer.SIZE_CLASS_ONCE.sizeof(t1);
-    assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE) + roundup(OBJECT_SIZE + 4 + 5), t1Size);
+    if (SystemUtils.isAzulJVM()) {
+      assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE + 8) + roundup(OBJECT_SIZE + 4 + 5), t1Size);
+    } else {
+      assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE) + roundup(OBJECT_SIZE + 4 + 5), t1Size);
+    }
     // Since we are using SIZE_CLASS_ONCE t2 should have the same size as t1
     assertEquals(t1Size, ObjectSizer.SIZE_CLASS_ONCE.sizeof(t2));
   }
