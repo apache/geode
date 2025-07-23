@@ -22,6 +22,8 @@ import static org.mockito.Mockito.mock;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -115,14 +117,15 @@ public class WanCopyRegionFunctionServiceTest {
 
   @Test
   public void cancelAllExecutionsWithRunningExecutionsReturnsCanceledExecutions() {
-    CountDownLatch latch = new CountDownLatch(2);
+    int executions = 2;
+    CountDownLatch latch = new CountDownLatch(executions);
+    ExecutorService executorService = Executors.newFixedThreadPool(executions);
     Callable<CliFunctionResult> firstExecution = () -> {
       latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
       return null;
     };
 
-    CompletableFuture
-        .supplyAsync(() -> {
+    executorService.submit(() -> {
           try {
             return service.execute(firstExecution, "myRegion", "mySender1");
           } catch (Exception e) {
@@ -135,8 +138,7 @@ public class WanCopyRegionFunctionServiceTest {
       return null;
     };
 
-    CompletableFuture
-        .supplyAsync(() -> {
+    executorService.submit(() -> {
           try {
             return service.execute(secondExecution, "myRegion", "mySender");
           } catch (Exception e) {
@@ -145,19 +147,21 @@ public class WanCopyRegionFunctionServiceTest {
         });
 
     // Wait for the functions to start execution
-    await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isLessThanOrEqualTo(2));
+    await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
 
     // Cancel the function execution
     String executionsString = service.cancelAll();
 
     assertThat(executionsString).isEqualTo("[(myRegion,mySender1), (myRegion,mySender)]");
     await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(0));
+    executorService.shutdown();
   }
 
   @Test
   public void severalExecuteWithDifferentRegionOrSenderAreAllowed() {
     int executions = 5;
     CountDownLatch latch = new CountDownLatch(executions);
+    ExecutorService executorService = Executors.newFixedThreadPool(executions);
     for (int i = 0; i < executions; i++) {
       Callable<CliFunctionResult> execution = () -> {
         latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
@@ -165,8 +169,7 @@ public class WanCopyRegionFunctionServiceTest {
       };
 
       final String regionName = String.valueOf(i);
-      CompletableFuture
-          .supplyAsync(() -> {
+      executorService.submit(() -> {
             try {
               return service.execute(execution, regionName, "mySender1");
             } catch (Exception e) {
@@ -177,12 +180,13 @@ public class WanCopyRegionFunctionServiceTest {
 
     // Wait for the functions to start execution
     await().untilAsserted(
-        () -> assertThat(service.getNumberOfCurrentExecutions()).isLessThanOrEqualTo(executions));
+        () -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
 
     // End executions
     for (int i = 0; i < executions; i++) {
       latch.countDown();
     }
+    executorService.shutdown();
   }
 
   @Test
@@ -193,6 +197,7 @@ public class WanCopyRegionFunctionServiceTest {
     int executions = 4;
     CountDownLatch latch = new CountDownLatch(executions);
     AtomicInteger concurrentExecutions = new AtomicInteger(0);
+    ExecutorService executorService = Executors.newFixedThreadPool(executions);
     for (int i = 0; i < executions; i++) {
       Callable<CliFunctionResult> execution = () -> {
         concurrentExecutions.incrementAndGet();
@@ -202,8 +207,7 @@ public class WanCopyRegionFunctionServiceTest {
       };
 
       final String regionName = String.valueOf(i);
-      CompletableFuture
-          .supplyAsync(() -> {
+      executorService.submit(() -> {
             try {
               return service.execute(execution, regionName, "mySender1");
             } catch (Exception e) {
@@ -214,7 +218,7 @@ public class WanCopyRegionFunctionServiceTest {
 
     // Wait for the functions to start execution
     await().untilAsserted(
-        () -> assertThat(service.getNumberOfCurrentExecutions()).isLessThanOrEqualTo(executions));
+        () -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
 
     // Make sure concurrent executions does not exceed the maximum
     assertThat(concurrentExecutions.get()).isEqualTo(maxConcurrentExecutions);
@@ -225,6 +229,7 @@ public class WanCopyRegionFunctionServiceTest {
     }
 
     await().untilAsserted(() -> assertThat(concurrentExecutions.get()).isEqualTo(0));
+    executorService.shutdown();
   }
 
 }
