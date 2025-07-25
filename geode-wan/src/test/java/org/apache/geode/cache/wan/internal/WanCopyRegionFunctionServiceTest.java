@@ -126,12 +126,12 @@ public class WanCopyRegionFunctionServiceTest {
     };
 
     executorService.submit(() -> {
-          try {
-            return service.execute(firstExecution, "myRegion", "mySender1");
-          } catch (Exception e) {
-            return null;
-          }
-        });
+      try {
+        return service.execute(firstExecution, "myRegion", "mySender1");
+      } catch (Exception e) {
+        return null;
+      }
+    });
 
     Callable<CliFunctionResult> secondExecution = () -> {
       latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
@@ -139,15 +139,16 @@ public class WanCopyRegionFunctionServiceTest {
     };
 
     executorService.submit(() -> {
-          try {
-            return service.execute(secondExecution, "myRegion", "mySender");
-          } catch (Exception e) {
-            return null;
-          }
-        });
+      try {
+        return service.execute(secondExecution, "myRegion", "mySender");
+      } catch (Exception e) {
+        return null;
+      }
+    });
 
     // Wait for the functions to start execution
-    await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
+    await().untilAsserted(
+        () -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
 
     // Cancel the function execution
     String executionsString = service.cancelAll();
@@ -170,12 +171,12 @@ public class WanCopyRegionFunctionServiceTest {
 
       final String regionName = String.valueOf(i);
       executorService.submit(() -> {
-            try {
-              return service.execute(execution, regionName, "mySender1");
-            } catch (Exception e) {
-              return null;
-            }
-          });
+        try {
+          return service.execute(execution, regionName, "mySender1");
+        } catch (Exception e) {
+          return null;
+        }
+      });
     }
 
     // Wait for the functions to start execution
@@ -208,12 +209,12 @@ public class WanCopyRegionFunctionServiceTest {
 
       final String regionName = String.valueOf(i);
       executorService.submit(() -> {
-            try {
-              return service.execute(execution, regionName, "mySender1");
-            } catch (Exception e) {
-              return null;
-            }
-          });
+        try {
+          return service.execute(execution, regionName, "mySender1");
+        } catch (Exception e) {
+          return null;
+        }
+      });
     }
 
     // Wait for the functions to start execution
