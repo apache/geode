@@ -67,8 +67,8 @@ org/apache/geode/management/api/ClusterManagementException
 org/apache/geode/management/api/ClusterManagementRealizationException
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category
 org/apache/geode/management/internal/exceptions/UserErrorException
-org/apache/geode/management/internal/json/AbstractJSONFormatter$PreventReserializationModule
-org/apache/geode/management/internal/json/QueryResultFormatter$TypeSerializationEnforcerModule
+org/apache/geode/management/internal/json/AbstractJSONFormatter$PreventReserializationModule$1
+org/apache/geode/management/internal/json/QueryResultFormatter$TypeSerializationEnforcerModule$1
 org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation
 org/apache/geode/security/ResourcePermission$Resource
