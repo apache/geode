@@ -20,6 +20,7 @@ import static org.apache.geode.internal.size.SizeTestUtil.roundup;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+
 import org.apache.geode.internal.lang.SystemUtils;
 
 
@@ -35,17 +36,18 @@ public class ObjectSizerJUnitTest {
     assertEquals(roundup(OBJECT_SIZE * 2 + REFERENCE_SIZE),
         ObjectGraphSizer.size(new TestObject3(), true));
     if (SystemUtils.isAzulJVM()) {
-      assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE + 8), ObjectGraphSizer.size(new TestObject4()));
+      assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE + 8),
+          ObjectGraphSizer.size(new TestObject4()));
       assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE + 8) + roundup(OBJECT_SIZE + 4),
-        ObjectGraphSizer.size(new TestObject5()));
+          ObjectGraphSizer.size(new TestObject5()));
       assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE - 8)
-        + roundup(OBJECT_SIZE + REFERENCE_SIZE * 4 + 4) + roundup(OBJECT_SIZE + 4),
-        ObjectGraphSizer.size(new TestObject6()));
+          + roundup(OBJECT_SIZE + REFERENCE_SIZE * 4 + 4) + roundup(OBJECT_SIZE + 4),
+          ObjectGraphSizer.size(new TestObject6()));
       assertEquals(roundup(OBJECT_SIZE + 7 + 8), ObjectGraphSizer.size(new TestObject7()));
     } else {
       assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE), ObjectGraphSizer.size(new TestObject4()));
       assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE) + roundup(OBJECT_SIZE + 4),
-        ObjectGraphSizer.size(new TestObject5()));
+          ObjectGraphSizer.size(new TestObject5()));
       assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE)
           + roundup(OBJECT_SIZE + REFERENCE_SIZE * 4 + 4) + roundup(OBJECT_SIZE + 4),
           ObjectGraphSizer.size(new TestObject6()));
