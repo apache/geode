@@ -1074,3 +1074,4 @@ tools/Modules/Apache_Geode_Modules-0.0.0-Tomcat.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer30.zip
 tools/Pulse/geode-pulse-0.0.0.war
+lib/byte-buddy-1.14.9.jar

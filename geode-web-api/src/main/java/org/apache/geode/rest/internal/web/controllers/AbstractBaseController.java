@@ -765,6 +765,18 @@ public abstract class AbstractBaseController implements InitializingBean {
     return value;
   }
 
+  public ResponseEntity<String> convertErrorAsJson(HttpStatus status, String errorMessage) {
+    return ResponseEntity.status(status)
+        .contentType(APPLICATION_JSON_UTF8)
+        .body(convertErrorAsJson(errorMessage));
+  }
+
+  public ResponseEntity<String> convertErrorAsJson(HttpStatus status, Throwable t) {
+    return ResponseEntity.status(status)
+        .contentType(APPLICATION_JSON_UTF8)
+        .body(convertErrorAsJson(t));
+  }
+
   String convertErrorAsJson(String errorMessage) {
     return ("{" + "\"cause\"" + ":" + "\"" + errorMessage + "\"" + "}");
   }
