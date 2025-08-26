@@ -7,8 +7,8 @@ commons-digester-2.1.jar
 commons-validator-1.7.jar
 spring-jcl-5.3.20.jar
 commons-codec-1.15.jar
-classgraph-4.8.146.jar
-jackson-databind-2.13.2.2.jar
+classgraph-4.8.147.jar
+jackson-databind-2.17.0.jar
 commons-logging-1.2.jar
 geode-management-0.0.0.jar
 geode-core-0.0.0.jar
@@ -44,8 +44,8 @@ rmiio-2.1.2.jar
 geode-tcp-server-0.0.0.jar
 log4j-jcl-2.17.2.jar
 geode-connectors-0.0.0.jar
-jackson-core-2.13.3.jar
-jetty-util-9.4.47.v20220610.jar
+jackson-core-2.17.0.jar
+jetty-util-9.4.57.v20241219.jar
 log4j-slf4j-impl-2.17.2.jar
 lucene-analyzers-common-6.6.6.jar
 geode-membership-0.0.0.jar
@@ -86,7 +86,8 @@ geode-common-0.0.0.jar
 antlr-2.7.7.jar
 jetty-xml-9.4.47.v20220610.jar
 geode-rebalancer-0.0.0.jar
-jetty-server-9.4.47.v20220610.jar
-jackson-datatype-jsr310-2.13.3.jar
-jackson-datatype-joda-2.13.3.jar
+jetty-server-9.4.57.v20241219.jar
+jackson-datatype-jsr310-2.17.0.jar
+jackson-datatype-joda-2.17.0.jar
 joda-time-2.10.14.jar
+byte-buddy-1.14.9.jar
