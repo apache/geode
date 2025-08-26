@@ -119,3 +119,4 @@ swagger-core
 swagger-models
 swagger-ui
 webjars-locator-core
+byte-buddy
