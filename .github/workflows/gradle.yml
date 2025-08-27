@@ -212,6 +212,12 @@ jobs:
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
+      - name: Setup Docker Compose
+        run: |
+          sudo install -m 0755 /dev/stdin /usr/local/bin/docker-compose <<'EOF'
+          #!/usr/bin/env bash
+          exec docker compose "$@"
+          EOF
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
       - name: Run acceptance tests
