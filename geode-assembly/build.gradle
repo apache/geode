@@ -125,6 +125,12 @@ sourceSets {
 task downloadWebServers(type:Copy) {
   from {configurations.findAll {it.name.startsWith("webServer")}}
   into webServersDir
+  outputs.dir(webServersDir)
+}
+
+// Ensure distributed test resources task runs after downloadWebServers to avoid implicit dependency warning
+tasks.matching { it.name == 'processDistributedTestResources' }.configureEach {
+  dependsOn(downloadWebServers)
 }
 
 dependencies {
