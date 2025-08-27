@@ -61,7 +61,8 @@ public class SizeClassOnceObjectSizerJUnitTest {
     TestObject t2 = new TestObject(15);
     int t1Size = ObjectSizer.SIZE_CLASS_ONCE.sizeof(t1);
     if (SystemUtils.isAzulJVM()) {
-      assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE + 8) + roundup(OBJECT_SIZE + 4 + 5), t1Size);
+      assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE + 8) + roundup(OBJECT_SIZE + 4 + 5),
+          t1Size);
     } else {
       assertEquals(roundup(OBJECT_SIZE + REFERENCE_SIZE) + roundup(OBJECT_SIZE + 4 + 5), t1Size);
     }
