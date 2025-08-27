@@ -293,9 +293,19 @@ public class MemoryIndexStore implements IndexStore {
   }
 
   @Override
+  public void removeMappingGII(Object indexKey, RegionEntry re) throws IMQException {
+    doRemoveMapping(indexKey, re, false);
+  }
+
+  @Override
   public void removeMapping(Object indexKey, RegionEntry re) throws IMQException {
+    doRemoveMapping(indexKey, re, true);
+  }
+
+  private void doRemoveMapping(Object indexKey, RegionEntry re, boolean findOldKey)
+      throws IMQException {
     // Remove from forward map
-    boolean found = basicRemoveMapping(indexKey, re, true);
+    boolean found = basicRemoveMapping(indexKey, re, findOldKey);
     // Remove from reverse map.
     // We do NOT need to synchronize here as different RegionEntries will be
     // operating concurrently i.e. different keys in entryToValuesMap which
