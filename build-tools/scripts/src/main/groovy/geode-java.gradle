@@ -157,7 +157,7 @@ gradle.taskGraph.whenReady({ graph ->
 
 configurations {
   testOutput {
-    extendsFrom testCompile
+    extendsFrom testImplementation
     description 'a dependency that exposes test artifacts'
   }
 }
@@ -178,7 +178,7 @@ tasks.register('jarTest', Jar) {
 }
 
 artifacts {
-  testOutput jarTest
+  testOutput (jarTest)
 }
 
 javadoc {
@@ -187,7 +187,7 @@ javadoc {
   options.encoding = 'UTF-8'
   exclude "**/internal/**"
 
-  classpath += configurations.compileOnly
+  classpath += configurations.compileClasspath
 }
 
 
