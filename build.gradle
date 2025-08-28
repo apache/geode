@@ -206,7 +206,8 @@ if (project.hasProperty('askpass')) {
 }
 
 gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
-    it.tasks.withType(Test)
-  }.flatten()
+  def allTestTasks = rootProject.subprojects.collect { it.tasks.withType(Test) }.flatten()
+  def cr = tasks.getByName('combineReports') as TestReport
+  cr.reportOn allTestTasks
+  cr.dependsOn allTestTasks
 })

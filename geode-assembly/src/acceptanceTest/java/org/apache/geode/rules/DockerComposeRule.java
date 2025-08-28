@@ -30,9 +30,9 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerState;
-import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.BaseConsumer;
 import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
@@ -77,7 +77,7 @@ public class DockerComposeRule extends ExternalResource {
   private final RuleChain delegate;
   private final String composeFile;
   private final Map<String, List<Integer>> exposedServices;
-  private DockerComposeContainer<?> composeContainer;
+  private ComposeContainer composeContainer;
 
   public DockerComposeRule(String composeFile, Map<String, List<Integer>> exposedServices) {
     this.composeFile = composeFile;
@@ -94,7 +94,7 @@ public class DockerComposeRule extends ExternalResource {
       @Override
       public void evaluate() throws Throwable {
 
-        composeContainer = new DockerComposeContainer<>("compose", new File(composeFile));
+        composeContainer = new ComposeContainer("compose", new File(composeFile));
         exposedServices.forEach((service, ports) -> ports
             .forEach(p -> composeContainer.withExposedService(service, p)));
         composeContainer.withLocalCompose(true);
@@ -116,7 +116,7 @@ public class DockerComposeRule extends ExternalResource {
    * When used with compose, testcontainers does not allow one to have a 'container_name'
    * attribute in the compose file. This means that container names end up looking something like:
    * {@code project_service_index}. When a container performs a reverse IP lookup it will get a
-   * hostname that looks something like {@code projectjkh_db_1.my-network}. This can be a problem
+   * hostname that looks something like {@code projectjkh-db-1.my-network}. This can be a problem
    * since this hostname is not RFC compliant as it contains underscores. This may cause problems
    * in particular with SSL.
    *
@@ -126,7 +126,7 @@ public class DockerComposeRule extends ExternalResource {
    * @throws IllegalArgumentException if the service cannot be found
    */
   public void setContainerName(String serviceName, String newName) {
-    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "_1")
+    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "-1")
         .orElseThrow(() -> new IllegalArgumentException("Unknown service name: " + serviceName));
 
     String containerId = container.getContainerId();
@@ -141,7 +141,7 @@ public class DockerComposeRule extends ExternalResource {
    * @return the stdout of the container if the command was successful, else the stderr
    */
   public String execForService(String serviceName, String... command) {
-    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "_1")
+    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "-1")
         .orElseThrow(() -> new IllegalArgumentException("Unknown service name: " + serviceName));
     Container.ExecResult result;
     try {
@@ -159,7 +159,7 @@ public class DockerComposeRule extends ExternalResource {
    * @return the exit code of the command
    */
   public Long loggingExecForService(String serviceName, String... command) {
-    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "_1")
+    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "-1")
         .orElseThrow(() -> new IllegalArgumentException("Unknown service name: " + serviceName));
 
     String containerId = container.getContainerId();
@@ -208,7 +208,7 @@ public class DockerComposeRule extends ExternalResource {
    * @return the ip address
    */
   public String getIpAddressForService(String serviceName, String network) {
-    Map networks = composeContainer.getContainerByServiceName(serviceName + "_1").get()
+    Map networks = composeContainer.getContainerByServiceName(serviceName + "-1").get()
         .getCurrentContainerInfo().getNetworkSettings().getNetworks();
     for (Object object : networks.entrySet()) {
       String key = (String) ((Map.Entry<?, ?>) object).getKey();
@@ -229,7 +229,7 @@ public class DockerComposeRule extends ExternalResource {
    * @param serviceName the service to pause
    */
   public void pauseService(String serviceName) {
-    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "_1")
+    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "-1")
         .orElseThrow(() -> new IllegalArgumentException("Unknown service name: " + serviceName));
     DockerClientFactory.instance().client().pauseContainerCmd(container.getContainerId()).exec();
   }
@@ -240,7 +240,7 @@ public class DockerComposeRule extends ExternalResource {
    * @param serviceName the service to unpause
    */
   public void unpauseService(String serviceName) {
-    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "_1")
+    ContainerState container = composeContainer.getContainerByServiceName(serviceName + "-1")
         .orElseThrow(() -> new IllegalArgumentException("Unknown service name: " + serviceName));
     DockerClientFactory.instance().client().unpauseContainerCmd(container.getContainerId()).exec();
   }

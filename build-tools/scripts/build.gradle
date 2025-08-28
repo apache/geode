@@ -25,6 +25,8 @@ repositories {
 }
 
 dependencies {
+  implementation('org.apache.maven:maven-core:3.8.1')
+  implementation('org.apache.maven:maven-model:3.8.1')
   implementation('org.nosphere.apache:creadur-rat-gradle:0.7.1')
   implementation('com.github.ben-manes:gradle-versions-plugin:0.42.0')
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3")

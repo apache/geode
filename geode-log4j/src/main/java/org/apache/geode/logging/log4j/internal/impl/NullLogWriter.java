@@ -14,7 +14,7 @@
  */
 package org.apache.geode.logging.log4j.internal.impl;
 
-import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
+import static org.apache.commons.io.output.NullOutputStream.INSTANCE;
 
 import java.io.PrintStream;
 
@@ -27,7 +27,7 @@ import org.apache.geode.logging.internal.spi.LogWriterLevel;
 class NullLogWriter extends ManagerLogWriter {
 
   NullLogWriter() {
-    this(LogWriterLevel.NONE.intLevel(), new PrintStream(NULL_OUTPUT_STREAM), true);
+    this(LogWriterLevel.NONE.intLevel(), new PrintStream(INSTANCE), true);
   }
 
   NullLogWriter(final int level, final PrintStream printStream, final boolean loner) {

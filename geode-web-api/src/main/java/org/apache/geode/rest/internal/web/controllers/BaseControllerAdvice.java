@@ -19,6 +19,7 @@ import java.io.StringWriter;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -65,8 +66,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler({RegionNotFoundException.class, ResourceNotFoundException.class})
   @ResponseBody
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public String handle(final RuntimeException e) {
-    return convertErrorAsJson(e.getMessage());
+  public ResponseEntity<String> handle(final RuntimeException e) {
+    return convertErrorAsJson(HttpStatus.NOT_FOUND, e.getMessage());
   }
 
   /**
@@ -80,8 +81,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler({MalformedJsonException.class})
   @ResponseBody
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public String handleException(final RuntimeException e) {
-    return convertErrorAsJson(e.getMessage());
+  public ResponseEntity<String> handleException(final RuntimeException e) {
+    return convertErrorAsJson(HttpStatus.BAD_REQUEST, e.getMessage());
   }
 
   /**
@@ -95,8 +96,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler(GemfireRestException.class)
   @ResponseBody
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public String handleException(final GemfireRestException ge) {
-    return convertErrorAsJson(ge);
+  public ResponseEntity<String> handleException(final GemfireRestException ge) {
+    return convertErrorAsJson(HttpStatus.INTERNAL_SERVER_ERROR, ge);
   }
 
   /**
@@ -111,8 +112,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler(DataTypeNotSupportedException.class)
   @ResponseBody
   @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-  public String handleException(final DataTypeNotSupportedException tns) {
-    return convertErrorAsJson(tns.getMessage());
+  public ResponseEntity<String> handleException(final DataTypeNotSupportedException tns) {
+    return convertErrorAsJson(HttpStatus.NOT_ACCEPTABLE, tns.getMessage());
   }
 
   /**
@@ -127,8 +128,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   @ResponseBody
   @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-  public String handleException(final HttpRequestMethodNotSupportedException e) {
-    return convertErrorAsJson(e.getMessage());
+  public ResponseEntity<String> handleException(final HttpRequestMethodNotSupportedException e) {
+    return convertErrorAsJson(HttpStatus.METHOD_NOT_ALLOWED, e.getMessage());
   }
 
   /**
@@ -142,8 +143,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler(AccessDeniedException.class)
   @ResponseBody
   @ResponseStatus(HttpStatus.FORBIDDEN)
-  public String handleException(final AccessDeniedException cause) {
-    return convertErrorAsJson(cause.getMessage());
+  public ResponseEntity<String> handleException(final AccessDeniedException cause) {
+    return convertErrorAsJson(HttpStatus.FORBIDDEN, cause.getMessage());
   }
 
   /**
@@ -156,8 +157,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler(NotAuthorizedException.class)
   @ResponseBody
   @ResponseStatus(HttpStatus.FORBIDDEN)
-  public String handleException(final NotAuthorizedException cause) {
-    return convertErrorAsJson(cause.getMessage());
+  public ResponseEntity<String> handleException(final NotAuthorizedException cause) {
+    return convertErrorAsJson(HttpStatus.FORBIDDEN, cause.getMessage());
   }
 
   /**
@@ -170,8 +171,8 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler(EntityNotFoundException.class)
   @ResponseBody
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public String handleException(final EntityNotFoundException cause) {
-    return convertErrorAsJson(cause.getMessage());
+  public ResponseEntity<String> handleException(final EntityNotFoundException cause) {
+    return convertErrorAsJson(HttpStatus.NOT_FOUND, cause.getMessage());
   }
 
   /**
@@ -185,7 +186,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ExceptionHandler(Throwable.class)
   @ResponseBody
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public String handleException(final Throwable cause) {
+  public ResponseEntity<String> handleException(final Throwable cause) {
     final StringWriter stackTraceWriter = new StringWriter();
     cause.printStackTrace(new PrintWriter(stackTraceWriter));
     final String stackTrace = stackTraceWriter.toString();
@@ -194,7 +195,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
       logger.debug(stackTrace);
     }
 
-    return convertErrorAsJson(cause.getMessage());
+    return convertErrorAsJson(HttpStatus.INTERNAL_SERVER_ERROR, cause.getMessage());
   }
 
 }
