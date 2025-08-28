@@ -48,7 +48,7 @@ public class StopServerCommand extends OfflineGfshCommand {
       throws Exception {
     ServerLauncher.ServerState serverState;
 
-  if (member != null && !member.trim().isEmpty()) {
+    if (member != null && !member.trim().isEmpty()) {
       if (!isConnectedAndReady()) {
         return ResultModel.createError(CliStrings
             .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
