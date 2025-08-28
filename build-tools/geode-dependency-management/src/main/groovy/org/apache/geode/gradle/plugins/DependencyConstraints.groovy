@@ -154,7 +154,7 @@ class DependencyConstraints {
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
-        api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
+        api(group: 'org.iq80.snappy', name: 'snappy', version: '0.5')
         api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
         api(group: 'org.jctools', name: 'jctools-core', version: '3.3.0')
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))

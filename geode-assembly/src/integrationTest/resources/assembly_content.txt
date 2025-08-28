@@ -1058,11 +1058,11 @@ lib/shiro-event-1.13.0.jar
 lib/shiro-lang-1.13.0.jar
 lib/slf4j-api-1.7.32.jar
 lib/slf4j-api-1.7.36.jar
-lib/snappy-0.4.jar
-lib/spring-beans-5.3.20.jar
-lib/spring-context-5.3.20.jar
-lib/spring-core-5.3.20.jar
-lib/spring-jcl-5.3.20.jar
+lib/snappy-0.5.jar
+lib/spring-beans-5.3.21.jar
+lib/spring-context-5.3.21.jar
+lib/spring-core-5.3.21.jar
+lib/spring-jcl-5.3.21.jar
 lib/spring-shell-1.2.0.RELEASE.jar
 lib/spring-web-5.3.20.jar
 lib/swagger-annotations-2.2.0.jar

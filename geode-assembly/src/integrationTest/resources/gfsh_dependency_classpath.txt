@@ -67,7 +67,7 @@ javax.servlet-api-3.1.0.jar
 joda-time-2.10.14.jar
 jna-platform-5.11.0.jar
 jna-5.11.0.jar
-snappy-0.4.jar
+snappy-0.5.jar
 jgroups-3.6.20.Final.jar
 shiro-cache-1.13.0.jar
 shiro-crypto-hash-1.13.0.jar
