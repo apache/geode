@@ -23,7 +23,7 @@ limitations under the License.
             <li>
                 <a href="/docs/guide/<%=vars.product_version_nodot%>/about_geode.html">Apache Geode Documentation</a>
             </li>
-            <li class="has_submenu">
+              <li class="has_submenu">
                 <a href="/docs/guide/<%=vars.product_version_nodot%>/getting_started/book_intro.html">Getting Started with Apache Geode</a>
                 <ul>
                     <li>
@@ -74,6 +74,94 @@ limitations under the License.
                     </li>
                 </ul>
             </li>
+             <li class="has_submenu">
+                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/chapter_overview.html">Security</a>
+                        <ul>
+                            <li>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/security_model.html">Security Model</a>
+                            </li>
+                            <li>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_security.html">Security Implementation Introduction and Overview</a>
+                            </li>
+                            <li class="has_submenu">
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/security_audit_overview.html">Security Detail Considerations</a>
+                                <ul>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/security-audit.html">External Interfaces, Ports, and Services</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/security-audit.html#topic_263072624B8D4CDBAD18B82E07AA44B6">Resources That Must Be Protected</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/security-audit.html#topic_5B6DF783A14241399DC25C6EE8D0048A">Log File Locations</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/properties_file.html">Where to Place Security Configuration Settings</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/enable_security.html">Enable Security with Property Definitions</a>
+                            </li>
+                            <li class="has_submenu">
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/authentication_overview.html">Authentication</a>
+                                <ul>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_authentication.html">Implementing Authentication</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/authentication_examples.html">Authentication Example</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_authentication_expiry.html">Implementing Authentication Expiry</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="has_submenu">
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/authorization_overview.html">Authorization</a>
+                                <ul>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_authorization.html">Implementing Authorization</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/method_invocation_authorizers.html">Method Invocation Authorizers</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/authorization_example.html">Authorization Examples</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/post_processing.html">Post Processing of Region Data</a>
+                            </li>
+                            <li class="has_submenu">
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/security/ssl_overview.html">SSL</a>
+                                <ul>
+                                    <li class="has_submenu">
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_ssl.html">Configuring SSL</a>
+                                    <ul>
+                                        <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_ssl.html#ssl_configurable_components">SSL-Configurable Components</a>
+                                        </li>
+                                        <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_ssl.html#ssl_configuration_properties">SSL Configuration Properties</a>
+                                        </li>
+                                        <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_ssl.html#ssl_property_reference_tables">SSL Property Reference Tables</a>
+                                        </li>
+                                        <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/implementing_ssl.html#implementing_ssl__sec_ssl_impl_proc">Procedure</a>
+                                        </li>
+                                    </ul>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/security/ssl_example.html">SSL Sample Implementation</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+            </li>
+           
             <li class="has_submenu">
                 <a href="/docs/guide/<%=vars.product_version_nodot%>/configuring/chapter_overview.html">Configuring and Running a Cluster</a>
                 <ul>
@@ -581,90 +669,6 @@ limitations under the License.
                             </li>
                             <li>
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/network_partitioning/preventing_network_partitions.html">Preventing Network Partitions</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="has_submenu">
-                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/chapter_overview.html">Security</a>
-                        <ul>
-                            <li>
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_security.html">Security Implementation Introduction and Overview</a>
-                            </li>
-                            <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/security_audit_overview.html">Security Detail Considerations</a>
-                                <ul>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/security-audit.html">External Interfaces, Ports, and Services</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/security-audit.html#topic_263072624B8D4CDBAD18B82E07AA44B6">Resources That Must Be Protected</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/security-audit.html#topic_5B6DF783A14241399DC25C6EE8D0048A">Log File Locations</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/properties_file.html">Where to Place Security Configuration Settings</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/enable_security.html">Enable Security with Property Definitions</a>
-                            </li>
-                            <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/authentication_overview.html">Authentication</a>
-                                <ul>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_authentication.html">Implementing Authentication</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/authentication_examples.html">Authentication Example</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_authentication_expiry.html">Implementing Authentication Expiry</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/authorization_overview.html">Authorization</a>
-                                <ul>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_authorization.html">Implementing Authorization</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/method_invocation_authorizers.html">Method Invocation Authorizers</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/authorization_example.html">Authorization Examples</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/post_processing.html">Post Processing of Region Data</a>
-                            </li>
-                            <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/ssl_overview.html">SSL</a>
-                                <ul>
-                                    <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_ssl.html">Configuring SSL</a>
-                                    <ul>
-                                        <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_ssl.html#ssl_configurable_components">SSL-Configurable Components</a>
-                                        </li>
-                                        <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_ssl.html#ssl_configuration_properties">SSL Configuration Properties</a>
-                                        </li>
-                                        <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_ssl.html#ssl_property_reference_tables">SSL Property Reference Tables</a>
-                                        </li>
-                                        <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/implementing_ssl.html#implementing_ssl__sec_ssl_impl_proc">Procedure</a>
-                                        </li>
-                                    </ul>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/security/ssl_example.html">SSL Sample Implementation</a>
-                                    </li>
-                                </ul>
                             </li>
                         </ul>
                     </li>

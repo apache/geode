@@ -21,27 +21,41 @@ limitations under the License.
 
 The security framework permits authentication of connecting components and authorization of operations for all communicating components of the cluster.
 
--   **[Security Implementation Introduction and Overview](implementing_security.html)**
+-   **[Security Model][securityModelDefinition]**
+
+    This section describes the security model for Apache Geode. It is intended to help users understand how Geode controls access to information and resources so that they can make informed decisions about how to deploy and manage Geode clusters and clients.
+
+-   **[Security Implementation Introduction and Overview][securityImplementationLink]**
 
     Encryption, SSL secure communication, authentication, and authorization help to secure the cluster.
 
--   **[Security Detail Considerations](security_audit_overview.html)**
+-   **[Security Detail Considerations][securityDetailReference]**
 
     This section gathers discrete details in one convenient location to better help you assess and configure the security of your environment.
 
--   **[Enable Security with Property Definitions](enable_security.html)**
+-   **[Enable Security with Property Definitions][enableSecurityDefinition]**
 
--   **[Authentication](authentication_overview.html)**
+-   **[Authentication][authenticationLink]**
 
     A cluster using authentication bars malicious peers or clients, and deters inadvertent access to its cache.
 
--   **[Authorization](authorization_overview.html)**
+-   **[Authorization][authOverviewLink]**
 
     Client operations on a cache server can be restricted or completely blocked based on the roles and permissions assigned to the credentials submitted by the client.
 
--   **[Post Processing of Region Data](post_processing.html)**
+-   **[Post Processing of Region Data][postProcessingLink]**
 
--   **[SSL](ssl_overview.html)**
+-   **[SSL][sslDetailsLink]**
 
     SSL protects your data in transit between applications.
 
+
+
+[securityImplementationLink]: implementing_security.html
+[securityModelDefinition]: security_model.html
+[securityDetailReference]: security_audit_overview.html
+[enableSecurityDefinition]: enable_security.html
+[authenticationLink]: authentication_overview.html
+[authOverviewLink]: ../security/authorization_overview.html
+[postProcessingLink]: ../security/post_processing.html
+[sslDetailsLink]: ../security/ssl_overview.html
