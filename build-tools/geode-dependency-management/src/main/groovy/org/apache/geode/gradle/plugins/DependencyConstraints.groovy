@@ -111,7 +111,7 @@ class DependencyConstraints {
         api(group: 'commons-digester', name: 'commons-digester', version: '2.1')
         api(group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4')
         api(group: 'commons-io', name: 'commons-io', version: get('commons-io.version'))
-        api(group: 'commons-logging', name: 'commons-logging', version: '1.2')
+        api(group: 'commons-logging', name: 'commons-logging', version: '1.3.5')
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
