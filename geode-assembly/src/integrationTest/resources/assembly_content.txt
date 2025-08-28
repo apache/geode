@@ -1058,7 +1058,7 @@ lib/shiro-event-1.12.0.jar
 lib/shiro-lang-1.12.0.jar
 lib/slf4j-api-1.7.32.jar
 lib/slf4j-api-1.7.36.jar
-lib/snappy-0.4.jar
+lib/snappy-0.5.jar
 lib/spring-beans-5.3.21.jar
 lib/spring-context-5.3.21.jar
 lib/spring-core-5.3.21.jar
