@@ -38,8 +38,14 @@ sourceSets {
   }
 }
 task downloadJdbcJars(type:Copy) {
+  inputs.files(configurations.jdbcTestingJars)
   from {configurations.jdbcTestingJars}
   into jdbcJarsDir
+  outputs.dir(jdbcJarsDir)
+}
+
+tasks.matching { it.name == 'processDistributedTestResources' }.configureEach {
+  dependsOn(downloadJdbcJars)
 }
 
 dependencies {

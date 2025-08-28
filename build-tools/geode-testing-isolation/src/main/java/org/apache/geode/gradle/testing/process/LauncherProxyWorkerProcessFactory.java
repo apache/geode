@@ -20,7 +20,7 @@ import java.io.File;
 
 import org.gradle.api.Action;
 import org.gradle.api.internal.ClassPathRegistry;
-import org.gradle.api.internal.file.TemporaryFileProvider;
+import org.gradle.api.internal.file.temp.TemporaryFileProvider;
 import org.gradle.api.logging.LoggingManager;
 import org.gradle.internal.id.IdGenerator;
 import org.gradle.internal.jvm.inspection.JvmVersionDetector;
