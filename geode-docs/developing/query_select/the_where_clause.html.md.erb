@@ -241,12 +241,12 @@ When a `null` argument is used, if the query processor cannot determine the prop
 
 **Methods calls with the `SecurityManager` enabled**
 
-When the `SecurityManager` is enabled, by default <%=vars.product_name%> throws a `NotAuthorizedException` when any method that does not belong to the to the list of default allowed methods, given in [RestrictedMethodAuthorizer](../../managing/security/method_invocation_authorizers.html#restrictedMethodAuthorizer), is invoked.
+When the `SecurityManager` is enabled, by default <%=vars.product_name%> throws a `NotAuthorizedException` when any method that does not belong to the to the list of default allowed methods, given in [RestrictedMethodAuthorizer](../../security/method_invocation_authorizers.html#restrictedMethodAuthorizer), is invoked.
 
-In order to further customize this authorization check, see [Changing the Method Authorizer](../../managing/security/method_invocation_authorizers.html#changing_method_authorizer).
+In order to further customize this authorization check, see [Changing the Method Authorizer](../../security/method_invocation_authorizers.html#changing_method_authorizer).
 
 In the past you could use the system property `gemfire.QueryService.allowUntrustedMethodInvocation` to disable the check altogether, but this approach is deprecated and will be removed in future releases;
-you need to configure the [UnrestrictedMethodAuthorizer](../../managing/security/method_invocation_authorizers.html#unrestrictedMethodAuthorizer) instead.
+you need to configure the [UnrestrictedMethodAuthorizer](../../security/method_invocation_authorizers.html#unrestrictedMethodAuthorizer) instead.
 
 ## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
 

@@ -30,7 +30,7 @@ For example:
 -   JMX clients (such as `gfsh` and JConsole) can connect to JMX Managers and other manageable members on the pre-defined RMI port 1099. You can configure a different port if necessary.
 -   Each gateway receiver usually has a port range where it listens for incoming communication.
 
-See [Firewalls and Ports](../../configuring/running/firewalls_ports.html#concept_5ED182BDBFFA4FAB89E3B81366EBC58E) for the complete list of ports used by <%=vars.product_name%>, their default values, and how to configure them if you do not want to use the default value.
+See [Firewalls and Ports](../configuring/running/firewalls_ports.html#concept_5ED182BDBFFA4FAB89E3B81366EBC58E) for the complete list of ports used by <%=vars.product_name%>, their default values, and how to configure them if you do not want to use the default value.
 
 <%=vars.product_name%> does not have any external interfaces or services that need to be enabled or opened.
 
@@ -49,7 +49,7 @@ The default location of the `gemfire.properties` and `cache.xml` configuration f
 
 By default, the log files are located in the working directory used when you started the corresponding processes.
 
-For <%=vars.product_name%> members (locators and cache servers), you can also specify a custom working directory location when you start each process. See [Logging](../logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865) for more details.
+For <%=vars.product_name%> members (locators and cache servers), you can also specify a custom working directory location when you start each process. See [Logging](../managing/logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865) for more details.
 
 The log files are as follows:
 
@@ -57,7 +57,7 @@ The log files are as follows:
 -   `server-name.log`: Contains logging information for a cache server process.
 -   `gfsh-%u_%g.log`: Contains logging information of an individual `gfsh` environment and session.
 
-    **Note:** By default, `gfsh` session logging is disabled. To enable `gfsh` logging, you must set the Java system property `-Dgfsh.                                 log-level=desired_log_level`. See [Configuring the gfsh Environment](../../tools_modules/gfsh/configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487) for more information.
+    **Note:** By default, `gfsh` session logging is disabled. To enable `gfsh` logging, you must set the Java system property `-Dgfsh.                                 log-level=desired_log_level`. See [Configuring the gfsh Environment](../tools_modules/gfsh/configuring_gfsh.html#concept_3B9C6CE2F64841E98C33D9F6441DF487) for more information.
 
 These log files should be readable and writable *only* by the dedicated user who runs the servers.
 
