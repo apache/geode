@@ -47,9 +47,9 @@ antlr-2.7.7.jar
 istack-commons-runtime-4.0.1.jar
 jaxb-impl-2.3.2.jar
 commons-validator-1.7.jar
+commons-beanutils-1.11.0.jar
 shiro-core-1.13.0.jar
 shiro-config-ogdl-1.13.0.jar
-commons-beanutils-1.9.4.jar
 commons-codec-1.15.jar
 commons-collections-3.2.2.jar
 commons-digester-2.1.jar
