@@ -30,7 +30,8 @@ pipeline {
             jdk 'jdk_1.8_latest'
       }
       steps {
-        doTest(env, ":geode-unsafe:test")
+        //doTest(env, ":geode-unsafe:test")
+        doTest(env, "build")
       }
     }
   }
