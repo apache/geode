@@ -42,7 +42,7 @@ You can configure your consumer members so their messages are queued separately 
 The specifications for handling slow receipt primarily affect how your members manage distribution for regions with distributed-no-ack scope, where distribution is asynchronous, but the specifications can affect other distributed scopes as well. If no regions have distributed-no-ack scope, the mechanism is unlikely to kick in at all. When slow receipt handling does kick in, however, it affects all distribution between the producer and that consumer, regardless of scope.
 
 **Note:**
-These slow receiver options are disabled in systems using SSL. See [SSL](../security/ssl_overview.html).
+These slow receiver options are disabled in systems using SSL. See [SSL](../../security/ssl_overview.html).
 
 Each consumer member determines how its own slow behavior is to be handled by its producers. The settings are specified as distributed system connection properties. This section describes the settings and lists the associated properties.
 

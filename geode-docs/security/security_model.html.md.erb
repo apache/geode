@@ -1,0 +1,35 @@
+---
+title:  Security Model
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+Every component of Apache Geode is built with security considerations as a top priority. However, certain security
+solutions require user-specific design and implementation. Geode's default configuration combines maximum flexibility
+and performance without any input needed from the user. Because of this, certain security measures like 
+**[authentication](authentication_overview.html)**, 
+**[authorization](authorization_overview.html)** and 
+**[over-the-wire encryption](ssl_overview.html)** 
+are absent from a default Geode installation. 
+It is highly recommended that users review Geode's security capabilities and implement them as they see fit. See the 
+**[Security Implementation Introduction and Overview](implementing_security.html)**
+to get started with Apache Geode security.
+
+Additional documentation related to security can be found on Apache Geode Wiki 
+
+[Geode Security Framework](https://cwiki.apache.org/confluence/display/GEODE/Geode+Security+Framework) and 
+[Geode Integrated Security](https://cwiki.apache.org/confluence/display/GEODE/Geode+Integrated+Security).
