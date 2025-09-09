@@ -17,6 +17,7 @@
 def doTest(env, target = "test") {
   sh """
   java -version
+  git checkout develop
   ./gradlew ${target}
   """
 }
