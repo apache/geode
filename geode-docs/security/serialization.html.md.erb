@@ -1,0 +1,54 @@
+---
+title:  Serialization
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Apache Geode offers mechanisms to control and filter object serialization, particularly 
+ in the context of security and performance. This is primarily achieved through:
+
+
+##  Global Serialization Filter (Java 8)
+
+For deployments using Java 8, a global serialization filter can be enabled to restrict the types of objects that can be serialized and 
+deserialized within the Geode process. This helps mitigate risks associated with deserialization of untrusted data, a common vulnerability.
+
+- To enable this, the Java system property `geode.enableGlobalSerialFilter` is set to true when starting Geode locators and servers.
+
+- Additionally, the `serializable-object-filter` configuration option, used in conjunction with `validate-serializable-objects,` is used to 
+specify a whitelist of user-defined classes that are allowed to be serialized/deserialized, in addition to standard JDK and Geode classes. 
+ This allows for fine-grained control over which custom objects are permitted in the system.
+
+##  PDX Serialization
+
+Apache Geode's Portable Data eXchange (PDX) serialization offers a more robust and flexible approach to data serialization, providing features
+like schema evolution and language independence. While not a "filter" in the same sense as the global serialization filter, PDX provides control
+over how objects are serialized and deserialized.
+
+- **PdxSerializer:** You can implement a custom `PdxSerializer` to define how specific domain objects are serialized and deserialized, allowing
+ for selective handling of fields or transformations during the process.
+
+- **Reflection-Based Auto-Serialization:** PDX also supports automatic reflection-based serialization, where Geode can serialize objects without
+ requiring explicit implementation of `PdxSerializable` in your domain classes. This can be configured to include or exclude specific types based
+  on criteria like package names, providing a form of type filtering.
+
+
+
+  
+ In conclusion, Apache Geode provides serialization filtering capabilities through a global filter for security hardening in Java 8 environments and
+   through the flexible configurations of PDX serialization for fine-grained control over data handling and type inclusion/exclusion.
