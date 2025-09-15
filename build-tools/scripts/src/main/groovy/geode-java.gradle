@@ -118,23 +118,13 @@ gradle.taskGraph.whenReady({ graph ->
           }.findAll { !(it.value?.hasProperty('optional') && it.value.optional)})
         }
 
-        // NOTE: Previously this logic resolved the upstream project's runtimeClasspath via
-        // geodeProject.configurations.runtimeClasspath.getIncoming().getResolutionResult().
-        // That constitutes cross-project configuration resolution (executed while configuring
-        // the current project's Jar task) and triggers Gradle's deprecation warning:
-        //   "Resolution of the configuration :otherProject:runtimeClasspath was attempted from a context different than the project context"
-        // To avoid that, we derive the first-level runtime dependency jar names directly from
-        // the dependency metadata (depMap) we already collected, without forcing resolution of
-        // the upstream configuration here. This yields the same set that was formerly filtered
-        // against the resolved components because depMap only contains declared (first-level)
-        // non-optional dependencies of the upstream project.
-        depMap.values()
-          .findAll { dep -> !(dep instanceof ProjectDependency) }
-          .each { dep ->
-            if (dep.hasProperty('version') && dep.version) {
-              upstreamDeps.add("${dep.name}-${dep.version}.jar")
-            }
-          }
+        def incoming = geodeProject.configurations.runtimeClasspath.getIncoming()
+        def resolutionResult = incoming.getResolutionResult()
+        def components = resolutionResult.allComponents
+
+        upstreamDeps.addAll(components.findAll {componentResult ->
+          depMap.containsKey(componentResult.moduleVersion.id.name)
+        }.collect {it.moduleVersion.id.name + '-' + it.moduleVersion.version + '.jar'})
       }
       // TODO: can we put our projects on the ClassPath line still?
       runtimeSet.removeAll(upstreamDeps)
