@@ -461,7 +461,7 @@ tasks.register('docs', Javadoc) {
   exclude '**/impl/**'
   exclude '**/test/**'
   exclude '**/examples/security/**'
-  
+
   // Use javadocOnly configuration with transitive dependencies to get external libraries
   // This avoids cross-project configuration resolution while including necessary dependencies
   // Include legacy Tomcat jars for symbol resolution of older session manager classes
