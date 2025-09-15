@@ -70,17 +70,6 @@ allprojects {
 task combineReports(type: TestReport) {
   description 'Combines the test reports.'
   destinationDir = file "${rootProject.buildDir}/reports/combined"
-  // Collect all Test tasks in subprojects
-  def allTests = subprojects.collect { it.tasks.withType(Test) }.flatten()
-
-  // Explicitly add geode-old-versions:test if it’s being missed
-  allTests += tasks.getByPath(":geode-old-versions:test")
-
-  // Tell TestReport to use their results
-  reportOn allTests
-
-  // Explicitly depend on them so results exist before combining
-  dependsOn allTests
 
   doLast {
     println "All test reports at ${rootProject.buildDir}/reports/combined"
@@ -217,7 +206,8 @@ if (project.hasProperty('askpass')) {
 }
 
 gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
-    it.tasks.withType(Test)
-  }.flatten()
+  def allTestTasks = rootProject.subprojects.collect { it.tasks.withType(Test) }.flatten()
+  def cr = tasks.getByName('combineReports') as TestReport
+  cr.reportOn allTestTasks
+  cr.dependsOn allTestTasks
 })
