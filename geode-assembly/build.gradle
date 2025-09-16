@@ -458,7 +458,6 @@ tasks.register('docs', Javadoc) {
 
   // Common exclude patterns retained (may overlap with per-project excludes)
   exclude '**/internal/**'
-  exclude '**/impl/**'
   exclude '**/test/**'
 
 
