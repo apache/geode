@@ -460,7 +460,7 @@ tasks.register('docs', Javadoc) {
   exclude '**/internal/**'
   exclude '**/impl/**'
   exclude '**/test/**'
-  
+
 
   // Use javadocOnly configuration with transitive dependencies to get external libraries
   // This avoids cross-project configuration resolution while including necessary dependencies
