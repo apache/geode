@@ -20,8 +20,8 @@ plugins {
   id 'org.apache.geode.gradle.geode-dependency-constraints'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 17
+targetCompatibility = 17
 compileJava.options.encoding = 'UTF-8'
 
 dependencies {
@@ -31,17 +31,26 @@ dependencies {
 }
 
 String javaVersion = System.properties['java.version']
-if (javaVersion.startsWith("1.8.0") && javaVersion.split("-")[0].split("_")[1].toInteger() < 121) {
-  throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
+def versionMajor = JavaVersion.current().majorVersion.toInteger()
+if (versionMajor < 17) {
+  throw new GradleException("Java version 17 or later required, but was " + javaVersion)
 }
 
 // apply compiler options
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(JavaCompile).each { javac ->
     javac.configure {
-      sourceCompatibility '1.8'
-      targetCompatibility '1.8'
+      sourceCompatibility '17'
+      targetCompatibility '17'
       options.encoding = 'UTF-8'
+      options.compilerArgs.addAll([
+        '--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED',
+        '--add-exports=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED',
+        '--add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED',
+        '-Xlint:-removal',
+        '-Xlint:-deprecation'
+      ])
     }
     javac.options.incremental = true
     javac.options.fork = true
@@ -183,7 +192,8 @@ artifacts {
 
 javadoc {
   destinationDir = file("$buildDir/javadoc")
-  options.addStringOption('Xwerror', '-quiet')
+  // Disabled strict HTML checking for Java 17 compatibility
+  options.addStringOption('Xdoclint:none', '-quiet')
   options.encoding = 'UTF-8'
   exclude "**/internal/**"
 

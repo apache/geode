@@ -44,6 +44,11 @@ dependencies {
   implementation('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
   }
+
+  // JAXB dependencies needed for Java 11+
+  implementation('javax.xml.bind:jaxb-api')
+  implementation('com.sun.xml.bind:jaxb-impl')
+
   // jackson-annotations must be accessed from the geode classloader and not the webapp
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.fasterxml.jackson.core:jackson-core')

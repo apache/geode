@@ -148,9 +148,9 @@ public class QCompiler implements OQLLexerTokenTypes {
   }
 
   public void compileGroupByClause(final int numOfChildren) {
-    final List<CompiledPath> list = new ArrayList<>();
+    final List<CompiledValue> list = new ArrayList<>();
     for (int i = 0; i < numOfChildren; i++) {
-      list.add(0, pop());
+      list.add(0, TypeUtils.checkCast(pop(), CompiledValue.class));
     }
     push(list);
   }

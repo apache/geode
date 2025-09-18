@@ -21,8 +21,10 @@ plugins {
 }
 
 compileJava {
-  options.compilerArgs << '-Xlint:-sunapi'
+  // -Xlint:-sunapi flag removed as it doesn't exist in Java 17
+  // Added --add-exports for sun.security.x509 package access needed for CertificateBuilder
   options.compilerArgs << '-XDenableSunApiLintControl'
+  options.compilerArgs << '--add-exports=java.base/sun.security.x509=ALL-UNNAMED'
 }
 
 dependencies {

@@ -410,6 +410,11 @@ dependencies {
   jmhImplementation('org.jctools:jctools-core')
 }
 
+// Exclude legacy doclet that uses removed com.sun.javadoc API (Java 9+)
+compileTestJava {
+  exclude '**/UnitTestDoclet.java'
+}
+
 tasks.eclipse.dependsOn(generateGrammarSource)
 
 distributedTest {
