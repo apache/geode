@@ -26,9 +26,6 @@ on:
 permissions:
   contents: read
 
-env:
-  GRADLE_OPTS: '--add-exports=java.base/sun.security.x509=ALL-UNNAMED'
-
 jobs:
   build:
     runs-on: ubuntu-latest
