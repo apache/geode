@@ -98,7 +98,7 @@ public class DeployCommand extends GfshCommand {
     Set<DistributedMember> targetMembers;
     targetMembers = findMembers(groups, null);
 
-    List<List<Object>> results = new LinkedList<>();
+    List<Object> results = new LinkedList<>();
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
 
@@ -123,9 +123,9 @@ public class DeployCommand extends GfshCommand {
     return result;
   }
 
-  private List<List<Object>> deployJars(List<String> jarFullPaths,
+  private List<Object> deployJars(List<String> jarFullPaths,
       Set<DistributedMember> targetMembers,
-      List<List<Object>> results,
+      List<Object> results,
       RemoteStreamExporter exporter)
       throws FileNotFoundException, java.rmi.RemoteException {
     for (DistributedMember member : targetMembers) {
@@ -155,9 +155,9 @@ public class DeployCommand extends GfshCommand {
                 new Object[] {jarNames, remoteStreams}, member);
 
         @SuppressWarnings("unchecked")
-        final List<List<Object>> resultCollectorResult =
-            (List<List<Object>>) resultCollector.getResult();
-        results.add(resultCollectorResult.get(0));
+        final List<CliFunctionResult> resultCollectorResult =
+            (List<CliFunctionResult>) resultCollector.getResult();
+        results.addAll(resultCollectorResult);
       } finally {
         for (RemoteInputStream ris : remoteStreams) {
           try {
