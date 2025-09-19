@@ -27,6 +27,11 @@ compileJava {
   options.compilerArgs << '--add-exports=java.base/sun.security.x509=ALL-UNNAMED'
 }
 
+javadoc {
+  // Add --add-exports for sun.security.x509 package access needed for CertificateBuilder javadoc generation
+  options.addStringOption('-add-exports', 'java.base/sun.security.x509=ALL-UNNAMED')
+}
+
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
