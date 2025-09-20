@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.net.URL;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rules.DockerComposeRule;
 
 /**
@@ -58,6 +60,8 @@ import org.apache.geode.rules.DockerComposeRule;
  */
 public class DualServerSNIAcceptanceTest {
 
+  private static final Logger logger = LogService.getLogger();
+
   private static final URL DOCKER_COMPOSE_PATH =
       DualServerSNIAcceptanceTest.class.getResource("dual-server-docker-compose.yml");
 
@@ -72,38 +76,38 @@ public class DualServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() {
-    System.out.println("[DIAGNOSTIC] Setting up Docker container names...");
+    logger.info("[DIAGNOSTIC] Setting up Docker container names...");
     docker.setContainerName("locator-maeve", "locator-maeve");
     docker.setContainerName("server-dolores", "server-dolores");
     docker.setContainerName("server-clementine", "server-clementine");
-    System.out.println("[DIAGNOSTIC] Container names set successfully");
+    logger.info("[DIAGNOSTIC] Container names set successfully");
 
-    System.out.println("[DIAGNOSTIC] Starting locator-maeve...");
+    logger.info("[DIAGNOSTIC] Starting locator-maeve...");
     docker.loggingExecForService("locator-maeve",
         "gfsh", "run", "--file=/geode/scripts/locator-maeve.gfsh");
-    System.out.println("[DIAGNOSTIC] Locator-maeve started successfully");
+    logger.info("[DIAGNOSTIC] Locator-maeve started successfully");
 
-    System.out.println("[DIAGNOSTIC] Starting server-dolores...");
+    logger.info("[DIAGNOSTIC] Starting server-dolores...");
     docker.loggingExecForService("server-dolores",
         "gfsh", "run", "--file=/geode/scripts/server-dolores.gfsh");
-    System.out.println("[DIAGNOSTIC] Server-dolores started successfully");
+    logger.info("[DIAGNOSTIC] Server-dolores started successfully");
 
-    System.out.println("[DIAGNOSTIC] Starting server-clementine...");
+    logger.info("[DIAGNOSTIC] Starting server-clementine...");
     docker.loggingExecForService("server-clementine",
         "gfsh", "run", "--file=/geode/scripts/server-clementine.gfsh");
-    System.out.println("[DIAGNOSTIC] Server-clementine started successfully");
+    logger.info("[DIAGNOSTIC] Server-clementine started successfully");
 
-    System.out.println("[DIAGNOSTIC] Creating regions...");
+    logger.info("[DIAGNOSTIC] Creating regions...");
     docker.loggingExecForService("locator-maeve",
         "gfsh", "run", "--file=/geode/scripts/create-regions.gfsh");
-    System.out.println("[DIAGNOSTIC] Regions created successfully");
+    logger.info("[DIAGNOSTIC] Regions created successfully");
 
-    System.out.println("[DIAGNOSTIC] Setting up SSL properties...");
+    logger.info("[DIAGNOSTIC] Setting up SSL properties...");
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    System.out.println("[DIAGNOSTIC] Trust store path: " + trustStorePath);
+    logger.info("[DIAGNOSTIC] Trust store path: " + trustStorePath);
 
     clientCacheProperties = new Properties();
     clientCacheProperties.setProperty(SSL_ENABLED_COMPONENTS, "all");
@@ -113,7 +117,7 @@ public class DualServerSNIAcceptanceTest {
     clientCacheProperties.setProperty(SSL_TRUSTSTORE, trustStorePath);
     clientCacheProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     clientCacheProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
-    System.out.println("[DIAGNOSTIC] SSL properties configured successfully");
+    logger.info("[DIAGNOSTIC] SSL properties configured successfully");
   }
 
   @After
@@ -131,13 +135,13 @@ public class DualServerSNIAcceptanceTest {
 
   @Test
   public void successfulRoutingTest() {
-    System.out.println("[DIAGNOSTIC] Starting successfulRoutingTest");
-    System.out.println("[DIAGNOSTIC] Testing connection to group-dolores, region-dolores");
+    logger.info("[DIAGNOSTIC] Starting successfulRoutingTest");
+    logger.info("[DIAGNOSTIC] Testing connection to group-dolores, region-dolores");
     try {
       verifyPutAndGet("group-dolores", "region-dolores");
-      System.out.println("[DIAGNOSTIC] successfulRoutingTest completed successfully");
+      logger.info("[DIAGNOSTIC] successfulRoutingTest completed successfully");
     } catch (Exception e) {
-      System.err.println("[DIAGNOSTIC ERROR] successfulRoutingTest failed: " + e.getMessage());
+      logger.error("[DIAGNOSTIC ERROR] successfulRoutingTest failed: " + e.getMessage());
       e.printStackTrace();
       throw e;
     }
@@ -145,13 +149,13 @@ public class DualServerSNIAcceptanceTest {
 
   @Test
   public void successfulRoutingTest2() {
-    System.out.println("[DIAGNOSTIC] Starting successfulRoutingTest2");
-    System.out.println("[DIAGNOSTIC] Testing connection to group-clementine, region-clementine");
+    logger.info("[DIAGNOSTIC] Starting successfulRoutingTest2");
+    logger.info("[DIAGNOSTIC] Testing connection to group-clementine, region-clementine");
     try {
       verifyPutAndGet("group-clementine", "region-clementine");
-      System.out.println("[DIAGNOSTIC] successfulRoutingTest2 completed successfully");
+      logger.info("[DIAGNOSTIC] successfulRoutingTest2 completed successfully");
     } catch (Exception e) {
-      System.err.println("[DIAGNOSTIC ERROR] successfulRoutingTest2 failed: " + e.getMessage());
+      logger.error("[DIAGNOSTIC ERROR] successfulRoutingTest2 failed: " + e.getMessage());
       e.printStackTrace();
       throw e;
     }
@@ -185,14 +189,13 @@ public class DualServerSNIAcceptanceTest {
    * modifies cache field as a side-effect
    */
   private Region<String, String> getRegion(final String groupName, final String regionName) {
-    System.out
-        .println("[DIAGNOSTIC] Getting region - Group: " + groupName + ", Region: " + regionName);
+    logger.info("[DIAGNOSTIC] Getting region - Group: " + groupName + ", Region: " + regionName);
 
     final int proxyPort = docker.getExternalPortForService("haproxy", 15443);
-    System.out.println("[DIAGNOSTIC] HAProxy proxy port: " + proxyPort);
+    logger.info("[DIAGNOSTIC] HAProxy proxy port: " + proxyPort);
 
     ensureCacheClosed();
-    System.out.println("[DIAGNOSTIC] Cache closed, creating new client cache...");
+    logger.info("[DIAGNOSTIC] Cache closed, creating new client cache...");
 
     try {
       cache = new ClientCacheFactory(clientCacheProperties)
@@ -200,12 +203,12 @@ public class DualServerSNIAcceptanceTest {
           .setPoolServerGroup(groupName)
           .setPoolSocketFactory(ProxySocketFactories.sni("localhost", proxyPort))
           .create();
-      System.out.println("[DIAGNOSTIC] Client cache created successfully");
+      logger.info("[DIAGNOSTIC] Client cache created successfully");
 
       Region<String, String> region =
           cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
               .create(regionName);
-      System.out.println("[DIAGNOSTIC] Client region created successfully");
+      logger.info("[DIAGNOSTIC] Client region created successfully");
 
       return region;
     } catch (Exception e) {
