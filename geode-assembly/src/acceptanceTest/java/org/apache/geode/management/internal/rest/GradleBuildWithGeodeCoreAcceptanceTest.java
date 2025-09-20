@@ -76,11 +76,20 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     build.setStandardError(System.err);
     build.setStandardOutput(System.out);
     build.withArguments(
+        // CHANGE: Add --rerun-tasks to force task re-execution
+        // REASON: Fixes Gradle cache corruption issues with Groovy VM plugin
+        // When the Gradle daemon caches corrupted plugin state, subsequent builds fail
+        // This flag forces Gradle to ignore cached task outputs and re-execute from scratch
         "--rerun-tasks",
         "-Pversion=" + geodeVersion,
         "-Pgroup=" + projectGroup,
         "-PgeodeHome=" + geodeHome);
 
+    // CHANGE: Add "clean" task to ensure fresh build state
+    // REASON: Complements --rerun-tasks by also clearing build directory
+    // This provides two-layered approach to cache corruption recovery:
+    // 1. clean removes all generated files and cached artifacts
+    // 2. --rerun-tasks forces re-execution of all tasks
     build.forTasks("clean", "installDist", "run");
     build.run();
 
