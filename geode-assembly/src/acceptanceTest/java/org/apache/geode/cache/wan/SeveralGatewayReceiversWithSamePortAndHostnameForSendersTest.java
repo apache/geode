@@ -84,6 +84,10 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   private static Cache cache;
 
+  // Add logger for diagnostic purposes
+  private static final System.Logger logger = System
+      .getLogger(SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest.class.getName());
+
   private static final URL DOCKER_COMPOSE_PATH =
       SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest.class
           .getResource("docker-compose.yml");
@@ -101,23 +105,38 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    System.out.println("[DIAGNOSTIC] Starting Docker container setup...");
+
     // Start locator
+    System.out.println("[DIAGNOSTIC] Starting locator...");
     docker.execForService("locator", "gfsh", "-e",
         startLocatorCommand());
+    System.out.println("[DIAGNOSTIC] Locator started successfully");
+
     // Start server1
+    System.out.println("[DIAGNOSTIC] Starting server1...");
     docker.execForService("server1", "gfsh", "-e",
         "start server --name=server1 --locators=locator[20334]");
+    System.out.println("[DIAGNOSTIC] Server1 started successfully");
+
+    System.out.println("[DIAGNOSTIC] Starting server2...");
     docker.execForService("server2", "gfsh", "-e",
         "start server --name=server2 --locators=locator[20334]");
+    System.out.println("[DIAGNOSTIC] Server2 started successfully");
 
+    System.out.println("[DIAGNOSTIC] Creating region...");
     docker.execForService("locator", "gfsh",
         "-e", "connect --locator=locator[20334]",
         "-e", "create region --name=region-wan --type=PARTITION");
+    System.out.println("[DIAGNOSTIC] Region created successfully");
 
     // Create gateway receiver
     String createGatewayReceiverCommand = createGatewayReceiverCommand();
+    System.out.println(
+        "[DIAGNOSTIC] Creating gateway receiver with command: " + createGatewayReceiverCommand);
     docker.execForService("locator", "gfsh", "-e",
         "connect --locator=locator[20334]", "-e", createGatewayReceiverCommand);
+    System.out.println("[DIAGNOSTIC] Gateway receiver created successfully");
   }
 
   public SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest() {
@@ -133,42 +152,74 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
+    System.out.println(
+        "[DIAGNOSTIC] Starting testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers");
+
     String senderId = "ln";
     String regionName = "region-wan";
     final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
 
+    System.out.println("[DIAGNOSTIC] Remote locator port: " + remoteLocPort);
+
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
+    System.out.println("[DIAGNOSTIC] Created local locator on port: " + locPort);
 
     VM vm1 = VM.getVM(1);
     createCache(vm1, locPort);
+    System.out.println("[DIAGNOSTIC] Created cache on VM1");
 
     // We must use more than one dispatcher thread. With just one dispatcher thread, only one
     // connection will be created by the sender towards one of the receivers and it will be
     // monitored by the one ping thread for that remote receiver.
     // With more than one thread, several connections will be opened and there should be one ping
     // thread per remote receiver.
+    System.out.println("[DIAGNOSTIC] Creating gateway sender with multiple dispatcher threads");
     createGatewaySender(vm1, senderId, 2, true, 5,
         5, GatewaySender.DEFAULT_ORDER_POLICY);
+    System.out.println("[DIAGNOSTIC] Gateway sender created successfully");
 
     createPartitionedRegion(vm1, regionName, senderId, 0, 10);
+    System.out.println("[DIAGNOSTIC] Partitioned region created successfully");
 
     int NUM_PUTS = 10;
 
+    System.out.println("[DIAGNOSTIC] Starting to put " + NUM_PUTS + " key-value pairs");
     putKeyValues(vm1, NUM_PUTS, regionName);
+    System.out.println("[DIAGNOSTIC] Completed putting key-value pairs");
 
+    System.out.println("[DIAGNOSTIC] Waiting for queue to drain...");
     await()
-        .untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
-
+        .untilAsserted(() -> {
+          int queuedEvents = getQueuedEvents(vm1, senderId);
+          System.out.println("[DIAGNOSTIC] Current queued events: " + queuedEvents);
+          assertThat(queuedEvents).isEqualTo(0);
+        });
+    System.out.println("[DIAGNOSTIC] Queue drained successfully");
 
     // Wait longer than the value set in the receivers for
     // maximum-time-between-pings: 10000 (see geode-starter-create.gfsh)
     // to verify that connections are not closed
     // by the receivers because each has received the pings timely.
     int maxTimeBetweenPingsInReceiver = 15000;
+    System.out.println(
+        "[DIAGNOSTIC] Waiting " + maxTimeBetweenPingsInReceiver + "ms to verify ping mechanism");
     Thread.sleep(maxTimeBetweenPingsInReceiver);
 
     int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
+    System.out.println("[DIAGNOSTIC] Sender pool disconnects: " + senderPoolDisconnects);
+
+    if (senderPoolDisconnects > 0) {
+      System.err.println("[DIAGNOSTIC ERROR] Found " + senderPoolDisconnects
+          + " disconnects - this indicates ping mechanism failure");
+      // Add more detailed diagnostics
+      int poolConnects = getSenderPoolConnects(vm1, senderId);
+      int poolEndpoints = getPoolEndPointSize(vm1, senderId);
+      System.err.println("[DIAGNOSTIC ERROR] Pool connects: " + poolConnects);
+      System.err.println("[DIAGNOSTIC ERROR] Pool endpoints: " + poolEndpoints);
+    }
+
     assertEquals(0, senderPoolDisconnects);
+    System.out.println("[DIAGNOSTIC] Test completed successfully");
   }
 
   @Test
@@ -379,6 +430,13 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       GatewaySender.OrderPolicy orderPolicy,
       boolean enforceThreadsConnectToSameReceiver) {
     vm.invoke(() -> {
+      System.out.println("[DIAGNOSTIC] Creating gateway sender - ID: " + dsName +
+          ", RemoteDsId: " + remoteDsId +
+          ", Parallel: " + isParallel +
+          ", BatchSize: " + batchSize +
+          ", Dispatchers: " + numDispatchers +
+          ", EnforceThreadsConnect: " + enforceThreadsConnectToSameReceiver);
+
       final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
       try {
         InternalGatewaySenderFactory gateway =
@@ -388,8 +446,15 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
         gateway.setDispatcherThreads(numDispatchers);
         gateway.setOrderPolicy(orderPolicy);
         gateway.setEnforceThreadsConnectSameReceiver(enforceThreadsConnectToSameReceiver);
-        gateway.create(dsName, remoteDsId);
 
+        System.out.println("[DIAGNOSTIC] Gateway sender factory configured, creating sender...");
+        gateway.create(dsName, remoteDsId);
+        System.out.println("[DIAGNOSTIC] Gateway sender created successfully");
+
+      } catch (Exception e) {
+        System.err.println("[DIAGNOSTIC ERROR] Failed to create gateway sender: " + e.getMessage());
+        e.printStackTrace();
+        throw e;
       } finally {
         exln.remove();
       }
@@ -444,11 +509,22 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   private static int getSenderPoolDisconnects(VM vm, String senderId) {
     return vm.invoke(() -> {
+      System.out.println("[DIAGNOSTIC] Getting pool disconnects for sender: " + senderId);
       AbstractGatewaySender sender =
           (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
       assertThat(sender).isNotNull();
       PoolStats poolStats = sender.getProxy().getStats();
-      return poolStats.getDisConnects();
+      int disconnects = poolStats.getDisConnects();
+      System.out.println("[DIAGNOSTIC] Pool disconnects for " + senderId + ": " + disconnects);
+
+      // Add more detailed pool diagnostics when disconnects occur
+      if (disconnects > 0) {
+        int connects = poolStats.getConnects();
+        System.err.println("[DIAGNOSTIC ERROR] Pool Stats - Connects: " + connects +
+            ", Disconnects: " + disconnects);
+      }
+
+      return disconnects;
     });
   }
 
@@ -480,15 +556,21 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   private static String createGatewayReceiverCommand() {
     String ipAddress = docker.getIpAddressForService("haproxy", "geode-wan-test");
-    return "create gateway-receiver --hostname-for-senders=" + ipAddress
+    System.out.println("[DIAGNOSTIC] HAProxy IP address for gateway receiver: " + ipAddress);
+    String command = "create gateway-receiver --hostname-for-senders=" + ipAddress
         + " --start-port=2324 --end-port=2324 --maximum-time-between-pings=10000";
+    System.out.println("[DIAGNOSTIC] Gateway receiver command: " + command);
+    return command;
   }
 
   private static String startLocatorCommand() {
     String ipAddress = docker.getIpAddressForService("haproxy", "geode-wan-test");
-    return "start locator --name=locator --port=20334 --connect=false --redirect-output --enable-cluster-configuration=true --hostname-for-clients="
-        + ipAddress + " --J=-Dgemfire.distributed-system-id=2";
-
+    System.out.println("[DIAGNOSTIC] HAProxy IP address for locator: " + ipAddress);
+    String command =
+        "start locator --name=locator --port=20334 --connect=false --redirect-output --enable-cluster-configuration=true --hostname-for-clients="
+            + ipAddress + " --J=-Dgemfire.distributed-system-id=2";
+    System.out.println("[DIAGNOSTIC] Locator start command: " + command);
+    return command;
   }
 
 }
