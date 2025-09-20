@@ -103,9 +103,11 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   public static void beforeClass() throws Exception {
     // Ignore expected network-related exceptions that occur during WAN setup
     IgnoredException.addIgnoredException("could not get remote locator information");
-    IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information");
-    IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information for remote site .*");
-    IgnoredException.addIgnoredException("GatewaySender ln could not get remote locator information for remote site 2");
+    IgnoredException
+        .addIgnoredException("GatewaySender .* could not get remote locator information");
+    IgnoredException
+        .addIgnoredException(
+            "GatewaySender .* could not get remote locator information for remote site .*");
 
     // Start locator
     docker.execForService("locator", "gfsh", "-e",
@@ -139,16 +141,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
-    // Add IgnoredException for expected connection failures
-    IgnoredException ie1 = IgnoredException.addIgnoredException("could not get remote locator information");
-    IgnoredException ie2 = IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information");
-    IgnoredException ie3 = IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information for remote site .*");
-    IgnoredException ie4 = IgnoredException.addIgnoredException("GatewaySender ln could not get remote locator information for remote site 2");
-
-    try {
-      String senderId = "ln";
-      String regionName = "region-wan";
-      final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+    String senderId = "ln";
+    String regionName = "region-wan";
+    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -182,12 +177,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
     int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
     assertEquals(0, senderPoolDisconnects);
-    } finally {
-      ie1.remove();
-      ie2.remove();
-      ie3.remove();
-      ie4.remove();
-    }
   }
 
   @Test
