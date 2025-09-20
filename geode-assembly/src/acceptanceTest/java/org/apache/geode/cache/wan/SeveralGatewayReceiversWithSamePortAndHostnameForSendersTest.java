@@ -103,9 +103,12 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   public static void beforeClass() throws Exception {
     // Ignore expected network-related exceptions that occur during WAN setup
     IgnoredException.addIgnoredException("could not get remote locator information");
-    IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information");
-    IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information for remote site .*");
-    IgnoredException.addIgnoredException("GatewaySender ln could not get remote locator information for remote site 2");
+    IgnoredException
+        .addIgnoredException("GatewaySender .* could not get remote locator information");
+    IgnoredException.addIgnoredException(
+        "GatewaySender .* could not get remote locator information for remote site .*");
+    IgnoredException.addIgnoredException(
+        "GatewaySender ln could not get remote locator information for remote site 2");
 
     // Start locator
     docker.execForService("locator", "gfsh", "-e",
@@ -140,48 +143,52 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
     // Add IgnoredException for expected connection failures
-    IgnoredException ie1 = IgnoredException.addIgnoredException("could not get remote locator information");
-    IgnoredException ie2 = IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information");
-    IgnoredException ie3 = IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information for remote site .*");
-    IgnoredException ie4 = IgnoredException.addIgnoredException("GatewaySender ln could not get remote locator information for remote site 2");
+    IgnoredException ie1 =
+        IgnoredException.addIgnoredException("could not get remote locator information");
+    IgnoredException ie2 = IgnoredException
+        .addIgnoredException("GatewaySender .* could not get remote locator information");
+    IgnoredException ie3 = IgnoredException.addIgnoredException(
+        "GatewaySender .* could not get remote locator information for remote site .*");
+    IgnoredException ie4 = IgnoredException.addIgnoredException(
+        "GatewaySender ln could not get remote locator information for remote site 2");
 
     try {
       String senderId = "ln";
       String regionName = "region-wan";
       final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
 
-    int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
+      int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
-    VM vm1 = VM.getVM(1);
-    createCache(vm1, locPort);
+      VM vm1 = VM.getVM(1);
+      createCache(vm1, locPort);
 
-    // We must use more than one dispatcher thread. With just one dispatcher thread, only one
-    // connection will be created by the sender towards one of the receivers and it will be
-    // monitored by the one ping thread for that remote receiver.
-    // With more than one thread, several connections will be opened and there should be one ping
-    // thread per remote receiver.
-    createGatewaySender(vm1, senderId, 2, true, 5,
-        5, GatewaySender.DEFAULT_ORDER_POLICY);
+      // We must use more than one dispatcher thread. With just one dispatcher thread, only one
+      // connection will be created by the sender towards one of the receivers and it will be
+      // monitored by the one ping thread for that remote receiver.
+      // With more than one thread, several connections will be opened and there should be one ping
+      // thread per remote receiver.
+      createGatewaySender(vm1, senderId, 2, true, 5,
+          5, GatewaySender.DEFAULT_ORDER_POLICY);
 
-    createPartitionedRegion(vm1, regionName, senderId, 0, 10);
+      createPartitionedRegion(vm1, regionName, senderId, 0, 10);
 
-    int NUM_PUTS = 10;
+      int NUM_PUTS = 10;
 
-    putKeyValues(vm1, NUM_PUTS, regionName);
+      putKeyValues(vm1, NUM_PUTS, regionName);
 
-    await()
-        .untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
+      await()
+          .untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
 
 
-    // Wait longer than the value set in the receivers for
-    // maximum-time-between-pings: 10000 (see geode-starter-create.gfsh)
-    // to verify that connections are not closed
-    // by the receivers because each has received the pings timely.
-    int maxTimeBetweenPingsInReceiver = 15000;
-    Thread.sleep(maxTimeBetweenPingsInReceiver);
+      // Wait longer than the value set in the receivers for
+      // maximum-time-between-pings: 10000 (see geode-starter-create.gfsh)
+      // to verify that connections are not closed
+      // by the receivers because each has received the pings timely.
+      int maxTimeBetweenPingsInReceiver = 15000;
+      Thread.sleep(maxTimeBetweenPingsInReceiver);
 
-    int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
-    assertEquals(0, senderPoolDisconnects);
+      int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
+      assertEquals(0, senderPoolDisconnects);
     } finally {
       ie1.remove();
       ie2.remove();
