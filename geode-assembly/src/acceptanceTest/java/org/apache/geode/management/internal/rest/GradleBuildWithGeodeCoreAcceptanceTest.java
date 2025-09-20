@@ -75,11 +75,13 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
 
     build.setStandardError(System.err);
     build.setStandardOutput(System.out);
-    build.withArguments("-Pversion=" + geodeVersion,
+    build.withArguments(
+        "--rerun-tasks",
+        "-Pversion=" + geodeVersion,
         "-Pgroup=" + projectGroup,
         "-PgeodeHome=" + geodeHome);
 
-    build.forTasks("installDist", "run");
+    build.forTasks("clean", "installDist", "run");
     build.run();
 
     connection.close();
