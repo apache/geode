@@ -101,14 +101,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    // Ignore expected network-related exceptions that occur during WAN setup
-    IgnoredException.addIgnoredException("could not get remote locator information");
-    IgnoredException
-        .addIgnoredException("GatewaySender .* could not get remote locator information");
-    IgnoredException
-        .addIgnoredException(
-            "GatewaySender .* could not get remote locator information for remote site .*");
-
     // Start locator
     docker.execForService("locator", "gfsh", "-e",
         startLocatorCommand());
