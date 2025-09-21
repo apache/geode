@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,7 +39,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rules.DockerComposeRule;
 
 /**
@@ -60,8 +58,6 @@ import org.apache.geode.rules.DockerComposeRule;
  */
 public class DualServerSNIAcceptanceTest {
 
-  private static final Logger logger = LogService.getLogger();
-
   private static final URL DOCKER_COMPOSE_PATH =
       DualServerSNIAcceptanceTest.class.getResource("dual-server-docker-compose.yml");
 
@@ -76,38 +72,26 @@ public class DualServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() {
-    logger.info("[DIAGNOSTIC] Setting up Docker container names...");
     docker.setContainerName("locator-maeve", "locator-maeve");
     docker.setContainerName("server-dolores", "server-dolores");
     docker.setContainerName("server-clementine", "server-clementine");
-    logger.info("[DIAGNOSTIC] Container names set successfully");
 
-    logger.info("[DIAGNOSTIC] Starting locator-maeve...");
     docker.loggingExecForService("locator-maeve",
         "gfsh", "run", "--file=/geode/scripts/locator-maeve.gfsh");
-    logger.info("[DIAGNOSTIC] Locator-maeve started successfully");
 
-    logger.info("[DIAGNOSTIC] Starting server-dolores...");
     docker.loggingExecForService("server-dolores",
         "gfsh", "run", "--file=/geode/scripts/server-dolores.gfsh");
-    logger.info("[DIAGNOSTIC] Server-dolores started successfully");
 
-    logger.info("[DIAGNOSTIC] Starting server-clementine...");
     docker.loggingExecForService("server-clementine",
         "gfsh", "run", "--file=/geode/scripts/server-clementine.gfsh");
-    logger.info("[DIAGNOSTIC] Server-clementine started successfully");
 
-    logger.info("[DIAGNOSTIC] Creating regions...");
     docker.loggingExecForService("locator-maeve",
         "gfsh", "run", "--file=/geode/scripts/create-regions.gfsh");
-    logger.info("[DIAGNOSTIC] Regions created successfully");
 
-    logger.info("[DIAGNOSTIC] Setting up SSL properties...");
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    logger.info("[DIAGNOSTIC] Trust store path: " + trustStorePath);
 
     clientCacheProperties = new Properties();
     clientCacheProperties.setProperty(SSL_ENABLED_COMPONENTS, "all");
@@ -117,7 +101,6 @@ public class DualServerSNIAcceptanceTest {
     clientCacheProperties.setProperty(SSL_TRUSTSTORE, trustStorePath);
     clientCacheProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     clientCacheProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
-    logger.info("[DIAGNOSTIC] SSL properties configured successfully");
   }
 
   @After
@@ -135,30 +118,12 @@ public class DualServerSNIAcceptanceTest {
 
   @Test
   public void successfulRoutingTest() {
-    logger.info("[DIAGNOSTIC] Starting successfulRoutingTest");
-    logger.info("[DIAGNOSTIC] Testing connection to group-dolores, region-dolores");
-    try {
-      verifyPutAndGet("group-dolores", "region-dolores");
-      logger.info("[DIAGNOSTIC] successfulRoutingTest completed successfully");
-    } catch (Exception e) {
-      logger.error("[DIAGNOSTIC ERROR] successfulRoutingTest failed: " + e.getMessage());
-      e.printStackTrace();
-      throw e;
-    }
+    verifyPutAndGet("group-dolores", "region-dolores");
   }
 
   @Test
   public void successfulRoutingTest2() {
-    logger.info("[DIAGNOSTIC] Starting successfulRoutingTest2");
-    logger.info("[DIAGNOSTIC] Testing connection to group-clementine, region-clementine");
-    try {
-      verifyPutAndGet("group-clementine", "region-clementine");
-      logger.info("[DIAGNOSTIC] successfulRoutingTest2 completed successfully");
-    } catch (Exception e) {
-      logger.error("[DIAGNOSTIC ERROR] successfulRoutingTest2 failed: " + e.getMessage());
-      e.printStackTrace();
-      throw e;
-    }
+    verifyPutAndGet("group-clementine", "region-clementine");
   }
 
   @Test
@@ -189,35 +154,16 @@ public class DualServerSNIAcceptanceTest {
    * modifies cache field as a side-effect
    */
   private Region<String, String> getRegion(final String groupName, final String regionName) {
-    logger.info("[DIAGNOSTIC] Getting region - Group: " + groupName + ", Region: " + regionName);
-
     final int proxyPort = docker.getExternalPortForService("haproxy", 15443);
-    logger.info("[DIAGNOSTIC] HAProxy proxy port: " + proxyPort);
-
     ensureCacheClosed();
-    logger.info("[DIAGNOSTIC] Cache closed, creating new client cache...");
-
-    try {
-      cache = new ClientCacheFactory(clientCacheProperties)
-          .addPoolLocator("locator-maeve", 10334)
-          .setPoolServerGroup(groupName)
-          .setPoolSocketFactory(ProxySocketFactories.sni("localhost", proxyPort))
-          .create();
-      logger.info("[DIAGNOSTIC] Client cache created successfully");
-
-      Region<String, String> region =
-          cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
-              .create(regionName);
-      logger.info("[DIAGNOSTIC] Client region created successfully");
-
-      return region;
-    } catch (Exception e) {
-      System.err.println("[DIAGNOSTIC ERROR] Failed to create cache/region: " + e.getMessage());
-      System.err.println("[DIAGNOSTIC ERROR] Group: " + groupName + ", Region: " + regionName
-          + ", ProxyPort: " + proxyPort);
-      e.printStackTrace();
-      throw e;
-    }
+    cache = new ClientCacheFactory(clientCacheProperties)
+        .addPoolLocator("locator-maeve", 10334)
+        .setPoolServerGroup(groupName)
+        .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
+            proxyPort))
+        .create();
+    return cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .create(regionName);
   }
 
   /**

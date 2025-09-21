@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -43,7 +42,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rules.DockerComposeRule;
 
 /**
@@ -57,8 +55,6 @@ import org.apache.geode.rules.DockerComposeRule;
  */
 
 public class SingleServerSNIAcceptanceTest {
-
-  private static final Logger logger = LogService.getLogger();
 
   private static final URL DOCKER_COMPOSE_PATH =
       SingleServerSNIAcceptanceTest.class.getResource("docker-compose.yml");
@@ -75,22 +71,15 @@ public class SingleServerSNIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() {
-    logger.info("[DIAGNOSTIC] Starting SingleServerSNIAcceptanceTest setup...");
-
     // start up server/locator processes and initialize the server cache
-    logger.info("[DIAGNOSTIC] Starting Geode server/locator...");
     docker.execForService("geode", "gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh");
-    logger.info("[DIAGNOSTIC] Geode server/locator started successfully");
 
-    logger.info("[DIAGNOSTIC] Setting up SSL trust store...");
     final String trustStorePath =
         createTempFileFromResource(SingleServerSNIAcceptanceTest.class,
             "geode-config/truststore.jks")
                 .getAbsolutePath();
-    logger.info("[DIAGNOSTIC] Trust store path: " + trustStorePath);
 
     // set up client cache properties so it can connect to the server
-    logger.info("[DIAGNOSTIC] Configuring client cache properties...");
     Properties clientCacheProperties = new Properties();
     clientCacheProperties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     clientCacheProperties.setProperty(SSL_KEYSTORE_TYPE, "jks");
@@ -99,29 +88,20 @@ public class SingleServerSNIAcceptanceTest {
     clientCacheProperties.setProperty(SSL_TRUSTSTORE, trustStorePath);
     clientCacheProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "geode");
     clientCacheProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
-    logger.info("[DIAGNOSTIC] SSL properties configured");
-
-    logger.info("[DIAGNOSTIC] Creating client cache...");
     cache = getClientCache(clientCacheProperties);
-    logger.info("[DIAGNOSTIC] Client cache created successfully");
 
     // the gfsh startup script created a server-side region named "jellyfish"
-    logger.info("[DIAGNOSTIC] Creating client region 'jellyfish'...");
     region = cache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
         .create("jellyfish");
-    logger.info("[DIAGNOSTIC] Client region created successfully");
-
-    logger.info("[DIAGNOSTIC] Populating region with bulk data...");
     bulkData = getBulkDataMap();
     region.putAll(bulkData);
-    logger.info("[DIAGNOSTIC] Region populated with " + bulkData.size() + " entries");
   }
 
   @AfterClass
   public static void afterClass() throws Exception {
     String logs = docker.execForService("geode", "cat", "server-dolores/server-dolores.log");
-    logger.info("server logs------------------------------------------");
-    logger.info(logs);
+    System.out.println("server logs------------------------------------------");
+    System.out.println(logs);
 
     if (cache != null) {
       cache.close();
@@ -206,22 +186,11 @@ public class SingleServerSNIAcceptanceTest {
 
   protected static ClientCache getClientCache(Properties properties) {
     int proxyPort = docker.getExternalPortForService("haproxy", 15443);
-    logger.info("[DIAGNOSTIC] HAProxy proxy port: " + proxyPort);
-    logger.info("[DIAGNOSTIC] Connecting to locator-maeve:10334 via localhost:" + proxyPort);
-
-    try {
-      ClientCache cache = new ClientCacheFactory(properties)
-          .addPoolLocator("locator-maeve", 10334)
-          .setPoolSocketFactory(ProxySocketFactories.sni("localhost", proxyPort))
-          .create();
-      logger.info("[DIAGNOSTIC] Client cache created successfully");
-      return cache;
-    } catch (Exception e) {
-      logger.error("[DIAGNOSTIC ERROR] Failed to create client cache: " + e.getMessage());
-      System.err.println("[DIAGNOSTIC ERROR] ProxyPort: " + proxyPort);
-      e.printStackTrace();
-      throw e;
-    }
+    return new ClientCacheFactory(properties)
+        .addPoolLocator("locator-maeve", 10334)
+        .setPoolSocketFactory(ProxySocketFactories.sni("localhost",
+            proxyPort))
+        .create();
   }
 
 }
