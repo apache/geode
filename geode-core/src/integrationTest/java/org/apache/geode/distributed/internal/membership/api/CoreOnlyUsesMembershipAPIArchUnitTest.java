@@ -33,19 +33,25 @@ import org.junit.Test;
  * geode classes in a single test requires 1.5g of heap.<br>
  * This test class can be removed if and when we create an isolated Java module that does
  * not export internal membership classes.
- * 
- * ARCHITECTURAL CHANGE NOTE: This test was updated to fix the "Layer 'api' is empty, Layer 'internal' is empty"
- * error. The original layered architecture approach failed because membership classes were moved from geode-core
- * to geode-membership module, leaving empty layers. The solution uses direct dependency rules instead of layered
- * architecture to enforce the same constraint: geode-core classes should not directly access GMS internals.
+ *
+ * ARCHITECTURAL CHANGE NOTE: This test was updated to fix the "Layer 'api' is empty, Layer
+ * 'internal' is empty"
+ * error. The original layered architecture approach failed because membership classes were moved
+ * from geode-core
+ * to geode-membership module, leaving empty layers. The solution uses direct dependency rules
+ * instead of layered
+ * architecture to enforce the same constraint: geode-core classes should not directly access GMS
+ * internals.
  */
 public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   @Test
   public void distributedAndInternalClassesDoNotUseMembershipInternals() {
     // CHANGE: Removed membership package import - these classes are now in geode-membership module
-    // REASON: Importing "org.apache.geode.distributed.internal.membership.." from geode-core finds no classes
-    // since membership was extracted to separate module, causing empty layers in layered architecture rule
+    // REASON: Importing "org.apache.geode.distributed.internal.membership.." from geode-core finds
+    // no classes
+    // since membership was extracted to separate module, causing empty layers in layered
+    // architecture rule
     JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.distributed..",
         "org.apache.geode.internal..");
@@ -66,12 +72,13 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
       @Override
       public boolean includes(Location location) {
         // CHANGE: Removed membership package inclusion check
-        // REASON: "org/apache/geode/distributed/internal/membership" no longer exists in geode-core,
+        // REASON: "org/apache/geode/distributed/internal/membership" no longer exists in
+        // geode-core,
         // so checking for it would always return false and serve no purpose
         return !location.matches(matcher);
       }
     });
-    // CHANGE: Removed membership package from import list 
+    // CHANGE: Removed membership package from import list
     // REASON: Same as above - membership packages moved to geode-membership module
     JavaClasses importedClasses = classFileImporter.importPackages("org.apache.geode");
     checkMembershipAPIUse(importedClasses);
@@ -150,7 +157,7 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
     // 1. Layer 'internal' (membership.gms..) was empty - classes moved to geode-membership module
     // 2. Layer 'api' (membership.api) was empty - classes moved to geode-membership module
     // 3. Empty layers cause ArchUnit to throw "Architecture Violation" errors
-    // 
+    //
     // NEW APPROACH: Direct dependency rule achieves same goal - ensures geode-core classes
     // cannot directly depend on GMS internal classes, while working with current module structure
     ArchRule myRule = classes()
@@ -166,7 +173,8 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
     // REASON: Previous implementation tried to exclude test classes but we need to ensure
     // JAR files (containing geode-membership classes) can be scanned for dependency analysis.
     // Default importer includes JARs on classpath, allowing ArchUnit to detect violations
-    // when geode-core classes inappropriately depend on GMS internal classes from geode-membership module.
+    // when geode-core classes inappropriately depend on GMS internal classes from geode-membership
+    // module.
     return new ClassFileImporter();
   }
 
