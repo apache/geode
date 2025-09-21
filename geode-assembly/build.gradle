@@ -563,6 +563,15 @@ tasks.withType(Test) {
   environment 'GEODE_HOME', "$buildDir/install/${distributions.main.distributionBaseName.get()}"
 }
 
+// Add JVM arguments for distributedTest to fix Java 17 + Jetty 9 compatibility issues
+tasks.named('distributedTest') {
+  jvmArgs += [
+    '--add-opens=java.base/jdk.internal.platform=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.platform.cgroupv2=ALL-UNNAMED'
+  ]
+}
+
 
 acceptanceTest.dependsOn(rootProject.getTasksByName("publishToMavenLocal", true))
 installDist.dependsOn ':extensions:geode-modules-assembly:dist'
