@@ -22,16 +22,17 @@ RUN apk add --no-cache \
 		bash \
 		ncurses
 
-ENV GEODE_GPG 1A3694A1448840FC3B1137B2CAE347D5AE2E5C93
+# https://github.com/apache/geode/blob/develop/KEYS
+ENV GEODE_GPG 62F7DA41B7D8F26C
 
 ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # https://geode.apache.org/releases/
-ENV GEODE_VERSION 1.15.1
+ENV GEODE_VERSION 1.15.2
 # Binaries TGZ SHA-256
 # https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
-ENV GEODE_SHA256 2668970982d373ef42cff5076e7073b03e82c8e2fcd7757d5799b2506e265d57
+ENV GEODE_SHA256 60d190b07b4dabd83a86bfa21acab7ed38d2eccaabe4bc5baabab0981cf7910a
 
 # http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
 
