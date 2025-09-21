@@ -380,7 +380,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       boolean enforceThreadsConnectToSameReceiver) {
     vm.invoke(() -> {
       final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
-      final IgnoredException exRemoteLocator = IgnoredException.addIgnoredException("could not get remote locator information for remote site");
+      final IgnoredException exRemoteLocator = IgnoredException
+          .addIgnoredException("could not get remote locator information for remote site");
       try {
         InternalGatewaySenderFactory gateway =
             (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
