@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM bellsoft/liberica-openjdk-alpine:8
+FROM bellsoft/liberica-openjdk-alpine:17
 
 RUN echo "This is a TEMPLATE, DO NOT build from this Dockerfile.  Instead checkout master or any released support/x.y branch." ; exit 1
 
