@@ -104,7 +104,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     // Ignore intermittent fatal messages about failing to get remote locator information
     // that can appear while the remote site (dockerized cluster) is still starting up.
     // These are transient and do not indicate a test failure once the system stabilizes.
-    IgnoredException.addIgnoredException("GatewaySender .* could not get remote locator information for remote site");
+    IgnoredException.addIgnoredException(
+        "GatewaySender .* could not get remote locator information for remote site");
     // Start locator
     docker.execForService("locator", "gfsh", "-e",
         startLocatorCommand());
