@@ -23,11 +23,17 @@ services:
     command: '-c /geode/scripts/forever'
     networks:
       geode-sni-test:
+        aliases:
+          - locator-maeve
     volumes:
       - ./geode-config:/geode/config:ro
       - ./scripts:/geode/scripts
   haproxy:
     image: 'haproxy:2.1'
+    depends_on:
+      - geode
+    ports:
+      - "15443:15443"
     networks:
       geode-sni-test:
     volumes:
