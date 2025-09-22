@@ -133,10 +133,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
-    // Ignore the expected error message about not getting remote locator information
-    IgnoredException
-        .addIgnoredException("could not get remote locator information for remote site.*");
-
     String senderId = "ln";
     String regionName = "region-wan";
     final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
@@ -177,10 +173,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   @Test
   public void testSerialGatewaySenderThreadsConnectToSameReceiver() {
-    // Ignore the expected error message about not getting remote locator information
-    IgnoredException
-        .addIgnoredException("could not get remote locator information for remote site.*");
-
     String senderId = "ln";
     String regionName = "region-wan";
     final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
@@ -202,10 +194,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   @Test
   public void testTwoSendersWithSameIdShouldUseSameValueForEnforceThreadsConnectToSameServer() {
-    // Ignore the expected error message about not getting remote locator information
-    IgnoredException
-        .addIgnoredException("could not get remote locator information for remote site.*");
-
     String senderId = "ln";
     final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
 
@@ -237,10 +225,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersUseOnlyOneMoreConnection()
       throws InterruptedException {
-    // Ignore the expected error message about not getting remote locator information
-    IgnoredException
-        .addIgnoredException("could not get remote locator information for remote site.*");
-
     String senderId = "ln";
     String regionName = "region-wan";
     final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
@@ -288,10 +272,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceiver()
       throws InterruptedException {
-    // Ignore the expected error message about not getting remote locator information
-    IgnoredException
-        .addIgnoredException("could not get remote locator information for remote site.*");
-
     String senderId = "ln";
     String regionName = "region-wan";
     final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
