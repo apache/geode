@@ -33,15 +33,6 @@ import org.junit.Test;
  * geode classes in a single test requires 1.5g of heap.<br>
  * This test class can be removed if and when we create an isolated Java module that does
  * not export internal membership classes.
- *
- * ARCHITECTURAL CHANGE NOTE: This test was updated to fix the "Layer 'api' is empty, Layer
- * 'internal' is empty"
- * error. The original layered architecture approach failed because membership classes were moved
- * from geode-core
- * to geode-membership module, leaving empty layers. The solution uses direct dependency rules
- * instead of layered
- * architecture to enforce the same constraint: geode-core classes should not directly access GMS
- * internals.
  */
 public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
