@@ -133,6 +133,7 @@ DIGIT : ('\u0030'..'\u0039' |
        '\u1040'..'\u1049')
     ;
 
+// Exclude Unicode digit ranges to prevent lexical nondeterminism with DIGIT rule
 protected
 ALL_UNICODE : ('\u0061'..'\u065f' |   // exclude Arabic-Indic digits
                '\u066a'..'\u06ef' |   // exclude Extended Arabic-Indic digits  
