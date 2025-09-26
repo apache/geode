@@ -133,6 +133,9 @@ gradle.taskGraph.whenReady({ graph ->
           .each { dep ->
             if (dep.hasProperty('version') && dep.version) {
               upstreamDeps.add("${dep.name}-${dep.version}.jar")
+            } else {
+              // Log warning about missing version but don't add to upstreamDeps (preserves original behavior)
+              logger.warn("Dependency '${dep.name}' has no version information in project '${geodeProject.name}' and will be skipped from upstream exclusion")
             }
           }
       }
