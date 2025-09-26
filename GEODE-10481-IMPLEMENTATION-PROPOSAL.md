@@ -2,7 +2,6 @@
 **Software Bill of Materials (SBOM) Generation for Apache Geode**
 
 ---
-
 ## Executive Summary
 
 This proposal outlines the implementation approach for **GEODE-10481**: adding automated SBOM generation to Apache Geode to enhance supply chain security, meet enterprise compliance requirements, and improve dependency transparency.
@@ -373,7 +372,6 @@ echo "SBOM artifacts prepared in build/distributions/sbom/"
       with:
         sarif_file: 'trivy-results.sarif'
 ```
-
 ---
 
 ## Risk Analysis & Mitigation Strategies
