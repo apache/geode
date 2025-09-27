@@ -47,7 +47,8 @@ dependencies {
 
   // JAXB dependencies needed for Java 11+
   implementation('javax.xml.bind:jaxb-api')
-  implementation('com.sun.xml.bind:jaxb-impl')
+  runtimeOnly('com.sun.xml.bind:jaxb-impl')
+  runtimeOnly('com.sun.activation:javax.activation')
 
   // jackson-annotations must be accessed from the geode classloader and not the webapp
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')

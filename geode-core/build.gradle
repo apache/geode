@@ -221,7 +221,8 @@ dependencies {
   implementation('javax.xml.bind:jaxb-api')
 
   //jaxb is used by cluster configuration
-  implementation('com.sun.xml.bind:jaxb-impl')
+  runtimeOnly('com.sun.xml.bind:jaxb-impl')
+  runtimeOnly('com.sun.activation:javax.activation')
 
   //istack appears to be used only by jaxb, not in our code. jaxb doesn't
   //declare this as required dependency though. It's unclear if this is needed
@@ -408,11 +409,6 @@ dependencies {
   performanceTestImplementation(project(':geode-log4j'))
 
   jmhImplementation('org.jctools:jctools-core')
-}
-
-// Exclude legacy doclet that uses removed com.sun.javadoc API (Java 9+)
-compileTestJava {
-  exclude '**/UnitTestDoclet.java'
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

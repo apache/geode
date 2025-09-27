@@ -20,8 +20,6 @@ plugins {
   id 'org.apache.geode.gradle.geode-dependency-constraints'
 }
 
-sourceCompatibility = 17
-targetCompatibility = 17
 compileJava.options.encoding = 'UTF-8'
 
 dependencies {
@@ -40,8 +38,6 @@ if (versionMajor < 17) {
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(JavaCompile).each { javac ->
     javac.configure {
-      sourceCompatibility '17'
-      targetCompatibility '17'
       options.encoding = 'UTF-8'
       options.compilerArgs.addAll([
         '--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED',

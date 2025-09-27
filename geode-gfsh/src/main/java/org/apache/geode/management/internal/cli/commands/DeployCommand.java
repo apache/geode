@@ -98,13 +98,18 @@ public class DeployCommand extends GfshCommand {
     Set<DistributedMember> targetMembers;
     targetMembers = findMembers(groups, null);
 
-    List<Object> results = new LinkedList<>();
+    List<List<Object>> results = new LinkedList<>();
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
 
     results = deployJars(jarFullPaths, targetMembers, results, exporter);
 
-    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
+    // Flatten the nested results for processing while maintaining backward compatibility
+    List<Object> flatResults = new LinkedList<>();
+    for (List<Object> memberResults : results) {
+      flatResults.addAll(memberResults);
+    }
+    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(flatResults);
 
     List<DeploymentInfo> deploymentInfos =
         DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults);
@@ -123,14 +128,15 @@ public class DeployCommand extends GfshCommand {
     return result;
   }
 
-  private List<Object> deployJars(List<String> jarFullPaths,
+  private List<List<Object>> deployJars(List<String> jarFullPaths,
       Set<DistributedMember> targetMembers,
-      List<Object> results,
+      List<List<Object>> results,
       RemoteStreamExporter exporter)
       throws FileNotFoundException, java.rmi.RemoteException {
     for (DistributedMember member : targetMembers) {
       List<RemoteInputStream> remoteStreams = new ArrayList<>();
       List<String> jarNames = new ArrayList<>();
+      List<Object> memberResults = new ArrayList<>();
       try {
         for (String jarFullPath : jarFullPaths) {
           FileInputStream fileInputStream = null;
@@ -157,7 +163,8 @@ public class DeployCommand extends GfshCommand {
         @SuppressWarnings("unchecked")
         final List<CliFunctionResult> resultCollectorResult =
             (List<CliFunctionResult>) resultCollector.getResult();
-        results.addAll(resultCollectorResult);
+        memberResults.addAll(resultCollectorResult);
+        results.add(memberResults);
       } finally {
         for (RemoteInputStream ris : remoteStreams) {
           try {

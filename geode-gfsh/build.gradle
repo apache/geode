@@ -42,7 +42,8 @@ dependencies {
 
   // JAXB dependencies needed for Java 11+
   implementation('javax.xml.bind:jaxb-api')
-  implementation('com.sun.xml.bind:jaxb-impl')
+  runtimeOnly('com.sun.xml.bind:jaxb-impl')
+  runtimeOnly('com.sun.activation:javax.activation')
 
   //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
   testImplementation('com.github.stephenc.findbugs:findbugs-annotations')

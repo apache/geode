@@ -37,6 +37,7 @@ class DependencyConstraints {
     deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.8")
+    deps.put("javax.activation.version", "1.2.0")
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.20.Final")
     deps.put("log4j.version", "2.17.2")
@@ -99,6 +100,7 @@ class DependencyConstraints {
         api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'8.11')
         // Pinning transitive dependency from spring-security-oauth2 to clean up our licenses.
         api(group: 'com.nimbusds', name: 'oauth2-oidc-sdk', version: '8.9')
+        api(group: 'com.sun.activation', name: 'javax.activation', version: get('javax.activation.version'))
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.1')
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
