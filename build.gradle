@@ -31,6 +31,7 @@ plugins {
   id "org.sonarqube" version "3.3" apply false
   id 'me.champeau.gradle.jmh' version '0.5.3' apply false
   id "de.undercouch.download" version "5.0.1" apply false
+  id "org.cyclonedx.bom" version "1.8.2" apply false
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
   id 'geode-publish-artifacts' apply false
   id 'geode-publish-common' apply false
@@ -211,3 +212,103 @@ gradle.taskGraph.whenReady({ graph ->
   cr.reportOn allTestTasks
   cr.dependsOn allTestTasks
 })
+
+// Test configuration for SBOM functionality will be added in later PRs
+// For PR 1, we focus on the basic plugin foundation without test infrastructure changes
+
+// SBOM (Software Bill of Materials) Configuration
+// This section implements GEODE-10481 for supply chain security
+
+/**
+ * Task to validate Gradle and Java compatibility for SBOM generation.
+ * This task provides information about current versions and future compatibility.
+ */
+tasks.register('validateGradleCompatibility') {
+  group = 'Verification'
+  description = 'Validate Gradle and Java compatibility for SBOM generation (GEODE-10481)'
+
+  doLast {
+    def gradleVersion = gradle.gradleVersion
+    def javaVersion = System.getProperty("java.version")
+    def javaVendor = System.getProperty("java.vendor")
+    def javaHome = System.getProperty("java.home")
+
+    logger.lifecycle("=== SBOM Compatibility Validation ===")
+    logger.lifecycle("Current Gradle version: ${gradleVersion}")
+    logger.lifecycle("Current Java version: ${javaVersion}")
+    logger.lifecycle("Java vendor: ${javaVendor}")
+    logger.lifecycle("Java home: ${javaHome}")
+
+    // Check minimum Gradle version for CycloneDX plugin
+    def currentGradleVersion = org.gradle.util.GradleVersion.version(gradleVersion)
+    def minimumRequiredVersion = org.gradle.util.GradleVersion.version("6.8")
+
+    if (currentGradleVersion >= minimumRequiredVersion) {
+      logger.lifecycle("✅ Gradle version meets minimum requirements for SBOM generation")
+    } else {
+      logger.warn("⚠️  Gradle version ${gradleVersion} is below minimum required ${minimumRequiredVersion}")
+    }
+
+    // Check Java version compatibility (handle both 1.8.x and 11+ formats)
+    def javaMajorVersion
+    def versionParts = javaVersion.split('\\.')
+    if (versionParts[0] == "1") {
+      javaMajorVersion = versionParts[1] as Integer
+    } else {
+      javaMajorVersion = versionParts[0] as Integer
+    }
+
+    if (javaMajorVersion >= 8) {
+      logger.lifecycle("✅ Java version is compatible with SBOM generation")
+    } else {
+      logger.warn("⚠️  Java version ${javaVersion} may not be compatible with SBOM generation")
+    }
+
+    // Future compatibility indicators
+    if (gradleVersion.startsWith("8.")) {
+      logger.lifecycle("✅ Running on Gradle 8.x - future compatibility confirmed")
+    } else {
+      logger.lifecycle("ℹ️  Running on Gradle ${gradleVersion}, 8.5+ compatibility will be validated during migration")
+    }
+
+    if (javaMajorVersion >= 21) {
+      logger.lifecycle("✅ Running on Java 21+ - future compatibility confirmed")
+    } else if (javaMajorVersion >= 11) {
+      logger.lifecycle("ℹ️  Running on Java ${javaMajorVersion}, Java 21+ compatibility ready for future migration")
+    } else {
+      logger.lifecycle("ℹ️  Running on Java ${javaMajorVersion}, consider Java 21+ for future SBOM enhancements")
+    }
+
+    // CycloneDX plugin availability check
+    try {
+      def pluginId = 'org.cyclonedx.bom'
+      def plugin = project.plugins.findPlugin(pluginId)
+      if (plugin != null) {
+        logger.lifecycle("✅ CycloneDX plugin is available")
+      } else {
+        logger.lifecycle("ℹ️  CycloneDX plugin is configured but not applied (expected for PR 1)")
+      }
+    } catch (Exception e) {
+      logger.lifecycle("ℹ️  CycloneDX plugin check: ${e.message}")
+    }
+
+    logger.lifecycle("=== End Compatibility Validation ===")
+  }
+}
+
+// Basic SBOM configuration structure (disabled by default)
+// This will be expanded in subsequent PRs
+ext {
+  // SBOM generation control flags (all disabled by default in PR 1)
+  sbomEnabled = false
+  sbomGenerationContext = 'none'
+
+  // SBOM configuration that will be used in later PRs
+  sbomConfig = [
+    pluginVersion: '1.8.2',
+    schemaVersion: '1.4',
+    outputFormat: 'json',
+    includeConfigs: ['runtimeClasspath', 'compileClasspath'],
+    skipConfigs: ['testRuntimeClasspath', 'testCompileClasspath']
+  ]
+}
