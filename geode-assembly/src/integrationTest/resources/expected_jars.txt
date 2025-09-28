@@ -4,6 +4,7 @@ LatencyUtils
 accessors-smart
 antlr
 asm
+byte-buddy
 classgraph
 commons-beanutils
 commons-codec
@@ -31,6 +32,7 @@ jackson-datatype-jsr
 jakarta.activation-api
 jakarta.validation-api
 jakarta.xml.bind-api
+javax.activation
 javax.activation-api
 javax.mail-api
 javax.resource-api
@@ -119,4 +121,3 @@ swagger-core
 swagger-models
 swagger-ui
 webjars-locator-core
-byte-buddy
