@@ -52,8 +52,8 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
-          <artifactId>hamcrest</artifactId>
           <groupId>*</groupId>
+          <artifactId>hamcrest</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -103,8 +103,8 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
-          <artifactId>junit-dep</artifactId>
           <groupId>*</groupId>
+          <artifactId>junit-dep</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

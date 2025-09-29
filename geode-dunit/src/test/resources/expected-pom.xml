@@ -52,8 +52,8 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
-          <artifactId>geode-core</artifactId>
           <groupId>*</groupId>
+          <artifactId>geode-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -98,8 +98,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>geode-core</artifactId>
           <groupId>*</groupId>
+          <artifactId>geode-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -134,32 +134,32 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>cglib</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-core</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>asm</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-aop</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>guava</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>aopalliance</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>spring-context-support</artifactId>
           <groupId>*</groupId>
+          <artifactId>spring-context-support</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>
@@ -175,8 +175,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>junit-dep</artifactId>
           <groupId>*</groupId>
+          <artifactId>junit-dep</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -206,8 +206,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>hamcrest</artifactId>
           <groupId>*</groupId>
+          <artifactId>hamcrest</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

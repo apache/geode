@@ -72,16 +72,16 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-beans</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-expression</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>spring-aop</artifactId>
           <groupId>*</groupId>
+          <artifactId>spring-aop</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

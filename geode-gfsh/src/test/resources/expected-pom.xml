@@ -62,32 +62,32 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>cglib</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-core</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>asm</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-aop</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>guava</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>aopalliance</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>spring-context-support</artifactId>
           <groupId>*</groupId>
+          <artifactId>spring-context-support</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -117,12 +117,12 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>spring-core</artifactId>
           <groupId>*</groupId>
+          <artifactId>spring-core</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>commons-logging</artifactId>
           <groupId>*</groupId>
+          <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

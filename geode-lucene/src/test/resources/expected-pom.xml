@@ -87,8 +87,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>lucene-sandbox</artifactId>
           <groupId>*</groupId>
+          <artifactId>lucene-sandbox</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
