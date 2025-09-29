@@ -44,6 +44,7 @@ import org.gradle.internal.Factory;
 import org.gradle.internal.actor.ActorFactory;
 import org.gradle.internal.time.Clock;
 import org.gradle.internal.work.WorkerLeaseRegistry;
+import org.gradle.internal.work.WorkerLeaseService;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 
 /**
@@ -72,6 +73,7 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
   private final ActorFactory actorFactory;
   private final ModuleRegistry moduleRegistry;
   private final WorkerLeaseRegistry workerLeaseRegistry;
+  private final WorkerLeaseService workerLeaseService;
   private final int maxWorkerCount;
   private final Clock clock;
   private final DocumentationRegistry documentationRegistry;
@@ -79,14 +81,16 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
   private final int iterationCount;
   private TestClassProcessor processor;
 
+  // Gradle 7.6.6: WorkerLeaseRegistry became private, use WorkerLeaseService instead
   public RepeatTestExecuter(WorkerProcessFactory workerFactory, ActorFactory actorFactory,
-      ModuleRegistry moduleRegistry, WorkerLeaseRegistry workerLeaseRegistry, int maxWorkerCount,
+      ModuleRegistry moduleRegistry, WorkerLeaseService workerLeaseService, int maxWorkerCount,
       Clock clock, DocumentationRegistry documentationRegistry, DefaultTestFilter testFilter,
       int iterationCount) {
     this.workerFactory = workerFactory;
     this.actorFactory = actorFactory;
     this.moduleRegistry = moduleRegistry;
-    this.workerLeaseRegistry = workerLeaseRegistry;
+    this.workerLeaseRegistry = null; // Keep for backward compatibility but not used
+    this.workerLeaseService = workerLeaseService;
     this.maxWorkerCount = maxWorkerCount;
     this.clock = clock;
     this.documentationRegistry = documentationRegistry;
@@ -99,17 +103,15 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
       TestResultProcessor testResultProcessor) {
     final TestFramework testFramework = testExecutionSpec.getTestFramework();
     final WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
-    final WorkerLeaseRegistry.WorkerLease
-        currentWorkerLease =
-        workerLeaseRegistry.getCurrentWorkerLease();
     final Set<File> classpath = ImmutableSet.copyOf(testExecutionSpec.getClasspath());
     final Set<File> modulePath = ImmutableSet.copyOf(testExecutionSpec.getModulePath());
     final List<String>
         testWorkerImplementationModules =
         testFramework.getTestWorkerImplementationModules();
     final Factory<TestClassProcessor> forkingProcessorFactory = () -> {
+      // Gradle 7.6.6: Worker API changed to require WorkerLeaseService for thread management
       TestClassProcessor forkingTestClassProcessor =
-          new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory,
+          new ForkingTestClassProcessor(workerLeaseService, workerFactory, testInstanceFactory,
               testExecutionSpec.getJavaForkOptions(), classpath, modulePath,
               testWorkerImplementationModules, testFramework.getWorkerConfigurationAction(),
               moduleRegistry, documentationRegistry);
@@ -139,7 +141,8 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
       detector = new DefaultTestClassScanner(testClassFiles, null, processor);
     }
 
-    new TestMainAction(detector, processor, testResultProcessor, clock, testExecutionSpec.getPath(),
+    // Gradle 7.6.6: TestMainAction constructor changed to accept WorkerLeaseService for resource management
+    new TestMainAction(detector, processor, testResultProcessor, workerLeaseService, clock, testExecutionSpec.getPath(),
         "Gradle Test Run " + testExecutionSpec.getIdentityPath()).run();
   }
 

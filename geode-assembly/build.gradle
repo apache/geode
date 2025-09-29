@@ -409,8 +409,9 @@ tasks.register('docs', Javadoc) {
   doLast {
     rootProject.subprojects.each { project ->
       copy {
-        if (project.hasProperty('sourceSets')) {
-          from project.sourceSets.main.resources.srcDirs
+        if (project.hasProperty('sourceSets') && project.sourceSets.findByName('main')) {
+          // Prevent NullPointerException when 'main' source set doesn't exist
+          from project.sourceSets.getByName('main').resources.srcDirs
         }
         include 'javadoc-images/*'
         into docsDir
