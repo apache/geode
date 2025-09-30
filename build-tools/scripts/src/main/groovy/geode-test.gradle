@@ -285,6 +285,20 @@ gradle.taskGraph.whenReady({ graph ->
         systemProperty 'log4j.configurationFile', log4jLocation
       }
 
+      // Port partitioning properties for GEODE-10490 - only enabled for integration tests
+      if (test.name.contains("integration")) {
+        
+        def portPartitionSize = System.getProperty('geode.portPartitionSize')
+        if (portPartitionSize != null) {
+          systemProperty 'geode.portPartitionSize', portPartitionSize
+        }
+        
+        def debugPortPartitioning = System.getProperty('geode.debugPortPartitioning')
+        if (debugPortPartitioning != null) {
+          systemProperty 'geode.debugPortPartitioning', debugPortPartitioning
+        }
+      }
+
       // The distributed tests seem to need to use /tmp directly,
       // so exclude them from using the supplied temp directory.
       if (!test.name.contains("distributed") && !test.name.contains("repeatDistributed")) {
