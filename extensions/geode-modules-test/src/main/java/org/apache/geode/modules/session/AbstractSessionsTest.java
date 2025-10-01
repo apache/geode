@@ -25,7 +25,8 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Paths;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.servlet.http.HttpSession;
 
@@ -54,9 +55,21 @@ public abstract class AbstractSessionsTest {
 
   // Set up the servers we need
   protected static void setupServer(final DeltaSessionManager manager) throws Exception {
-    FileUtils.copyDirectory(
-        Paths.get("..", "..", "resources", "integrationTest", "tomcat").toFile(),
-        new File("./tomcat"));
+    // Use classpath for resource isolation and concurrent resource management
+    URL resourceUrl = AbstractSessionsTest.class.getClassLoader().getResource("tomcat");
+    if (resourceUrl == null) {
+      throw new IllegalStateException("Could not find 'tomcat' resource directory in classpath");
+    }
+
+    File tomcatResourceDir;
+    try {
+      tomcatResourceDir = new File(resourceUrl.toURI());
+    } catch (URISyntaxException e) {
+      throw new IllegalStateException("Invalid URI for tomcat resource directory: " + resourceUrl,
+          e);
+    }
+
+    FileUtils.copyDirectory(tomcatResourceDir, new File("./tomcat"));
     port = SocketUtils.findAvailableTcpPort();
     server = new EmbeddedTomcat(port, "JVM-1");
 
