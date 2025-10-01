@@ -352,6 +352,20 @@ afterEvaluate {
         logger.debug("includeMetadataResolution not available: ${e.message}")
       }
 
+      // PR 6: Performance Optimization & Caching Configuration for Assembly
+      // Enable task caching for SBOM generation
+      outputs.cacheIf { true }
+
+      // Define task inputs for proper cache key generation
+      inputs.files(configurations.runtimeClasspath).withPropertyName("assemblyDependencies")
+      inputs.property("projectVersion", project.version)
+      inputs.property("projectType", "application")
+      inputs.property("schemaVersion", "1.4")
+      inputs.property("outputFormat", "json")
+
+      // Define outputs for caching
+      outputs.dir(destination).withPropertyName("assemblyOutputDir")
+
       // ASF Compliance Metadata
       // Note: Advanced metadata configuration may not be available in CycloneDX plugin 1.8.2
       // This will be enhanced when newer plugin versions are available
@@ -361,6 +375,7 @@ afterEvaluate {
       logger.lifecycle("   📋 Output Name: apache-geode-${project.version}")
       logger.lifecycle("   📁 Destination: $buildDir/reports/bom")
       logger.lifecycle("   🔍 Include Configs: runtimeClasspath")
+      logger.lifecycle("   ⚡ Caching: enabled for performance optimization")
     } else {
       // Disable SBOM generation by setting enabled to false
       enabled = false
