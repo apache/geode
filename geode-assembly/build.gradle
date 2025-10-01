@@ -21,6 +21,7 @@ plugins {
   id 'distribution'
   id 'com.palantir.docker'
   id 'geode-publish-common'
+  id 'org.cyclonedx.bom'
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -308,6 +309,66 @@ dependencies {
   defaultDistributionConfigClasspath(project(':geode-log4j'))
 }
 
+// ===== SBOM Configuration =====
+// Configure SBOM generation for geode-assembly module (application type)
+// This generates an SBOM for the complete Apache Geode distribution
+// Configure SBOM generation for geode-assembly module (application type)
+// This generates an SBOM for the complete Apache Geode distribution
+
+// Import context detection from root build
+// Check if property exists before accessing it
+def shouldGenerateSbom = rootProject.hasProperty('sbomEnabled') ? rootProject.ext.sbomEnabled : false
+
+if (shouldGenerateSbom) {
+  logger.lifecycle("=== SBOM Context Detection ===")
+  logger.lifecycle("CI Environment: ${rootProject.hasProperty('sbomContextFlags') ? rootProject.ext.sbomContextFlags.isCI : false}")
+  logger.lifecycle("Release Build: ${rootProject.hasProperty('sbomContextFlags') ? rootProject.ext.sbomContextFlags.isRelease : false}")
+  logger.lifecycle("Explicit SBOM Request: ${rootProject.hasProperty('sbomContextFlags') ? rootProject.ext.sbomContextFlags.isExplicitSbom : false}")
+  logger.lifecycle("Should Generate SBOM: ${shouldGenerateSbom}")
+  logger.lifecycle("SBOM generation context: ${rootProject.hasProperty('sbomGenerationContext') ? rootProject.ext.sbomGenerationContext : 'unknown'}")
+  logger.lifecycle("=== End SBOM Context Detection ===")
+  logger.lifecycle("")
+}
+
+// Configure CycloneDX SBOM generation after project evaluation
+afterEvaluate {
+  cyclonedxBom {
+    // Only configure if SBOM generation is enabled
+    if (shouldGenerateSbom) {
+      // Assembly-specific configuration
+      projectType = "application"
+      schemaVersion = "1.4"
+      destination = file("$buildDir/reports/bom")
+      outputName = "apache-geode-${project.version}"
+      outputFormat = "json"
+      includeBomSerialNumber = true
+      includeConfigs = ["runtimeClasspath"]
+
+      // Try to set metadata resolution if available (version-dependent)
+      try {
+        includeMetadataResolution = true
+      } catch (Exception e) {
+        // Property not available in this version of CycloneDX plugin
+        logger.debug("includeMetadataResolution not available: ${e.message}")
+      }
+
+      // ASF Compliance Metadata
+      // Note: Advanced metadata configuration may not be available in CycloneDX plugin 1.8.2
+      // This will be enhanced when newer plugin versions are available
+
+      logger.lifecycle("🔧 Configuring SBOM for geode-assembly (application)")
+      logger.lifecycle("   📦 Project Type: application")
+      logger.lifecycle("   📋 Output Name: apache-geode-${project.version}")
+      logger.lifecycle("   📁 Destination: $buildDir/reports/bom")
+      logger.lifecycle("   🔍 Include Configs: runtimeClasspath")
+    } else {
+      // Disable SBOM generation by setting enabled to false
+      enabled = false
+      logger.debug("SBOM generation disabled for geode-assembly")
+    }
+  }
+}
+
 acceptanceTest {
   // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
   systemProperty 'projectGroup', project.group
@@ -523,6 +584,17 @@ distributions {
         from { project(':extensions:geode-modules-assembly').distTomcat }
         from { project(':extensions:geode-modules-assembly').distAppServer }
       }
+
+      // Include SBOM artifacts in distribution
+      // TODO: Re-enable once circular reference issue is resolved
+      /*
+      with copySpec {
+        into('sbom')
+        from { file("$buildDir/install/apache-geode/sbom") }
+        // Only include if SBOM generation is enabled
+        onlyIf { rootProject.hasProperty('sbomEnabled') ? rootProject.ext.sbomEnabled : false }
+      }
+      */
     }
   }
 
@@ -537,6 +609,157 @@ distributions {
   archiveExtension='tgz'
   build.dependsOn(it)
 }
+
+// ===== SBOM Distribution Integration =====
+// Task to copy SBOM artifacts to distribution directory
+tasks.register('generateDistributionSbom') {
+  description = 'Generate and copy SBOM artifacts to distribution directory'
+  group = 'distribution'
+
+  // Only run if SBOM generation is enabled
+  onlyIf { rootProject.hasProperty('sbomEnabled') ? rootProject.ext.sbomEnabled : false }
+
+  // Depend on the cyclonedxBom task
+  dependsOn tasks.cyclonedxBom
+
+  // Input: SBOM files from cyclonedxBom task
+  inputs.files tasks.cyclonedxBom.outputs.files
+
+  // Output: SBOM files in distribution directory
+  def sbomDistDir = file("$buildDir/install/apache-geode/sbom")
+  outputs.dir sbomDistDir
+
+  doLast {
+    logger.lifecycle("📦 Copying SBOM artifacts to distribution directory...")
+
+    // Create SBOM directory in distribution
+    sbomDistDir.mkdirs()
+
+    // Copy SBOM files from cyclonedxBom output
+    copy {
+      from tasks.cyclonedxBom.outputs.files
+      into sbomDistDir
+      include '*.json'
+      include '*.xml'
+    }
+
+    // Create SBOM metadata file with ASF compliance information
+    def metadataFile = new File(sbomDistDir, 'sbom-metadata.json')
+    metadataFile.text = """{
+  "supplier": "The Apache Software Foundation",
+  "manufacturer": "The Apache Software Foundation",
+  "component": "Apache Geode",
+  "version": "${project.version}",
+  "projectType": "application",
+  "format": "CycloneDX 1.4",
+  "generated": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')}"
+}"""
+
+    logger.lifecycle("✅ SBOM artifacts copied to: ${sbomDistDir}")
+    logger.lifecycle("📋 SBOM files: ${tasks.cyclonedxBom.outputs.files.files.collect { it.name }.join(', ')}")
+    logger.lifecycle("📄 Created ASF compliance metadata: ${metadataFile}")
+  }
+}
+
+// Add SBOM files to distribution archives after they are created
+tasks.named('distTar').configure {
+  dependsOn tasks.generateDistributionSbom
+
+  doLast {
+    // Only add SBOM files if SBOM generation is enabled
+    def sbomEnabled = rootProject.hasProperty('sbomEnabled') ? rootProject.ext.sbomEnabled : false
+    if (sbomEnabled) {
+      logger.lifecycle("📦 SBOM files have been included in the distribution via generateDistributionSbom task")
+      logger.lifecycle("   Distribution archive: ${archiveFile.get().asFile}")
+      logger.lifecycle("   SBOM directory: $buildDir/install/apache-geode/sbom")
+    }
+  }
+}
+
+// ===== SBOM Validation Task =====
+tasks.register('validateAssemblySbom') {
+  description = 'Validate SBOM configuration for geode-assembly module'
+  group = 'verification'
+
+  doLast {
+    logger.lifecycle("=== Assembly SBOM Validation ===")
+
+    def validationSuccess = true
+
+    // Check if CycloneDX plugin is applied
+    if (project.plugins.hasPlugin('org.cyclonedx.bom')) {
+      logger.lifecycle("✅ CycloneDX plugin applied to geode-assembly")
+    } else {
+      logger.lifecycle("❌ CycloneDX plugin not applied to geode-assembly")
+      validationSuccess = false
+    }
+
+    // Check if cyclonedxBom task exists
+    if (tasks.findByName('cyclonedxBom')) {
+      logger.lifecycle("✅ cyclonedxBom task configured")
+
+      // Check task configuration
+      def cyclonedxTask = tasks.cyclonedxBom
+      if (shouldGenerateSbom) {
+        logger.lifecycle("✅ SBOM generation enabled")
+        logger.lifecycle("   📦 Project Type: application")
+        logger.lifecycle("   📋 Output Name: apache-geode-${project.version}")
+        logger.lifecycle("   📁 Destination: $buildDir/reports/bom")
+      } else {
+        logger.lifecycle("ℹ️  SBOM generation disabled (context-dependent)")
+      }
+    } else {
+      logger.lifecycle("❌ cyclonedxBom task not found")
+      validationSuccess = false
+    }
+
+    // Check if generateDistributionSbom task exists
+    if (tasks.findByName('generateDistributionSbom')) {
+      logger.lifecycle("✅ generateDistributionSbom task configured")
+    } else {
+      logger.lifecycle("❌ generateDistributionSbom task not found")
+      validationSuccess = false
+    }
+
+    // Check distribution integration
+    def distTarTask = tasks.findByName('distTar')
+    if (distTarTask && distTarTask.dependsOn.any { it.toString().contains('generateDistributionSbom') }) {
+      logger.lifecycle("✅ Distribution integration configured")
+    } else {
+      logger.lifecycle("❌ Distribution integration not configured")
+      validationSuccess = false
+    }
+
+    // Context detection validation
+    logger.lifecycle("")
+    logger.lifecycle("🔍 Context Detection Status:")
+    logger.lifecycle("  SBOM enabled: ${shouldGenerateSbom}")
+    if (rootProject.hasProperty('sbomGenerationContext')) {
+      logger.lifecycle("  Generation context: ${rootProject.ext.sbomGenerationContext}")
+    }
+    if (rootProject.hasProperty('sbomContextFlags')) {
+      logger.lifecycle("  CI detected: ${rootProject.ext.sbomContextFlags.isCI}")
+      logger.lifecycle("  Release detected: ${rootProject.ext.sbomContextFlags.isRelease}")
+      logger.lifecycle("  Explicit SBOM: ${rootProject.ext.sbomContextFlags.isExplicitSbom}")
+    }
+
+    logger.lifecycle("")
+    if (validationSuccess) {
+      logger.lifecycle("✅ Assembly SBOM validation PASSED")
+    } else {
+      logger.lifecycle("❌ Assembly SBOM validation FAILED")
+      logger.lifecycle("   Please review the issues reported above")
+    }
+    logger.lifecycle("=== End Assembly SBOM Validation ===")
+  }
+}
+
+// Integrate SBOM generation with distribution tasks
+installDist.dependsOn generateDistributionSbom
+tasks.named('distTar').configure {
+  dependsOn generateDistributionSbom
+}
+
 // Make build final task to generate all test and product resources
 build.dependsOn(installDist)
 

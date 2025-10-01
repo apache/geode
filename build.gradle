@@ -308,7 +308,8 @@ def isRelease = gradle.startParameter.taskNames.any { taskName ->
 }
 def isExplicitSbom = gradle.startParameter.taskNames.any { taskName ->
   taskName.toLowerCase().contains("generatesbom") ||
-  taskName.toLowerCase().contains("cyclonedxbom")
+  taskName.toLowerCase().contains("cyclonedxbom") ||
+  taskName.toLowerCase().contains("sbom")
 }
 
 // Combined logic: SBOM generation should occur in CI, release builds, or when explicitly requested
