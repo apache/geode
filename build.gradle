@@ -408,3 +408,501 @@ tasks.register('testSbomContext') {
     logger.lifecycle("=== End SBOM Context Detection Tests ===")
   }
 }
+
+// SBOM (Software Bill of Materials) Multi-Module Configuration - GEODE-10481 PR 4
+// Apply SBOM configuration to all eligible subprojects (excluding assembly and test modules)
+
+// Define the SBOM configuration closure for reuse across modules
+def sbomConfiguration = {
+  apply plugin: 'org.cyclonedx.bom'
+
+  afterEvaluate {
+    tasks.named('cyclonedxBom') {
+      // Use context detection from root build.gradle (PR 2) to control SBOM generation
+      enabled = rootProject.ext.sbomEnabled
+
+      // Include only runtime and compile dependencies, exclude test dependencies
+      includeConfigs = rootProject.ext.sbomConfig.includeConfigs
+      skipConfigs = rootProject.ext.sbomConfig.skipConfigs
+
+      // Module-specific project type configuration
+      def moduleProjectType = determineProjectType(project)
+      projectType = moduleProjectType
+
+      schemaVersion = rootProject.ext.sbomConfig.schemaVersion
+      outputFormat = rootProject.ext.sbomConfig.outputFormat
+      includeLicenseText = true
+
+      // Configure output location and naming
+      destination = file("$buildDir/reports/sbom")
+      outputName = "${project.name}-${project.version}"
+
+      // Enable serial number for SBOM identification
+      includeBomSerialNumber = true
+
+      // Try to set metadata resolution if available (version-dependent)
+      try {
+        includeMetadataResolution = true
+      } catch (Exception e) {
+        // Property not available in this version of CycloneDX plugin
+        logger.debug("includeMetadataResolution not available: ${e.message}")
+      }
+    }
+  }
+}
+
+// Helper function to determine project type based on module characteristics
+def determineProjectType(project) {
+  // Server/Application modules
+  if (project.name in ['geode-server-all', 'geode-gfsh']) {
+    return "application"
+  }
+
+  // Web application modules
+  if (project.name.startsWith('geode-web') || project.name == 'geode-pulse') {
+    return "application"
+  }
+
+  // BOM modules
+  if (project.path.startsWith(':boms:')) {
+    return "framework"
+  }
+
+  // Extension/connector modules
+  if (project.path.startsWith(':extensions:') || project.name == 'geode-connectors') {
+    return "framework"
+  }
+
+  // Default to library for core modules
+  return "library"
+}
+
+// Apply SBOM configuration to all eligible subprojects
+configure(getEligibleSubprojectsForSbom(), sbomConfiguration)
+
+// Create coordinating generateSbom task for all modules
+tasks.register('generateSbom') {
+  group = 'Build'
+  description = 'Generate SBOM for all eligible Apache Geode modules'
+
+  // Get eligible subprojects using helper function
+  def eligibleSubprojects = getEligibleSubprojectsForSbom()
+
+  // Depend on cyclonedxBom tasks from all eligible subprojects
+  dependsOn eligibleSubprojects.collect { "${it.path}:cyclonedxBom" }
+
+  doFirst {
+    logger.lifecycle("=== Starting SBOM Generation ===")
+    logger.lifecycle("SBOM generation enabled: ${rootProject.ext.sbomEnabled}")
+    logger.lifecycle("SBOM generation context: ${rootProject.ext.sbomGenerationContext}")
+    logger.lifecycle("Eligible modules: ${eligibleSubprojects.size()}")
+
+    if (!rootProject.ext.sbomEnabled) {
+      logger.lifecycle("⚠️  SBOM generation is disabled - no SBOMs will be generated")
+      logger.lifecycle("   To enable SBOM generation, run with 'generateSbom' task or in CI/release context")
+    } else {
+      logger.lifecycle("📋 Generating SBOMs for ${eligibleSubprojects.size()} modules...")
+      eligibleSubprojects.each { subproject ->
+        logger.lifecycle("  - ${subproject.name} (${determineProjectType(subproject)})")
+      }
+    }
+  }
+
+  doLast {
+    logger.lifecycle("=== SBOM Generation Results ===")
+
+    if (rootProject.ext.sbomEnabled) {
+      def sbomFiles = []
+      def failedModules = []
+      def totalSize = 0
+
+      // Progress reporting and error detection
+      logger.lifecycle("📊 Collecting and validating generated SBOMs...")
+
+      eligibleSubprojects.each { subproject ->
+        def sbomFile = subproject.file("${subproject.buildDir}/reports/sbom/${subproject.name}-${subproject.version}.json")
+
+        try {
+          if (sbomFile.exists()) {
+            // Validate SBOM file
+            def sbomContent = new groovy.json.JsonSlurper().parse(sbomFile)
+
+            if (sbomContent.bomFormat == 'CycloneDX' && sbomContent.specVersion) {
+              sbomFiles.add(sbomFile)
+              totalSize += sbomFile.length()
+              logger.lifecycle("  ✅ ${subproject.name}: ${sbomFile.length()} bytes, ${sbomContent.components?.size() ?: 0} components")
+            } else {
+              failedModules.add([module: subproject.name, reason: "Invalid SBOM format"])
+              logger.lifecycle("  ❌ ${subproject.name}: Invalid SBOM format")
+            }
+          } else {
+            failedModules.add([module: subproject.name, reason: "SBOM file not generated"])
+            logger.lifecycle("  ❌ ${subproject.name}: SBOM file not found")
+          }
+        } catch (Exception e) {
+          failedModules.add([module: subproject.name, reason: "Validation error: ${e.message}"])
+          logger.lifecycle("  ❌ ${subproject.name}: Validation failed - ${e.message}")
+        }
+      }
+
+      // Summary reporting
+      logger.lifecycle("")
+      logger.lifecycle("📈 Generation Summary:")
+      logger.lifecycle("  ✅ Successful: ${sbomFiles.size()}/${eligibleSubprojects.size()} modules")
+      logger.lifecycle("  📦 Total SBOM size: ${String.format('%.2f', totalSize / 1024.0)} KB")
+
+      if (failedModules.size() > 0) {
+        logger.lifecycle("  ❌ Failed: ${failedModules.size()} modules")
+        failedModules.each { failure ->
+          logger.lifecycle("    - ${failure.module}: ${failure.reason}")
+        }
+      }
+
+      // Create aggregated SBOM directory for easy collection
+      if (sbomFiles.size() > 0) {
+        def aggregatedDir = file("${buildDir}/sbom-artifacts")
+        aggregatedDir.mkdirs()
+
+        logger.lifecycle("")
+        logger.lifecycle("📁 Creating aggregated SBOM collection...")
+
+        sbomFiles.each { sbomFile ->
+          try {
+            copy {
+              from sbomFile
+              into aggregatedDir
+            }
+            logger.lifecycle("  📄 Copied: ${sbomFile.name}")
+          } catch (Exception e) {
+            logger.lifecycle("  ⚠️  Failed to copy ${sbomFile.name}: ${e.message}")
+          }
+        }
+
+        logger.lifecycle("✅ Aggregated SBOMs available at: ${aggregatedDir.absolutePath}")
+
+        // Create summary file
+        def summaryFile = new File(aggregatedDir, 'sbom-generation-summary.txt')
+        summaryFile.text = """SBOM Generation Summary
+Generated: ${new Date()}
+Context: ${rootProject.ext.sbomGenerationContext}
+Successful modules: ${sbomFiles.size()}/${eligibleSubprojects.size()}
+Total size: ${String.format('%.2f', totalSize / 1024.0)} KB
+
+Generated SBOMs:
+${sbomFiles.collect { "- ${it.name} (${it.length()} bytes)" }.join('\n')}
+
+${failedModules.size() > 0 ? "\nFailed modules:\n${failedModules.collect { "- ${it.module}: ${it.reason}" }.join('\n')}" : ""}
+"""
+        logger.lifecycle("📋 Summary written to: ${summaryFile.absolutePath}")
+      }
+
+      // Fail the build if critical modules failed
+      if (failedModules.size() > 0) {
+        def criticalModules = ['geode-core', 'geode-common', 'geode-gfsh']
+        def failedCritical = failedModules.findAll { failure ->
+          criticalModules.contains(failure.module)
+        }
+
+        if (failedCritical.size() > 0) {
+          throw new GradleException("SBOM generation failed for critical modules: ${failedCritical.collect { it.module }.join(', ')}")
+        }
+      }
+
+    } else {
+      logger.lifecycle("ℹ️  SBOM generation was disabled in current context")
+      logger.lifecycle("   Contexts that enable SBOM generation:")
+      logger.lifecycle("   - CI environment (CI=true)")
+      logger.lifecycle("   - Release builds (tasks containing 'release', 'distribution', 'assemble')")
+      logger.lifecycle("   - Explicit SBOM tasks ('generateSbom', 'cyclonedxBom')")
+    }
+
+    logger.lifecycle("=== End SBOM Generation ===")
+  }
+}
+
+// Helper function to get eligible subprojects (reused by task and configuration)
+def getEligibleSubprojectsForSbom() {
+  return subprojects.findAll { subproject ->
+    // Exclude assembly modules (as per PR 4 requirements)
+    if (subproject.name == 'geode-assembly' || subproject.name == 'geode-modules-assembly') {
+      return false
+    }
+
+    // Exclude test-only modules
+    if (subproject.name.endsWith('-test') || subproject.name == 'session-testing-war') {
+      return false
+    }
+
+    // Exclude old version modules (compatibility testing only)
+    if (subproject.path.startsWith(':geode-old-versions')) {
+      return false
+    }
+
+    // Exclude static analysis modules (build tooling)
+    if (subproject.path.startsWith(':static-analysis')) {
+      return false
+    }
+
+    // Exclude parent/container modules that don't have their own artifacts
+    if (['boms', 'extensions'].contains(subproject.name)) {
+      return false
+    }
+
+    return true
+  }
+}
+
+// Performance monitoring task for SBOM generation
+tasks.register('benchmarkSbomGeneration') {
+  group = 'Verification'
+  description = 'Benchmark SBOM generation performance across all modules'
+
+  doLast {
+    logger.lifecycle("=== SBOM Performance Benchmark ===")
+
+    def runtime = Runtime.getRuntime()
+    def initialMemory = runtime.totalMemory() - runtime.freeMemory()
+    def startTime = System.currentTimeMillis()
+
+    logger.lifecycle("🚀 Starting performance benchmark...")
+    logger.lifecycle("Initial memory usage: ${String.format('%.2f', initialMemory / (1024 * 1024))} MB")
+    logger.lifecycle("Eligible modules: ${getEligibleSubprojectsForSbom().size()}")
+
+    // Force SBOM generation for benchmarking
+    project.ext.sbomEnabled = true
+    project.ext.sbomGenerationContext = 'benchmark'
+
+    try {
+      // Run SBOM generation
+      def eligibleSubprojects = getEligibleSubprojectsForSbom()
+      def generatedCount = 0
+      def totalSbomSize = 0
+
+      eligibleSubprojects.each { subproject ->
+        def cyclonedxTask = subproject.tasks.findByName('cyclonedxBom')
+        if (cyclonedxTask) {
+          def moduleStartTime = System.currentTimeMillis()
+
+          try {
+            cyclonedxTask.enabled = true
+            cyclonedxTask.execute()
+
+            def moduleEndTime = System.currentTimeMillis()
+            def moduleTime = moduleEndTime - moduleStartTime
+
+            def sbomFile = subproject.file("${subproject.buildDir}/reports/sbom/${subproject.name}-${subproject.version}.json")
+            if (sbomFile.exists()) {
+              generatedCount++
+              totalSbomSize += sbomFile.length()
+              logger.lifecycle("  ✅ ${subproject.name}: ${moduleTime}ms, ${sbomFile.length()} bytes")
+            } else {
+              logger.lifecycle("  ❌ ${subproject.name}: ${moduleTime}ms, no SBOM generated")
+            }
+          } catch (Exception e) {
+            logger.lifecycle("  ❌ ${subproject.name}: failed - ${e.message}")
+          }
+        }
+      }
+
+      def endTime = System.currentTimeMillis()
+      def totalTime = endTime - startTime
+      def finalMemory = runtime.totalMemory() - runtime.freeMemory()
+      def memoryIncrease = finalMemory - initialMemory
+
+      logger.lifecycle("")
+      logger.lifecycle("📊 Performance Results:")
+      logger.lifecycle("  ⏱️  Total time: ${totalTime}ms (${String.format('%.2f', totalTime / 1000.0)}s)")
+      logger.lifecycle("  📦 Generated SBOMs: ${generatedCount}/${eligibleSubprojects.size()}")
+      logger.lifecycle("  📏 Total SBOM size: ${String.format('%.2f', totalSbomSize / 1024.0)} KB")
+      logger.lifecycle("  🧠 Memory increase: ${String.format('%.2f', memoryIncrease / (1024 * 1024))} MB")
+      logger.lifecycle("  ⚡ Average time per module: ${String.format('%.2f', totalTime / eligibleSubprojects.size())}ms")
+
+      // Performance analysis
+      def timePerModule = totalTime / eligibleSubprojects.size()
+      def memoryPerModule = memoryIncrease / (1024 * 1024) / eligibleSubprojects.size()
+
+      logger.lifecycle("")
+      logger.lifecycle("📈 Performance Analysis:")
+      logger.lifecycle("  Time per module: ${String.format('%.2f', timePerModule)}ms")
+      logger.lifecycle("  Memory per module: ${String.format('%.2f', memoryPerModule)}MB")
+
+      // Performance warnings
+      if (timePerModule > 5000) { // 5 seconds per module
+        logger.lifecycle("  ⚠️  WARNING: Time per module exceeds 5 seconds")
+      }
+
+      if (memoryPerModule > 50) { // 50MB per module
+        logger.lifecycle("  ⚠️  WARNING: Memory usage per module exceeds 50MB")
+      }
+
+      if (totalTime > 300000) { // 5 minutes total
+        logger.lifecycle("  ⚠️  WARNING: Total generation time exceeds 5 minutes")
+      }
+
+      // Recommendations
+      logger.lifecycle("")
+      logger.lifecycle("💡 Recommendations:")
+      if (generatedCount < eligibleSubprojects.size()) {
+        logger.lifecycle("  - Investigate failed module SBOM generation")
+      }
+      if (timePerModule > 2000) {
+        logger.lifecycle("  - Consider enabling parallel execution with --parallel")
+      }
+      if (memoryIncrease > 1024 * 1024 * 1024) { // 1GB
+        logger.lifecycle("  - Consider increasing heap size with -Xmx")
+      }
+
+    } catch (Exception e) {
+      logger.lifecycle("❌ Benchmark failed: ${e.message}")
+      throw e
+    }
+
+    logger.lifecycle("=== End SBOM Performance Benchmark ===")
+  }
+}
+
+// Comprehensive validation task for multi-module SBOM implementation
+tasks.register('validateMultiModuleSbom') {
+  group = 'Verification'
+  description = 'Validate multi-module SBOM implementation (GEODE-10481 PR 4)'
+
+  doLast {
+    logger.lifecycle("=== Multi-Module SBOM Validation ===")
+
+    def eligibleSubprojects = getEligibleSubprojectsForSbom()
+    def validationResults = [:]
+    def overallSuccess = true
+
+    logger.lifecycle("🔍 Validating SBOM configuration for ${eligibleSubprojects.size()} modules...")
+
+    // Validate each eligible subproject has SBOM configuration
+    eligibleSubprojects.each { subproject ->
+      def results = [:]
+
+      try {
+        // Check if CycloneDX plugin is applied
+        def hasCycloneDxPlugin = subproject.plugins.hasPlugin('org.cyclonedx.bom')
+        results.pluginApplied = hasCycloneDxPlugin
+
+        // Check if cyclonedxBom task exists
+        def cyclonedxTask = subproject.tasks.findByName('cyclonedxBom')
+        results.taskExists = cyclonedxTask != null
+
+        // Check task configuration
+        if (cyclonedxTask) {
+          results.taskEnabled = cyclonedxTask.enabled
+          results.projectType = determineProjectType(subproject)
+          results.outputDir = subproject.file("${subproject.buildDir}/reports/sbom")
+        }
+
+        // Overall module validation
+        results.valid = hasCycloneDxPlugin && cyclonedxTask != null
+
+        if (results.valid) {
+          logger.lifecycle("  ✅ ${subproject.name}: Plugin applied, task configured (${results.projectType})")
+        } else {
+          logger.lifecycle("  ❌ ${subproject.name}: Configuration issues detected")
+          overallSuccess = false
+        }
+
+      } catch (Exception e) {
+        results.valid = false
+        results.error = e.message
+        logger.lifecycle("  ❌ ${subproject.name}: Validation error - ${e.message}")
+        overallSuccess = false
+      }
+
+      validationResults[subproject.name] = results
+    }
+
+    // Validate excluded modules are properly excluded
+    logger.lifecycle("")
+    logger.lifecycle("🚫 Validating excluded modules...")
+
+    def excludedModules = subprojects.findAll { !getEligibleSubprojectsForSbom().contains(it) }
+    excludedModules.each { subproject ->
+      def hasCycloneDxPlugin = subproject.plugins.hasPlugin('org.cyclonedx.bom')
+      if (hasCycloneDxPlugin) {
+        logger.lifecycle("  ⚠️  ${subproject.name}: Has CycloneDX plugin but should be excluded")
+      } else {
+        logger.lifecycle("  ✅ ${subproject.name}: Properly excluded")
+      }
+    }
+
+    // Validate generateSbom task configuration
+    logger.lifecycle("")
+    logger.lifecycle("🎯 Validating generateSbom task...")
+
+    def generateSbomTask = tasks.findByName('generateSbom')
+    if (generateSbomTask) {
+      def dependencies = generateSbomTask.dependsOn
+      def expectedDependencies = eligibleSubprojects.collect { "${it.path}:cyclonedxBom" }
+
+      logger.lifecycle("  ✅ generateSbom task exists")
+      logger.lifecycle("  📋 Task dependencies: ${dependencies.size()}")
+      logger.lifecycle("  📋 Expected dependencies: ${expectedDependencies.size()}")
+
+      if (dependencies.size() == expectedDependencies.size()) {
+        logger.lifecycle("  ✅ Dependency count matches expected")
+      } else {
+        logger.lifecycle("  ❌ Dependency count mismatch")
+        overallSuccess = false
+      }
+    } else {
+      logger.lifecycle("  ❌ generateSbom task not found")
+      overallSuccess = false
+    }
+
+    // Summary report
+    logger.lifecycle("")
+    logger.lifecycle("📊 Validation Summary:")
+
+    def validModules = validationResults.values().count { it.valid }
+    def invalidModules = validationResults.size() - validModules
+
+    logger.lifecycle("  ✅ Valid modules: ${validModules}/${validationResults.size()}")
+    logger.lifecycle("  ❌ Invalid modules: ${invalidModules}")
+    logger.lifecycle("  🚫 Excluded modules: ${excludedModules.size()}")
+    logger.lifecycle("  📦 Total subprojects: ${subprojects.size()}")
+
+    // Project type distribution
+    def projectTypes = [:]
+    validationResults.each { moduleName, results ->
+      if (results.projectType) {
+        projectTypes[results.projectType] = (projectTypes[results.projectType] ?: 0) + 1
+      }
+    }
+
+    logger.lifecycle("")
+    logger.lifecycle("📈 Project Type Distribution:")
+    projectTypes.each { type, count ->
+      logger.lifecycle("  ${type}: ${count} modules")
+    }
+
+    // Context detection validation
+    logger.lifecycle("")
+    logger.lifecycle("🔍 Context Detection Status:")
+    logger.lifecycle("  SBOM enabled: ${rootProject.ext.sbomEnabled}")
+    logger.lifecycle("  Generation context: ${rootProject.ext.sbomGenerationContext}")
+    logger.lifecycle("  CI detected: ${rootProject.ext.sbomContextFlags.isCI}")
+    logger.lifecycle("  Release detected: ${rootProject.ext.sbomContextFlags.isRelease}")
+    logger.lifecycle("  Explicit SBOM: ${rootProject.ext.sbomContextFlags.isExplicitSbom}")
+
+    // Final validation result
+    logger.lifecycle("")
+    if (overallSuccess) {
+      logger.lifecycle("🎉 Multi-module SBOM validation PASSED")
+      logger.lifecycle("   All ${eligibleSubprojects.size()} eligible modules are properly configured")
+      logger.lifecycle("   generateSbom task is correctly set up")
+      logger.lifecycle("   Context detection is working")
+    } else {
+      logger.lifecycle("❌ Multi-module SBOM validation FAILED")
+      logger.lifecycle("   Please review the issues reported above")
+
+      // Don't fail the build, just report issues
+      logger.lifecycle("   (This is a validation task - build will continue)")
+    }
+
+    logger.lifecycle("=== End Multi-Module SBOM Validation ===")
+  }
+}

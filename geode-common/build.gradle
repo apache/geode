@@ -57,31 +57,9 @@ dependencies {
   jmhTestImplementation('org.assertj:assertj-core')
 }
 
-// SBOM (Software Bill of Materials) Configuration - GEODE-10481 PR 3
-// Configure CycloneDX SBOM generation for geode-common module
-afterEvaluate {
-  tasks.named('cyclonedxBom') {
-    // Use context detection from root build.gradle (PR 2) to control SBOM generation
-    enabled = rootProject.ext.sbomEnabled
-
-    // Include only runtime and compile dependencies, exclude test dependencies
-    includeConfigs = rootProject.ext.sbomConfig.includeConfigs
-    skipConfigs = rootProject.ext.sbomConfig.skipConfigs
-
-    // Configure SBOM metadata and format
-    projectType = "library"
-    schemaVersion = "1.4"
-    includeLicenseText = true
-
-    // Configure output location and naming
-    destination = file("$buildDir/reports/sbom")
-    outputName = "${project.name}-${project.version}"
-    outputFormat = "json"
-
-    // Enable serial number for SBOM identification
-    includeBomSerialNumber = true
-  }
-}
+// SBOM Configuration Note - GEODE-10481 PR 4
+// SBOM configuration for this module is now handled by the multi-module configuration
+// in the root build.gradle file. This ensures consistency across all modules.
 
 // Add task to validate SBOM generation for this module
 tasks.register('validateGeodeCommonSbom') {
