@@ -20,6 +20,9 @@ plugins {
   id 'geode-publish-java'
   id 'warnings'
   id 'jmh'
+  // SBOM (Software Bill of Materials) Generation - GEODE-10481 PR 3
+  // Apply CycloneDX plugin for SBOM generation when context detection enables it
+  id 'org.cyclonedx.bom'
 }
 
 dependencies {
@@ -52,4 +55,71 @@ dependencies {
   jmhTestImplementation('junit:junit')
   jmhTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   jmhTestImplementation('org.assertj:assertj-core')
+}
+
+// SBOM (Software Bill of Materials) Configuration - GEODE-10481 PR 3
+// Configure CycloneDX SBOM generation for geode-common module
+afterEvaluate {
+  tasks.named('cyclonedxBom') {
+    // Use context detection from root build.gradle (PR 2) to control SBOM generation
+    enabled = rootProject.ext.sbomEnabled
+
+    // Include only runtime and compile dependencies, exclude test dependencies
+    includeConfigs = rootProject.ext.sbomConfig.includeConfigs
+    skipConfigs = rootProject.ext.sbomConfig.skipConfigs
+
+    // Configure SBOM metadata and format
+    projectType = "library"
+    schemaVersion = "1.4"
+    includeLicenseText = true
+
+    // Configure output location and naming
+    destination = file("$buildDir/reports/sbom")
+    outputName = "${project.name}-${project.version}"
+    outputFormat = "json"
+
+    // Enable serial number for SBOM identification
+    includeBomSerialNumber = true
+  }
+}
+
+// Add task to validate SBOM generation for this module
+tasks.register('validateGeodeCommonSbom') {
+  group = 'Verification'
+  description = 'Validate SBOM generation for geode-common module'
+  dependsOn 'cyclonedxBom'
+
+  doLast {
+    def sbomFile = file("$buildDir/reports/sbom/${project.name}-${project.version}.json")
+    logger.lifecycle("=== SBOM Validation for geode-common ===")
+    logger.lifecycle("SBOM enabled: ${rootProject.ext.sbomEnabled}")
+    logger.lifecycle("SBOM context: ${rootProject.ext.sbomGenerationContext}")
+
+    if (rootProject.ext.sbomEnabled) {
+      if (sbomFile.exists()) {
+        logger.lifecycle("✅ SBOM file generated: ${sbomFile.absolutePath}")
+        logger.lifecycle("✅ SBOM file size: ${sbomFile.length()} bytes")
+
+        // Basic JSON validation
+        try {
+          def sbomContent = new groovy.json.JsonSlurper().parse(sbomFile)
+          logger.lifecycle("✅ SBOM JSON is valid")
+          logger.lifecycle("✅ SBOM format version: ${sbomContent.specVersion}")
+          logger.lifecycle("✅ Components found: ${sbomContent.components?.size() ?: 0}")
+        } catch (Exception e) {
+          logger.lifecycle("❌ SBOM JSON validation failed: ${e.message}")
+        }
+      } else {
+        logger.lifecycle("❌ SBOM file not found at expected location")
+      }
+    } else {
+      logger.lifecycle("ℹ️  SBOM generation disabled by context detection")
+      if (sbomFile.exists()) {
+        logger.lifecycle("⚠️  SBOM file exists but should not (context detection may be incorrect)")
+      } else {
+        logger.lifecycle("✅ No SBOM file generated (correct behavior)")
+      }
+    }
+    logger.lifecycle("=== End SBOM Validation ===")
+  }
 }
