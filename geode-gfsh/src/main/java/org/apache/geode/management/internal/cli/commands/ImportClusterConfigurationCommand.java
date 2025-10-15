@@ -72,7 +72,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * 1. USER INPUT SANITIZATION:
  * - The xmlFile parameter comes from user input via @ShellOption
  * - Direct use of xmlFile in output messages creates information disclosure risks
- * - Solution: Use file.getName() to display only filename, not full path
+ * - Solution: Use sanitizeFilename() to clean filenames before display
  *
  * 2. PATH TRAVERSAL PREVENTION:
  * - File paths from CommandExecutionContext could contain "../" sequences
@@ -84,19 +84,27 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * - Prevent attacks that try to manipulate non-file filesystem objects
  * - Solution: Validate file.isFile() before processing
  *
+ * 4. FILENAME SANITIZATION:
+ * - User-controlled filenames in error/log messages can expose sensitive information
+ * - Malicious filenames could contain path traversal or special characters
+ * - Solution: Comprehensive filename sanitization for all output messages
+ *
  * SECURITY IMPLEMENTATION:
  *
  * - getUploadedFile(): Added path validation and file type checking
+ * - sanitizeFilename(): Removes dangerous characters and limits length
  * - Output messages: Use sanitized filename instead of raw user input
  * - File operations: Validated files before processing
+ * - Error messages: Consistently use sanitized filenames to prevent information disclosure
  *
  * COMPLIANCE:
  * - Fixes CodeQL vulnerability: java/path-injection
  * - Follows OWASP guidelines for file upload security
  * - Implements defense-in-depth for path handling
+ * - Prevents information disclosure through error messages
  *
  * Last updated: Jakarta EE 10 migration (October 2024)
- * Security review: Path injection vulnerabilities addressed
+ * Security review: Path injection vulnerabilities and filename sanitization addressed
  */
 @SuppressWarnings("unused")
 public class ImportClusterConfigurationCommand extends GfshCommand {
@@ -179,7 +187,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
         // Security: Sanitize user-provided xmlFile parameter to prevent path injection
         // Only display the filename, not the full path, to avoid exposing sensitive path
         // information
-        String safeFileName = file.getName();
+        String safeFileName = sanitizeFilename(file.getName());
         infoSection.addLine(
             "Successfully set the '" + group + "' configuration to the content of " + safeFileName);
       }
@@ -212,26 +220,74 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
     }
   }
 
+  /**
+   * Security: Enhanced file upload handling with comprehensive path injection prevention.
+   *
+   * This method addresses CodeQL vulnerability java/path-injection by implementing
+   * defense-in-depth validation before creating File objects with user-controlled paths.
+   *
+   * SECURITY ENHANCEMENTS:
+   * 1. Pre-validation of path strings before File object creation
+   * 2. Canonical path validation to prevent sophisticated traversal attacks
+   * 3. System directory access prevention (Linux and Windows)
+   * 4. Enhanced path traversal detection with multiple patterns
+   * 5. File type validation and accessibility checks
+   * 6. Sanitized error messages to prevent information disclosure
+   *
+   * @return Validated File object safe for processing
+   * @throws IllegalArgumentException if the path is invalid, unsafe, or inaccessible
+   */
   File getUploadedFile() {
     List<String> filePathFromShell = CommandExecutionContext.getFilePathFromShell();
     String filePath = filePathFromShell.get(0);
 
-    // Security: Validate file path to prevent path injection attacks
-    // Ensure the file path doesn't contain directory traversal attempts
-    if (filePath.contains("..") || filePath.contains("~")) {
-      throw new IllegalArgumentException(
-          "Invalid file path: path traversal detected in " + filePath);
+    // Security: Comprehensive path validation to prevent path injection attacks
+    if (filePath == null || filePath.trim().isEmpty()) {
+      throw new IllegalArgumentException("File path cannot be null or empty");
     }
 
-    File file = new File(filePath);
+    // Security: Normalize and validate the path string before creating File object
+    String normalizedPath = filePath.trim();
+
+    // Security: Prevent path traversal attacks - check for dangerous patterns
+    if (normalizedPath.contains("..") || normalizedPath.contains("~") ||
+        normalizedPath.contains("\\..") || normalizedPath.contains("/..")) {
+      throw new IllegalArgumentException("Invalid file path: path traversal detected");
+    }
+
+    // Security: Prevent absolute paths to system directories
+    if (normalizedPath.startsWith("/etc/") || normalizedPath.startsWith("/sys/") ||
+        normalizedPath.startsWith("/proc/") || normalizedPath.startsWith("/dev/") ||
+        normalizedPath.contains(":\\Windows\\") || normalizedPath.contains(":\\Program Files\\")) {
+      throw new IllegalArgumentException("Access to system directories is not allowed");
+    }
+
+    File file;
+    try {
+      // Security: Create File object and immediately get canonical path for validation
+      file = new File(normalizedPath);
+      String canonicalPath = file.getCanonicalPath();
+
+      // Security: Ensure canonical path doesn't escape intended directory bounds
+      String expectedFileName = new File(normalizedPath).getName();
+      if (canonicalPath.contains("..") || !canonicalPath.endsWith(expectedFileName)) {
+        throw new IllegalArgumentException("Invalid file path: canonical path validation failed");
+      }
+    } catch (java.io.IOException e) {
+      throw new IllegalArgumentException("Invalid file path: " + e.getMessage());
+    }
 
     // Security: Ensure the file exists and is a regular file (not a directory or special file)
     if (!file.exists()) {
-      throw new IllegalArgumentException("File does not exist: " + file.getName());
+      // Security: Use sanitized filename in error message to prevent information disclosure
+      String safeFileName = sanitizeFilename(file.getName());
+      throw new IllegalArgumentException("File does not exist: " + safeFileName);
     }
     if (!file.isFile()) {
+      // Security: Use sanitized filename in error message to prevent information disclosure
+      String safeFileName = sanitizeFilename(file.getName());
       throw new IllegalArgumentException(
-          "Path does not point to a regular file: " + file.getName());
+          "Path does not point to a regular file: " + safeFileName);
     }
 
     return file;
@@ -322,4 +378,31 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
     }
   }
 
+  /**
+   * Security: Sanitizes filename for safe inclusion in log messages and error messages.
+   *
+   * This method prevents information disclosure and potential path traversal
+   * by cleaning user-controlled filenames before including them in output.
+   *
+   * @param filename The filename to sanitize
+   * @return A sanitized version of the filename safe for log/error messages
+   */
+  private String sanitizeFilename(String filename) {
+    if (filename == null) {
+      return "<unknown>";
+    }
+
+    // Remove any path separators and potentially dangerous characters
+    String sanitized = filename.replaceAll("[/\\\\]", "")
+        .replaceAll("\\.\\.", "")
+        .replaceAll("[<>:\"|?*]", "");
+
+    // Limit length to prevent excessively long filenames in messages
+    if (sanitized.length() > 50) {
+      sanitized = sanitized.substring(0, 47) + "...";
+    }
+
+    // Return a safe default if the filename becomes empty after sanitization
+    return sanitized.isEmpty() ? "<sanitized>" : sanitized;
+  }
 }

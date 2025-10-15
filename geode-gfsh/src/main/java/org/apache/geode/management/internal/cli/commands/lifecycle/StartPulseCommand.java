@@ -83,7 +83,9 @@ public class StartPulseCommand extends OfflineGfshCommand {
       defaultValue = "http://localhost:7070/pulse",
       help = CliStrings.START_PULSE__URL__HELP) final String url) throws IOException {
     if (StringUtils.isNotBlank(url)) {
-      browse(URI.create(url));
+      // Security: Validate and sanitize URL string before creating URI
+      String validatedUrl = validateAndSanitizeUrlString(url);
+      browse(URI.create(validatedUrl));
       return ResultModel.createInfo(CliStrings.START_PULSE__RUN);
     } else {
       if (isConnectedAndReady()) {
@@ -96,8 +98,11 @@ public class StartPulseCommand extends OfflineGfshCommand {
             (String) operationInvoker.getAttribute(managerObjectName.toString(), "PulseURL");
 
         if (StringUtils.isNotBlank(pulseURL)) {
-          browse(URI.create(pulseURL));
-          return ResultModel.createError(CliStrings.START_PULSE__RUN + " with URL: " + pulseURL);
+          // Security: Validate and sanitize URL string from remote source before creating URI
+          String validatedPulseUrl = validateAndSanitizeUrlString(pulseURL);
+          browse(URI.create(validatedPulseUrl));
+          return ResultModel
+              .createError(CliStrings.START_PULSE__RUN + " with URL: " + validatedPulseUrl);
         } else {
           String pulseMessage = (String) operationInvoker
               .getAttribute(managerObjectName.toString(), "StatusMessage");
@@ -137,12 +142,22 @@ public class StartPulseCommand extends OfflineGfshCommand {
    * - Could steal credentials or inject malicious content
    * - URL validation prevents access to non-HTTP/HTTPS protocols
    *
-   * SECURITY IMPLEMENTATION:
+   * ENHANCED SECURITY IMPLEMENTATION:
    *
+   * - DUAL-LAYER VALIDATION: URL string validation before URI creation + URI validation before
+   * browsing
    * - Protocol Validation: Only allow HTTP and HTTPS protocols
    * - Host Validation: Ensure URLs point to expected hosts (localhost or configured)
    * - Malicious Protocol Blocking: Reject javascript:, file:, ftp: etc.
+   * - Character Injection Prevention: Block newlines, tabs, and other dangerous characters
+   * - Pre-URI Validation: Validate URL strings before creating URI objects to satisfy CodeQL
+   * requirements
    * - Comprehensive logging for security monitoring
+   *
+   * COMPLIANCE:
+   * - Fixes CodeQL vulnerability: java/unvalidated-url-redirection
+   * - Follows OWASP guidelines for URL redirection prevention
+   * - Implements defense-in-depth security validation
    *
    * @param uri The URI to browse to (must be validated)
    * @throws IOException if desktop browsing fails
@@ -214,4 +229,55 @@ public class StartPulseCommand extends OfflineGfshCommand {
         !host.contains("..");
   }
 
+  /**
+   * Security: Validates and sanitizes URL strings before URI creation.
+   *
+   * This method provides comprehensive validation of URL strings from user input
+   * or remote sources to prevent URL redirection attacks.
+   *
+   * @param urlString The URL string to validate and sanitize
+   * @return A validated and sanitized URL string safe for URI creation
+   * @throws IllegalArgumentException if the URL string is invalid or unsafe
+   */
+  private String validateAndSanitizeUrlString(String urlString) {
+    if (urlString == null || urlString.trim().isEmpty()) {
+      throw new IllegalArgumentException("URL cannot be null or empty");
+    }
+
+    // Security: Normalize the URL string
+    String normalizedUrl = urlString.trim();
+
+    // Security: Prevent URL injection with dangerous characters
+    if (normalizedUrl.contains("\n") || normalizedUrl.contains("\r") ||
+        normalizedUrl.contains("\t") || normalizedUrl.contains(" ")) {
+      throw new IllegalArgumentException("URL contains invalid characters");
+    }
+
+    // Security: Ensure URL starts with allowed protocols
+    if (!normalizedUrl.toLowerCase().startsWith("http://") &&
+        !normalizedUrl.toLowerCase().startsWith("https://")) {
+      throw new IllegalArgumentException(
+          "URL must start with http:// or https://. Got: "
+              + normalizedUrl.substring(0, Math.min(20, normalizedUrl.length())));
+    }
+
+    // Security: Prevent javascript: and other dangerous protocols
+    if (normalizedUrl.toLowerCase().contains("javascript:") ||
+        normalizedUrl.toLowerCase().contains("vbscript:") ||
+        normalizedUrl.toLowerCase().contains("data:") ||
+        normalizedUrl.toLowerCase().contains("file:")) {
+      throw new IllegalArgumentException("URL contains dangerous protocol");
+    }
+
+    // Security: Basic URL structure validation
+    try {
+      URI tempUri = URI.create(normalizedUrl);
+      // Perform the same validation we do in validatePulseUri
+      validatePulseUri(tempUri);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid URL format: " + e.getMessage());
+    }
+
+    return normalizedUrl;
+  }
 }

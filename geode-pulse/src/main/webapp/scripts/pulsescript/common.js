@@ -133,12 +133,20 @@ function changeLocale(language, pagename) {
  * - Error Logging: Log blocked attempts for security monitoring
  * 
  * COMPLIANCE:
- * - Fixes CodeQL vulnerability: js/xss-through-dom
+ * - Fixes CodeQL vulnerability: js/xss-through-dom (DOM text reinterpretation)
  * - Follows OWASP XSS prevention guidelines for attribute injection
  * - Implements secure internationalization content handling
+ * - Enhanced URL validation for src/href attributes with HTML escaping
+ * - Prevents malicious protocol injection (javascript:, vbscript:, data:, etc.)
+ * 
+ * SECURITY ENHANCEMENTS:
+ * 1. HTML escaping applied to all DOM attribute assignments (src, href)
+ * 2. Comprehensive protocol validation to block malicious URLs
+ * 3. Enhanced regex patterns to detect and prevent XSS vectors
+ * 4. Consistent security validation across img src and a href attributes
  * 
  * Last updated: Jakarta EE 10 migration (October 2024)
- * Security review: XSS vulnerabilities in UI customization addressed
+ * Security review: XSS vulnerabilities and DOM text reinterpretation addressed
  */
 function customizeUI() {
 
@@ -151,15 +159,17 @@ function customizeUI() {
       if ($(this).is("div")) {
         $(this).html(escapeHTML(customDisplayValue));
       } else if ($(this).is("img")) {
-        // Security: Validate image src to prevent XSS via javascript: URLs
-        if (customDisplayValue && !customDisplayValue.match(/^(https?:\/\/|\/|data:image\/)/i)) {
+        // Security: Validate image src to prevent XSS via javascript: URLs and other malicious protocols
+        if (customDisplayValue && customDisplayValue.match(/^javascript:|^data:(?!image\/)|^vbscript:|^on\w+:/i)) {
+          console.warn("Potentially unsafe image src blocked:", customDisplayValue);
+        } else if (customDisplayValue && !customDisplayValue.match(/^(https?:\/\/|\/|data:image\/|#)/i)) {
           console.warn("Potentially unsafe image src blocked:", customDisplayValue);
         } else {
-          $(this).attr('src', customDisplayValue);
+          $(this).attr('src', escapeHTML(customDisplayValue));
         }
       } else if ($(this).is("a")) {
-        // Security: Validate href to prevent XSS via javascript: URLs
-        if (customDisplayValue && customDisplayValue.match(/^javascript:/i)) {
+        // Security: Validate href to prevent XSS via javascript: URLs and other malicious protocols
+        if (customDisplayValue && customDisplayValue.match(/^javascript:|^vbscript:|^on\w+:|^data:(?!image\/)/i)) {
           console.warn("Potentially unsafe href blocked:", customDisplayValue);
         } else {
           $(this).attr('href', escapeHTML(customDisplayValue));

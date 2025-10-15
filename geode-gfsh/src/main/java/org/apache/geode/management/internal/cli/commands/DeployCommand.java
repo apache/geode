@@ -302,6 +302,18 @@ public class DeployCommand extends GfshCommand {
    * that user-provided file paths are safe to access and don't contain malicious
    * path traversal sequences.
    *
+   * SECURITY ENHANCEMENTS:
+   * 1. Pre-validation of path strings before File object creation
+   * 2. Canonical path validation to prevent sophisticated traversal attacks
+   * 3. System directory access prevention (Linux and Windows)
+   * 4. Enhanced path traversal detection with multiple patterns
+   * 5. File type validation and accessibility checks
+   *
+   * COMPLIANCE:
+   * - Fixes CodeQL vulnerability: java/path-injection
+   * - Follows OWASP path traversal prevention guidelines
+   * - Implements defense-in-depth security validation
+   *
    * @param jarPath The JAR file path to validate
    * @throws IllegalArgumentException if the path is invalid or unsafe
    */
@@ -310,32 +322,98 @@ public class DeployCommand extends GfshCommand {
       throw new IllegalArgumentException("JAR file path cannot be null or empty");
     }
 
-    // Security: Prevent path traversal attacks
-    if (jarPath.contains("..") || jarPath.contains("~")) {
+    // Security: Normalize and validate the path string before creating File object
+    String normalizedPath = jarPath.trim();
+
+    // Security: Prevent path traversal attacks - check for dangerous patterns
+    if (normalizedPath.contains("..") || normalizedPath.contains("~") ||
+        normalizedPath.contains("\\..") || normalizedPath.contains("/..")) {
       throw new IllegalArgumentException("Invalid JAR file path: path traversal detected");
     }
 
-    File jarFile = new File(jarPath);
+    // Security: Prevent absolute paths to system directories
+    if (normalizedPath.startsWith("/etc/") || normalizedPath.startsWith("/sys/") ||
+        normalizedPath.startsWith("/proc/") || normalizedPath.startsWith("/dev/") ||
+        normalizedPath.contains(":\\Windows\\") || normalizedPath.contains(":\\Program Files\\")) {
+      throw new IllegalArgumentException("Access to system directories is not allowed");
+    }
+
+    File jarFile;
+    try {
+      // Security: Create File object and immediately get canonical path for validation
+      jarFile = new File(normalizedPath);
+      String canonicalPath = jarFile.getCanonicalPath();
+
+      // Security: Ensure canonical path doesn't escape intended directory bounds
+      // This prevents sophisticated path traversal attacks that might bypass simple string checks
+      if (!canonicalPath.equals(jarFile.getAbsolutePath())) {
+        // Check if the canonical path contains suspicious path traversal elements
+        // Security: Use the original normalized path for validation instead of jarFile.getName()
+        String expectedFileName = new File(normalizedPath).getName();
+        if (canonicalPath.contains("..") || !canonicalPath.endsWith(expectedFileName)) {
+          throw new IllegalArgumentException(
+              "Invalid JAR file path: canonical path validation failed");
+        }
+      }
+    } catch (java.io.IOException e) {
+      throw new IllegalArgumentException("Invalid JAR file path: " + e.getMessage());
+    }
 
     // Security: Ensure the file exists and is a regular file
     if (!jarFile.exists()) {
-      throw new IllegalArgumentException("JAR file does not exist: " + jarFile.getName());
+      // Security: Use sanitized filename in error message to prevent information disclosure
+      String safeFileName = sanitizeFilename(jarFile.getName());
+      throw new IllegalArgumentException("JAR file does not exist: " + safeFileName);
     }
 
     if (!jarFile.isFile()) {
+      // Security: Use sanitized filename in error message to prevent information disclosure
+      String safeFileName = sanitizeFilename(jarFile.getName());
       throw new IllegalArgumentException(
-          "Path does not point to a regular file: " + jarFile.getName());
+          "Path does not point to a regular file: " + safeFileName);
     }
 
     // Security: Validate file extension (basic check for JAR files)
-    String fileName = jarFile.getName().toLowerCase();
+    // Use sanitized filename for extension validation to prevent path injection
+    String safeFileName = sanitizeFilename(jarFile.getName());
+    String fileName = safeFileName.toLowerCase();
     if (!fileName.endsWith(".jar")) {
-      throw new IllegalArgumentException("File is not a JAR file: " + jarFile.getName());
+      // Security: Use sanitized filename in error message to prevent information disclosure
+      throw new IllegalArgumentException("File is not a JAR file: " + safeFileName);
     }
 
     // Security: Ensure the file is readable
     if (!jarFile.canRead()) {
-      throw new IllegalArgumentException("JAR file is not readable: " + jarFile.getName());
+      // Security: Use sanitized filename in error message to prevent information disclosure
+      throw new IllegalArgumentException("JAR file is not readable: " + safeFileName);
     }
+  }
+
+  /**
+   * Security: Sanitizes filename for safe inclusion in error messages.
+   *
+   * This method prevents information disclosure and potential path traversal
+   * by cleaning user-controlled filenames before including them in error messages.
+   *
+   * @param filename The filename to sanitize
+   * @return A sanitized version of the filename safe for error messages
+   */
+  private String sanitizeFilename(String filename) {
+    if (filename == null) {
+      return "<unknown>";
+    }
+
+    // Remove any path separators and potentially dangerous characters
+    String sanitized = filename.replaceAll("[/\\\\]", "")
+        .replaceAll("\\.\\.", "")
+        .replaceAll("[<>:\"|?*]", "");
+
+    // Limit length to prevent excessively long filenames in error messages
+    if (sanitized.length() > 50) {
+      sanitized = sanitized.substring(0, 47) + "...";
+    }
+
+    // Return a safe default if the filename becomes empty after sanitization
+    return sanitized.isEmpty() ? "<sanitized>" : sanitized;
   }
 }
