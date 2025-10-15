@@ -435,7 +435,7 @@ jobs:
             geode-connectors:distributedTest \
             geode-old-client:distributedTest \
             extensions:geode-modules:distributedTest \
-            extensions:geode-modules-tomcat8:distributedTest --console=plain --no-daemon
+            extensions:geode-modules-tomcat10:distributedTest --console=plain --no-daemon
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

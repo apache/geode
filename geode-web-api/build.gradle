@@ -24,6 +24,11 @@ plugins {
 
 jar.enabled = false
 
+// Add -parameters flag for Spring Security 6 @PreAuthorize parameter expressions
+tasks.withType(JavaCompile) {
+  options.compilerArgs << '-parameters'
+}
+
 configurations {
   war {}
 }
@@ -38,7 +43,7 @@ dependencies {
   compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-serialization'))
 
-  compileOnly('javax.servlet:javax.servlet-api')
+  compileOnly('jakarta.servlet:jakarta.servlet-api')
 
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-fileupload:commons-fileupload') {
@@ -46,9 +51,9 @@ dependencies {
   }
 
   // JAXB dependencies needed for Java 11+
-  implementation('javax.xml.bind:jaxb-api')
-  runtimeOnly('com.sun.xml.bind:jaxb-impl')
-  runtimeOnly('com.sun.activation:javax.activation')
+  implementation('jakarta.xml.bind:jakarta.xml.bind-api')
+  runtimeOnly('org.glassfish.jaxb:jaxb-runtime')
+  runtimeOnly('jakarta.activation:jakarta.activation-api')
 
   // jackson-annotations must be accessed from the geode classloader and not the webapp
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
@@ -57,7 +62,8 @@ dependencies {
     exclude module: 'jackson-annotations'
   }
 
-  implementation('org.springdoc:springdoc-openapi-ui') {
+  // SpringDoc 2.x uses new artifact name (Spring 6.x migration)
+  implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
   }
@@ -92,7 +98,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-core'))
-  testImplementation('javax.servlet:javax.servlet-api')
+  testImplementation('jakarta.servlet:jakarta.servlet-api')
 
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework.security:spring-security-test')

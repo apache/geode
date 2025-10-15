@@ -874,7 +874,14 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           }
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
+
           x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
+
+          // Start/Restart HTTP server after adding webapp to ensure proper Jetty 12 Configuration
+          // lifecycle
+          // This is critical for ServletContainerInitializer discovery (e.g.,
+          // SpringServletContainerInitializer)
+          x.restartHttpServer();
         } catch (Throwable e) {
           logger.warn("Unable to start management service: {}", e.getMessage());
         }

@@ -322,8 +322,6 @@ org/apache/geode/internal/cache/control/InternalResourceManager$ResourceType,fal
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,false
 org/apache/geode/internal/cache/control/PartitionRebalanceDetailsImpl,true,5880667005758250156,bucketCreateBytes:long,bucketCreateTime:long,bucketCreatesCompleted:int,bucketRemoveBytes:long,bucketRemoveTime:long,bucketRemovesCompleted:int,bucketTransferBytes:long,bucketTransferTime:long,bucketTransfersCompleted:int,numOfMembers:int,partitionMemberDetailsAfter:java/util/Set,partitionMemberDetailsBefore:java/util/Set,primaryTransferTime:long,primaryTransfersCompleted:int,time:long
 org/apache/geode/internal/cache/control/RebalanceResultsImpl,false,detailSet:java/util/Set,totalBucketCreateBytes:long,totalBucketCreateTime:long,totalBucketCreatesCompleted:int,totalBucketTransferBytes:long,totalBucketTransferTime:long,totalBucketTransfersCompleted:int,totalNumOfMembers:int,totalPrimaryTransferTime:long,totalPrimaryTransfersCompleted:int,totalTime:long
-org/apache/geode/internal/cache/control/SerializableRegionRedundancyStatusImpl,false
-org/apache/geode/internal/cache/control/SerializableRestoreRedundancyResultsImpl,true,-6385537590999520662
 org/apache/geode/internal/cache/execute/BucketMovedException,true,4893171227542647452
 org/apache/geode/internal/cache/execute/InternalFunctionException,true,3532698050312820319
 org/apache/geode/internal/cache/execute/InternalFunctionInvocationTargetException,true,-6063507496829271815,failedIds:java/util/Set
@@ -379,13 +377,13 @@ org/apache/geode/internal/datasource/GemFireBasicDataSource,true,-40101160248169
 org/apache/geode/internal/datasource/GemFireConnPooledDataSource,true,1177231744410855158,provider:org/apache/geode/internal/datasource/ConnectionProvider
 org/apache/geode/internal/datasource/GemFireConnectionPoolManager,true,23723212980453813,connPoolCache:org/apache/geode/internal/datasource/ConnectionPoolCache
 org/apache/geode/internal/datasource/GemFireTransactionDataSource,true,-3095123666092414103,provider:org/apache/geode/internal/datasource/ConnectionProvider,xaResourcesMap:java/util/Map
-org/apache/geode/internal/datasource/JCAConnectionManagerImpl,true,5281512854051120661,conReqInfo:javax/resource/spi/ConnectionRequestInfo,isActive:boolean,mannPoolCache:org/apache/geode/internal/datasource/ConnectionPoolCache,subject:javax/security/auth/Subject,xaResourcesMap:java/util/Map
-org/apache/geode/internal/datasource/ManagedPoolCacheImpl,true,1064642271736399718,connFactory:javax/resource/spi/ManagedConnectionFactory,connReqInfo:javax/resource/spi/ConnectionRequestInfo,sub:javax/security/auth/Subject
+org/apache/geode/internal/datasource/JCAConnectionManagerImpl,true,5281512854051120661,conReqInfo:jakarta/resource/spi/ConnectionRequestInfo,isActive:boolean,mannPoolCache:org/apache/geode/internal/datasource/ConnectionPoolCache,subject:javax/security/auth/Subject,xaResourcesMap:java/util/Map
+org/apache/geode/internal/datasource/ManagedPoolCacheImpl,true,1064642271736399718,connFactory:jakarta/resource/spi/ManagedConnectionFactory,connReqInfo:jakarta/resource/spi/ConnectionRequestInfo,sub:javax/security/auth/Subject
 org/apache/geode/internal/datasource/PoolException,true,-6178632158204356727
 org/apache/geode/internal/datasource/TranxPoolCacheImpl,true,3295652525163658888,m_xads:javax/sql/XADataSource
 org/apache/geode/internal/jta/TransactionManagerImpl,true,5033392316185449821,globalTransactionMap:java/util/Map,gtxSet:java/util/SortedSet,isActive:boolean,transactionMap:java/util/Map
 org/apache/geode/internal/jta/TransactionManagerImpl$GlobalTransactionComparator,false
-org/apache/geode/internal/jta/UserTransactionImpl,true,2994652455204901910,storedTimeOut:int,tm:javax/transaction/TransactionManager
+org/apache/geode/internal/jta/UserTransactionImpl,true,2994652455204901910,storedTimeOut:int,tm:jakarta/transaction/TransactionManager
 org/apache/geode/internal/monitoring/ThreadsMonitoring$Mode,false
 org/apache/geode/internal/net/BufferPool$BufferType,false
 org/apache/geode/internal/offheap/MemoryBlock$State,false

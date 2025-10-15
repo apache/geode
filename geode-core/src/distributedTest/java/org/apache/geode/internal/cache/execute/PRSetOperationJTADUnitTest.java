@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.Context;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.UserTransaction;
 import junitparams.Parameters;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;

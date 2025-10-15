@@ -25,9 +25,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import javax.transaction.TransactionManager;
-
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.TransactionManager;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;

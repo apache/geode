@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,9 +31,9 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
 import javax.sql.DataSource;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.LogWriter;
@@ -143,10 +142,30 @@ public class JNDIInvoker {
     try {
       TransactionUtils.setLogWriter(distSystem.getLogWriter());
       cleanup();
+      ctx = new InitialContext();
       if (IGNORE_JTA) {
+        // Jakarta EE migration fix: When ignoreJTA is true, we must still bind TransactionManager
+        // to JNDI
+        // Previously, setting ignoreJTA would skip all TM initialization, causing
+        // NullPointerException
+        // when code tries to look up "java:/TransactionManager" even though regions ignore JTA
+        // This ensures the TransactionManager is available for lookup while regions still skip JTA
+        // participation
+        try {
+          initializeGemFireContext();
+          transactionManager = TransactionManagerImpl.getTransactionManager();
+          ctx.rebind("java:/TransactionManager", transactionManager);
+          UserTransactionImpl utx = new UserTransactionImpl();
+          ctx.rebind("java:/UserTransaction", utx);
+        } catch (NamingException | SystemException e) {
+          // Log and continue - TransactionManager initialization failed
+          LogWriter writer = TransactionUtils.getLogWriter();
+          if (writer.infoEnabled()) {
+            writer.info("Failed to initialize TransactionManager with ignoreJTA=true", e);
+          }
+        }
         return;
       }
-      ctx = new InitialContext();
       doTransactionLookup();
     } catch (NamingException ne) {
       LogWriter writer = TransactionUtils.getLogWriter();
@@ -229,6 +248,8 @@ public class JNDIInvoker {
       try {
         if (ctx != null) {
           ctx.unbind("java:/TransactionManager");
+          // Also unbind UserTransaction to fully clean up JTA resources on cache restart
+          ctx.unbind("java:/UserTransaction");
         }
       } catch (NamingException e) {
         // ok to ignore, rebind will be tried later
@@ -345,10 +366,13 @@ public class JNDIInvoker {
    *
    */
   private static void initializeGemFireContext() throws NamingException {
-    Hashtable table = new Hashtable();
-    table.put(Context.INITIAL_CONTEXT_FACTORY,
-        "org.apache.geode.internal.jndi.InitialContextFactoryImpl");
-    ctx = new InitialContext(table);
+    // Jakarta EE migration fix: Get the GemFire context directly from the factory
+    // instead of through InitialContext wrapper to avoid JNDI provider conflicts
+    // In Jetty 12 environments, InitialContext may delegate to Jetty's JNDI provider,
+    // causing lookup failures when trying to retrieve GemFire-bound resources
+    // Direct factory access ensures we always use GemFire's ContextImpl
+    InitialContextFactoryImpl factory = new InitialContextFactoryImpl();
+    ctx = factory.getInitialContext(null);
   }
 
   /**

@@ -23,6 +23,11 @@ plugins {
 
 jar.enabled = false
 
+// Add -parameters flag for Spring 6.x compatibility
+tasks.withType(JavaCompile) {
+  options.compilerArgs << '-parameters'
+}
+
 facets {
   commonTest {
     testTaskName = 'commonTest'
@@ -59,7 +64,7 @@ dependencies {
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-core'))
 
-  compileOnly('javax.servlet:javax.servlet-api')
+  compileOnly('jakarta.servlet:jakarta.servlet-api')
   // jackson-annotations must be accessed from the geode classloader and not the webapp
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
@@ -72,11 +77,17 @@ dependencies {
     exclude module: 'jackson-annotations'
   }
 
-  implementation('org.springdoc:springdoc-openapi-ui') {
+  // SpringDoc 2.x uses new artifact name (Spring 6.x migration)
+  implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
   }
 
+  // Spring 6.x requires explicit spring-aop dependency
+  // Previously implicit via transitive dependencies, now must be declared explicitly
+  // for component scanning to work. Missing this causes ClassNotFoundException during
+  // Spring context initialization.
+  implementation('org.springframework:spring-aop')
   implementation('org.springframework:spring-beans')
   implementation('org.springframework.security:spring-security-core')
   implementation('org.springframework.security:spring-security-web')
@@ -118,7 +129,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-core'))
-  testImplementation('javax.servlet:javax.servlet-api')
+  testImplementation('jakarta.servlet:jakarta.servlet-api')
 
   integrationTestImplementation(sourceSets.commonTest.output)
 
@@ -159,6 +170,14 @@ dependencies {
 war {
   enabled = true
   rootSpec.exclude("**/*commons-logging-*.jar")
+  // Exclude Spring modules that exist in geode/lib (system classpath) to prevent LinkageError
+  rootSpec.exclude("**/spring-web-*.jar")
+  rootSpec.exclude("**/spring-core-*.jar")
+  rootSpec.exclude("**/spring-beans-*.jar")
+  rootSpec.exclude("**/spring-context-*.jar")
+  rootSpec.exclude("**/spring-expression-*.jar")
+  rootSpec.exclude("**/spring-jcl-*.jar")
+  rootSpec.exclude("**/spring-aop-*.jar")  // spring-context needs spring-aop for component scanning
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   // this shouldn't be necessary but if it's not specified we're missing some of the jars
   // from the runtime classpath

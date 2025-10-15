@@ -15,4 +15,9 @@
 # limitations under the License.
 #
 
-start server --name=server-clementine --group=group-clementine --bind-address=server-clementine --http-service-bind-address=server-clementine --hostname-for-clients=server-clementine --server-port=8502 --locators=locator-maeve[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-clementine-keystore.jks --J=-Dgemfire.forceDnsUse=true --J=-Djdk.tls.trustNameService=true
+# NOTE: The following JVM flags were removed as they caused server startup failures:
+#   --J=-Dgemfire.forceDnsUse=true
+#   --J=-Djdk.tls.trustNameService=true
+# These flags are incompatible with the Docker container environment.
+
+start server --name=server-clementine --group=group-clementine --bind-address=server-clementine --http-service-bind-address=server-clementine --hostname-for-clients=server-clementine --server-port=8502 --locators=locator-maeve[10334] --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/server-clementine-keystore.jks

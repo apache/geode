@@ -24,28 +24,37 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import com.mockrunner.mock.web.MockHttpServletRequest;
-import com.mockrunner.mock.web.MockHttpServletResponse;
-import com.mockrunner.mock.web.MockServletContext;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockServletContext;
 
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
 
 /**
  * This servlet tests the effects of the downstream SessionCachingFilter filter. When these tests
  * are performed, the filter would already have taken effect.
+ *
+ * <p>
+ * Jakarta EE 10 Migration Notes:
+ * <ul>
+ * <li>Migrated from MockRunner to Spring Mock Web for servlet mocking (MockRunner lacks Jakarta
+ * support)</li>
+ * <li>Spring's MockHttpServletResponse.getCookies() returns Cookie[] instead of List</li>
+ * <li>Spring's MockHttpServletRequest uses setCookies(Cookie...) instead of addCookie(Cookie)</li>
+ * <li>Spring's MockHttpServletRequest uses setRequestURI() instead of setRequestURL()</li>
+ * </ul>
  */
 public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdapter {
   static final String CONTEXT_PATH = "/test";
@@ -66,8 +75,10 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     HttpSession session1 = ((HttpServletRequest) getFilteredRequest()).getSession();
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
-    getWebMockObjectFactory().getMockRequest().addCookie(cookie);
+    // Spring Mock Web: getCookies() returns Cookie[] instead of List (MockRunner used .get(0))
+    Cookie cookie = response.getCookies()[0];
+    // Spring Mock Web: setCookies() replaces addCookie() which doesn't exist in Spring's API
+    getWebMockObjectFactory().getMockRequest().setCookies(cookie);
 
     doFilter();
 
@@ -117,8 +128,8 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     ((HttpServletRequest) getFilteredRequest()).getSession().setAttribute("foo", "bar");
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
-    getWebMockObjectFactory().getMockRequest().addCookie(cookie);
+    Cookie cookie = response.getCookies()[0];
+    getWebMockObjectFactory().getMockRequest().setCookies(cookie);
 
     doFilter();
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
@@ -339,8 +350,8 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     String sessionId = ((HttpServletRequest) getFilteredRequest()).getSession().getId();
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
-    getWebMockObjectFactory().getMockRequest().addCookie(cookie);
+    Cookie cookie = response.getCookies()[0];
+    getWebMockObjectFactory().getMockRequest().setCookies(cookie);
 
     doFilter();
 
@@ -368,8 +379,8 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     long creationTime = ((HttpServletRequest) getFilteredRequest()).getSession().getCreationTime();
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
-    getWebMockObjectFactory().getMockRequest().addCookie(cookie);
+    Cookie cookie = response.getCookies()[0];
+    getWebMockObjectFactory().getMockRequest().setCookies(cookie);
 
     doFilter();
 
@@ -380,7 +391,7 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
   @Test
   public void testResponseContainsRequestedSessionId1() {
     Cookie cookie = new Cookie("JSESSIONID", "999-GF");
-    getWebMockObjectFactory().getMockRequest().addCookie(cookie);
+    getWebMockObjectFactory().getMockRequest().setCookies(cookie);
 
     doFilter();
 
@@ -416,12 +427,13 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     assertTrue("Session should have a non-zero last access time", lastAccess > 0);
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
+    Cookie cookie = response.getCookies()[0];
 
     MockHttpServletRequest mRequest = getWebMockObjectFactory().createMockRequest();
-    mRequest.setRequestURL("/test/foo/bar");
+    // Spring Mock Web: setRequestURI() replaces setRequestURL() (different API design)
+    mRequest.setRequestURI("/test/foo/bar");
     mRequest.setContextPath(CONTEXT_PATH);
-    mRequest.addCookie(cookie);
+    mRequest.setCookies(cookie);
     getWebMockObjectFactory().addRequestWrapper(mRequest);
 
     Thread.sleep(50);
@@ -452,7 +464,7 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     ((HttpServletRequest) getFilteredRequest()).getSession();
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
+    Cookie cookie = response.getCookies()[0];
 
     assertEquals(secure, cookie.getSecure());
   }
@@ -468,7 +480,7 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     ((HttpServletRequest) getFilteredRequest()).getSession();
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
+    Cookie cookie = response.getCookies()[0];
 
     assertEquals(httpOnly, cookie.isHttpOnly());
   }
@@ -496,12 +508,12 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     request.getSession();
 
     MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
-    Cookie cookie = (Cookie) response.getCookies().get(0);
+    Cookie cookie = response.getCookies()[0];
 
     MockHttpServletRequest mRequest = getWebMockObjectFactory().createMockRequest();
-    mRequest.setRequestURL("/test/foo/bar");
+    mRequest.setRequestURI("/test/foo/bar");
     mRequest.setContextPath(CONTEXT_PATH);
-    mRequest.addCookie(cookie);
+    mRequest.setCookies(cookie);
     getWebMockObjectFactory().addRequestWrapper(mRequest);
 
     doFilter();
@@ -515,7 +527,7 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
   public void testIsRequestedSessionIdFromCookie() {
     MockHttpServletRequest mRequest = getWebMockObjectFactory().getMockRequest();
     Cookie c = new Cookie("JSESSIONID", "1-GF");
-    mRequest.addCookie(c);
+    mRequest.setCookies(c);
 
     doFilter();
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
@@ -527,7 +539,7 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
   @Test
   public void testIsRequestedSessionIdFromURL() {
     MockHttpServletRequest mRequest = getWebMockObjectFactory().getMockRequest();
-    mRequest.setRequestURL("/foo/bar;jsessionid=1");
+    mRequest.setRequestURI("/foo/bar;jsessionid=1");
 
     doFilter();
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
@@ -567,8 +579,9 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     public void destroy() {}
   }
 
-  private MyMockServletContext asMyMockServlet(final MockServletContext mockServletContext) {
-    return (MyMockServletContext) mockServletContext;
+  private SessionCookieConfigServletTestCaseAdapter.MyMockServletContext asMyMockServlet(
+      final MockServletContext mockServletContext) {
+    return (SessionCookieConfigServletTestCaseAdapter.MyMockServletContext) mockServletContext;
   }
 
 }

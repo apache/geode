@@ -107,11 +107,11 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import javax.naming.Context;
-import javax.transaction.TransactionManager;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.TransactionManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -245,7 +245,6 @@ import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.lang.ThrowableUtils;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
@@ -2452,8 +2451,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           TXCommitMessage.getTracker().clearForCacheClose();
         }
 
-        // Added to close the TransactionManager's cleanup thread
-        TransactionManagerImpl.refresh();
+        // JAKARTA MIGRATION FIX: Commented out refresh() call to prevent TransactionManager
+        // invalidation
+        // The refresh() call was setting isActive=false on the TransactionManager instance, causing
+        // "TransactionManager invalid" errors in subsequent operations or tests. The cleanup thread
+        // and JNDI unbinding are handled by JNDIInvoker.cleanup() instead.
+        // TransactionManagerImpl.refresh();
 
         if (!keepDS) {
           // keepDS is used by ShutdownAll. It will override disableDisconnectDsOnCacheClose
@@ -2461,7 +2464,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             system.disconnect();
           }
         }
-
         typeRegistryClose.run();
         typeRegistrySetPdxSerializer.accept(null);
 

@@ -49,7 +49,13 @@ public class LogWrapper {
     logger = Logger.getLogger(getClass().getCanonicalName());
 
     if (cache != null && !cache.isClosed()) {
-      logger.addHandler(cache.getLogger().getHandler());
+      org.apache.geode.LogWriter cacheLogger = cache.getLogger();
+      if (cacheLogger != null) {
+        Handler handler = cacheLogger.getHandler();
+        if (handler != null) {
+          logger.addHandler(handler);
+        }
+      }
     }
     logger.setUseParentHandlers(false);
   }

@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
@@ -36,11 +36,11 @@ public class DescribeJndiBindingCommand extends GfshCommand {
   private static final String DESCRIBE_JNDIBINDING__HELP =
       "Describe the configuration of the given jndi binding.";
 
-  @CliCommand(value = DESCRIBE_JNDI_BINDING, help = DESCRIBE_JNDIBINDING__HELP)
+  @ShellMethod(value = DESCRIBE_JNDIBINDING__HELP, key = DESCRIBE_JNDI_BINDING)
   @CliMetaData
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public ResultModel describeJndiBinding(@CliOption(key = "name", mandatory = true,
+  public ResultModel describeJndiBinding(@ShellOption(value = "name",
       help = "Name of the binding to describe") String bindingName) {
 
     ResultModel crm = new ResultModel();

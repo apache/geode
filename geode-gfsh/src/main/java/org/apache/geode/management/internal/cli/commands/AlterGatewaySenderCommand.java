@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.cli.functions.AlterGatewaySenderFunction;
@@ -50,34 +49,35 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
       new AlterGatewaySenderFunction();
   private static final Logger logger = LogService.getLogger();
 
-  @CliCommand(value = CliStrings.ALTER_GATEWAYSENDER,
-      help = CliStrings.ALTER_GATEWAYSENDER__HELP)
+  @ShellMethod(value = CliStrings.ALTER_GATEWAYSENDER__HELP, key = CliStrings.ALTER_GATEWAYSENDER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
 
-  public ResultModel alterGatewaySender(@CliOption(key = CliStrings.ALTER_GATEWAYSENDER__ID,
-      mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
+  public ResultModel alterGatewaySender(@ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__ID,
+      defaultValue = ShellOption.NULL,
       help = CliStrings.ALTER_GATEWAYSENDER__ID__HELP) String senderId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__ALERTTHRESHOLD,
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__ALERTTHRESHOLD,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__ALERTTHRESHOLD__HELP) Integer alertThreshold,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__BATCHSIZE,
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__BATCHSIZE,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__BATCHSIZE__HELP) Integer batchSize,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL,
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
-          specifiedDefaultValue = "",
-          // split the input only with comma outside of json string
-          optionContext = "splittingRegex=,(?![^{]*\\})",
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
+          defaultValue = ShellOption.NULL,
+          // split the input only with comma outside of json string,(?![^{]*\\})",
           help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) ClassName[] gatewayEventFilters,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) Boolean groupTransactionEvents)
       throws EntityNotFoundException {
 
@@ -87,6 +87,10 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
     if (getConfigurationPersistenceService() == null) {
       return ResultModel.createError("Cluster Configuration Service is not available. "
           + "Please connect to a locator with running Cluster Configuration Service.");
+    }
+
+    if (senderId == null) {
+      return ResultModel.createError("You must specify a gateway sender id.");
     }
 
     final String id = senderId.trim();

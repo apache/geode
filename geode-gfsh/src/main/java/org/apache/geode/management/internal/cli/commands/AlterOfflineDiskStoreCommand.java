@@ -18,8 +18,8 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 
 import java.io.File;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.CacheExistsException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -29,36 +29,36 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class AlterOfflineDiskStoreCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.ALTER_DISK_STORE, help = CliStrings.ALTER_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.ALTER_DISK_STORE__HELP, key = CliStrings.ALTER_DISK_STORE)
   @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel alterOfflineDiskStore(
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__DISKSTORENAME, mandatory = true,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__DISKSTORENAME,
           help = CliStrings.ALTER_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__REGIONNAME, mandatory = true,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__REGIONNAME,
           help = CliStrings.ALTER_DISK_STORE__REGIONNAME__HELP) String regionName,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__DISKDIRS,
-          help = CliStrings.ALTER_DISK_STORE__DISKDIRS__HELP, mandatory = true) String[] diskDirs,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__COMPRESSOR, specifiedDefaultValue = "none",
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__DISKDIRS,
+          help = CliStrings.ALTER_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__COMPRESSOR,
           help = CliStrings.ALTER_DISK_STORE__COMPRESSOR__HELP) String compressorClassName,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL,
           help = CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL__HELP) Integer concurrencyLevel,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED,
           help = CliStrings.ALTER_DISK_STORE__STATISTICS__ENABLED__HELP) Boolean statisticsEnabled,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__INITIAL__CAPACITY,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__INITIAL__CAPACITY,
           help = CliStrings.ALTER_DISK_STORE__INITIAL__CAPACITY__HELP) Integer initialCapacity,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__LOAD__FACTOR,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__LOAD__FACTOR,
           help = CliStrings.ALTER_DISK_STORE__LOAD__FACTOR__HELP) Float loadFactor,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION,
           help = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ACTION__HELP) String lruEvictionAction,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM,
           help = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__ALGORITHM__HELP) String lruEvictionAlgo,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT,
           help = CliStrings.ALTER_DISK_STORE__LRU__EVICTION__LIMIT__HELP) Integer lruEvictionLimit,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__OFF_HEAP,
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__OFF_HEAP,
           help = CliStrings.ALTER_DISK_STORE__OFF_HEAP__HELP) Boolean offHeap,
-      @CliOption(key = CliStrings.ALTER_DISK_STORE__REMOVE,
-          help = CliStrings.ALTER_DISK_STORE__REMOVE__HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean remove) {
+      @ShellOption(value = CliStrings.ALTER_DISK_STORE__REMOVE,
+          help = CliStrings.ALTER_DISK_STORE__REMOVE__HELP,
+          defaultValue = "false") boolean remove) {
 
     String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);
     if (validatedDirectories != null) {

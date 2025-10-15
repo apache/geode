@@ -28,8 +28,8 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.UserTransaction;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

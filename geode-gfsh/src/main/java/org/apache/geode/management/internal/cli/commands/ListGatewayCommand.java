@@ -24,15 +24,14 @@ import java.util.TreeMap;
 
 import javax.management.ObjectName;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -43,22 +42,20 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ListGatewayCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.LIST_GATEWAY, help = CliStrings.LIST_GATEWAY__HELP)
+  @ShellMethod(value = CliStrings.LIST_GATEWAY__HELP, key = CliStrings.LIST_GATEWAY)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel listGateway(
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String[] onMember,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup,
-      @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY},
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY},
+          defaultValue = "false",
           help = CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY__HELP) boolean showReceiversOnly,
-      @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY},
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY},
+          defaultValue = "false",
           help = CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP) boolean showSendersOnly)
 
       throws Exception {

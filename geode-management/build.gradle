@@ -32,12 +32,15 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('org.springframework:spring-web')
-  implementation('org.apache.httpcomponents:httpclient')
+  // Upgraded to HttpComponents Client 5.x for modern HTTP support
+  implementation('org.apache.httpcomponents.client5:httpclient5')
+  implementation('org.apache.httpcomponents.core5:httpcore5')
 
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
   }
-  compileOnly('org.springdoc:springdoc-openapi-ui') {
+  // SpringDoc 2.x uses new artifact name (Spring 6.x migration)
+  compileOnly('org.springdoc:springdoc-openapi-starter-webmvc-ui') {
     exclude module: 'slf4j-api'
     exclude module: "jackson-annotations"
   }

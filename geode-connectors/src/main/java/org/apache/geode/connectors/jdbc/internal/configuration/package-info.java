@@ -17,8 +17,8 @@
 
 @XmlSchema(namespace = "http://geode.apache.org/schema/jdbc",
     xmlns = {@XmlNs(prefix = "jdbc", namespaceURI = "http://geode.apache.org/schema/jdbc")},
-    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+    elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.apache.geode.connectors.jdbc.internal.configuration;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlSchema;

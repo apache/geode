@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -36,7 +36,6 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -52,97 +51,87 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
   private static final int MBEAN_CREATION_WAIT_TIME = 10000;
 
-  @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
+  @ShellMethod(value = CliStrings.CREATE_GATEWAYSENDER__HELP, key = CliStrings.CREATE_GATEWAYSENDER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateGatewaySenderCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
   public ResultModel createGatewaySender(
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID,
-          mandatory = true,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__ID,
           help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
-          mandatory = true,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
           help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
 
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
+          defaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) boolean groupTransactionEvents,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
+          defaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) boolean parallel,
 
       // Users must avoid this feature, it might cause data loss and other issues during startup.
-      @SuppressWarnings("deprecation") @CliOption(
-          key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
-          unspecifiedDefaultValue = "false",
+      @SuppressWarnings("deprecation") @ShellOption(
+          value = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
+          defaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART__HELP) Boolean manualStart,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE,
           help = CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE__HELP) Integer socketBufferSize,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
           help = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT__HELP) Integer socketReadTimeout,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION,
+          defaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION__HELP) Boolean enableBatchConflation,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE,
           help = CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE__HELP) Integer batchSize,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL,
           help = CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE,
+          defaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE__HELP) Boolean enablePersistence,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME,
           help = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME__HELP) String diskStoreName,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS,
+          defaultValue = "true",
           help = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY,
           help = CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY__HELP) Integer maxQueueMemory,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD,
           help = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD__HELP) Integer alertThreshold,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
           help = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS__HELP) Integer dispatcherThreads,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY,
           help = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY__HELP) OrderPolicy orderPolicy,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER,
           help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) String[] gatewayEventFilters,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
           help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilter,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER,
+          defaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER__HELP) Boolean enforceThreadsConnectSameReceiver) {
 
     CacheConfig.GatewaySender configuration =

@@ -19,47 +19,67 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import org.apache.geode.management.configuration.Links;
+
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+// Spring Security 6.x migration: @EnableGlobalMethodSecurity deprecated, replaced by
+// @EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 @ComponentScan("org.apache.geode.rest.internal.web")
-public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class RestSecurityConfiguration {
 
   @Autowired
   private GeodeAuthenticationProvider authProvider;
 
-  @Override
-  protected void configure(AuthenticationManagerBuilder auth) {
-    auth.authenticationProvider(authProvider);
-  }
-
+  /**
+   * Spring Security 6.x migration: Create AuthenticationManager bean using ProviderManager.
+   * Previously configured via AuthenticationManagerBuilder in configure() method.
+   */
   @Bean
-  @Override
-  public AuthenticationManager authenticationManagerBean() throws Exception {
-    return super.authenticationManagerBean();
+  public AuthenticationManager authenticationManager() {
+    return new ProviderManager(authProvider);
   }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
+  /**
+   * Spring Security 6.x migration: Configure security using SecurityFilterChain bean.
+   * Replaces WebSecurityConfigurerAdapter's configure(HttpSecurity) method.
+   * Uses lambda-based configuration and authorizeHttpRequests() instead of authorizeRequests().
+   */
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-        .authorizeRequests()
-        .antMatchers("/docs/**", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-ui/**",
-            Links.URI_VERSION + "/api-docs/**", "/webjars/springdoc-openapi-ui/**",
-            "/v3/api-docs/**", "/swagger-resources/**")
-        .permitAll().and().csrf().disable();
+    http.sessionManagement(
+        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(authorize -> authorize
+            .requestMatchers(new AntPathRequestMatcher("/docs/**"),
+                new AntPathRequestMatcher("/swagger-ui.html"),
+                new AntPathRequestMatcher("/swagger-ui/index.html"),
+                new AntPathRequestMatcher("/swagger-ui/**"),
+                new AntPathRequestMatcher("/v1/api-docs/**"),
+                new AntPathRequestMatcher("/webjars/springdoc-openapi-ui/**"),
+                new AntPathRequestMatcher("/v3/api-docs/**"),
+                new AntPathRequestMatcher("/swagger-resources/**"))
+            .permitAll())
+        .csrf(csrf -> csrf.disable());
 
     if (authProvider.getSecurityService().isIntegratedSecurity()) {
-      http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
+      http.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+          .httpBasic(httpBasic -> {
+          });
+    } else {
+      // When integrated security is not enabled, permit all other requests
+      http.authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
     }
+
+    return http.build();
   }
 }

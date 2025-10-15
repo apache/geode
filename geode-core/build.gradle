@@ -196,6 +196,9 @@ dependencies {
   //Spring web is used for SerializableObjectHttpMessageConverter
   compileOnly('org.springframework:spring-web')
 
+  // spring-aop needed at runtime for Spring context component scanning in deployed WARs
+  runtimeOnly('org.springframework:spring-aop')
+
   // find bugs leaks in from spring, needed to remove warnings.
   compileOnly('com.google.code.findbugs:jsr305')
 
@@ -218,11 +221,17 @@ dependencies {
 
 
   //jaxb is used by cluster configuration
-  implementation('javax.xml.bind:jaxb-api')
+  implementation('jakarta.xml.bind:jakarta.xml.bind-api')
+
+  //Jakarta Resource API is used for JCA datasource implementations
+  implementation('jakarta.resource:jakarta.resource-api')
+
+  //Jakarta Transaction API is used for JTA and XA support
+  implementation('jakarta.transaction:jakarta.transaction-api')
 
   //jaxb is used by cluster configuration
-  runtimeOnly('com.sun.xml.bind:jaxb-impl')
-  runtimeOnly('com.sun.activation:javax.activation')
+  runtimeOnly('org.glassfish.jaxb:jaxb-runtime')
+  runtimeOnly('jakarta.activation:jakarta.activation-api')
 
   //istack appears to be used only by jaxb, not in our code. jaxb doesn't
   //declare this as required dependency though. It's unclear if this is needed
@@ -252,12 +261,13 @@ dependencies {
   implementation('it.unimi.dsi:fastutil')
 
   //Mail API is used by the deprecated admin API
-  compileOnly('javax.mail:javax.mail-api') {
+  compileOnly('jakarta.mail:jakarta.mail-api') {
     ext.optional = true
   }
 
   //The resource-API is used by the JCA support.
-  api('javax.resource:javax.resource-api')
+  api('jakarta.resource:jakarta.resource-api')
+  api('jakarta.transaction:jakarta.transaction-api')
 
 
   //MX4J is used by the old admin API
@@ -293,6 +303,10 @@ dependencies {
   runtimeOnly(project(':geode-http-service')) {
     ext.optional = true
   }
+
+  // geode-gfsh provides OnlineCommandProcessor (loaded via ServiceLoader) which enables
+  // server-side command processing via JMX and HTTP
+  runtimeOnly(project(':geode-gfsh'))
 
   //Snappy is used for compressing values, if enabled
   implementation('org.iq80.snappy:snappy') {
@@ -363,6 +377,7 @@ dependencies {
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
   integrationTestImplementation('org.junit-pioneer:junit-pioneer')
+  integrationTestImplementation('javax.transaction:javax.transaction-api')  // XA classes (not Jakarta)
 
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
@@ -371,7 +386,7 @@ dependencies {
   // The block below is only for the deprecated admin mbeans API
   integrationTestRuntimeOnly('commons-modeler:commons-modeler')
   integrationTestRuntimeOnly('org.springframework:spring-web')
-  integrationTestRuntimeOnly('javax.mail:javax.mail-api')
+  integrationTestRuntimeOnly('jakarta.mail:jakarta.mail-api')
   integrationTestRuntimeOnly('mx4j:mx4j')
   integrationTestRuntimeOnly('mx4j:mx4j-remote')
   integrationTestRuntimeOnly('mx4j:mx4j-tools')

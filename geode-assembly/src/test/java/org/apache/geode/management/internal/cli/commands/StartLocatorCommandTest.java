@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.management.internal.cli.GfshParser;
 
 class StartLocatorCommandTest {
   // JVM options to use with every start command.
@@ -168,9 +169,11 @@ class StartLocatorCommandTest {
           "-classpath",
           expectedClasspath);
 
+      // Spring Shell 3.x migration: JVM arguments changed from String[] to String with delimiter
+      // Shell 3.x option parsing changed to handle multi-value options as delimited strings
       String[] commandLine =
           startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
-              null, null, gemfireProperties, null, false, new String[0], null, null);
+              null, null, gemfireProperties, null, false, null, null, null);
 
       verifyCommandLine(commandLine, expectedJavaCommandSequence, expectedJvmOptions,
           expectedStartCommandSequence, expectedStartCommandOptions);
@@ -256,10 +259,13 @@ class StartLocatorCommandTest {
       expectedJvmOptions.add("-Xmx" + heapSize);
       expectedJvmOptions.addAll(getGcJvmOptions(emptyList()));
 
+      // Spring Shell 3.x migration: Join JVM arguments array into single delimited string
+      // Shell 3.x changed multi-value option handling to use delimited strings instead of arrays
       String[] commandLine =
           startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
               propertiesFile, securityPropertiesFile, gemfireProperties,
-              userClasspath, false, customJvmArguments, heapSize, heapSize);
+              userClasspath, false,
+              String.join(GfshParser.J_ARGUMENT_DELIMITER, customJvmArguments), heapSize, heapSize);
 
       verifyCommandLine(commandLine, expectedJavaCommandSequence, expectedJvmOptions,
           expectedStartCommandSequence, expectedStartCommandOptions);

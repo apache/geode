@@ -28,8 +28,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import javax.annotation.Nullable;
-
+import jakarta.annotation.Nullable;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

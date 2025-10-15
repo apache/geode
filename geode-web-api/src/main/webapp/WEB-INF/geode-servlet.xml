@@ -32,6 +32,9 @@ limitations under the License.
         https://www.springframework.org/schema/util/spring-util.xsd
   ">
   <context:annotation-config />
+  
+  <!-- Component scan for REST controllers -->
+  <context:component-scan base-package="org.apache.geode.rest.internal.web.controllers"/>
 
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
     <mvc:message-converters register-defaults="false">

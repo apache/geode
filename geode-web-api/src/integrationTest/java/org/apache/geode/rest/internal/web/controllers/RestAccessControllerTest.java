@@ -676,7 +676,7 @@ public class RestAccessControllerTest {
     mockMvc.perform(post("/v1")
         .with(POST_PROCESSOR))
         .andExpect(status().isMethodNotAllowed())
-        .andExpect(jsonPath("$.cause", is("Request method 'POST' not supported")));
+        .andExpect(jsonPath("$.cause", is("Request method 'POST' is not supported")));
   }
 
   @SuppressWarnings("unchecked")
@@ -774,7 +774,7 @@ public class RestAccessControllerTest {
     mockMvc.perform(post("/v1/unknown/keys")
         .with(POST_PROCESSOR))
         .andExpect(status().isMethodNotAllowed())
-        .andExpect(jsonPath("$.cause", is("Request method 'POST' not supported")));
+        .andExpect(jsonPath("$.cause", is("Request method 'POST' is not supported")));
   }
 
   @Test

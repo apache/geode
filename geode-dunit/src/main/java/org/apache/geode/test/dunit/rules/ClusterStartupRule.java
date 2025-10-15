@@ -170,9 +170,17 @@ public class ClusterStartupRule implements SerializableTestRule {
         occupiedVMs.values().stream().filter(VMProvider::isLocator).collect(Collectors.toSet()));
     vms.forEach(VMProvider::stop);
 
-    // delete any file under root dir
-    Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
-        .forEach(FileUtils::deleteQuietly);
+    // Delete any file under root dir - with null safety checks
+    // getWorkingDirRoot() may return null, and listFiles() may return null if directory doesn't
+    // exist or I/O error occurs
+    File workingDirRoot = getWorkingDirRoot();
+    if (workingDirRoot != null && workingDirRoot.exists()) {
+      File[] files = workingDirRoot.listFiles();
+      if (files != null) {
+        Arrays.stream(files).filter(File::isFile)
+            .forEach(FileUtils::deleteQuietly);
+      }
+    }
 
     restoreSystemProperties.afterDistributedTest(description);
 

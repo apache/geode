@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -52,6 +52,10 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>geode-core</artifactId>
           <groupId>*</groupId>
         </exclusion>
@@ -61,42 +65,88 @@
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-logging</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-serialization</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-membership</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-tcp-server</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-core</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-gfsh</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-cq</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-log4j</artifactId>
       <scope>runtime</scope>
       <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
         <exclusion>
           <artifactId>geode-core</artifactId>
           <groupId>*</groupId>
@@ -107,32 +157,66 @@
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.shell</groupId>
-      <artifactId>spring-shell</artifactId>
+      <artifactId>spring-shell-starter</artifactId>
       <scope>runtime</scope>
       <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
         <exclusion>
           <artifactId>cglib</artifactId>
           <groupId>*</groupId>
@@ -168,12 +252,22 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.github.stefanbirkner</groupId>
       <artifactId>system-rules</artifactId>
       <scope>runtime</scope>
       <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
         <exclusion>
           <artifactId>junit-dep</artifactId>
           <groupId>*</groupId>
@@ -184,27 +278,55 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>pl.pragmatists</groupId>
       <artifactId>JUnitParams</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>runtime</scope>
       <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
         <exclusion>
           <artifactId>hamcrest</artifactId>
           <groupId>*</groupId>

@@ -23,8 +23,8 @@ import static org.apache.geode.management.internal.i18n.CliStrings.REDUNDANCY_RE
 import static org.apache.geode.management.internal.i18n.CliStrings.RESTORE_REDUNDANCY;
 import static org.apache.geode.management.internal.i18n.CliStrings.RESTORE_REDUNDANCY_HELP;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -33,18 +33,17 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class RestoreRedundancyCommand extends RedundancyCommand {
-  @CliCommand(value = RESTORE_REDUNDANCY, help = RESTORE_REDUNDANCY_HELP)
+  @ShellMethod(value = RESTORE_REDUNDANCY_HELP, key = RESTORE_REDUNDANCY)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel executeRestoreRedundancy(
-      @CliOption(key = REDUNDANCY_INCLUDE_REGION,
+      @ShellOption(value = REDUNDANCY_INCLUDE_REGION,
           help = REDUNDANCY_INCLUDE_REGION_HELP) String[] includeRegions,
-      @CliOption(key = REDUNDANCY_EXCLUDE_REGION,
+      @ShellOption(value = REDUNDANCY_EXCLUDE_REGION,
           help = REDUNDANCY_EXCLUDE_REGION_HELP) String[] excludeRegions,
-      @CliOption(key = REDUNDANCY_REASSIGN_PRIMARIES, help = REDUNDANCY_REASSIGN_PRIMARIES_HELP,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "true") boolean reassignPrimaries) {
+      @ShellOption(value = REDUNDANCY_REASSIGN_PRIMARIES, help = REDUNDANCY_REASSIGN_PRIMARIES_HELP,
+          defaultValue = "true") boolean reassignPrimaries) {
     return super.execute(includeRegions, excludeRegions, reassignPrimaries, false);
   }
 }

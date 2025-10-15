@@ -265,6 +265,12 @@ public class ManagementAgent {
           managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":")
               .concat(String.valueOf(port)).concat("/pulse/"));
         }
+
+        // Start/Restart HTTP server after adding all webapps to ensure proper Jetty 12
+        // Configuration lifecycle
+        // This is critical for ServletContainerInitializer discovery (e.g.,
+        // SpringServletContainerInitializer)
+        httpService.restartHttpServer();
       }
     } catch (Throwable e) {
       setStatusMessage(managerBean, "HTTP service failed to start with "

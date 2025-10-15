@@ -15,10 +15,9 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
-import com.mockrunner.mock.web.MockFilterConfig;
-import com.mockrunner.mock.web.WebMockObjectFactory;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.springframework.mock.web.MockFilterConfig;
 
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import org.apache.geode.test.junit.categories.SessionTest;
@@ -26,6 +25,15 @@ import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This runs all tests with a local cache enabled
+ *
+ * <p>
+ * <b>Jakarta EE 10 Migration Changes:</b>
+ * <ul>
+ * <li>Migrated from MockRunner to Spring Mock Web framework</li>
+ * <li>Direct field access (filterConfig, servletContext, request) instead of WebMockObjectFactory
+ * pattern</li>
+ * <li>API changes: setInitParameter() → addInitParameter(), setRequestURL() → setRequestURI()</li>
+ * </ul>
  */
 @Category({SessionTest.class})
 public class SessionReplicationLocalCacheJUnitTest extends CommonTests {
@@ -35,17 +43,22 @@ public class SessionReplicationLocalCacheJUnitTest extends CommonTests {
   public void setUp() throws Exception {
     super.setUp();
 
-    WebMockObjectFactory factory = getWebMockObjectFactory();
-    MockFilterConfig config = factory.getMockFilterConfig();
+    // Spring Mock Web: Direct instantiation instead of factory.getMockFilterConfig()
+    filterConfig = new MockFilterConfig(servletContext);
 
-    config.setInitParameter(GeodeGlossary.GEMFIRE_PREFIX + "property.mcast-port", "0");
-    config.setInitParameter("cache-type", "peer-to-peer");
-    config.setInitParameter(GeodeGlossary.GEMFIRE_PREFIX + "cache.enable_local_cache", "true");
+    // Spring Mock Web: addInitParameter() replaces setInitParameter()
+    filterConfig.addInitParameter(GeodeGlossary.GEMFIRE_PREFIX + "property.mcast-port", "0");
+    filterConfig.addInitParameter("cache-type", "peer-to-peer");
+    filterConfig.addInitParameter(GeodeGlossary.GEMFIRE_PREFIX + "cache.enable_local_cache",
+        "true");
 
-    factory.getMockServletContext().setContextPath(CONTEXT_PATH);
+    // Spring Mock Web: Direct field access replaces factory.getMockServletContext()
+    servletContext.setContextPath(CONTEXT_PATH);
 
-    factory.getMockRequest().setRequestURL("/test/foo/bar");
-    factory.getMockRequest().setContextPath(CONTEXT_PATH);
+    // Spring Mock Web: setRequestURI() replaces setRequestURL() (different method name)
+    // Direct field access replaces factory.getMockRequest()
+    request.setRequestURI("/test/foo/bar");
+    request.setContextPath(CONTEXT_PATH);
 
     createFilter(SessionCachingFilter.class);
     createServlet(CallbackServlet.class);

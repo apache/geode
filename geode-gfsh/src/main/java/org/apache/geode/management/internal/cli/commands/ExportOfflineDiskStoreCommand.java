@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
@@ -28,16 +28,16 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class ExportOfflineDiskStoreCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.EXPORT_OFFLINE_DISK_STORE,
-      help = CliStrings.EXPORT_OFFLINE_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.EXPORT_OFFLINE_DISK_STORE__HELP,
+      key = CliStrings.EXPORT_OFFLINE_DISK_STORE)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @SuppressWarnings("deprecation")
   public ResultModel exportOfflineDiskStore(
-      @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
+      @ShellOption(value = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME,
           help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
-      @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
+      @ShellOption(value = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKDIRS,
           help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
-      @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DIR, mandatory = true,
+      @ShellOption(value = CliStrings.EXPORT_OFFLINE_DISK_STORE__DIR,
           help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DIR__HELP) String dir) {
 
     try {

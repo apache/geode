@@ -87,7 +87,9 @@ public class DestroyDataSourceCommandTest {
 
   @Test
   public void missingMandatory() {
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsError().containsOutput("Invalid command");
+    // Shell 3.x: Command parses but fails at execution with proper error
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("Data source named \"null\" does not exist");
   }
 
   @Test

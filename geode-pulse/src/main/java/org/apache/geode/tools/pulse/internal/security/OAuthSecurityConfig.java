@@ -16,21 +16,31 @@
 package org.apache.geode.tools.pulse.internal.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+/**
+ * Spring Security 6.x Migration:
+ * - Changed from extending WebSecurityConfigurerAdapter to using SecurityFilterChain bean
+ * - Changed @EnableGlobalMethodSecurity to @EnableMethodSecurity
+ * - Changed authorizeRequests() to authorizeHttpRequests()
+ * - Changed mvcMatchers() to requestMatchers() with AntPathRequestMatcher
+ * - WebSecurityConfigurerAdapter is removed in Spring Security 6.x
+ */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.oauth")
-public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
+public class OAuthSecurityConfig {
   private final LogoutHandler repositoryLogoutHandler;
   private final LogoutSuccessHandler oidcLogoutHandler;
 
@@ -41,14 +51,24 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
     this.repositoryLogoutHandler = repositoryLogoutHandler;
   }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http.authorizeRequests(authorize -> authorize
-        .mvcMatchers("/pulseVersion", "/scripts/**", "/images/**", "/css/**", "/properties/**")
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests(authorize -> authorize
+        .requestMatchers(new AntPathRequestMatcher("/pulseVersion"),
+            new AntPathRequestMatcher("/scripts/**"),
+            new AntPathRequestMatcher("/images/**"),
+            new AntPathRequestMatcher("/css/**"),
+            new AntPathRequestMatcher("/properties/**"))
         .permitAll()
-        .mvcMatchers("/dataBrowser*", "/getQueryStatisticsGridModel*")
-        .access("hasAuthority('SCOPE_CLUSTER:READ') and hasAuthority('SCOPE_DATA:READ')")
-        .mvcMatchers("/*")
+        .requestMatchers(new AntPathRequestMatcher("/dataBrowser*"),
+            new AntPathRequestMatcher("/getQueryStatisticsGridModel*"))
+        .access((authentication,
+            context) -> new org.springframework.security.authorization.AuthorizationDecision(
+                authentication.get().getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("SCOPE_CLUSTER:READ"))
+                    && authentication.get().getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("SCOPE_DATA:READ"))))
+        .requestMatchers(new AntPathRequestMatcher("/*"))
         .hasAuthority("SCOPE_CLUSTER:READ")
         .anyRequest().authenticated())
         .oauth2Login(oauth -> oauth.defaultSuccessUrl("/clusterDetail.html", true))
@@ -58,11 +78,12 @@ public class OAuthSecurityConfig extends WebSecurityConfigurerAdapter {
             .addLogoutHandler(repositoryLogoutHandler)
             .logoutSuccessHandler(oidcLogoutHandler))
         .headers(header -> header
-            .frameOptions().deny()
-            .xssProtection(xss -> xss
-                .xssProtectionEnabled(true)
-                .block(true))
-            .contentTypeOptions())
-        .csrf().disable();
+            .frameOptions(frameOptions -> frameOptions.deny())
+            .xssProtection(xss -> xss.headerValue(
+                org.springframework.security.web.header.writers.XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+            .contentTypeOptions(contentTypeOptions -> {
+            }))
+        .csrf(csrf -> csrf.disable());
+    return http.build();
   }
 }

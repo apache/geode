@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;

@@ -77,8 +77,10 @@ public class AlterRegionCommandIntegrationTest {
 
   @Test
   public void invalidEvictionMax() {
-    gfsh.executeAndAssertThat("alter region --name=" + SEPARATOR + "REPLICATED --eviction-max=-1")
+    gfsh.executeAndAssertThat(
+        "alter region --name=" + SEPARATOR + "REPLICATED --eviction-max=\"-1\"")
         .statusIsError()
+        // Custom validation message for eviction-max parameter
         .containsOutput("Specify 0 or a positive integer value for eviction-max");
   }
 

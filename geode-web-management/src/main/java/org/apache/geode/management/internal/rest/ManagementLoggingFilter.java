@@ -18,11 +18,10 @@ package org.apache.geode.management.internal.rest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -36,8 +35,20 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
 
   private static final int MAX_PAYLOAD_LENGTH = 10000;
 
+  /**
+   * Filters and logs HTTP requests and responses for management operations.
+   *
+   * <p>
+   * Request payload cannot be logged before making the actual request because the InputStream
+   * would be consumed and cannot be read again by the actual processing/server. This method uses
+   * content caching wrappers to capture request/response data after the request is processed.
+   *
+   * <p>
+   * <b>IMPORTANT:</b> The response content must be copied back into the original response
+   * using {@code wrappedResponse.copyBodyToResponse()} to ensure clients receive the response.
+   */
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+  public void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
     if (!logger.isDebugEnabled() && !ENABLE_REQUEST_LOGGING) {
@@ -45,8 +56,6 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
       return;
     }
 
-    // We can not log request payload before making the actual request because then the InputStream
-    // would be consumed and cannot be read again by the actual processing/server.
     ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
     ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper(response);
 
@@ -61,7 +70,6 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
       logResponse(response, wrappedResponse);
     }
 
-    // IMPORTANT: copy content of response back into original response
     wrappedResponse.copyBodyToResponse();
   }
 

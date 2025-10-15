@@ -14,13 +14,14 @@
  */
 package org.apache.geode.management.internal.rest.security;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -50,9 +51,15 @@ public class RestSecurityService implements ServletContextAware {
    * calls used in @PreAuthorize tag needs to return a boolean
    */
   public boolean authorize(String resource, String operation, String region, String key) {
-    securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
-        key);
-    return true;
+    try {
+      securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
+          key);
+      return true;
+    } catch (GemFireSecurityException e) {
+      // Convert Geode security exception to Spring Security exception
+      // so that @PreAuthorize properly handles authorization failures
+      throw new AccessDeniedException(e.getMessage(), e);
+    }
   }
 
   public boolean authorize(String operation, String region, String[] keys) {

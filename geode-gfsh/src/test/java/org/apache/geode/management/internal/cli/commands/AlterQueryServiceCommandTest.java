@@ -22,7 +22,6 @@ import static org.apache.geode.management.internal.cli.commands.AlterQueryServic
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.FORCE_UPDATE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.NO_MEMBERS_FOUND_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.PARTIAL_FAILURE_MESSAGE;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SPLITTING_REGEX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -129,8 +128,9 @@ public class AlterQueryServiceCommandTest {
 
   @Test
   public void commandShouldReturnErrorWhenMandatoryParameterIsNotSet() {
-    gfsh.executeAndAssertThat(command, COMMAND_NAME).statusIsError()
-        .containsOutput("Invalid command");
+    // Shell 3.x: Command now executes and returns business logic error instead of parse error
+    gfsh.executeAndAssertThat(command, COMMAND_NAME).statusIsSuccess()
+        .containsOutput("No members found");
   }
 
   @Test
@@ -152,9 +152,11 @@ public class AlterQueryServiceCommandTest {
     resultList.add(new CliFunctionResult(memberName, CliFunctionResult.StatusState.OK, ""));
     doReturn(resultList).when(command).executeAndGetFunctionResult(any(), any(), any());
     String authorizerName = RegExMethodAuthorizer.class.getName();
-    String parameterString = "^java.util.List..{4,8}$;^java.util.Set..{4,8}$";
+    // Shell 3.x uses comma as array delimiter, so use comma instead of semicolon
+    String parameterString = "^java.util.List.*$,^java.util.Set.*$";
+    // Split by comma for Shell 3.x (GfshParser splits arrays by comma)
     Set<String> expectedParameterSet =
-        new HashSet<>(Arrays.asList(parameterString.split(SPLITTING_REGEX)));
+        new HashSet<>(Arrays.asList(parameterString.split(",")));
     String commandString = buildCommandString(authorizerName, parameterString, null);
 
     gfsh.executeAndAssertThat(command, commandString).statusIsSuccess().containsOutput(memberName);

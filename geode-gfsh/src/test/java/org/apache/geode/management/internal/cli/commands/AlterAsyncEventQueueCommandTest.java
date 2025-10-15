@@ -77,8 +77,9 @@ public class AlterAsyncEventQueueCommandTest {
 
   @Test
   public void mandatoryOption() {
+    // Shell 3.x: Custom validation error replaces generic "Invalid command"
     gfsh.executeAndAssertThat(command, "alter async-event-queue").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("need to specify at least one option to modify");
   }
 
   @Test

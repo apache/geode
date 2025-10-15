@@ -25,8 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
-
+import jakarta.servlet.ServletException;
 import junitparams.Parameters;
 import org.apache.catalina.Context;
 import org.apache.catalina.Manager;

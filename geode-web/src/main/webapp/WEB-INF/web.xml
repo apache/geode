@@ -15,10 +15,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+<!-- Jakarta EE 10 migration: Updated from Jakarta EE 5.0 to Jakarta EE 6.0 
+     to support Jetty 12 EE10 servlet container -->
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
 
   <display-name>GemFire Management and Monitoring REST API</display-name>
 
@@ -27,13 +29,13 @@ limitations under the License.
   </description>
 
   <filter>
-    <filter-name>httpPutFilter</filter-name>
-    <filter-class>org.springframework.web.filter.HttpPutFormContentFilter</filter-class>
+    <filter-name>formContentFilter</filter-name>
+    <filter-class>org.springframework.web.filter.FormContentFilter</filter-class>
     <async-supported>true</async-supported>
   </filter>
 
   <filter-mapping>
-    <filter-name>httpPutFilter</filter-name>
+    <filter-name>formContentFilter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
@@ -46,6 +48,11 @@ limitations under the License.
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <async-supported>true</async-supported>
     <load-on-startup>1</load-on-startup>
+    <multipart-config>
+      <max-file-size>52428800</max-file-size>
+      <max-request-size>52428800</max-request-size>
+      <file-size-threshold>0</file-size-threshold>
+    </multipart-config>
   </servlet>
 
   <servlet-mapping>

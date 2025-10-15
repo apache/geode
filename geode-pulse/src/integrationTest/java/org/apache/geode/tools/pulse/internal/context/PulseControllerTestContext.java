@@ -32,6 +32,7 @@ import java.util.ResourceBundle;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import org.apache.geode.tools.pulse.internal.PropertiesFileLoader;
@@ -55,7 +56,17 @@ public class PulseControllerTestContext {
     return "/login.html";
   }
 
+  /**
+   * Spring 6.x migration: Added @Primary annotation to resolve bean ambiguity.
+   *
+   * In Spring 6.x, when multiple beans of the same type exist in the context,
+   * Spring requires explicit disambiguation. The @Primary annotation marks this
+   * mock PropertiesFileLoader as the preferred bean for autowiring in test contexts,
+   * preventing NoUniqueBeanDefinitionException when other PropertiesFileLoader beans
+   * might be present in the test application context.
+   */
   @Bean
+  @Primary
   public PropertiesFileLoader propertiesLoader() {
     PropertiesFileLoader propertiesFileLoader = mock(PropertiesFileLoader.class);
     Properties properties = new Properties();

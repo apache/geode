@@ -22,8 +22,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
@@ -32,7 +32,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -46,18 +45,17 @@ import org.apache.geode.security.ResourcePermission;
 public class ChangeLogLevelCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
-  @CliCommand(value = CliStrings.CHANGE_LOGLEVEL, help = CliStrings.CHANGE_LOGLEVEL__HELP)
+  @ShellMethod(value = CliStrings.CHANGE_LOGLEVEL__HELP, key = CliStrings.CHANGE_LOGLEVEL)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_LOGS},
       interceptor = "org.apache.geode.management.internal.cli.commands.ChangeLogLevelCommand$ChangeLogLevelCommandInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.WRITE)
   public ResultModel changeLogLevel(
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
-          optionContext = ConverterHint.LOG_LEVEL, mandatory = true, unspecifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL, defaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL__HELP) String logLevel,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, unspecifiedDefaultValue = "",
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS}, defaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps) {
 
     if ((memberIds == null || memberIds.length == 0) && (grps == null || grps.length == 0)) {

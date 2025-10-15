@@ -31,14 +31,13 @@ import java.util.zip.DataFormatException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtils;
@@ -55,7 +54,7 @@ import org.apache.geode.security.ResourcePermission;
 public class NetstatCommand extends GfshCommand {
   private static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
 
-  @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
+  @ShellMethod(value = CliStrings.NETSTAT__HELP, key = CliStrings.NETSTAT)
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.NetstatCommand$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
@@ -63,15 +62,13 @@ public class NetstatCommand extends GfshCommand {
       operation = ResourcePermission.Operation.READ)
   // TODO : Verify the auto-completion for multiple values.
   public ResultModel netstat(
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.NETSTAT__MEMBER__HELP) String[] members,
-      @CliOption(key = CliStrings.GROUP, optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = CliStrings.GROUP,
           help = CliStrings.NETSTAT__GROUP__HELP) String group,
-      @CliOption(key = CliStrings.NETSTAT__FILE,
+      @ShellOption(value = CliStrings.NETSTAT__FILE,
           help = CliStrings.NETSTAT__FILE__HELP) String saveAs,
-      @CliOption(key = CliStrings.NETSTAT__WITHLSOF, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.NETSTAT__WITHLSOF, defaultValue = "false",
           help = CliStrings.NETSTAT__WITHLSOF__HELP) boolean withlsof) {
     ResultModel result = new ResultModel();
 

@@ -22,7 +22,7 @@ import java.util.Map;
 
 import javax.management.ObjectName;
 
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
 
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ListClientCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
+  @ShellMethod(value = CliStrings.LIST_CLIENT__HELP, key = CliStrings.LIST_CLIENTS)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)

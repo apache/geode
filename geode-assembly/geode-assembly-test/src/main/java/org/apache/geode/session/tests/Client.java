@@ -18,21 +18,18 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.function.Function;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.http.Header;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.net.URIBuilder;
 
 import org.apache.geode.modules.session.CommandServlet;
 import org.apache.geode.modules.session.QueryCommand;
@@ -40,20 +37,33 @@ import org.apache.geode.modules.session.QueryCommand;
 /**
  * A simple http client that talks to a server running the session-testing-war.
  *
+ * <p>
  * This client sends commands to the {@link CommandServlet} over http to modify session properties
  * and returns the results. The client has support for connecting to multiple servers and sending
  * the session cookie returned by one server to other servers, to emulate the behavior of a client
  * talking to the servers through a load balancer.
  *
+ * <p>
  * The client currently only targets servers running on "localhost"
  *
+ * <p>
  * To set the server this client is targeting, use {@link #setPort}.
+ *
+ * <p>
+ * <b>Jakarta EE 10 Migration Changes:</b>
+ * <ul>
+ * <li>Apache HttpComponents 4.x → 5.x (required for Jakarta compatibility)</li>
+ * <li>Package names: org.apache.http.* → org.apache.hc.client5.* and org.apache.hc.core5.*</li>
+ * <li>API changes: StatusLine → getCode()/getReasonPhrase(), BasicHttpContext →
+ * HttpClientContext</li>
+ * <li>URI building: setHost() now requires separate setHost(host) and setPort(port) calls</li>
+ * </ul>
  */
 public class Client {
   private static final String HOST = "localhost";
   private int port = 8080;
   private String cookie;
-  private final HttpContext context;
+  private final HttpClientContext context;
 
   private final URIBuilder reqURIBuild;
   private final CloseableHttpClient httpclient;
@@ -63,7 +73,7 @@ public class Client {
     reqURIBuild.setScheme("http");
 
     httpclient = HttpClients.createDefault();
-    context = new BasicHttpContext();
+    context = HttpClientContext.create();
 
     cookie = null;
   }
@@ -213,7 +223,8 @@ public class Client {
   }
 
   private void resetURI() {
-    reqURIBuild.setHost(HOST + ":" + port);
+    reqURIBuild.setHost(HOST);
+    reqURIBuild.setPort(port);
     reqURIBuild.clearParameters();
   }
 
@@ -237,13 +248,21 @@ public class Client {
       cookie = reqCookie;
     }
 
-    StatusLine status = resp.getStatusLine();
-    if (status.getStatusCode() != 200) {
-      throw new IOException("Http request to " + req.getURI().getHost() + "["
-          + req.getURI().getPort() + "] failed. " + status);
+    // HttpClient 5.x: StatusLine replaced with getCode() and getReasonPhrase()
+    int statusCode = resp.getCode();
+    if (statusCode != 200) {
+      throw new IOException("Http request to " + HOST + ":" + port + " failed. Status: "
+          + statusCode + " " + resp.getReasonPhrase());
     }
 
-    Response response = new Response(reqCookie, EntityUtils.toString(resp.getEntity()), isNew);
+    String responseBody;
+    try {
+      responseBody = EntityUtils.toString(resp.getEntity());
+    } catch (ParseException e) {
+      throw new IOException("Failed to parse response entity", e);
+    }
+
+    Response response = new Response(reqCookie, responseBody, isNew);
     resp.close();
     return response;
   }
@@ -252,7 +271,7 @@ public class Client {
     // Set the cookie header
     if (cookie != null) {
       BasicClientCookie cookie = new BasicClientCookie("JSESSIONID", this.cookie);
-      cookie.setDomain(req.getURI().getHost());
+      cookie.setDomain(HOST);
       cookie.setPath("/");
 
       BasicCookieStore cookieStore = new BasicCookieStore();
@@ -268,7 +287,18 @@ public class Client {
     if (lastHeader == null) {
       return null;
     }
-    return lastHeader.getElements()[0].getValue();
+    // HttpClient 5.x: Parse Set-Cookie header value directly
+    // Format: JSESSIONID=value; Path=/; ...
+    String headerValue = lastHeader.getValue();
+    int semicolonIndex = headerValue.indexOf(';');
+    if (semicolonIndex > 0) {
+      headerValue = headerValue.substring(0, semicolonIndex);
+    }
+    int equalsIndex = headerValue.indexOf('=');
+    if (equalsIndex > 0) {
+      return headerValue.substring(equalsIndex + 1);
+    }
+    return headerValue;
   }
 
   /**

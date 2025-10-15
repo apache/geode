@@ -19,29 +19,29 @@ import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getM
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class StatusServerCommand extends OfflineGfshCommand {
 
-  @CliCommand(value = CliStrings.STATUS_SERVER, help = CliStrings.STATUS_SERVER__HELP)
+  @ShellMethod(value = CliStrings.STATUS_SERVER__HELP, key = CliStrings.STATUS_SERVER)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public ResultModel statusServer(
-      @CliOption(key = CliStrings.STATUS_SERVER__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = CliStrings.STATUS_SERVER__MEMBER,
           help = CliStrings.STATUS_SERVER__MEMBER__HELP) final String member,
-      @CliOption(key = CliStrings.STATUS_SERVER__PID,
+      @ShellOption(value = CliStrings.STATUS_SERVER__PID,
           help = CliStrings.STATUS_SERVER__PID__HELP) final Integer pid,
-      @CliOption(key = CliStrings.STATUS_SERVER__DIR,
+      @ShellOption(value = CliStrings.STATUS_SERVER__DIR,
           help = CliStrings.STATUS_SERVER__DIR__HELP) final String workingDirectory)
       throws IOException {
 

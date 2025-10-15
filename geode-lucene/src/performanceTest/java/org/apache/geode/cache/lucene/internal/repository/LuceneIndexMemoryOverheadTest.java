@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.shell.converters.AvailableCommandsConverter;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -51,8 +50,8 @@ public class LuceneIndexMemoryOverheadTest extends LuceneIntegrationTest {
   private static final Logger logger = LogService.getLogger();
   private final Callable flush =
       () -> luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
-  protected static ObjectGraphSizer.ObjectFilter filter =
-      (parent, object) -> !(object instanceof AvailableCommandsConverter);
+  // Shell 3.x migration: AvailableCommandsConverter no longer exists, so no filtering needed
+  protected static ObjectGraphSizer.ObjectFilter filter = (parent, object) -> true;
 
   @Test
   public void perEntryNonIndexMemoryWithTombstoneGC() throws Exception {

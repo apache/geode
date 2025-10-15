@@ -50,6 +50,11 @@ import org.apache.geode.rest.internal.web.util.JSONUtils;
  * The CommonCrudController serves REST Requests related to listing regions, listing keys in region,
  * delete keys or delete all data in region.
  *
+ * Spring Security 6.x Migration:
+ * - Changed @PreAuthorize authorize() to authorizeBoolean()
+ * - Spring Security 6.x authorize() returns AuthorizationDecision instead of boolean
+ * - Use authorizeBoolean() for direct boolean evaluation in @PreAuthorize expressions
+ *
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
@@ -62,14 +67,14 @@ public abstract class CommonCrudController extends AbstractBaseController {
    *
    * @return JSON document containing result
    */
-  @RequestMapping(method = RequestMethod.GET, produces = {APPLICATION_JSON_UTF8_VALUE})
+  @RequestMapping(method = RequestMethod.GET, value = "/", produces = {APPLICATION_JSON_UTF8_VALUE})
   @Operation(summary = "list all resources (Regions)",
       description = "List all available resources (Regions) in the Geode cluster")
   @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
       @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
   public ResponseEntity<?> regions() {
     logger.debug("Listing all resources (Regions) in Geode...");
     final HttpHeaders headers = new HttpHeaders();
@@ -96,7 +101,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "404", description = "Region does not exist"),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
-  @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ', #region)")
   public ResponseEntity<?> keys(@PathVariable("region") String region) {
     logger.debug("Reading all Keys in Region ({})...", region);
 
@@ -194,7 +199,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
       @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "500", description = "if GemFire throws an error or exception")})
-  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('CLUSTER', 'READ')")
   public ResponseEntity<?> servers() {
     logger.debug("Executing function to get REST enabled gemfire nodes in the DS!");
 

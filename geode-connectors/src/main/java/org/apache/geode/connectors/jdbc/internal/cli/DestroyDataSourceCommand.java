@@ -20,9 +20,9 @@ import static org.apache.geode.lang.Identifiable.remove;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -53,15 +53,16 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
           + "not exist. Without this option, an error results from the specification "
           + "of a data source that does not exist.";
 
-  @CliCommand(value = DESTROY_DATA_SOURCE, help = DESTROY_DATA_SOURCE_HELP)
+  @ShellMethod(value = DESTROY_DATA_SOURCE_HELP, key = DESTROY_DATA_SOURCE)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyDataSource(
-      @CliOption(key = DATA_SOURCE_NAME, mandatory = true,
+      @ShellOption(value = DATA_SOURCE_NAME,
           help = DATA_SOURCE_NAME_HELP) String dataSourceName,
-      @CliOption(key = CliStrings.IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean ifExists) {
+      @ShellOption(value = CliStrings.IFEXISTS,
+          defaultValue = "false", arity = 0,
+          help = IFEXISTS_HELP) boolean ifExists) {
 
     InternalConfigurationPersistenceService service =
         getConfigurationPersistenceService();
@@ -158,7 +159,7 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
     return true;
   }
 
-  @CliAvailabilityIndicator({DESTROY_DATA_SOURCE})
+  @ShellMethodAvailability({DESTROY_DATA_SOURCE})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
   }

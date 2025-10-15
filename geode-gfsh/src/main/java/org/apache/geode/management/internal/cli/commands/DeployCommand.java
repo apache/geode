@@ -33,14 +33,13 @@ import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementAgent;
@@ -73,18 +72,18 @@ public class DeployCommand extends GfshCommand {
    * @param dir Directory of JAR files to deploy
    * @return The result of the attempt to deploy
    */
-  @CliCommand(value = {CliStrings.DEPLOY}, help = CliStrings.DEPLOY__HELP)
+  @ShellMethod(value = CliStrings.DEPLOY__HELP, key = {CliStrings.DEPLOY})
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommand$Interceptor",
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   public ResultModel deploy(
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, optionContext = ConverterHint.JARFILES,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.DEPLOY__GROUP__HELP) String[] groups,
+      @ShellOption(value = {CliStrings.JAR, CliStrings.JARS},
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
-      @CliOption(key = {CliStrings.DEPLOY__DIR}, optionContext = ConverterHint.JARDIR,
+      @ShellOption(value = {CliStrings.DEPLOY__DIR},
           help = CliStrings.DEPLOY__DIR__HELP) String dir)
       throws IOException {
 

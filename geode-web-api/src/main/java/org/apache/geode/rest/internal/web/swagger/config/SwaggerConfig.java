@@ -16,15 +16,14 @@ package org.apache.geode.rest.internal.web.swagger.config;
 
 
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import org.springdoc.core.GroupedOpenApi;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -44,26 +43,42 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SuppressWarnings("unused")
 public class SwaggerConfig implements WebApplicationInitializer {
 
+  /**
+   * Initializes the Swagger web application context on startup.
+   *
+   * <p>
+   * Jakarta Servlet spec returns null when servlet already exists. The "geode" servlet is
+   * defined in web.xml. Jakarta Servlet 6.0 (and Jetty 12) returns null from addServlet() to
+   * indicate servlet name conflict, preventing NullPointerException during DispatcherServlet
+   * initialization. Previous javax.servlet implementations had inconsistent behavior.
+   * See Jakarta Servlet spec 4.4.
+   */
   @Override
   public void onStartup(ServletContext servletContext) throws ServletException {
     WebApplicationContext context = getContext();
     servletContext.addListener(new ContextLoaderListener(context));
+
     ServletRegistration.Dynamic dispatcher = servletContext.addServlet("geode",
         new DispatcherServlet(context));
-    dispatcher.setLoadOnStartup(1);
-    dispatcher.addMapping("/*");
+
+    // Only configure if this is a new servlet registration (dispatcher != null)
+    if (dispatcher != null) {
+      dispatcher.setLoadOnStartup(1);
+      dispatcher.addMapping("/*");
+    }
   }
 
   private AnnotationConfigWebApplicationContext getContext() {
     AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
     context.scan("org.apache.geode.rest");
+    // SpringDoc OpenAPI migration: Package structure changed in newer versions
+    // - org.springdoc.core.* -> org.springdoc.core.properties.* (config properties)
+    // - org.springdoc.core.* -> org.springdoc.core.configuration.* (configuration classes)
     context.register(this.getClass(), org.springdoc.webmvc.ui.SwaggerConfig.class,
-        org.springdoc.core.SwaggerUiConfigProperties.class,
-        org.springdoc.core.SwaggerUiOAuthProperties.class,
-        org.springdoc.webmvc.core.SpringDocWebMvcConfiguration.class,
-        org.springdoc.webmvc.core.MultipleOpenApiSupportConfiguration.class,
-        org.springdoc.core.SpringDocConfiguration.class,
-        org.springdoc.core.SpringDocConfigProperties.class,
+        org.springdoc.core.properties.SwaggerUiConfigProperties.class,
+        org.springdoc.core.properties.SwaggerUiOAuthProperties.class,
+        org.springdoc.core.configuration.SpringDocConfiguration.class,
+        org.springdoc.core.properties.SpringDocConfigProperties.class,
         org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class);
 
     return context;

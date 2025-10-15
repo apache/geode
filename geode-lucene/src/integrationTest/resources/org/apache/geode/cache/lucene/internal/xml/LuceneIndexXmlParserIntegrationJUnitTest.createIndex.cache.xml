@@ -40,7 +40,7 @@
 		<lucene:index name="index3">
 		  <lucene:field name="h" analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
 		  <lucene:field name="i" analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
-		  <lucene:field name="j" analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
+		  <lucene:field name="j" analyzer="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
 		</lucene:index>
     </region>
 </cache>

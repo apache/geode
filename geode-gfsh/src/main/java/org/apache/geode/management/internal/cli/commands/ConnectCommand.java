@@ -31,8 +31,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.net.SSLConfig;
@@ -40,11 +40,9 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SSLUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.JmxManagerLocatorResponse;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -57,6 +55,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
 
+@org.springframework.shell.standard.ShellComponent
 public class ConnectCommand extends OfflineGfshCommand {
   // millis that connect --locator will wait for a response from the locator.
   static final int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
@@ -71,47 +70,42 @@ public class ConnectCommand extends OfflineGfshCommand {
           UserInputProperty.TRUSTSTORE_PASSWORD, UserInputProperty.TRUSTSTORE_TYPE,
           UserInputProperty.CIPHERS, UserInputProperty.PROTOCOL, UserInputProperty.COMPONENT};
 
-  @CliCommand(value = {CliStrings.CONNECT}, help = CliStrings.CONNECT__HELP)
+  @ShellMethod(value = CliStrings.CONNECT__HELP, key = {CliStrings.CONNECT})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX,
       CliStrings.TOPIC_GEODE_MANAGER})
   public ResultModel connect(
-      @CliOption(key = {CliStrings.CONNECT__LOCATOR},
-          unspecifiedDefaultValue = ConnectionEndpointConverter.DEFAULT_LOCATOR_ENDPOINTS,
-          optionContext = ConnectionEndpoint.LOCATOR_OPTION_CONTEXT,
+      @ShellOption(value = {CliStrings.CONNECT__LOCATOR},
+          defaultValue = "localhost[10334]",
           help = CliStrings.CONNECT__LOCATOR__HELP) ConnectionEndpoint locatorEndPoint,
-      @CliOption(key = {CliStrings.CONNECT__JMX_MANAGER},
-          optionContext = ConnectionEndpoint.JMXMANAGER_OPTION_CONTEXT,
+      @ShellOption(value = {CliStrings.CONNECT__JMX_MANAGER},
           help = CliStrings.CONNECT__JMX_MANAGER__HELP) ConnectionEndpoint jmxManagerEndPoint,
-      @CliOption(key = {CliStrings.CONNECT__USE_HTTP}, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.CONNECT__USE_HTTP}, defaultValue = "false",
           help = CliStrings.CONNECT__USE_HTTP__HELP) boolean useHttp,
-      @CliOption(key = {CliStrings.CONNECT__URL}, help = CliStrings.CONNECT__URL__HELP) String url,
-      @CliOption(key = {CliStrings.CONNECT__USERNAME, CliStrings.CONNECT__USERNAME_LONGFORM},
-          specifiedDefaultValue = "",
+      @ShellOption(value = {CliStrings.CONNECT__URL},
+          help = CliStrings.CONNECT__URL__HELP) String url,
+      @ShellOption(value = {CliStrings.CONNECT__USERNAME, CliStrings.CONNECT__USERNAME_LONGFORM},
           help = CliStrings.CONNECT__USERNAME__HELP) String userName,
-      @CliOption(key = {CliStrings.CONNECT__PASSWORD}, specifiedDefaultValue = "",
+      @ShellOption(value = {CliStrings.CONNECT__PASSWORD},
           help = CliStrings.CONNECT__PASSWORD__HELP) String password,
-      @CliOption(key = {CliStrings.CONNECT__TOKEN}, specifiedDefaultValue = "",
+      @ShellOption(value = {CliStrings.CONNECT__TOKEN},
           help = CliStrings.CONNECT__TOKEN__HELP) String token,
-      @CliOption(key = {CliStrings.CONNECT__KEY_STORE},
+      @ShellOption(value = {CliStrings.CONNECT__KEY_STORE},
           help = CliStrings.CONNECT__KEY_STORE__HELP) String keystore,
-      @CliOption(key = {CliStrings.CONNECT__KEY_STORE_PASSWORD},
+      @ShellOption(value = {CliStrings.CONNECT__KEY_STORE_PASSWORD},
           help = CliStrings.CONNECT__KEY_STORE_PASSWORD__HELP) String keystorePassword,
-      @CliOption(key = {CliStrings.CONNECT__TRUST_STORE},
+      @ShellOption(value = {CliStrings.CONNECT__TRUST_STORE},
           help = CliStrings.CONNECT__TRUST_STORE__HELP) String truststore,
-      @CliOption(key = {CliStrings.CONNECT__TRUST_STORE_PASSWORD},
+      @ShellOption(value = {CliStrings.CONNECT__TRUST_STORE_PASSWORD},
           help = CliStrings.CONNECT__TRUST_STORE_PASSWORD__HELP) String truststorePassword,
-      @CliOption(key = {CliStrings.CONNECT__SSL_CIPHERS},
+      @ShellOption(value = {CliStrings.CONNECT__SSL_CIPHERS},
           help = CliStrings.CONNECT__SSL_CIPHERS__HELP) String sslCiphers,
-      @CliOption(key = {CliStrings.CONNECT__SSL_PROTOCOLS},
+      @ShellOption(value = {CliStrings.CONNECT__SSL_PROTOCOLS},
           help = CliStrings.CONNECT__SSL_PROTOCOLS__HELP) String sslProtocols,
-      @CliOption(key = CliStrings.CONNECT__SECURITY_PROPERTIES, optionContext = ConverterHint.FILE,
+      @ShellOption(value = CliStrings.CONNECT__SECURITY_PROPERTIES,
           help = CliStrings.CONNECT__SECURITY_PROPERTIES__HELP) final File gfSecurityPropertiesFile,
-      @CliOption(key = {CliStrings.CONNECT__USE_SSL}, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.CONNECT__USE_SSL}, defaultValue = "false",
           help = CliStrings.CONNECT__USE_SSL__HELP) boolean useSsl,
-      @CliOption(key = {"skip-ssl-validation"}, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = {"skip-ssl-validation"}, defaultValue = "false",
           help = "When connecting via HTTP, connects using 1-way SSL validation rather than 2-way SSL validation.") boolean skipSslValidation) {
 
     ResultModel result = new ResultModel();

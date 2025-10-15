@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import joptsimple.internal.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
@@ -52,11 +52,8 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.configuration.ClassName;
-import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionArgs;
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
@@ -82,128 +79,223 @@ public class CreateRegionCommand extends SingleGfshCommand {
       CliStrings.CREATE_REGION__PARTITION_RESOLVER
   };
 
-  @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
-      interceptor = "org.apache.geode.management.internal.cli.commands.CreateRegionCommand$Interceptor")
+  @ShellMethod(value = CliStrings.CREATE_REGION__HELP, key = CliStrings.CREATE_REGION)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createRegion(
-      @CliOption(key = CliStrings.CREATE_REGION__REGION, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.CREATE_REGION__REGION,
           help = CliStrings.CREATE_REGION__REGION__HELP) String regionPath,
-      @CliOption(key = CliStrings.CREATE_REGION__REGIONSHORTCUT,
+      @ShellOption(value = CliStrings.CREATE_REGION__REGIONSHORTCUT,
           help = CliStrings.CREATE_REGION__REGIONSHORTCUT__HELP) RegionShortcut regionShortcut,
-      @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String templateRegion,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
-      @CliOption(key = {CliStrings.IFNOTEXISTS, CliStrings.CREATE_REGION__SKIPIFEXISTS},
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.IFNOTEXISTS, CliStrings.CREATE_REGION__SKIPIFEXISTS},
+          defaultValue = "false",
           help = CliStrings.CREATE_REGION__IFNOTEXISTS__HELP) boolean ifNotExists,
 
       // the following should all be in alphabetical order according to
       // their key string
-      @CliOption(key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
+      @ShellOption(value = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
           help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
-      @CliOption(key = CliStrings.CREATE_REGION__CACHELISTENER,
-          // split the input only with "," outside of json string
-          optionContext = "splittingRegex=,(?![^{]*\\})",
+      @ShellOption(value = CliStrings.CREATE_REGION__CACHELISTENER,
+          // split the input only with "," outside of json string,(?![^{]*\\})",
           help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) ClassName[] cacheListener,
-      @CliOption(key = CliStrings.CREATE_REGION__CACHELOADER,
+      @ShellOption(value = CliStrings.CREATE_REGION__CACHELOADER,
           help = CliStrings.CREATE_REGION__CACHELOADER__HELP) ClassName cacheLoader,
-      @CliOption(key = CliStrings.CREATE_REGION__CACHEWRITER,
+      @ShellOption(value = CliStrings.CREATE_REGION__CACHEWRITER,
           help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) ClassName cacheWriter,
-      @CliOption(key = CliStrings.CREATE_REGION__COLOCATEDWITH,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.CREATE_REGION__COLOCATEDWITH,
           help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP) String prColocatedWith,
-      @CliOption(key = CliStrings.CREATE_REGION__COMPRESSOR,
+      @ShellOption(value = CliStrings.CREATE_REGION__COMPRESSOR,
           help = CliStrings.CREATE_REGION__COMPRESSOR__HELP) String compressor,
-      @CliOption(key = CliStrings.CREATE_REGION__CONCURRENCYLEVEL,
+      @ShellOption(value = CliStrings.CREATE_REGION__CONCURRENCYLEVEL,
           help = CliStrings.CREATE_REGION__CONCURRENCYLEVEL__HELP) Integer concurrencyLevel,
-      @CliOption(key = CliStrings.CREATE_REGION__DISKSTORE,
+      @ShellOption(value = CliStrings.CREATE_REGION__DISKSTORE,
           help = CliStrings.CREATE_REGION__DISKSTORE__HELP) String diskStore,
-      @CliOption(key = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION,
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION,
           help = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION__HELP) Boolean enableAsyncConflation,
-      @CliOption(key = CliStrings.CREATE_REGION__CLONINGENABLED, specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__CLONINGENABLED,
           help = CliStrings.CREATE_REGION__CLONINGENABLED__HELP) Boolean cloningEnabled,
-      @CliOption(key = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED,
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED,
           help = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP) Boolean concurrencyChecksEnabled,
-      @CliOption(key = CliStrings.CREATE_REGION__MULTICASTENABLED, specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__MULTICASTENABLED,
           help = CliStrings.CREATE_REGION__MULTICASTENABLED__HELP) Boolean mcastEnabled,
-      @CliOption(key = CliStrings.CREATE_REGION__STATISTICSENABLED, specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__STATISTICSENABLED,
           help = CliStrings.CREATE_REGION__STATISTICSENABLED__HELP) Boolean statisticsEnabled,
-      @CliOption(key = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION,
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION,
           help = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION__HELP) Boolean enableSubscriptionConflation,
-      @CliOption(key = CliStrings.CREATE_REGION__DISKSYNCHRONOUS, specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__DISKSYNCHRONOUS,
           help = CliStrings.CREATE_REGION__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
-      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
+      @ShellOption(value = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
-      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
+      @ShellOption(value = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction entryExpirationIdleTimeAction,
-      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE,
+      @ShellOption(value = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
-      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
+      @ShellOption(value = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
-      @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
+      @ShellOption(value = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
           help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName entryIdleTimeCustomExpiry,
-      @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY,
+      @ShellOption(value = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY,
           help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName entryTTLCustomExpiry,
-      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
+      @ShellOption(value = CliStrings.CREATE_REGION__EVICTION_ACTION,
           help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
-      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
+      @ShellOption(value = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
           help = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT__HELP) Integer evictionEntryCount,
-      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY,
+      @ShellOption(value = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY,
           help = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY__HELP) Integer evictionMaxMemory,
-      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER,
+      @ShellOption(value = CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER,
           help = CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER__HELP) String evictionObjectSizer,
-      @CliOption(key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
+      @ShellOption(value = CliStrings.CREATE_REGION__GATEWAYSENDERID,
           help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP) String[] gatewaySenderIds,
-      @CliOption(key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
+      @ShellOption(value = CliStrings.CREATE_REGION__KEYCONSTRAINT,
           help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP) String keyConstraint,
-      @CliOption(key = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
+      @ShellOption(value = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
           help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP) Integer prLocalMaxMemory,
-      @CliOption(key = CliStrings.CREATE_REGION__OFF_HEAP, specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_REGION__OFF_HEAP,
           help = CliStrings.CREATE_REGION__OFF_HEAP__HELP) Boolean offHeap,
-      @CliOption(key = CliStrings.CREATE_REGION__PARTITION_LISTENER,
-          optionContext = "splittingRegex=,(?![^{]*\\})",
+      @ShellOption(value = CliStrings.CREATE_REGION__PARTITION_LISTENER,
           help = CliStrings.CREATE_REGION__PARTITION_LISTENER__HELP) ClassName[] partitionListener,
-      @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
+      @ShellOption(value = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
           help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
-      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
+      @ShellOption(value = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
-      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
+      @ShellOption(value = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction regionExpirationIdleTimeAction,
-      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL,
+      @ShellOption(value = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
-      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
+      @ShellOption(value = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP) ExpirationAction regionExpirationTTLAction,
-      @CliOption(key = CliStrings.CREATE_REGION__RECOVERYDELAY,
+      @ShellOption(value = CliStrings.CREATE_REGION__RECOVERYDELAY,
           help = CliStrings.CREATE_REGION__RECOVERYDELAY__HELP) Long prRecoveryDelay,
-      @CliOption(key = CliStrings.CREATE_REGION__REDUNDANTCOPIES,
+      @ShellOption(value = CliStrings.CREATE_REGION__REDUNDANTCOPIES,
           help = CliStrings.CREATE_REGION__REDUNDANTCOPIES__HELP) Integer prRedundantCopies,
-      @CliOption(key = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
+      @ShellOption(value = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
           help = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY__HELP) Long prStartupRecoveryDelay,
-      @CliOption(key = CliStrings.CREATE_REGION__TOTALMAXMEMORY,
+      @ShellOption(value = CliStrings.CREATE_REGION__TOTALMAXMEMORY,
           help = CliStrings.CREATE_REGION__TOTALMAXMEMORY__HELP) Long prTotalMaxMemory,
-      @CliOption(key = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
+      @ShellOption(value = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
           help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP) Integer prTotalNumBuckets,
-      @CliOption(key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
+      @ShellOption(value = CliStrings.CREATE_REGION__VALUECONSTRAINT,
           help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint,
-      @CliOption(key = CliStrings.CREATE_REGION__SCOPE,
+      @ShellOption(value = CliStrings.CREATE_REGION__SCOPE,
           help = CliStrings.CREATE_REGION__SCOPE__HELP) RegionAttributesScope scope
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
-    if (regionShortcut != null && templateRegion != null) {
+    // Parameter validation (migrated from Interceptor.preExecution for Spring Shell 3.x)
+
+    // Normalize template region path to include leading separator
+    final String normalizedTemplateRegion;
+    if (templateRegion != null && !templateRegion.isEmpty()
+        && !templateRegion.startsWith(SEPARATOR)) {
+      normalizedTemplateRegion = SEPARATOR + templateRegion;
+    } else {
+      normalizedTemplateRegion = templateRegion;
+    }
+
+    if (prLocalMaxMemory != null && prLocalMaxMemory < 0) {
+      return ResultModel.createError(
+          "PartitionAttributes localMaxMemory must not be negative.");
+    }
+
+    if (prTotalMaxMemory != null && prTotalMaxMemory <= 0) {
+      return ResultModel.createError(
+          "Total size of partition region must be > 0.");
+    }
+
+    if (prRedundantCopies != null && (prRedundantCopies < 0 || prRedundantCopies > 3)) {
+      return ResultModel.createError(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__REDUNDANT_COPIES_SHOULD_BE_ONE_OF_0123,
+          new Object[] {prRedundantCopies}));
+    }
+
+    if (concurrencyLevel != null && concurrencyLevel < 0) {
+      return ResultModel.createError(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_CONCURRENCYLEVEL_0_IS_NOT_VALID,
+          new Object[] {concurrencyLevel}));
+    }
+
+    if (keyConstraint != null && !isClassNameValid(keyConstraint)) {
+      return ResultModel.createError(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
+          new Object[] {keyConstraint}));
+    }
+
+    if (valueConstraint != null && !isClassNameValid(valueConstraint)) {
+      return ResultModel.createError(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
+          new Object[] {valueConstraint}));
+    }
+
+    if (compressor != null && !isClassNameValid(compressor)) {
+      return ResultModel.createError(CliStrings
+          .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
+    }
+
+    if (compressor != null && cloningEnabled != null && !cloningEnabled) {
+      return ResultModel.createError(CliStrings
+          .format(CliStrings.CREATE_REGION__MSG__CANNOT_DISABLE_CLONING_WITH_COMPRESSOR,
+              new Object[] {compressor}));
+    }
+
+    if (diskStore != null && regionShortcut != null
+        && !RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS.contains(regionShortcut)) {
+      String subMessage =
+          "Only regions with persistence or overflow to disk can specify DiskStore";
+      String message = subMessage + ". "
+          + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
+              new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
+      return ResultModel.createError(message);
+    }
+
+    // If any expiration value is set, statistics must be enabled
+    if ((entryExpirationIdleTime != null || entryExpirationTTL != null
+        || regionExpirationIdleTime != null || regionExpirationTTL != null
+        || entryExpirationIdleTimeAction != null || entryExpirationTTLAction != null
+        || regionExpirationIdleTimeAction != null || regionExpirationTTLAction != null
+        || entryIdleTimeCustomExpiry != null || entryTTLCustomExpiry != null)
+        && (statisticsEnabled == null || !statisticsEnabled)) {
+      return ResultModel.createError("Statistics must be enabled for expiration.");
+    }
+
+    // Eviction validation
+    if (evictionEntryCount != null && evictionMaxMemory != null) {
+      return ResultModel.createError(CliStrings.CREATE_REGION__MSG__BOTH_EVICTION_VALUES);
+    }
+
+    if ((evictionEntryCount != null || evictionMaxMemory != null) && evictionAction == null) {
+      return ResultModel.createError(CliStrings.CREATE_REGION__MSG__MISSING_EVICTION_ACTION);
+    }
+
+    if (evictionObjectSizer != null && evictionEntryCount != null) {
+      return ResultModel.createError(
+          CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT);
+    }
+
+    if (evictionAction != null
+        && EvictionAction.parseAction(evictionAction) == EvictionAction.NONE) {
+      return ResultModel.createError(CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_ACTION);
+    }
+
+    // Scope validation
+    if (scope != null && regionShortcut == null) {
+      return ResultModel
+          .createError(CliStrings.CREATE_REGION__SCOPE__SCOPE_CANNOT_BE_SET_IF_TYPE_NOT_SET);
+    } else if (scope != null && !regionShortcut.isReplicate()) {
+      return ResultModel
+          .createError(CliStrings.CREATE_REGION__MSG__SCOPE_CANNOT_BE_SET_ON_NON_REPLICATED_REGION);
+    }
+
+    // Existing validation continues below
+    if (regionShortcut != null && normalizedTemplateRegion != null) {
       return ResultModel.createError(
           CliStrings.CREATE_REGION__MSG__ONLY_ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_CAN_BE_SPECIFIED);
     }
 
-    if (regionShortcut == null && templateRegion == null) {
+    if (regionShortcut == null && normalizedTemplateRegion == null) {
       return ResultModel.createError(
           CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED);
     }
@@ -246,7 +338,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
       if (persistenceService != null) {
         templateRegionConfigs = persistenceService.getGroups().stream()
             .flatMap(g -> persistenceService.getCacheConfig(g, true).getRegions().stream())
-            .filter(c -> c.getName().equals(templateRegion.substring(1)))
+            .filter(c -> c.getName().equals(normalizedTemplateRegion.substring(1)))
             .collect(Collectors.toList());
       }
       // as a last resort, go the member that hosts this region to retrieve the template's region
@@ -256,11 +348,13 @@ public class CreateRegionCommand extends SingleGfshCommand {
         // region xml. cluster configuration isn't always enabled, so we cannot guarantee that we
         // can
         // get the template region configuration from the cluster configuration.
-        Set<DistributedMember> regionAssociatedMembers = findMembersForRegion(templateRegion);
+        Set<DistributedMember> regionAssociatedMembers =
+            findMembersForRegion(normalizedTemplateRegion);
 
         if (!regionAssociatedMembers.isEmpty()) {
           List<CliFunctionResult> regionXmlResults = executeAndGetFunctionResult(
-              FetchRegionAttributesFunction.INSTANCE, templateRegion, regionAssociatedMembers);
+              FetchRegionAttributesFunction.INSTANCE, normalizedTemplateRegion,
+              regionAssociatedMembers);
 
           JAXBService jaxbService = new JAXBService(CacheConfig.class);
           templateRegionConfigs = regionXmlResults.stream().filter(CliFunctionResult::isSuccessful)
@@ -271,7 +365,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
       }
 
       if (templateRegionConfigs.isEmpty()) {
-        return ResultModel.createError("Template region " + templateRegion + " does not exist.");
+        return ResultModel
+            .createError("Template region " + normalizedTemplateRegion + " does not exist.");
       }
       if (templateRegionConfigs.size() == 1) {
         regionConfig = templateRegionConfigs.get(0);
@@ -434,12 +529,14 @@ public class CreateRegionCommand extends SingleGfshCommand {
           .forEach(regionAttributes.getCacheListeners()::add);
     }
 
-    if (cacheLoader != null) {
+    // Shell 3.x: Empty strings are converted to ClassName.EMPTY, which should be treated as null
+    // for create operations (don't create the component)
+    if (cacheLoader != null && !cacheLoader.equals(ClassName.EMPTY)) {
       regionAttributes.setCacheLoader(
           new DeclarableType(cacheLoader.getClassName(), cacheLoader.getInitProperties()));
     }
 
-    if (cacheWriter != null) {
+    if (cacheWriter != null && !cacheWriter.equals(ClassName.EMPTY)) {
       regionAttributes.setCacheWriter(
           new DeclarableType(cacheWriter.getClassName(), cacheWriter.getInitProperties()));
     }
@@ -632,8 +729,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
       if (config != null) {
         regionConfig =
             config.getRegions().stream().filter(
-                region -> region.getName().equals(regionName) && !region.getType()
-                    .contains("PROXY"))
+                region -> region.getName().equals(regionName) && region.getType() != null
+                    && !region.getType().contains("PROXY"))
                 .findFirst().orElse(null);
         if (regionConfig != null) {
           return regionConfig;
@@ -671,6 +768,9 @@ public class CreateRegionCommand extends SingleGfshCommand {
     }
 
     String existingDataPolicy = regionConfig.getType();
+    if (existingDataPolicy == null) {
+      return;
+    }
     boolean existingRegionIsNotProxy = !existingDataPolicy.contains("PROXY");
     if (regionShortcut.isLocal() || existingDataPolicy.equals("NORMAL")
         || (!regionShortcut.isProxy() && existingRegionIsNotProxy)) {
@@ -724,6 +824,9 @@ public class CreateRegionCommand extends SingleGfshCommand {
     }
 
     String existingDataPolicy = regionBean.getRegionType();
+    if (existingDataPolicy == null) {
+      return;
+    }
     // fail if either C is local, or E is local or E and C are both non-proxy regions. this is to
     // make sure local, replicate or partition regions have unique names across the entire cluster
     boolean existingRegionIsNotProxy = regionBean.getMemberCount() > regionBean.getEmptyNodes();
@@ -783,166 +886,5 @@ public class CreateRegionCommand extends SingleGfshCommand {
   DistributedSystemMXBean getDSMBean() {
     ManagementService managementService = getManagementService();
     return managementService.getDistributedSystemMXBean();
-  }
-
-  public static class Interceptor extends AbstractCliAroundInterceptor {
-    @Override
-    public ResultModel preExecution(GfshParseResult parseResult) {
-      Integer localMaxMemory =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
-      if (localMaxMemory != null) {
-        if (localMaxMemory < 0) {
-          return ResultModel.createError(
-              "PartitionAttributes localMaxMemory must not be negative.");
-        }
-      }
-
-      Long totalMaxMemory =
-          (Long) parseResult.getParamValue(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
-      if (totalMaxMemory != null) {
-        if (totalMaxMemory <= 0) {
-          return ResultModel.createError(
-              "Total size of partition region must be > 0.");
-        }
-      }
-      Integer redundantCopies =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
-      if (redundantCopies != null) {
-        if (redundantCopies < 0 || redundantCopies > 3) {
-          return ResultModel.createError(CliStrings.format(
-              CliStrings.CREATE_REGION__MSG__REDUNDANT_COPIES_SHOULD_BE_ONE_OF_0123,
-              new Object[] {redundantCopies}));
-        }
-      }
-
-      Integer concurrencyLevel =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__CONCURRENCYLEVEL);
-      if (concurrencyLevel != null) {
-        if (concurrencyLevel < 0) {
-          return ResultModel.createError(CliStrings.format(
-              CliStrings.CREATE_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_CONCURRENCYLEVEL_0_IS_NOT_VALID,
-              new Object[] {concurrencyLevel}));
-        }
-      }
-
-      String keyConstraint =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__KEYCONSTRAINT);
-      if (keyConstraint != null && !isClassNameValid(keyConstraint)) {
-        return ResultModel.createError(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
-            new Object[] {keyConstraint}));
-      }
-
-      String valueConstraint =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__VALUECONSTRAINT);
-      if (valueConstraint != null && !isClassNameValid(valueConstraint)) {
-        return ResultModel.createError(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
-            new Object[] {valueConstraint}));
-      }
-
-      String compressor = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__COMPRESSOR);
-      if (compressor != null && !isClassNameValid(compressor)) {
-        return ResultModel.createError(CliStrings
-            .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
-      }
-
-      Boolean cloningEnabled =
-          (Boolean) parseResult.getParamValue(CliStrings.CREATE_REGION__CLONINGENABLED);
-      if (compressor != null && cloningEnabled != null && !cloningEnabled) {
-        return ResultModel.createError(CliStrings
-            .format(CliStrings.CREATE_REGION__MSG__CANNOT_DISABLE_CLONING_WITH_COMPRESSOR,
-                new Object[] {compressor}));
-      }
-
-      String diskStore = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__DISKSTORE);
-      if (diskStore != null) {
-        String regionShortcut =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONSHORTCUT);
-        if (regionShortcut != null && !RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS
-            .contains(RegionShortcut.valueOf(regionShortcut))) {
-          String subMessage =
-              "Only regions with persistence or overflow to disk can specify DiskStore";
-          String message = subMessage + ". "
-              + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
-                  new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
-
-          return ResultModel.createError(message);
-        }
-      }
-
-      // if any expiration value is set, statistics must be enabled
-      Boolean statisticsEnabled =
-          (Boolean) parseResult.getParamValue(CliStrings.CREATE_REGION__STATISTICSENABLED);
-      Integer entryIdle =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME);
-      Integer entryTtl =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE);
-      Integer regionIdle =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME);
-      Integer regionTtl =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL);
-      ExpirationAction entryIdleAction = (ExpirationAction) parseResult
-          .getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION);
-      ExpirationAction entryTtlAction = (ExpirationAction) parseResult
-          .getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION);
-      ExpirationAction regionIdleAction = (ExpirationAction) parseResult
-          .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION);
-      ExpirationAction regionTtlAction = (ExpirationAction) parseResult
-          .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION);
-      ClassName entryIdleExpiry =
-          (ClassName) parseResult.getParamValue(CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
-      ClassName entryTTTLExpiry =
-          (ClassName) parseResult.getParamValue(CliStrings.ENTRY_TTL_CUSTOM_EXPIRY);
-
-      if ((entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null
-          || entryIdleAction != null || entryTtlAction != null || regionIdleAction != null
-          || regionTtlAction != null || entryIdleExpiry != null || entryTTTLExpiry != null)
-          && (statisticsEnabled == null || !statisticsEnabled)) {
-        String message =
-            "Statistics must be enabled for expiration";
-        return ResultModel.createError(message + ".");
-      }
-
-
-      String maxMemory =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY);
-      String maxEntry =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT);
-      String evictionAction =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_ACTION);
-      String evictionSizer =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER);
-      if (maxEntry != null && maxMemory != null) {
-        return ResultModel.createError(CliStrings.CREATE_REGION__MSG__BOTH_EVICTION_VALUES);
-      }
-
-      if ((maxEntry != null || maxMemory != null) && evictionAction == null) {
-        return ResultModel.createError(CliStrings.CREATE_REGION__MSG__MISSING_EVICTION_ACTION);
-      }
-
-      if (evictionSizer != null && maxEntry != null) {
-        return ResultModel.createError(
-            CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT);
-      }
-
-      if (evictionAction != null
-          && EvictionAction.parseAction(evictionAction) == EvictionAction.NONE) {
-        return ResultModel.createError(CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_ACTION);
-      }
-      RegionAttributesScope scope =
-          (RegionAttributesScope) parseResult.getParamValue(CliStrings.CREATE_REGION__SCOPE);
-      RegionShortcut regionShortcut =
-          (RegionShortcut) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONSHORTCUT);
-      if (scope != null && regionShortcut == null) {
-        return ResultModel
-            .createError(CliStrings.CREATE_REGION__SCOPE__SCOPE_CANNOT_BE_SET_IF_TYPE_NOT_SET);
-      } else if (scope != null && !regionShortcut.isReplicate()) {
-        return ResultModel
-            .createError(
-                CliStrings.CREATE_REGION__MSG__SCOPE_CANNOT_BE_SET_ON_NON_REPLICATED_REGION);
-      }
-      return ResultModel.createInfo("");
-    }
   }
 }

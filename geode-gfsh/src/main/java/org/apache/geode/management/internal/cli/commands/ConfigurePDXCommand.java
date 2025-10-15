@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Arrays;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
@@ -41,23 +41,26 @@ public class ConfigurePDXCommand extends SingleGfshCommand {
     return new ReflectionBasedAutoSerializer(checkPortability, patterns);
   }
 
-  @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
+  @ShellMethod(value = CliStrings.CONFIGURE_PDX__HELP, key = CliStrings.CONFIGURE_PDX)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.ConfigurePDXCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel configurePDX(
-      @CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
+          defaultValue = "false",
           help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) Boolean readSerialized,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
+          defaultValue = "false",
           help = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP) Boolean ignoreUnreadFields,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE, specifiedDefaultValue = "DEFAULT",
+      @ShellOption(value = CliStrings.CONFIGURE_PDX__DISKSTORE,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.CONFIGURE_PDX__DISKSTORE__HELP) String diskStore,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
+      @ShellOption(value = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP) String[] nonPortableClassesPatterns,
-      @CliOption(key = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
+      @ShellOption(value = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP) String[] portableClassesPatterns) {
 
     if (getConfigurationPersistenceService() == null) {
@@ -79,12 +82,18 @@ public class ConfigurePDXCommand extends SingleGfshCommand {
     infoSection
         .addLine(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS + " = " + ignoreUnreadFields);
 
-    pdxType.setDiskStoreName(diskStore);
-    pdxType.setPersistent(diskStore != null);
+    // Shell 3.x: empty string converted to null, treat as "DEFAULT"
+    String effectiveDiskStore = diskStore;
+    if (diskStore != null && diskStore.isEmpty()) {
+      effectiveDiskStore = "DEFAULT";
+    }
 
-    if (diskStore != null) {
+    pdxType.setDiskStoreName(effectiveDiskStore);
+    pdxType.setPersistent(effectiveDiskStore != null);
+
+    if (effectiveDiskStore != null) {
       infoSection.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = true");
-      infoSection.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + diskStore);
+      infoSection.addLine(CliStrings.CONFIGURE_PDX__DISKSTORE + " = " + effectiveDiskStore);
     } else {
       infoSection.addLine(CliStrings.CONFIGURE_PDX__PERSISTENT + " = false");
     }

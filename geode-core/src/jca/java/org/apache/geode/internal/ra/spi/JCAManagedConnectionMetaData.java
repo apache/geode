@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.ra.spi;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnectionMetaData;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnectionMetaData;
 
 public class JCAManagedConnectionMetaData implements ManagedConnectionMetaData {
   private final String prodName;

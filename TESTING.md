@@ -13,8 +13,10 @@ Tests are broken up into five types - unit, integration, distributed, acceptance
   `./gradlew distributedTest`
 * Acceptance tests: test Geode from end user perspective  
   `./gradlew acceptanceTest`
-* Upgrade tests: test compatibility between versions of Geode and rolling upgrades  
+* Upgrade tests: test backwards compatibility and rolling upgrades between versions of Geode  
   `./gradlew upgradeTest`
+  
+  **Note**: Rolling upgrades are **NOT supported** across the Jakarta EE 10 migration boundary (pre-migration → post-migration) for Tomcat session replication due to the javax.servlet → jakarta.servlet API incompatibility. Rolling upgrades within the same API era continue to work.
 
 ## Running Individual Tests
 To run an individual test, you can either

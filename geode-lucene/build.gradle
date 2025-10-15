@@ -30,7 +30,8 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
-  implementation('org.apache.lucene:lucene-analyzers-common')
+  // Lucene 9.x: Artifact renamed from lucene-analyzers-common to lucene-analysis-common
+  implementation('org.apache.lucene:lucene-analysis-common')
   implementation('org.apache.lucene:lucene-queryparser') {
     exclude module: 'lucene-sandbox'
   }
@@ -38,13 +39,14 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
 
   // JAXB dependencies needed for Java 11+
-  implementation('javax.xml.bind:jaxb-api')
-  implementation('com.sun.xml.bind:jaxb-impl')
+  implementation('jakarta.xml.bind:jakarta.xml.bind-api')
+  runtimeOnly('org.glassfish.jaxb:jaxb-runtime')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
-  runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
+  // Lucene 9.x: Artifact renamed from lucene-analyzers-phonetic to lucene-analysis-phonetic
+  runtimeOnly('org.apache.lucene:lucene-analysis-phonetic')
 
 
   testImplementation(project(':geode-junit'))
@@ -65,7 +67,8 @@ dependencies {
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-lucene:geode-lucene-test'))
-  integrationTestImplementation('org.apache.lucene:lucene-analyzers-phonetic')
+  // Lucene 9.x: Artifact renamed from lucene-analyzers-phonetic to lucene-analysis-phonetic
+  integrationTestImplementation('org.apache.lucene:lucene-analysis-phonetic')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
 

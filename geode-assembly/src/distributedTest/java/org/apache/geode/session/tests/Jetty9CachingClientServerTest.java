@@ -22,8 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.util.function.IntSupplier;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;

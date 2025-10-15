@@ -40,7 +40,6 @@ rat {
     'wrapper/**',
     '**/build/**',
     '**/build-*/**',
-    '**/bin/**',
     '.buildinfo',
     '**/release-features.rendered', // just for jenkins
 

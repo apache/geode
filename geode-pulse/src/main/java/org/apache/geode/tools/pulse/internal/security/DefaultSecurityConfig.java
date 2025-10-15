@@ -26,20 +26,31 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+/**
+ * Spring Security 6.x Migration:
+ * - Changed from extending WebSecurityConfigurerAdapter to using SecurityFilterChain bean
+ * - Changed @EnableGlobalMethodSecurity to @EnableMethodSecurity
+ * - Changed authorizeRequests() to authorizeHttpRequests()
+ * - Changed mvcMatchers() to requestMatchers() with AntPathRequestMatcher
+ * - WebSecurityConfigurerAdapter is removed in Spring Security 6.x
+ */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.default")
-public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
+public class DefaultSecurityConfig {
 
   private final RepositoryLogoutHandler repositoryLogoutHandler;
 
@@ -62,15 +73,26 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
     return exceptionMappingAuthenticationFailureHandler;
   }
 
-  @Override
-  protected void configure(HttpSecurity httpSecurity) throws Exception {
-    httpSecurity.authorizeRequests(authorize -> authorize
-        .mvcMatchers("/login.html", "/authenticateUser", "/pulseVersion", "/scripts/**",
-            "/images/**", "/css/**", "/properties/**")
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    httpSecurity.authorizeHttpRequests(authorize -> authorize
+        .requestMatchers(new AntPathRequestMatcher("/login.html"),
+            new AntPathRequestMatcher("/authenticateUser"),
+            new AntPathRequestMatcher("/pulseVersion"),
+            new AntPathRequestMatcher("/scripts/**"),
+            new AntPathRequestMatcher("/images/**"),
+            new AntPathRequestMatcher("/css/**"),
+            new AntPathRequestMatcher("/properties/**"))
         .permitAll()
-        .mvcMatchers("/dataBrowser*", "/getQueryStatisticsGridModel*")
-        .access("hasRole('CLUSTER:READ') and hasRole('DATA:READ')")
-        .mvcMatchers("/*")
+        .requestMatchers(new AntPathRequestMatcher("/dataBrowser*"),
+            new AntPathRequestMatcher("/getQueryStatisticsGridModel*"))
+        .access((authentication,
+            context) -> new org.springframework.security.authorization.AuthorizationDecision(
+                authentication.get().getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_CLUSTER:READ"))
+                    && authentication.get().getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_DATA:READ"))))
+        .requestMatchers(new AntPathRequestMatcher("/*"))
         .hasRole("CLUSTER:READ")
         .anyRequest().authenticated())
         .formLogin(form -> form
@@ -85,24 +107,22 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
         .exceptionHandling(exception -> exception
             .accessDeniedPage("/accessDenied.html"))
         .headers(header -> header
-            .frameOptions().deny()
-            .xssProtection(xss -> xss
-                .xssProtectionEnabled(true)
-                .block(true))
-            .contentTypeOptions())
-        .csrf().disable();
+            .frameOptions(frameOptions -> frameOptions.deny())
+            .xssProtection(xss -> xss.headerValue(
+                org.springframework.security.web.header.writers.XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+            .contentTypeOptions(contentTypeOptions -> {
+            }))
+        .csrf(csrf -> csrf.disable());
+    return httpSecurity.build();
   }
 
-  @Override
-  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder)
-      throws Exception {
-    @SuppressWarnings("deprecation")
-    final PasswordEncoder noOpPasswordEncoder =
-        org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
-    authenticationManagerBuilder.inMemoryAuthentication()
-        .passwordEncoder(noOpPasswordEncoder)
-        .withUser("admin")
-        .password("admin")
-        .roles("CLUSTER:READ", "DATA:READ");
+  @Bean
+  public UserDetailsService userDetailsService() {
+    UserDetails admin = User.withUsername("admin")
+        .password("{noop}admin")
+        .roles("CLUSTER:READ", "DATA:READ")
+        .build();
+
+    return new InMemoryUserDetailsManager(admin);
   }
 }

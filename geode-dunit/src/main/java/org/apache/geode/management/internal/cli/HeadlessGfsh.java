@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -30,16 +29,16 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
-import jline.console.ConsoleReader;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.event.ShellStatus.Status;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
-
 
 /**
  * This is headless shell which can be used to submit random commands and get command-result It is
@@ -75,22 +74,17 @@ public class HeadlessGfsh implements ResultHandler {
       }
     }
 
-    // This allows us to avoid race conditions during startup - in particular a NPE on the
-    // ConsoleReader which is
-    // created in a separate thread during start()
-    CountDownLatch shellStarted = new CountDownLatch(1);
-    shell.addShellStatusListener((oldStatus, newStatus) -> {
-      if (newStatus.getStatus() == Status.STARTED) {
-        shellStarted.countDown();
-      }
-    });
-
+    // Start the shell and wait for initialization
+    // In Spring Shell 3.x, the shell initialization is simplified
+    // We just need to ensure the shell thread has started
     shell.start();
 
+    // Give the shell a moment to initialize
+    // The shell creates its resources in the runner thread
     try {
-      shellStarted.await();
+      Thread.sleep(100);
     } catch (InterruptedException e) {
-      e.printStackTrace(System.out);
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -103,7 +97,9 @@ public class HeadlessGfsh implements ResultHandler {
     } catch (Exception e) {
       outputString = e.getMessage();
     }
-    if (!success && shell.output != null) {
+    // Only use shell.output if outputString hasn't been set by the handler
+    // (e.g., from logWarning/logSevere via handleExecutionResult)
+    if (!success && shell.output != null && outputString == null) {
       outputString = shell.output.toString();
       shell.output.reset();
     }
@@ -132,14 +128,14 @@ public class HeadlessGfsh implements ResultHandler {
         return (CommandResult) result;
       }
 
-      if (result == null) {
+      // For null or ERROR_RESULT, use the output string which contains the actual error message
+      if (result == null || ERROR_RESULT.equals(result)) {
         return new CommandResult(ResultModel.createError(outputString));
       } else {
         return new CommandResult(ResultModel.createError(result.toString()));
       }
 
     } catch (InterruptedException e) {
-      e.printStackTrace();
       throw e;
     }
   }
@@ -208,14 +204,35 @@ public class HeadlessGfsh implements ResultHandler {
 
     @Override
     protected void handleExecutionResult(Object result) {
-      if (!result.equals(ERROR_RESULT)) {
+      // Initialize lazily to avoid NPE when output is accessed before being set
+      if (output == null) {
+        output = new ByteArrayOutputStream(1024 * 10);
+      }
+
+      // Call parent implementation to write result lines to output stream
+      // This must happen before capturing output, otherwise capturedOutput will be empty
+      if (result != null && !result.equals(ERROR_RESULT)) {
         super.handleExecutionResult(result);
-        handler.handleExecutionResult(result, output.toString());
-        output.reset();
+      }
+
+      // Capture output before reset so handler can access the command output
+      String capturedOutput = output.toString();
+      output.reset();
+
+      // For errors, use errorString if available (contains exception message from
+      // logWarning/logSevere)
+      // Otherwise use capturedOutput from the output buffer
+      String outputToPass = (ERROR_RESULT.equals(result) && errorString != null)
+          ? errorString : capturedOutput;
+
+      // Pass ERROR_RESULT sentinel for null/error cases to maintain backward compatibility
+      // with legacy code that checks for ERROR_RESULT string
+      if (result == null || ERROR_RESULT.equals(result)) {
+        handler.handleExecutionResult(ERROR_RESULT, outputToPass);
+        // Clear errorString after use to avoid stale errors in subsequent commands
+        errorString = null;
       } else {
-        // signal waiting queue with error condition with empty output
-        output.reset();
-        handler.handleExecutionResult(result, output.toString());
+        handler.handleExecutionResult(result, capturedOutput);
       }
     }
 
@@ -224,7 +241,7 @@ public class HeadlessGfsh implements ResultHandler {
     }
 
     public void terminate() {
-      closeShell();
+      // Spring Shell 3.x removed closeShell(), so we use stop() which handles cleanup
       stopPromptLoop();
       stop();
     }
@@ -253,9 +270,9 @@ public class HeadlessGfsh implements ResultHandler {
     }
 
     /**
-     * We override this method just to fool runner thread in reading from nothing. It waits for
-     * Condition endOfShell which is signalled when terminate is called. This achieves clean
-     * shutdown of runner thread.
+     * We override this method to avoid reading from console input.
+     * It waits for Condition endOfShell which is signalled when terminate is called.
+     * This achieves clean shutdown of runner thread.
      */
     @Override
     public void promptLoop() {
@@ -264,9 +281,10 @@ public class HeadlessGfsh implements ResultHandler {
         try {
           endOfShell.await();
         } catch (InterruptedException ignore) {
+          Thread.currentThread().interrupt();
         }
-        exitShellRequest = ExitShellRequest.NORMAL_EXIT;
-        setShellStatus(Status.SHUTTING_DOWN);
+        // Note: exitShellRequest is set via stop() method in parent class
+        // Shell status tracking removed in Spring Shell 3.x migration
       } finally {
         lock.unlock();
       }
@@ -278,42 +296,66 @@ public class HeadlessGfsh implements ResultHandler {
     }
 
     /**
-     * This prints out error messages when Exceptions occur in shell. Capture it and set error
-     * flag=true and send ERROR_RESULT on the queue to signal thread waiting for CommandResult
+     * Captures error messages and signals waiting threads via ERROR_RESULT.
+     * Overridden to track error state for headless test execution.
      */
     @Override
     public void logWarning(String message, Throwable t) {
       super.logWarning(message, t);
-      errorString = message;
+      // Use the exception message if available, otherwise use the message parameter
+      // Include exception class name for compatibility with Spring Shell 1.x error format
+      if (t != null) {
+        String exceptionMessage = (t.getMessage() != null) ? t.getMessage() : "";
+        errorString = t.getClass().getName() + ": " + exceptionMessage;
+      } else {
+        errorString = message;
+      }
       hasError = true;
-      // signal waiting queue with error condition
+      // Signal waiting threads that an error occurred during command execution
       handleExecutionResult(ERROR_RESULT);
     }
 
     /**
-     * This prints out error messages when Exceptions occur in shell. Capture it and set error
-     * flag=true and send ERROR_RESULT on the queue to signal thread waiting for CommandResult
+     * Captures severe errors and signals waiting threads via ERROR_RESULT.
+     * Overridden to track error state for headless test execution.
      */
     @Override
     public void logSevere(String message, Throwable t) {
       t.printStackTrace();
       super.logSevere(message, t);
-      errorString = message;
+      // Use the exception message if available, otherwise use the message parameter
+      // Include exception class name for compatibility with Spring Shell 1.x error format
+      if (t != null) {
+        String exceptionMessage = (t.getMessage() != null) ? t.getMessage() : "";
+        errorString = t.getClass().getName() + ": " + exceptionMessage;
+      } else {
+        errorString = message;
+      }
       hasError = true;
-      // signal waiting queue with error condition
+      // Signal waiting threads that an error occurred during command execution
       handleExecutionResult(ERROR_RESULT);
     }
 
     /**
-     * Setup console-reader to capture Shell output
+     * Setup console reader to capture Shell output.
+     * Updated for JLine 3.x and Spring Shell 3.x.
      */
     @Override
-    protected ConsoleReader createConsoleReader() {
+    protected LineReader createConsoleReader() {
       try {
         output = new ByteArrayOutputStream(1024 * 10);
         PrintStream sysout = new PrintStream(output);
         setGfshOutErr(sysout);
-        return new ConsoleReader(new FileInputStream(FileDescriptor.in), sysout);
+
+        // Create a simple terminal with our output stream
+        // For headless mode, we don't need full terminal capabilities
+        Terminal terminal = TerminalBuilder.builder()
+            .streams(new FileInputStream(FileDescriptor.in), sysout)
+            .build();
+
+        return LineReaderBuilder.builder()
+            .terminal(terminal)
+            .build();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

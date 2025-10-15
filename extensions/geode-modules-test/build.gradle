@@ -31,6 +31,8 @@ dependencies {
 
   api(project(':extensions:geode-modules'))
 
-  compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  // Jakarta Servlet 5.0+ (compatible with Tomcat 10.1+)
+  implementation('jakarta.servlet:jakarta.servlet-api')
+  // Tomcat 10+ for embedded test server (was compileOnly, now implementation for Tomcat API)
+  implementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat10.version'))
 }

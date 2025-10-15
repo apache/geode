@@ -19,25 +19,16 @@ import static org.apache.geode.distributed.ConfigurationProperties.USER_COMMAND_
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 
-import org.springframework.shell.converters.EnumConverter;
-import org.springframework.shell.converters.SimpleFileConverter;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
@@ -56,21 +47,27 @@ public class CommandManager {
   private static final String USER_CMD_PACKAGES_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
   private static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
-  private static final String SPRING_CONVERTER_PACKAGE = "org.springframework.shell.converters";
 
-  /** Skip some of the Converters from Spring Shell for our customization */
-  @Immutable
-  private static final List<Class<?>> SPRING_CONVERTERS_TO_SKIP =
-      Collections.unmodifiableList(Arrays.asList(
-          // skip springs SimpleFileConverter to use our own FilePathConverter
-          SimpleFileConverter.class,
-          // skip spring's EnumConverter to use our own EnumConverter
-          EnumConverter.class));
+  // WHY COMMENTED: Spring Shell 3.x uses different converter mechanism
+  // Shell 1.x: Used SPRING_CONVERTER_PACKAGE to load Spring's converters
+  // Shell 3.x: Converters registered differently, no longer need package scanning
+  // private static final String SPRING_CONVERTER_PACKAGE = "org.springframework.shell.converters";
+
+  // WHY COMMENTED: Spring Shell 3.x converters handled differently
+  // Shell 1.x: Had to skip Spring's SimpleFileConverter and EnumConverter to use custom ones
+  // Shell 3.x: Converter registration mechanism changed, no longer need skip list
+  // @Immutable
+  // private static final List<Class<?>> SPRING_CONVERTERS_TO_SKIP =
+  // Collections.unmodifiableList(Arrays.asList(
+  // SimpleFileConverter.class, // skip springs SimpleFileConverter to use our own FilePathConverter
+  // EnumConverter.class)); // skip spring's EnumConverter to use our own EnumConverter
 
   private final Helper helper = new Helper();
 
-  private final List<Converter<?>> converters = new ArrayList<>();
-  private final List<CommandMarker> commandMarkers = new ArrayList<>();
+  // WHY KEPT: Converters list retained for potential future Shell 3.x converter support
+  // Currently unused as Shell 3.x converter mechanism is different from Shell 1.x
+  private final List<Object> converters = new ArrayList<>();
+  private final List<Object> commandMarkers = new ArrayList<>();
 
   private final Properties cacheProperties = new Properties();
   private final LogWrapper logWrapper;
@@ -81,7 +78,13 @@ public class CommandManager {
    * environment. used by Gfsh.
    */
   public CommandManager() {
-    this(null, null);
+    // Initialize fields (cache will be null for client-side usage)
+    this.cache = null;
+    this.logWrapper = LogWrapper.getInstance(null);
+
+    // Load commands and converters (same as server-side)
+    loadCommands();
+    loadConverters();
   }
 
   /**
@@ -147,7 +150,10 @@ public class CommandManager {
           scanner.scanPackagesForClassesImplementing(CommandMarker.class, userCommandPackages);
       for (Class<?> klass : foundClasses) {
         try {
-          add((CommandMarker) klass.newInstance());
+          // WHY CAST: Explicit cast to CommandMarker kept for code clarity, though add() accepts
+          // Object
+          // This makes the intent clear that user commands must implement CommandMarker interface
+          add((CommandMarker) klass.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
           logWrapper.warning("Could not load User Commands from: " + klass + " due to "
               + e.getLocalizedMessage()); // continue
@@ -161,22 +167,73 @@ public class CommandManager {
   }
 
   /**
-   * Loads commands via {@link ServiceLoader} from {@link ClassPathLoader}.
+   * Loads commands by scanning for classes implementing {@link CommandMarker}.
+   * In Spring Shell 3.x, commands still implement CommandMarker for discovery purposes,
+   * though they use @ShellComponent and @ShellMethod for command registration.
    *
    * @since GemFire 8.1
    */
   private void loadGeodeCommands() {
-    ServiceLoader<CommandMarker> commandMarkers =
-        ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
+    // Define packages containing Geode command classes
+    String[] commandPackages = {
+        "org.apache.geode.management.internal.cli.commands",
+        "org.apache.geode.management.cli",
+        "org.apache.geode.cache.wan.internal.cli.commands", // WAN commands
+        "org.apache.geode.connectors.jdbc.internal.cli", // JDBC connector commands
+        "org.apache.geode.cache.lucene.internal.cli.commands" // Lucene commands
+    };
 
-    boolean loadedAtLeastOneCommand = false;
-    for (CommandMarker commandMarker : commandMarkers) {
-      add(commandMarker);
-      loadedAtLeastOneCommand = true;
-    }
-    if (!loadedAtLeastOneCommand) {
-      throw new IllegalStateException(
-          "Required Command classes were not loaded. Check logs for errors.");
+    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(commandPackages)) {
+      Set<Class<?>> foundClasses = new HashSet<>();
+
+      // Spring Shell 3.x: Find classes annotated with @ShellComponent
+      Set<Class<?>> shellComponentClasses = scanner.scanClasspathForAnnotation(
+          org.springframework.shell.standard.ShellComponent.class,
+          commandPackages);
+
+      // For each class with @ShellComponent, also find non-abstract subclasses.
+      Set<Class<?>> allShellComponentClasses = new HashSet<>();
+      for (Class<?> klass : shellComponentClasses) {
+        // Find all concrete subclasses recursively
+        Set<Class<?>> concreteSubclasses =
+            scanner.scanPackagesForSubclassesOf(klass, commandPackages);
+
+        if (!concreteSubclasses.isEmpty()) {
+          allShellComponentClasses.addAll(concreteSubclasses);
+        } else {
+          if (!java.lang.reflect.Modifier.isAbstract(klass.getModifiers())) {
+            allShellComponentClasses.add(klass);
+          }
+        }
+      }
+      foundClasses.addAll(allShellComponentClasses);
+
+      // Also check for classes implementing CommandMarker (for backwards compatibility)
+      Set<Class<?>> commandMarkerClasses = scanner.scanPackagesForClassesImplementing(
+          CommandMarker.class,
+          commandPackages);
+      foundClasses.addAll(commandMarkerClasses);
+
+      boolean loadedAtLeastOneCommand = false;
+      for (Class<?> klass : foundClasses) {
+        try {
+          Object commandInstance = klass.getDeclaredConstructor().newInstance();
+          add(commandInstance);
+          loadedAtLeastOneCommand = true;
+        } catch (Exception e) {
+          logWrapper.warning("Could not load Command from: " + klass + " due to "
+              + e.getLocalizedMessage());
+          e.printStackTrace();
+        }
+      }
+
+      if (!loadedAtLeastOneCommand) {
+        throw new IllegalStateException(
+            "Required Command classes were not loaded. Check logs for errors.");
+      }
+    } catch (IllegalStateException e) {
+      logWrapper.warning(e.getMessage(), e);
+      throw e;
     }
   }
 
@@ -191,73 +248,97 @@ public class CommandManager {
   }
 
   private void loadSpringDefinedConverters() {
-    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(SPRING_CONVERTER_PACKAGE)) {
-      // Spring shell's converters
-      Set<Class<?>> foundClasses =
-          scanner.scanPackagesForClassesImplementing(Converter.class, SPRING_CONVERTER_PACKAGE);
-      for (Class<?> klass : foundClasses) {
-        if (!SPRING_CONVERTERS_TO_SKIP.contains(klass)) {
-          try {
-            add((Converter<?>) klass.newInstance());
-          } catch (Exception e) {
-            logWrapper.warning(
-                "Could not load Converter from: " + klass + " due to " + e.getLocalizedMessage()); // continue
-          }
-        }
-      }
-      raiseExceptionIfEmpty(foundClasses, "Spring Converter");
-    } catch (IllegalStateException e) {
-      logWrapper.warning(e.getMessage(), e);
-      throw e;
-    }
+    // WHY DISABLED: Spring Shell 3.x converter loading mechanism differs from Shell 1.x
+    // Shell 1.x: Used Converter interface, scanned SPRING_CONVERTER_PACKAGE for implementations
+    // Shell 3.x: Uses different converter registration approach, needs migration
+    // Once Shell 3.x converter approach is finalized, this should be re-implemented
+    /*
+     * try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(SPRING_CONVERTER_PACKAGE))
+     * {
+     * Set<Class<?>> foundClasses =
+     * scanner.scanPackagesForClassesImplementing(Converter.class, SPRING_CONVERTER_PACKAGE);
+     * for (Class<?> klass : foundClasses) {
+     * if (!SPRING_CONVERTERS_TO_SKIP.contains(klass)) {
+     * try {
+     * add((Converter<?>) klass.newInstance());
+     * } catch (Exception e) {
+     * logWrapper.warning(
+     * "Could not load Converter from: " + klass + " due to " + e.getLocalizedMessage());
+     * }
+     * }
+     * }
+     * raiseExceptionIfEmpty(foundClasses, "Spring Converter");
+     * } catch (IllegalStateException e) {
+     * logWrapper.warning(e.getMessage(), e);
+     * throw e;
+     * }
+     */
   }
 
   private void loadGeodeDefinedConverters() {
-    ServiceLoader<Converter> converters =
-        ServiceLoader.load(Converter.class, ClassPathLoader.getLatestAsClassLoader());
-
-    boolean loadedAtLeastOneConverter = false;
-    for (Converter<?> converter : converters) {
-      add(converter);
-      loadedAtLeastOneConverter = true;
-    }
-    if (!loadedAtLeastOneConverter) {
-      throw new IllegalStateException(
-          "Required Converter classes were not loaded. Check logs for errors.");
-    }
+    // WHY DISABLED: Spring Shell 3.x Converter interface changed from Shell 1.x
+    // Shell 1.x: Used ServiceLoader to load Converter implementations
+    // Shell 3.x: Converter mechanism redesigned, pending migration strategy
+    /*
+     * ServiceLoader<Converter> converters =
+     * ServiceLoader.load(Converter.class, ClassPathLoader.getLatestAsClassLoader());
+     *
+     * boolean loadedAtLeastOneConverter = false;
+     * for (Converter<?> converter : converters) {
+     * add(converter);
+     * loadedAtLeastOneConverter = true;
+     * }
+     * if (!loadedAtLeastOneConverter) {
+     * throw new IllegalStateException(
+     * "Required Converter classes were not loaded. Check logs for errors.");
+     * }
+     */
   }
 
-  public List<Converter<?>> getConverters() {
-    return converters;
-  }
+  // WHY COMMENTED: Spring Shell 3.x migration - Shell 1.x Converter API removed
+  // Shell 1.x: getConverters() returned List<Converter<?>> for parser to access converters
+  // Shell 3.x: Converter mechanism changed, this method no longer applicable
+  // public List<Converter<?>> getConverters() {
+  // return converters;
+  // }
 
-  public List<CommandMarker> getCommandMarkers() {
+  /**
+   * Returns the list of command markers (command instances) registered with this manager.
+   * Used by GfshParser to find command instances when building parse results.
+   */
+  public List<Object> getCommandMarkers() {
     return commandMarkers;
   }
 
   /**
-   * Method to add new Converter
+   * WHY COMMENTED: Spring Shell 3.x migration - Shell 1.x Converter API removed
+   * Shell 1.x: add(Converter<?>) method registered converters with CommandManagerAware injection
+   * Shell 3.x: Converter registration mechanism changed, method no longer needed
    */
-  private void add(Converter<?> converter) {
-    if (CommandManagerAware.class.isAssignableFrom(converter.getClass())) {
-      ((CommandManagerAware) converter).setCommandManager(this);
-    }
-    converters.add(converter);
-  }
+  // private void add(Converter<?> converter) {
+  // if (CommandManagerAware.class.isAssignableFrom(converter.getClass())) {
+  // ((CommandManagerAware) converter).setCommandManager(this);
+  // }
+  // converters.add(converter);
+  // }
 
   /**
    * Method to add new Commands to the parser
+   * Made public to support test command registration in GfshParserRule
    */
-  void add(CommandMarker commandMarker) {
+  public void add(Object commandMarker) {
     Disabled classDisabled = commandMarker.getClass().getAnnotation(Disabled.class);
     if (classDisabled != null && (classDisabled.unlessPropertyIsSet().isEmpty()
         || System.getProperty(classDisabled.unlessPropertyIsSet()) == null)) {
       return;
     }
 
-    // inject the cache into the commands
+    // inject the cache into the commands (only if not already set, to support test mocking)
     if (GfshCommand.class.isAssignableFrom(commandMarker.getClass())) {
-      ((GfshCommand) commandMarker).setCache(cache);
+      GfshCommand gfshCommand = (GfshCommand) commandMarker;
+      if (!gfshCommand.hasCacheSet()) {
+        gfshCommand.setCache(cache);
+      }
     }
 
     // inject the commandManager into the commands
@@ -265,19 +346,21 @@ public class CommandManager {
       ((CommandManagerAware) commandMarker).setCommandManager(this);
     }
     commandMarkers.add(commandMarker);
+
     for (Method method : commandMarker.getClass().getMethods()) {
-      CliCommand cliCommand = method.getAnnotation(CliCommand.class);
-      CliAvailabilityIndicator availability = method.getAnnotation(CliAvailabilityIndicator.class);
-      if (cliCommand == null && availability == null) {
+      ShellMethod shellMethod = method.getAnnotation(ShellMethod.class);
+      ShellMethodAvailability availability = method.getAnnotation(ShellMethodAvailability.class);
+      if (shellMethod == null && availability == null) {
         continue;
       }
 
-      if (cliCommand != null) {
-        helper.addCommand(cliCommand, method);
+      if (shellMethod != null) {
+        helper.addCommand(shellMethod, method);
       }
 
       if (availability != null) {
-        helper.addAvailabilityIndicator(availability, new MethodTarget(method, commandMarker));
+        // Spring Shell 3.x: Pass method and target separately instead of MethodTarget
+        helper.addAvailabilityIndicator(availability, method, commandMarker);
       }
     }
   }

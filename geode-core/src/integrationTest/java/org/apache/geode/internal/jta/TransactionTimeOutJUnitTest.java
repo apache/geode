@@ -34,8 +34,8 @@ import java.util.Random;
 
 import javax.naming.Context;
 import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.UserTransaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;

@@ -21,33 +21,32 @@ import static org.apache.geode.management.internal.i18n.CliStrings.LOCATOR_TERM_
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class StopLocatorCommand extends OfflineGfshCommand {
   private static final long WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS = 30 * 1000;
 
-  @CliCommand(value = CliStrings.STOP_LOCATOR, help = CliStrings.STOP_LOCATOR__HELP)
+  @ShellMethod(value = CliStrings.STOP_LOCATOR__HELP, key = CliStrings.STOP_LOCATOR)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public ResultModel stopLocator(
-      @CliOption(key = CliStrings.STOP_LOCATOR__MEMBER,
-          optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
+      @ShellOption(value = CliStrings.STOP_LOCATOR__MEMBER,
           help = CliStrings.STOP_LOCATOR__MEMBER__HELP) final String member,
-      @CliOption(key = CliStrings.STOP_LOCATOR__PID,
+      @ShellOption(value = CliStrings.STOP_LOCATOR__PID,
           help = CliStrings.STOP_LOCATOR__PID__HELP) final Integer pid,
-      @CliOption(key = CliStrings.STOP_LOCATOR__DIR,
+      @ShellOption(value = CliStrings.STOP_LOCATOR__DIR,
           help = CliStrings.STOP_LOCATOR__DIR__HELP) final String workingDirectory)
       throws Exception {
 

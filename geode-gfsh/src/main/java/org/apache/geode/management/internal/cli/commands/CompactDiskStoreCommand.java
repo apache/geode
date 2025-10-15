@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
@@ -34,7 +34,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
@@ -45,15 +44,14 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CompactDiskStoreCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.COMPACT_DISK_STORE, help = CliStrings.COMPACT_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.COMPACT_DISK_STORE__HELP, key = CliStrings.COMPACT_DISK_STORE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DISK)
   public ResultModel compactDiskStore(
-      @CliOption(key = CliStrings.COMPACT_DISK_STORE__NAME, mandatory = true,
-          optionContext = ConverterHint.DISKSTORE,
+      @ShellOption(value = CliStrings.COMPACT_DISK_STORE__NAME,
           help = CliStrings.COMPACT_DISK_STORE__NAME__HELP) String diskStoreName,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.COMPACT_DISK_STORE__GROUP__HELP) String[] groups) {
     ResultModel result = new ResultModel();
 

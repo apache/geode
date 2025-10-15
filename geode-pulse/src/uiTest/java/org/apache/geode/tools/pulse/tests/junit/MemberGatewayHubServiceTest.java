@@ -22,11 +22,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
@@ -40,7 +40,12 @@ import org.junit.Test;
 /**
  * JUnit Tests for MemberGatewayHubService in the back-end server for region detail page
  *
- *
+ * Apache HttpClient 5.x Migration:
+ * - Changed from org.apache.http.* to org.apache.hc.client5.* and org.apache.hc.core5.*
+ * - HttpUriRequest → ClassicHttpRequest
+ * - RequestBuilder → ClassicRequestBuilder
+ * - response.getStatusLine() → response.getCode() + response.getReasonPhrase()
+ * - Package reorganization: client and core packages separated in HttpClient 5.x
  */
 @Ignore
 public class MemberGatewayHubServiceTest extends BaseServiceTest {
@@ -83,14 +88,16 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
         "MemberGatewayHubServiceTest ::  ------TESTCASE BEGIN : NULL RESPONSE CHECK FOR MEMBER GATEWAY HUB SERVICE --------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
         CloseableHttpResponse response = httpclient.execute(pulseupdate);
         try {
           HttpEntity entity = response.getEntity();
 
           System.out.println(
-              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getStatusLine());
+              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getCode() + " "
+                  + response.getReasonPhrase());
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
           StringWriter sw = new StringWriter();
@@ -135,14 +142,16 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
         "MemberGatewayHubServiceTest ::  ------TESTCASE BEGIN : IS GATEWAY SENDER IN RESPONSE CHECK FOR MEMBER GATEWAY HUB SERVICE------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
         CloseableHttpResponse response = httpclient.execute(pulseupdate);
         try {
           HttpEntity entity = response.getEntity();
 
           System.out.println(
-              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getStatusLine());
+              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getCode() + " "
+                  + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -198,14 +207,16 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
         "MemberGatewayHubServiceTest ::  ------TESTCASE BEGIN : GATEWAY SENDER COUNT IN RESPONSE CHECK FOR MEMBER GATEWAY HUB SERVICE------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
         CloseableHttpResponse response = httpclient.execute(pulseupdate);
         try {
           HttpEntity entity = response.getEntity();
 
           System.out.println(
-              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getStatusLine());
+              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getCode() + " "
+                  + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -268,14 +279,16 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
         "MemberGatewayHubServiceTest ::  ------TESTCASE BEGIN : GATEWAY SENDER PROPERTIES IN RESPONSE CHECK FOR MEMBER GATEWAY HUB SERVICE------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
         CloseableHttpResponse response = httpclient.execute(pulseupdate);
         try {
           HttpEntity entity = response.getEntity();
 
           System.out.println(
-              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getStatusLine());
+              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getCode() + " "
+                  + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -345,14 +358,16 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
         "MemberGatewayHubServiceTest ::  ------TESTCASE BEGIN : ASYNC EVENT QUEUE PROPERTIES IN RESPONSE CHECK FOR MEMBER GATEWAY HUB SERVICE------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_5_VALUE).build();
         CloseableHttpResponse response = httpclient.execute(pulseupdate);
         try {
           HttpEntity entity = response.getEntity();
 
           System.out.println(
-              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getStatusLine());
+              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getCode() + " "
+                  + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -431,14 +446,16 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
         "MemberGatewayHubServiceTest ::  ------TESTCASE BEGIN : NO ASYNC EVENT QUEUES IN RESPONSE CHECK FOR MEMBER GATEWAY HUB SERVICE------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_6_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_6_VALUE).build();
         CloseableHttpResponse response = httpclient.execute(pulseupdate);
         try {
           HttpEntity entity = response.getEntity();
 
           System.out.println(
-              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getStatusLine());
+              "MemberGatewayHubServiceTest :: HTTP request status : " + response.getCode() + " "
+                  + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));

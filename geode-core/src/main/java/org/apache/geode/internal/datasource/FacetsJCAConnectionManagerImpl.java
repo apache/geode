@@ -17,21 +17,21 @@ package org.apache.geode.internal.datasource;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEvent;
-import javax.resource.spi.ConnectionEventListener;
-import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionEvent;
+import jakarta.resource.spi.ConnectionEventListener;
+import jakarta.resource.spi.ConnectionManager;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -86,9 +86,9 @@ public class FacetsJCAConnectionManagerImpl
 
   /*
    * allocates a ManagedConnection from the ConnectionPool or creates a new
-   * ManagedConnection. @param javax.resource.spi.ManagedConnectionFactory
+   * ManagedConnection. @param jakarta.resource.spi.ManagedConnectionFactory
    *
-   * @param javax.resource.spi.ConnectionRequestInfo
+   * @param jakarta.resource.spi.ConnectionRequestInfo
    *
    */
   @Override

@@ -20,37 +20,37 @@ package org.apache.geode.internal.datasource;
  * Generation - Code and Comments
  */
 public class ConnectionEventListenerAdaptor
-    implements javax.resource.spi.ConnectionEventListener, javax.sql.ConnectionEventListener {
+    implements jakarta.resource.spi.ConnectionEventListener, javax.sql.ConnectionEventListener {
 
   /**
-   * @see javax.resource.spi.ConnectionEventListener#connectionClosed(javax.resource.spi.ConnectionEvent)
+   * @see jakarta.resource.spi.ConnectionEventListener#connectionClosed(jakarta.resource.spi.ConnectionEvent)
    */
   @Override
-  public void connectionClosed(javax.resource.spi.ConnectionEvent arg0) {}
+  public void connectionClosed(jakarta.resource.spi.ConnectionEvent arg0) {}
 
   /**
-   * @see javax.resource.spi.ConnectionEventListener#localTransactionStarted(javax.resource.spi.ConnectionEvent)
+   * @see jakarta.resource.spi.ConnectionEventListener#localTransactionStarted(jakarta.resource.spi.ConnectionEvent)
    */
   @Override
-  public void localTransactionStarted(javax.resource.spi.ConnectionEvent arg0) {}
+  public void localTransactionStarted(jakarta.resource.spi.ConnectionEvent arg0) {}
 
   /**
-   * @see javax.resource.spi.ConnectionEventListener#localTransactionCommitted(javax.resource.spi.ConnectionEvent)
+   * @see jakarta.resource.spi.ConnectionEventListener#localTransactionCommitted(jakarta.resource.spi.ConnectionEvent)
    */
   @Override
-  public void localTransactionCommitted(javax.resource.spi.ConnectionEvent arg0) {}
+  public void localTransactionCommitted(jakarta.resource.spi.ConnectionEvent arg0) {}
 
   /**
-   * @see javax.resource.spi.ConnectionEventListener#localTransactionRolledback(javax.resource.spi.ConnectionEvent)
+   * @see jakarta.resource.spi.ConnectionEventListener#localTransactionRolledback(jakarta.resource.spi.ConnectionEvent)
    */
   @Override
-  public void localTransactionRolledback(javax.resource.spi.ConnectionEvent arg0) {}
+  public void localTransactionRolledback(jakarta.resource.spi.ConnectionEvent arg0) {}
 
   /**
-   * @see javax.resource.spi.ConnectionEventListener#connectionErrorOccurred(javax.resource.spi.ConnectionEvent)
+   * @see jakarta.resource.spi.ConnectionEventListener#connectionErrorOccurred(jakarta.resource.spi.ConnectionEvent)
    */
   @Override
-  public void connectionErrorOccurred(javax.resource.spi.ConnectionEvent arg0) {}
+  public void connectionErrorOccurred(jakarta.resource.spi.ConnectionEvent arg0) {}
 
   /**
    * Implementation of call back function from ConnectionEventListener interface. This callback will

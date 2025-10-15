@@ -27,8 +27,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.functions.CreateDiskStoreFunction;
@@ -55,44 +54,41 @@ import org.apache.geode.security.ResourcePermission;
 public class CreateDiskStoreCommand extends SingleGfshCommand {
   private static final int MBEAN_CREATION_WAIT_TIME = 10000;
 
-  @CliCommand(value = CliStrings.CREATE_DISK_STORE, help = CliStrings.CREATE_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.CREATE_DISK_STORE__HELP, key = CliStrings.CREATE_DISK_STORE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DISK)
   public ResultModel createDiskStore(
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, mandatory = true,
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
           help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP) String[] directoriesAndSizes,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__NAME, mandatory = true,
-          optionContext = ConverterHint.DISKSTORE,
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__NAME,
           help = CliStrings.CREATE_DISK_STORE__NAME__HELP) String name,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION,
+          defaultValue = "false",
           help = CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION__HELP) boolean allowForceCompaction,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__AUTO_COMPACT, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__AUTO_COMPACT, defaultValue = "true",
           help = CliStrings.CREATE_DISK_STORE__AUTO_COMPACT__HELP) boolean autoCompact,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__COMPACTION_THRESHOLD,
-          unspecifiedDefaultValue = "50",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__COMPACTION_THRESHOLD,
+          defaultValue = "50",
           help = CliStrings.CREATE_DISK_STORE__COMPACTION_THRESHOLD__HELP) int compactionThreshold,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__MAX_OPLOG_SIZE,
-          unspecifiedDefaultValue = "1024",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__MAX_OPLOG_SIZE,
+          defaultValue = "1024",
           help = CliStrings.CREATE_DISK_STORE__MAX_OPLOG_SIZE__HELP) int maxOplogSize,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__QUEUE_SIZE, unspecifiedDefaultValue = "0",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__QUEUE_SIZE, defaultValue = "0",
           help = CliStrings.CREATE_DISK_STORE__QUEUE_SIZE__HELP) int queueSize,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__TIME_INTERVAL,
-          unspecifiedDefaultValue = "1000",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__TIME_INTERVAL,
+          defaultValue = "1000",
           help = CliStrings.CREATE_DISK_STORE__TIME_INTERVAL__HELP) long timeInterval,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE,
-          unspecifiedDefaultValue = "32768",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE,
+          defaultValue = "32768",
           help = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE__HELP) int writeBufferSize,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          help = CliStrings.CREATE_DISK_STORE__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT,
-          unspecifiedDefaultValue = "90",
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.CREATE_DISK_STORE__GROUP__HELP) String[] groups,
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT,
+          defaultValue = "90",
           help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT__HELP) float diskUsageWarningPercentage,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT,
-          unspecifiedDefaultValue = "99",
+      @ShellOption(value = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT,
+          defaultValue = "99",
           help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT__HELP) float diskUsageCriticalPercentage) {
 
     DiskStoreAttributes diskStoreAttributes = new DiskStoreAttributes();

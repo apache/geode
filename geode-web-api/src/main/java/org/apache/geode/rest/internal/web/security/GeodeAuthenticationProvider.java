@@ -18,8 +18,7 @@ package org.apache.geode.rest.internal.web.security;
 
 import java.util.Properties;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

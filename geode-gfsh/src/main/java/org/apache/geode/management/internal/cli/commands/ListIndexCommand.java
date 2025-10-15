@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -41,12 +41,12 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ListIndexCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
+  @ShellMethod(value = CliStrings.LIST_INDEX__HELP, key = {CliStrings.LIST_INDEX, "list index"})
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ, target = ResourcePermission.Target.QUERY)
-  public ResultModel listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
-      specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+  public ResultModel listIndex(@ShellOption(value = CliStrings.LIST_INDEX__STATS,
+      defaultValue = "false",
       help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats) {
 
     ResultModel result = new ResultModel();

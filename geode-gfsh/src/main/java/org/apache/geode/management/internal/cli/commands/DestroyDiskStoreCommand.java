@@ -18,14 +18,13 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFunctionArgs;
@@ -36,18 +35,17 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DestroyDiskStoreCommand extends SingleGfshCommand {
-  @CliCommand(value = CliStrings.DESTROY_DISK_STORE, help = CliStrings.DESTROY_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.DESTROY_DISK_STORE__HELP, key = CliStrings.DESTROY_DISK_STORE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DISK)
   public ResultModel destroyDiskStore(
-      @CliOption(key = CliStrings.DESTROY_DISK_STORE__NAME, mandatory = true,
+      @ShellOption(value = CliStrings.DESTROY_DISK_STORE__NAME,
           help = CliStrings.DESTROY_DISK_STORE__NAME__HELP) String name,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          help = CliStrings.DESTROY_DISK_STORE__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExist) {
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.DESTROY_DISK_STORE__GROUP__HELP) String[] groups,
+      @ShellOption(value = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
+          defaultValue = "false") boolean ifExist) {
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);
 

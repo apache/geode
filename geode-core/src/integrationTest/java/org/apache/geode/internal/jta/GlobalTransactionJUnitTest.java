@@ -24,13 +24,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.naming.Context;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.UserTransaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

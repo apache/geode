@@ -14,35 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
-import java.io.InputStreamReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
 
-import jline.UnixTerminal;
-
+import org.jline.terminal.impl.DumbTerminal;
 
 /**
- * This is re-write of UnixTerminal with stty process spawn removed. There is no process named stty
- * in windows (non-cygwin process) so that part is commented, also since erase is already applied
- * within gfsh script when running under cygwin backspaceDeleteSwitched is hard-coded as true
+ * Terminal implementation for Cygwin Mintty environment.
+ * Updated for JLine 3.x: uses DumbTerminal for simplicity
  *
- * To know exact changed please see UnixTerminal code.
- *
- *
+ * @since GemFire 7.0
  */
-public class CygwinMinttyTerminal extends UnixTerminal {
+public class CygwinMinttyTerminal extends DumbTerminal {
 
-
-  String encoding = System.getProperty("input.encoding", "UTF-8");
-  InputStreamReader replayReader;
-
-  public CygwinMinttyTerminal() throws Exception {}
-
-  @Override
-  public void init() throws Exception {
-
-  }
-
-  @Override
-  public void restore() throws Exception {
-    reset();
+  public CygwinMinttyTerminal() throws IOException {
+    super("cygwin-mintty", "ansi", System.in, System.out, Charset.forName("UTF-8"));
   }
 }

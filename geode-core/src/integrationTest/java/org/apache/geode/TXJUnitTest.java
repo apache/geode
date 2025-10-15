@@ -36,8 +36,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.transaction.Synchronization;
-
+import jakarta.transaction.Synchronization;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -6189,11 +6188,11 @@ public class TXJUnitTest {
 
   @Test
   public void testJTASynchronization()
-      throws CacheException, javax.transaction.NotSupportedException,
-      javax.transaction.RollbackException, javax.transaction.SystemException,
-      javax.transaction.HeuristicMixedException, javax.transaction.HeuristicRollbackException {
+      throws CacheException, jakarta.transaction.NotSupportedException,
+      jakarta.transaction.RollbackException, jakarta.transaction.SystemException,
+      jakarta.transaction.HeuristicMixedException, jakarta.transaction.HeuristicRollbackException {
 
-    javax.transaction.TransactionManager jtaTxMgr = cache.getJTATransactionManager();
+    jakarta.transaction.TransactionManager jtaTxMgr = cache.getJTATransactionManager();
     TransactionListener tl = new TransactionListener() {
       @Override
       public void afterCommit(TransactionEvent event) {
@@ -6272,7 +6271,7 @@ public class TXJUnitTest {
       assertEquals("syncVal3", region.getEntry("syncKey3").getValue());
 
       TXStateProxy gfTx = gfTxMgrImpl.pauseTransaction();
-      javax.transaction.Transaction jtaTx = jtaTxMgr.suspend();
+      jakarta.transaction.Transaction jtaTx = jtaTxMgr.suspend();
       assertNull(jtaTxMgr.getTransaction());
       region.put("syncKey3", "syncVal4");
       assertEquals("syncVal4", region.getEntry("syncKey3").getValue());
@@ -6352,8 +6351,8 @@ public class TXJUnitTest {
     try {
       jtaTxMgr.commit();
       fail("Expected JTA manager conflict exception!");
-    } catch (javax.transaction.HeuristicRollbackException ignored) {
-    } catch (javax.transaction.RollbackException ignored) {
+    } catch (jakarta.transaction.HeuristicRollbackException ignored) {
+    } catch (jakarta.transaction.RollbackException ignored) {
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -6367,9 +6366,9 @@ public class TXJUnitTest {
   }
 
   @Test
-  public void testJTAEnlistment() throws CacheException, javax.transaction.NotSupportedException,
-      javax.transaction.RollbackException, javax.transaction.SystemException,
-      javax.transaction.HeuristicMixedException, javax.transaction.HeuristicRollbackException {
+  public void testJTAEnlistment() throws CacheException, jakarta.transaction.NotSupportedException,
+      jakarta.transaction.RollbackException, jakarta.transaction.SystemException,
+      jakarta.transaction.HeuristicMixedException, jakarta.transaction.HeuristicRollbackException {
 
     TransactionListener tl = new TransactionListener() {
       @Override
@@ -6398,9 +6397,9 @@ public class TXJUnitTest {
 
     txMgr.addListener(tl);
 
-    javax.transaction.UserTransaction userTx = null;
+    jakarta.transaction.UserTransaction userTx = null;
     try {
-      userTx = (javax.transaction.UserTransaction) cache.getJNDIContext()
+      userTx = (jakarta.transaction.UserTransaction) cache.getJNDIContext()
           .lookup("java:/UserTransaction");
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
@@ -6519,8 +6518,8 @@ public class TXJUnitTest {
       TXManagerImpl gfTxMgrImpl = (TXManagerImpl) txMgr;
       TXStateProxy gfTx = gfTxMgrImpl.pauseTransaction();
 
-      javax.transaction.TransactionManager jtaTxMgr = cache.getJTATransactionManager();
-      javax.transaction.Transaction jtaTx = jtaTxMgr.suspend();
+      jakarta.transaction.TransactionManager jtaTxMgr = cache.getJTATransactionManager();
+      jakarta.transaction.Transaction jtaTx = jtaTxMgr.suspend();
 
       region.put("enlistKey", "conflictVal");
       assertEquals("conflictVal", region.get("enlistKey"));
@@ -6536,8 +6535,8 @@ public class TXJUnitTest {
     try {
       userTx.commit();
       fail("Expected JTA commit exception!");
-    } catch (javax.transaction.HeuristicRollbackException ignored) {
-    } catch (javax.transaction.RollbackException ignored) {
+    } catch (jakarta.transaction.HeuristicRollbackException ignored) {
+    } catch (jakarta.transaction.RollbackException ignored) {
     } catch (Exception yuk) {
       fail("Did not expect this exception from JTA commit: " + yuk);
     }
@@ -6549,7 +6548,7 @@ public class TXJUnitTest {
     userTx.begin();
     assertNull(txMgr.getTransactionId());
     userTx.setRollbackOnly();
-    assertEquals(javax.transaction.Status.STATUS_MARKED_ROLLBACK, userTx.getStatus());
+    assertEquals(jakarta.transaction.Status.STATUS_MARKED_ROLLBACK, userTx.getStatus());
     try {
       region.put("enlistKey", "enlistVal2");
       fail("Expected to get a FailedSynchronizationException!");

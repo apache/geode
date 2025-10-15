@@ -205,10 +205,10 @@ public class ConfigurePDXCommandTest {
   public void executionShouldCorrectlyConfigurePortableAutoSerializableClassesWhenUsingCustomPattern() {
     String[] patterns = new String[] {"com.company.DomainObject.*#identity=id"};
 
-    // Custom Settings
+    // Shell 3.x: Pattern with special characters must be quoted
     gfshParserRule
         .executeAndAssertThat(command,
-            BASE_COMMAND_STRING + "--portable-auto-serializable-classes=" + patterns[0])
+            BASE_COMMAND_STRING + "--portable-auto-serializable-classes='" + patterns[0] + "'")
         .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = false")
         .containsOutput("Portable Classes = [com.company.DomainObject.*#identity=id]")
@@ -222,10 +222,10 @@ public class ConfigurePDXCommandTest {
   public void executionShouldCorrectlyConfigureAutoSerializableClassesWhenUsingCustomPattern() {
     String[] patterns = new String[] {"com.company.DomainObject.*#identity=id"};
 
-    // Custom Settings
+    // Shell 3.x: Pattern with special characters must be quoted
     gfshParserRule
         .executeAndAssertThat(command,
-            BASE_COMMAND_STRING + "--auto-serializable-classes=" + patterns[0])
+            BASE_COMMAND_STRING + "--auto-serializable-classes='" + patterns[0] + "'")
         .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = false")
         .containsOutput("Non Portable Classes = [com.company.DomainObject.*#identity=id]")

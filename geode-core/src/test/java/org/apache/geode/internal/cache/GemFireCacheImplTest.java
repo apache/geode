@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -688,6 +689,9 @@ public class GemFireCacheImplTest {
     when(file.listFiles()).thenReturn(new File[0]);
     when(file.list()).thenReturn(new String[0]);
     when(internalDistributedMember.getVmKind()).thenReturn(LOCATOR_DM_TYPE);
+    // Mock statistics creation to avoid NullPointerException in DLockStats
+    when(internalDistributedSystem.createAtomicStatistics(any(), any(), anyLong()))
+        .thenReturn(mock(org.apache.geode.Statistics.class));
     when(internalDistributedSystem.getDistributedMember())
         .thenThrow(new Error("Expected error by test."));
     assertThat(gemFireCacheImpl.isClosed()).isFalse();

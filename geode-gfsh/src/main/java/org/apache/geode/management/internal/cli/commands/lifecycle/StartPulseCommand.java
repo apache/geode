@@ -23,8 +23,8 @@ import java.net.URI;
 import javax.management.ObjectName;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -33,13 +33,14 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class StartPulseCommand extends OfflineGfshCommand {
 
-  @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
+  @ShellMethod(value = CliStrings.START_PULSE__HELP, key = CliStrings.START_PULSE)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
       CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  public ResultModel startPulse(@CliOption(key = CliStrings.START_PULSE__URL,
-      unspecifiedDefaultValue = "http://localhost:7070/pulse",
+  public ResultModel startPulse(@ShellOption(value = CliStrings.START_PULSE__URL,
+      defaultValue = "http://localhost:7070/pulse",
       help = CliStrings.START_PULSE__URL__HELP) final String url) throws IOException {
     if (StringUtils.isNotBlank(url)) {
       browse(URI.create(url));

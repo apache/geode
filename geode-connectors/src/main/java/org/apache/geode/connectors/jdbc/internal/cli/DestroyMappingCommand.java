@@ -23,9 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -40,7 +40,6 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -59,14 +58,15 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   private static final String DESTROY_MAPPING__GROUPS_NAME__HELP =
       "Server Group(s) of the JDBC mapping to be destroyed.";
 
-  @CliCommand(value = DESTROY_MAPPING, help = DESTROY_MAPPING__HELP)
+  @ShellMethod(value = DESTROY_MAPPING__HELP, key = DESTROY_MAPPING)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public ResultModel destroyMapping(@CliOption(key = DESTROY_MAPPING__REGION_NAME, mandatory = true,
-      help = DESTROY_MAPPING__REGION_NAME__HELP) String regionName,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+  public ResultModel destroyMapping(
+      @ShellOption(value = DESTROY_MAPPING__REGION_NAME,
+          help = DESTROY_MAPPING__REGION_NAME__HELP) String regionName,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          defaultValue = ShellOption.NULL,
           help = DESTROY_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     if (regionName.startsWith(SEPARATOR)) {
       regionName = regionName.substring(1);
@@ -227,7 +227,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
     return result;
   }
 
-  @CliAvailabilityIndicator({DESTROY_MAPPING})
+  @ShellMethodAvailability({DESTROY_MAPPING})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
   }

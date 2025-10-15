@@ -83,7 +83,9 @@ public class RegionMBeanAttributesTest {
     Set<String> eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
     assertThat(eventQueueIds).containsExactly("AEQ1");
 
-    gfsh.executeAndAssertThat("alter region --name=" + SEPARATOR + "FOO --async-event-queue-id=")
+    // Use explicit empty string syntax ('') for gfsh parameter to properly clear the queue
+    // assignment
+    gfsh.executeAndAssertThat("alter region --name=" + SEPARATOR + "FOO --async-event-queue-id=''")
         .statusIsSuccess();
 
     eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();

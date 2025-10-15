@@ -111,8 +111,8 @@ public class PutCommandIntegrationTest {
   @SuppressWarnings("deprecation")
   @Test
   public void putIfAbsent() {
-    // skip-if-exists is deprecated.
-    gfsh.executeAndAssertThat("help put").statusIsSuccess()
+    // Shell 3.x: help command requires explicit --command= syntax instead of positional argument
+    gfsh.executeAndAssertThat("help --command put").statusIsSuccess()
         .containsOutput("(Deprecated: Use --if-not-exists).");
 
     gfsh.executeAndAssertThat("put --region=" + SEPARATOR + "testRegion --key=key1 --value=value1")

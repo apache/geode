@@ -108,7 +108,13 @@ public class MissingDiskStoreAcceptanceTest {
         "--name=" + REGION_NAME,
         "--type=REPLICATE_PERSISTENT");
 
+    // Jakarta EE migration: Explicit connect command required before creating region.
+    // With Jetty 12, implicit connection after server startup is no longer reliable,
+    // so we must explicitly connect to the locator before executing cluster commands.
+    String connectToLocatorCommand = "connect --locator=localhost[" + locatorPort + "]";
+
     gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
+        connectToLocatorCommand,
         createRegionCommand);
 
     clientCache = new ClientCacheFactory()

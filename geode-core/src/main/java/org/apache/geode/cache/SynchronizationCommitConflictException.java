@@ -19,7 +19,7 @@ package org.apache.geode.cache;
  * Thrown when a commit operation of a JTA enlisted cache transaction fails
  *
  *
- * @see javax.transaction.UserTransaction#commit
+ * @see jakarta.transaction.UserTransaction#commit
  * @since GemFire 4.0
  */
 public class SynchronizationCommitConflictException extends CacheRuntimeException {

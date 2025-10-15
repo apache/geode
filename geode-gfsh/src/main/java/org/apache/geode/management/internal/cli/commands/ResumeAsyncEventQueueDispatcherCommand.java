@@ -17,11 +17,10 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ResumeAsyncEventQueueDispatcherFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -33,19 +32,17 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ResumeAsyncEventQueueDispatcherCommand extends GfshCommand {
 
-  @CliCommand(value = CliStrings.RESUME_ASYNCEVENTQUEUE,
-      help = CliStrings.RESUME_ASYNCEVENTQUEUE__HELP)
+  @ShellMethod(value = CliStrings.RESUME_ASYNCEVENTQUEUE__HELP,
+      key = CliStrings.RESUME_ASYNCEVENTQUEUE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel resumeAsyncEventQueueDispatcher(
-      @CliOption(key = CliStrings.RESUME_ASYNCEVENTQUEUE__ID,
-          mandatory = true, help = CliStrings.RESUME_ASYNCEVENTQUEUE__ID__HELP) String queueId,
+      @ShellOption(value = CliStrings.RESUME_ASYNCEVENTQUEUE__ID,
+          help = CliStrings.RESUME_ASYNCEVENTQUEUE__ID__HELP) String queueId,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.RESUME_ASYNCEVENTQUEUE__GROUP__HELP) String[] onGroup,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.RESUME_ASYNCEVENTQUEUE__MEMBER__HELP) String[] onMember) {
 
     if (queueId != null) {

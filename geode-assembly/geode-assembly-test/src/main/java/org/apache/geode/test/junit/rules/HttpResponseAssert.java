@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractCharSequenceAssert;
@@ -38,12 +38,20 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 
-public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
+/**
+ * Apache HttpComponents 5.x migration changes:
+ * - HttpResponse → ClassicHttpResponse (more specific interface for classic HTTP/1.1)
+ * - getStatusLine().getStatusCode() → getCode() (simplified status code access)
+ * - getEntity().getContentType().getValue() → getEntity().getContentType() (returns String
+ * directly)
+ */
+public class HttpResponseAssert
+    extends AbstractAssert<HttpResponseAssert, ClassicHttpResponse> {
   private static final Logger logger = LogService.getLogger();
   private final String responseBody;
   private final String logMessage;
 
-  public HttpResponseAssert(String uri, HttpResponse httpResponse) {
+  public HttpResponseAssert(String uri, ClassicHttpResponse httpResponse) {
     super(httpResponse, HttpResponseAssert.class);
     try {
       responseBody = getResponseBody();
@@ -59,12 +67,13 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     logger.info(logMessage);
   }
 
-  public static HttpResponseAssert assertResponse(HttpResponse response) {
+  public static HttpResponseAssert assertResponse(ClassicHttpResponse response) {
     return new HttpResponseAssert(null, response);
   }
 
   public HttpResponseAssert hasStatusCode(int... httpStatus) {
-    int statusCode = actual.getStatusLine().getStatusCode();
+    // HttpClient 5.x: getStatusLine().getStatusCode() replaced with getCode()
+    int statusCode = actual.getCode();
     assertThat(statusCode)
         .describedAs(logMessage + "\n" + descriptionText())
         .isIn(Arrays.stream(httpStatus).boxed().collect(Collectors.toList()));
@@ -92,12 +101,14 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
   }
 
   public HttpResponseAssert hasContentType(String contentType) {
-    assertThat(actual.getEntity().getContentType().getValue()).containsIgnoringCase(contentType);
+    // HttpClient 5.x: getContentType() returns String directly
+    assertThat(actual.getEntity().getContentType()).containsIgnoringCase(contentType);
     return this;
   }
 
   public HttpResponseAssert statusIsOk() {
-    assertThat(actual.getStatusLine().getStatusCode())
+    // HttpClient 5.x: getStatusLine().getStatusCode() replaced with getCode()
+    assertThat(actual.getCode())
         .describedAs(logMessage + "\n" + descriptionText())
         .isBetween(200, 299);
     return this;

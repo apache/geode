@@ -29,8 +29,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

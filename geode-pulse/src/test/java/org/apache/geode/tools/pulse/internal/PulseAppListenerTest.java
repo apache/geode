@@ -20,8 +20,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

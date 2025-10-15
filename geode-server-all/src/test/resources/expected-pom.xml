@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -50,96 +50,210 @@
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-connectors</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-core</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-cq</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-gfsh</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-log4j</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-logging</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-management</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-lucene</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-rebalancer</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-serialization</artifactId>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-memcached</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-old-client-support</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-wan</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-tcp-server</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-unsafe</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-http-service</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.iq80.snappy</groupId>
       <artifactId>snappy</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.swagger.core.v3</groupId>
       <artifactId>swagger-annotations</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j-to-slf4j</artifactId>
+          <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>

@@ -18,8 +18,8 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -27,11 +27,12 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class EchoCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
+  @ShellMethod(value = CliStrings.ECHO__HELP, key = {CliStrings.ECHO})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public ResultModel echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
-      mandatory = true, help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
+  public ResultModel echo(@ShellOption(value = {CliStrings.ECHO__STR, ""},
+      help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
 
     if (stringToEcho.equals("$*")) {
       Gfsh gfshInstance = getGfsh();

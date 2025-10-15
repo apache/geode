@@ -23,11 +23,6 @@ import java.util.Properties;
 import com.examples.UserGfshCommand;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.cli.CliMetaData;

@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -34,7 +34,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -54,24 +53,25 @@ public class LuceneCreateIndexCommand extends LuceneCommandBase {
   /**
    * On the server, we also verify the resource operation permissions CLUSTER:WRITE:DISK
    */
-  @CliCommand(value = LuceneCliStrings.LUCENE_CREATE_INDEX,
-      help = LuceneCliStrings.LUCENE_CREATE_INDEX__HELP)
+  @ShellMethod(value = LuceneCliStrings.LUCENE_CREATE_INDEX__HELP,
+      key = LuceneCliStrings.LUCENE_CREATE_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
   public ResultModel createIndex(
-      @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
+      @ShellOption(value = LuceneCliStrings.LUCENE__INDEX_NAME,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__NAME__HELP) final String indexName,
 
-      @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = LuceneCliStrings.LUCENE__REGION_PATH,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__REGION_HELP) final String regionPath,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, mandatory = true,
+      @ShellOption(value = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD_HELP) final String[] fields,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
+      @ShellOption(value = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
+          defaultValue = ShellOption.NULL,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers,
-      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
+      @ShellOption(value = LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
+          defaultValue = ShellOption.NULL,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER_HELP) final String serializer)
       throws CommandResultException {
 
@@ -123,7 +123,7 @@ public class LuceneCreateIndexCommand extends LuceneCommandBase {
     return executeFunction(function, functionArguments, targetMembers);
   }
 
-  @CliAvailabilityIndicator(LuceneCliStrings.LUCENE_CREATE_INDEX)
+  @ShellMethodAvailability(LuceneCliStrings.LUCENE_CREATE_INDEX)
   public boolean indexCommandsAvailable() {
     return super.indexCommandsAvailable();
   }

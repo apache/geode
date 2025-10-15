@@ -29,8 +29,8 @@ import javax.management.MalformedObjectNameException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
@@ -41,7 +41,6 @@ import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -49,132 +48,123 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceConstants;
 
+@org.springframework.shell.standard.ShellComponent
 public class StartServerCommand extends OfflineGfshCommand {
   private static final String SERVER_TERM_NAME = "Server";
 
-  @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
+  @ShellMethod(value = CliStrings.START_SERVER__HELP, key = CliStrings.START_SERVER)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public ResultModel startServer(
-      @CliOption(key = CliStrings.START_SERVER__NAME,
+      @ShellOption(value = CliStrings.START_SERVER__NAME,
           help = CliStrings.START_SERVER__NAME__HELP) String memberName,
-      @CliOption(key = CliStrings.START_SERVER__ASSIGN_BUCKETS, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__ASSIGN_BUCKETS, defaultValue = "false",
           help = CliStrings.START_SERVER__ASSIGN_BUCKETS__HELP) final Boolean assignBuckets,
-      @CliOption(key = CliStrings.START_SERVER__BIND_ADDRESS,
+      @ShellOption(value = CliStrings.START_SERVER__BIND_ADDRESS,
           help = CliStrings.START_SERVER__BIND_ADDRESS__HELP) final String bindAddress,
-      @CliOption(key = CliStrings.START_SERVER__CACHE_XML_FILE,
-          optionContext = ConverterHint.FILE_PATH,
+      @ShellOption(value = CliStrings.START_SERVER__CACHE_XML_FILE,
           help = CliStrings.START_SERVER__CACHE_XML_FILE__HELP) String cacheXmlPathname,
-      @CliOption(key = CliStrings.START_SERVER__CLASSPATH,
-          /* optionContext = ConverterHint.FILE_PATH, // there's an issue with TAB here */
+      @ShellOption(value = CliStrings.START_SERVER__CLASSPATH,
+          /* , // there's an issue with TAB here */
           help = CliStrings.START_SERVER__CLASSPATH__HELP) final String classpath,
-      @CliOption(key = CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE,
+      @ShellOption(value = CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE,
           help = CliStrings.START_SERVER__CRITICAL__HEAP__HELP) final Float criticalHeapPercentage,
-      @CliOption(key = CliStrings.START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE,
+      @ShellOption(value = CliStrings.START_SERVER__CRITICAL_OFF_HEAP_PERCENTAGE,
           help = CliStrings.START_SERVER__CRITICAL_OFF_HEAP__HELP) final Float criticalOffHeapPercentage,
-      @CliOption(key = CliStrings.START_SERVER__DIR,
+      @ShellOption(value = CliStrings.START_SERVER__DIR,
           help = CliStrings.START_SERVER__DIR__HELP) String workingDirectory,
-      @CliOption(key = CliStrings.START_SERVER__DISABLE_DEFAULT_SERVER,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__DISABLE_DEFAULT_SERVER,
+          defaultValue = "false",
           help = CliStrings.START_SERVER__DISABLE_DEFAULT_SERVER__HELP) final Boolean disableDefaultServer,
-      @CliOption(key = CliStrings.START_SERVER__DISABLE_EXIT_WHEN_OUT_OF_MEMORY,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__DISABLE_EXIT_WHEN_OUT_OF_MEMORY,
+          defaultValue = "false",
           help = CliStrings.START_SERVER__DISABLE_EXIT_WHEN_OUT_OF_MEMORY_HELP) final Boolean disableExitWhenOutOfMemory,
-      @CliOption(key = CliStrings.START_SERVER__ENABLE_TIME_STATISTICS,
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__ENABLE_TIME_STATISTICS,
           help = CliStrings.START_SERVER__ENABLE_TIME_STATISTICS__HELP) final Boolean enableTimeStatistics,
-      @CliOption(key = CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE,
+      @ShellOption(value = CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE,
           help = CliStrings.START_SERVER__EVICTION__HEAP__PERCENTAGE__HELP) final Float evictionHeapPercentage,
-      @CliOption(key = CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE,
+      @ShellOption(value = CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE,
           help = CliStrings.START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP) final Float evictionOffHeapPercentage,
-      @CliOption(key = CliStrings.START_SERVER__FORCE, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__FORCE, defaultValue = "false",
           help = CliStrings.START_SERVER__FORCE__HELP) final Boolean force,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.START_SERVER__GROUP__HELP) final String group,
-      @CliOption(key = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS,
+      @ShellOption(value = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS,
           help = CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS__HELP) final String hostNameForClients,
-      @CliOption(key = ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
+      @ShellOption(value = ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
           help = CliStrings.START_SERVER__JMX_MANAGER_HOSTNAME_FOR_CLIENTS__HELP) final String jmxManagerHostnameForClients,
-      @CliOption(key = CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH,
+          defaultValue = "false",
           help = CliStrings.START_SERVER__INCLUDE_SYSTEM_CLASSPATH__HELP) final Boolean includeSystemClasspath,
-      @CliOption(key = CliStrings.START_SERVER__INITIAL_HEAP,
+      @ShellOption(value = CliStrings.START_SERVER__INITIAL_HEAP,
           help = CliStrings.START_SERVER__INITIAL_HEAP__HELP) final String initialHeap,
-      @CliOption(key = CliStrings.START_SERVER__J, optionContext = GfshParser.J_OPTION_CONTEXT,
-          help = CliStrings.START_SERVER__J__HELP) final String[] jvmArgsOpts,
-      @CliOption(key = CliStrings.START_SERVER__LOCATORS,
-          optionContext = ConverterHint.LOCATOR_DISCOVERY_CONFIG,
+      @ShellOption(value = CliStrings.START_SERVER__J,
+          help = CliStrings.START_SERVER__J__HELP) final String jvmArgsOpts,
+      @ShellOption(value = CliStrings.START_SERVER__LOCATORS,
           help = CliStrings.START_SERVER__LOCATORS__HELP) final String locators,
-      @CliOption(key = CliStrings.START_SERVER__LOCATOR_WAIT_TIME,
+      @ShellOption(value = CliStrings.START_SERVER__LOCATOR_WAIT_TIME,
           help = CliStrings.START_SERVER__LOCATOR_WAIT_TIME_HELP) final Integer locatorWaitTime,
-      @CliOption(key = CliStrings.START_SERVER__LOCK_MEMORY, specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__LOCK_MEMORY,
           help = CliStrings.START_SERVER__LOCK_MEMORY__HELP) final Boolean lockMemory,
-      @CliOption(key = CliStrings.START_SERVER__LOG_LEVEL, optionContext = ConverterHint.LOG_LEVEL,
+      @ShellOption(value = CliStrings.START_SERVER__LOG_LEVEL,
           help = CliStrings.START_SERVER__LOG_LEVEL__HELP) final String logLevel,
-      @CliOption(key = CliStrings.START_SERVER__MAX__CONNECTIONS,
+      @ShellOption(value = CliStrings.START_SERVER__MAX__CONNECTIONS,
           help = CliStrings.START_SERVER__MAX__CONNECTIONS__HELP) final Integer maxConnections,
-      @CliOption(key = CliStrings.START_SERVER__MAXHEAP,
+      @ShellOption(value = CliStrings.START_SERVER__MAXHEAP,
           help = CliStrings.START_SERVER__MAXHEAP__HELP) final String maxHeap,
-      @CliOption(key = CliStrings.START_SERVER__MAX__MESSAGE__COUNT,
+      @ShellOption(value = CliStrings.START_SERVER__MAX__MESSAGE__COUNT,
           help = CliStrings.START_SERVER__MAX__MESSAGE__COUNT__HELP) final Integer maxMessageCount,
-      @CliOption(key = CliStrings.START_SERVER__MAX__THREADS,
+      @ShellOption(value = CliStrings.START_SERVER__MAX__THREADS,
           help = CliStrings.START_SERVER__MAX__THREADS__HELP) final Integer maxThreads,
-      @CliOption(key = CliStrings.START_SERVER__MCAST_ADDRESS,
+      @ShellOption(value = CliStrings.START_SERVER__MCAST_ADDRESS,
           help = CliStrings.START_SERVER__MCAST_ADDRESS__HELP) final String mcastBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__MCAST_PORT,
+      @ShellOption(value = CliStrings.START_SERVER__MCAST_PORT,
           help = CliStrings.START_SERVER__MCAST_PORT__HELP) final Integer mcastPort,
-      @CliOption(key = CliStrings.START_SERVER__MEMCACHED_PORT,
+      @ShellOption(value = CliStrings.START_SERVER__MEMCACHED_PORT,
           help = CliStrings.START_SERVER__MEMCACHED_PORT__HELP) final Integer memcachedPort,
-      @CliOption(key = CliStrings.START_SERVER__MEMCACHED_PROTOCOL,
+      @ShellOption(value = CliStrings.START_SERVER__MEMCACHED_PROTOCOL,
           help = CliStrings.START_SERVER__MEMCACHED_PROTOCOL__HELP) final String memcachedProtocol,
-      @CliOption(key = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS,
+      @ShellOption(value = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS,
           help = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS__HELP) final String memcachedBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
+      @ShellOption(value = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
-      @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
+      @ShellOption(value = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
           help = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP) final String offHeapMemorySize,
-      @CliOption(key = CliStrings.START_SERVER__PROPERTIES, optionContext = ConverterHint.FILE,
+      @ShellOption(value = CliStrings.START_SERVER__PROPERTIES,
           help = CliStrings.START_SERVER__PROPERTIES__HELP) File gemfirePropertiesFile,
-      @CliOption(key = CliStrings.START_SERVER__REBALANCE, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__REBALANCE, defaultValue = "false",
           help = CliStrings.START_SERVER__REBALANCE__HELP) final Boolean rebalance,
-      @CliOption(key = CliStrings.START_SERVER__SECURITY_PROPERTIES,
-          optionContext = ConverterHint.FILE,
+      @ShellOption(value = CliStrings.START_SERVER__SECURITY_PROPERTIES,
           help = CliStrings.START_SERVER__SECURITY_PROPERTIES__HELP) File gemfireSecurityPropertiesFile,
-      @CliOption(key = CliStrings.START_SERVER__SERVER_BIND_ADDRESS,
-          unspecifiedDefaultValue = CacheServer.DEFAULT_BIND_ADDRESS,
+      @ShellOption(value = CliStrings.START_SERVER__SERVER_BIND_ADDRESS,
+          defaultValue = CacheServer.DEFAULT_BIND_ADDRESS,
           help = CliStrings.START_SERVER__SERVER_BIND_ADDRESS__HELP) final String serverBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__SERVER_PORT,
-          unspecifiedDefaultValue = ("" + CacheServer.DEFAULT_PORT),
+      @ShellOption(value = CliStrings.START_SERVER__SERVER_PORT,
+          defaultValue = ("" + CacheServer.DEFAULT_PORT),
           help = CliStrings.START_SERVER__SERVER_PORT__HELP) final Integer serverPort,
-      @CliOption(key = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE,
+      @ShellOption(value = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE,
           help = CliStrings.START_SERVER__SOCKET__BUFFER__SIZE__HELP) final Integer socketBufferSize,
-      @CliOption(key = CliStrings.START_SERVER__SPRING_XML_LOCATION,
+      @ShellOption(value = CliStrings.START_SERVER__SPRING_XML_LOCATION,
           help = CliStrings.START_SERVER__SPRING_XML_LOCATION_HELP) final String springXmlLocation,
-      @CliOption(key = CliStrings.START_SERVER__STATISTIC_ARCHIVE_FILE,
+      @ShellOption(value = CliStrings.START_SERVER__STATISTIC_ARCHIVE_FILE,
           help = CliStrings.START_SERVER__STATISTIC_ARCHIVE_FILE__HELP) final String statisticsArchivePathname,
-      @CliOption(key = CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION,
-          unspecifiedDefaultValue = "true", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION,
+          defaultValue = "true",
           help = CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION__HELP) final Boolean requestSharedConfiguration,
-      @CliOption(key = CliStrings.START_SERVER__REST_API, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__REST_API, defaultValue = "false",
           help = CliStrings.START_SERVER__REST_API__HELP) final Boolean startRestApi,
-      @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_PORT, unspecifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.START_SERVER__HTTP_SERVICE_PORT, defaultValue = "",
           help = CliStrings.START_SERVER__HTTP_SERVICE_PORT__HELP) final String httpServicePort,
-      @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS,
-          unspecifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS,
+          defaultValue = "",
           help = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress,
-      @CliOption(
-          key = {CliStrings.START_SERVER__USERNAME, CliStrings.START_SERVER__USERNAME_LONGFORM},
-          unspecifiedDefaultValue = "",
+      @ShellOption(
+          value = {CliStrings.START_SERVER__USERNAME, CliStrings.START_SERVER__USERNAME_LONGFORM},
+          defaultValue = "",
           help = CliStrings.START_SERVER__USERNAME__HELP) final String userName,
-      @CliOption(key = CliStrings.START_SERVER__PASSWORD, unspecifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.START_SERVER__PASSWORD, defaultValue = "",
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
-      @CliOption(key = CliStrings.START_SERVER__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_SERVER__REDIRECT_OUTPUT, defaultValue = "false",
           help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
       throws Exception {
     // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_*
@@ -217,7 +207,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Boolean disableExitWhenOutOfMemory, Boolean enableTimeStatistics,
       Float evictionHeapPercentage, Float evictionOffHeapPercentage, Boolean force, String group,
       String hostNameForClients, String jmxManagerHostnameForClients,
-      Boolean includeSystemClasspath, String initialHeap, String[] jvmArgsOpts, String locators,
+      Boolean includeSystemClasspath, String initialHeap, String jvmArgsOpts, String locators,
       Integer locatorWaitTime, Boolean lockMemory, String logLevel, Integer maxConnections,
       String maxHeap, Integer maxMessageCount, Integer maxThreads, String mcastBindAddress,
       Integer mcastPort, Integer memcachedPort, String memcachedProtocol,
@@ -422,7 +412,7 @@ public class StartServerCommand extends OfflineGfshCommand {
   String[] createStartServerCommandLine(final ServerLauncher launcher,
       final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
       final Properties gemfireProperties, final String userClasspath,
-      final Boolean includeSystemClasspath, final String[] jvmArgsOpts,
+      final Boolean includeSystemClasspath, final String jvmArgsOpts,
       final Boolean disableExitWhenOutOfMemory, final String initialHeap, final String maxHeap)
       throws MalformedObjectNameException {
     List<String> commandLine = new ArrayList<>();
@@ -437,7 +427,13 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
     StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
     StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
-    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
+
+    // Split JVM arguments by the special delimiter used by GfshParser
+    String[] jvmArgsArray = null;
+    if (jvmArgsOpts != null && !jvmArgsOpts.isEmpty()) {
+      jvmArgsArray = jvmArgsOpts.split(GfshParser.J_ARGUMENT_DELIMITER);
+    }
+    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsArray);
 
     // NOTE asserting not equal to true rather than equal to false handles the null case and ensures
     // the user

@@ -32,9 +32,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
-import javax.transaction.TransactionManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.TransactionManager;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;

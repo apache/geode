@@ -15,8 +15,8 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Interface to session management. This class would be responsible for creating new sessions.

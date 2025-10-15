@@ -24,9 +24,9 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.springframework.shell.core.Completion;
 
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.Completion;
 
 public class JarDirPathConverterTest {
   @Rule

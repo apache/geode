@@ -18,14 +18,13 @@ package org.apache.geode.cache.wan.internal.cli.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.WanCopyRegionFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -58,30 +57,35 @@ public class WanCopyRegionCommand extends GfshCommand {
   public static final String WAN_COPY_REGION__CANCEL__HELP =
       "Cancel an ongoing wan-copy region command";
 
-  @CliAvailabilityIndicator({WAN_COPY_REGION})
+  @ShellMethodAvailability({WAN_COPY_REGION})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
   }
 
-  @CliCommand(value = WAN_COPY_REGION, help = WAN_COPY_REGION__HELP)
+  @ShellMethod(value = WAN_COPY_REGION__HELP, key = WAN_COPY_REGION)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   public ResultModel wanCopyRegion(
-      @CliOption(key = WAN_COPY_REGION__REGION, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = WAN_COPY_REGION__REGION,
+          defaultValue = ShellOption.NULL,
           help = WAN_COPY_REGION__REGION__HELP) String regionName,
-      @CliOption(key = WAN_COPY_REGION__SENDERID, mandatory = true,
-          optionContext = ConverterHint.GATEWAY_SENDER_ID,
+      @ShellOption(value = WAN_COPY_REGION__SENDERID,
+          defaultValue = ShellOption.NULL,
           help = WAN_COPY_REGION__SENDERID__HELP) String senderId,
-      @CliOption(key = WAN_COPY_REGION__MAXRATE,
-          unspecifiedDefaultValue = "0",
+      @ShellOption(value = WAN_COPY_REGION__MAXRATE,
+          defaultValue = "0",
           help = WAN_COPY_REGION__MAXRATE__HELP) long maxRate,
-      @CliOption(key = WAN_COPY_REGION__BATCHSIZE,
-          unspecifiedDefaultValue = "1000",
+      @ShellOption(value = WAN_COPY_REGION__BATCHSIZE,
+          defaultValue = "1000",
           help = WAN_COPY_REGION__BATCHSIZE__HELP) int batchSize,
-      @CliOption(key = WAN_COPY_REGION__CANCEL,
-          unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = WAN_COPY_REGION__CANCEL,
+          defaultValue = "false",
+          arity = 0,
           help = WAN_COPY_REGION__CANCEL__HELP) boolean isCancel) {
+
+    // Validate required parameters
+    if (regionName == null || senderId == null) {
+      return ResultModel.createError("Both --region and --sender-id are required");
+    }
 
     authorize(Resource.DATA, Operation.WRITE, regionName);
     final Object[] args = {regionName, senderId, isCancel, maxRate, batchSize};

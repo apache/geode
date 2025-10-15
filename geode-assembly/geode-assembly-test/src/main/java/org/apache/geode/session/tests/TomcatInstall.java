@@ -41,12 +41,20 @@ public class TomcatInstall extends ContainerInstall {
    * <p>
    * Includes the download URL for the each version, the version number associated with each
    * version, and other properties or XML attributes needed to setup tomcat containers within Cargo
+   *
+   * <p>
+   * Note: TOMCAT6-9 are kept for backward compatibility with upgradeTest but are not actively
+   * used in distributedTest (Jakarta EE 10 migration requires Tomcat 10+)
    */
   public enum TomcatVersion {
+    // Legacy versions - kept for upgradeTest compatibility only
     TOMCAT6(6, "tomcat-6.0.37.zip"),
     TOMCAT7(7, "tomcat-7.0.109.zip"),
     TOMCAT8(8, "tomcat-8.5.66.zip"),
-    TOMCAT9(9, "tomcat-9.0.62.zip");
+    TOMCAT9(9, "tomcat-9.0.62.zip"),
+
+    // Jakarta EE 10 compatible version - actively used in distributedTest
+    TOMCAT10(10, "tomcat-10.1.33.zip");
 
     private final int version;
 
@@ -86,6 +94,7 @@ public class TomcatInstall extends ContainerInstall {
           return "tomcat.util.scan.DefaultJarScanner.jarsToSkip";
         case TOMCAT8:
         case TOMCAT9:
+        case TOMCAT10:
           return "tomcat.util.scan.StandardJarScanFilter.jarsToSkip";
         default:
           throw new IllegalArgumentException("Illegal tomcat version option");
@@ -124,7 +133,8 @@ public class TomcatInstall extends ContainerInstall {
       {"antlr", "commons-io", "commons-lang", "commons-validator", "fastutil", "geode-common",
           "geode-core", "geode-unsafe", "geode-deployment-legacy", "geode-log4j", "geode-logging",
           "geode-membership", "geode-management", "geode-serialization", "geode-tcp-server",
-          "javax.transaction-api", "jgroups", "log4j-api", "log4j-core", "log4j-jul", "micrometer",
+          "jakarta.transaction-api", "jgroups", "log4j-api", "log4j-core", "log4j-jul",
+          "micrometer",
           "shiro-core", "jetty-server", "jetty-util", "jetty-http", "jetty-io"};
 
   private final TomcatVersion version;

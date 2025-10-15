@@ -14,40 +14,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-version: '3.5'
+version: '3'
 services:
-  locator-maeve:
+  geode:
     image: 'geode:develop'
     hostname: locator-maeve
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
       geode-sni-test:
+        aliases:
+          - locator-maeve
     volumes:
-      - ./geode-config:/geode/config:ro
+      # NOTE: Volumes are writable (no :ro flag) to allow dynamic certificate generation
+      # at test runtime. The test generates keystores with actual Docker-assigned IP addresses
+      # before starting Geode processes, as Jetty 12 requires IP SANs for RFC 6125 compliance.
+      - ./geode-config:/geode/config
       - ./scripts:/geode/scripts
-  server-clementine:
+  geode-server-clementine:
     image: 'geode:develop'
     hostname: server-clementine
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
       geode-sni-test:
+        aliases:
+          - server-clementine
     volumes:
-      - ./geode-config:/geode/config:ro
+      # NOTE: Volumes are writable to allow dynamic certificate generation (see geode service above)
+      - ./geode-config:/geode/config
       - ./scripts:/geode/scripts
-  server-dolores:
+  geode-server-dolores:
     image: 'geode:develop'
     hostname: server-dolores
     entrypoint: 'sh'
     command: '-c /geode/scripts/forever'
     networks:
       geode-sni-test:
+        aliases:
+          - server-dolores
     volumes:
-      - ./geode-config:/geode/config:ro
+      # NOTE: Volumes are writable to allow dynamic certificate generation (see geode service above)
+      - ./geode-config:/geode/config
       - ./scripts:/geode/scripts
   haproxy:
     image: 'haproxy:2.1'
+    depends_on:
+      - geode
+      - geode-server-dolores
+      - geode-server-clementine
+    ports:
+      - "15443:15443"
     networks:
       geode-sni-test:
     volumes:

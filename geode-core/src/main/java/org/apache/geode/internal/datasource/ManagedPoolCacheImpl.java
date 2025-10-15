@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.datasource;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEventListener;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
 
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionEventListener;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -43,7 +43,7 @@ public class ManagedPoolCacheImpl extends AbstractPoolCache {
    * Constructor initializes the ConnectionPoolCacheImpl properties.
    */
   public ManagedPoolCacheImpl(ManagedConnectionFactory connFac, Subject subject,
-      ConnectionRequestInfo connReq, javax.resource.spi.ConnectionEventListener eventListner,
+      ConnectionRequestInfo connReq, jakarta.resource.spi.ConnectionEventListener eventListner,
       ConfiguredDataSourceProperties configs) throws PoolException {
     super(eventListner, configs);
     connFactory = connFac;
@@ -69,7 +69,8 @@ public class ManagedPoolCacheImpl extends AbstractPoolCache {
           rex);
     }
     manConn
-        .addConnectionEventListener((javax.resource.spi.ConnectionEventListener) connEventListner);
+        .addConnectionEventListener(
+            (jakarta.resource.spi.ConnectionEventListener) connEventListner);
     return manConn;
   }
 

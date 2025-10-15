@@ -45,4 +45,13 @@ public interface HttpService extends CacheService {
    */
   void addWebApplication(String webAppContext, Path warFilePath,
       Map<String, Object> attributeNameValuePairs) throws Exception;
+
+  /**
+   * Restarts the HTTP server to ensure all webapps go through the complete Configuration lifecycle.
+   * This is necessary for Jetty 12 to properly discover ServletContainerInitializers via
+   * AnnotationConfiguration.configure().
+   *
+   * Should be called after adding all webapps to ensure they all initialize properly.
+   */
+  void restartHttpServer() throws Exception;
 }

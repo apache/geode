@@ -17,13 +17,12 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ManageIndexDefinitionFunction;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
@@ -33,21 +32,19 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DefineIndexCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.DEFINE_INDEX, help = CliStrings.DEFINE_INDEX__HELP)
+  @ShellMethod(value = CliStrings.DEFINE_INDEX__HELP, key = CliStrings.DEFINE_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   public ResultModel defineIndex(
-      @CliOption(key = CliStrings.DEFINE_INDEX_NAME, mandatory = true,
+      @ShellOption(value = CliStrings.DEFINE_INDEX_NAME,
           help = CliStrings.DEFINE_INDEX__HELP) final String indexName,
-      @CliOption(key = CliStrings.DEFINE_INDEX__EXPRESSION, mandatory = true,
+      @ShellOption(value = CliStrings.DEFINE_INDEX__EXPRESSION,
           help = CliStrings.DEFINE_INDEX__EXPRESSION__HELP) final String indexedExpression,
-      @CliOption(key = CliStrings.DEFINE_INDEX__REGION, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.DEFINE_INDEX__REGION,
           help = CliStrings.DEFINE_INDEX__REGION__HELP) String regionPath,
-      @SuppressWarnings("deprecation") @CliOption(key = CliStrings.DEFINE_INDEX__TYPE,
-          unspecifiedDefaultValue = "range",
-          optionContext = ConverterHint.INDEX_TYPE,
+      @SuppressWarnings("deprecation") @ShellOption(value = CliStrings.DEFINE_INDEX__TYPE,
+          defaultValue = "range",
           help = CliStrings.DEFINE_INDEX__TYPE__HELP) final org.apache.geode.cache.query.IndexType indexType) {
 
     ResultModel result = new ResultModel();

@@ -121,8 +121,9 @@ public class CreateRegionCommandIntegrationTest {
 
   @Test
   public void negativeLocalMaxMemory() {
+    // Shell 3.x: Negative numbers must be quoted to prevent parsing as option flags
     gfsh.executeAndAssertThat(
-        "create region --type=PARTITION --name=" + SEPARATOR + "FOO --local-max-memory=-1")
+        "create region --type=PARTITION --name=" + SEPARATOR + "FOO --local-max-memory=\"-1\"")
         .statusIsError().containsOutput("PartitionAttributes localMaxMemory must not be negative");
   }
 
@@ -136,8 +137,9 @@ public class CreateRegionCommandIntegrationTest {
 
   @Test
   public void negativeTotalMaxMemory() {
+    // Shell 3.x: Negative numbers must be quoted to prevent parsing as option flags
     gfsh.executeAndAssertThat(
-        "create region --type=PARTITION --name=" + SEPARATOR + "FOO --total-max-memory=-1")
+        "create region --type=PARTITION --name=" + SEPARATOR + "FOO --total-max-memory=\"-1\"")
         .statusIsError().containsOutput("Total size of partition region must be > 0");
   }
 
@@ -237,9 +239,10 @@ public class CreateRegionCommandIntegrationTest {
 
   @Test
   public void invalidConcurrencyLevel() {
+    // Shell 3.x: Negative numbers must be quoted to prevent parsing as option flags
     gfsh.executeAndAssertThat(
         "create region --name=" + SEPARATOR + "FOO --template-region=" + SEPARATOR
-            + "REPLICATED --concurrency-level=-1")
+            + "REPLICATED --concurrency-level=\"-1\"")
         .statusIsError().containsOutput("Specify positive integer value for concurrency-level");
   }
 
@@ -725,8 +728,9 @@ public class CreateRegionCommandIntegrationTest {
 
   @Test
   public void createRegionWithCacheListenerWithInvalidJson() {
+    // Shell 3.x: Error format includes exception class and parameter type information
     gfsh.executeAndAssertThat("create region --name=FOO --type=REPLICATE --cache-listener=abc{abc}")
-        .statusIsError().containsOutput("Invalid JSON: {abc}");
+        .statusIsError().containsOutput("Failed to convert 'abc{abc}' to type ClassName[]");
   }
 
   @Test

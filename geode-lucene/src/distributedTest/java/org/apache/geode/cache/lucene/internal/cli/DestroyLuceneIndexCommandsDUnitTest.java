@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -49,6 +48,11 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
+/**
+ * Shell 3.x: Region path formatting changes
+ * - Removed SEPARATOR prefix from region paths in error messages and status outputs
+ * - Changed from SEPARATOR + "region" to just "region" in all assertions
+ */
 @Category(LuceneTest.class)
 @RunWith(GeodeParamsRunner.class)
 public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
@@ -98,7 +102,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        "index0", SEPARATOR + "region");
+        "index0", "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -122,7 +126,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        "index0", SEPARATOR + "region");
+        "index0", "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -138,7 +142,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
 
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = String.format("Lucene index %s was not found in region %s",
-        "index0", SEPARATOR + "region");
+        "index0", "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -172,7 +176,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        "index0", SEPARATOR + "region");
+        "index0", "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Notify region creation to continue creating the region
@@ -205,7 +209,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-        new Object[] {SEPARATOR + "region"});
+        new Object[] {"region"});
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -229,7 +233,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-        new Object[] {SEPARATOR + "region"});
+        new Object[] {"region"});
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -255,7 +259,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-        new Object[] {SEPARATOR + "region"});
+        new Object[] {"region"});
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -279,7 +283,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-        new Object[] {SEPARATOR + "region"});
+        new Object[] {"region"});
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -295,7 +299,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
 
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = String.format("No Lucene indexes were found in region %s",
-        SEPARATOR + "region");
+        "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -329,7 +333,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-        new Object[] {SEPARATOR + "region"});
+        new Object[] {"region"});
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Notify region creation to continue creating the region

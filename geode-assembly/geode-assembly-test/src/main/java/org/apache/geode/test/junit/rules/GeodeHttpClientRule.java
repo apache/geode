@@ -22,19 +22,24 @@ import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.ProtocolException;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -56,7 +61,10 @@ public class GeodeHttpClientRule extends ExternalResource {
   private final Supplier<Integer> portSupplier;
   private HttpHost host;
   private HttpClient httpClient;
+  private HttpClient httpClientNoRedirect;
   private boolean useSSL;
+  // Jakarta EE migration: Shared context to maintain session cookies across requests
+  private HttpClientContext sharedContext;
 
   public GeodeHttpClientRule(String hostName, Supplier<Integer> portSupplier) {
     this.hostName = hostName;
@@ -72,32 +80,51 @@ public class GeodeHttpClientRule extends ExternalResource {
     return this;
   }
 
-  public HttpResponse loginToPulse(String username, String password) throws Exception {
+  public ClassicHttpResponse loginToPulse(String username, String password) throws Exception {
     connect();
-    return post("/pulse/login", "username", username, "password", password);
+    // Jakarta EE migration: Use non-redirecting client for login to verify 302 response
+    return postNoRedirect("/pulse/login", "username", username, "password", password);
   }
 
   public void loginToPulseAndVerify(String username, String password) throws Exception {
-    HttpResponse response = loginToPulse(username, password);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(302);
+    ClassicHttpResponse response = loginToPulse(username, password);
+    // HttpClient 5.x: getStatusLine() replaced with getCode() and getReasonPhrase()
+    assertThat(response.getCode()).isEqualTo(302);
     assertThat(response.getFirstHeader("Location").getValue())
         .contains("/pulse/clusterDetail.html");
   }
 
-  public HttpResponse logoutFromPulse() throws Exception {
+  public ClassicHttpResponse logoutFromPulse() throws Exception {
     return get("/pulse/clusterLogout");
   }
 
-  public HttpResponse get(String uri, String... params) throws Exception {
+  public ClassicHttpResponse get(String uri, String... params) throws Exception {
     connect();
-    HttpClientContext clientContext = HttpClientContext.create();
-    return httpClient.execute(host, buildHttpGet(uri, params), clientContext);
+    // Jakarta EE migration: Use shared context to preserve session cookies
+    if (sharedContext == null) {
+      sharedContext = HttpClientContext.create();
+    }
+    return (ClassicHttpResponse) httpClient.execute(host, buildHttpGet(uri, params), sharedContext);
   }
 
-  public HttpResponse post(String uri, String... params) throws Exception {
+  public ClassicHttpResponse post(String uri, String... params) throws Exception {
     connect();
-    HttpClientContext clientContext = HttpClientContext.create();
-    return httpClient.execute(host, buildHttpPost(uri, params), clientContext);
+    // Jakarta EE migration: Use shared context to preserve session cookies
+    if (sharedContext == null) {
+      sharedContext = HttpClientContext.create();
+    }
+    return (ClassicHttpResponse) httpClient.execute(host, buildHttpPost(uri, params),
+        sharedContext);
+  }
+
+  private ClassicHttpResponse postNoRedirect(String uri, String... params) throws Exception {
+    connect();
+    // Jakarta EE migration: Use shared context to preserve session cookies
+    if (sharedContext == null) {
+      sharedContext = HttpClientContext.create();
+    }
+    return (ClassicHttpResponse) httpClientNoRedirect.execute(host, buildHttpPost(uri, params),
+        sharedContext);
   }
 
   private void connect() {
@@ -105,16 +132,61 @@ public class GeodeHttpClientRule extends ExternalResource {
       return;
     }
 
-    host = new HttpHost(hostName, portSupplier.get(), useSSL ? "https" : "http");
+    // Jakarta EE migration: Create lenient redirect strategy for URIs with placeholders
+    // Apache HttpComponents 5 is stricter about URI validation than version 4
+    // This allows Spring Security OAuth2 redirect URIs with property placeholders
+    DefaultRedirectStrategy lenientRedirectStrategy = new DefaultRedirectStrategy() {
+      @Override
+      public boolean isRedirected(
+          org.apache.hc.core5.http.HttpRequest request,
+          org.apache.hc.core5.http.HttpResponse response,
+          org.apache.hc.core5.http.protocol.HttpContext context)
+          throws ProtocolException {
+        // Check if this would be a redirect
+        if (!super.isRedirected(request, response, context)) {
+          return false;
+        }
+        // Check if the Location header contains property placeholders
+        String location = response.getFirstHeader("Location").getValue();
+        if (location != null && location.contains("${")) {
+          // Don't follow redirects with unresolved property placeholders
+          return false;
+        }
+        return true;
+      }
+    };
+
+    host = new HttpHost(useSSL ? "https" : "http", hostName, portSupplier.get());
     if (useSSL) {
       HttpClientBuilder clientBuilder = HttpClients.custom();
       SSLContext ctx = SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.WEB).getSslContext();
-      clientBuilder.setSSLContext(ctx);
-      clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+      // HttpClient 5.x: SSL configuration via connection manager
+      HttpClientConnectionManager connectionManager =
+          PoolingHttpClientConnectionManagerBuilder.create()
+              .setSSLSocketFactory(SSLConnectionSocketFactoryBuilder.create()
+                  .setSslContext(ctx)
+                  .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                  .build())
+              .build();
+      clientBuilder.setConnectionManager(connectionManager);
+      // Jakarta EE migration: Create client with lenient redirect strategy
+      clientBuilder.setRedirectStrategy(lenientRedirectStrategy);
       httpClient = clientBuilder.build();
+      // Jakarta EE migration: Create client without redirect handling for login verification
+      httpClientNoRedirect = HttpClients.custom()
+          .setConnectionManager(connectionManager)
+          .disableRedirectHandling()
+          .build();
     } else {
-      httpClient = HttpClients.createDefault();
+      // Jakarta EE migration: Create client with lenient redirect strategy
+      httpClient = HttpClients.custom()
+          .setRedirectStrategy(lenientRedirectStrategy)
+          .build();
+      // Jakarta EE migration: Create client without redirect handling for login verification
+      httpClientNoRedirect = HttpClients.custom()
+          .disableRedirectHandling()
+          .build();
     }
   }
 

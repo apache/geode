@@ -274,8 +274,9 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     Region region = createRegionAndIndex();
     feedSomeNestedObjects(region);
 
+    // Escape @ symbol for Lucene query parser special characters
     query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
-        "Johnni.Jackson2@pivotal.io", "contacts.email");
+        "Johnni.Jackson2\\@pivotal.io", "contacts.email");
     results = query.findPages();
     assertEquals(1, results.size());
     printResults(results);
@@ -286,8 +287,9 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     Region region = createRegionAndIndex();
     feedSomeNestedObjects(region);
 
+    // Escape @ symbol for Lucene query parser special characters
     query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
-        "Johnni.Jackson2@pivotal.io", "email");
+        "Johnni.Jackson2\\@pivotal.io", "email");
     results = query.findPages();
     assertEquals(0, results.size());
   }
@@ -395,8 +397,9 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     Region region = createRegionAndIndexOnInvalidFields();
     feedSomeNestedObjects(region);
 
+    // Escape @ symbol for Lucene query parser special characters
     query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
-        "Johnni.Jackson2@pivotal.io", "contacts.email");
+        "Johnni.Jackson2\\@pivotal.io", "contacts.email");
     results = query.findPages();
     assertEquals(0, results.size());
   }

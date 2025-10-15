@@ -26,8 +26,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.internal.cli.commands.StartServerCommand;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -46,8 +45,11 @@ public class GfshParserAutoCompletionIntegrationTest {
     for (Method method : o.getClass().getDeclaredMethods()) {
       if (method.getName().equals("startServer")) {
         for (Parameter param : method.getParameters()) {
-          CliOption annotation = param.getAnnotation(CliOption.class);
-          startServerCommandCliOptions += annotation.key().length;
+          ShellOption annotation = param.getAnnotation(ShellOption.class);
+          if (annotation != null) {
+            // In Shell 3.x, @ShellOption uses 'value' (single option name) instead of 'key' (array)
+            startServerCommandCliOptions += annotation.value().length;
+          }
         }
         break;
       }
@@ -119,10 +121,10 @@ public class GfshParserAutoCompletionIntegrationTest {
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates().size()).isEqualTo(8);
     assertThat(candidate.getCandidates().stream()
-        .anyMatch(completion -> completion.getFormattedValue().contains("gateway-receiver")))
+        .anyMatch(completion -> completion.getValue().contains("gateway-receiver")))
             .isTrue();
     assertThat(candidate.getCandidates().stream()
-        .anyMatch(completion -> completion.getFormattedValue().contains("vsd")))
+        .anyMatch(completion -> completion.getValue().contains("vsd")))
             .isTrue();
   }
 
@@ -132,10 +134,10 @@ public class GfshParserAutoCompletionIntegrationTest {
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates().size()).isEqualTo(8);
     assertThat(candidate.getCandidates().stream()
-        .anyMatch(completion -> completion.getFormattedValue().contains("gateway-receiver")))
+        .anyMatch(completion -> completion.getValue().contains("gateway-receiver")))
             .isTrue();
     assertThat(candidate.getCandidates().stream()
-        .anyMatch(completion -> completion.getFormattedValue().contains("vsd")))
+        .anyMatch(completion -> completion.getValue().contains("vsd")))
             .isTrue();
   }
 

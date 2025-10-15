@@ -260,10 +260,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
         Throwable cause = e.getCause();
         if (cause instanceof IllegalArgumentException) {
           // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
-          String fullRegionPath =
-              regionPath.startsWith(SEPARATOR) ? regionPath : SEPARATOR + regionPath;
+          // Note: The error message uses the region path without leading separator
+          String displayRegionPath =
+              regionPath.startsWith(SEPARATOR) ? regionPath.substring(SEPARATOR.length())
+                  : regionPath;
           String indexNotFoundMessage = String.format("Lucene index %s was not found in region %s",
-              indexName, fullRegionPath);
+              indexName, displayRegionPath);
           if (!cause.getLocalizedMessage().equals(indexNotFoundMessage)) {
             throw e;
           }

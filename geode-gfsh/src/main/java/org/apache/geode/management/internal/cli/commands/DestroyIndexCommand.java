@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -32,7 +32,6 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.DestroyIndexFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -46,23 +45,21 @@ public class DestroyIndexCommand extends SingleGfshCommand {
   @Immutable
   private static final DestroyIndexFunction destroyIndexFunction = new DestroyIndexFunction();
 
-  @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
+  @ShellMethod(value = CliStrings.DESTROY_INDEX__HELP, key = CliStrings.DESTROY_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   public ResultModel destroyIndex(
-      @CliOption(key = CliStrings.DESTROY_INDEX__NAME, unspecifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.DESTROY_INDEX__NAME, defaultValue = "",
           help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
-      @CliOption(key = CliStrings.DESTROY_INDEX__REGION, optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.DESTROY_INDEX__REGION,
           help = CliStrings.DESTROY_INDEX__REGION__HELP) final String regionPath,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.DESTROY_INDEX__MEMBER__HELP) final String[] memberNameOrID,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group,
-      @CliOption(key = CliStrings.IFEXISTS, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false", help = CliStrings.IFEXISTS_HELP) boolean ifExists) {
+      @ShellOption(value = CliStrings.IFEXISTS, defaultValue = "false",
+          help = CliStrings.IFEXISTS_HELP) boolean ifExists) {
 
     if (isBlank(indexName) && isBlank(regionPath)
         && ArrayUtils.isEmpty(group) && ArrayUtils.isEmpty(memberNameOrID)) {

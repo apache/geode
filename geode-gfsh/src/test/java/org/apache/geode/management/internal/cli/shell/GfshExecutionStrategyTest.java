@@ -23,11 +23,11 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.CommandMarker;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
@@ -82,9 +82,18 @@ public class GfshExecutionStrategyTest {
   public void testOnLineCommandWhenGfshisOffLine() throws Exception {
     when(parsedCommand.getMethod()).thenReturn(Commands.class.getDeclaredMethod("onlineCommand"));
     when(parsedCommand.getInstance()).thenReturn(new Commands());
+    // Shell 3.x: getUserInput() is required for error message generation
+    when(parsedCommand.getUserInput()).thenReturn("onlineCommand");
     when(gfsh.isConnectedAndReady()).thenReturn(false);
     Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
-    assertThat(result).isNull();
+    // In Spring Shell 3.x, offline commands return an error message instead of null
+    assertThat(result).isNotNull();
+    // Check the result status or message content
+    String resultText = "";
+    while (result.hasNextLine()) {
+      resultText += result.nextLine();
+    }
+    assertThat(resultText).contains("not currently available");
   }
 
   @Test

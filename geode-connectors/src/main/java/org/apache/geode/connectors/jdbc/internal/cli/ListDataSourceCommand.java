@@ -15,8 +15,8 @@
 
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -41,7 +41,7 @@ public class ListDataSourceCommand extends GfshCommand {
 
   static final String DATA_SOURCE_PROPERTIES_SECTION = "data-source-properties";
 
-  @CliCommand(value = LIST_DATA_SOURCE, help = LIST_DATA_SOURCE__HELP)
+  @ShellMethod(value = LIST_DATA_SOURCE__HELP, key = LIST_DATA_SOURCE)
   @CliMetaData
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
@@ -107,7 +107,7 @@ public class ListDataSourceCommand extends GfshCommand {
     return dataSourceName.equals(regionMapping.getDataSourceName());
   }
 
-  @CliAvailabilityIndicator({LIST_DATA_SOURCE})
+  @ShellMethodAvailability({LIST_DATA_SOURCE})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
   }

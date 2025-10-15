@@ -20,8 +20,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
@@ -97,37 +97,39 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
           + " If that prefix is used it will be used to configure the pool data source. Append json string containing (name, type, value) to set any property. "
           + "For example: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
 
-  @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
+  @ShellMethod(value = CREATE_JNDIBINDING__HELP, key = CREATE_JNDIBINDING)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.UsernamePasswordInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createJDNIBinding(
-      @CliOption(key = {URL, CONNECTION_URL}, mandatory = true,
+      @ShellOption(value = {URL, CONNECTION_URL},
           help = CONNECTION_URL__HELP) String connectionUrl,
-      @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName,
-      @CliOption(key = BLOCKING_TIMEOUT_SECONDS,
+      @ShellOption(value = JNDI_NAME, help = JNDI_NAME__HELP) String jndiName,
+      @ShellOption(value = BLOCKING_TIMEOUT_SECONDS,
           help = BLOCKING_TIMEOUT_SECONDS__HELP) Integer blockingTimeout,
-      @CliOption(key = CONNECTION_POOLED_DATASOURCE_CLASS,
+      @ShellOption(value = CONNECTION_POOLED_DATASOURCE_CLASS,
           help = CONNECTION_POOLED_DATASOURCE_CLASS__HELP) String connectionPooledDatasource,
-      @CliOption(key = IDLE_TIMEOUT_SECONDS, help = IDLE_TIMEOUT_SECONDS__HELP) Integer idleTimeout,
-      @CliOption(key = INIT_POOL_SIZE, help = INIT_POOL_SIZE__HELP) Integer initPoolSize,
-      @CliOption(key = JDBC_DRIVER_CLASS,
+      @ShellOption(value = IDLE_TIMEOUT_SECONDS,
+          help = IDLE_TIMEOUT_SECONDS__HELP) Integer idleTimeout,
+      @ShellOption(value = INIT_POOL_SIZE, help = INIT_POOL_SIZE__HELP) Integer initPoolSize,
+      @ShellOption(value = JDBC_DRIVER_CLASS,
           help = JDBC_DRIVER_CLASS__HELP) String jdbcDriver,
-      @CliOption(key = LOGIN_TIMEOUT_SECONDS,
+      @ShellOption(value = LOGIN_TIMEOUT_SECONDS,
           help = LOGIN_TIMEOUT_SECONDS__HELP) Integer loginTimeout,
-      @CliOption(key = MANAGED_CONN_FACTORY_CLASS,
+      @ShellOption(value = MANAGED_CONN_FACTORY_CLASS,
           help = MANAGED_CONN_FACTORY_CLASS__HELP) String managedConnFactory,
-      @CliOption(key = MAX_POOL_SIZE, help = MAX_POOL_SIZE__HELP) Integer maxPoolSize,
-      @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
-      @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
-      @CliOption(key = TRANSACTION_TYPE, help = TRANSACTION_TYPE__HELP) String transactionType,
-      @CliOption(key = TYPE, unspecifiedDefaultValue = "SIMPLE",
+      @ShellOption(value = MAX_POOL_SIZE, help = MAX_POOL_SIZE__HELP) Integer maxPoolSize,
+      @ShellOption(value = USERNAME, help = USERNAME__HELP) String username,
+      @ShellOption(value = PASSWORD, help = PASSWORD__HELP) String password,
+      @ShellOption(value = TRANSACTION_TYPE, help = TRANSACTION_TYPE__HELP) String transactionType,
+      @ShellOption(value = TYPE, defaultValue = "SIMPLE",
           help = TYPE__HELP) DATASOURCE_TYPE type,
-      @CliOption(key = XA_DATASOURCE_CLASS, help = XA_DATASOURCE_CLASS__HELP) String xaDataSource,
-      @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
-      @CliOption(key = DATASOURCE_CONFIG_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
+      @ShellOption(value = XA_DATASOURCE_CLASS,
+          help = XA_DATASOURCE_CLASS__HELP) String xaDataSource,
+      @ShellOption(value = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
+          defaultValue = "false") boolean ifNotExists,
+      @ShellOption(value = DATASOURCE_CONFIG_PROPERTIES,
           help = DATASOURCE_CONFIG_PROPERTIES_HELP) JndiBindingsType.JndiBinding.ConfigProperty[] dsConfigProperties) {
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();

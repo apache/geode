@@ -55,7 +55,7 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
-  implementation('org.apache.httpcomponents:httpcore')
+  implementation('org.apache.httpcomponents.core5:httpcore5')
   implementation('com.fasterxml.jackson.core:jackson-databind')
 
   testImplementation(project(':geode-membership'))
@@ -83,20 +83,20 @@ dependencies {
 
   implementation('com.zaxxer:HikariCP')
   implementation('org.apache.commons:commons-lang3')
-  implementation('javax.xml.bind:jaxb-api')
+  implementation('jakarta.xml.bind:jakarta.xml.bind-api')
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-jcl') {
     ext.optional = true
   }
-  implementation('org.springframework.shell:spring-shell') {
+  // Spring Shell 3.x uses spring-shell-starter (Spring 6.x migration)
+  // Note: removed ext.optional and spring-core exclude to support PoolPropertyConverter
+  implementation('org.springframework.shell:spring-shell-starter') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
-    exclude module: 'spring-core'
-    ext.optional = true
   }
   implementation('com.healthmarketscience.rmiio:rmiio')
 
@@ -121,6 +121,12 @@ dependencies {
   acceptanceTestImplementation('org.mockito:mockito-core')
   acceptanceTestImplementation('pl.pragmatists:JUnitParams')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
+
+  // Exclude log4j-to-slf4j and logback to avoid conflicts with log4j-slf4j-impl
+  configurations.acceptanceTestRuntimeClasspath {
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+    exclude group: 'ch.qos.logback'
+  }
 
   acceptanceTestRuntimeOnly('mysql:mysql-connector-java')
   acceptanceTestRuntimeOnly('org.apache.derby:derby')

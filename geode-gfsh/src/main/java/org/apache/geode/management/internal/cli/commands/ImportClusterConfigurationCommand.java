@@ -31,8 +31,8 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.execute.ResultCollector;
@@ -74,19 +74,18 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
     APPLY, STAGE
   }
 
-  @CliCommand(value = {CliStrings.IMPORT_SHARED_CONFIG},
-      help = CliStrings.IMPORT_SHARED_CONFIG__HELP)
+  @ShellMethod(value = CliStrings.IMPORT_SHARED_CONFIG__HELP,
+      key = {CliStrings.IMPORT_SHARED_CONFIG})
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.ImportClusterConfigurationCommand$ImportInterceptor",
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public ResultModel importSharedConfig(
-      @CliOption(key = CliStrings.GROUP,
-          specifiedDefaultValue = ConfigurationPersistenceService.CLUSTER_CONFIG,
-          unspecifiedDefaultValue = ConfigurationPersistenceService.CLUSTER_CONFIG) String group,
-      @CliOption(key = XML_FILE) String xmlFile,
-      @CliOption(key = ACTION, help = ACTION_HELP, unspecifiedDefaultValue = "APPLY") Action action,
-      @CliOption(key = {CliStrings.IMPORT_SHARED_CONFIG__ZIP},
+      @ShellOption(value = CliStrings.GROUP,
+          defaultValue = ConfigurationPersistenceService.CLUSTER_CONFIG) String group,
+      @ShellOption(value = XML_FILE) String xmlFile,
+      @ShellOption(value = ACTION, help = ACTION_HELP, defaultValue = "APPLY") Action action,
+      @ShellOption(value = {CliStrings.IMPORT_SHARED_CONFIG__ZIP},
           help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
       throws IOException, TransformerException, SAXException, ParserConfigurationException {
 

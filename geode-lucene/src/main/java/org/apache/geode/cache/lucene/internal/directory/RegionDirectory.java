@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.lucene.store.BaseDirectory;
@@ -119,6 +121,15 @@ public class RegionDirectory extends BaseDirectory {
   @Override
   public void close() throws IOException {
     isOpen = false;
+  }
+
+  /**
+   * Lucene 9.x: New required method to track pending file deletions.
+   * Since Geode regions handle deletion immediately, we return an empty set.
+   */
+  @Override
+  public Set<String> getPendingDeletions() throws IOException {
+    return Collections.emptySet();
   }
 
   /**

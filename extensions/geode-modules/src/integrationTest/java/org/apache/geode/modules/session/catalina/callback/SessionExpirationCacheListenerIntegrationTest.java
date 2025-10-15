@@ -23,8 +23,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import junitparams.Parameters;
 import org.apache.juli.logging.Log;
 import org.junit.Before;

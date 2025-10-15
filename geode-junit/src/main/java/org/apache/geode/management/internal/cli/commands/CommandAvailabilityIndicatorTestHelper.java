@@ -18,43 +18,59 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
-
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 
 
+/**
+ * Test helper for verifying command availability indicators.
+ * Updated for Spring Shell 3.x - uses ShellMethod instead of CliCommand.
+ */
 public class CommandAvailabilityIndicatorTestHelper {
 
+  /**
+   * Asserts that all online commands (non-shell-only commands) have availability indicators
+   * defined.
+   * This ensures commands properly declare when they can be executed.
+   *
+   * In Spring Shell 3.x, availability is controlled by ShellMethodAvailability annotation.
+   * Shell-only commands (those that run locally in gfsh) don't need availability indicators
+   * since they don't depend on cluster connection state.
+   */
   public static void assertOnlineCommandsHasAvailabilityIndicator(CommandManager manager) {
-    List<CommandMarker> commandMarkers = manager.getCommandMarkers();
-    for (CommandMarker commandMarker : commandMarkers) {
-      // ignore all the other commands beside GfshCommand
-      if (!GfshCommand.class.isAssignableFrom(commandMarker.getClass())) {
-        continue;
-      }
+    List<String> commandsWithoutAvailabilityIndicator = new ArrayList<>();
 
+    // Get all registered command markers
+    for (Object commandMarker : manager.getCommandMarkers()) {
+      // Check each method for ShellMethod annotation
       for (Method method : commandMarker.getClass().getMethods()) {
-        CliCommand cliCommand = method.getAnnotation(CliCommand.class);
-        if (cliCommand == null) {
-          // the method is not a command method
+        CliMetaData cliMetaData = method.getAnnotation(CliMetaData.class);
+
+        // Skip if this is a shell-only command (doesn't need availability indicator)
+        if (cliMetaData != null && cliMetaData.shellOnly()) {
           continue;
         }
 
-        CliMetaData cliMetaData = method.getAnnotation(CliMetaData.class);
-        // all the online commands have availability indicator defined in the commandManager
-        if (cliMetaData == null || !cliMetaData.shellOnly()) {
-          assertThat(manager.getHelper().hasAvailabilityIndicator(cliCommand.value()[0]))
-              .describedAs(cliCommand.value()[0] + " in " + commandMarker.getClass()
-                  + " has no availability indicator defined. "
-                  + "Please add the command in the CommandAvailabilityIndicator")
-              .isTrue();
+        // Get the command name from Spring Shell's ShellMethod annotation
+        org.springframework.shell.standard.ShellMethod shellMethod =
+            method.getAnnotation(org.springframework.shell.standard.ShellMethod.class);
+
+        if (shellMethod != null) {
+          String commandName = shellMethod.key()[0]; // Primary command name
+
+          // Check if this online command has an availability indicator
+          if (!manager.getHelper().hasAvailabilityIndicator(commandName)) {
+            commandsWithoutAvailabilityIndicator.add(commandName);
+          }
         }
       }
     }
+
+    assertThat(commandsWithoutAvailabilityIndicator)
+        .as("All online commands must have availability indicators defined")
+        .isEmpty();
   }
 }
