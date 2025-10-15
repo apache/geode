@@ -6,6 +6,8 @@ accessors-smart
 antlr
 antlr-runtime
 asm
+asm-commons
+asm-tree
 byte-buddy
 classgraph
 classmate
@@ -37,6 +39,11 @@ jackson-datatype-jsr
 jakarta.activation
 jakarta.activation-api
 jakarta.annotation-api
+jakarta.el-api
+jakarta.enterprise.cdi-api
+jakarta.enterprise.lang-model
+jakarta.inject-api
+jakarta.interceptor-api
 jakarta.mail-api
 jakarta.resource-api
 jakarta.servlet-api
@@ -50,6 +57,8 @@ jcip-annotations
 jetty-ee
 jetty-http
 jetty-io
+jetty-jndi
+jetty-plus
 jetty-security
 jetty-server
 jetty-session
