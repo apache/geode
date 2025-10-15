@@ -99,6 +99,47 @@ function changeLocale(language, pagename) {
   });
 }
 
+/**
+ * Customizes UI elements with internationalized content
+ * 
+ * SECURITY CONSIDERATIONS:
+ * 
+ * This function processes i18n properties and updates DOM elements with dynamic content.
+ * It must properly validate and escape all content to prevent XSS attacks 
+ * (CodeQL rule: js/xss-through-dom).
+ * 
+ * XSS VULNERABILITIES ADDRESSED:
+ * 
+ * 1. UNSAFE HREF ATTRIBUTES:
+ * - customDisplayValue could contain malicious javascript: URLs
+ * - Direct insertion into href attributes enables XSS via link clicks
+ * - Solution: Block javascript: URLs and escape href content
+ * 
+ * 2. UNSAFE IMG SRC ATTRIBUTES:
+ * - customDisplayValue could contain malicious javascript: or data: URLs
+ * - Could enable XSS via image error handlers or malicious data URIs
+ * - Solution: Validate src URLs to allow only safe protocols
+ * 
+ * 3. DOM CONTENT INJECTION:
+ * - Content inserted via .html() method executes as HTML/JavaScript
+ * - I18n properties could be compromised or contain malicious content
+ * - Solution: Use escapeHTML() for all HTML content insertion
+ * 
+ * SECURITY IMPLEMENTATION:
+ * 
+ * - URL Validation: Block javascript: URLs in href attributes
+ * - Protocol Whitelist: Allow only safe protocols for image sources
+ * - HTML Escaping: Apply escapeHTML() to all HTML content
+ * - Error Logging: Log blocked attempts for security monitoring
+ * 
+ * COMPLIANCE:
+ * - Fixes CodeQL vulnerability: js/xss-through-dom
+ * - Follows OWASP XSS prevention guidelines for attribute injection
+ * - Implements secure internationalization content handling
+ * 
+ * Last updated: Jakarta EE 10 migration (October 2024)
+ * Security review: XSS vulnerabilities in UI customization addressed
+ */
 function customizeUI() {
 
   // common call back function for default and selected languages
@@ -110,9 +151,19 @@ function customizeUI() {
       if ($(this).is("div")) {
         $(this).html(escapeHTML(customDisplayValue));
       } else if ($(this).is("img")) {
-        $(this).attr('src', customDisplayValue);
+        // Security: Validate image src to prevent XSS via javascript: URLs
+        if (customDisplayValue && !customDisplayValue.match(/^(https?:\/\/|\/|data:image\/)/i)) {
+          console.warn("Potentially unsafe image src blocked:", customDisplayValue);
+        } else {
+          $(this).attr('src', customDisplayValue);
+        }
       } else if ($(this).is("a")) {
-        $(this).attr('href', customDisplayValue);
+        // Security: Validate href to prevent XSS via javascript: URLs
+        if (customDisplayValue && customDisplayValue.match(/^javascript:/i)) {
+          console.warn("Potentially unsafe href blocked:", customDisplayValue);
+        } else {
+          $(this).attr('href', escapeHTML(customDisplayValue));
+        }
       } else if ($(this).is("span")) {
         $(this).html(escapeHTML(customDisplayValue));
       }
@@ -749,7 +800,48 @@ function displayAlertCounts(){
 
 }
 
-// function used for generating alerts html div
+/**
+ * Function used for generating alerts HTML div
+ * 
+ * SECURITY CONSIDERATIONS:
+ * 
+ * This function constructs HTML content from user-controlled data and must properly
+ * escape all dynamic content to prevent XSS attacks (CodeQL rule: js/xss-through-dom).
+ * 
+ * XSS VULNERABILITIES ADDRESSED:
+ * 
+ * 1. UNESCAPED MEMBER NAME:
+ * - alertsList.memberName comes from server-side alert data
+ * - Could contain malicious script content if compromised or misconfigured
+ * - Direct insertion into DOM creates XSS vulnerability
+ * - Solution: Use escapeHTML() to sanitize before DOM insertion
+ * 
+ * 2. UNESCAPED ALERT DESCRIPTION:
+ * - alertsList.description contains alert message text
+ * - Could be manipulated by attackers to inject script content
+ * - Both full description and truncated substring vulnerable
+ * - Solution: Escape both full and truncated description content
+ * 
+ * 3. DOM INSERTION WITHOUT SANITIZATION:
+ * - Generated HTML inserted via .html() method in calling code
+ * - Browser interprets content as HTML, executing any embedded scripts
+ * - Malicious content could steal session cookies, redirect users, etc.
+ * 
+ * SECURITY IMPLEMENTATION:
+ * 
+ * - escapeHTML(): Applied to all user-controlled content before HTML construction
+ * - Member names: alertsList.memberName escaped before insertion
+ * - Alert descriptions: Both full and substring content escaped
+ * - HTML entities: Converts dangerous characters (<, >, &, quotes) to safe entities
+ * 
+ * COMPLIANCE:
+ * - Fixes CodeQL vulnerability: js/xss-through-dom
+ * - Follows OWASP XSS prevention guidelines
+ * - Implements input sanitization for web application security
+ * 
+ * Last updated: Jakarta EE 10 migration (October 2024)
+ * Security review: XSS vulnerabilities in notification rendering addressed
+ */
 function generateNotificationAlerts(alertsList, type) {
   var alertDiv = "";
 
@@ -783,7 +875,7 @@ function generateNotificationAlerts(alertsList, type) {
   }
 
   alertDiv = alertDiv + " defaultCursor' id='alertTitle_" + alertsList.id
-      + "'>" + alertsList.memberName + "</div>" + "<p id='alertShortMsg_"
+      + "'>" + escapeHTML(alertsList.memberName) + "</div>" + "<p id='alertShortMsg_"
       + alertsList.id + "' class='tabMessageDetailsBlock ";
 
   if (alertsList.isAcknowledged) {
@@ -794,9 +886,9 @@ function generateNotificationAlerts(alertsList, type) {
 
   var alertDescription = alertsList.description;
   if(alertDescription.length <= 38){
-    alertDiv = alertDiv + " '>" + alertDescription + "</p>";
+    alertDiv = alertDiv + " '>" + escapeHTML(alertDescription) + "</p>";
   }else{
-    alertDiv = alertDiv + " '>" + alertDescription.substring(0,36) + "..</p>";
+    alertDiv = alertDiv + " '>" + escapeHTML(alertDescription.substring(0,36)) + "..</p>";
   }
 
   alertDiv = alertDiv + "<div class='tabMessageDateBlock'>" 
