@@ -84,53 +84,53 @@ public class RestSecurityConfiguration {
      * CSRF Protection is intentionally disabled for this REST API.
      *
      * JUSTIFICATION:
-     * 
+     *
      * This is a stateless REST API consumed by non-browser clients (CLI tools, SDKs, scripts)
      * using explicit token-based authentication (HTTP Basic Auth). CSRF protection is unnecessary
      * and inappropriate for this use case.
      *
      * WHY CSRF IS NOT NEEDED:
-     * 
+     *
      * 1. STATELESS SESSION POLICY:
-     *    - Configured with SessionCreationPolicy.STATELESS (see sessionManagement() above)
-     *    - No HTTP sessions created, no JSESSIONID cookies generated
-     *    - Server maintains zero session state between requests
-     *    - Each request is authenticated independently via Authorization header
+     * - Configured with SessionCreationPolicy.STATELESS (see sessionManagement() above)
+     * - No HTTP sessions created, no JSESSIONID cookies generated
+     * - Server maintains zero session state between requests
+     * - Each request is authenticated independently via Authorization header
      *
      * 2. EXPLICIT HEADER-BASED AUTHENTICATION:
-     *    - Uses HTTP Basic Authentication: Authorization: Basic <base64(username:password)>
-     *    - Credentials must be explicitly included in HTTP headers on EVERY request
-     *    - Browsers do NOT automatically send Authorization headers (unlike cookies)
-     *    - Clients must programmatically set headers for each API call
-     *    - See GeodeDevRestClient.doRequest() for reference implementation
+     * - Uses HTTP Basic Authentication: Authorization: Basic <base64(username:password)>
+     * - Credentials must be explicitly included in HTTP headers on EVERY request
+     * - Browsers do NOT automatically send Authorization headers (unlike cookies)
+     * - Clients must programmatically set headers for each API call
+     * - See GeodeDevRestClient.doRequest() for reference implementation
      *
      * 3. NO AUTOMATIC CREDENTIAL TRANSMISSION:
-     *    - CSRF attacks exploit browsers' automatic cookie submission to authenticated domains
-     *    - Authorization headers require explicit JavaScript code to set (not automatic)
-     *    - Same-Origin Policy (SOP) blocks cross-origin header access without CORS consent
-     *    - Even if attacker hosts malicious page, cannot extract or send Authorization header
+     * - CSRF attacks exploit browsers' automatic cookie submission to authenticated domains
+     * - Authorization headers require explicit JavaScript code to set (not automatic)
+     * - Same-Origin Policy (SOP) blocks cross-origin header access without CORS consent
+     * - Even if attacker hosts malicious page, cannot extract or send Authorization header
      *
      * 4. NON-BROWSER CLIENT ARCHITECTURE:
-     *    - Primary consumers: gfsh CLI, Java/Python SDKs, curl scripts, automation tools
-     *    - These clients don't execute arbitrary JavaScript from untrusted sources
-     *    - No risk of user visiting malicious website while authenticated
-     *    - Browser-based consumption would violate API's stateless design contract
+     * - Primary consumers: gfsh CLI, Java/Python SDKs, curl scripts, automation tools
+     * - These clients don't execute arbitrary JavaScript from untrusted sources
+     * - No risk of user visiting malicious website while authenticated
+     * - Browser-based consumption would violate API's stateless design contract
      *
      * 5. CORS PROTECTION LAYER:
-     *    - Cross-Origin Resource Sharing (CORS) provides boundary protection
-     *    - Browsers enforce preflight OPTIONS requests for cross-origin API calls
-     *    - Custom Authorization headers trigger CORS preflight checks
-     *    - Server must explicitly whitelist origins via Access-Control-Allow-Origin
-     *    - Default CORS policy blocks unauthorized cross-origin requests
+     * - Cross-Origin Resource Sharing (CORS) provides boundary protection
+     * - Browsers enforce preflight OPTIONS requests for cross-origin API calls
+     * - Custom Authorization headers trigger CORS preflight checks
+     * - Server must explicitly whitelist origins via Access-Control-Allow-Origin
+     * - Default CORS policy blocks unauthorized cross-origin requests
      *
      * 6. SPRING SECURITY RECOMMENDATIONS:
-     *    Official Spring Security documentation states:
-     *    "If you are only creating a service that is used by non-browser clients, 
-     *     you will likely want to disable CSRF protection."
-     *    Source: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html
+     * Official Spring Security documentation states:
+     * "If you are only creating a service that is used by non-browser clients,
+     * you will likely want to disable CSRF protection."
+     * Source: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html
      *
      * WHEN CSRF WOULD BE REQUIRED:
-     * 
+     *
      * - Browser-based UI with session cookies (see geode-pulse for contrast)
      * - Form-based authentication with automatic cookie submission
      * - SessionCreationPolicy.IF_REQUIRED or ALWAYS
@@ -138,7 +138,7 @@ public class RestSecurityConfiguration {
      * - Cookie-based authentication without additional token validation
      *
      * SECURITY MEASURES IN PLACE:
-     * 
+     *
      * - Authentication required on every request (no persistent sessions)
      * - Authorization via @PreAuthorize annotations on endpoints
      * - HTTPS/TLS encryption required in production (protects credentials in transit)
@@ -146,7 +146,7 @@ public class RestSecurityConfiguration {
      * - No state stored on server between requests (eliminates session hijacking)
      *
      * ALTERNATIVE CONSIDERED:
-     * 
+     *
      * Enabling CSRF with CookieCsrfTokenRepository would be inappropriate because:
      * - Adds unnecessary complexity for stateless API clients
      * - Requires clients to perform extra GET request to obtain CSRF token
@@ -155,7 +155,7 @@ public class RestSecurityConfiguration {
      * - Breaks compatibility with standard REST client libraries
      *
      * VERIFICATION:
-     * 
+     *
      * See test evidence in:
      * - GeodeDevRestClient: Demonstrates per-request Basic Auth without sessions
      * - RestFunctionExecuteDUnitTest: Shows explicit credentials on each API call
@@ -163,7 +163,7 @@ public class RestSecurityConfiguration {
      * - No session cookie handling in client code
      *
      * CONCLUSION:
-     * 
+     *
      * CSRF protection is disabled by design for this stateless REST API. This configuration
      * aligns with Spring Security best practices, industry standards for REST APIs, and the
      * architectural requirements of Geode's programmatic client ecosystem.

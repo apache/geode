@@ -170,90 +170,90 @@ public class RestSecurityConfiguration {
      * CSRF Protection is intentionally disabled for this REST Management API.
      *
      * JUSTIFICATION:
-     * 
+     *
      * This is a stateless REST API consumed by non-browser clients (gfsh CLI, Java Management API,
      * automation scripts) using explicit token-based authentication (JWT Bearer tokens or HTTP
      * Basic Auth). CSRF protection is unnecessary and would break standard REST client workflows.
      *
      * WHY CSRF IS NOT NEEDED:
-     * 
+     *
      * 1. STATELESS SESSION POLICY:
-     *    - Configured with SessionCreationPolicy.STATELESS (see sessionManagement() above)
-     *    - No HTTP sessions created, no JSESSIONID cookies generated or maintained
-     *    - Server maintains zero session state between requests (pure stateless REST)
-     *    - Each request independently authenticated via Authorization header
-     *    - No session storage, no session hijacking attack surface
+     * - Configured with SessionCreationPolicy.STATELESS (see sessionManagement() above)
+     * - No HTTP sessions created, no JSESSIONID cookies generated or maintained
+     * - Server maintains zero session state between requests (pure stateless REST)
+     * - Each request independently authenticated via Authorization header
+     * - No session storage, no session hijacking attack surface
      *
      * 2. EXPLICIT HEADER-BASED AUTHENTICATION (DUAL MODE):
-     *    
-     *    MODE A - JWT Bearer Token Authentication (Primary):
-     *    - Format: Authorization: Bearer <JWT-token>
-     *    - JWT filter (JwtAuthenticationFilter) extracts token from Authorization header
-     *    - Token validated on every request via GeodeAuthenticationProvider
-     *    - Tokens are NOT automatically sent by browsers (must be explicitly set in code)
-     *    - See JwtAuthenticationFilter.attemptAuthentication() for token extraction logic
-     *    - Test evidence: JwtAuthenticationFilterTest proves header requirement
-     *    
-     *    MODE B - HTTP Basic Authentication (Fallback):
-     *    - Format: Authorization: Basic <base64(username:password)>
-     *    - BasicAuthenticationFilter processes credentials from header
-     *    - Credentials required on EVERY request (no persistent authentication)
-     *    - See ClusterManagementAuthorizationIntegrationTest for usage patterns
+     *
+     * MODE A - JWT Bearer Token Authentication (Primary):
+     * - Format: Authorization: Bearer <JWT-token>
+     * - JWT filter (JwtAuthenticationFilter) extracts token from Authorization header
+     * - Token validated on every request via GeodeAuthenticationProvider
+     * - Tokens are NOT automatically sent by browsers (must be explicitly set in code)
+     * - See JwtAuthenticationFilter.attemptAuthentication() for token extraction logic
+     * - Test evidence: JwtAuthenticationFilterTest proves header requirement
+     *
+     * MODE B - HTTP Basic Authentication (Fallback):
+     * - Format: Authorization: Basic <base64(username:password)>
+     * - BasicAuthenticationFilter processes credentials from header
+     * - Credentials required on EVERY request (no persistent authentication)
+     * - See ClusterManagementAuthorizationIntegrationTest for usage patterns
      *
      * 3. NO AUTOMATIC CREDENTIAL TRANSMISSION:
-     *    - CSRF attacks exploit browsers' automatic cookie submission to authenticated sites
-     *    - Authorization headers require explicit JavaScript/code to set (NEVER automatic)
-     *    - Same-Origin Policy (SOP) prevents cross-origin JavaScript from reading headers
-     *    - XMLHttpRequest/fetch cannot set Authorization header for cross-origin without CORS
-     *    - Even if attacker controls malicious page, cannot access or transmit user's tokens
-     *    - Browser security model protects Authorization header from cross-site access
+     * - CSRF attacks exploit browsers' automatic cookie submission to authenticated sites
+     * - Authorization headers require explicit JavaScript/code to set (NEVER automatic)
+     * - Same-Origin Policy (SOP) prevents cross-origin JavaScript from reading headers
+     * - XMLHttpRequest/fetch cannot set Authorization header for cross-origin without CORS
+     * - Even if attacker controls malicious page, cannot access or transmit user's tokens
+     * - Browser security model protects Authorization header from cross-site access
      *
      * 4. NON-BROWSER CLIENT ARCHITECTURE:
-     *    Primary API consumers:
-     *    - gfsh command-line interface (shell scripts, interactive sessions)
-     *    - Java ClusterManagementService client SDK
-     *    - Python/Ruby automation scripts using REST libraries
-     *    - CI/CD pipelines (Jenkins, GitLab CI, GitHub Actions)
-     *    - Infrastructure-as-Code tools (Terraform, Ansible)
-     *    - Monitoring systems (Prometheus exporters, custom agents)
-     *    
-     *    Security characteristics:
-     *    - These clients don't render HTML or execute untrusted JavaScript
-     *    - No risk of user visiting malicious website while API credentials active
-     *    - Credentials stored in secure configuration files, not browser storage
-     *    - No session cookies to steal via XSS or network sniffing
+     * Primary API consumers:
+     * - gfsh command-line interface (shell scripts, interactive sessions)
+     * - Java ClusterManagementService client SDK
+     * - Python/Ruby automation scripts using REST libraries
+     * - CI/CD pipelines (Jenkins, GitLab CI, GitHub Actions)
+     * - Infrastructure-as-Code tools (Terraform, Ansible)
+     * - Monitoring systems (Prometheus exporters, custom agents)
+     *
+     * Security characteristics:
+     * - These clients don't render HTML or execute untrusted JavaScript
+     * - No risk of user visiting malicious website while API credentials active
+     * - Credentials stored in secure configuration files, not browser storage
+     * - No session cookies to steal via XSS or network sniffing
      *
      * 5. CORS PROTECTION LAYER:
-     *    - Cross-Origin Resource Sharing provides boundary enforcement
-     *    - Browsers enforce preflight OPTIONS requests for custom headers
-     *    - Authorization header is non-simple header → triggers CORS preflight
-     *    - Server must explicitly allow origins via Access-Control-Allow-Origin
-     *    - Server must explicitly allow Authorization header via Access-Control-Allow-Headers
-     *    - Default CORS policy: deny all cross-origin requests with credentials
-     *    - Attacker cannot make cross-origin authenticated requests without server consent
+     * - Cross-Origin Resource Sharing provides boundary enforcement
+     * - Browsers enforce preflight OPTIONS requests for custom headers
+     * - Authorization header is non-simple header → triggers CORS preflight
+     * - Server must explicitly allow origins via Access-Control-Allow-Origin
+     * - Server must explicitly allow Authorization header via Access-Control-Allow-Headers
+     * - Default CORS policy: deny all cross-origin requests with credentials
+     * - Attacker cannot make cross-origin authenticated requests without server consent
      *
      * 6. JWT-SPECIFIC CSRF RESISTANCE:
-     *    - JWT tokens stored in client application memory, not browser cookies
-     *    - No automatic transmission mechanism (unlike HttpOnly cookies)
-     *    - Token must be explicitly read from storage and set in request header
-     *    - Cross-site scripts cannot access localStorage/sessionStorage (Same-Origin Policy)
-     *    - Token rotation/expiration limits window of vulnerability
-     *    - Stateless validation eliminates server-side session fixation attacks
+     * - JWT tokens stored in client application memory, not browser cookies
+     * - No automatic transmission mechanism (unlike HttpOnly cookies)
+     * - Token must be explicitly read from storage and set in request header
+     * - Cross-site scripts cannot access localStorage/sessionStorage (Same-Origin Policy)
+     * - Token rotation/expiration limits window of vulnerability
+     * - Stateless validation eliminates server-side session fixation attacks
      *
      * 7. SPRING SECURITY OFFICIAL GUIDANCE:
-     *    Spring Security documentation explicitly states:
-     *    
-     *    "If you are only creating a service that is used by non-browser clients, 
-     *     you will likely want to disable CSRF protection."
-     *    
-     *    "CSRF protection is not necessary for APIs that are consumed by non-browser 
-     *     clients. This is because there is no way for a malicious site to submit 
-     *     requests on behalf of the user."
-     *    
-     *    Source: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html
+     * Spring Security documentation explicitly states:
+     *
+     * "If you are only creating a service that is used by non-browser clients,
+     * you will likely want to disable CSRF protection."
+     *
+     * "CSRF protection is not necessary for APIs that are consumed by non-browser
+     * clients. This is because there is no way for a malicious site to submit
+     * requests on behalf of the user."
+     *
+     * Source: https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html
      *
      * WHEN CSRF WOULD BE REQUIRED:
-     * 
+     *
      * CSRF protection should be enabled for:
      * - Browser-based web applications with HTML forms (see geode-pulse)
      * - Session-based authentication using cookies for state management
@@ -263,7 +263,7 @@ public class RestSecurityConfiguration {
      * - Any application where credentials are stored in cookies
      *
      * SECURITY MEASURES CURRENTLY IN PLACE:
-     * 
+     *
      * Defense-in-depth protections:
      * - ✅ Authentication required on EVERY request (no session reuse)
      * - ✅ Method-level authorization via @PreAuthorize annotations
@@ -277,7 +277,7 @@ public class RestSecurityConfiguration {
      * - ✅ JSON serialization security (Jackson ObjectMapper configuration)
      *
      * ALTERNATIVES CONSIDERED AND REJECTED:
-     * 
+     *
      * Option: Enable CSRF with CookieCsrfTokenRepository
      * Rejected because:
      * - Violates stateless REST principles (requires server-side token storage)
@@ -296,7 +296,7 @@ public class RestSecurityConfiguration {
      * - Incompatible with JWT Bearer token authentication model
      *
      * VERIFICATION AND TEST EVIDENCE:
-     * 
+     *
      * Configuration verification:
      * - SessionCreationPolicy.STATELESS explicitly set (line 120 above)
      * - JwtAuthenticationFilter requires "Authorization: Bearer" header
@@ -318,7 +318,7 @@ public class RestSecurityConfiguration {
      * - Client libraries use Apache HttpClient with per-request auth
      *
      * ARCHITECTURAL COMPARISON:
-     * 
+     *
      * geode-web-management (this API):
      * - SessionCreationPolicy: STATELESS
      * - Authentication: JWT Bearer / HTTP Basic (headers)
@@ -334,7 +334,7 @@ public class RestSecurityConfiguration {
      * - CSRF needed: YES (but currently disabled - separate issue)
      *
      * COMPLIANCE AND STANDARDS:
-     * 
+     *
      * This configuration complies with:
      * - OWASP REST Security Cheat Sheet (stateless API recommendations)
      * - Spring Security best practices for REST APIs
@@ -343,7 +343,7 @@ public class RestSecurityConfiguration {
      * - Industry standard practices (AWS API Gateway, Google Cloud APIs, Azure APIs)
      *
      * CONCLUSION:
-     * 
+     *
      * CSRF protection is intentionally disabled for this stateless REST Management API.
      * This configuration is architecturally correct, security-appropriate, and follows
      * Spring Security recommendations for APIs consumed by non-browser clients using
