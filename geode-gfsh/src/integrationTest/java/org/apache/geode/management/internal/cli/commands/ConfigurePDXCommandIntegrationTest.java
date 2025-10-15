@@ -28,28 +28,46 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 /**
  * Integration tests for the 'configure pdx' gfsh command.
  *
- * <p><b>IMPORTANT - Spring Shell 3.x Parameter Quoting:</b></p>
- * <p>Parameter values containing '=' signs MUST be quoted to prevent incorrect parsing.
+ * <p>
+ * <b>IMPORTANT - Spring Shell 3.x Parameter Quoting:</b>
+ * </p>
+ * <p>
+ * Parameter values containing '=' signs MUST be quoted to prevent incorrect parsing.
  * Spring Shell 3.x's {@link org.apache.geode.management.internal.cli.GfshParser#splitUserInput}
- * splits unquoted tokens on '=' by default, treating them as separate arguments.</p>
+ * splits unquoted tokens on '=' by default, treating them as separate arguments.
+ * </p>
  *
- * <p><b>Why Quotes Are Required:</b></p>
+ * <p>
+ * <b>Why Quotes Are Required:</b>
+ * </p>
  * <ul>
- *   <li><b>Without quotes:</b> {@code --auto-serializable-classes=com.company.DomainObject.*#identity=id}
- *       <br>Parser sees: {@code ["com.company.DomainObject.*#identity", "id"]} (2 separate values)</li>
- *   <li><b>With quotes:</b> {@code --auto-serializable-classes="com.company.DomainObject.*#identity=id"}
- *       <br>Parser sees: {@code ["com.company.DomainObject.*#identity=id"]} (single value)</li>
+ * <li><b>Without quotes:</b>
+ * {@code --auto-serializable-classes=com.company.DomainObject.*#identity=id}
+ * <br>
+ * Parser sees: {@code ["com.company.DomainObject.*#identity", "id"]} (2 separate values)</li>
+ * <li><b>With quotes:</b>
+ * {@code --auto-serializable-classes="com.company.DomainObject.*#identity=id"}
+ * <br>
+ * Parser sees: {@code ["com.company.DomainObject.*#identity=id"]} (single value)</li>
  * </ul>
  *
- * <p><b>Impact:</b> PDX auto-serialization patterns use the format {@code pattern#param=value}.
+ * <p>
+ * <b>Impact:</b> PDX auto-serialization patterns use the format {@code pattern#param=value}.
  * Without quotes, the {@code =value} portion is lost, causing
  * {@link org.apache.geode.pdx.internal.AutoSerializableManager} to fail with:
- * <pre>"Unable to correctly process auto serialization init value: pattern#param"</pre>
- * because it expects {@code param=value} but receives only {@code param}.</p>
  *
- * <p><b>GfshParser Behavior:</b> The parser explicitly checks for quoted strings and bypasses
+ * <pre>
+ * "Unable to correctly process auto serialization init value: pattern#param"
+ * </pre>
+ *
+ * because it expects {@code param=value} but receives only {@code param}.
+ * </p>
+ *
+ * <p>
+ * <b>GfshParser Behavior:</b> The parser explicitly checks for quoted strings and bypasses
  * the '=' splitting logic when quotes are detected (see {@code GfshParser.splitUserInput()}).
- * This is the intended mechanism for passing parameter values containing delimiter characters.</p>
+ * This is the intended mechanism for passing parameter values containing delimiter characters.
+ * </p>
  *
  * @see org.apache.geode.management.internal.cli.GfshParser#splitUserInput
  * @see org.apache.geode.pdx.ReflectionBasedAutoSerializer
