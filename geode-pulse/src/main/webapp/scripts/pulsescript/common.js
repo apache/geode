@@ -29,6 +29,37 @@ var clusteRGraph;
 var loadMore = false;
 var productname = 'gemfire';
 var currentSelectedAlertId = null;
+
+/**
+ * CSRF Token Support for Spring Security 6.x
+ * 
+ * Jakarta EE 10 Migration: Added CSRF token handling for secure AJAX requests.
+ * Spring Security now requires CSRF tokens for all state-changing operations (POST, PUT, DELETE).
+ * 
+ * This function extracts the CSRF token from the XSRF-TOKEN cookie set by Spring Security's
+ * CookieCsrfTokenRepository. The token must be included in the X-XSRF-TOKEN header for all
+ * AJAX POST requests to prevent Cross-Site Request Forgery attacks.
+ * 
+ * Security Context:
+ * - Pulse uses session-based authentication (form login + session cookies)
+ * - Browsers automatically send session cookies with requests
+ * - CSRF tokens prevent malicious sites from forging authenticated requests
+ * - Token is stored in cookie (readable by JavaScript) and must be sent in header
+ * 
+ * @returns {string|null} The CSRF token value, or null if not found
+ */
+function getCsrfToken() {
+  var name = "XSRF-TOKEN=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var cookies = decodedCookie.split(';');
+  for(var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i].trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length, cookie.length);
+    }
+  }
+  return null;
+}
 var colorCodeForRegions = "#8c9aab"; // Default color for regions
 var colorCodeForSelectedRegion = "#87b025";
 var colorCodeForZeroEntryCountRegions = "#848789";
@@ -279,14 +310,22 @@ function displayClusterStatus() {
       var data = {
         "pulseData" : this.toJSONObj(postData)
       };
-      $.post("pulseUpdate", data, function(data) {
-        updateRGraphFlags();
-        clusteRGraph.loadJSON(data.clustor);
-        clusteRGraph.compute('end');
-        if (vMode != 8)
-          refreshNodeAccAlerts();
-        clusteRGraph.refresh();
-      }).error(repsonseErrorHandler);
+      // Jakarta EE 10 Migration: Include CSRF token for AJAX POST requests
+      $.ajax({
+        url: "pulseUpdate",
+        type: "POST",
+        headers: { 'X-XSRF-TOKEN': getCsrfToken() },
+        data: data,
+        success: function(data) {
+          updateRGraphFlags();
+          clusteRGraph.loadJSON(data.clustor);
+          clusteRGraph.compute('end');
+          if (vMode != 8)
+            refreshNodeAccAlerts();
+          clusteRGraph.refresh();
+        },
+        error: repsonseErrorHandler
+      });
     }
     // updating tree map
     if (flagActiveTab == "MEM_TREE_MAP_DEF") {
@@ -297,8 +336,14 @@ function displayClusterStatus() {
         "pulseData" : this.toJSONObj(postData)
       };
 
-      $.post("pulseUpdate", data, function(data) {
-        var members = data.members;
+      // Jakarta EE 10 Migration: Include CSRF token for AJAX POST requests
+      $.ajax({
+        url: "pulseUpdate",
+        type: "POST",
+        headers: { 'X-XSRF-TOKEN': getCsrfToken() },
+        data: data,
+        success: function(data) {
+          var members = data.members;
         memberCount = members.length;
         var childerensVal = [];
 
@@ -357,7 +402,9 @@ function displayClusterStatus() {
         };
         clusterMemberTreeMap.loadJSON(json);
         clusterMemberTreeMap.refresh();
-      }).error(repsonseErrorHandler);
+        },
+        error: repsonseErrorHandler
+      });
     }
   }
 }
@@ -1329,6 +1376,11 @@ function ajaxPost(pulseUrl, pulseData, pulseCallBackName) {
     url : pulseUrl,
     type : "POST",
     dataType : "json",
+    // Jakarta EE 10 Migration: Include CSRF token in request header
+    // Spring Security 6.x requires X-XSRF-TOKEN header for CSRF protection
+    headers: {
+      'X-XSRF-TOKEN': getCsrfToken()
+    },
     data : {
       "pulseData" : this.toJSONObj(pulseData)
     },
