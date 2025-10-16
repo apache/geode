@@ -132,7 +132,9 @@ public class LuceneTestUtilities {
     @Override
     public Query getQuery(LuceneIndex index) throws LuceneQueryException {
       if (luceneQuery == null) {
-        luceneQuery = IntPoint.newRangeQuery(fieldName, lowerValue, upperValue);
+        // Use "_point" suffix to match the field name used in SerializerUtil for Lucene 9.x
+        // compatibility
+        luceneQuery = IntPoint.newRangeQuery(fieldName + "_point", lowerValue, upperValue);
       }
       System.out.println("IntRangeQueryProvider, using java serializable");
       return luceneQuery;
@@ -155,7 +157,9 @@ public class LuceneTestUtilities {
     @Override
     public Query getQuery(LuceneIndex index) throws LuceneQueryException {
       if (luceneQuery == null) {
-        luceneQuery = FloatPoint.newRangeQuery(fieldName, lowerValue, upperValue);
+        // Use "_point" suffix to match the field name used in SerializerUtil for Lucene 9.x
+        // compatibility
+        luceneQuery = FloatPoint.newRangeQuery(fieldName + "_point", lowerValue, upperValue);
         // luceneQuery = DoublePoint.newRangeQuery(fieldName, lowerValue, upperValue);
       }
       System.out.println("IntRangeQueryProvider, using java serializable");

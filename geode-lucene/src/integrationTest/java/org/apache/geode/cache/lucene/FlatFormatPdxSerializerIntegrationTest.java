@@ -105,7 +105,8 @@ public class FlatFormatPdxSerializerIntegrationTest {
     Document doc1 = invokeSerializer(serializer, pdx, fields);
     assertEquals(17, doc1.getFields().size());
 
-    IndexableField[] fieldsInDoc = doc1.getFields("intArr");
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    IndexableField[] fieldsInDoc = doc1.getFields("intArr_point");
     Collection<Object> results = getResultCollection(fieldsInDoc, true);
     assertEquals(2, results.size());
     assertTrue(results.contains(2001));
@@ -149,7 +150,8 @@ public class FlatFormatPdxSerializerIntegrationTest {
     PdxInstance pdx = createPdxInstance();
     Document doc1 = invokeSerializer(serializer, pdx, fields);
 
-    IndexableField[] fieldsInDoc = doc1.getFields("positions.sharesOutstanding");
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    IndexableField[] fieldsInDoc = doc1.getFields("positions.sharesOutstanding_point");
     Collection<Object> results = getResultCollection(fieldsInDoc, true);
     assertEquals(2, results.size());
     assertTrue(results.contains(5000.0));

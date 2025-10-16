@@ -20,7 +20,6 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.IntRangeQueryProvider;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.List;
@@ -58,7 +57,6 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
     result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER, filter);
     return result;
   }
-
 
   @Test
   @Parameters(method = "getPartitionRegionTypes")
@@ -196,7 +194,8 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
           new TestObjectSameFieldNameButDifferentDataTypeFloat(999.1f)));
     });
 
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    // Wait for async event queue to flush all entries to Lucene index before querying
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
 
     accessor.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
