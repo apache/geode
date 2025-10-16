@@ -413,8 +413,22 @@ public class CreateRegionCommand extends SingleGfshCommand {
 
     // validate colocation for partitioned regions
     if (prColocatedWith != null) {
+      // Normalize region path to include leading slash for MBean lookup.
+      // The prColocatedWith parameter comes from gfsh command input and may or may not
+      // include a leading slash (e.g., "test1" vs "/test1"). However, MBeans are always
+      // registered using region.getFullPath() which includes the leading slash.
+      // This creates an ObjectName mismatch:
+      // - MBean registered as: GemFire:service=Region,name=/test1,type=Distributed
+      // - Lookup without slash: GemFire:service=Region,name=test1,type=Distributed
+      // The lookup returns null, causing "Region not found" errors even though the region
+      // exists and its MBean is properly registered. We must normalize the path before
+      // lookup to ensure consistent ObjectName matching.
+      String normalizedColocatedPath = prColocatedWith.startsWith(SEPARATOR)
+          ? prColocatedWith
+          : SEPARATOR + prColocatedWith;
+
       DistributedRegionMXBean colocatedRegionBean =
-          getManagementService().getDistributedRegionMXBean(prColocatedWith);
+          getManagementService().getDistributedRegionMXBean(normalizedColocatedPath);
 
       if (colocatedRegionBean == null) {
         return ResultModel.createError(CliStrings.format(
