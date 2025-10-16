@@ -89,10 +89,10 @@ public class GfshCommandRedactionAcceptanceTest {
     Path gfshLogFile = gfshCommandRule.getGfshLogFile();
 
     gfshCommandRule.connectAndVerify(locatorPort, GfshCommandRule.PortType.locator);
-    
+
     // Execute a disconnect followed by a failed connect with a password.
     // The password in the connect command should be redacted in the log.
-    
+
     gfshCommandRule.executeAndAssertThat("disconnect")
         .statusIsSuccess();
     gfshCommandRule.executeAndAssertThat(

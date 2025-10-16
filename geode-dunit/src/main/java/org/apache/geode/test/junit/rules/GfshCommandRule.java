@@ -324,7 +324,7 @@ public class GfshCommandRule extends DescribedExternalResource {
    * This is useful for tests that need to verify command logging and password redaction.
    * The log file is configured via the log4j2-cli.xml configuration using the
    * gfsh.log.file system property.
-   * 
+   *
    * @return the absolute path to the gfsh log file
    * @throws IllegalStateException if gfsh has not been initialized
    */

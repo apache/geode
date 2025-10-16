@@ -67,16 +67,16 @@ public class HeadlessGfsh implements ResultHandler {
   public HeadlessGfsh(String name, int timeout, Properties envProps, String parentDir)
       throws IOException {
     this.timeout = timeout;
-    
+
     // Create config and set up log file path for gfsh command logging.
     // The config instance is shared with HeadlessGfshShell to ensure consistent log file paths.
     // The log file path is cached in the config to prevent timestamp mismatches.
     this.config = new HeadlessGfshConfig(name, parentDir);
     String logFilePath = config.getLogFilePath();
-    
+
     // Set system property so Log4j can pick up the log file path from log4j2-cli.xml
     System.setProperty("gfsh.log.file", logFilePath);
-    
+
     // Create the log file and parent directories if they don't exist.
     // This ensures the file is available before Log4j attempts to write to it.
     java.io.File logFile = new java.io.File(logFilePath);
@@ -84,7 +84,7 @@ public class HeadlessGfsh implements ResultHandler {
     if (!logFile.exists()) {
       logFile.createNewFile();
     }
-    
+
     System.setProperty("jline.terminal", GfshUnsupportedTerminal.class.getName());
     // Pass the config instance to shell to ensure it uses the same cached log file path
     shell = new HeadlessGfshShell(name, this, config);
@@ -213,7 +213,7 @@ public class HeadlessGfsh implements ResultHandler {
    * <p>
    * The log file path is set during HeadlessGfsh construction and is used by the Log4j
    * configuration (log4j2-cli.xml) to write gfsh command logs.
-   * 
+   *
    * @return the absolute path to the gfsh log file
    */
   public Path getGfshLogFile() {
@@ -420,11 +420,12 @@ public class HeadlessGfsh implements ResultHandler {
 
       this.parentDir = new File(parentDir);
       Files.createDirectories(this.parentDir.toPath());
-      
+
       // Generate and cache the log file path once in constructor to ensure consistency.
       // This prevents timestamp mismatches where the file is created with one timestamp
       // but accessed with a different timestamp later.
-      this.logFilePath = new File(this.parentDir, getFileNamePrefix() + "-gfsh.log").getAbsolutePath();
+      this.logFilePath =
+          new File(this.parentDir, getFileNamePrefix() + "-gfsh.log").getAbsolutePath();
     }
 
     private static boolean isDUnitTest(String name) {
