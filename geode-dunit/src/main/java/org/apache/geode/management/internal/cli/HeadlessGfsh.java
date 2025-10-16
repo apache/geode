@@ -21,6 +21,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +54,7 @@ public class HeadlessGfsh implements ResultHandler {
   public static final String ERROR_RESULT = "_$_ERROR_RESULT";
 
   private final HeadlessGfshShell shell;
+  private final HeadlessGfshConfig config;
   private final LinkedBlockingQueue<Object> queue = new LinkedBlockingQueue<>();
   private long timeout;
   public String outputString = null;
@@ -64,8 +67,27 @@ public class HeadlessGfsh implements ResultHandler {
   public HeadlessGfsh(String name, int timeout, Properties envProps, String parentDir)
       throws IOException {
     this.timeout = timeout;
+    
+    // Create config and set up log file path for gfsh command logging.
+    // The config instance is shared with HeadlessGfshShell to ensure consistent log file paths.
+    // The log file path is cached in the config to prevent timestamp mismatches.
+    this.config = new HeadlessGfshConfig(name, parentDir);
+    String logFilePath = config.getLogFilePath();
+    
+    // Set system property so Log4j can pick up the log file path from log4j2-cli.xml
+    System.setProperty("gfsh.log.file", logFilePath);
+    
+    // Create the log file and parent directories if they don't exist.
+    // This ensures the file is available before Log4j attempts to write to it.
+    java.io.File logFile = new java.io.File(logFilePath);
+    logFile.getParentFile().mkdirs();
+    if (!logFile.exists()) {
+      logFile.createNewFile();
+    }
+    
     System.setProperty("jline.terminal", GfshUnsupportedTerminal.class.getName());
-    shell = new HeadlessGfshShell(name, this, parentDir);
+    // Pass the config instance to shell to ensure it uses the same cached log file path
+    shell = new HeadlessGfshShell(name, this, config);
     shell.setEnvProperty(Gfsh.ENV_APP_RESULT_VIEWER, "non-basic");
 
     if (envProps != null) {
@@ -186,6 +208,18 @@ public class HeadlessGfsh implements ResultHandler {
     return queue;
   }
 
+  /**
+   * Returns the path to the gfsh log file.
+   * <p>
+   * The log file path is set during HeadlessGfsh construction and is used by the Log4j
+   * configuration (log4j2-cli.xml) to write gfsh command logs.
+   * 
+   * @return the absolute path to the gfsh log file
+   */
+  public Path getGfshLogFile() {
+    return Paths.get(config.getLogFilePath());
+  }
+
   public static class HeadlessGfshShell extends Gfsh {
 
     private final ResultHandler handler;
@@ -196,9 +230,9 @@ public class HeadlessGfsh implements ResultHandler {
     private boolean hasError = false;
     boolean stopCalledThroughAPI = false;
 
-    protected HeadlessGfshShell(String testName, ResultHandler handler, String parentDir)
+    protected HeadlessGfshShell(String testName, ResultHandler handler, HeadlessGfshConfig config)
         throws IOException {
-      super(false, new String[] {}, new HeadlessGfshConfig(testName, parentDir));
+      super(false, new String[] {}, config);
       this.handler = handler;
     }
 
@@ -363,11 +397,17 @@ public class HeadlessGfsh implements ResultHandler {
   }
 
   /**
-   * HeadlessGfshConfig for tests. Taken from TestableGfsh
+   * HeadlessGfshConfig for tests. Taken from TestableGfsh.
+   * <p>
+   * This config caches the log file path in the constructor to prevent timestamp mismatches.
+   * Previously, getFileNamePrefix() was called each time getLogFilePath() was invoked, which
+   * generated a new timestamp each time, causing the file path to change between when the file
+   * was created and when tests tried to access it.
    */
   static class HeadlessGfshConfig extends GfshConfig {
     private final File parentDir;
     private final String fileNamePrefix;
+    private final String logFilePath;
     private String generatedHistoryFileName = null;
 
     public HeadlessGfshConfig(String name, String parentDir) throws IOException {
@@ -380,6 +420,11 @@ public class HeadlessGfsh implements ResultHandler {
 
       this.parentDir = new File(parentDir);
       Files.createDirectories(this.parentDir.toPath());
+      
+      // Generate and cache the log file path once in constructor to ensure consistency.
+      // This prevents timestamp mismatches where the file is created with one timestamp
+      // but accessed with a different timestamp later.
+      this.logFilePath = new File(this.parentDir, getFileNamePrefix() + "-gfsh.log").getAbsolutePath();
     }
 
     private static boolean isDUnitTest(String name) {
@@ -395,9 +440,14 @@ public class HeadlessGfsh implements ResultHandler {
 
     @Override
     public String getLogFilePath() {
-      return new File(parentDir, getFileNamePrefix() + "-gfsh.log").getAbsolutePath();
+      // Return the cached log file path to ensure consistency across multiple calls
+      return logFilePath;
     }
 
+    /**
+     * Generates a file name prefix with a timestamp.
+     * Note: This method is only called once during construction to avoid timestamp mismatches.
+     */
     private String getFileNamePrefix() {
       String timeStamp = new java.sql.Time(System.currentTimeMillis()).toString();
       timeStamp = timeStamp.replace(':', '_');

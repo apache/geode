@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -315,6 +316,23 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public File getWorkingDir() {
     return workingDir;
+  }
+
+  /**
+   * Returns the path to the gfsh log file where gfsh commands are logged.
+   * <p>
+   * This is useful for tests that need to verify command logging and password redaction.
+   * The log file is configured via the log4j2-cli.xml configuration using the
+   * gfsh.log.file system property.
+   * 
+   * @return the absolute path to the gfsh log file
+   * @throws IllegalStateException if gfsh has not been initialized
+   */
+  public Path getGfshLogFile() {
+    if (gfsh == null) {
+      throw new IllegalStateException("Gfsh has not been initialized");
+    }
+    return gfsh.getGfshLogFile();
   }
 
   public GfshCommandRule withTimeout(int timeoutInSeconds) {
