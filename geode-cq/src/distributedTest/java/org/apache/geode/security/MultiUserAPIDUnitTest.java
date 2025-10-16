@@ -43,6 +43,7 @@ import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.security.templates.CountableUserPasswordAuthInit;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
@@ -62,6 +63,42 @@ public class MultiUserAPIDUnitTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
+    // Jakarta EE 10 migration: Ignore expected authentication failure messages in server logs
+    //
+    // BACKGROUND:
+    // This test class validates multi-user API functionality with security enabled.
+    // It uses SimpleSecurityManager which intentionally rejects invalid credentials
+    // and logs authentication failures at ERROR level.
+    //
+    // WHY IGNORE:
+    // The ClusterStartupRule's closeAndCheckForSuspects() scans all server logs for
+    // error messages and fails the test if any "suspect strings" are found. This is
+    // designed to catch unexpected errors during test execution.
+    //
+    // However, this test intentionally triggers authentication failures to verify:
+    // 1. Multi-user authentication with different credentials
+    // 2. Security checks for unauthorized operations
+    // 3. Proper exception handling for invalid credentials
+    //
+    // SPECIFIC ERROR MESSAGE:
+    // SimpleSecurityManager.authenticate() logs at ERROR level:
+    // "Authentication FAILED - no valid token and username/password don't match"
+    //
+    // This error is EXPECTED and INTENTIONAL for negative security test cases.
+    // Without IgnoredException, the test would fail with "Found suspect string in log"
+    // even though the actual test assertions pass correctly.
+    //
+    // JAKARTA IMPACT:
+    // While this issue existed before Jakarta EE 10 migration, it became more apparent
+    // during migration testing as we run comprehensive test suites. The authentication
+    // logic in SimpleSecurityManager remains unchanged, but the test framework's
+    // suspect string checking catches these expected failures.
+    //
+    // SCOPE:
+    // This IgnoredException applies to ALL tests in this class that use authentication,
+    // including tests that verify correct rejection of invalid credentials.
+    IgnoredException.addIgnoredException("Authentication FAILED");
+
     MemberVM locator =
         cluster.startLocatorVM(0, c -> c.withSecurityManager(SimpleSecurityManager.class));
     server = cluster.startServerVM(1, s -> s.withCredential("cluster", "cluster")
