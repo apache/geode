@@ -157,6 +157,8 @@ public class JtaNoninvolvementJUnitTest {
   public void test002IgnoreJTASysProp() throws Exception {
     jakarta.transaction.UserTransaction ut = null;
     try {
+      // System property must be set BEFORE cache creation because JNDIInvoker.IGNORE_JTA
+      // is read during mapTransactions() which is called from cache initialization
       System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "ignoreJTA", "true");
       createCache(false);
       ut = (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
