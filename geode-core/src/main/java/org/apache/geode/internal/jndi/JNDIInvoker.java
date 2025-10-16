@@ -145,16 +145,16 @@ public class JNDIInvoker {
       ctx = new InitialContext();
       if (IGNORE_JTA) {
         // Jakarta EE migration fix: When ignoreJTA is true, we must still bind TransactionManager
-        // to JNDI
-        // Previously, setting ignoreJTA would skip all TM initialization, causing
-        // NullPointerException
-        // when code tries to look up "java:/TransactionManager" even though regions ignore JTA
-        // This ensures the TransactionManager is available for lookup while regions still skip JTA
-        // participation
+        // to JNDI so that JNDI lookups don't fail with NameNotFoundException.
+        // However, we intentionally do NOT set the transactionManager static field, which ensures
+        // that getTransactionManager() returns null. This allows region operations to check
+        // cache.getJTATransactionManager() and correctly skip JTA participation when IGNORE_JTA is
+        // true.
         try {
           initializeGemFireContext();
-          transactionManager = TransactionManagerImpl.getTransactionManager();
-          ctx.rebind("java:/TransactionManager", transactionManager);
+          // Create a TransactionManager for JNDI binding but do NOT store it in the static field
+          TransactionManager tm = TransactionManagerImpl.getTransactionManager();
+          ctx.rebind("java:/TransactionManager", tm);
           UserTransactionImpl utx = new UserTransactionImpl();
           ctx.rebind("java:/UserTransaction", utx);
         } catch (NamingException | SystemException e) {
