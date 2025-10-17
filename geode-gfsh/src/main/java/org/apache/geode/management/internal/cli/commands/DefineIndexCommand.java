@@ -49,10 +49,18 @@ public class DefineIndexCommand extends GfshCommand {
 
     ResultModel result = new ResultModel();
 
+    // Normalize region path to include leading separator for index creation.
+    // The regionPath parameter may or may not have the leading separator depending on user input
+    // (e.g., "regionA" vs "/regionA"). However, when the index is later created, the query service
+    // expects the fromClause to be a valid region path with the separator prefix. Without this
+    // normalization, index creation fails with "does not evaluate to a Region Path" error.
+    // This ensures consistency with Geode's convention of using full region paths with separators.
+    String normalizedRegionPath = regionPath.startsWith("/") ? regionPath : "/" + regionPath;
+
     RegionConfig.Index indexInfo = new RegionConfig.Index();
     indexInfo.setName(indexName);
     indexInfo.setExpression(indexedExpression);
-    indexInfo.setFromClause(regionPath);
+    indexInfo.setFromClause(normalizedRegionPath);
     indexInfo.setType(indexType.getName());
 
     IndexDefinition.indexDefinitions.add(indexInfo);
@@ -69,7 +77,8 @@ public class DefineIndexCommand extends GfshCommand {
     infoResult.addLine(CliStrings.format(CliStrings.DEFINE_INDEX__NAME__MSG, indexName));
     infoResult
         .addLine(CliStrings.format(CliStrings.DEFINE_INDEX__EXPRESSION__MSG, indexedExpression));
-    infoResult.addLine(CliStrings.format(CliStrings.DEFINE_INDEX__REGIONPATH__MSG, regionPath));
+    infoResult
+        .addLine(CliStrings.format(CliStrings.DEFINE_INDEX__REGIONPATH__MSG, normalizedRegionPath));
 
     return result;
   }
