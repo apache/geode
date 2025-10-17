@@ -364,7 +364,9 @@ public class GfshParser {
       // Convert value to parameter type
       // Wrap conversion errors with Spring Shell 1.x compatible error message format
       try {
-        arguments[i] = convertValue(value, param.getType(), option.defaultValue());
+        // Get the option name (use first alias for error message and special handling)
+        String optionName = option.value().length > 0 ? option.value()[0] : "";
+        arguments[i] = convertValue(value, param.getType(), option.defaultValue(), optionName);
       } catch (IllegalArgumentException e) {
         // Get the option name (use first alias for error message)
         String optionName = option.value().length > 0 ? option.value()[0] : "unknown";
@@ -570,7 +572,17 @@ public class GfshParser {
    * Shell 3.x expects direct value conversion, so this method handles all type conversions inline.
    * Supports: primitives, enums, arrays, File, ConnectionEndpoint, ClassName, ExpirationAction.
    */
-  private Object convertValue(String value, Class<?> targetType, String defaultValue) {
+  /**
+   * Converts a string value to the target type.
+   *
+   * @param value the string value to convert (may be null)
+   * @param targetType the target type to convert to
+   * @param defaultValue the default value to use if value is null or empty
+   * @param optionName the name of the option being converted (used for special handling)
+   * @return the converted value
+   */
+  private Object convertValue(String value, Class<?> targetType, String defaultValue,
+      String optionName) {
     // Special handling for option-present-but-no-value: treat as null for most types
     // This distinguishes "--option" (OPTION_NOT_VALUED → null) from "--option=''" (empty string)
     if (OPTION_NOT_VALUED.equals(value)) {
@@ -720,8 +732,16 @@ public class GfshParser {
 
       Class<?> componentType = targetType.getComponentType();
 
-      // Split value by comma
-      String[] parts = value.split(",");
+      // Spring Shell 3.x migration: Special handling for authorizer-parameters option
+      // This option uses semicolon (;) as separator instead of comma (,) because the
+      // parameter values may contain commas (e.g., regex patterns like "{4,8}")
+      String delimiter = ",";
+      if ("authorizer-parameters".equals(optionName)) {
+        delimiter = ";";
+      }
+
+      // Split value by delimiter
+      String[] parts = value.split(delimiter);
 
       // Create array of appropriate type
       Object array = java.lang.reflect.Array.newInstance(componentType, parts.length);
@@ -729,7 +749,8 @@ public class GfshParser {
       // Convert each part to the component type
       for (int i = 0; i < parts.length; i++) {
         String part = parts[i].trim();
-        Object element = convertValue(part, componentType, ""); // Recursive call for each element
+        Object element = convertValue(part, componentType, "", ""); // Recursive call for each
+                                                                    // element
         java.lang.reflect.Array.set(array, i, element);
       }
 
