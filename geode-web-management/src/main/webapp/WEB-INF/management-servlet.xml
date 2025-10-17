@@ -29,7 +29,20 @@
         http://www.springframework.org/schema/util
         https://www.springframework.org/schema/util/spring-util.xsd
   ">
+  <!-- ============================================================================= -->
+  <!-- GEODE-10466: Jakarta EE 10 and Spring 6.x Migration                          -->
+  <!-- ============================================================================= -->
+  <!-- This Spring XML configuration was NOT created by this migration.              -->
+  <!-- It was part of the original V2 Management REST API (GEODE-6174, Jan 2019).   -->
+  <!-- Changes made for Spring 6.x compatibility are documented below.               -->
+  <!-- ============================================================================= -->
+
   <context:annotation-config />
+  
+  <!-- GEODE-10466: Added component-scan for Spring 6.x compatibility.
+       Discovers @RestController, @Configuration, @Component beans.
+       Requires spring-aop dependency (see build.gradle). -->
+  <context:component-scan base-package="org.apache.geode.management.internal.rest" />
 
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
     <mvc:message-converters register-defaults="false">
@@ -56,11 +69,13 @@
       </value>
     </property>
   </bean>
-  
+
+  <!-- GEODE-10466: Added primary="true" to prevent Spring Boot ObjectMapper conflicts when SpringDoc is on parent classloader.
+       Configuration migrated from Jackson2ObjectMapperFactoryBean properties to custom ObjectMapperFactoryBean. -->
   <bean id="objectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean"
         p:failOnEmptyBeans="true"
         p:simpleDateFormat="MM/dd/yyyy"
-    >
+        primary="true">
     <property name="featuresToEnable">
       <array>
         <util:constant static-field="com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS"/>
@@ -73,5 +88,8 @@
     <property name="serializationInclusion" value="NON_EMPTY"/>
   </bean>
 
-  <bean class="org.apache.geode.management.internal.rest.security.RestSecurityConfiguration"/>
+  <!-- GEODE-10466: Removed explicit RestSecurityConfiguration bean declaration.
+       Now discovered automatically via <context:component-scan> above.
+       @Configuration classes require component-scan for proper CGLIB proxying and @Bean processing. -->
+
 </beans>

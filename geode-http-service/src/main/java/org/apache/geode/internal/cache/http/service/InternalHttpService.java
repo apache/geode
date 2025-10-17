@@ -388,9 +388,42 @@ public class InternalHttpService implements HttpService {
         logger.debug(LIFECYCLE, "Stopping running server before restart");
       }
       httpServer.stop();
+
+      // When server is stopped, the Handler.Sequence is cleared.
+      // We need to re-add all webapps to the handler before starting again.
+      Handler.Sequence handlerSequence = (Handler.Sequence) httpServer.getHandler();
+      if (handlerSequence != null) {
+        // Clear any remaining handlers
+        for (Handler handler : handlerSequence.getHandlers()) {
+          handlerSequence.removeHandler(handler);
+        }
+        // Re-add all webapps
+        for (WebAppContext webapp : webApps) {
+          handlerSequence.addHandler(webapp);
+          if (logger.isDebugEnabled()) {
+            logger.debug(WEBAPP, "Re-added webapp to handler sequence: context={}",
+                webapp.getContextPath());
+          }
+        }
+      }
     }
 
     httpServer.start();
+
+    // Check each webapp's availability after start
+    for (WebAppContext webapp : webApps) {
+      boolean available = webapp.isAvailable();
+      Throwable unavailableException = webapp.getUnavailableException();
+
+      if (!available || unavailableException != null) {
+        logger.error(LIFECYCLE, "Webapp failed to start: context={}, available={}, exception={}",
+            webapp.getContextPath(), available,
+            unavailableException != null ? unavailableException.getMessage() : "none",
+            unavailableException);
+      } else {
+        logger.info(WEBAPP, "Webapp started successfully: context={}", webapp.getContextPath());
+      }
+    }
 
     logger.info(LIFECYCLE, "HTTP server {} successfully: {}",
         isStarted ? "restarted" : "started",

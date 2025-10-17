@@ -99,7 +99,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 @EnableMethodSecurity(prePostEnabled = true)
 // this package name needs to be different than the admin rest controller's package name
 // otherwise this component scan will pick up the admin rest controllers as well.
-@ComponentScan("org.apache.geode.management.internal.rest")
+@ComponentScan(basePackages = "org.apache.geode.management.internal.rest")
 public class RestSecurityConfiguration {
 
   @Autowired

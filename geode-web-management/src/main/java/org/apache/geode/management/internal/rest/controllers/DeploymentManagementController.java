@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,8 +54,53 @@ import org.apache.geode.management.runtime.DeploymentInfo;
 @RequestMapping(URI_VERSION)
 public class DeploymentManagementController extends AbstractManagementController {
 
+  /*
+   * ==========================================================================
+   * GEODE-10466: ObjectMapper Injection - Direct Bean vs FactoryBean
+   * ==========================================================================
+   * CHANGE: Field type changed from Jackson2ObjectMapperFactoryBean to ObjectMapper
+   *
+   * REASON: Eliminate unnecessary FactoryBean indirection
+   *
+   * BACKGROUND:
+   * Spring FactoryBeans are proxy objects that create other beans.
+   * When you inject a FactoryBean, you get the factory itself, not the
+   * product bean. To get the actual ObjectMapper, you must call getObject().
+   *
+   * BEFORE MIGRATION:
+   * 1. Inject Jackson2ObjectMapperFactoryBean (the factory)
+   * 2. Call objectMapper.getObject() to get actual ObjectMapper
+   * 3. Use: objectMapper.getObject().readValue(json, Deployment.class)
+   *
+   * AFTER MIGRATION:
+   * 1. Inject ObjectMapper directly (Spring resolves the FactoryBean automatically)
+   * 2. Use directly: objectMapper.readValue(json, Deployment.class)
+   *
+   * HOW SPRING RESOLVES THIS:
+   * In management-servlet.xml, we declare:
+   * <bean id="objectMapper" class="ObjectMapperFactoryBean" primary="true"/>
+   *
+   * When @Autowired ObjectMapper is requested:
+   * 1. Spring sees ObjectMapperFactoryBean implements FactoryBean<ObjectMapper>
+   * 2. Spring automatically calls factoryBean.getObject()
+   * 3. Spring injects the ObjectMapper product, not the factory
+   *
+   * BENEFITS:
+   * - Cleaner code: No repeated .getObject() calls
+   * - Type safety: Field type matches actual usage
+   * - Standard pattern: Most Spring apps inject products, not factories
+   *
+   * IMPACT:
+   * This change requires updating one usage site in upload() method
+   * where objectMapper.getObject().readValue() becomes objectMapper.readValue()
+   *
+   * RELATED:
+   * - management-servlet.xml: ObjectMapperFactoryBean configuration with primary="true"
+   * - upload() method below: Changed readValue() call
+   * ==========================================================================
+   */
   @Autowired
-  private Jackson2ObjectMapperFactoryBean objectMapper;
+  private ObjectMapper objectMapper;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -110,7 +155,23 @@ public class DeploymentManagementController extends AbstractManagementController
     file.transferTo(targetFile);
     Deployment deployment = new Deployment();
     if (StringUtils.isNotBlank(json)) {
-      deployment = objectMapper.getObject().readValue(json, Deployment.class);
+      /*
+       * ======================================================================
+       * GEODE-10466: Simplified ObjectMapper Usage
+       * ======================================================================
+       * CHANGE: Removed .getObject() call when using objectMapper
+       *
+       * REASON: Field type changed from Jackson2ObjectMapperFactoryBean to ObjectMapper
+       *
+       * Since we now inject ObjectMapper directly (not the FactoryBean),
+       * we can call readValue() directly without the .getObject() indirection.
+       *
+       * Spring's FactoryBean resolution automatically unwraps the
+       * ObjectMapperFactoryBean declared in management-servlet.xml,
+       * injecting the actual ObjectMapper instance.
+       * ======================================================================
+       */
+      deployment = objectMapper.readValue(json, Deployment.class);
     }
     deployment.setFile(targetFile);
     ClusterManagementRealizationResult realizationResult =
