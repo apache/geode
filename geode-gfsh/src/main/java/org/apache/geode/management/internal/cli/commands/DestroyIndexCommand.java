@@ -107,7 +107,9 @@ public class DestroyIndexCommand extends SingleGfshCommand {
         throw new EntityNotFoundException(errorMessage);
       }
 
-      if (indexName.isEmpty()) {
+      // Fix: Check for null before isEmpty() to avoid NullPointerException.
+      // indexName is null when destroying all indexes on a region (no --name parameter).
+      if (indexName == null || indexName.isEmpty()) {
         regionConfig.getIndexes().clear();
       } else {
         Identifiable.remove(regionConfig.getIndexes(), indexName);
