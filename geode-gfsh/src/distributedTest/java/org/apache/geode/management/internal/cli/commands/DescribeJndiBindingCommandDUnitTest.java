@@ -25,7 +25,36 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-
+/**
+ * Distributed tests for describe jndi-binding command.
+ *
+ * <p>
+ * <b>Spring Shell 3.x Migration Context (GEODE-10466):</b><br>
+ * These tests use the --datasource-config-properties parameter which accepts ConfigProperty[]
+ * with JSON-like syntax:
+ *
+ * <pre>
+ * --datasource-config-properties={'name':'prop1','type':'java.lang.String','value':'value1'}
+ * </pre>
+ *
+ * <p>
+ * Spring Shell 1.x handled this with ConfigPropertyConverter using Jackson JSON parsing.
+ * Shell 3.x required reimplementing ConfigPropertyConverter using regex-based parsing and
+ * registering it in GfshParser.convertValue() to handle the array conversion before generic
+ * comma-splitting (which would break JSON-like objects).
+ *
+ * <p>
+ * <b>Key Implementation Details:</b>
+ * <ul>
+ * <li>ConfigPropertyConverter (geode-gfsh/converters) - Regex-based JSON-like parser</li>
+ * <li>GfshParser.convertValue() - Special handling for ConfigProperty[] before array splitting</li>
+ * <li>ConfigProperty fields: name (required), value (required), type (optional)</li>
+ * <li>Flexible field order supported (name/type/value, value/name/type, etc.)</li>
+ * </ul>
+ *
+ * @see org.apache.geode.management.internal.cli.converters.ConfigPropertyConverter
+ * @see CreateJndiBindingCommand Uses ConfigProperty[] parameter
+ */
 public class DescribeJndiBindingCommandDUnitTest {
 
   @ClassRule

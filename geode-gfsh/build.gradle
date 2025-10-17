@@ -110,7 +110,7 @@ dependencies {
 sourceSets {
   test {
     java {
-      exclude '**/converters/ConfigPropertyConverterTest.java'
+      // ConfigPropertyConverterTest now tests the Shell 3.x version (re-created)
       exclude '**/converters/ClassNameConverterTest.java'
       exclude '**/converters/IndexTypeConverterTest.java'
       exclude '**/converters/RegionPathConverterJUnitTest.java'

@@ -695,6 +695,21 @@ public class GfshParser {
         throw new IllegalArgumentException(
             "Invalid enum value: " + value + " for type " + targetType.getSimpleName(), e);
       }
+    } else if (targetType == org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty[].class) {
+      // Handle ConfigProperty[] with custom converter
+      // Spring Shell 3.x migration: ConfigProperty uses JSON-like syntax with commas inside objects
+      // Must parse BEFORE generic array handling which would incorrectly split by comma
+      // Example:
+      // "{'name':'prop1','value':'v1','type':'t1'},{'name':'prop2','value':'v2','type':'t2'}"
+
+      if (value == null || value.isEmpty()) {
+        return new org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigProperty[0];
+      }
+
+      // Use ConfigPropertyConverter for parsing
+      org.apache.geode.management.internal.cli.converters.ConfigPropertyConverter converter =
+          new org.apache.geode.management.internal.cli.converters.ConfigPropertyConverter();
+      return converter.convert(value);
     } else if (targetType.isArray()) {
       // Handle array types (String[], int[], custom object arrays, etc.)
 
