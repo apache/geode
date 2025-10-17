@@ -43,6 +43,7 @@ import java.util.stream.IntStream;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -152,18 +153,26 @@ public class AlterQueryServiceCommandTest {
     resultList.add(new CliFunctionResult(memberName, CliFunctionResult.StatusState.OK, ""));
     doReturn(resultList).when(command).executeAndGetFunctionResult(any(), any(), any());
     String authorizerName = RegExMethodAuthorizer.class.getName();
-    // Shell 3.x uses comma as array delimiter, so use comma instead of semicolon
-    String parameterString = "^java.util.List.*$,^java.util.Set.*$";
-    // Split by comma for Shell 3.x (GfshParser splits arrays by comma)
-    Set<String> expectedParameterSet =
-        new HashSet<>(Arrays.asList(parameterString.split(",")));
+    // Shell 3.x uses semicolon as array delimiter for authorizer-parameters (not comma)
+    // This allows commas within regex patterns
+    String parameterString = "^java.util.List.*$;^java.util.Set.*$";
     String commandString = buildCommandString(authorizerName, parameterString, null);
 
     gfsh.executeAndAssertThat(command, commandString).statusIsSuccess().containsOutput(memberName);
-    verify(command).populateMethodAuthorizer(authorizerName, expectedParameterSet,
-        mockQueryConfigService);
+
+    // Capture the actual arguments passed to populateMethodAuthorizer
+    ArgumentCaptor<Set<String>> parameterCaptor = ArgumentCaptor.forClass(Set.class);
+    verify(command).populateMethodAuthorizer(eq(authorizerName), parameterCaptor.capture(),
+        eq(mockQueryConfigService));
+
+    // Verify the captured set contains the expected parameters (order-independent)
+    Set<String> capturedParameters = parameterCaptor.getValue();
+    assertThat(capturedParameters).containsExactlyInAnyOrder("^java.util.List.*$",
+        "^java.util.Set.*$");
+
+    // Verify executeAndGetFunctionResult with captured parameters
     verify(command).executeAndGetFunctionResult(any(AlterQueryServiceFunction.class),
-        eq(new Object[] {false, authorizerName, expectedParameterSet}), eq(members));
+        eq(new Object[] {false, authorizerName, capturedParameters}), eq(members));
   }
 
   @Test
