@@ -377,7 +377,15 @@ public class CreateRegionCommand extends SingleGfshCommand {
         for (int i = 1; i < templateRegionConfigs.size(); i++) {
           if (!EqualsBuilder.reflectionEquals(first, templateRegionConfigs.get(i), false, null,
               true)) {
-            return ResultModel.createError("Multiple types of template region " + templateRegion
+            // Use normalizedTemplateRegion (with leading separator) instead of templateRegion
+            // to ensure the error message displays the full region path consistently.
+            // The templateRegion parameter may or may not have the leading separator depending
+            // on how the user specified it, but normalizedTemplateRegion is guaranteed to have
+            // the separator prefix (e.g., "/regionName" instead of "regionName").
+            // This ensures error messages match test expectations and follow Geode's convention
+            // of displaying region paths with the separator prefix.
+            return ResultModel.createError("Multiple types of template region "
+                + normalizedTemplateRegion
                 + " exist. Can not resolve template region attributes.");
           }
         }
