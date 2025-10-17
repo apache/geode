@@ -399,13 +399,24 @@ public class CreateRegionCommand extends SingleGfshCommand {
         : Arrays.stream(partitionListener)
             .map(ClassName::getClassName).collect(Collectors.toList());
 
+    // Normalize prColocatedWith to include leading separator before storing in configuration.
+    // This ensures the colocatedWith attribute in the persisted configuration always uses
+    // the full region path format (e.g., "/regionName" instead of "regionName").
+    // Without this normalization, regions created with "--colocated-with=regionName" would
+    // store "regionName" in the configuration, while regions created from templates would
+    // copy this non-normalized value, causing inconsistencies in the persisted configuration
+    // and test assertion failures expecting the full path format.
+    String normalizedPrColocatedWith = prColocatedWith != null
+        ? (prColocatedWith.startsWith(SEPARATOR) ? prColocatedWith : SEPARATOR + prColocatedWith)
+        : null;
+
     // set partition attributes
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
     RegionAttributesType.PartitionAttributes delta =
         RegionAttributesType.PartitionAttributes.generate(partitionResolver,
             partitionListeners, prLocalMaxMemory,
             prRecoveryDelay, prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory,
-            prTotalNumBuckets, prColocatedWith);
+            prTotalNumBuckets, normalizedPrColocatedWith);
 
     RegionAttributesType.PartitionAttributes partitionAttributes =
         RegionAttributesType.PartitionAttributes.combine(
