@@ -199,6 +199,13 @@ dependencies {
   // spring-aop needed at runtime for Spring context component scanning in deployed WARs
   runtimeOnly('org.springframework:spring-aop')
 
+  /*
+   * jackson-dataformat-yaml needed for SpringDoc OpenAPI YAML generation
+   * Added to parent classloader to prevent classloader conflicts with WAR-deployed apps
+   * See geode-web-management/build.gradle WAR exclusions for context
+   */
+  runtimeOnly('com.fasterxml.jackson.dataformat:jackson-dataformat-yaml')
+
   // find bugs leaks in from spring, needed to remove warnings.
   compileOnly('com.google.code.findbugs:jsr305')
 

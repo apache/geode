@@ -203,27 +203,19 @@ dependencies {
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    * CHANGED: springdoc-openapi-ui → springdoc-openapi-starter-webmvc-ui
    *
-   * REASON: SpringDoc 2.x restructured artifacts for Spring Boot 3.x compatibility
+   * REASON: SpringDoc 2.x is required for Spring 6.x compatibility
    *
-   * Artifact naming evolution:
+   * SpringDoc 2.x restructured artifacts:
    *   - SpringDoc 1.x: springdoc-openapi-ui (Spring 5.x)
    *   - SpringDoc 2.x: springdoc-openapi-starter-webmvc-ui (Spring 6.x)
    *
-   * The "-starter-" naming follows Spring Boot's convention, indicating it includes
-   * autoconfiguration support. However, we exclude Spring Boot JARs (see war {} block)
-   * since this is a pure Spring Framework application.
+   * The "-starter-" prefix indicates Spring Boot-style autoconfiguration support,
+   * but we use it in pure Spring Framework via component scanning (see SwaggerConfig).
    *
-   * NOTE: SpringDoc JARs are EXCLUDED from WAR (see war exclusions) because:
-   *   1. SpringDoc 2.x depends on Spring Boot autoconfiguration
-   *   2. We don't use Spring Boot (pure Spring Framework)
-   *   3. Excluding Spring Boot breaks SpringDoc's runtime initialization
-   *   4. OpenAPI docs are development-only, not required for production REST API
-   *
-   * TRADE-OFF DECISION:
-   *   - Lose: Swagger UI documentation at /management/swagger-ui.html
-   *   - Keep: Full REST API functionality for production use
-   *   - Rationale: API documentation is primarily for developers, production
-   *     deployments don't require it
+   * INTEGRATION:
+   *   - JARs included in WAR (no longer excluded)
+   *   - SwaggerConfig provides required infrastructure via @ComponentScan
+   *   - See SwaggerConfig.java for detailed integration comments
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    */
   implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui') {
@@ -235,38 +227,20 @@ dependencies {
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    * Spring AOP Explicit Dependency
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   * ADDED: spring-aop (was implicit in Spring 5.x)
+   * ADDED: Explicit spring-aop dependency
    *
-   * REASON: Spring 6.x made AOP dependencies explicit for component scanning
+   * REASON: Spring 6.x requires explicit AOP dependency for component scanning
    *
-   * PROBLEM WITHOUT THIS DEPENDENCY:
-   *   ClassNotFoundException: org.springframework.aop.scope.ScopedProxyUtils
-   *     at org.springframework.context.annotation.ComponentScanBeanDefinitionParser
-   *     at org.springframework.beans.factory.xml.XmlBeanDefinitionReader
-   *
-   * ROOT CAUSE:
-   *   Spring's component scanning (<context:component-scan>) uses AOP infrastructure
-   *   for scoped proxy creation. In Spring 5.x, spring-aop was transitively included
-   *   via spring-context. In Spring 6.x, dependency graph was optimized, making
-   *   spring-aop optional for spring-context.
-   *
-   * WHEN REQUIRED:
-   *   - Component scanning with scoped proxies
+   * In Spring 5.x, spring-aop was transitively included via spring-context.
+   * Spring 6.x made AOP optional, requiring explicit declaration when using:
+   *   - <context:component-scan> (our management-servlet.xml)
    *   - @EnableAspectJAutoProxy annotations
    *   - AOP-based features like @PreAuthorize (Spring Security)
    *
-   * MIGRATION IMPACT:
-   *   - Must be declared explicitly for Spring 6.x applications using component-scan
-   *   - Increases WAR size by ~500KB (spring-aop JAR)
-   *   - Required for our XML-based Spring configuration (management-servlet.xml)
+   * ERROR WITHOUT THIS DEPENDENCY:
+   *   ClassNotFoundException: org.springframework.aop.scope.ScopedProxyUtils
    *
-   * ALTERNATIVE REJECTED:
-   *   - Removing component-scan → Requires converting all beans to Java Config
-   *   - Too invasive for migration, XML config is well-established
-   *
-   * RELATED:
-   *   - This JAR is also excluded from WAR (see war {} block) to use parent version
-   *   - See management-servlet.xml for <context:component-scan> usage
+   * NOTE: This JAR is excluded from WAR (see war exclusions) to use parent version
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    */
   implementation('org.springframework:spring-aop')
@@ -457,101 +431,42 @@ war {
 
   /*
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   * Spring Boot Exclusions - NOT USED, Causes Autoconfiguration Conflicts
+   * SpringDoc 2.x and Spring Boot JARs - Included for Swagger UI
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   * REASON: This is a pure Spring Framework application, NOT Spring Boot
+   * SpringDoc and Spring Boot JARs are INCLUDED in WAR
    *
-   * SpringDoc 2.x transitively depends on Spring Boot, but we don't use Boot's
-   * features. Including Spring Boot JARs in WAR causes:
-   *   1. SpringApplication autoconfiguration attempts (fails, no Boot context)
-   *   2. Conflicting bean definitions (@Configuration vs XML <bean>)
-   *   3. Classpath scanning duplication (Boot + XML component-scan)
+   * REASON: Enable Swagger UI at /management/swagger-ui.html
    *
-   * SPRING BOOT vs SPRING FRAMEWORK:
-   *   - Spring Framework: Core DI container, no autoconfiguration
-   *   - Spring Boot: Opinionated defaults + autoconfiguration + embedded server
+   * SpringDoc 2.x requires Spring Boot's autoconfiguration infrastructure
+   * (JacksonAutoConfiguration, etc.). We include these JARs but use them as
+   * libraries only - Spring Boot is NOT activated in the main application context.
    *
-   * We configure Spring explicitly via management-servlet.xml (XML config),
-   * which is incompatible with Boot's annotation-driven autoconfiguration.
+   * ARCHITECTURE:
+   *   - Main Context: management-servlet.xml (pure Spring Framework, XML config)
+   *   - SwaggerConfig: Picked up via component-scan, provides SpringDoc beans
+   *   - No bean conflicts: Main context has primary="true" ObjectMapper
    *
-   * IMPACT OF EXCLUSION:
-   *   - No Spring Boot features (expected, we don't use them)
-   *   - Breaks SpringDoc initialization (acceptable trade-off, see below)
+   * SWAGGER INTEGRATION:
+   *   SwaggerConfig uses:
+   *   - @EnableWebMvc: Provides MVC infrastructure beans
+   *   - @ComponentScan("org.springdoc"): Discovers SpringDoc components
+   *   - @Import(JacksonAutoConfiguration): Provides ObjectMapper for OpenAPI
+   *
+   * BENEFITS:
+   *   + Swagger UI: /management/swagger-ui.html
+   *   + OpenAPI JSON: /management/v3/api-docs
+   *   + All Swagger tests pass (SwaggerManagementVerificationIntegrationTest)
+   *
+   * COST:
+   *   - ~2MB WAR size (spring-boot-autoconfigure, springdoc JARs)
+   *
+   * RELATED:
+   *   - SwaggerConfig.java: Comprehensive comments on integration approach
+   *   - geode-core/build.gradle: jackson-dataformat-yaml in parent classloader
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    */
-  rootSpec.exclude("**/spring-boot-*.jar")
-  rootSpec.exclude("**/spring-boot-autoconfigure-*.jar")
+  /* Spring Boot and SpringDoc JARs included in WAR */
 
-  /*
-   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   * SpringDoc OpenAPI Exclusions - Requires Spring Boot Infrastructure
-   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   * REASON: SpringDoc 2.x initialization depends on Spring Boot autoconfiguration
-   *
-   * SpringDoc 2.x was designed for Spring Boot's "starter" pattern and relies on:
-   *   - SpringBootApplication context
-   *   - @ConditionalOnClass annotations
-   *   - Auto-configuration classes
-   *
-   * Without Spring Boot JARs (excluded above), SpringDoc fails to initialize:
-   *   NoClassDefFoundError: org/springframework/boot/autoconfigure/SpringBootApplication
-   *
-   * TRADE-OFF DECISION:
-   *   ✓ KEEP: Full REST API functionality (/management/v1/*)
-   *   ✗ LOSE: Swagger UI documentation (/management/swagger-ui.html)
-   *
-   * RATIONALE:
-   *   - OpenAPI docs are development/testing tools, not production requirements
-   *   - REST API endpoints remain fully functional
-   *   - Alternative: Manually maintain openapi.yaml (out of scope for migration)
-   *   - Future: Migrate to springdoc-openapi-native (pure Spring Framework version)
-   *
-   * EXCLUDED ARTIFACTS:
-   *   - springdoc-openapi-starter-webmvc-ui (main SpringDoc JAR)
-   *   - springdoc-openapi-common (shared classes)
-   *   - All transitive springdoc-* dependencies
-   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   */
-  rootSpec.exclude("**/springdoc-*.jar")
-
-  /*
-   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   * SwaggerConfig Class Exclusion - Prevents ServletContainerInitializer Error
-   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   * REASON: WebApplicationInitializer invocation fails without SpringDoc JARs
-   *
-   * SwaggerConfig.java implements WebApplicationInitializer, which is part of
-   * Spring's ServletContainerInitializer SPI. During webapp startup, Jetty's
-   * ServletContainerInitializer discovers ALL WebApplicationInitializer
-   * implementations via classpath scanning and invokes their onStartup() methods.
-   *
-   * STARTUP SEQUENCE:
-   *   1. Jetty starts webapp context
-   *   2. ServletContainerInitializer scans for WebApplicationInitializer classes
-   *   3. Finds SwaggerConfig.class
-   *   4. Invokes SwaggerConfig.onStartup()
-   *   5. SwaggerConfig tries to load SpringDoc classes
-   *   6. FAILURE: NoClassDefFoundError (SpringDoc JARs excluded)
-   *
-   * EXAMPLE ERROR (without .class exclusion):
-   *   java.lang.NoClassDefFoundError: org/springdoc/core/SpringDocConfiguration
-   *     at SwaggerConfig.onStartup(SwaggerConfig.java:42)
-   *     at org.springframework.web.SpringServletContainerInitializer.onStartup
-   *
-   * SOLUTION: Exclude SwaggerConfig.class from WAR
-   *   - Prevents ServletContainerInitializer from discovering it
-   *   - No invocation = no NoClassDefFoundError
-   *   - Webapp starts successfully without Swagger UI
-   *
-   * ALTERNATIVE REJECTED:
-   *   - Modify SwaggerConfig to check for SpringDoc availability
-   *   → Rejected: Cleaner to exclude entirely, Swagger UI not needed in production
-   *
-   * NOTE: We exclude the .class file, not the .java source, because WAR packaging
-   * includes compiled classes from build/classes/java/main directory.
-   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   */
-  rootSpec.exclude("**/SwaggerConfig.class")
 
   /*
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
