@@ -32,15 +32,21 @@ public class EchoCommand extends OfflineGfshCommand {
   @ShellMethod(value = CliStrings.ECHO__HELP, key = {CliStrings.ECHO})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public ResultModel echo(@ShellOption(value = {CliStrings.ECHO__STR, ""},
-      help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
+      help = CliStrings.ECHO__STR__HELP, defaultValue = "") String stringToEcho) {
 
-    if (stringToEcho.equals("$*")) {
+    // When Spring Shell fails to parse command arguments (e.g., complex quoted strings),
+    // it may pass null to this method despite the parameter annotation. This commonly occurs
+    // when gfsh executes multiple commands in sequence with disconnect/reconnect scenarios,
+    // where the command context may be lost. Adding null-safety prevents NPE and gracefully
+    // handles malformed input by treating it as an empty string, maintaining backward compatibility
+    // with scripts that rely on echo for status checks.
+    if (stringToEcho != null && stringToEcho.equals("$*")) {
       Gfsh gfshInstance = getGfsh();
       Map<String, String> envMap = gfshInstance.getEnv();
       Set<Map.Entry<String, String>> setEnvMap = envMap.entrySet();
       return buildResultForEcho(setEnvMap);
     } else {
-      return ResultModel.createInfo(stringToEcho);
+      return ResultModel.createInfo(stringToEcho == null ? "" : stringToEcho);
     }
   }
 
