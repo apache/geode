@@ -245,6 +245,7 @@ import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.lang.ThrowableUtils;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
@@ -2451,12 +2452,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           TXCommitMessage.getTracker().clearForCacheClose();
         }
 
-        // JAKARTA MIGRATION FIX: Commented out refresh() call to prevent TransactionManager
-        // invalidation
-        // The refresh() call was setting isActive=false on the TransactionManager instance, causing
-        // "TransactionManager invalid" errors in subsequent operations or tests. The cleanup thread
-        // and JNDI unbinding are handled by JNDIInvoker.cleanup() instead.
-        // TransactionManagerImpl.refresh();
+        // JAKARTA MIGRATION FIX: Stop GlobalTXTimeoutMonitor thread without invalidating
+        // TransactionManager
+        //
+        // The GlobalTXTimeoutMonitor cleanup thread must be stopped to avoid thread leaks when
+        // cache closes. However, calling TransactionManagerImpl.refresh() would set isActive=false,
+        // which breaks servlet environments where the cache may be reused across servlet reloads
+        // (e.g., SessionReplicationIntegrationJUnitTest).
+        //
+        // Solution: stopCleanupThread() only interrupts the GlobalTXTimeoutMonitor thread,
+        // leaving the TransactionManager in a usable state for cache reuse scenarios.
+        // The thread is daemon=true, so it won't prevent JVM shutdown even if left running.
+        //
+        // See: GEODE-10466, commit 417edc9990 (original issue), this commit (fix)
+        TransactionManagerImpl.stopCleanupThread();
 
         if (!keepDS) {
           // keepDS is used by ShutdownAll. It will override disableDisconnectDsOnCacheClose
