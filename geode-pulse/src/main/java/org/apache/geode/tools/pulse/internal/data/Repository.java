@@ -126,6 +126,33 @@ public class Repository {
         if (cluster.isConnectedFlag()) {
           clusterMap.put(userName, cluster);
         }
+      } else if (credentials instanceof String[] && ((String[]) credentials).length > 1
+          && ((String[]) credentials)[1] != null) {
+        // Jakarta EE Migration: For password-based authentication, validate credentials
+        // by creating a fresh connection. This prevents authentication bypass when wrong
+        // credentials are provided for a username that has a cached JMX connection.
+        // OAuth2 tokens are validated via expiration checks elsewhere.
+        // Only validate when we have an actual password (not null), otherwise just return
+        // the cached cluster for session-based requests.
+        logger.debug("Validating password credentials for cached cluster: " + userName);
+        Cluster testCluster = clusterFactory.create(host, port, userName, resourceBundle, this);
+        testCluster
+            .setName(PulseConstants.APP_NAME + "-" + host + ":" + port + ":" + userName);
+        testCluster.connectToGemFire(credentials);
+        if (testCluster.isConnectedFlag()) {
+          // Credentials are valid. Replace cached cluster with the new validated connection
+          // to ensure we're connected to the current server instance (not a stale connection).
+          logger.info("Replacing cached cluster with fresh connection for user: " + userName);
+          cluster.stopThread();
+          cluster = testCluster;
+          clusterMap.put(userName, cluster);
+        } else {
+          // Credentials are invalid, remove cached cluster
+          logger.info("Invalid credentials for user: " + userName);
+          clusterMap.remove(userName);
+          cluster.stopThread();
+          cluster = testCluster; // Return the failed cluster so authentication fails properly
+        }
       }
       return cluster;
     }

@@ -25,6 +25,7 @@ import javax.net.ssl.SSLContext;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -80,10 +81,34 @@ public class GeodeHttpClientRule extends ExternalResource {
     return this;
   }
 
+  @Override
+  protected void after() {
+    // Jakarta EE migration: Clear shared context after each test to prevent session cookie leakage
+    // This ensures each test starts with a clean state and login attempts are properly tested
+    sharedContext = null;
+  }
+
   public ClassicHttpResponse loginToPulse(String username, String password) throws Exception {
     connect();
-    // Jakarta EE migration: Use non-redirecting client for login to verify 302 response
-    return postNoRedirect("/pulse/login", "username", username, "password", password);
+    // Jakarta EE migration: Always create a completely fresh context for login attempts
+    // This ensures each login is independent and not affected by any existing session cookies.
+    // This is critical to prevent false authentication successes where an existing valid session
+    // cookie from a previous test/login would bypass the authentication check for incorrect
+    // credentials.
+    HttpClientContext freshLoginContext = HttpClientContext.create();
+    // Explicitly set an empty cookie store to ensure no cookies from previous requests
+    freshLoginContext.setCookieStore(new BasicCookieStore());
+    ClassicHttpResponse response = (ClassicHttpResponse) httpClientNoRedirect.execute(host,
+        buildHttpPost("/pulse/login", "username", username, "password", password),
+        freshLoginContext);
+    // If login is successful (302 redirect to clusterDetail), update shared context with new
+    // session
+    if (response.getCode() == 302 && response.getFirstHeader("Location") != null
+        && response.getFirstHeader("Location").getValue().contains("/pulse/clusterDetail.html")) {
+      // Replace shared context with the fresh one containing the new authenticated session
+      sharedContext = freshLoginContext;
+    }
+    return response;
   }
 
   public void loginToPulseAndVerify(String username, String password) throws Exception {
@@ -95,7 +120,10 @@ public class GeodeHttpClientRule extends ExternalResource {
   }
 
   public ClassicHttpResponse logoutFromPulse() throws Exception {
-    return get("/pulse/clusterLogout");
+    ClassicHttpResponse response = get("/pulse/clusterLogout");
+    // Clear the shared context after logout to remove session cookies
+    sharedContext = null;
+    return response;
   }
 
   public ClassicHttpResponse get(String uri, String... params) throws Exception {
