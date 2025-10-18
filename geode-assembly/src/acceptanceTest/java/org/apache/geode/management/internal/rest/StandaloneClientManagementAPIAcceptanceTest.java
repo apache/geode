@@ -72,11 +72,40 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
   @Rule(order = 1)
-  public GfshRule gfshRule = new GfshRule(folderRule::getFolder);
+  public GfshRule gfshRule = new GfshRule(() -> sanitizedFolder());
+
+  /**
+   * GEODE-10466: JUnit parameterized tests create folders with names containing square brackets
+   * (e.g., "clientCreatesRegionUsingClusterManagementService[0]"). When Jetty attempts to load
+   * jars from WEB-INF/lib using these paths as URIs, it throws URISyntaxException because square
+   * brackets are illegal characters in URI paths (RFC 3986).
+   *
+   * This method sanitizes the folder name by replacing square brackets with underscores to prevent
+   * the URISyntaxException and allow the embedded Jetty HTTP management service to start properly.
+   *
+   * Error without sanitization:
+   * java.net.URISyntaxException: Illegal character in path at index 188:
+   * file:/.../clientCreatesRegionUsingClusterManagementService[0]/startCluster/...
+   */
+  private org.apache.geode.test.junit.rules.Folder sanitizedFolder() {
+    org.apache.geode.test.junit.rules.Folder originalFolder = folderRule.getFolder();
+    String folderName = originalFolder.toPath().getFileName().toString();
+    String sanitizedName = folderName.replaceAll("[\\[\\]]", "_");
+
+    if (!folderName.equals(sanitizedName)) {
+      Path sanitized = originalFolder.toPath().resolveSibling(sanitizedName);
+      try {
+        return new org.apache.geode.test.junit.rules.Folder(sanitized);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create sanitized folder: " + sanitized, e);
+      }
+    }
+    return originalFolder;
+  }
 
   @Before
   public void setUp() {
-    rootFolder = folderRule.getFolder().toPath();
+    rootFolder = sanitizedFolder().toPath();
 
     /*
      * This file was generated with:
@@ -134,7 +163,38 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     boolean exited = process.waitFor(processTimeout, TimeUnit.SECONDS);
     assertThat(exited).as(String.format("Process did not exit within %d seconds", processTimeout))
         .isTrue();
-    assertThat(process.exitValue())
+
+    int exitValue = process.exitValue();
+
+    /*
+     * GEODE-10466: Enhanced error handling to capture actual process output for debugging.
+     *
+     * When the client process fails, we need to see the actual error messages
+     * (NoClassDefFoundError,
+     * exceptions, etc.) rather than just the exit code. The ProcessLogger captures stdout/stderr
+     * asynchronously, so we wait for it to finish and then retrieve the captured output to include
+     * in the assertion error message.
+     *
+     * This helped identify:
+     * - Missing micrometer-observation dependency
+     * - Missing slf4j-api dependency
+     * - URISyntaxException from square brackets in folder paths
+     */
+    // Always wait for ProcessLogger to finish collecting output
+    try {
+      clientProcessLogger.awaitTermination(5000, MILLISECONDS);
+    } catch (Exception e) {
+      // Ignore timeout exceptions
+    }
+
+    // If process failed, get the actual output from ProcessLogger
+    if (exitValue != 0) {
+      String processOutput = clientProcessLogger.getOutputText();
+      throw new AssertionError(
+          String.format("Process exited with code %d. Output:\n%s", exitValue, processOutput));
+    }
+
+    assertThat(exitValue)
         .as(String.format("Process did not exit with %d return code", expectedReturnCode))
         .isEqualTo(0);
 
@@ -154,6 +214,22 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     ProcessBuilder processBuilder = new ProcessBuilder();
     processBuilder.directory(clientFolder.toFile());
 
+    /*
+     * GEODE-10466: Jakarta EE migration requires updating HTTP client dependencies:
+     *
+     * Changed dependencies:
+     * - httpclient4 -> httpclient5: Jakarta namespace requires Apache HttpClient 5.x
+     * - httpcore4 -> httpcore5: HttpClient 5.x dependency
+     *
+     * New dependencies required:
+     * - httpcore5-h2: HTTP/2 support for HttpClient 5.x
+     * - micrometer-observation: Required by Spring Framework 6.x (Jakarta EE)
+     * - micrometer-commons: Transitive dependency of micrometer-observation
+     * - slf4j-api: HttpClient 5.x uses SLF4J for logging instead of commons-logging
+     *
+     * These dependencies are needed for the standalone client to use the
+     * ClusterManagementService REST API over HTTP.
+     */
     StringBuilder classPath = new StringBuilder();
     for (String module : Arrays.asList(
         "commons-logging",
@@ -166,8 +242,12 @@ public class StandaloneClientManagementAPIAcceptanceTest {
         "jackson-datatype-jsr310",
         "jackson-datatype-joda",
         "joda-time",
-        "httpclient",
-        "httpcore",
+        "httpclient5",
+        "httpcore5",
+        "httpcore5-h2",
+        "micrometer-observation",
+        "micrometer-commons",
+        "slf4j-api",
         "spring-beans",
         "spring-core",
         "spring-web")) {
