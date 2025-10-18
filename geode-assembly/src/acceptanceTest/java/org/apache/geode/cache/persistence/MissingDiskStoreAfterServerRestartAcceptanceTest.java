@@ -118,9 +118,11 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
         "query --query='select * from " + SEPARATOR + REGION_NAME_WITH_UNDERSCORE + "'";
 
     gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
-        startServer3Command, startServer4Command,
-        connectToLocatorCommand,
-        createRegionWithUnderscoreCommand);
+        startServer3Command, startServer4Command);
+
+    // Jakarta EE migration: Execute connect and create region in a separate gfsh session
+    // to ensure servers are fully started before attempting to create the region.
+    gfshRule.execute(connectToLocatorCommand, createRegionWithUnderscoreCommand);
   }
 
   @Test

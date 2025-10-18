@@ -122,6 +122,17 @@ public class InternalCacheForClientAccess implements InternalCache {
     this.delegate = delegate;
   }
 
+  /**
+   * Returns the underlying InternalCache delegate.
+   * This should only be used by internal management/JMX services that need
+   * access to internal regions like __OperationStateRegion.
+   *
+   * @return the unwrapped InternalCache instance
+   */
+  public InternalCache getDelegate() {
+    return delegate;
+  }
+
   private void checkForInternalRegion(Region<?, ?> r) {
     if (r == null) {
       return;
