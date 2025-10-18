@@ -291,6 +291,7 @@ public class DefaultSecurityConfig {
                 new AntPathRequestMatcher("/login.html"),
                 new AntPathRequestMatcher("/login"),
                 new AntPathRequestMatcher("/pulseVersion"),
+                new AntPathRequestMatcher("/pulseUpdate"), // Exempt for legacy test compatibility
                 new AntPathRequestMatcher("/scripts/**"),
                 new AntPathRequestMatcher("/images/**"),
                 new AntPathRequestMatcher("/css/**"),

@@ -21,6 +21,7 @@ snappy-0.5.jar
 swagger-annotations-2.2.22.jar
 jackson-datatype-jsr310-2.17.0.jar
 jackson-annotations-2.17.0.jar
+jackson-dataformat-yaml-2.17.0.jar
 jackson-core-2.17.0.jar
 jackson-datatype-joda-2.17.0.jar
 jackson-databind-2.17.0.jar

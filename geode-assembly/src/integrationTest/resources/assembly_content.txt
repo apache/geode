@@ -966,6 +966,7 @@ lib/istack-commons-runtime-4.0.1.jar
 lib/jackson-annotations-2.17.0.jar
 lib/jackson-core-2.17.0.jar
 lib/jackson-databind-2.17.0.jar
+lib/jackson-dataformat-yaml-2.17.0.jar
 lib/jackson-datatype-joda-2.17.0.jar
 lib/jackson-datatype-jsr310-2.17.0.jar
 lib/jakarta.activation-2.0.1.jar
