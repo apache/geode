@@ -58,6 +58,8 @@
   <Properties>
     <!-- Read log file path from system property set by HeadlessGfsh -->
     <Property name="log-file">${sys:gfsh.log.file:-${sys:java.io.tmpdir}/gfsh.log}</Property>
+    <!-- Geode log pattern for cache member logs (servers and clients) -->
+    <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} %memberName &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
   </Properties>
 
   <Appenders>
@@ -80,12 +82,27 @@
       </Policies>
       <DefaultRolloverStrategy max="5"/>
     </RollingFile>
+
+    <!-- Geode-specific appenders for cache member logging (servers and clients)
+         These are dynamically configured by the LoggingSession when a cache is created -->
+    <GeodeLogWriter name="LOGWRITER">
+      <PatternLayout pattern="${geode-pattern}"/>
+    </GeodeLogWriter>
+    <GeodeLogWriter name="SECURITYLOGWRITER" security="true">
+      <PatternLayout pattern="${geode-pattern}"/>
+    </GeodeLogWriter>
   </Appenders>
 
   <Loggers>
+    <!-- Security logger writes to SECURITYLOGWRITER only (not to Root appenders) -->
+    <Logger name="org.apache.geode.security" level="INFO" additivity="false">
+      <AppenderRef ref="SECURITYLOGWRITER"/>
+    </Logger>
+
     <Root level="INFO">
       <AppenderRef ref="STDOUT"/>
-      <AppenderRef ref="LOGFILE"/>  <!-- Both console and file output -->
+      <AppenderRef ref="LOGFILE"/>  <!-- gfsh command logging -->
+      <AppenderRef ref="LOGWRITER"/> <!-- Cache member (server/client) logging -->
     </Root>
   </Loggers>
 </Configuration>
