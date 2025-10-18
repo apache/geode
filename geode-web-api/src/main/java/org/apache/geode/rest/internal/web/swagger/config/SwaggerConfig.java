@@ -39,6 +39,9 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 
 @PropertySource({"classpath:swagger.properties"})
@@ -46,7 +49,19 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration("swaggerConfigApi")
 @ComponentScan(basePackages = {"org.springdoc"})
 @SuppressWarnings("unused")
-public class SwaggerConfig implements WebApplicationInitializer {
+public class SwaggerConfig implements WebApplicationInitializer, WebMvcConfigurer {
+
+  /**
+   * Configure path matching to use trailing slash matching.
+   * GEODE-10466: Spring Framework 6.x with @EnableWebMvc requires explicit configuration
+   * to match URLs with or without trailing slashes. Without this, /geode/v1/ returns 404.
+   */
+  @Override
+  public void configurePathMatch(PathMatchConfigurer configurer) {
+    PathPatternParser parser = new PathPatternParser();
+    parser.setMatchOptionalTrailingSeparator(true);
+    configurer.setPatternParser(parser);
+  }
 
   /**
    * Initializes the Swagger web application context on startup.
