@@ -16,6 +16,10 @@ package org.apache.geode.rest.internal.web.swagger.config;
 
 
 
+import java.text.SimpleDateFormat;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -27,6 +31,7 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
@@ -90,6 +95,20 @@ public class SwaggerConfig implements WebApplicationInitializer {
         .group("developer-apis")
         .pathsToMatch("/**")
         .build();
+  }
+
+  /**
+   * Configure ObjectMapper with SimpleDateFormat to match geode-servlet.xml configuration.
+   * GEODE-10466: After Jakarta migration, @EnableWebMvc disables Spring Boot auto-configuration,
+   * so we must configure Jackson programmatically.
+   */
+  @Bean
+  @Primary
+  public ObjectMapper objectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
+    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    return mapper;
   }
 
   /**
