@@ -15,7 +15,7 @@
 package org.apache.geode.session.tests;
 
 import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER;
-import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
+import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY12;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,12 +29,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
-public class Jetty9CachingClientServerTest extends GenericAppServerClientServerTest {
+public class Jetty12CachingClientServerTest extends GenericAppServerClientServerTest {
 
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier)
       throws IOException, InterruptedException {
-    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY9, CACHING_CLIENT_SERVER,
+    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY12, CACHING_CLIENT_SERVER,
         portSupplier);
   }
 

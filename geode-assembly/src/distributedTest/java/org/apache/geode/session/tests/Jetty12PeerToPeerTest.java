@@ -14,17 +14,17 @@
  */
 package org.apache.geode.session.tests;
 
-import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CLIENT_SERVER;
-import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
+import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.PEER_TO_PEER;
+import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY12;
 
 import java.io.IOException;
 import java.util.function.IntSupplier;
 
-public class Jetty9ClientServerTest extends GenericAppServerClientServerTest {
+public class Jetty12PeerToPeerTest extends CargoTestBase {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier)
       throws IOException, InterruptedException {
-    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY9, CLIENT_SERVER,
+    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY12, PEER_TO_PEER,
         portSupplier);
   }
 }

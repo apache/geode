@@ -51,7 +51,7 @@ class DependencyConstraints {
     deps.put("micrometer.version", "1.12.11")
     deps.put("shiro.version", "1.13.0")
     deps.put("slf4j-api.version", "1.7.32")
-    deps.put("javax.transaction-api.version", "1.3")
+    deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.17.0")
     deps.put("jackson.databind.version", "2.17.0")
@@ -178,7 +178,7 @@ class DependencyConstraints {
         api(group: 'org.assertj', name: 'assertj-core', version: '3.22.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.2.0')
         api(group: 'org.buildobjects', name: 'jproc', version: '2.8.0')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.12')
+        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.10.24')
         // Jetty 12: Core server module stays in org.eclipse.jetty
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         // Jetty 12: Servlet and webapp modules moved to ee10 package for Jakarta EE 10
@@ -198,7 +198,7 @@ class DependencyConstraints {
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
         api(group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: get('log4j-slf4j2-impl.version'))
-        api(group: 'javax.transaction', name: 'javax.transaction-api', version: get('javax.transaction-api.version'))
+        api(group: 'jakarta.transaction', name: 'jakarta.transaction-api', version: get('jakarta.transaction-api.version'))
         api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: get('springhateoas.version'))
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: get('springldap.version'))
         api(group: 'org.springframework.shell', name: 'spring-shell-starter', version: get('springshell.version'))

@@ -109,6 +109,14 @@ sourceSets {
   }
 }
 
+// Add JVM module access for Jetty 12 session tests
+// Required for Geode serialization to access JDK internal classes
+tasks.named('distributedTest') {
+  jvmArgs '--add-opens=jdk.zipfs/jdk.nio.zipfs=ALL-UNNAMED'
+  jvmArgs '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED'
+  jvmArgs '--add-opens=java.base/sun.invoke.util=ALL-UNNAMED'
+}
+
 task downloadWebServers(type:Copy) {
   from {configurations.findAll {it.name.startsWith("webServer")}}
   into webServersDir

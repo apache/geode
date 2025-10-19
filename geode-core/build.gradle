@@ -384,7 +384,7 @@ dependencies {
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
   integrationTestImplementation('org.junit-pioneer:junit-pioneer')
-  integrationTestImplementation('javax.transaction:javax.transaction-api')  // XA classes (not Jakarta)
+  integrationTestImplementation('jakarta.transaction:jakarta.transaction-api')  // XA classes (Jakarta EE 10)
 
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
