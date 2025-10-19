@@ -58,7 +58,6 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
@@ -248,19 +247,24 @@ public class ManagementAgent {
         serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
             securityService);
 
-        // Create LocatorClusterManagementService for the V2 Management REST API
-        // Pass null for persistenceService if cluster configuration is disabled
-        InternalConfigurationPersistenceService persistenceService = null;
-        if (config.getEnableClusterConfiguration()) {
-          InternalLocator locator = InternalLocator.getLocator();
-          if (locator != null) {
-            persistenceService = locator.getConfigurationPersistenceService();
-          }
+        // GEODE-10466: Create LocatorClusterManagementService for the V2 Management REST API
+        // For LOCATORS: Skip creation here to avoid race condition. During cache initialization,
+        // ManagementAgent runs before InternalLocator can initialize the persistence service,
+        // resulting in a service instance with null persistence. This caused duplicate instances:
+        // one broken (null persistence) created here, and one correct created by InternalLocator.
+        // Solution: Let InternalLocator.startClusterManagementService() handle service creation
+        // for locators with properly initialized persistence service.
+        // For SERVERS: Create the service here without persistence (servers don't have one).
+        InternalLocator locator = InternalLocator.getLocator();
+
+        if (locator == null) {
+          // This is a server - create the service without persistence
+          LocatorClusterManagementService clusterManagementService =
+              new LocatorClusterManagementService(cache, null);
+
+          serviceAttributes.put(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+              clusterManagementService);
         }
-        LocatorClusterManagementService clusterManagementService =
-            new LocatorClusterManagementService(cache, persistenceService);
-        serviceAttributes.put(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-            clusterManagementService);
 
         // Set auth token enabled parameter for management REST APIs
         String[] authTokenEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
@@ -275,8 +279,15 @@ public class ManagementAgent {
           httpService.addWebApplication("/geode-mgmt", adminRestWarPath, serviceAttributes);
         }
 
-        // Deploy V2 Cluster Management API at /management context path
-        if (agentUtil.isAnyWarFileAvailable(managementRestWar)) {
+        // GEODE-10466: Deploy V2 Cluster Management API at /management context path
+        // For LOCATORS: Skip webapp deployment here because
+        // InternalLocator.startClusterManagementService()
+        // will add it after properly initializing the cluster management service with persistence
+        // service.
+        // This prevents the webapp from using a service instance with null persistence.
+        // For SERVERS: Deploy the webapp here since servers handle service creation immediately
+        // above.
+        if (locator == null && agentUtil.isAnyWarFileAvailable(managementRestWar)) {
           Path managementRestWarPath = Paths.get(managementRestWar);
           httpService.addWebApplication("/management", managementRestWarPath, serviceAttributes);
         }
