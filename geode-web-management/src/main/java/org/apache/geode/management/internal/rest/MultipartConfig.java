@@ -38,10 +38,13 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
  * <li>web.xml {@code <multipart-config>} causes DispatcherServlet to wrap ALL HttpServletRequests
  * as MultipartHttpServletRequests, changing how Spring MVC processes parameters</li>
  * <li>This breaks Spring Shell converters because multipart parameter processing bypasses
+ *
  * @ShellOption validation and custom Converter beans</li>
- * <li>StandardServletMultipartResolver only activates for actual multipart requests</li>
- * <li>File size limits (50MB) are enforced at the application level via resolver configuration</li>
- * </ul>
+ *              <li>StandardServletMultipartResolver only activates for actual multipart
+ *              requests</li>
+ *              <li>File size limits (50MB) are enforced at the application level via resolver
+ *              configuration</li>
+ *              </ul>
  *
  * @see org.springframework.web.multipart.support.StandardServletMultipartResolver
  * @since Geode 1.15.0
