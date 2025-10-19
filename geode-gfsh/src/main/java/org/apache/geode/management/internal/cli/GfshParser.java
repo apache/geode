@@ -722,6 +722,21 @@ public class GfshParser {
       org.apache.geode.management.internal.cli.converters.ConfigPropertyConverter converter =
           new org.apache.geode.management.internal.cli.converters.ConfigPropertyConverter();
       return converter.convert(value);
+    } else if (targetType == org.apache.geode.management.internal.cli.domain.PoolProperty[].class) {
+      // Handle PoolProperty[] with custom converter
+      // GEODE-10466: Added for Spring Shell 3.x pool-properties parameter support
+      // PoolProperty uses JSON-like syntax with commas inside objects
+      // Must parse BEFORE generic array handling which would incorrectly split by comma
+      // Example: "{'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}"
+
+      if (value == null || value.isEmpty()) {
+        return new org.apache.geode.management.internal.cli.domain.PoolProperty[0];
+      }
+
+      // Use PoolPropertyConverter for parsing
+      org.apache.geode.management.internal.cli.converters.PoolPropertyConverter converter =
+          new org.apache.geode.management.internal.cli.converters.PoolPropertyConverter();
+      return converter.convert(value);
     } else if (targetType.isArray()) {
       // Handle array types (String[], int[], custom object arrays, etc.)
 

@@ -41,8 +41,13 @@
   
   <!-- GEODE-10466: Added component-scan for Spring 6.x compatibility.
        Discovers @RestController, @Configuration, @Component beans.
-       Requires spring-aop dependency (see build.gradle). -->
-  <context:component-scan base-package="org.apache.geode.management.internal.rest" />
+       Requires spring-aop dependency (see build.gradle).
+       
+       GEODE-10466: Added org.apache.geode.management.internal.cli.converters
+       to enable Spring Shell 3.x parameter converters (like PoolPropertyConverter).
+       These converters are annotated with @Component and must be discovered via
+       component scanning for Spring MVC to use them for parameter binding. -->
+  <context:component-scan base-package="org.apache.geode.management.internal.rest,org.apache.geode.management.internal.cli.converters" />
 
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
     <mvc:message-converters register-defaults="false">
