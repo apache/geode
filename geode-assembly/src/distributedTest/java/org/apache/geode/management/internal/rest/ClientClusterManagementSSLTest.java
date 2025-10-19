@@ -44,6 +44,7 @@ import org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -346,6 +347,44 @@ public class ClientClusterManagementSSLTest {
    */
   @Test
   public void createRegion_WrongPassword() {
+    /*
+     * IMPORTANT: Test Expectation Change for Spring Security 6
+     *
+     * PREVIOUS EXPECTATION (incorrect on GEODE-10466):
+     * - Expected: result.isSuccessful() == true
+     * - Reason given: "Spring Security ThreadLocal doesn't work in DUnit multi-JVM tests"
+     *
+     * ACTUAL BEHAVIOR:
+     * - Spring Security 6 DOES work correctly in DUnit multi-JVM environments!
+     * - Authentication is properly enforced across JVM boundaries via HTTP
+     * - Invalid credentials correctly result in UNAUTHENTICATED exceptions
+     *
+     * CORRECTED EXPECTATION (matching develop branch):
+     * - Expected: ClusterManagementException with "UNAUTHENTICATED" message
+     * - This proves Spring Security is functioning correctly
+     *
+     * WHY THE CONFUSION:
+     * On the develop branch, these tests used assertThatThrownBy() expecting authentication
+     * failures. When migrating to Spring Security 6 on GEODE-10466, tests were incorrectly
+     * changed to expect success based on the assumption that authentication couldn't work
+     * in DUnit. This assumption was WRONG.
+     *
+     * EVIDENCE:
+     * - Test with VALID credentials (createRegion_Successful) passes ✅
+     * - Tests with INVALID credentials fail with proper auth errors ✅
+     * - This confirms Spring Security is working correctly
+     *
+     * SERIALIZATION NOTE:
+     * These tests previously didn't need ClusterManagementResult to be Serializable because
+     * they threw exceptions (no return value). Now that we correctly expect exceptions again,
+     * we've added Serializable support to enable OTHER tests that DO return results successfully.
+     *
+     * IgnoredException: Authentication failures produce error logs that DUnit's suspect string
+     * checker flags. We add IgnoredException to mark these as expected test behavior.
+     */
+    IgnoredException.addIgnoredException("Authentication FAILED");
+    IgnoredException.addIgnoredException("invalid username/password");
+
     Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -363,10 +402,9 @@ public class ClientClusterManagementSSLTest {
               .setHostnameVerifier(hostnameVerifier)
               .build();
 
-      // Due to Spring Security's ThreadLocal limitation in multi-JVM DUnit tests,
-      // authentication cannot be validated. This test validates SSL connectivity instead.
-      ClusterManagementRealizationResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isTrue();
+      // Authentication should fail with wrong password
+      assertThatThrownBy(() -> cmsClient.create(region))
+          .hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
@@ -429,6 +467,14 @@ public class ClientClusterManagementSSLTest {
    */
   @Test
   public void createRegion_NoUser() {
+    /*
+     * Test validates that authentication is properly enforced when no username is provided.
+     * Spring Security 6 correctly rejects unauthenticated requests with UNAUTHENTICATED error.
+     * See createRegion_WrongPassword for detailed explanation of test expectation changes.
+     */
+    IgnoredException.addIgnoredException("Authentication FAILED");
+    IgnoredException.addIgnoredException("Full authentication is required");
+
     Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -450,10 +496,9 @@ public class ClientClusterManagementSSLTest {
               .setHostnameVerifier(hostnameVerifier)
               .build();
 
-      // Due to Spring Security's ThreadLocal limitation in multi-JVM DUnit tests,
-      // authentication cannot be validated. This test validates SSL connectivity instead.
-      ClusterManagementRealizationResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isTrue();
+      // Authentication should fail with no username
+      assertThatThrownBy(() -> cmsClient.create(region))
+          .hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
@@ -489,6 +534,14 @@ public class ClientClusterManagementSSLTest {
    */
   @Test
   public void createRegion_NoPassword() {
+    /*
+     * Test validates that authentication is properly enforced when password is null.
+     * Spring Security 6 correctly rejects requests with missing credentials.
+     * See createRegion_WrongPassword for detailed explanation of test expectation changes.
+     */
+    IgnoredException.addIgnoredException("Authentication FAILED");
+    IgnoredException.addIgnoredException("Full authentication is required");
+
     Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -506,11 +559,9 @@ public class ClientClusterManagementSSLTest {
               .setHostnameVerifier(hostnameVerifier)
               .build();
 
-      // Test validates SSL connectivity only. Authentication challenge is not enforced
-      // in DUnit multi-JVM environment due to ThreadLocal limitation (see class-level JavaDoc).
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isTrue();
-      assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+      // Authentication should fail with null password
+      assertThatThrownBy(() -> cmsClient.create(region))
+          .hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
@@ -591,6 +642,24 @@ public class ClientClusterManagementSSLTest {
    */
   @Test
   public void createRegion_NoPrivilege() {
+    /*
+     * Test validates that AUTHORIZATION is properly enforced for users with insufficient
+     * privileges.
+     *
+     * CRITICAL FINDING: Spring Security @PreAuthorize DOES work in DUnit multi-JVM tests!
+     *
+     * User "dataRead" has DATA:READ permission but lacks DATA:MANAGE permission required for
+     * creating regions. Spring Security correctly rejects this with UNAUTHORIZED error.
+     *
+     * This disproves the previous assumption that "@PreAuthorize doesn't work in DUnit because
+     * of ThreadLocal limitations". While ThreadLocal is JVM-scoped, Spring Security's HTTP-based
+     * authentication and authorization work perfectly across JVM boundaries.
+     *
+     * See createRegion_WrongPassword for detailed explanation of test expectation changes.
+     */
+    IgnoredException.addIgnoredException("Authentication FAILED");
+    IgnoredException.addIgnoredException("not authorized");
+
     Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -662,12 +731,9 @@ public class ClientClusterManagementSSLTest {
       // - Authorization IS tested in integration tests (single-JVM) environments
       // ============================================================================
 
-      ClusterManagementResult result = cmsClient.create(region);
-
-      // Operation succeeds despite insufficient permissions due to the multi-JVM
-      // ThreadLocal limitation described above. This is expected behavior in DUnit tests.
-      assertThat(result.isSuccessful()).isTrue();
-      assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+      // Authorization should fail - user has insufficient privileges
+      assertThatThrownBy(() -> cmsClient.create(region))
+          .hasMessageContaining("UNAUTHORIZED");
     });
   }
 

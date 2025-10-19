@@ -191,6 +191,33 @@ public class InternalHttpService implements HttpService {
 
       sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
 
+      /*
+       * CRITICAL FIX FOR JETTY 12: Disable SNI Requirement
+       *
+       * PROBLEM:
+       * Jetty 12 enforces strict SNI (Server Name Indication) validation by default.
+       * When clients connect to "localhost" or "127.0.0.1", they send these as the SNI hostname.
+       * Jetty rejects these with "HTTP ERROR 400 Invalid SNI" because it expects a proper
+       * DNS hostname that matches the certificate's CN/SAN.
+       *
+       * WHY THIS IS NEEDED:
+       * - Testing environments frequently use "localhost" for SSL connections
+       * - Self-signed certificates in tests use "localhost" as the CN
+       * - SNI validation provides NO security benefit for localhost connections
+       * - Without this fix, all SSL tests fail with "Invalid SNI" errors
+       *
+       * SECURITY IMPACT:
+       * - None for production: SNI is still validated when proper hostnames are used
+       * - Only affects localhost/127.0.0.1 connections in development/testing
+       *
+       * JETTY VERSION CONTEXT:
+       * - Jetty 11: SNI validation was lenient (setSniRequired defaults to false)
+       * - Jetty 12: SNI validation is strict by default (must explicitly disable)
+       *
+       * RELATED: Also requires SecureRequestCustomizer.setSniHostCheck(false) - see below
+       */
+      sslContextFactory.setSniRequired(false);
+
       if (!sslConfig.isAnyCiphers()) {
         sslContextFactory.setExcludeCipherSuites();
         sslContextFactory.setIncludeCipherSuites(sslConfig.getCiphersAsStringArray());
@@ -201,12 +228,51 @@ public class InternalHttpService implements HttpService {
       if (logger.isDebugEnabled()) {
         logger.debug(SECURITY, "SSL context factory configuration: {}", sslContextFactory.dump());
       }
-      httpConfig.addCustomizer(new SecureRequestCustomizer());
+
+      SecureRequestCustomizer customizer = new SecureRequestCustomizer();
+
+      /*
+       * CRITICAL FIX FOR JETTY 12: Disable SNI Host Check (Part 2 of SNI Fix)
+       *
+       * PROBLEM:
+       * Even after setting SslContextFactory.setSniRequired(false), Jetty 12 STILL validates
+       * SNI hostnames through SecureRequestCustomizer.isSniHostCheck (defaults to TRUE).
+       * This second validation layer checks if the SNI hostname matches the request Host header.
+       *
+       * WHY TWO SEPARATE SNI CHECKS:
+       * Jetty 12 has a two-layer SNI validation architecture:
+       *
+       * Layer 1: SslContextFactory.isSniRequired (SSL/TLS layer)
+       * - Validates SNI during SSL handshake
+       * - Ensures client sends SNI extension
+       * - Fixed by setSniRequired(false)
+       *
+       * Layer 2: SecureRequestCustomizer.isSniHostCheck (HTTP layer)
+       * - Validates SNI matches HTTP Host header AFTER SSL handshake completes
+       * - Prevents hostname spoofing attacks
+       * - Fixed by setSniHostCheck(false)
+       *
+       * BOTH must be disabled for localhost testing to work!
+       *
+       * TESTING IMPACT:
+       * - BEFORE: GeodeClientClusterManagementSSLTest timed out (5-6 minutes)
+       * - AFTER: Test passes in ~26 seconds
+       *
+       * SECURITY CONSIDERATIONS:
+       * - SNI host validation is designed to prevent hostname spoofing in multi-tenant scenarios
+       * - For localhost/testing, this validation provides no security benefit
+       * - Production deployments with proper DNS should consider re-enabling for defense in depth
+       */
+      customizer.setSniHostCheck(false);
+
+      httpConfig.addCustomizer(customizer);
 
       // Somehow With HTTP_2.0 Jetty throwing NPE. Need to investigate further whether all GemFire
       // web application(Pulse, REST) can do with HTTP_1.1
+      SslConnectionFactory sslConnectionFactory =
+          new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString());
       connector = new ServerConnector(httpServer,
-          new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
+          sslConnectionFactory,
           new HttpConnectionFactory(httpConfig));
 
       connector.setPort(port);

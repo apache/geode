@@ -260,9 +260,10 @@ public class RestTemplateClusterManagementServiceTransport
 
   @Override
   public boolean isConnected() {
+    String pingUrl = URI_VERSION + "/ping";
     try {
-      return "pong"
-          .equals(restTemplate.getForEntity(URI_VERSION + "/ping", String.class).getBody());
+      String responseBody = restTemplate.getForEntity(pingUrl, String.class).getBody();
+      return "pong".equals(responseBody);
     } catch (RestClientException e) {
       return false;
     }
