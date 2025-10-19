@@ -27,9 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
@@ -151,12 +148,17 @@ public class RestTemplateClusterManagementServiceTransport
         return execution.execute(request, body);
       });
     } else if (connectionConfig.getUsername() != null && connectionConfig.getPassword() != null) {
-      BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(
-          new AuthScope(connectionConfig.getHost(), connectionConfig.getPort()),
-          new UsernamePasswordCredentials(connectionConfig.getUsername(),
-              connectionConfig.getPassword().toCharArray()));
-      clientBuilder.setDefaultCredentialsProvider(credsProvider);
+      // Apache HttpClient 5.x requires explicit preemptive authentication
+      // Using RestTemplate interceptor to add Authorization header to every request
+      final String auth = connectionConfig.getUsername() + ":" + connectionConfig.getPassword();
+      final byte[] encodedAuth =
+          java.util.Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+      final String authHeader = "Basic " + new String(encodedAuth, StandardCharsets.UTF_8);
+
+      this.restTemplate.getInterceptors().add((request, body, execution) -> {
+        request.getHeaders().set(HttpHeaders.AUTHORIZATION, authHeader);
+        return execution.execute(request, body);
+      });
     }
 
     // Configure SSL context and hostname verifier (HttpClient 5.x approach)
