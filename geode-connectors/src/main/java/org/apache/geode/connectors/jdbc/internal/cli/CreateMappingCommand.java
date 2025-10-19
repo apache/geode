@@ -140,6 +140,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
       regionName = regionName.substring(1);
     }
 
+    // Validate that at least one of the required parameters is provided
+    // This is needed because multipart-config in web.xml can bypass Spring Shell validation
+    if (StringUtils.isBlank(pdxName) && StringUtils.isBlank(table) &&
+        StringUtils.isBlank(pdxClassFile)) {
+      return ResultModel.createError(
+          "You should specify option (--table, --pdx-name, --pdx-class-file, --synchronous, --id, --catalog, --schema, --if-not-exists, --group) for this command");
+    }
+
     String tempPdxClassFilePath = null;
     String remoteInputStreamName = null;
     RemoteInputStream remoteInputStream = null;
