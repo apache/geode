@@ -59,23 +59,22 @@ public class MultipartConfig {
    * This bean enables multipart file uploads for endpoints that need them (like create-mapping
    * with --pdx-class-file) while preserving normal parameter binding for other commands.
    *
-   * @return configured multipart resolver
+   * <p>
+   * <b>Servlet-Level Configuration:</b> The actual multipart configuration (file size limits,
+   * temp directory, etc.) is set programmatically on the DispatcherServlet by
+   * {@link org.apache.geode.management.internal.configuration.MultipartConfigurationListener},
+   * which is registered in {@code InternalHttpService.addWebApplication()}. The listener
+   * configures {@link jakarta.servlet.MultipartConfigElement} with 50MB limits via
+   * {@link jakarta.servlet.ServletRegistration.Dynamic#setMultipartConfig}.
+   *
+   * @return configured multipart resolver that reads limits from servlet's MultipartConfigElement
+   * @see org.apache.geode.management.internal.configuration.MultipartConfigurationListener
    */
   @Bean
   public StandardServletMultipartResolver multipartResolver() {
-    StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();
-    // Note: File size limits are now enforced programmatically rather than in web.xml.
-    // Spring Framework 6.x StandardServletMultipartResolver relies on
-    // jakarta.servlet.MultipartConfigElement for limits, which must be set on the servlet.
-    // Since we removed <multipart-config> from web.xml to fix parameter binding,
-    // we need an alternative approach for file size limits.
-    //
-    // Options:
-    // 1. Accept default servlet container limits (usually unlimited or very high)
-    // 2. Implement custom file size validation in controller methods
-    // 3. Use CommonsMultipartResolver instead (requires commons-fileupload dependency)
-    //
-    // For now, we accept default limits. File size validation can be added later if needed.
-    return resolver;
+    // StandardServletMultipartResolver automatically reads configuration from the
+    // jakarta.servlet.MultipartConfigElement set on the DispatcherServlet by
+    // MultipartConfigurationListener. No additional configuration needed here.
+    return new StandardServletMultipartResolver();
   }
 }

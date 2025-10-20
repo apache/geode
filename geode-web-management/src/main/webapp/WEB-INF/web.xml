@@ -24,6 +24,15 @@
     Web deployment descriptor declaring the Geode Management API for Geode.
   </description>
 
+  <listener>
+    <description>
+      Programmatically configures multipart file upload support for the DispatcherServlet.
+      This replaces the &lt;multipart-config&gt; element that was removed in commit 3ef6c393e0
+      to fix Spring Shell parameter binding issues. See MultipartConfigurationListener for details.
+    </description>
+    <listener-class>org.apache.geode.management.internal.configuration.MultipartConfigurationListener</listener-class>
+  </listener>
+
   <filter>
     <filter-name>springSecurityFilterChain</filter-name>
     <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
