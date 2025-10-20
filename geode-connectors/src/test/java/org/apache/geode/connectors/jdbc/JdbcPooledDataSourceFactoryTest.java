@@ -136,17 +136,18 @@ public class JdbcPooledDataSourceFactoryTest {
   }
 
   /**
-   * Verifies that query parameters are stripped from the JDBC URL after extraction.
+   * Verifies that only user and password parameters are stripped from the JDBC URL after
+   * extraction.
    * <p>
    * This test ensures that after extracting username/password from the URL query string,
-   * the resulting jdbcUrl property contains only the base URL without parameters.
-   * For example, "jdbc:postgresql://localhost:5432/test?user=postgres" becomes
-   * "jdbc:postgresql://localhost:5432/test".
+   * the resulting jdbcUrl property has only those credentials removed while other parameters
+   * are preserved. For example, "jdbc:postgresql://localhost:5432/test?user=postgres" becomes
+   * "jdbc:postgresql://localhost:5432/test", with credentials removed.
    * <p>
    * Context: This is critical because HikariCP will set username/password as separate
    * properties on the connection. If we leave them in the URL as well, it could cause
-   * conflicts or the JDBC driver might reject duplicate credentials. The URL parameters
-   * must be removed after extraction to prevent this issue.
+   * conflicts or the JDBC driver might reject duplicate credentials. Only credential
+   * parameters must be removed after extraction.
    */
   @Test
   public void validateThatUrlParametersAreStrippedFromJdbcUrl() throws Exception {
@@ -184,6 +185,34 @@ public class JdbcPooledDataSourceFactoryTest {
     Properties hikariProperties = instance.convertToHikari(poolProperties);
 
     assertThat(hikariProperties.getProperty("username")).isEqualTo("admin");
+  }
+
+  /**
+   * Verifies that non-credential parameters (like useSSL, serverTimezone, etc.) are preserved
+   * in the JDBC URL after credential extraction.
+   * <p>
+   * This test ensures that when extracting and stripping user/password from a JDBC URL,
+   * other important parameters like "useSSL=false" are NOT removed. For example:
+   * "jdbc:mysql://localhost:3306/test?user=root&password=secret&useSSL=false" should become
+   * "jdbc:mysql://localhost:3306/test?useSSL=false" with credentials removed but useSSL preserved.
+   * <p>
+   * Context: This is critical for databases like MySQL where parameters like useSSL,
+   * serverTimezone,
+   * and characterEncoding control important connection behavior. Removing these parameters would
+   * break functionality (e.g., MySQL might attempt SSL handshake with deprecated protocols if
+   * useSSL=false is lost). Only credential parameters (user, password) should be stripped.
+   */
+  @Test
+  public void validateThatNonCredentialParametersArePreserved() throws Exception {
+    Properties poolProperties = new Properties();
+    poolProperties.setProperty("connection-url",
+        "jdbc:mysql://localhost:3306/test?user=root&password=secret&useSSL=false&serverTimezone=UTC");
+    Properties hikariProperties = instance.convertToHikari(poolProperties);
+
+    assertThat(hikariProperties.getProperty("jdbcUrl"))
+        .isEqualTo("jdbc:mysql://localhost:3306/test?useSSL=false&serverTimezone=UTC");
+    assertThat(hikariProperties.getProperty("username")).isEqualTo("root");
+    assertThat(hikariProperties.getProperty("password")).isEqualTo("secret");
   }
 
 }

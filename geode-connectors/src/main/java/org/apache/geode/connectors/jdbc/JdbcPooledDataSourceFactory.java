@@ -112,9 +112,12 @@ public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
         result.setProperty("password", passwordFromUrl);
       }
 
-      // Strip parameters from the URL since HikariCP expects them as separate properties.
-      // This prevents the JDBC driver from receiving duplicate or conflicting credentials.
-      String cleanUrl = jdbcUrl.substring(0, jdbcUrl.indexOf('?'));
+      // Strip only user and password parameters from the URL since they are now set as separate
+      // properties.
+      // Other parameters (e.g., useSSL, serverTimezone, characterEncoding) must be preserved.
+      // This prevents the JDBC driver from receiving duplicate credentials while maintaining
+      // other important connection properties.
+      String cleanUrl = stripCredentialsFromUrl(jdbcUrl);
       result.setProperty("jdbcUrl", cleanUrl);
     }
 
@@ -166,6 +169,61 @@ public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
     }
 
     return params;
+  }
+
+  /**
+   * Removes only user and password parameters from a JDBC URL while preserving all other
+   * parameters.
+   * <p>
+   * This method extracts the query string from a JDBC URL, removes the "user" and "password"
+   * parameters, and reconstructs the URL with the remaining parameters. Other important JDBC
+   * parameters like "useSSL", "serverTimezone", "characterEncoding", etc. are preserved.
+   * <p>
+   * For example:
+   * - Input: "jdbc:mysql://localhost:3306/db?user=root&password=secret&useSSL=false"
+   * - Output: "jdbc:mysql://localhost:3306/db?useSSL=false"
+   * <p>
+   * This is necessary because HikariCP sets username and password as separate connection
+   * properties,
+   * and having them in both the URL and as properties could cause conflicts. However, other JDBC
+   * parameters must remain in the URL as they control connection behavior (SSL, timezone, encoding,
+   * etc.)
+   * and are not extracted by HikariCP.
+   *
+   * @param jdbcUrl the JDBC URL potentially containing user/password parameters
+   * @return the URL with user and password parameters removed, but other parameters preserved
+   */
+  String stripCredentialsFromUrl(String jdbcUrl) {
+    if (jdbcUrl == null || !jdbcUrl.contains("?")) {
+      return jdbcUrl;
+    }
+
+    String baseUrl = jdbcUrl.substring(0, jdbcUrl.indexOf('?'));
+    String queryString = jdbcUrl.substring(jdbcUrl.indexOf('?') + 1);
+
+    StringBuilder cleanParams = new StringBuilder();
+    String[] pairs = queryString.split("&");
+
+    for (String pair : pairs) {
+      int idx = pair.indexOf('=');
+      if (idx > 0) {
+        String key = pair.substring(0, idx);
+        // Preserve all parameters except 'user' and 'password'
+        if (!key.equals("user") && !key.equals("password")) {
+          if (cleanParams.length() > 0) {
+            cleanParams.append("&");
+          }
+          cleanParams.append(pair);
+        }
+      }
+    }
+
+    // Return base URL with remaining parameters, or just base URL if no parameters remain
+    if (cleanParams.length() > 0) {
+      return baseUrl + "?" + cleanParams.toString();
+    } else {
+      return baseUrl;
+    }
   }
 
   private String convertToCamelCase(String name) {
