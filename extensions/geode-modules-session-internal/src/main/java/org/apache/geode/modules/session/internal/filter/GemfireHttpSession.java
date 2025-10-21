@@ -38,9 +38,10 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.Instantiator;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.modules.session.filter.SafeDeserializationFilter;
 import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.SessionAttributes;
-import org.apache.geode.modules.util.ClassLoaderObjectInputStream;
+import org.apache.geode.modules.util.SecureClassLoaderObjectInputStream;
 
 /**
  * Class which implements a Gemfire persisted {@code HttpSession}
@@ -136,11 +137,50 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
           oos.writeObject(obj);
           oos.close();
 
-          ObjectInputStream ois = new ClassLoaderObjectInputStream(
-              new ByteArrayInputStream(baos.toByteArray()), loader);
+          /*
+           * SECURITY FIX: Protection Against Unsafe Deserialization Attacks
+           *
+           * Critical security enhancement to prevent remote code execution (RCE) vulnerabilities
+           * through unsafe deserialization of session attributes.
+           *
+           * Problem:
+           * - Session attributes stored in Geode regions can be manipulated by attackers
+           * - Deserialization of untrusted data can execute arbitrary code via gadget chains
+           * - Known exploits exist (e.g., Commons Collections, Spring Framework internals)
+           *
+           * Solution:
+           * - Replaced insecure ClassLoaderObjectInputStream with
+           * SecureClassLoaderObjectInputStream
+           * - Applied SafeDeserializationFilter that implements whitelist-based class filtering
+           * - Blocks 40+ known dangerous classes used in deserialization gadget chains
+           * - Enforces limits on object graph depth, references, array sizes, and total bytes
+           *
+           * Security Features:
+           * 1. Whitelist Filtering: Only explicitly allowed classes can be deserialized
+           * 2. Gadget Chain Blocking: Prevents exploitation via Commons Collections, Spring, etc.
+           * 3. Resource Limits: Protects against DoS attacks (depth, size, references)
+           * 4. Security Logging: All blocked attempts are logged for audit/monitoring
+           * 5. Fail-Safe Design: Returns null for suspicious data rather than throwing exceptions
+           *
+           * See: SafeDeserializationFilter for detailed filtering rules and blocked classes
+           * See: SecureClassLoaderObjectInputStream for secure deserialization implementation
+           */
+          ObjectInputStream ois = new SecureClassLoaderObjectInputStream(
+              new ByteArrayInputStream(baos.toByteArray()),
+              loader,
+              new SafeDeserializationFilter());
           tmpObj = ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
           LOG.error("Exception while recreating attribute '" + name + "'", e);
+        } catch (SecurityException e) {
+          // Security filter rejected the deserialization attempt - this indicates a potential
+          // attack
+          // Log the security event and fail safely by returning null instead of the malicious
+          // object
+          LOG.error("SECURITY: Blocked unsafe deserialization attempt for attribute '" + name
+              + "' in session " + id + ". This may indicate an attack attempt.", e);
+          // Fail-safe: return null rather than propagating potentially malicious data
+          return null;
         }
         if (tmpObj != null) {
           setAttribute(name, tmpObj);
