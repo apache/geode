@@ -77,6 +77,33 @@ class FileProcessController implements ProcessController {
     statusTimeoutMillis = units.toMillis(timeout);
   }
 
+  /**
+   * Constructs an instance for controlling a local process.
+   *
+   * @param parameters details about the controllable process
+   */
+  FileProcessController(final FileControllerParameters parameters) {
+    this(parameters, DEFAULT_STATUS_TIMEOUT_MILLIS, MILLISECONDS);
+  }
+
+  /**
+   * Constructs an instance for controlling a local process.
+   *
+   * @param parameters details about the controllable process
+   * @param timeout the timeout that operations must complete within
+   * @param units the units of the timeout
+   */
+  FileProcessController(final FileControllerParameters parameters,
+      final long timeout, final TimeUnit units) {
+    notNull(parameters, "Invalid parameters '" + parameters + "' specified");
+    isTrue(timeout >= 0, "Invalid timeout '" + timeout + "' specified");
+    notNull(units, "Invalid units '" + units + "' specified");
+
+    this.pid = 0;
+    this.parameters = parameters;
+    this.statusTimeoutMillis = units.toMillis(timeout);
+  }
+
   @Override
   public int getProcessId() {
     return pid;
