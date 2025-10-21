@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,7 +31,6 @@ import java.util.Set;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.standard.ShellMethod;
@@ -53,6 +53,7 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.cli.security.SecurePathResolver;
 import org.apache.geode.management.internal.cli.util.DeploymentInfoTableUtil;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -104,6 +105,7 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class DeployCommand extends GfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
+  private final SecurePathResolver pathResolver = new SecurePathResolver(null);
 
   /**
    * Deploy one or more JAR files to members of a group or all members.
@@ -179,14 +181,18 @@ public class DeployCommand extends GfshCommand {
       List<Object> memberResults = new ArrayList<>();
       try {
         for (String jarFullPath : jarFullPaths) {
-          // Security: Validate JAR file path to prevent path injection attacks
+          // Security: Validate JAR file path to prevent path injection attacks (CWE-22)
           validateJarPath(jarFullPath);
+
+          // Security: Resolve path securely using SecurePathResolver
+          // This prevents path traversal attacks by validating canonical paths
+          Path validatedPath = pathResolver.resolveSecurePath(jarFullPath, true, true);
 
           FileInputStream fileInputStream = null;
           try {
-            fileInputStream = new FileInputStream(jarFullPath);
+            fileInputStream = new FileInputStream(validatedPath.toFile());
             remoteStreams.add(exporter.export(new SimpleRemoteInputStream(fileInputStream)));
-            jarNames.add(FilenameUtils.getName(jarFullPath));
+            jarNames.add(validatedPath.getFileName().toString());
           } catch (Exception ex) {
             if (fileInputStream != null) {
               try {
@@ -223,7 +229,15 @@ public class DeployCommand extends GfshCommand {
 
   private void verifyJarContent(List<String> jarNames) {
     for (String jarName : jarNames) {
-      File jar = new File(jarName);
+      // Security: Validate path before File operations
+      Path validatedPath;
+      try {
+        validatedPath = pathResolver.resolveSecurePath(jarName, true, true);
+      } catch (SecurityException e) {
+        throw new IllegalArgumentException("Invalid JAR path: " + e.getMessage(), e);
+      }
+
+      File jar = validatedPath.toFile();
       if (!JarFileUtils.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jar.getName());
@@ -241,6 +255,7 @@ public class DeployCommand extends GfshCommand {
    */
   public static class Interceptor extends AbstractCliAroundInterceptor {
     private final DecimalFormat numFormatter = new DecimalFormat("###,##0.00");
+    private final SecurePathResolver pathResolver = new SecurePathResolver(null);
 
     /**
      *
@@ -263,14 +278,38 @@ public class DeployCommand extends GfshCommand {
       ResultModel result = new ResultModel();
       if (jars != null) {
         for (String jar : jars) {
-          File jarFile = new File(jar);
+          // Security: Validate path before File operations
+          Path validatedJarPath;
+          try {
+            validatedJarPath = pathResolver.resolveSecurePath(jar, true, true);
+          } catch (SecurityException e) {
+            // Provide user-friendly error messages for common cases
+            if (e.getMessage().contains("does not exist")) {
+              return ResultModel.createError(jar + " not found.");
+            }
+            return ResultModel.createError("Invalid JAR path: " + e.getMessage());
+          }
+
+          File jarFile = validatedJarPath.toFile();
           if (!jarFile.exists()) {
             return ResultModel.createError(jar + " not found.");
           }
           result.addFile(jarFile, FileResultModel.FILE_TYPE_FILE);
         }
       } else {
-        File fileDir = new File(dir);
+        // Security: Validate directory path before File operations
+        Path validatedDirPath;
+        try {
+          validatedDirPath = pathResolver.resolveSecurePath(dir, true, false);
+        } catch (SecurityException e) {
+          // Provide user-friendly error messages for common cases
+          if (e.getMessage().contains("does not exist")) {
+            return ResultModel.createError(dir + " not a directory");
+          }
+          return ResultModel.createError("Invalid directory path: " + e.getMessage());
+        }
+
+        File fileDir = validatedDirPath.toFile();
         if (!fileDir.isDirectory()) {
           return ResultModel.createError(dir + " is not a directory");
         }
@@ -298,122 +337,41 @@ public class DeployCommand extends GfshCommand {
   /**
    * Security: Validates JAR file paths to prevent path injection attacks.
    *
-   * This method addresses CodeQL vulnerability java/path-injection by ensuring
-   * that user-provided file paths are safe to access and don't contain malicious
-   * path traversal sequences.
+   * <p>
+   * This method addresses CodeQL vulnerability java/path-injection by delegating to
+   * {@link SecurePathResolver} for comprehensive path validation.
    *
-   * SECURITY ENHANCEMENTS:
-   * 1. Pre-validation of path strings before File object creation
-   * 2. Canonical path validation to prevent sophisticated traversal attacks
-   * 3. System directory access prevention (Linux and Windows)
-   * 4. Enhanced path traversal detection with multiple patterns
-   * 5. File type validation and accessibility checks
-   *
-   * COMPLIANCE:
-   * - Fixes CodeQL vulnerability: java/path-injection
-   * - Follows OWASP path traversal prevention guidelines
-   * - Implements defense-in-depth security validation
+   * <p>
+   * SECURITY FEATURES (via SecurePathResolver):
+   * <ul>
+   * <li>Canonical path resolution (prevents symlink attacks)</li>
+   * <li>Path traversal detection (blocks ../, ~, etc.)</li>
+   * <li>System directory access prevention</li>
+   * <li>File type and existence validation</li>
+   * <li>JAR content validation</li>
+   * </ul>
    *
    * @param jarPath The JAR file path to validate
    * @throws IllegalArgumentException if the path is invalid or unsafe
    */
   private void validateJarPath(String jarPath) {
-    if (jarPath == null || jarPath.trim().isEmpty()) {
-      throw new IllegalArgumentException("JAR file path cannot be null or empty");
-    }
-
-    // Security: Normalize and validate the path string before creating File object
-    String normalizedPath = jarPath.trim();
-
-    // Security: Prevent path traversal attacks - check for dangerous patterns
-    if (normalizedPath.contains("..") || normalizedPath.contains("~") ||
-        normalizedPath.contains("\\..") || normalizedPath.contains("/..")) {
-      throw new IllegalArgumentException("Invalid JAR file path: path traversal detected");
-    }
-
-    // Security: Prevent absolute paths to system directories
-    if (normalizedPath.startsWith("/etc/") || normalizedPath.startsWith("/sys/") ||
-        normalizedPath.startsWith("/proc/") || normalizedPath.startsWith("/dev/") ||
-        normalizedPath.contains(":\\Windows\\") || normalizedPath.contains(":\\Program Files\\")) {
-      throw new IllegalArgumentException("Access to system directories is not allowed");
-    }
-
-    File jarFile;
     try {
-      // Security: Create File object and immediately get canonical path for validation
-      jarFile = new File(normalizedPath);
-      String canonicalPath = jarFile.getCanonicalPath();
+      // Security: Use SecurePathResolver for comprehensive path validation
+      Path validatedPath = pathResolver.resolveSecurePath(jarPath, true, true);
 
-      // Security: Ensure canonical path doesn't escape intended directory bounds
-      // This prevents sophisticated path traversal attacks that might bypass simple string checks
-      if (!canonicalPath.equals(jarFile.getAbsolutePath())) {
-        // Check if the canonical path contains suspicious path traversal elements
-        // Security: Use the original normalized path for validation instead of jarFile.getName()
-        String expectedFileName = new File(normalizedPath).getName();
-        if (canonicalPath.contains("..") || !canonicalPath.endsWith(expectedFileName)) {
-          throw new IllegalArgumentException(
-              "Invalid JAR file path: canonical path validation failed");
-        }
+      // Additional JAR-specific validation
+      String filename = validatedPath.getFileName().toString().toLowerCase();
+      if (!filename.endsWith(".jar")) {
+        throw new SecurityException("File is not a JAR file: " + filename);
       }
-    } catch (java.io.IOException e) {
-      throw new IllegalArgumentException("Invalid JAR file path: " + e.getMessage());
+
+      // Validate JAR content to ensure it's a valid JAR archive
+      if (!JarFileUtils.hasValidJarContent(validatedPath.toFile())) {
+        throw new SecurityException("File does not contain valid JAR content");
+      }
+
+    } catch (SecurityException e) {
+      throw new IllegalArgumentException("Invalid JAR file path: " + e.getMessage(), e);
     }
-
-    // Security: Ensure the file exists and is a regular file
-    if (!jarFile.exists()) {
-      // Security: Use sanitized filename in error message to prevent information disclosure
-      String safeFileName = sanitizeFilename(jarFile.getName());
-      throw new IllegalArgumentException("JAR file does not exist: " + safeFileName);
-    }
-
-    if (!jarFile.isFile()) {
-      // Security: Use sanitized filename in error message to prevent information disclosure
-      String safeFileName = sanitizeFilename(jarFile.getName());
-      throw new IllegalArgumentException(
-          "Path does not point to a regular file: " + safeFileName);
-    }
-
-    // Security: Validate file extension (basic check for JAR files)
-    // Use sanitized filename for extension validation to prevent path injection
-    String safeFileName = sanitizeFilename(jarFile.getName());
-    String fileName = safeFileName.toLowerCase();
-    if (!fileName.endsWith(".jar")) {
-      // Security: Use sanitized filename in error message to prevent information disclosure
-      throw new IllegalArgumentException("File is not a JAR file: " + safeFileName);
-    }
-
-    // Security: Ensure the file is readable
-    if (!jarFile.canRead()) {
-      // Security: Use sanitized filename in error message to prevent information disclosure
-      throw new IllegalArgumentException("JAR file is not readable: " + safeFileName);
-    }
-  }
-
-  /**
-   * Security: Sanitizes filename for safe inclusion in error messages.
-   *
-   * This method prevents information disclosure and potential path traversal
-   * by cleaning user-controlled filenames before including them in error messages.
-   *
-   * @param filename The filename to sanitize
-   * @return A sanitized version of the filename safe for error messages
-   */
-  private String sanitizeFilename(String filename) {
-    if (filename == null) {
-      return "<unknown>";
-    }
-
-    // Remove any path separators and potentially dangerous characters
-    String sanitized = filename.replaceAll("[/\\\\]", "")
-        .replaceAll("\\.\\.", "")
-        .replaceAll("[<>:\"|?*]", "");
-
-    // Limit length to prevent excessively long filenames in error messages
-    if (sanitized.length() > 50) {
-      sanitized = sanitized.substring(0, 47) + "...";
-    }
-
-    // Return a safe default if the filename becomes empty after sanitization
-    return sanitized.isEmpty() ? "<sanitized>" : sanitized;
   }
 }
