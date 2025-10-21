@@ -49,6 +49,7 @@ import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.cli.security.SecurePathResolver;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
 import org.apache.geode.management.internal.configuration.functions.RecreateCacheFunction;
@@ -109,6 +110,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 @SuppressWarnings("unused")
 public class ImportClusterConfigurationCommand extends GfshCommand {
   public static final Logger logger = LogService.getLogger();
+  private final SecurePathResolver pathResolver = new SecurePathResolver(null);
   public static final String XML_FILE = "xml-file";
   public static final String ACTION = "action";
   public static final String ACTION_HELP =
@@ -241,56 +243,15 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
     List<String> filePathFromShell = CommandExecutionContext.getFilePathFromShell();
     String filePath = filePathFromShell.get(0);
 
-    // Security: Comprehensive path validation to prevent path injection attacks
-    if (filePath == null || filePath.trim().isEmpty()) {
-      throw new IllegalArgumentException("File path cannot be null or empty");
-    }
-
-    // Security: Normalize and validate the path string before creating File object
-    String normalizedPath = filePath.trim();
-
-    // Security: Prevent path traversal attacks - check for dangerous patterns
-    if (normalizedPath.contains("..") || normalizedPath.contains("~") ||
-        normalizedPath.contains("\\..") || normalizedPath.contains("/..")) {
-      throw new IllegalArgumentException("Invalid file path: path traversal detected");
-    }
-
-    // Security: Prevent absolute paths to system directories
-    if (normalizedPath.startsWith("/etc/") || normalizedPath.startsWith("/sys/") ||
-        normalizedPath.startsWith("/proc/") || normalizedPath.startsWith("/dev/") ||
-        normalizedPath.contains(":\\Windows\\") || normalizedPath.contains(":\\Program Files\\")) {
-      throw new IllegalArgumentException("Access to system directories is not allowed");
-    }
-
-    File file;
+    // Security: Use SecurePathResolver for comprehensive path validation
+    // This prevents path traversal attacks (CWE-22) by validating paths through
+    // canonical resolution, system directory blacklisting, and traversal pattern detection
     try {
-      // Security: Create File object and immediately get canonical path for validation
-      file = new File(normalizedPath);
-      String canonicalPath = file.getCanonicalPath();
-
-      // Security: Ensure canonical path doesn't escape intended directory bounds
-      String expectedFileName = new File(normalizedPath).getName();
-      if (canonicalPath.contains("..") || !canonicalPath.endsWith(expectedFileName)) {
-        throw new IllegalArgumentException("Invalid file path: canonical path validation failed");
-      }
-    } catch (java.io.IOException e) {
-      throw new IllegalArgumentException("Invalid file path: " + e.getMessage());
+      Path validatedPath = pathResolver.resolveSecurePath(filePath, true, true);
+      return validatedPath.toFile();
+    } catch (SecurityException e) {
+      throw new IllegalArgumentException("Invalid file path: " + e.getMessage(), e);
     }
-
-    // Security: Ensure the file exists and is a regular file (not a directory or special file)
-    if (!file.exists()) {
-      // Security: Use sanitized filename in error message to prevent information disclosure
-      String safeFileName = sanitizeFilename(file.getName());
-      throw new IllegalArgumentException("File does not exist: " + safeFileName);
-    }
-    if (!file.isFile()) {
-      // Security: Use sanitized filename in error message to prevent information disclosure
-      String safeFileName = sanitizeFilename(file.getName());
-      throw new IllegalArgumentException(
-          "Path does not point to a regular file: " + safeFileName);
-    }
-
-    return file;
   }
 
   Set<DistributedMember> findMembers(String group) {
