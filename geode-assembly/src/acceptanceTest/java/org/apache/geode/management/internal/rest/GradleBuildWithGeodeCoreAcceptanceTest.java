@@ -66,7 +66,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     copyDirectoryResource(projectDir, buildDir);
 
     GradleConnector connector = GradleConnector.newConnector();
-    connector.useBuildDistribution();
+    connector.useGradleVersion("7.3.3");
     connector.forProjectDirectory(buildDir);
 
     ProjectConnection connection = connector.connect();
@@ -75,7 +75,8 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
 
     build.setStandardError(System.err);
     build.setStandardOutput(System.out);
-    build.withArguments("-Pversion=" + geodeVersion,
+    build.withArguments(
+        "-Pversion=" + geodeVersion,
         "-Pgroup=" + projectGroup,
         "-PgeodeHome=" + geodeHome);
 

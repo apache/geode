@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM bellsoft/liberica-openjdk-debian:8
+FROM bellsoft/liberica-openjdk-debian:17
 
 LABEL Vendor="Apache Geode"
 LABEL version=unstable

@@ -148,10 +148,12 @@ public class QCompiler implements OQLLexerTokenTypes {
   }
 
   public void compileGroupByClause(final int numOfChildren) {
-    final List<CompiledPath> list = new ArrayList<>();
+    final List<CompiledValue> list = new ArrayList<>();
     for (int i = 0; i < numOfChildren; i++) {
-      list.add(0, pop());
+      list.add(TypeUtils.checkCast(pop(), CompiledValue.class));
     }
+    // reverse to preserve original left-to-right order without O(n^2) insert-at-zero
+    java.util.Collections.reverse(list);
     push(list);
   }
 

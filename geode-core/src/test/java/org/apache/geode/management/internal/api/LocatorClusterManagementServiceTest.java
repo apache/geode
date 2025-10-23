@@ -583,7 +583,7 @@ public class LocatorClusterManagementServiceTest {
     OperationState operationState = mock(OperationState.class);
     when(operationManager.get(any())).thenReturn(operationState);
     when(operationState.getOperationEnd()).thenReturn(new Date());
-    OperationResult operationResult = mock(OperationResult.class);
+    RebalanceResult operationResult = mock(RebalanceResult.class);
     when(operationResult.getSuccess()).thenReturn(false);
     when(operationResult.getStatusMessage()).thenReturn("Failure status message.");
     when(operationState.getResult()).thenReturn(operationResult);
@@ -601,7 +601,7 @@ public class LocatorClusterManagementServiceTest {
     OperationState operationState = mock(OperationState.class);
     when(operationManager.get(any())).thenReturn(operationState);
     when(operationState.getOperationEnd()).thenReturn(new Date());
-    OperationResult operationResult = mock(OperationResult.class);
+    RebalanceResult operationResult = mock(RebalanceResult.class);
     when(operationResult.getSuccess()).thenReturn(true);
     when(operationResult.getStatusMessage()).thenReturn("Success status message.");
     when(operationState.getResult()).thenReturn(operationResult);
