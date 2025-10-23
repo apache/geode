@@ -81,11 +81,12 @@ dependencies {
   performanceTestImplementation(project(':geode-lucene:geode-lucene-test'))
 }
 
-// Enable forking to help manage memory usage in integration tests
-integrationTest.forkEvery 20
+// Fork more frequently to prevent memory accumulation in integration tests
+integrationTest.forkEvery 5
 
 // Increase heap size for Lucene integration tests to prevent OutOfMemoryError
 // Jakarta migration introduced ByteBuffersDirectory which may have different memory characteristics
 integrationTest {
-  maxHeapSize = '8g'
+  maxHeapSize = '12g'
+  jvmArgs '-XX:+UseG1GC', '-XX:MaxGCPauseMillis=500', '-XX:+HeapDumpOnOutOfMemoryError'
 }
