@@ -69,7 +69,9 @@ lucene-analyzers-phonetic
 lucene-core
 lucene-queries
 lucene-queryparser
+micrometer-commons
 micrometer-core
+micrometer-observation
 mx4j
 mx4j-remote
 mx4j-tools
