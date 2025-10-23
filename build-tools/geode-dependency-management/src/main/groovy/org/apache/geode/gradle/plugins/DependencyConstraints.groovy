@@ -48,7 +48,7 @@ class DependencyConstraints {
     deps.put("jgroups.version", "3.6.20.Final")
     deps.put("log4j.version", "2.17.2")
     deps.put("log4j-slf4j2-impl.version", "2.23.1")
-    deps.put("micrometer.version", "1.12.11")
+    deps.put("micrometer.version", "1.14.0")
     deps.put("shiro.version", "1.13.0")
     deps.put("slf4j-api.version", "1.7.32")
     deps.put("jakarta.transaction-api.version", "2.0.1")

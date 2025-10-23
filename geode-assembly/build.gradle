@@ -131,6 +131,16 @@ tasks.matching { it.name == 'processDistributedTestResources' }.configureEach {
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
+  // Force micrometer to version 1.14.0 to avoid pulling in old versions
+  constraints {
+    geodeLibdirJars('io.micrometer:micrometer-commons:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJars('io.micrometer:micrometer-observation:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJars('io.micrometer:micrometer-core:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJarsDeprecated('io.micrometer:micrometer-commons:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJarsDeprecated('io.micrometer:micrometer-observation:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJarsDeprecated('io.micrometer:micrometer-core:' + DependencyConstraints.get('micrometer.version'))
+  }
+
   geodeLibdirJars(project(':geode-server-all'))
 
 

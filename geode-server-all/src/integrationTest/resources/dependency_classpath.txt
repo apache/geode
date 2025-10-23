@@ -46,7 +46,7 @@ spring-shell-standard-commands-3.3.3.jar
 spring-shell-standard-3.3.3.jar
 spring-shell-core-3.3.3.jar
 commons-io-2.15.1.jar
-micrometer-core-1.12.11.jar
+micrometer-core-1.14.0.jar
 jakarta.resource-api-2.1.0.jar
 jetty-ee10-annotations-12.0.27.jar
 jetty-ee10-plus-12.0.27.jar
@@ -113,8 +113,8 @@ logback-classic-1.5.11.jar
 jul-to-slf4j-2.0.16.jar
 slf4j-api-1.7.32.jar
 jakarta.activation-2.0.1.jar
-micrometer-observation-1.12.11.jar
-micrometer-commons-1.12.11.jar
+micrometer-observation-1.14.0.jar
+micrometer-commons-1.14.0.jar
 HdrHistogram-2.1.12.jar
 LatencyUtils-2.0.3.jar
 byte-buddy-1.14.9.jar
