@@ -24,6 +24,7 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
@@ -47,7 +48,12 @@ public class AbstractCompiledValueTestJUnitTest {
             new LinkedHashMap<>()),
         new CompiledIn(compiledValue1, compiledValue2),
         new CompiledIteratorDef("test", new CollectionTypeImpl(), compiledValue1),
-        new CompiledJunction(new CompiledValue[] {compiledValue1, compiledValue2}, 89),
+        // Changed from hardcoded value 89 to OQLLexerTokenTypes.LITERAL_or constant.
+        // The hardcoded value 89 was the token number for LITERAL_or in the original grammar,
+        // but after adding syntactic predicates to fix nondeterminism warnings, the token
+        // numbering changed (LITERAL_or is now 94). Using the constant ensures this test
+        // remains correct regardless of future grammar changes.
+        new CompiledJunction(new CompiledValue[] {compiledValue1, compiledValue2}, OQLLexerTokenTypes.LITERAL_or),
         new CompiledLike(compiledValue1, compiledValue2),
         new CompiledLiteral(compiledValue1),
         new CompiledMod(compiledValue1, compiledValue2),
