@@ -53,7 +53,8 @@ public class AbstractCompiledValueTestJUnitTest {
         // but after adding syntactic predicates to fix nondeterminism warnings, the token
         // numbering changed (LITERAL_or is now 94). Using the constant ensures this test
         // remains correct regardless of future grammar changes.
-        new CompiledJunction(new CompiledValue[] {compiledValue1, compiledValue2}, OQLLexerTokenTypes.LITERAL_or),
+        new CompiledJunction(new CompiledValue[] {compiledValue1, compiledValue2},
+            OQLLexerTokenTypes.LITERAL_or),
         new CompiledLike(compiledValue1, compiledValue2),
         new CompiledLiteral(compiledValue1),
         new CompiledMod(compiledValue1, compiledValue2),
