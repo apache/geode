@@ -115,7 +115,7 @@ slf4j-api-1.7.32.jar
 jakarta.activation-2.0.1.jar
 micrometer-observation-1.14.0.jar
 micrometer-commons-1.14.0.jar
-HdrHistogram-2.1.12.jar
+HdrHistogram-2.2.2.jar
 LatencyUtils-2.0.3.jar
 byte-buddy-1.14.9.jar
 spring-jcl-6.1.14.jar
