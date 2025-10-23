@@ -87,5 +87,5 @@ integrationTest.forkEvery 0
 // Increase heap size for Lucene integration tests to prevent OutOfMemoryError
 // Jakarta migration introduced ByteBuffersDirectory which may have different memory characteristics
 integrationTest {
-  maxHeapSize = '4g'
+  maxHeapSize = '6g'
 }
