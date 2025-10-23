@@ -90,5 +90,5 @@ geode-rebalancer-0.0.0.jar
 jetty-server-9.4.57.v20241219.jar
 jackson-datatype-jsr310-2.17.0.jar
 jackson-datatype-joda-2.17.0.jar
-joda-time-2.10.14.jar
+joda-time-2.12.7.jar
 byte-buddy-1.14.9.jar
