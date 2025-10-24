@@ -33,7 +33,7 @@ class DependencyConstraints {
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
-    deps.put("commons-io.version", "2.15.1")
+    deps.put("commons-io.version", "2.18.0")
     deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.8")
@@ -121,7 +121,8 @@ class DependencyConstraints {
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.1')
+        api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.22')
+        api(group: 'org.hdrhistogram', name: 'HdrHistogram', version: '2.1.12')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
@@ -130,7 +131,7 @@ class DependencyConstraints {
         api(group: 'javax.resource', name: 'javax.resource-api', version: '1.7.1')
         api(group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0')
         api(group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1')
-        api(group: 'joda-time', name: 'joda-time', version: '2.10.14')
+        api(group: 'joda-time', name: 'joda-time', version: '2.12.7')
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')

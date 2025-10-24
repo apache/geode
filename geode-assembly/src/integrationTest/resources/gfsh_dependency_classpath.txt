@@ -26,7 +26,7 @@ jackson-annotations-2.17.0.jar
 jackson-core-2.17.0.jar
 jackson-datatype-jsr310-2.17.0.jar
 jackson-databind-2.17.0.jar
-swagger-annotations-2.2.1.jar
+swagger-annotations-2.2.22.jar
 jopt-simple-5.0.4.jar
 log4j-slf4j-impl-2.17.2.jar
 log4j-core-2.17.2.jar
@@ -53,7 +53,7 @@ shiro-config-ogdl-1.13.0.jar
 commons-codec-1.15.jar
 commons-collections-3.2.2.jar
 commons-digester-2.1.jar
-commons-io-2.15.1.jar
+commons-io-2.18.0.jar
 commons-logging-1.3.5.jar
 classgraph-4.8.147.jar
 micrometer-core-1.9.1.jar
@@ -64,7 +64,7 @@ jetty-servlet-9.4.57.v20241219.jar
 jetty-security-9.4.57.v20241219.jar
 jetty-server-9.4.57.v20241219.jar
 javax.servlet-api-3.1.0.jar
-joda-time-2.10.14.jar
+joda-time-2.12.7.jar
 jna-platform-5.11.0.jar
 jna-5.11.0.jar
 snappy-0.5.jar
