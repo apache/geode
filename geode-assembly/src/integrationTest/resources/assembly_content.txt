@@ -1043,7 +1043,6 @@ lib/shiro-crypto-core-1.13.0.jar
 lib/shiro-crypto-hash-1.13.0.jar
 lib/shiro-event-1.13.0.jar
 lib/shiro-lang-1.13.0.jar
-lib/slf4j-api-1.7.32.jar
 lib/slf4j-api-2.0.17.jar
 lib/snakeyaml-2.2.jar
 lib/snappy-0.5.jar
