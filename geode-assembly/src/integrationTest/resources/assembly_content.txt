@@ -815,6 +815,7 @@ javadoc/org/apache/geode/modules/session/catalina/callback/package-summary.html
 javadoc/org/apache/geode/modules/session/catalina/callback/package-tree.html
 javadoc/org/apache/geode/modules/session/catalina/package-summary.html
 javadoc/org/apache/geode/modules/session/catalina/package-tree.html
+javadoc/org/apache/geode/modules/session/filter/SafeDeserializationFilter.html
 javadoc/org/apache/geode/modules/session/filter/SessionCachingFilter.RequestWrapper.html
 javadoc/org/apache/geode/modules/session/filter/SessionCachingFilter.html
 javadoc/org/apache/geode/modules/session/filter/package-summary.html
@@ -844,6 +845,7 @@ javadoc/org/apache/geode/modules/util/RegionHelper.html
 javadoc/org/apache/geode/modules/util/RegionSizeFunction.html
 javadoc/org/apache/geode/modules/util/RegionStatus.html
 javadoc/org/apache/geode/modules/util/ResourceManagerValidator.html
+javadoc/org/apache/geode/modules/util/SecureClassLoaderObjectInputStream.html
 javadoc/org/apache/geode/modules/util/SessionCustomExpiry.html
 javadoc/org/apache/geode/modules/util/TouchPartitionedRegionEntriesFunction.html
 javadoc/org/apache/geode/modules/util/TouchReplicatedRegionEntriesFunction.html
