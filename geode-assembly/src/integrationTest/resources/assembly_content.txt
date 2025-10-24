@@ -931,7 +931,7 @@ lib/commons-beanutils-1.11.0.jar
 lib/commons-codec-1.15.jar
 lib/commons-collections-3.2.2.jar
 lib/commons-digester-2.1.jar
-lib/commons-io-2.15.1.jar
+lib/commons-io-2.18.0.jar
 lib/commons-lang3-3.12.0.jar
 lib/commons-logging-1.3.5.jar
 lib/commons-modeler-2.0.1.jar
@@ -989,7 +989,7 @@ lib/jgroups-3.6.20.Final.jar
 lib/jline-2.12.jar
 lib/jna-5.11.0.jar
 lib/jna-platform-5.11.0.jar
-lib/joda-time-2.10.14.jar
+lib/joda-time-2.12.7.jar
 lib/jopt-simple-5.0.4.jar
 lib/log4j-api-2.17.2.jar
 lib/log4j-core-2.17.2.jar
@@ -1027,7 +1027,7 @@ lib/spring-core-5.3.21.jar
 lib/spring-jcl-5.3.21.jar
 lib/spring-shell-1.2.0.RELEASE.jar
 lib/spring-web-5.3.21.jar
-lib/swagger-annotations-2.2.1.jar
+lib/swagger-annotations-2.2.22.jar
 tools/Extensions/geode-web-0.0.0.war
 tools/Extensions/geode-web-api-0.0.0.war
 tools/Extensions/geode-web-management-0.0.0.war
