@@ -45,7 +45,7 @@ spring-shell-autoconfigure-3.3.3.jar
 spring-shell-standard-commands-3.3.3.jar
 spring-shell-standard-3.3.3.jar
 spring-shell-core-3.3.3.jar
-commons-io-2.15.1.jar
+commons-io-2.18.0.jar
 micrometer-core-1.14.0.jar
 jakarta.resource-api-2.1.0.jar
 jetty-ee10-annotations-12.0.27.jar
@@ -90,7 +90,7 @@ jakarta.annotation-api-2.1.1.jar
 jetty-ee10-webapp-12.0.27.jar
 jetty-ee10-servlet-12.0.27.jar
 jakarta.servlet-api-6.0.0.jar
-joda-time-2.10.14.jar
+joda-time-2.12.7.jar
 jetty-ee-12.0.27.jar
 jetty-session-12.0.27.jar
 jetty-plus-12.0.27.jar

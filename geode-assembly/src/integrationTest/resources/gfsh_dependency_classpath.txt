@@ -71,7 +71,7 @@ commons-beanutils-1.11.0.jar
 commons-codec-1.15.jar
 commons-collections-3.2.2.jar
 commons-digester-2.1.jar
-commons-io-2.15.1.jar
+commons-io-2.18.0.jar
 commons-logging-1.3.5.jar
 classgraph-4.8.147.jar
 micrometer-core-1.14.0.jar
@@ -86,7 +86,7 @@ jetty-ee10-webapp-12.0.27.jar
 jetty-ee10-servlet-12.0.27.jar
 jakarta.servlet-api-6.0.0.jar
 jakarta.transaction-api-2.0.1.jar
-joda-time-2.10.14.jar
+joda-time-2.12.7.jar
 jna-platform-5.11.0.jar
 jna-5.11.0.jar
 jetty-ee-12.0.27.jar

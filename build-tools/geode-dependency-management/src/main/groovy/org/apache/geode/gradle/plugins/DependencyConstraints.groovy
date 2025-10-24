@@ -33,7 +33,7 @@ class DependencyConstraints {
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
-    deps.put("commons-io.version", "2.15.1")
+    deps.put("commons-io.version", "2.18.0")
     deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.8")
@@ -153,7 +153,7 @@ class DependencyConstraints {
         api(group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: get('jakarta.servlet.version'))
         api(group: 'jakarta.transaction', name: 'jakarta.transaction-api', version: get('jakarta.transaction.version'))
         api(group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: get('jakarta.xml.bind.version'))
-        api(group: 'joda-time', name: 'joda-time', version: '2.10.14')
+        api(group: 'joda-time', name: 'joda-time', version: '2.12.7')
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
