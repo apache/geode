@@ -959,9 +959,9 @@ lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/hibernate-validator-8.0.1.Final.jar
-lib/httpclient5-5.3.1.jar
-lib/httpcore5-5.2.4.jar
-lib/httpcore5-h2-5.2.4.jar
+lib/httpclient5-5.4.4.jar
+lib/httpcore5-5.3.4.jar
+lib/httpcore5-h2-5.3.4.jar
 lib/istack-commons-runtime-4.0.1.jar
 lib/jackson-annotations-2.17.0.jar
 lib/jackson-core-2.17.0.jar
@@ -970,7 +970,7 @@ lib/jackson-dataformat-yaml-2.17.0.jar
 lib/jackson-datatype-joda-2.17.0.jar
 lib/jackson-datatype-jsr310-2.17.0.jar
 lib/jakarta.activation-2.0.1.jar
-lib/jakarta.activation-api-2.1.2.jar
+lib/jakarta.activation-api-2.1.3.jar
 lib/jakarta.annotation-api-2.1.1.jar
 lib/jakarta.el-api-5.0.0.jar
 lib/jakarta.enterprise.cdi-api-4.0.1.jar
@@ -982,9 +982,9 @@ lib/jakarta.resource-api-2.1.0.jar
 lib/jakarta.servlet-api-6.0.0.jar
 lib/jakarta.transaction-api-2.0.1.jar
 lib/jakarta.validation-api-3.0.2.jar
-lib/jakarta.xml.bind-api-4.0.1.jar
-lib/jaxb-core-3.0.2.jar
-lib/jaxb-runtime-3.0.2.jar
+lib/jakarta.xml.bind-api-4.0.2.jar
+lib/jaxb-core-4.0.2.jar
+lib/jaxb-runtime-4.0.2.jar
 lib/jboss-logging-3.4.3.Final.jar
 lib/jetty-ee-12.0.27.jar
 lib/jetty-ee10-annotations-12.0.27.jar
