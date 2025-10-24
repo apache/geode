@@ -3,6 +3,7 @@ HikariCP
 LatencyUtils
 ST
 accessors-smart
+angus-activation
 antlr
 antlr-runtime
 asm
@@ -36,7 +37,6 @@ jackson-databind
 jackson-dataformat-yaml
 jackson-datatype-joda
 jackson-datatype-jsr
-jakarta.activation
 jakarta.activation-api
 jakarta.annotation-api
 jakarta.el-api
