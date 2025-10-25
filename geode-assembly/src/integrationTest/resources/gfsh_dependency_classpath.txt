@@ -26,7 +26,7 @@ jackson-annotations-2.17.0.jar
 jackson-core-2.17.0.jar
 jackson-datatype-jsr310-2.17.0.jar
 jackson-databind-2.17.0.jar
-swagger-annotations-2.2.1.jar
+swagger-annotations-2.2.22.jar
 jaxb-api-2.3.1.jar
 jopt-simple-5.0.4.jar
 log4j-slf4j-impl-2.17.2.jar
