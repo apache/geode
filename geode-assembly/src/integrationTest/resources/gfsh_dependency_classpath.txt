@@ -72,7 +72,7 @@ commons-beanutils-1.11.0.jar
 commons-codec-1.15.jar
 commons-collections-3.2.2.jar
 commons-digester-2.1.jar
-commons-io-2.18.0.jar
+commons-io-2.19.0.jar
 commons-logging-1.3.5.jar
 classgraph-4.8.147.jar
 micrometer-core-1.14.0.jar

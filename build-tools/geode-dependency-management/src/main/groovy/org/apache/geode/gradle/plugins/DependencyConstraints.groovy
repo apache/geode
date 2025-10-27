@@ -33,7 +33,7 @@ class DependencyConstraints {
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
-    deps.put("commons-io.version", "2.18.0")
+    deps.put("commons-io.version", "2.19.0")
     deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.8")
@@ -145,6 +145,7 @@ class DependencyConstraints {
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.22')
+        api(group: 'org.hdrhistogram', name: 'HdrHistogram', version: '2.2.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: get('jakarta.annotation.version'))
         api(group: 'jakarta.annotation', name: 'jsr250-api', version: '1.0')
