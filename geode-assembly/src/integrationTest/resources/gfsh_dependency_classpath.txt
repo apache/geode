@@ -83,7 +83,7 @@ javax.activation-api-1.2.0.jar
 jline-2.12.jar
 lucene-queries-6.6.6.jar
 spring-jcl-5.3.21.jar
-HdrHistogram-2.1.12.jar
+HdrHistogram-2.2.2.jar
 LatencyUtils-2.0.3.jar
 javax.transaction-api-1.3.jar
 jetty-xml-9.4.57.v20241219.jar

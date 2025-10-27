@@ -122,7 +122,7 @@ class DependencyConstraints {
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.22')
-        api(group: 'org.hdrhistogram', name: 'HdrHistogram', version: '2.1.12')
+        api(group: 'org.hdrhistogram', name: 'HdrHistogram', version: '2.2.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
