@@ -921,6 +921,7 @@ javadoc/serialized-form.html
 javadoc/stylesheet.css
 javadoc/tag-search-index.js
 javadoc/type-search-index.js
+lib/HdrHistogram-2.1.12.jar
 lib/HdrHistogram-2.2.2.jar
 lib/HikariCP-4.0.3.jar
 lib/LatencyUtils-2.0.3.jar
