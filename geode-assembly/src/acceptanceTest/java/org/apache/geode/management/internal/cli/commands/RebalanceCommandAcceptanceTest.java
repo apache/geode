@@ -34,7 +34,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.i18n.CliStrings;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
@@ -97,9 +96,6 @@ public class RebalanceCommandAcceptanceTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    // Ignore expected disconnection messages during test cleanup
-    IgnoredException.addIgnoredException("No longer connected");
-
     locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     int locatorPort = locator.getPort();
 
