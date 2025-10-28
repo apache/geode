@@ -1505,10 +1505,23 @@ public class Gfsh implements Runnable {
   public void notifyDisconnect(String endPoints) {
     String message =
         CliStrings.format(CliStrings.GFSH__MSG__NO_LONGER_CONNECTED_TO_0, new Object[] {endPoints});
-    printAsSevere(LINE_SEPARATOR + message);
-    if (gfshFileLogger.severeEnabled()) {
-      gfshFileLogger.severe(message);
+
+    // Check if we're in shutdown mode - if so, this is expected behavior, log at INFO
+    // If not shutting down, this is an unexpected disconnection, log at SEVERE
+    if (exitShellRequest != null) {
+      // Normal shutdown - connection close is expected
+      printAsInfo(LINE_SEPARATOR + message);
+      if (gfshFileLogger.infoEnabled()) {
+        gfshFileLogger.info(message);
+      }
+    } else {
+      // Unexpected disconnection - this is a problem
+      printAsSevere(LINE_SEPARATOR + message);
+      if (gfshFileLogger.severeEnabled()) {
+        gfshFileLogger.severe(message);
+      }
     }
+
     // Reset prompt path to default after disconnect (Shell 3.x uses env property)
     // Shell 1.x: setPromptPath() method updated prompt directly
     // Shell 3.x: Set ENV_APP_CONTEXT_PATH; getPromptText() reads it dynamically
