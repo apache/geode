@@ -58,7 +58,7 @@ public class DestroyDataSourceCommandDUnitTest {
   public void before() throws Exception {
     // Ignore expected disconnection messages during test cleanup
     IgnoredException.addIgnoredException("No longer connected");
-    
+
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());

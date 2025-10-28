@@ -50,7 +50,7 @@ public class ListDataSourceCommandDUnitTest {
   public void before() throws Exception {
     // Ignore expected disconnection messages during test cleanup
     IgnoredException.addIgnoredException("No longer connected");
-    
+
     MemberVM locator = cluster.startLocatorVM(0);
     server = cluster.startServerVM(1, new Properties(), locator.getPort());
 
