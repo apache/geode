@@ -39,6 +39,7 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -55,6 +56,9 @@ public class DestroyDataSourceCommandDUnitTest {
 
   @Before
   public void before() throws Exception {
+    // Ignore expected disconnection messages during test cleanup
+    IgnoredException.addIgnoredException("No longer connected");
+    
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());

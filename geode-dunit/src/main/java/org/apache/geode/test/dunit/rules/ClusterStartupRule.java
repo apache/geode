@@ -150,6 +150,10 @@ public class ClusterStartupRule implements SerializableTestRule {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
+    // GEODE-10466: After migrating GFSH to Log4j2 and implementing closeShell(), JMX/HTTP
+    // connection cleanup during test teardown logs expected "No longer connected" messages.
+    // These are normal connection close notifications from background monitoring threads.
+    IgnoredException.addIgnoredException("No longer connected");
     restoreSystemProperties.beforeDistributedTest(description);
     occupiedVMs = new HashMap<>();
   }
