@@ -45,7 +45,7 @@ spring-shell-autoconfigure-3.3.3.jar
 spring-shell-standard-commands-3.3.3.jar
 spring-shell-standard-3.3.3.jar
 spring-shell-core-3.3.3.jar
-commons-io-2.18.0.jar
+commons-io-2.19.0.jar
 micrometer-core-1.14.0.jar
 jakarta.resource-api-2.1.0.jar
 jetty-ee10-annotations-12.0.27.jar

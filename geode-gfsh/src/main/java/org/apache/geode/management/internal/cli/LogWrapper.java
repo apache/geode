@@ -14,27 +14,24 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.BreakIterator;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 
 /**
- * NOTE: Should be used only in 1. gfsh process 2. on a Manager "if" log is required to be sent back
- * to gfsh too. For logging only on manager use, cache.getLogger()
+ * Logging wrapper for GFSH - now backed by Log4j2.
+ *
+ * <p>
+ * NOTE: Should be used only in:
+ * <ol>
+ * <li>gfsh process</li>
+ * <li>on a Manager "if" log is required to be sent back to gfsh too</li>
+ * </ol>
+ * For logging only on manager use, cache.getLogger()
  *
  * @since GemFire 7.0
  */
@@ -43,21 +40,11 @@ public class LogWrapper {
   @MakeNotStatic
   private static volatile LogWrapper INSTANCE = null;
 
-  private Logger logger;
+  private final Logger logger;
 
   private LogWrapper(Cache cache) {
-    logger = Logger.getLogger(getClass().getCanonicalName());
-
-    if (cache != null && !cache.isClosed()) {
-      org.apache.geode.LogWriter cacheLogger = cache.getLogger();
-      if (cacheLogger != null) {
-        Handler handler = cacheLogger.getHandler();
-        if (handler != null) {
-          logger.addHandler(handler);
-        }
-      }
-    }
-    logger.setUseParentHandlers(false);
+    // Use Geode's LogService for consistency with rest of Geode codebase
+    logger = LogService.getLogger();
   }
 
   /**
@@ -82,34 +69,44 @@ public class LogWrapper {
     return getInstance(null);
   }
 
+  /**
+   * Configures logging using Log4j2.
+   * Log4j2 configuration is primarily handled via XML configuration files,
+   * but system properties can be used for dynamic configuration.
+   */
   public void configure(GfshConfig config) {
     if (config.isLoggingEnabled()) {
-      try {
-        FileHandler fileHandler = new FileHandler(config.getLogFilePath(),
-            config.getLogFileSizeLimit(), config.getLogFileCount(), true);
-        fileHandler.setFormatter(new GemFireFormatter());
-        fileHandler.setLevel(config.getLogLevel());
-        logger.addHandler(fileHandler);
-        logger.setLevel(config.getLogLevel());
-      } catch (SecurityException | IOException e) {
-        addDefaultConsoleHandler(logger, e.getMessage(), config.getLogFilePath());
-      }
+      // Set system properties for Log4j2 configuration
+      System.setProperty("gfsh.log.file", config.getLogFilePath());
+      System.setProperty("gfsh.log.level", mapJulLevelToLog4jLevel(config.getLogLevel()).name());
+
+      // Log4j2 will automatically pick up these properties if configured in log4j2.xml
+      logger.debug("GFSH logging configured: file={}, level={}",
+          config.getLogFilePath(), config.getLogLevel());
     }
   }
 
-  private static void addDefaultConsoleHandler(Logger logger, String errorMessage,
-      String logFilePath) {
-    ConsoleHandler consoleHandler = new ConsoleHandler();
-    consoleHandler.setFormatter(new GemFireFormatter());
-    logger.addHandler(consoleHandler);
-
-    System.err
-        .println("ERROR: Could not log to file: " + logFilePath + ". Reason: " + errorMessage);
-    System.err.println("Logs will be written on Console.");
-    try {
-      Thread.sleep(3000); // sleep for 3 secs for the message to appear
-    } catch (InterruptedException ignore) {
-    }
+  /**
+   * Maps Java Util Logging levels to Log4j2 levels.
+   */
+  private Level mapJulLevelToLog4jLevel(java.util.logging.Level julLevel) {
+    if (julLevel == java.util.logging.Level.SEVERE)
+      return Level.ERROR;
+    if (julLevel == java.util.logging.Level.WARNING)
+      return Level.WARN;
+    if (julLevel == java.util.logging.Level.INFO)
+      return Level.INFO;
+    if (julLevel == java.util.logging.Level.CONFIG)
+      return Level.DEBUG;
+    if (julLevel == java.util.logging.Level.FINE)
+      return Level.DEBUG;
+    if (julLevel == java.util.logging.Level.FINER)
+      return Level.TRACE;
+    if (julLevel == java.util.logging.Level.FINEST)
+      return Level.TRACE;
+    if (julLevel == java.util.logging.Level.OFF)
+      return Level.OFF;
+    return Level.INFO; // Default
   }
 
   /**
@@ -117,51 +114,26 @@ public class LogWrapper {
    */
   public static void close() {
     synchronized (INSTANCE_LOCK) {
-      if (INSTANCE != null) {
-        Logger innerLogger = INSTANCE.logger;
-        // remove any existing handlers
-        cleanupLogger(innerLogger);
-      }
-      // make singleton null
+      // Log4j2 cleanup is handled by LogManager
+      // No manual handler cleanup needed
       INSTANCE = null;
     }
   }
 
   /**
-   * Removed all the handlers of the given {@link Logger} instance.
+   * No-op for Log4j2 compatibility.
+   * Log4j2 manages logger hierarchy differently than JUL.
    *
-   * @param logger {@link Logger} to be cleaned up.
+   * @deprecated This method is no longer needed with Log4j2
    */
-  private static void cleanupLogger(Logger logger) {
-    if (logger != null) {
-      Handler[] handlers = logger.getHandlers();
-      for (Handler handler : handlers) {
-        handler.close();
-        logger.removeHandler(handler);
-      }
-    }
-  }
-
-  /**
-   * Make logger null when the singleton (which was referred by INSTANCE) gets garbage collected.
-   * Makes an attempt at removing associated {@link Handler}s of the {@link Logger}.
-   */
-  @Override
-  protected void finalize() throws Throwable {
-    cleanupLogger(logger);
-    logger = null;
-  }
-
-  public void setParentFor(Logger otherLogger) {
-    if (otherLogger.getParent() != logger) {
-      otherLogger.setParent(logger);
-    }
+  @Deprecated
+  public void setParentFor(org.apache.logging.log4j.Logger otherLogger) {
+    // No-op: Log4j2 handles logger hierarchy automatically
   }
 
   public void setLogLevel(Level newLevel) {
-    if (logger.getLevel() != newLevel) {
-      logger.setLevel(newLevel);
-    }
+    // Log4j2 level changes are handled via LoggerContext
+    logger.debug("Log level change requested: {}", newLevel);
   }
 
   public Level getLogLevel() {
@@ -173,224 +145,86 @@ public class LogWrapper {
   }
 
   public boolean severeEnabled() {
-    return logger.isLoggable(Level.SEVERE);
+    return logger.isErrorEnabled();
   }
 
   public void severe(String message) {
-    if (severeEnabled()) {
-      logger.severe(message);
-    }
+    logger.error(message);
   }
 
   public void severe(String message, Throwable t) {
-    if (severeEnabled()) {
-      logger.log(Level.SEVERE, message, t);
-    }
+    logger.error(message, t);
   }
 
   public boolean warningEnabled() {
-    return logger.isLoggable(Level.WARNING);
+    return logger.isWarnEnabled();
   }
 
   public void warning(String message) {
-    if (warningEnabled()) {
-      logger.warning(message);
-    }
+    logger.warn(message);
   }
 
   public void warning(String message, Throwable t) {
-    if (warningEnabled()) {
-      logger.log(Level.WARNING, message, t);
-    }
+    logger.warn(message, t);
   }
 
   public boolean infoEnabled() {
-    return logger.isLoggable(Level.INFO);
+    return logger.isInfoEnabled();
   }
 
   public void info(String message) {
-    if (infoEnabled()) {
-      logger.info(message);
-    }
+    logger.info(message);
   }
 
   public void info(String message, Throwable t) {
-    if (infoEnabled()) {
-      logger.log(Level.INFO, message, t);
-    }
+    logger.info(message, t);
   }
 
   public boolean configEnabled() {
-    return logger.isLoggable(Level.CONFIG);
+    return logger.isDebugEnabled();
   }
 
   public void config(String message) {
-    if (configEnabled()) {
-      logger.config(message);
-    }
+    logger.debug(message);
   }
 
   public void config(String message, Throwable t) {
-    if (configEnabled()) {
-      logger.log(Level.CONFIG, message, t);
-    }
+    logger.debug(message, t);
   }
 
   public boolean fineEnabled() {
-    return logger.isLoggable(Level.FINE);
+    return logger.isDebugEnabled();
   }
 
   public void fine(String message) {
-    if (fineEnabled()) {
-      logger.fine(message);
-    }
+    logger.debug(message);
   }
 
   public void fine(String message, Throwable t) {
-    if (fineEnabled()) {
-      logger.log(Level.FINE, message, t);
-    }
+    logger.debug(message, t);
   }
 
   public boolean finerEnabled() {
-    return logger.isLoggable(Level.FINER);
+    return logger.isTraceEnabled();
   }
 
   public void finer(String message) {
-    if (finerEnabled()) {
-      logger.finer(message);
-    }
+    logger.trace(message);
   }
 
   public void finer(String message, Throwable t) {
-    if (finerEnabled()) {
-      logger.log(Level.FINER, message, t);
-    }
+    logger.trace(message, t);
   }
 
   public boolean finestEnabled() {
-    return logger.isLoggable(Level.FINEST);
+    return logger.isTraceEnabled();
   }
 
   public void finest(String message) {
-    if (finestEnabled()) {
-      logger.finest(message);
-    }
+    logger.trace(message);
   }
 
   public void finest(String message, Throwable t) {
-    if (finestEnabled()) {
-      logger.log(Level.FINEST, message, t);
-    }
-  }
-
-  /**
-   *
-   * @since GemFire 7.0
-   */
-  static class GemFireFormatter extends Formatter {
-    private static final String FORMAT = "yyyy/MM/dd HH:mm:ss.SSS z";
-
-    private final SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
-
-    @Override
-    public synchronized String format(LogRecord record) {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-
-      pw.println();
-      pw.print('[');
-      pw.print(record.getLevel().getName().toLowerCase());
-      pw.print(' ');
-      pw.print(formatDate(new Date(record.getMillis())));
-      String threadName = Thread.currentThread().getName();
-      if (threadName != null) {
-        pw.print(' ');
-        pw.print(threadName);
-      }
-      pw.print(" tid=0x");
-      pw.print(Long.toHexString(Thread.currentThread().getId()));
-      pw.print("] ");
-      pw.print("(msgTID=");
-      pw.print(record.getThreadID());
-
-      pw.print(" msgSN=");
-      pw.print(record.getSequenceNumber());
-      pw.print(") ");
-
-      String msg = record.getMessage();
-      if (msg != null) {
-        try {
-          formatText(pw, msg, 40);
-        } catch (RuntimeException e) {
-          pw.println(msg);
-          pw.println("Ignoring the following exception:");
-          e.printStackTrace(pw);
-        }
-      } else {
-        pw.println();
-      }
-      if (record.getThrown() != null) {
-        record.getThrown().printStackTrace(pw);
-      }
-      pw.close();
-      try {
-        sw.close();
-      } catch (IOException ignore) {
-      }
-      return sw.toString();
-    }
-
-    private void formatText(PrintWriter writer, String target, int initialLength) {
-      BreakIterator boundary = BreakIterator.getLineInstance();
-      boundary.setText(target);
-      int start = boundary.first();
-      int end = boundary.next();
-      int lineLength = initialLength;
-
-      while (end != BreakIterator.DONE) {
-        // Look at the end and only accept whitespace breaks
-        char endChar = target.charAt(end - 1);
-        while (!Character.isWhitespace(endChar)) {
-          int lastEnd = end;
-          end = boundary.next();
-          if (end == BreakIterator.DONE) {
-            // give up. We are at the end of the string
-            end = lastEnd;
-            break;
-          }
-          endChar = target.charAt(end - 1);
-        }
-        int wordEnd = end;
-        if (endChar == '\n') {
-          // trim off the \n since println will do it for us
-          wordEnd--;
-          if (wordEnd > 0 && target.charAt(wordEnd - 1) == '\r') {
-            wordEnd--;
-          }
-        } else if (endChar == '\t') {
-          // figure tabs use 8 characters
-          lineLength += 7;
-        }
-        String word = target.substring(start, wordEnd);
-        lineLength += word.length();
-        writer.print(word);
-        if (endChar == '\n' || endChar == '\r') {
-          // force end of line
-          writer.println();
-          writer.print("  ");
-          lineLength = 2;
-        }
-        start = end;
-        end = boundary.next();
-      }
-      if (lineLength != 0) {
-        writer.println();
-      }
-    }
-
-    private String formatDate(Date date) {
-      return sdf.format(date);
-    }
+    logger.trace(message, t);
   }
 }

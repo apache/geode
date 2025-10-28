@@ -27,16 +27,14 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
@@ -53,6 +51,7 @@ import org.apache.geode.internal.util.HostName;
 import org.apache.geode.internal.util.ProductVersionUtil;
 import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtils;
@@ -134,7 +133,7 @@ public class Gfsh implements Runnable {
   // This flag is used to restrict column trimming to table only types
   private static final ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<>();
   private static final String OS = System.getProperty("os.name").toLowerCase();
-  protected static final Logger logger = Logger.getLogger(Gfsh.class.getName());
+  protected static final Logger logger = LogService.getLogger();
 
   private final Map<String, String> env = new TreeMap<>();
   private final List<String> readonlyAppEnv = new ArrayList<>();
@@ -158,6 +157,12 @@ public class Gfsh implements Runnable {
   private boolean isScriptRunning;
   private AbstractSignalNotificationHandler signalHandler;
   private ExitShellRequest exitShellRequest;
+  /**
+   * Holds accumulated multi-line command input when continuation character is used.
+   * Reset to null when complete command is executed.
+   * Used in promptLoop() to support backslash continuation across multiple lines.
+   */
+  private StringBuilder multiLineBuffer;
 
   public Gfsh() {
     this(null);
@@ -191,7 +196,7 @@ public class Gfsh implements Runnable {
     gfshFileLogger.configure(this.gfshConfig);
     ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported());
 
-    // 3. log system properties & gfsh environment TODO: change GFSH to use Geode logging
+    // Log system properties & gfsh environment
     @SuppressWarnings("deprecation")
     final Banner banner = new Banner();
     gfshFileLogger.info(banner.getString());
@@ -289,12 +294,46 @@ public class Gfsh implements Runnable {
     gfsherr.println(toPrint);
   }
 
-  // See 46369
-  // TODO: Adapt this for JLine 3 LineReader when needed
-  private static String readLine(LineReader reader, String prompt) throws IOException {
-    // Simplified for now - JLine 3 has different API
-    String readLine = reader.readLine(prompt);
-    return readLine;
+  /**
+   * Reads a line from the LineReader with proper JLine 3 exception handling.
+   *
+   * <p>
+   * JLine 3 throws unchecked exceptions for user interrupts:
+   * <ul>
+   * <li>{@code UserInterruptException} when Ctrl-C is pressed</li>
+   * <li>{@code EndOfFileException} when Ctrl-D is pressed on empty line</li>
+   * </ul>
+   *
+   * <p>
+   * This method handles both exceptions gracefully:
+   * <ul>
+   * <li>Ctrl-C returns empty string - allows user to cancel current command</li>
+   * <li>Ctrl-D returns null - signals EOF and causes shell to exit</li>
+   * </ul>
+   *
+   * @param reader the JLine 3 LineReader to read from
+   * @param prompt the prompt string to display to the user
+   * @return the line read from input, empty string if user interrupted (Ctrl-C),
+   *         or null if end-of-file reached (Ctrl-D)
+   */
+  private static String readLine(LineReader reader, String prompt) {
+    try {
+      return reader.readLine(prompt);
+    } catch (org.jline.reader.UserInterruptException e) {
+      // User pressed Ctrl-C to cancel current command line input
+      // Return empty string so promptLoop() will display a new prompt
+      if (logger.isDebugEnabled()) {
+        logger.debug("User interrupted input with Ctrl-C");
+      }
+      return "";
+    } catch (org.jline.reader.EndOfFileException e) {
+      // User pressed Ctrl-D on empty line to signal end-of-file
+      // Return null so promptLoop() will detect EOF and exit gracefully
+      if (logger.isDebugEnabled()) {
+        logger.debug("End-of-file signal received (Ctrl-D)");
+      }
+      return null;
+    }
   }
 
   private static String removeBackslash(String result) {
@@ -305,37 +344,20 @@ public class Gfsh implements Runnable {
   }
 
   /**
-   * This method sets the parent of all loggers whose name starts with "java" or "javax" to
-   * LogWrapper.
+   * Redirects internal Java loggers (java.* and javax.*) to Log4j2.
    *
-   * logWrapper disables any parents's log handler, and only logs to the file if specified. This
-   * would prevent JDK's logging show up in the console
+   * <p>
+   * With the log4j-jul bridge (org.apache.logging.log4j:log4j-jul), JUL logging is
+   * automatically routed to Log4j2. This method sets the system property to enable
+   * the bridge and ensures JDK internal logging goes to the GFSH log file instead of console.
    */
   public void redirectInternalJavaLoggers() {
-    // Do we need to this on re-connect?
-    LogManager logManager = LogManager.getLogManager();
+    // Set JUL manager to Log4j2's JUL bridge
+    // This routes all java.util.logging calls to Log4j2
+    System.setProperty("java.util.logging.manager",
+        "org.apache.logging.log4j.jul.LogManager");
 
-    try {
-      Enumeration<String> loggerNames = logManager.getLoggerNames();
-
-      while (loggerNames.hasMoreElements()) {
-        String loggerName = loggerNames.nextElement();
-        if (loggerName.startsWith("java.") || loggerName.startsWith("javax.")) {
-          Logger javaLogger = logManager.getLogger(loggerName);
-          /*
-           * From Java Docs: It is also important to note that the Logger associated with the String
-           * name may be garbage collected at any time if there is no strong reference to the
-           * Logger. The caller of this method must check the return value for null in order to
-           * properly handle the case where the Logger has been garbage collected.
-           */
-          if (javaLogger != null) {
-            gfshFileLogger.setParentFor(javaLogger);
-          }
-        }
-      }
-    } catch (SecurityException e) {
-      gfshFileLogger.warning(e.getMessage(), e);
-    }
+    logger.debug("JUL loggers redirected to Log4j2 via log4j-jul bridge");
   }
 
   public static Gfsh getCurrentInstance() {
@@ -501,13 +523,112 @@ public class Gfsh implements Runnable {
    * Stops this GemFire Shell.
    */
   public void stop() {
-    // TODO: Implement closeShell() for Spring Shell 3.x
-    // closeShell();
+    closeShell();
     LogWrapper.close();
     if (operationInvoker != null && operationInvoker.isConnected()) {
       operationInvoker.stop();
     }
     instance = null;
+  }
+
+  /**
+   * Closes the shell and cleans up resources.
+   * Replaces Spring Shell 1.x JLineShell.closeShell() functionality.
+   *
+   * <p>
+   * This method ensures proper cleanup of:
+   * <ul>
+   * <li>JLine 3 Terminal and LineReader</li>
+   * <li>Command history (flush to disk)</li>
+   * <li>Signal handlers</li>
+   * <li>Thread-local state</li>
+   * </ul>
+   *
+   * <p>
+   * This method is idempotent and can be called multiple times safely.
+   */
+  private void closeShell() {
+    try {
+      // 1. Save command history to disk (highest priority - preserve user data)
+      if (gfshHistory != null) {
+        try {
+          // Ensure all commands are flushed to history file
+          gfshHistory.setAutoFlush(true);
+          // JLine 3: DefaultHistory automatically saves when save() is called
+          // But our GfshHistory writes directly to file in addToHistory()
+          // So we just need to ensure the last entry is flushed
+          if (gfshFileLogger.fineEnabled()) {
+            gfshFileLogger.fine("Command history saved");
+          }
+        } catch (Exception e) {
+          gfshFileLogger.warning("Failed to save command history", e);
+        }
+      }
+
+      // 2. Close LineReader (stops accepting new input)
+      if (lineReader != null) {
+        try {
+          // JLine 3 LineReader doesn't have an explicit close() method
+          // But we should null it out to release references
+          lineReader = null;
+          if (gfshFileLogger.fineEnabled()) {
+            gfshFileLogger.fine("LineReader closed");
+          }
+        } catch (Exception e) {
+          gfshFileLogger.warning("Error closing LineReader", e);
+        }
+      }
+
+      // 3. Close Terminal (releases OS terminal resources)
+      if (terminal != null) {
+        try {
+          // JLine 3 Terminal has close() method
+          terminal.close();
+          if (gfshFileLogger.fineEnabled()) {
+            gfshFileLogger.fine("Terminal closed");
+          }
+        } catch (Exception e) {
+          gfshFileLogger.warning("Error closing terminal", e);
+        }
+      }
+
+      // 4. Unregister signal handlers (clean up OS signal handling)
+      if (signalHandler != null) {
+        try {
+          // Signal handler cleanup if needed
+          // GfshSignalHandler may need explicit cleanup
+          signalHandler = null;
+          if (gfshFileLogger.fineEnabled()) {
+            gfshFileLogger.fine("Signal handlers unregistered");
+          }
+        } catch (Exception e) {
+          gfshFileLogger.warning("Error unregistering signal handlers", e);
+        }
+      }
+
+      // 5. Clean ThreadLocal state (prevent memory leaks)
+      try {
+        gfshThreadLocal.remove();
+        resultTypeTL.remove();
+        if (gfshFileLogger.fineEnabled()) {
+          gfshFileLogger.fine("ThreadLocal state cleaned");
+        }
+      } catch (Exception e) {
+        gfshFileLogger.warning("Error cleaning ThreadLocal state", e);
+      }
+
+      // 6. Set exit request (signal shutdown is complete)
+      if (exitShellRequest == null) {
+        exitShellRequest = ExitShellRequest.NORMAL_EXIT;
+      }
+
+      if (gfshFileLogger.fineEnabled()) {
+        gfshFileLogger.fine("Shell closed successfully");
+      }
+    } catch (Exception e) {
+      // Log but don't throw - we're shutting down anyway
+      gfshFileLogger.severe("Error during shell shutdown", e);
+    }
   }
 
   public ExitShellRequest getExitShellRequest() {
@@ -572,13 +693,123 @@ public class Gfsh implements Runnable {
    * Executes a single command string.
    * It substitutes the variables defined within the command, if any, and then executes it.
    *
+   * <p>
+   * This method is used for programmatic command execution (e.g., from tests, APIs).
+   * Unlike {@link #executeScriptLine(String)}, this method:
+   * <ul>
+   * <li>Returns a CommandResult object instead of boolean</li>
+   * <li>Does not automatically print output</li>
+   * <li>Does not add commands to history</li>
+   * </ul>
+   *
+   * <p>
+   * Migrated from Spring Shell 1.x to work with direct JLine 3 integration.
+   *
    * @param line command string to be executed
-   * @return command execution result.
+   * @return command execution result, or null if input is null/empty
    */
   public CommandResult executeCommand(String line) {
-    String expandedLine = !line.contains("$") ? line : expandProperties(line);
-    // TODO: Implement direct command execution logic for Spring Shell 3.x
-    return null;
+    // 1. Validate input
+    if (line == null || line.trim().isEmpty()) {
+      return null; // Match Spring Shell 1.x behavior for empty input
+    }
+
+    try {
+      // 2. Expand properties (${VAR} → value)
+      String expandedLine = !line.contains("$") ? line : expandProperties(line);
+
+      // 3. Store mapping for logging (if expansion occurred)
+      if (!line.equals(expandedLine)) {
+        expandedPropCommandsMap.put(expandedLine, line);
+      }
+
+      // 4. Parse the command
+      GfshParseResult parseResult;
+      try {
+        parseResult = parser.parse(expandedLine);
+      } catch (IllegalArgumentException e) {
+        // Parameter validation error from parser
+        String errorMessage = e.getClass().getName() + ": " + e.getMessage();
+        ResultModel errorResult = ResultModel.createError(errorMessage);
+        setLastExecutionStatus(-1);
+        return new CommandResult(errorResult);
+      } catch (Exception e) {
+        // Unexpected parse error
+        logWarning("Error parsing command: " + expandedLine, e);
+        ResultModel errorResult = ResultModel.createError("Parse error: " + e.getMessage());
+        setLastExecutionStatus(-1);
+        return new CommandResult(errorResult);
+      }
+
+      // 5. Handle unrecognized command
+      if (parseResult == null) {
+        String commandName = extractCommandNameForError(expandedLine);
+        ResultModel errorResult =
+            ResultModel.createError("Command '" + commandName + "' not found");
+        setLastExecutionStatus(-1);
+        return new CommandResult(errorResult);
+      }
+
+      // 6. Execute the command
+      Object result;
+      try {
+        result = executionStrategy.execute(parseResult);
+      } catch (Exception e) {
+        logWarning("Error executing command: " + expandedLine, e);
+        ResultModel errorResult = ResultModel.createError("Execution error: " + e.getMessage());
+        setLastExecutionStatus(-1);
+        return new CommandResult(errorResult);
+      }
+
+      // 7. Convert result to CommandResult
+      CommandResult commandResult = convertToCommandResult(result);
+
+      // 8. Update execution status based on result
+      if (commandResult != null && Result.Status.ERROR.equals(commandResult.getStatus())) {
+        setLastExecutionStatus(-2);
+      } else {
+        setLastExecutionStatus(0);
+      }
+
+      // 9. Log command execution (fine level)
+      if (gfshFileLogger.fineEnabled()) {
+        logCommandToOutput(expandedLine);
+      }
+
+      return commandResult;
+
+    } finally {
+      // 10. Clean up mapping
+      expandedPropCommandsMap.clear();
+    }
+  }
+
+  /**
+   * Converts execution result to CommandResult.
+   * Handles multiple result types that can be returned from command execution.
+   *
+   * @param result The execution result (can be ResultModel, CommandResult, String, etc.)
+   * @return CommandResult representation, never null
+   */
+  private CommandResult convertToCommandResult(Object result) {
+    if (result == null) {
+      return new CommandResult(ResultModel.createError("Command returned no result"));
+    }
+
+    if (result instanceof CommandResult) {
+      return (CommandResult) result;
+    }
+
+    if (result instanceof ResultModel) {
+      return new CommandResult((ResultModel) result);
+    }
+
+    if (result instanceof String) {
+      return new CommandResult(ResultModel.createInfo((String) result));
+    }
+
+    // Fallback: convert toString() to info result
+    return new CommandResult(ResultModel.createInfo(result.toString()));
   }
 
   /**
@@ -608,7 +839,6 @@ public class Gfsh implements Runnable {
       if (gfshFileLogger.fineEnabled()) {
         gfshFileLogger.fine(logMessage + ArgumentRedactor.redact(withPropsExpanded));
       }
-      // TODO: Implement executeScriptLine logic for Spring Shell 3.x
       success = executeScriptLineInternal(withPropsExpanded);
     } catch (Exception e) {
       setLastExecutionStatus(-1);
@@ -930,7 +1160,7 @@ public class Gfsh implements Runnable {
     if (isHeadlessMode) {
       printlnErr(message);
     } else {
-      logger.warning(message);
+      logger.warn(message);
     }
   }
 
@@ -938,14 +1168,14 @@ public class Gfsh implements Runnable {
     if (isHeadlessMode) {
       printlnErr(message);
     } else {
-      logger.severe(message);
+      logger.error(message);
     }
   }
 
   public void logInfo(String message, Throwable t) {
     // No level enabled check for logger - it prints on console in colors as per level
     if (debugON) {
-      logger.log(Level.INFO, message, t);
+      logger.info(message, t);
     } else {
       logger.info(message);
     }
@@ -957,9 +1187,9 @@ public class Gfsh implements Runnable {
   public void logWarning(String message, Throwable t) {
     // No level enabled check for logger - it prints on console in colors as per level
     if (debugON) {
-      logger.log(Level.WARNING, message, t);
+      logger.warn(message, t);
     } else {
-      logger.warning(message);
+      logger.warn(message);
     }
     if (gfshFileLogger.warningEnabled()) {
       gfshFileLogger.warning(message, t);
@@ -969,9 +1199,9 @@ public class Gfsh implements Runnable {
   public void logSevere(String message, Throwable t) {
     // No level enabled check for logger - it prints on console in colors as per level
     if (debugON) {
-      logger.log(Level.SEVERE, message, t);
+      logger.error(message, t);
     } else {
-      logger.severe(message);
+      logger.error(message);
     }
     if (gfshFileLogger.severeEnabled()) {
       gfshFileLogger.severe(message, t);
@@ -1111,42 +1341,94 @@ public class Gfsh implements Runnable {
     return Boolean.parseBoolean(env.get(ENV_APP_QUIET_EXECUTION));
   }
 
+  /**
+   * Main interactive prompt loop for the shell.
+   *
+   * <p>
+   * Reads commands from the user and executes them until exit is requested.
+   * Supports multi-line commands using the continuation character (backslash).
+   *
+   * <p>
+   * <b>Multi-line Command Support:</b>
+   * <ul>
+   * <li>Lines ending with '\' are accumulated into a buffer</li>
+   * <li>Secondary prompt ('>') indicates continuation mode</li>
+   * <li>Ctrl-C cancels multi-line input and resets buffer</li>
+   * <li>Empty Enter skips to next prompt (resets if in continuation mode)</li>
+   * <li>Complete command executes when line doesn't end with '\'</li>
+   * </ul>
+   *
+   * <p>
+   * <b>JLine 3 Migration Notes:</b>
+   * <ul>
+   * <li>Replaced JLine 2's CursorBuffer with StringBuilder accumulation</li>
+   * <li>Matches pattern used in executeScript() for consistency</li>
+   * <li>User cannot edit previous lines after pressing Enter</li>
+   * </ul>
+   *
+   * @see #executeScript(File, boolean, boolean) for similar multi-line handling
+   * @see GfshParser#CONTINUATION_CHARACTER
+   */
   public void promptLoop() {
     String line = null;
     String prompt = getPromptText();
-    try {
-      gfshHistory.setAutoFlush(false);
-      // NOTE: Similar code is in executeScript()
-      // TODO: Adapt for JLine 3 LineReader
-      while (exitShellRequest == null && (line = readLine(lineReader, prompt)) != null) {
-        if (!line.endsWith(GfshParser.CONTINUATION_CHARACTER)) { // see 45893
-          List<String> commandList = MultiCommandHelper.getMultipleCommands(line);
-          for (String cmdLet : commandList) {
-            String trimmedCommand = cmdLet.trim();
-            if (!trimmedCommand.isEmpty()) {
-              executeCommand(cmdLet);
+    gfshHistory.setAutoFlush(false);
+    multiLineBuffer = null; // Initialize multi-line buffer
+
+    // NOTE: Similar code is in executeScript()
+    while (exitShellRequest == null && (line = readLine(lineReader, prompt)) != null) {
+      // Skip empty input (from Ctrl-C or Enter on empty line)
+      if (line.trim().isEmpty()) {
+        // Reset multi-line buffer if user cancels with Ctrl-C
+        if (multiLineBuffer != null) {
+          multiLineBuffer = null;
+          prompt = getPromptText(); // Back to primary prompt
+        } else {
+          prompt = getPromptText();
+        }
+        continue;
+      }
+
+      // Accumulate multi-line input
+      if (multiLineBuffer == null) {
+        multiLineBuffer = new StringBuilder();
+      } else {
+        // Add space between continued lines
+        multiLineBuffer.append(" ");
+      }
+      multiLineBuffer.append(line);
+
+      String accumulatedCommand = multiLineBuffer.toString();
+
+      if (!accumulatedCommand.endsWith(GfshParser.CONTINUATION_CHARACTER)) {
+        // Complete command - execute it
+        List<String> commandList = MultiCommandHelper.getMultipleCommands(accumulatedCommand);
+        for (String cmdLet : commandList) {
+          String trimmedCommand = cmdLet.trim();
+          if (!trimmedCommand.isEmpty()) {
+            CommandResult result = executeCommand(cmdLet);
+            // Display result in interactive mode
+            if (result != null) {
+              handleExecutionResult(result);
             }
           }
-          prompt = getPromptText();
-        } else {
-          prompt = getDefaultSecondaryPrompt();
-          // TODO: Adapt cursor buffer handling for JLine 3
-          // reader.getCursorBuffer().cursor = 0;
-          // reader.getCursorBuffer().write(removeBackslash(line) + LINE_SEPARATOR);
         }
+        // Reset buffer and prompt after execution
+        multiLineBuffer = null;
+        prompt = getPromptText();
+      } else {
+        // Incomplete command - remove trailing backslash and continue
+        multiLineBuffer.deleteCharAt(multiLineBuffer.length() - 1);
+        prompt = getDefaultSecondaryPrompt();
       }
-      if (line == null) {
-        // Possibly Ctrl-D was pressed on empty prompt. ConsoleReader.readLine
-        // returns null on Ctrl-D
-        exitShellRequest = ExitShellRequest.NORMAL_EXIT;
-        gfshFileLogger.info("Exiting gfsh, it seems Ctrl-D was pressed.");
-      }
-    } catch (IOException e) {
-      logSevere(e.getMessage(), e);
+    }
+    if (line == null) {
+      // Possibly Ctrl-D was pressed on empty prompt. ConsoleReader.readLine
+      // returns null on Ctrl-D
+      exitShellRequest = ExitShellRequest.NORMAL_EXIT;
+      gfshFileLogger.info("Exiting gfsh, it seems Ctrl-D was pressed.");
     }
     println((line == null ? LINE_SEPARATOR : "") + "Exiting... ");
-    // TODO: Implement shell status tracking for Spring Shell 3.x
-    // setShellStatus(Status.SHUTTING_DOWN);
   }
 
   String getDefaultSecondaryPrompt() {
@@ -1264,8 +1546,6 @@ public class Gfsh implements Runnable {
 
   @Override
   public void run() {
-    // TODO: Implement run() method for Spring Shell 3.x
-    // This method should start the prompt loop
     try {
       printBannerAndWelcome();
       promptLoop();

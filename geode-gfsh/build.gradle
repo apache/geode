@@ -75,6 +75,8 @@ dependencies {
 
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
+  implementation(project(':geode-log4j'))  // Add Log4j2 integration for Geode logging
+  runtimeOnly('org.apache.logging.log4j:log4j-jul')  // Bridge JUL → Log4j2
 
   //Spring core is used by the the gfsh cli
   implementation('org.springframework:spring-core') {
@@ -92,7 +94,6 @@ dependencies {
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
-    exclude module: 'spring-core'
   }
 
   // spring-aop is needed in system classpath for Spring context component scanning
