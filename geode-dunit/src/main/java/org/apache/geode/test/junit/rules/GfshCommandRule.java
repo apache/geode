@@ -243,6 +243,15 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public void disconnect() throws Exception {
     gfsh.clear();
+
+    // Stop the operation invoker FIRST to set intentional disconnect flags
+    // This must be done even if isConnectedAndReady() returns false
+    Gfsh gfshInstance = gfsh.getGfsh();
+    if (gfshInstance != null && gfshInstance.getOperationInvoker() != null) {
+      gfshInstance.getOperationInvoker().stop();
+    }
+
+    // Then execute disconnect command (may return early if not ready)
     executeCommand("disconnect");
     connected = false;
   }

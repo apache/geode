@@ -549,6 +549,20 @@ public class Gfsh implements Runnable {
    */
   private void closeShell() {
     try {
+      // 0. Disconnect operation invoker first to prevent "No longer connected" errors
+      // This sets the intentional disconnect flags (isSelfDisconnect for JMX,
+      // stoppingIntentionally for HTTP) BEFORE server shutdown during test cleanup
+      if (operationInvoker != null && operationInvoker.isConnected()) {
+        try {
+          operationInvoker.stop();
+          if (gfshFileLogger.fineEnabled()) {
+            gfshFileLogger.fine("Operation invoker disconnected");
+          }
+        } catch (Exception e) {
+          gfshFileLogger.warning("Error disconnecting operation invoker", e);
+        }
+      }
+
       // 1. Save command history to disk (highest priority - preserve user data)
       if (gfshHistory != null) {
         try {

@@ -31,8 +31,6 @@ public class DisconnectCommand extends OfflineGfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX,
       CliStrings.TOPIC_GEODE_MANAGER})
   public ResultModel disconnect() {
-
-
     if (getGfsh() != null && !getGfsh().isConnectedAndReady()) {
       return ResultModel.createInfo("Not connected.");
     }

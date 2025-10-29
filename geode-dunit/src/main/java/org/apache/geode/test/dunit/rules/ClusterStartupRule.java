@@ -159,6 +159,10 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   private void after(Description description) throws Throwable {
+    // Ignore "No longer connected" errors that occur when servers shut down before
+    // GFSH clients disconnect. This is expected during test cleanup due to the order
+    // of @Rule cleanup (ClusterStartupRule may run before GfshCommandRule).
+    IgnoredException.addIgnoredException("No longer connected to");
 
     if (!skipLocalDistributedSystemCleanup) {
       MemberStarterRule.disconnectDSIfAny();
