@@ -153,7 +153,8 @@ public class ClusterStartupRule implements SerializableTestRule {
     // GEODE-10466: After migrating GFSH to Log4j2 and implementing closeShell(), JMX/HTTP
     // connection cleanup during test teardown logs expected "No longer connected" messages.
     // These are normal connection close notifications from background monitoring threads.
-    IgnoredException.addIgnoredException("No longer connected");
+    // MUST use "No longer connected to" (with "to") to match the actual error pattern.
+    IgnoredException.addIgnoredException("No longer connected to");
     restoreSystemProperties.beforeDistributedTest(description);
     occupiedVMs = new HashMap<>();
   }
@@ -162,12 +163,6 @@ public class ClusterStartupRule implements SerializableTestRule {
     if (!skipLocalDistributedSystemCleanup) {
       MemberStarterRule.disconnectDSIfAny();
     }
-
-    // Ignore "No longer connected" errors that occur when servers shut down before
-    // GFSH clients disconnect. This is expected during test cleanup due to the order
-    // of @Rule cleanup (ClusterStartupRule may run before GfshCommandRule).
-    // MUST be added BEFORE stopping VMs and BEFORE removeAllExpectedExceptions().
-    IgnoredException.addIgnoredException("No longer connected to");
 
     // stop all the members in the order of clients, servers and locators
     List<VMProvider> vms = new ArrayList<>();
