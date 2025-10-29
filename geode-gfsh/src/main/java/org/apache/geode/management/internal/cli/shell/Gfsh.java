@@ -1523,8 +1523,8 @@ public class Gfsh implements Runnable {
     // Connection disconnections during normal operations:
     // 1. exitShellRequest != null: Intentional GFSH shutdown - log at INFO
     // 2. exitShellRequest == null: Server shutdown or network issue
-    //    - In production: User needs to know (log at SEVERE for console visibility)
-    //    - In tests: Expected during cleanup (but we can't distinguish here)
+    // - In production: User needs to know (log at SEVERE for console visibility)
+    // - In tests: Expected during cleanup (but we can't distinguish here)
     //
     // GEODE-10466: During test cleanup, servers shut down before GFSH disconnects,
     // triggering background heartbeat threads to detect "connection lost" and call
