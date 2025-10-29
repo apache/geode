@@ -363,6 +363,12 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Before
   public final void setUpDistributedTestCase() throws Exception {
+    // Ignore "No longer connected" errors that occur when VMs shut down before
+    // GFSH clients disconnect. This is expected during test cleanup.
+    // Must be added here in setup, before GFSH connections are made, so the tag
+    // is logged before any errors can occur.
+    IgnoredException.addIgnoredException("No longer connected to");
+
     preSetUp();
     doSetUpDistributedTestCase();
     postSetUp();
@@ -473,11 +479,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @After
   public final void tearDownDistributedTestCase() throws Exception {
-    // Ignore "No longer connected" errors that occur when VMs shut down before
-    // GFSH clients disconnect. This is expected during test cleanup.
-    // Must be added here, before VMs are shut down, so the tag is logged before the error.
-    IgnoredException.addIgnoredException("No longer connected to");
-
     try {
       try {
         preTearDownAssertions();
