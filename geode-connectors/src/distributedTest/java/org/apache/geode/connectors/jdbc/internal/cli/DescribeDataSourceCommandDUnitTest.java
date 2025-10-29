@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -53,9 +52,6 @@ public class DescribeDataSourceCommandDUnitTest {
 
   @Before
   public void before() throws Exception {
-    // Ignore expected disconnection messages during test cleanup
-    IgnoredException.addIgnoredException("No longer connected");
-
     MemberVM locator = cluster.startLocatorVM(0);
     server = cluster.startServerVM(1, new Properties(), locator.getPort());
 
