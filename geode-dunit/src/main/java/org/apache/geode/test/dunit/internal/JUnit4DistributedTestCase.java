@@ -51,7 +51,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -363,12 +362,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Before
   public final void setUpDistributedTestCase() throws Exception {
-    // Ignore "No longer connected" errors that occur when VMs shut down before
-    // GFSH clients disconnect. This is expected during test cleanup.
-    // Must be added here in setup, before GFSH connections are made, so the tag
-    // is logged before any errors can occur.
-    IgnoredException.addIgnoredException("No longer connected to");
-
     preSetUp();
     doSetUpDistributedTestCase();
     postSetUp();
