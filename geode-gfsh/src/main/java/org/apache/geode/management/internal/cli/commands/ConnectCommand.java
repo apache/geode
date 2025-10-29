@@ -478,7 +478,14 @@ public class ConnectCommand extends OfflineGfshCommand {
   }
 
   private ResultModel handleException(Exception e, String errorMessage) {
-    LogWrapper.getInstance().severe(errorMessage, e);
+    // In headless mode (tests), log connection errors at INFO level to avoid polluting
+    // suspect logs with expected errors from negative test cases (SSL handshake failures,
+    // certificate validation errors, etc.)
+    if (getGfsh() != null && getGfsh().isHeadlessMode()) {
+      LogWrapper.getInstance().info(errorMessage, e);
+    } else {
+      LogWrapper.getInstance().severe(errorMessage, e);
+    }
     return ResultModel.createError(errorMessage);
   }
 
