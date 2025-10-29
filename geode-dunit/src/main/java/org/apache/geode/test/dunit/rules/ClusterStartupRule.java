@@ -159,14 +159,15 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   private void after(Description description) throws Throwable {
-    // Ignore "No longer connected" errors that occur when servers shut down before
-    // GFSH clients disconnect. This is expected during test cleanup due to the order
-    // of @Rule cleanup (ClusterStartupRule may run before GfshCommandRule).
-    IgnoredException.addIgnoredException("No longer connected to");
-
     if (!skipLocalDistributedSystemCleanup) {
       MemberStarterRule.disconnectDSIfAny();
     }
+
+    // Ignore "No longer connected" errors that occur when servers shut down before
+    // GFSH clients disconnect. This is expected during test cleanup due to the order
+    // of @Rule cleanup (ClusterStartupRule may run before GfshCommandRule).
+    // MUST be added BEFORE stopping VMs and BEFORE removeAllExpectedExceptions().
+    IgnoredException.addIgnoredException("No longer connected to");
 
     // stop all the members in the order of clients, servers and locators
     List<VMProvider> vms = new ArrayList<>();
@@ -195,8 +196,10 @@ public class ClusterStartupRule implements SerializableTestRule {
     // close suspect string at the end of tear down
     // any background thread can fill the dunit_suspect.log
     // after its been truncated if we do it before closing cache
-    IgnoredException.removeAllExpectedExceptions();
+    // NOTE: Do NOT call removeAllExpectedExceptions() before closeAndCheckForSuspects()
+    // because it will remove the "No longer connected" exception we added above!
     closeAndCheckForSuspects();
+    IgnoredException.removeAllExpectedExceptions();
   }
 
 
