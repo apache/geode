@@ -378,8 +378,11 @@ public class Helper {
     HelpBlock optionNode = new HelpBlock(optionKey);
 
     // Spring Shell 3.x: ShellOption.help() provides option description
+    // Only add help text if it's not blank to avoid empty lines
     String help = shellOption.help();
-    optionNode.addChild(new HelpBlock((StringUtils.isNotBlank(help) ? help : "")));
+    if (StringUtils.isNotBlank(help)) {
+      optionNode.addChild(new HelpBlock(help));
+    }
 
     if (getSynonyms(shellOption).size() > 0) {
       StringBuilder builder = new StringBuilder();

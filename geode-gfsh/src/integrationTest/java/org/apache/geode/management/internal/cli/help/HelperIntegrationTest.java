@@ -73,9 +73,14 @@ public class HelperIntegrationTest {
     getHelpCommand();
     String testInput = helper.getHelp("help", -1);
     String[] helpLines = testInput.split("\n");
-    // Shell 3.x: help command output has 11 lines. The command parameter has no default value,
-    // so the "Default (if the parameter is specified without value)" line is omitted.
-    assertThat(helpLines).hasSize(11);
+    // Shell 3.x: help command output has 12 lines, which includes:
+    // - NAME, command name
+    // - IS AVAILABLE, availability status
+    // - SYNOPSIS, command description
+    // - SYNTAX, command syntax
+    // - PARAMETERS, section header
+    // - parameter name, parameter description (from ShellOption.help()), Required status
+    assertThat(helpLines).hasSize(12);
     assertThat(helpLines[0].trim()).isEqualTo("NAME");
     assertThat(helpLines[1].trim()).isEqualTo("help");
   }
