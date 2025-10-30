@@ -36,9 +36,11 @@ public class DescribeOfflineDiskStoreCommand extends GfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel describeOfflineDiskStore(
       @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME,
-          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
+          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP,
+          defaultValue = ShellOption.NULL) String diskStoreName,
       @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS,
-          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
+          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP,
+          defaultValue = ShellOption.NULL) String[] diskDirs,
       @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES__HELP) Boolean listPdxTypes,
       @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME,

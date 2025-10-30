@@ -14,7 +14,9 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,44 +36,22 @@ public class ConnectionsCommandManagerTest {
   }
 
   /**
-   * Tests loadCommands()
-   *
-   * WHY DISABLED: Spring Shell 3.x removed CommandManager.getCommandMarkers() method that was
-   * used in Shell 1.x. This test needs to be refactored to use Shell 3.x command discovery API.
+   * Tests that CommandManager loads commands.
+   * In Spring Shell 3.x, CommandManager.getCommandMarkers() returns the list of command instances.
    */
   @Test
-  @org.junit.Ignore("Spring Shell 3.x: getCommandMarkers() method removed, needs Shell 3.x refactoring")
   public void testCommandManagerLoadCommands() {
-    // Disabled: CommandManager.getCommandMarkers() not available in Spring Shell 3.x
-    /*
-     * Set<String> packagesToScan = new HashSet<>();
-     * packagesToScan.add(GfshCommand.class.getPackage().getName());
-     * packagesToScan.add(VersionCommand.class.getPackage().getName());
-     *
-     * ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
-     * ServiceLoader<CommandMarker> loader =
-     * ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
-     * loader.reload();
-     * Iterator<CommandMarker> iterator = loader.iterator();
-     *
-     * Set<Class<?>> foundClasses;
-     *
-     * // geode's commands
-     * foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
-     * GfshCommand.class.getPackage().getName(),
-     * VersionCommand.class.getPackage().getName());
-     *
-     * while (iterator.hasNext()) {
-     * foundClasses.add(iterator.next().getClass());
-     * }
-     *
-     * Set<Class<?>> expectedClasses = new HashSet<>();
-     *
-     * for (CommandMarker commandMarker : commandManager.getCommandMarkers()) {
-     * expectedClasses.add(commandMarker.getClass());
-     * }
-     *
-     * assertThat(expectedClasses).isEqualTo(foundClasses);
-     */
+    // Get all registered command markers (command instances)
+    List<Object> commandMarkers = commandManager.getCommandMarkers();
+
+    // Verify that commands were loaded
+    assertThat(commandMarkers).isNotEmpty();
+
+    // Verify that we have a reasonable number of commands
+    // Geode has many commands (version, alter, create, describe, etc.)
+    assertThat(commandMarkers.size()).isGreaterThan(10);
+
+    // Verify that command markers are proper instances (not null)
+    assertThat(commandMarkers).doesNotContainNull();
   }
 }

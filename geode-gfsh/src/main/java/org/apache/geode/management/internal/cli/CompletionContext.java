@@ -45,17 +45,21 @@ public class CompletionContext {
   private final String optionName;
   private final String partialInput;
   private final int cursorPosition;
+  private final boolean isFirstOption; // NEW: Track if user has provided any options yet
+  private final Object commandManager; // ROOT CAUSE #10: Needed for hint/help topic completion
 
   /**
    * Private constructor - use factory methods instead.
    */
   private CompletionContext(Type type, String commandName, String optionName,
-      String partialInput, int cursorPosition) {
+      String partialInput, int cursorPosition, boolean isFirstOption, Object commandManager) {
     this.type = type;
     this.commandName = commandName;
     this.optionName = optionName;
     this.partialInput = partialInput != null ? partialInput : "";
     this.cursorPosition = cursorPosition;
+    this.isFirstOption = isFirstOption;
+    this.commandManager = commandManager;
   }
 
   /**
@@ -65,7 +69,7 @@ public class CompletionContext {
    * @return CompletionContext for command name completion
    */
   public static CompletionContext commandName(String partialInput) {
-    return new CompletionContext(Type.COMMAND_NAME, null, null, partialInput, 0);
+    return new CompletionContext(Type.COMMAND_NAME, null, null, partialInput, 0, false, null);
   }
 
   /**
@@ -73,10 +77,13 @@ public class CompletionContext {
    *
    * @param commandName The command being executed
    * @param partialOption The partial option name (without "--")
+   * @param isFirstOption Whether this is the first option being completed
    * @return CompletionContext for option name completion
    */
-  public static CompletionContext optionName(String commandName, String partialOption) {
-    return new CompletionContext(Type.OPTION_NAME, commandName, null, partialOption, 0);
+  public static CompletionContext optionName(String commandName, String partialOption,
+      boolean isFirstOption) {
+    return new CompletionContext(Type.OPTION_NAME, commandName, null, partialOption, 0,
+        isFirstOption, null);
   }
 
   /**
@@ -89,7 +96,8 @@ public class CompletionContext {
    */
   public static CompletionContext optionValue(String commandName, String optionName,
       String partialValue) {
-    return new CompletionContext(Type.OPTION_VALUE, commandName, optionName, partialValue, 0);
+    return new CompletionContext(Type.OPTION_VALUE, commandName, optionName, partialValue, 0,
+        false, null);
   }
 
   /**
@@ -98,7 +106,7 @@ public class CompletionContext {
    * @return CompletionContext with UNKNOWN type
    */
   public static CompletionContext unknown() {
-    return new CompletionContext(Type.UNKNOWN, null, null, "", 0);
+    return new CompletionContext(Type.UNKNOWN, null, null, "", 0, false, null);
   }
 
   /**
@@ -144,6 +152,38 @@ public class CompletionContext {
    */
   public int getCursorPosition() {
     return cursorPosition;
+  }
+
+  /**
+   * Check if this is the first option being completed.
+   * When true, only mandatory options should be shown.
+   *
+   * @return true if no options have been provided yet
+   */
+  public boolean isFirstOption() {
+    return isFirstOption;
+  }
+
+  /**
+   * Get the CommandManager instance for access to command metadata.
+   * ROOT CAUSE #10: Needed for hint/help topic completion to access Helper.getTopicNames().
+   *
+   * @return The CommandManager, or null if not set
+   */
+  public Object getCommandManager() {
+    return commandManager;
+  }
+
+  /**
+   * Create a new context with the CommandManager set.
+   * ROOT CAUSE #10: GfshParser calls this to pass CommandManager to completion providers.
+   *
+   * @param newCommandManager The CommandManager instance
+   * @return A new CompletionContext with commandManager set
+   */
+  public CompletionContext withCommandManager(Object newCommandManager) {
+    return new CompletionContext(this.type, this.commandName, this.optionName,
+        this.partialInput, this.cursorPosition, this.isFirstOption, newCommandManager);
   }
 
   @Override

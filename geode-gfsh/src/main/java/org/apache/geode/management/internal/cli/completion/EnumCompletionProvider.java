@@ -57,7 +57,14 @@ public class EnumCompletionProvider implements ValueCompletionProvider {
       String value = constant.toString();
 
       // Filter by partial input (case-insensitive)
-      if (lowerPartial.isEmpty() || value.toLowerCase().startsWith(lowerPartial)) {
+      // REASONING: Exclude exact matches to avoid suggesting what user already typed.
+      // When user types "--type=REPLICATE", don't suggest "REPLICATE" itself,
+      // only suggest values that START with REPLICATE but are longer (REPLICATE_*).
+      // This fixes testCompleteWithRegionTypeWithNoSpace which expects 5 REPLICATE_*
+      // values but not the exact "REPLICATE" match.
+      if (lowerPartial.isEmpty() ||
+          (value.toLowerCase().startsWith(lowerPartial) &&
+              !value.equalsIgnoreCase(partialValue))) {
         completions.add(new Completion(value));
       }
     }

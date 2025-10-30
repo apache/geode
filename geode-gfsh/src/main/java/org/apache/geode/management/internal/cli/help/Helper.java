@@ -377,8 +377,10 @@ public class Helper {
     String optionKey = getPrimaryKey(shellOption);
     HelpBlock optionNode = new HelpBlock(optionKey);
 
-    // Shell 3.x doesn't have help() method on ShellOption, description comes from method param docs
-    // We'll just show the option details
+    // Spring Shell 3.x: ShellOption.help() provides option description
+    String help = shellOption.help();
+    optionNode.addChild(new HelpBlock((StringUtils.isNotBlank(help) ? help : "")));
+
     if (getSynonyms(shellOption).size() > 0) {
       StringBuilder builder = new StringBuilder();
       for (String string : getSynonyms(shellOption)) {

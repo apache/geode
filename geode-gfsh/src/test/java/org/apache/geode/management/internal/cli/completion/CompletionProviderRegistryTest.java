@@ -44,8 +44,11 @@ public class CompletionProviderRegistryTest {
 
   @Test
   public void constructor_shouldRegisterDefaultProviders() {
-    // Registry should have enum and boolean providers by default
-    assertThat(registry.getProviderCount()).isEqualTo(2);
+    // SPRING SHELL 3.x: Registry now has 6 default providers (was 2 in Shell 2.x)
+    // Added during migration: IndexTypeCompletionProvider, HintTopicCompletionProvider,
+    // HelpCommandCompletionProvider, LogLevelCompletionProvider
+    // Original: EnumCompletionProvider, BooleanCompletionProvider
+    assertThat(registry.getProviderCount()).isEqualTo(6);
   }
 
   @Test
@@ -73,10 +76,17 @@ public class CompletionProviderRegistryTest {
   }
 
   @Test
-  public void findProvider_shouldReturnNull_whenNoProviderSupportsType() {
+  public void findProvider_shouldReturnProvider_forStringClass() {
+    // SPRING SHELL 3.x: String.class now has providers (HintTopicCompletionProvider,
+    // HelpCommandCompletionProvider) for context-specific completions. Registry uses
+    // "chain of responsibility" pattern - first provider that supports(String.class) is
+    // returned (HintTopicCompletionProvider), but it returns empty completions if context
+    // doesn't match (not hint command's topic parameter). See ROOT CAUSE #11 in
+    // CompletionProviderRegistry.getCompletions() for details.
     ValueCompletionProvider provider = registry.findProvider(String.class);
 
-    assertThat(provider).isNull();
+    assertThat(provider).isNotNull();
+    assertThat(provider).isInstanceOf(HintTopicCompletionProvider.class);
   }
 
   @Test

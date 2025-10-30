@@ -39,4 +39,21 @@ public class Completion {
   public String toString() {
     return value;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    Completion other = (Completion) obj;
+    return value != null ? value.equals(other.value) : other.value == null;
+  }
+
+  @Override
+  public int hashCode() {
+    return value != null ? value.hashCode() : 0;
+  }
 }

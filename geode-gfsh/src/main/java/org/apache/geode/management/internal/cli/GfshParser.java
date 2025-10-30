@@ -18,6 +18,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,19 @@ public class GfshParser {
   private static final char ASCII_UNIT_SEPARATOR = '\u001F';
   public static final String J_ARGUMENT_DELIMITER = "" + ASCII_UNIT_SEPARATOR;
   public static final String J_OPTION_CONTEXT = "splittingRegex=" + J_ARGUMENT_DELIMITER;
+
+  /**
+   * Wrapper class to return both completions and their parameter indices from completeOptionName()
+   */
+  private static class CompletionWithIndex {
+    final List<Completion> completions;
+    final Map<String, Integer> parameterIndices;
+
+    CompletionWithIndex(List<Completion> completions, Map<String, Integer> parameterIndices) {
+      this.completions = completions;
+      this.parameterIndices = parameterIndices;
+    }
+  }
 
   private final CommandManager commandManager;
   private final CompletionProviderRegistry completionProviderRegistry;
@@ -1010,7 +1024,8 @@ public class GfshParser {
       return CompletionContext.commandName("");
     }
 
-    List<String> tokens = splitUserInput(userInput.trim());
+    // Don't trim userInput here! We need to preserve trailing spaces to detect "command + space"
+    List<String> tokens = splitUserInput(userInput);
 
     if (tokens.isEmpty()) {
       return CompletionContext.commandName("");
@@ -1032,6 +1047,25 @@ public class GfshParser {
 
     // Get the last token
     String lastToken = tokens.get(tokens.size() - 1);
+    // ROOT CAUSE #9: When buffer ends with "--option=value" (NO trailing space),
+    // splitUserInput() splits it into ["--option", "value"], so lastToken="value" doesn't contain
+    // "=".
+    // FIX: Check if second-to-last token is an option name AND no trailing space,
+    // meaning lastToken is its value.
+    // EVIDENCE:
+    // "start server --name=name1" → tokens=["start", "server", "--name", "name1"], no trailing
+    // space
+    // lastToken="name1", secondToLast="--name" → OPTION_VALUE context ✓
+    // "start server --name=name1 " → tokens=["start", "server", "--name", "name1"], HAS trailing
+    // space
+    // lastToken="name1", but trailing space means user wants NEXT option → OPTION_NAME context ✓
+    if (tokens.size() >= 2 && !userInput.endsWith(" ")) {
+      String secondToLast = tokens.get(tokens.size() - 2);
+      if (secondToLast.startsWith(LONG_OPTION_SPECIFIER)) {
+        // The second-to-last token is an option name, so lastToken is its value
+        return CompletionContext.optionValue(commandName, secondToLast, lastToken);
+      }
+    }
 
     // Check if we're completing option value after "="
     if (userInput.endsWith("=")) {
@@ -1049,9 +1083,62 @@ public class GfshParser {
     }
 
     // Check if last token is an option name (starts with "--")
-    if (lastToken.startsWith(LONG_OPTION_SPECIFIER)) {
-      // This is an option without value yet - prepare for value completion
-      return CompletionContext.optionValue(commandName, lastToken, "");
+    // ROOT CAUSE #14: Need to distinguish complete vs incomplete option names
+    // COMPLETE: "--server-port" (valid option, user wants value)
+    // INCOMPLETE: "--se" (partial option name, user wants to complete the option name)
+    // REASONING: If lastToken starts with "--" but is NOT a valid option for this command,
+    // it's an incomplete option name → return OPTION_NAME context.
+    // If it IS a valid option, user has typed the full option and wants value → return
+    // OPTION_VALUE context.
+    if (lastToken.startsWith(LONG_OPTION_SPECIFIER)
+        && lastToken.length() > LONG_OPTION_SPECIFIER.length()) {
+      // Check if this is a valid complete option for this command
+      boolean isValidOption = false;
+      try {
+        Method method = commandManager.getHelper().getCommandMethod(commandName);
+        if (method != null) {
+          Parameter[] parameters = method.getParameters();
+          for (Parameter parameter : parameters) {
+            ShellOption annotation = parameter.getAnnotation(ShellOption.class);
+            if (annotation != null) {
+              for (String optName : annotation.value()) {
+                if (lastToken.equals(LONG_OPTION_SPECIFIER + optName)) {
+                  isValidOption = true;
+                  break;
+                }
+              }
+            }
+            if (isValidOption)
+              break;
+          }
+        }
+      } catch (Exception e) {
+        // Ignore
+      }
+
+      if (isValidOption) {
+        // This is a complete option name without value yet - prepare for value completion
+        return CompletionContext.optionValue(commandName, lastToken, "");
+      } else {
+        // This is an incomplete option name (e.g., "--se" when options are "--server-port",
+        // "--security-properties-file")
+        // Return OPTION_NAME context so completeOptionName() can complete it
+        boolean isFirstOption = tokens.stream()
+            .limit(tokens.size() - 1) // Don't count the lastToken itself
+            .noneMatch(t -> t.startsWith(LONG_OPTION_SPECIFIER));
+        return CompletionContext.optionName(commandName,
+            lastToken.substring(LONG_OPTION_SPECIFIER.length()), isFirstOption);
+      }
+    }
+
+    // Check if last token is just "--" (completing option name with -- prefix)
+    // e.g., "import data --" should complete to "--member", "--region", etc.
+    if (lastToken.equals(LONG_OPTION_SPECIFIER)) {
+      // User typed just the dashes, complete option names
+      boolean isFirstOption = tokens.stream()
+          .filter(t -> !t.equals(LONG_OPTION_SPECIFIER)) // Don't count the trailing "--"
+          .noneMatch(t -> t.startsWith(LONG_OPTION_SPECIFIER));
+      return CompletionContext.optionName(commandName, "", isFirstOption);
     }
 
     // Check if we should complete option names (user typed command + space)
@@ -1059,7 +1146,9 @@ public class GfshParser {
     if (!commandName.isEmpty() && userInput.endsWith(" ")) {
       // Extract partial option name if any
       String partialOption = "";
-      return CompletionContext.optionName(commandName, partialOption);
+      // Determine if this is the first option by checking if any tokens start with "--"
+      boolean isFirstOption = tokens.stream().noneMatch(t -> t.startsWith(LONG_OPTION_SPECIFIER));
+      return CompletionContext.optionName(commandName, partialOption, isFirstOption);
     }
 
     // Default: completing command name
@@ -1103,8 +1192,10 @@ public class GfshParser {
               Class<?> parameterType = parameter.getType();
 
               // Use completion provider registry to get completions
+              // ROOT CAUSE #10: Pass CommandManager to context for hint/help topic completion
               CompletionContext context =
-                  CompletionContext.optionValue(commandName, optionName, partialValue);
+                  CompletionContext.optionValue(commandName, optionName, partialValue)
+                      .withCommandManager(commandManager);
               List<Completion> completions = completionProviderRegistry.getCompletions(
                   parameterType, partialValue, context);
               return completions;
@@ -1121,6 +1212,41 @@ public class GfshParser {
   }
 
   /**
+   * Extracts already-provided option names from the user input.
+   * REASONING: When user has typed "start server --name=name1 --port=8080 ",
+   * we need to exclude --name and --port from future completions.
+   *
+   * @param userInput the full command line input
+   * @return Set of option names (with "--" prefix) that are already in the input
+   */
+  private Set<String> extractProvidedOptions(String userInput) {
+    Set<String> providedOptions = new HashSet<>();
+    if (userInput == null || userInput.trim().isEmpty()) {
+      return providedOptions;
+    }
+
+    // Split into tokens
+    List<String> tokens = splitUserInput(userInput);
+
+    for (String token : tokens) {
+      // Check if token starts with "--" (is an option)
+      if (token.startsWith(LONG_OPTION_SPECIFIER)) {
+        // Extract just the option name (before "=" if present)
+        String optionName;
+        if (token.contains("=")) {
+          optionName = token.substring(0, token.indexOf("="));
+        } else {
+          optionName = token;
+        }
+        providedOptions.add(optionName);
+
+      }
+    }
+
+    return providedOptions;
+  }
+
+  /**
    * Completes option names for a given command.
    * Returns all available option names (with "--" prefix) for the specified command.
    *
@@ -1130,42 +1256,122 @@ public class GfshParser {
    * @param commandName the command name (e.g., "configure pdx")
    * @param partialOption the partial option name typed by user (currently unused, for future
    *        filtering)
-   * @return list of option name completions
+   * @param context the completion context containing information about what to complete
+   * @param userInput the full user input to extract already-provided options
+   * @return wrapper containing completions and their parameter indices
    */
-  private List<Completion> completeOptionName(String commandName, String partialOption) {
+  private CompletionWithIndex completeOptionName(String commandName, String partialOption,
+      CompletionContext context, String userInput) {
     List<Completion> completions = new ArrayList<>();
+    Map<String, Integer> completionToParameterIndex = new HashMap<>(); // Track which parameter each
+                                                                       // completion came from
+
+    // Extract already-provided options to filter them out
+    Set<String> providedOptions = extractProvidedOptions(userInput);
 
     try {
       // Find the command method through helper
       Method method = commandManager.getHelper().getCommandMethod(commandName);
 
       if (method == null) {
-        return completions;
+        return new CompletionWithIndex(completions, completionToParameterIndex);
       }
 
       // Get all parameters with ShellOption annotations
       Parameter[] parameters = method.getParameters();
 
-      for (Parameter parameter : parameters) {
+      // REASONING: Only the FIRST consecutive String parameters without defaults are mandatory.
+      // Track whether we've seen consecutive String parameters and a non-String after them
+      boolean foundNonMandatory = false;
+      boolean foundConsecutiveStrings = false; // true if we've seen 2+ consecutive String params
+      boolean foundNonStringAfterStrings = false; // true if we've seen non-String after String(s)
+
+      for (int paramIndex = 0; paramIndex < parameters.length; paramIndex++) {
+        Parameter parameter = parameters[paramIndex];
         ShellOption annotation = parameter.getAnnotation(ShellOption.class);
         if (annotation != null) {
-          // Add all option names (typically there's a primary name and possibly aliases)
-          for (String optName : annotation.value()) {
-            String fullOptionName = LONG_OPTION_SPECIFIER + optName;
-            // Filter by partial input if provided
-            if (partialOption.isEmpty()
-                || fullOptionName.startsWith(LONG_OPTION_SPECIFIER + partialOption)) {
-              completions.add(new Completion(fullOptionName));
+          // SPRING SHELL 3.x ROOT CAUSE FIX FOR ConfigurePDXCommandTest:
+          // When isFirstOption is true (user just typed "command "),
+          // show ALL parameters (both mandatory and optional), not just mandatory ones.
+          // EVIDENCE: ConfigurePDXCommandTest.parsingAutoCompleteShouldSucceed expects 5
+          // completions
+          // for "configure pdx ", which includes 2 optional Boolean params + 3 mandatory String
+          // params.
+          // The old comment "only show parameters that are mandatory" was WRONG.
+          boolean includeThisOption = true;
+          if (context.isFirstOption()) {
+            String defaultValue = annotation.defaultValue();
+            Class<?> paramType = parameter.getType();
+
+            // SPRING SHELL 3.x: For first option, show ALL parameters except targeting params
+            // Do NOT apply type-based filtering (String sequencing, non-String limits)
+            // Do NOT filter by mandatory/optional status
+            // ONLY exclude targeting parameters (group/member)
+
+            // Check if it's a targeting parameter (group/member) that should be excluded
+            String[] optionNames = annotation.value();
+            boolean isTargetingParam = false;
+            boolean isArrayType = parameter.getType().isArray();
+
+            if (isArrayType && paramIndex > 0) { // Only check targeting if NOT first param
+              for (String optName : optionNames) {
+                if (optName.equals("group") || optName.equals("groups")
+                    || optName.equals("member") || optName.equals("members")) {
+                  isTargetingParam = true;
+                  break;
+                }
+              }
+            }
+
+            if (isTargetingParam) {
+              includeThisOption = false;
+            }
+          }
+
+          if (includeThisOption) {
+            // SPRING SHELL 3.x: Removed positional parameter detection logic.
+            // REASONING: The logic that detected "positional parameters" based on (String type +
+            // defaultValue="__NULL__" + arity=-1) was incorrectly treating regular optional
+            // parameters like configurePDX's disk-store as positional.
+            // In Spring Shell 3.x, arity=-1 just means "optional", not "positional".
+            // There's no reliable way to distinguish truly positional params (like hint's topic)
+            // from regular named options. Both should show option names (--disk-store, --topic).
+
+            // Standard behavior: Add all option names (typically there's a primary name and
+            // possibly aliases)
+            for (String optName : annotation.value()) {
+              String fullOptionName = LONG_OPTION_SPECIFIER + optName;
+              // Filter by partial input if provided
+              if (partialOption.isEmpty()
+                  || fullOptionName.startsWith(LONG_OPTION_SPECIFIER + partialOption)) {
+                completions.add(new Completion(fullOptionName));
+                completionToParameterIndex.put(fullOptionName, paramIndex);
+              }
             }
           }
         }
       }
     } catch (Exception e) {
-      // If anything goes wrong, return empty list
-      return new ArrayList<>();
+      return new CompletionWithIndex(new ArrayList<>(), new HashMap<>());
     }
 
-    return completions;
+
+    // Filter out already-provided options
+    // REASONING: If user has typed "--name=value1 --port=8080 ", they shouldn't see --name or
+    // --port again
+    if (!providedOptions.isEmpty()) {
+      completions.removeIf(completion -> {
+        boolean shouldRemove = providedOptions.contains(completion.getValue());
+        if (shouldRemove) {
+          // Also remove from the parameter index map
+          completionToParameterIndex.remove(completion.getValue());
+        }
+        return shouldRemove;
+      });
+    }
+
+
+    return new CompletionWithIndex(completions, completionToParameterIndex);
   }
 
   /**
@@ -1191,15 +1397,249 @@ public class GfshParser {
     // Analyze what type of completion is needed
     CompletionContext context = analyzeContext(userInput, cursor);
 
+    // Handle command name completion
+    // EVIDENCE: /tmp/test-describe.log shows COMMAND_NAME context with commandName='null'
+    // ROOT CAUSE #1: No handler for COMMAND_NAME, so it falls through to return -1
+    // ROOT CAUSE #4: When input exactly matches a single-word command (e.g., "deploy"),
+    // should show options not command name
+    if (context.getType() == CompletionContext.Type.COMMAND_NAME) {
+      String partialCommand = context.getPartialInput();
+
+      // Get all available commands from the command manager
+      Set<String> allCommands = commandManager.getHelper().getCommands();
+
+      // Filter commands that start with the partial input
+      List<Completion> matchingCommands = allCommands.stream()
+          .filter(cmd -> partialCommand.isEmpty() || cmd.startsWith(partialCommand))
+          .map(Completion::new)
+          .sorted(Comparator.comparing(Completion::getValue))
+          .collect(java.util.stream.Collectors.toList());
+
+
+      // ROOT CAUSE #10 + #12: Handle positional parameters for multi-word input like "hint d" or
+      // "help start"
+      // DETECTION: If partialCommand contains space, split it and check if first word is a valid
+      // command with String parameter (hint: arity=-1, defaultValue=__NULL__; help:
+      // defaultValue="")
+      // EXAMPLES:
+      // "hint d" → command="hint", partialValue="d" → complete to "hint data"
+      // "help start" → command="help", partialValue="start" → complete to "help start
+      // gateway-receiver"
+      if (matchingCommands.isEmpty() && partialCommand.contains(" ")) {
+
+        String[] parts = partialCommand.split(" ", 2); // Split into max 2 parts
+        String firstWord = parts[0];
+        String restOfInput = parts.length > 1 ? parts[1] : "";
+
+        // Check if first word is a valid command
+        if (allCommands.contains(firstWord)) {
+
+          // Check if this command has a String parameter that should complete to values
+          // Two patterns:
+          // 1. hint: arity=-1, defaultValue=__NULL__ (positional parameter)
+          // 2. help: defaultValue="" (optional String parameter)
+          try {
+            Method method = commandManager.getHelper().getCommandMethod(firstWord);
+            if (method != null) {
+              Parameter[] parameters = method.getParameters();
+              if (parameters.length > 0) {
+                Parameter firstParam = parameters[0];
+                ShellOption annotation = firstParam.getAnnotation(ShellOption.class);
+                if (annotation != null && firstParam.getType().equals(String.class)) {
+                  String defaultValue = annotation.defaultValue();
+                  int arity = annotation.arity();
+
+                  // Check if this is a completable String parameter
+                  // Pattern 1: hint-style positional (arity=-1, defaultValue=__NULL__)
+                  // Pattern 2: help-style optional (defaultValue="")
+                  boolean isCompletableStringParam =
+                      (arity == -1 && "__NULL__".equals(defaultValue)) // hint pattern
+                          || "".equals(defaultValue); // help pattern
+
+                  if (isCompletableStringParam) {
+
+                    CompletionContext valueContext = CompletionContext
+                        .optionValue(firstWord, annotation.value()[0], restOfInput)
+                        .withCommandManager(commandManager);
+
+                    List<Completion> valueCompletions = completionProviderRegistry.getCompletions(
+                        firstParam.getType(), restOfInput, valueContext);
+
+                    // Add completions as "command value" (replace entire input)
+                    for (Completion valueCompletion : valueCompletions) {
+                      candidates.add(new Completion(firstWord + " " + valueCompletion.getValue()));
+                    }
+
+                    if (!candidates.isEmpty()) {
+                      // Return cursor at start of input to replace entire "hint d" with "hint data"
+                      return 0;
+                    }
+                  }
+                }
+              }
+            }
+          } catch (Exception e) {
+            // Ignore and continue
+          }
+        }
+      }
+
+      // EVIDENCE: /tmp/test-deploy-verify.log shows:
+      // Input: "deploy", Found 1 matching command
+      // Expected: ["--dir", "--jar", ...] (options)
+      // Actual: ["deploy"] (command name)
+      // FIX: If the only match is an exact match, this is a complete command - show options instead
+      if (matchingCommands.size() == 1
+          && matchingCommands.get(0).getValue().equals(partialCommand)) {
+        // This is a complete command like "deploy" or "describe config" - fall through to option
+        // completion
+        // by treating it as if user had typed "deploy " (with space)
+        // Use a new variable to avoid "effectively final" issue
+        CompletionContext optionContext = CompletionContext.optionName(partialCommand, "", true);
+        CompletionWithIndex result = completeOptionName(
+            optionContext.getCommandName(),
+            optionContext.getPartialInput(),
+            optionContext,
+            userInput);
+
+        if (!result.completions.isEmpty()) {
+          // ROOT CAUSE #16: Need to add leading space before option names
+          // REASONING: "describe config" → "describe config --member" (with space)
+          // testCompleteWithRequiredOption expects "describe config --member", not "describe
+          // config--member"
+          // SPECIAL CASE: Positional parameters may already have leading space (e.g., hint topics
+          // like " Client")
+          // Check first completion to see if it already has leading space
+          boolean hasLeadingSpace = result.completions.get(0).getValue().startsWith(" ");
+          for (Completion completion : result.completions) {
+            if (hasLeadingSpace) {
+              // Already has space (positional parameter value), add as-is
+              candidates.add(completion);
+            } else {
+              // No space (option name), add leading space
+              candidates.add(new Completion(" " + completion.getValue()));
+            }
+          }
+          return userInput.length();
+        }
+        return -1;
+      } else if (!matchingCommands.isEmpty()) {
+        candidates.addAll(matchingCommands);
+        // Return cursor position at start of partial command
+        return userInput.length() - partialCommand.length();
+      } else {
+        return -1;
+      }
+    }
+
     // Handle option name completion
     if (context.getType() == CompletionContext.Type.OPTION_NAME) {
-      List<Completion> completions = completeOptionName(
+      CompletionWithIndex result = completeOptionName(
           context.getCommandName(),
-          context.getPartialInput());
+          context.getPartialInput(),
+          context,
+          userInput); // Pass full userInput for already-provided option filtering
+
+      List<Completion> completions = result.completions;
+      Map<String, Integer> parameterIndices = result.parameterIndices;
+
+      // EVIDENCE: /tmp/test-describe-with-space.log shows:
+      // Input: "describe " → context=OPTION_NAME, commandName="describe", method=null
+      // Expected: 9 command completions like "describe client"
+      // Actual: 0 completions
+      // ROOT CAUSE #6: "describe" is not a valid command, only a prefix
+      // FIX: If method not found, treat as command name prefix completion
+      if (completions.isEmpty() && context.getCommandName() != null) {
+        // Check if this is a command prefix
+        Set<String> allCommands = commandManager.getHelper().getCommands();
+        List<Completion> matchingCommands = allCommands.stream()
+            .filter(cmd -> cmd.startsWith(context.getCommandName()))
+            .map(Completion::new)
+            .sorted(Comparator.comparing(Completion::getValue))
+            .collect(java.util.stream.Collectors.toList());
+
+        if (!matchingCommands.isEmpty()) {
+          candidates.addAll(matchingCommands);
+          return 0; // Cursor at start of input
+        }
+      }
 
       if (!completions.isEmpty()) {
-        candidates.addAll(completions);
-        return userInput.length();
+        // REASONING: When input ends with "--":
+        // - If isFirstOption=true (e.g., "create gateway-sender --"), show only FIRST parameter (1
+        // completion)
+        // - If isFirstOption=false (e.g., "start server --name=x --"), show ALL options (many
+        // completions)
+        // This matches Spring Shell 2.x behavior and test expectations.
+        if (userInput.endsWith(LONG_OPTION_SPECIFIER) && context.getPartialInput().isEmpty()) {
+          if (context.isFirstOption()) {
+            // Show only the FIRST parameter's aliases (by parameter index, not alphabetically)
+            // EVIDENCE: /tmp/test-mandatory-v2.log shows --region=idx0, --key=idx1
+            // testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForCreateJndiBindingWithDash
+            // expects 2 completions: --connection-url and --url (both idx0), NOT --name (idx1)
+            // Get the first parameter's index (should be 0)
+            int firstParamIndex = completions.isEmpty() ? 0
+                : parameterIndices.getOrDefault(completions.get(0).getValue(), 0);
+            // Filter to only completions with the same index, then sort alphabetically
+            List<Completion> firstParamCompletions = completions.stream()
+                .filter(c -> parameterIndices.getOrDefault(c.getValue(), -1) == firstParamIndex)
+                .sorted(Comparator.comparing(Completion::getValue))
+                .collect(java.util.stream.Collectors.toList());
+            candidates.addAll(firstParamCompletions);
+          } else {
+            // Show ALL available options (sort alphabetically for user convenience)
+            completions.sort(Comparator.comparing(Completion::getValue));
+            candidates.addAll(completions);
+          }
+          // Return cursor position BEFORE the "--" so completion replaces it
+          return userInput.length() - LONG_OPTION_SPECIFIER.length();
+        } else {
+          // REASONING: When input ends with space (e.g., "start server --name=value "),
+          // completions should have a leading space so they can be inserted directly.
+          // Cursor position should be BEFORE the trailing space.
+          if (userInput.endsWith(" ")) {
+            // Check if this is the first option position
+            if (context.isFirstOption()) {
+              // Sort alphabetically before adding (test expects alphabetical order)
+              completions.sort(Comparator.comparing(Completion::getValue));
+              for (Completion completion : completions) {
+                candidates.add(new Completion(" " + completion.getValue()));
+              }
+            } else {
+              // Show ALL options with leading space
+              completions.sort(Comparator.comparing(Completion::getValue));
+              for (Completion completion : completions) {
+                candidates.add(new Completion(" " + completion.getValue()));
+              }
+            }
+            return userInput.length() - 1;
+          } else {
+            // ROOT CAUSE #14 + #15: When there's a partial option name like "start server
+            // --name=name1 --se",
+            // we need to return cursor position to REPLACE the partial from its start.
+            // REASONING: Input "... --se" should replace "--se" with "--security-properties-file",
+            // not append it.
+            // Cursor should be at position where "--" begins, not at end of input.
+            // ROOT CAUSE #15: Partial option completions should be sorted alphabetically
+            // REASONING: testCompleteOptionWithMultipleCandidates expects "--loc" → first candidate
+            // = "--locator-wait-time" (alphabetically first among --locator-wait-time, --locators,
+            // --lock-memory)
+            completions.sort(Comparator.comparing(Completion::getValue));
+            candidates.addAll(completions);
+
+            // Calculate cursor position: if there's a partial input, position before the "--"
+            if (!context.getPartialInput().isEmpty()) {
+              // Find where the partial starts (it will be "--" + partialInput)
+              String partialWithPrefix = LONG_OPTION_SPECIFIER + context.getPartialInput();
+              int partialStart = userInput.lastIndexOf(partialWithPrefix);
+              if (partialStart >= 0) {
+                return partialStart;
+              }
+            }
+
+            return userInput.length();
+          }
+        }
       }
     }
 
@@ -1211,23 +1651,101 @@ public class GfshParser {
           context.getPartialInput());
 
       if (!completions.isEmpty()) {
-        // Determine cursor position based on input format
+        // ROOT CAUSE #13: Determine cursor position based on input format
+        // THREE cases to distinguish:
+        // 1. "--option=" (ends with =, no value yet)
+        // 2. "--option" (no = after this specific option, need to add "=" + value)
+        // 3. "--option=partial" (has = and partial value after this option, need to replace from
+        // =)
+        //
+        // TRICKY CASE: "create region --name=test --type" has an = but not after --type
+        // We need to check if optionName appears in input and if there's an = after it
+
+
         if (userInput.endsWith("=")) {
-          // Test 1 case: "... --action=" → cursor at end, add value directly
+          // CASE 1: "... --action=" → cursor at end, add value directly
           candidates.addAll(completions);
-          return userInput.length();
-        } else if (context.getOptionName() != null && !userInput.endsWith("=")) {
-          // Test 2 case: "... --order-policy" → need to add "=" + value
-          for (Completion completion : completions) {
-            candidates.add(new Completion("=" + completion.getValue()));
-          }
           return userInput.length();
         } else {
-          // Partial value case: "... --action=AP" → replace from "="
-          candidates.addAll(completions);
-          int equalsPos = userInput.lastIndexOf('=');
-          return equalsPos + 1;
+          // Check if this specific option has an = after it
+          // REASONING: Need to distinguish "--name=test --type" (no = after --type) from
+          // "--type=REPLICATE" (has = after --type)
+          String optionName = context.getOptionName();
+          boolean hasEqualsAfterOption = false;
+          if (optionName != null) {
+            int optionPos = userInput.lastIndexOf(optionName);
+            if (optionPos >= 0) {
+              String afterOption = userInput.substring(optionPos + optionName.length());
+              hasEqualsAfterOption = afterOption.startsWith("=");
+            }
+          }
+
+          if (!hasEqualsAfterOption) {
+            // CASE 2: "... --order-policy" (no = after this option) → need to add "=" + value
+            // EXAMPLES: "create region --name=test --type" → add "=LOCAL"
+            for (Completion completion : completions) {
+              candidates.add(new Completion("=" + completion.getValue()));
+            }
+            return userInput.length();
+          } else {
+            // CASE 3: Partial value case: "... --action=AP" → replace from "="
+            // This handles "--type=REPLICATE" where we want to replace "REPLICATE" with
+            // "REPLICATE_HEAP_LRU"
+            // Find the = that belongs to THIS option (last occurrence of optionName + "=")
+            int optionPos = userInput.lastIndexOf(optionName);
+            int equalsPos = optionPos + optionName.length(); // Position of = after this option
+            candidates.addAll(completions);
+            return equalsPos + 1;
+          }
         }
+      } else {
+        // No value completions available - need to determine why and handle accordingly
+        String optionName = context.getOptionName();
+
+        // CASE 1: Input ends with just "--option=" or "--option" (no value yet)
+        // EVIDENCE: testCompleteJ: "--J=" expects to complete the --J option itself
+        // testCompleteWithValue: "--J" expects to complete the --J option itself
+        // FIX: Return the option name as completion so user can tab-complete the full option
+        if (userInput.endsWith("=") || (optionName != null && userInput.endsWith(optionName))) {
+          if (optionName != null) {
+            candidates.add(new Completion(optionName));
+            // Position cursor to replace the option
+            int optionStartPos = userInput.lastIndexOf(optionName);
+            if (optionStartPos >= 0) {
+              // If ends with "=", cursor after the "="
+              // If ends with option name, cursor at start of option name
+              if (userInput.endsWith("=")) {
+                return optionStartPos + 1; // After "--J" in "--J="
+              } else {
+                return optionStartPos; // At "--J" in "--J"
+              }
+            }
+          }
+          return -1;
+        }
+
+        // CASE 2: Input has "--option=value" (complete option with value)
+        // ROOT CAUSE #9: When no value completions for complete "--option=value" pattern,
+        // fall back to showing OTHER OPTIONS that can be added.
+        // EVIDENCE: "start server --name=name1" expects other options like " --J", "
+        // --properties-file"
+        CompletionContext optionNameContext =
+            CompletionContext.optionName(context.getCommandName(), "", false);
+        CompletionWithIndex result =
+            completeOptionName(context.getCommandName(), "", optionNameContext, userInput);
+        if (!result.completions.isEmpty()) {
+          // ROOT CAUSE #9: Sort completions alphabetically (Java natural String order)
+          // EVIDENCE: Test expects "--J" before "--assign-buckets" (uppercase < lowercase)
+          result.completions.sort(Comparator.comparing(Completion::getValue));
+
+          // Add completions with leading space since they're additional options
+          for (Completion completion : result.completions) {
+            candidates.add(new Completion(" " + completion.getValue()));
+          }
+          return userInput.length();
+        }
+        // If still no completions, return -1
+        return -1;
       }
     }
 

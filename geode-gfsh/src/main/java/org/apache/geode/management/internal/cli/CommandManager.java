@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.springframework.shell.standard.ShellMethod;
@@ -29,6 +30,7 @@ import org.springframework.shell.standard.ShellMethodAvailability;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
@@ -171,9 +173,25 @@ public class CommandManager {
    * In Spring Shell 3.x, commands still implement CommandMarker for discovery purposes,
    * though they use @ShellComponent and @ShellMethod for command registration.
    *
+   * Also loads commands via ServiceLoader for META-INF/services plugin discovery.
+   *
    * @since GemFire 8.1
    */
   private void loadGeodeCommands() {
+    boolean loadedAtLeastOneCommand = false;
+
+    // 1. Load via ServiceLoader (for META-INF/services based plugin discovery)
+    // This maintains compatibility with existing plugin mechanism
+    ServiceLoader<CommandMarker> serviceLoaderCommands =
+        ServiceLoader.load(CommandMarker.class,
+            ClassPathLoader.getLatest().asClassLoader());
+
+    for (CommandMarker commandMarker : serviceLoaderCommands) {
+      add(commandMarker);
+      loadedAtLeastOneCommand = true;
+    }
+
+    // 2. Load via classpath scanning (for Geode built-in commands)
     // Define packages containing Geode command classes
     String[] commandPackages = {
         "org.apache.geode.management.internal.cli.commands",
@@ -214,7 +232,6 @@ public class CommandManager {
           commandPackages);
       foundClasses.addAll(commandMarkerClasses);
 
-      boolean loadedAtLeastOneCommand = false;
       for (Class<?> klass : foundClasses) {
         try {
           Object commandInstance = klass.getDeclaredConstructor().newInstance();

@@ -1,0 +1,4 @@
+# Mock command for CommandManagerJUnitTest.testCommandManagerLoadPluginCommands
+# Spring Shell 3.x migration: Changed from org.springframework.shell.core.CommandMarker
+# to Geode's CommandMarker interface
+org.apache.geode.management.internal.cli.CommandManagerJUnitTest$MockPluginCommand

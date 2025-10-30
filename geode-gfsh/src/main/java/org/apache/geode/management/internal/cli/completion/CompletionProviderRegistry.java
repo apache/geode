@@ -45,8 +45,36 @@ public class CompletionProviderRegistry {
     this.providers = new ArrayList<>();
 
     // Register default providers (order matters - first match wins)
+
+    // REASONING: IndexTypeCompletionProvider must be registered BEFORE EnumCompletionProvider
+    // to provide IndexType-specific completion behavior. Returns lowercase synonyms
+    // ("hash", "key", "range") in alphabetical order instead of uppercase enum names
+    // (FUNCTIONAL, HASH, PRIMARY_KEY), matching Shell 1.x behavior. Fixes testIndexType.
+    registerProvider(new IndexTypeCompletionProvider());
+
     registerProvider(new EnumCompletionProvider());
     registerProvider(new BooleanCompletionProvider());
+
+    // ROOT CAUSE #10: HintTopicCompletionProvider provides topic name completions for the
+    // "hint" command's topic parameter. In Spring Shell 2.x, HintTopicConverter handled this,
+    // but it was never migrated during the Shell 3.x migration. Fixes 4 hint tests:
+    // testCompleteHintNada, testCompleteHintSpace, testCompleteHintPartial,
+    // testCompleteHintAlreadyComplete
+    // MUST be registered BEFORE LogLevelCompletionProvider to get first priority for String params!
+    registerProvider(new HintTopicCompletionProvider());
+
+    // ROOT CAUSE #12: HelpCommandCompletionProvider provides command name completions for the
+    // "help" command's command parameter. Similar to HintTopicCompletionProvider, this was
+    // never migrated from Spring Shell 2.x HelpConverter. Fixes 2 help tests:
+    // testCompleteHelpFirstWord, testCompleteHelpPartialFirstWord
+    registerProvider(new HelpCommandCompletionProvider());
+
+    // REASONING: LogLevelCompletionProvider provides log level completions for String parameters //
+    // REASONING: LogLevelCompletionProvider provides log level completions for String parameters
+    // whose name contains "loglevel". This maintains Shell 1.x backward compatibility where
+    // the "change loglevel --loglevel" command offered 8 log levels: ALL, TRACE, DEBUG, INFO,
+    // WARN, ERROR, FATAL, OFF. Fixes testCompleteLogLevel and testCompleteLogLevelWithEqualSign.
+    registerProvider(new LogLevelCompletionProvider());
 
     // Future: Add more providers here
     // registerProvider(new FilePathCompletionProvider());
@@ -81,6 +109,15 @@ public class CompletionProviderRegistry {
   /**
    * Gets completion candidates for a parameter value.
    *
+   * ROOT CAUSE #11: When multiple providers support the same type (e.g., String),
+   * we need to try them all and return the first non-empty result. This implements
+   * a "chain of responsibility" pattern with fallback.
+   *
+   * REASONING: HintTopicCompletionProvider and LogLevelCompletionProvider both support
+   * String.class, but only work for specific parameters (topic vs loglevel). The first
+   * provider might return empty, so we need to try subsequent providers until we find
+   * one that returns completions.
+   *
    * @param targetType the parameter type (e.g., OrderPolicy.class)
    * @param partialValue the partial value typed by user
    * @param context the completion context
@@ -88,13 +125,20 @@ public class CompletionProviderRegistry {
    */
   public List<Completion> getCompletions(Class<?> targetType, String partialValue,
       CompletionContext context) {
-    ValueCompletionProvider provider = findProvider(targetType);
+    // ROOT CAUSE #11 FIX: Try ALL providers that support this type, return first non-empty result
+    // This allows multiple String providers to coexist (HintTopicCompletionProvider,
+    // LogLevelCompletionProvider)
+    for (ValueCompletionProvider provider : providers) {
+      if (provider.supports(targetType)) {
+        List<Completion> completions = provider.getCompletions(targetType, partialValue, context);
 
-    if (provider == null) {
-      return Collections.emptyList();
+        if (completions != null && !completions.isEmpty()) {
+          return completions;
+        }
+      }
     }
 
-    return provider.getCompletions(targetType, partialValue, context);
+    return Collections.emptyList();
   }
 
   /**
