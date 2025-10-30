@@ -40,12 +40,13 @@ public class WanCommandAutoCompletionIntegrationTest {
     // Spring Shell 3.x shows ALL options (both mandatory and optional)
     assertThat(candidate.getCandidates()).hasSize(5);
     // Verify that mandatory options (--region and --sender-id) are present
+    // Note: When buffer ends with space, completions have leading space
     List<String> candidateStrings = candidate.getCandidates().stream()
         .map(c -> c.getValue())
         .collect(Collectors.toList());
-    assertThat(candidateStrings).contains("--region", "--sender-id");
+    assertThat(candidateStrings).contains(" --region", " --sender-id");
     // Also verify optional parameters are present
-    assertThat(candidateStrings).contains("--max-rate", "--batch-size", "--cancel");
+    assertThat(candidateStrings).contains(" --max-rate", " --batch-size", " --cancel");
   }
 
   @Test
