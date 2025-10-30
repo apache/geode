@@ -931,7 +931,7 @@ lib/commons-beanutils-1.11.0.jar
 lib/commons-codec-1.15.jar
 lib/commons-collections-3.2.2.jar
 lib/commons-digester-2.1.jar
-lib/commons-io-2.18.0.jar
+lib/commons-io-2.19.0.jar
 lib/commons-lang3-3.18.0.jar
 lib/commons-logging-1.3.5.jar
 lib/commons-modeler-2.0.1.jar
