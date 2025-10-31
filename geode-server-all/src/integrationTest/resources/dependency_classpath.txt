@@ -29,7 +29,6 @@ httpclient5-5.4.4.jar
 httpcore5-h2-5.3.4.jar
 httpcore5-5.3.4.jar
 HikariCP-4.0.3.jar
-commons-lang3-3.12.0.jar
 jaxb-runtime-4.0.2.jar
 jaxb-core-4.0.2.jar
 jakarta.xml.bind-api-4.0.2.jar
@@ -37,6 +36,10 @@ log4j-slf4j-impl-2.17.2.jar
 log4j-core-2.17.2.jar
 log4j-jcl-2.17.2.jar
 log4j-jul-2.17.2.jar
+commons-lang3-3.18.0.jar
+jopt-simple-5.0.4.jar
+swagger-annotations-2.2.22.jar
+snappy-0.5.jar
 log4j-api-2.17.2.jar
 spring-shell-starter-3.3.3.jar
 rmiio-2.1.2.jar

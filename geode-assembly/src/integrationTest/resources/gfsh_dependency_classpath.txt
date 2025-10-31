@@ -19,7 +19,7 @@ geode-unsafe-0.0.0.jar
 geode-deployment-legacy-0.0.0.jar
 spring-shell-starter-3.3.3.jar
 spring-web-6.1.14.jar
-commons-lang3-3.12.0.jar
+commons-lang3-3.18.0.jar
 rmiio-2.1.2.jar
 jackson-datatype-joda-2.17.0.jar
 jackson-annotations-2.17.0.jar
