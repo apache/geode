@@ -51,7 +51,7 @@ log4j-slf4j-impl-2.17.2.jar
 lucene-analyzers-common-6.6.6.jar
 geode-membership-0.0.0.jar
 jetty-webapp-9.4.57.v20241219.jar
-commons-lang3-3.12.0.jar
+commons-lang3-3.18.0.jar
 jopt-simple-5.0.4.jar
 swagger-annotations-2.2.22.jar
 snappy-0.5.jar

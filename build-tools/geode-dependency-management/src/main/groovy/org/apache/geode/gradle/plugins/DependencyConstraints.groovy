@@ -34,7 +34,7 @@ class DependencyConstraints {
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
     deps.put("commons-io.version", "2.19.0")
-    deps.put("commons-lang3.version", "3.12.0")
+    deps.put("commons-lang3.version", "3.18.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.8")
     deps.put("javax.activation.version", "1.2.0")
