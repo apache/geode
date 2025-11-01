@@ -87,8 +87,8 @@ fromData,97
 toData,105
 
 org/apache/geode/pdx/TestObjectForJSONFormatter,2
-fromData,613
-toData,568
+fromData,625
+toData,610
 
 org/apache/geode/security/query/data/PdxQueryTestObject,2
 fromData,25

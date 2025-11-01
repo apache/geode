@@ -40,6 +40,11 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-databind')
   implementation('io.swagger.core.v3:swagger-annotations')
 
+  // JAXB dependencies needed for Java 11+
+  implementation('javax.xml.bind:jaxb-api')
+  runtimeOnly('com.sun.xml.bind:jaxb-impl')
+  runtimeOnly('com.sun.activation:javax.activation')
+
   //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
   testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
   testImplementation('org.springframework:spring-test')

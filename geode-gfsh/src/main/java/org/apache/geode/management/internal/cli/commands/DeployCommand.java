@@ -104,7 +104,12 @@ public class DeployCommand extends GfshCommand {
 
     results = deployJars(jarFullPaths, targetMembers, results, exporter);
 
-    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
+    // Flatten the nested results for processing while maintaining backward compatibility
+    List<Object> flatResults = new LinkedList<>();
+    for (List<Object> memberResults : results) {
+      flatResults.addAll(memberResults);
+    }
+    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(flatResults);
 
     List<DeploymentInfo> deploymentInfos =
         DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults);
@@ -131,6 +136,7 @@ public class DeployCommand extends GfshCommand {
     for (DistributedMember member : targetMembers) {
       List<RemoteInputStream> remoteStreams = new ArrayList<>();
       List<String> jarNames = new ArrayList<>();
+      List<Object> memberResults = new ArrayList<>();
       try {
         for (String jarFullPath : jarFullPaths) {
           FileInputStream fileInputStream = null;
@@ -155,9 +161,10 @@ public class DeployCommand extends GfshCommand {
                 new Object[] {jarNames, remoteStreams}, member);
 
         @SuppressWarnings("unchecked")
-        final List<List<Object>> resultCollectorResult =
-            (List<List<Object>>) resultCollector.getResult();
-        results.add(resultCollectorResult.get(0));
+        final List<CliFunctionResult> resultCollectorResult =
+            (List<CliFunctionResult>) resultCollector.getResult();
+        memberResults.addAll(resultCollectorResult);
+        results.add(memberResults);
       } finally {
         for (RemoteInputStream ris : remoteStreams) {
           try {

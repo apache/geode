@@ -1,14 +1,14 @@
 # Building this Release from Source
 
-All platforms require a Java installation, with JDK 1.8 or more recent version.
+All platforms require a Java installation, with JDK 17 or more recent version.
 
 Set the JAVA\_HOME environment variable. For example:
 
 | Platform | Command |
 | :---: | --- |
-|  Unix    | ``export JAVA_HOME=/usr/java/jdk1.8.0_121``            |
-|  OSX     | ``export JAVA_HOME=`/usr/libexec/java_home -v 1.8` ``  |
-|  Windows | ``set JAVA_HOME="C:\Program Files\Java\jdk1.8.0_121"`` |
+|  Unix    | ``export JAVA_HOME=/usr/java/jdk-17.0.16``            |
+|  OSX     | ``export JAVA_HOME=`/usr/libexec/java_home -v 17.0.16` ``  |
+|  Windows | ``set JAVA_HOME="C:\Program Files\Java\jdk-17.0.16"`` |
 
 Download the project source from the Releases page at
 [Apache Geode](http://geode.apache.org/releases/), and unpack the source code.
@@ -51,7 +51,7 @@ The following steps have been tested with **IntelliJ IDEA 2020.3.3**
     * Set the Java SDK for the project.
         1. Select **File -> Project Structure...** from the menu.
         1. Open the **Project Settings -> Project** section.
-        1. Set **Project SDK** to your most recent Java 1.8 JDK.
+        1. Set **Project SDK** to your most recent Java 17 JDK.
 
     * To automatically re-generate sources when needed (recommended).
         1. Select **View -> Tool Windows -> Gradle** from the menu.

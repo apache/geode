@@ -210,5 +210,10 @@
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>com.sun.activation</groupId>
+      <artifactId>javax.activation</artifactId>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 </project>
