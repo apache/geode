@@ -38,10 +38,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'liberica'
-    - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
-      uses: gradle/gradle-build-action@v2
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5
       with:
-        arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
+        gradle-version: wrapper
+    - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
+      run: ./gradlew --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
   apiCheck:
      needs: build
@@ -102,7 +104,9 @@ jobs:
        java-version: |
          17
    - name: Setup Gradle
-     uses: gradle/gradle-build-action@v2
+     uses: gradle/actions/setup-gradle@v5
+     with:
+       gradle-version: wrapper
    - name: Set JAVA_TEST_PATH to 17
      run: |
        echo "JAVA_TEST_PATH=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
@@ -149,7 +153,9 @@ jobs:
          java-version: |
            17
      - name: Setup Gradle
-       uses: gradle/gradle-build-action@v2
+       uses: gradle/actions/setup-gradle@v5
+       with:
+         gradle-version: wrapper
      - name: Run integration tests
        run: |
          GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -193,7 +199,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run acceptance tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -235,7 +243,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run wan distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -279,134 +289,25 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: Run cq distributed tests with intelligent retry
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
+      - name: Run cq distributed tests
         run: |
-          #!/bin/bash
-          set +e
-          
-          # Function to detect Gradle wrapper download errors (version-agnostic)
-          is_wrapper_download_error() {
-            local log_file="$1"
-            
-            # Check for gradle-distributions GitHub URL (primary indicator)
-            grep -qE "github\.com/gradle/gradle-distributions" "$log_file" && return 0
-            
-            # Check for services.gradle.org download attempts/failures
-            grep -qE "services\.gradle\.org/distributions/gradle-[0-9]" "$log_file" && return 0
-            
-            # Check for HTTP 403 on .zip files (likely gradle distribution)
-            grep -qE "HTTP response code: 403.*\.zip" "$log_file" && return 0
-            
-            # Check for wrapper-specific class names in stack traces
-            grep -qE "at org\.gradle\.wrapper\.(Download|Install|WrapperExecutor)" "$log_file" && return 0
-            
-            # Check for generic download failure messages (any gradle version)
-            grep -qE "(Could not download|Failed to download|Exception.*downloading).*(gradle-[0-9]+\.[0-9]+|distribution)" "$log_file" && return 0
-            
-            # Check for "Downloading" message followed by error (wrapper was attempting download)
-            if grep -qE "Downloading https://services\.gradle\.org" "$log_file" && \
-               grep -qE "(Exception|Error|Failed)" "$log_file"; then
-              return 0
-            fi
-            
-            return 1
-          }
-          
-          MAX_ATTEMPTS=3
-          ATTEMPT=1
-          
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            echo "========================================"
-            echo "Attempt $ATTEMPT of $MAX_ATTEMPTS"
-            echo "Started at: $(date)"
-            echo "========================================"
-            
-            START_TIME=$(date +%s)
-            
-            GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
-            JAVA_BUILD_PATH=${JAVA_HOME_17_X64}
-            JAVA_BUILD_VERSION=17
-            JAVA_TEST_VERSION=17
-            cp gradlew gradlewStrict
-            sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
-            
-            # Create temporary file for output
-            OUTPUT_FILE=$(mktemp)
-            
-            # Run tests and capture all output
-            GRADLE_JVM=${GRADLE_JVM_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict \
-              --parallel -PparallelDunit --max-workers=6 \
-              -PcompileJVM=${JAVA_BUILD_PATH} \
-              -PcompileJVMVer=${JAVA_BUILD_VERSION} \
-              -PtestJVM=${JAVA_TEST_PATH} \
-              -PtestJVMVer=${JAVA_TEST_VERSION} \
-              -PtestJava17Home=${JAVA_HOME_17_X64} \
-              geode-cq:distributedTest --console=plain --no-daemon 2>&1 | tee "$OUTPUT_FILE"
-            
-            EXIT_CODE=${PIPESTATUS[0]}
-            END_TIME=$(date +%s)
-            DURATION=$((END_TIME - START_TIME))
-            
-            echo "========================================"
-            echo "Finished at: $(date)"
-            echo "Duration: ${DURATION} seconds"
-            echo "Exit code: $EXIT_CODE"
-            echo "========================================"
-            
-            # Success!
-            if [ $EXIT_CODE -eq 0 ]; then
-              echo "[SUCCESS] Tests passed successfully on attempt $ATTEMPT"
-              rm -f "$OUTPUT_FILE"
-              exit 0
-            fi
-            
-            # SAFETY CHECK: If it ran for more than 2 minutes, it's NOT a wrapper issue
-            if [ $DURATION -gt 120 ]; then
-              echo ""
-              echo "[FAILURE] Build/test failed after ${DURATION} seconds (>2 minutes)"
-              echo "[FAILURE] This is NOT a Gradle wrapper download issue"
-              echo "[FAILURE] Failing immediately to avoid wasting CI time"
-              echo ""
-              rm -f "$OUTPUT_FILE"
-              exit $EXIT_CODE
-            fi
-            
-            # Check if this is a wrapper download error
-            if is_wrapper_download_error "$OUTPUT_FILE"; then
-              if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
-                echo ""
-                echo "[RETRY] Gradle wrapper download error detected (failed in ${DURATION} seconds)"
-                echo "[RETRY] This is a transient network/infrastructure issue, not a test failure"
-                echo "[RETRY] Retrying in 15 seconds... (next attempt: $((ATTEMPT + 1)) of $MAX_ATTEMPTS)"
-                echo ""
-                rm -f "$OUTPUT_FILE"
-                sleep 15
-                ATTEMPT=$((ATTEMPT + 1))
-                continue
-              else
-                echo ""
-                echo "[FAILURE] Gradle wrapper download failed after $MAX_ATTEMPTS attempts"
-                echo "[FAILURE] This indicates a persistent network or infrastructure problem"
-                echo ""
-                rm -f "$OUTPUT_FILE"
-                exit $EXIT_CODE
-              fi
-            else
-              # Not a wrapper error
-              echo ""
-              echo "[FAILURE] Build or test failure detected (failed in ${DURATION} seconds)"
-              echo "[FAILURE] Error does not match Gradle wrapper download patterns"
-              echo "[FAILURE] Failing immediately to save time - please review errors above"
-              echo ""
-              rm -f "$OUTPUT_FILE"
-              exit $EXIT_CODE
-            fi
-          done
-          
-          # Should never reach here
-          rm -f "$OUTPUT_FILE"
-          exit 1
+          GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
+          JAVA_BUILD_PATH=${JAVA_HOME_17_X64}
+          JAVA_BUILD_VERSION=17
+          JAVA_TEST_VERSION=17
+          cp gradlew gradlewStrict
+          sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
+          GRADLE_JVM=${GRADLE_JVM_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict \
+            --parallel -PparallelDunit --max-workers=6 \
+            -PcompileJVM=${JAVA_BUILD_PATH} \
+            -PcompileJVMVer=${JAVA_BUILD_VERSION} \
+            -PtestJVM=${JAVA_TEST_PATH} \
+            -PtestJVMVer=${JAVA_TEST_VERSION} \
+            -PtestJava17Home=${JAVA_HOME_17_X64} \
+            geode-cq:distributedTest --console=plain --no-daemon
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -432,7 +333,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run lucene distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -476,7 +379,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run gfsh, web-mgmt, web distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -522,7 +427,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run assembly, connectors, old-client, extensions distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
