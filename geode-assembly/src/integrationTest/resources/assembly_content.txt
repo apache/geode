@@ -1016,7 +1016,6 @@ lib/shiro-crypto-core-1.13.0.jar
 lib/shiro-crypto-hash-1.13.0.jar
 lib/shiro-event-1.13.0.jar
 lib/shiro-lang-1.13.0.jar
-lib/slf4j-api-1.7.32.jar
 lib/slf4j-api-1.7.36.jar
 lib/snappy-0.5.jar
 lib/spring-beans-5.3.21.jar
