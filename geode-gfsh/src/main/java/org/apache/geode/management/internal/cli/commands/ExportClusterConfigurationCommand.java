@@ -28,8 +28,8 @@ import joptsimple.internal.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -58,18 +58,17 @@ public class ExportClusterConfigurationCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
   public static final String XML_FILE = "xml-file";
 
-  @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},
-      help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
+  @ShellMethod(value = CliStrings.EXPORT_SHARED_CONFIG__HELP,
+      key = {CliStrings.EXPORT_SHARED_CONFIG})
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.ExportClusterConfigurationCommand$ExportInterceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public ResultModel exportSharedConfig(
-      @CliOption(key = GROUP,
-          specifiedDefaultValue = ConfigurationPersistenceService.CLUSTER_CONFIG,
-          unspecifiedDefaultValue = ConfigurationPersistenceService.CLUSTER_CONFIG) String group,
-      @CliOption(key = XML_FILE) String xmlFile,
-      @CliOption(key = CliStrings.EXPORT_SHARED_CONFIG__FILE,
+      @ShellOption(value = GROUP,
+          defaultValue = ConfigurationPersistenceService.CLUSTER_CONFIG) String group,
+      @ShellOption(value = XML_FILE) String xmlFile,
+      @ShellOption(value = CliStrings.EXPORT_SHARED_CONFIG__FILE,
           help = CliStrings.EXPORT_SHARED_CONFIG__FILE__HELP) String zipFileName)
       throws IOException {
 

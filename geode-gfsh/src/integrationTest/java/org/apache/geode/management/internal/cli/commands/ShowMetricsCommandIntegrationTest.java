@@ -174,7 +174,8 @@ public class ShowMetricsCommandIntegrationTest {
   public void getRegionMetricsForPartitionedRegionWithStatistics() {
     String cmd = "create region --name=region2 --type=PARTITION --enable-statistics";
     gfsh.executeAndAssertThat(cmd).statusIsSuccess();
-    String cmd2 = "show metrics --member=" + MEMBER_NAME + " --region=region2";
+    // Shell 3.x: Region path conversion now requires explicit "/" prefix
+    String cmd2 = "show metrics --member=" + MEMBER_NAME + " --region=" + SEPARATOR + "region2";
     gfsh.executeAndAssertThat(cmd2).statusIsSuccess().tableHasRowWithValues("Category", "Metric",
         "Value", "", "missCount", "0");
   }

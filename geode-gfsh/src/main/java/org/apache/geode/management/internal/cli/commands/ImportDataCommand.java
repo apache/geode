@@ -18,15 +18,14 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ImportDataFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -38,22 +37,20 @@ import org.apache.geode.security.ResourcePermission.Resource;
 public class ImportDataCommand extends GfshCommand {
   private final ImportDataFunction importDataFunction = new ImportDataFunction();
 
-  @CliCommand(value = CliStrings.IMPORT_DATA, help = CliStrings.IMPORT_DATA__HELP)
+  @ShellMethod(value = CliStrings.IMPORT_DATA__HELP, key = CliStrings.IMPORT_DATA)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   public ResultModel importData(
-      @CliOption(key = CliStrings.MEMBER, mandatory = true,
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = CliStrings.MEMBER,
           help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
-      @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGION_PATH,
-          mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
-      @CliOption(key = CliStrings.IMPORT_DATA__FILE,
+      @ShellOption(value = CliStrings.IMPORT_DATA__REGION,
+          help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
+      @ShellOption(value = CliStrings.IMPORT_DATA__FILE, defaultValue = ShellOption.NULL,
           help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
-      @CliOption(key = CliStrings.IMPORT_DATA__DIR,
+      @ShellOption(value = CliStrings.IMPORT_DATA__DIR, defaultValue = ShellOption.NULL,
           help = CliStrings.IMPORT_DATA__DIR__HELP) String dirPath,
-      @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, defaultValue = "false",
           help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks,
-      @CliOption(key = CliStrings.IMPORT_DATA__PARALLEL, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.IMPORT_DATA__PARALLEL, defaultValue = "false",
           help = CliStrings.IMPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
     authorize(Resource.DATA, Operation.WRITE, regionName);

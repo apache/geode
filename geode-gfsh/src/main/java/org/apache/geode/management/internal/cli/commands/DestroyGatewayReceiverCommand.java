@@ -17,14 +17,13 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.DestroyGatewayReceiverFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -42,19 +41,17 @@ public class DestroyGatewayReceiverCommand extends SingleGfshCommand {
   public static final String DESTROY_GATEWAYRECEIVER__MEMBER__HELP =
       "Name/Id of the member on which to destroy the Gateway Receiver.";
 
-  @CliCommand(value = DESTROY_GATEWAYRECEIVER, help = DESTROY_GATEWAYRECEIVER__HELP)
+  @ShellMethod(value = DESTROY_GATEWAYRECEIVER__HELP, key = DESTROY_GATEWAYRECEIVER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
   public ResultModel destroyGatewayReceiver(
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = DESTROY_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = DESTROY_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember,
-      @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists) {
+      @ShellOption(value = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
+          defaultValue = "false") boolean ifExists) {
 
     boolean persisted = true;
     Set<DistributedMember> members = getMembers(onGroups, onMember);

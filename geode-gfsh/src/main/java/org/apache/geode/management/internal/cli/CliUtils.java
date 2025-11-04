@@ -56,11 +56,13 @@ public class CliUtils {
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
     // "Validate" each dependency by attempting to load an associated class
     Map<String, String> classLibraryMap = new HashMap<>();
-    classLibraryMap.put("org.springframework.shell.core.Parser", "Spring Shell");
-    classLibraryMap.put("org.springframework.shell.core.annotation.CliCommand", "Spring Shell");
+    // Spring Shell 3.x classes (updated from Spring Shell 1.x)
+    classLibraryMap.put("org.springframework.shell.command.parser.Parser", "Spring Shell");
+    classLibraryMap.put("org.springframework.shell.command.annotation.Command", "Spring Shell");
     classLibraryMap.put("org.springframework.core.SpringVersion", "Spring Core");
     if (includeGfshDependencies) {
-      classLibraryMap.put("jline.console.ConsoleReader", "JLine");
+      // JLine 3.x class (updated from JLine 2.x)
+      classLibraryMap.put("org.jline.reader.LineReader", "JLine");
     }
 
     List<String> unloadableJars =

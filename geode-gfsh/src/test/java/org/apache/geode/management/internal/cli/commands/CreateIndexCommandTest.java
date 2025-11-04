@@ -72,24 +72,27 @@ public class CreateIndexCommandTest {
 
   @Test
   public void missingName() {
+    // Shell 3.x: Parse failures return generic 'Error while processing command'
     gfshParser.executeAndAssertThat(command,
         "create index --expression=abc --region=abc")
         .statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("Error while processing command");
   }
 
   @Test
   public void missingExpression() {
+    // Shell 3.x: Parse failures return generic 'Error while processing command'
     gfshParser.executeAndAssertThat(command, "create index --name=abc --region=abc")
         .statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("Error while processing command");
   }
 
   @Test
   public void missingRegion() {
+    // Shell 3.x: Parse failures return generic 'Error while processing command'
     gfshParser.executeAndAssertThat(command, "create index --name=abc --expression=abc")
         .statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("Error while processing command");
   }
 
   @Test

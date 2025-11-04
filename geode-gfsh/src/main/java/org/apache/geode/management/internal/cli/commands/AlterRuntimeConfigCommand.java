@@ -26,8 +26,8 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -56,47 +55,43 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
       new AlterRuntimeConfigFunction();
   private static final Logger logger = LogService.getLogger();
 
-  @CliCommand(value = {CliStrings.ALTER_RUNTIME_CONFIG},
-      help = CliStrings.ALTER_RUNTIME_CONFIG__HELP)
+  @ShellMethod(value = CliStrings.ALTER_RUNTIME_CONFIG__HELP,
+      key = {CliStrings.ALTER_RUNTIME_CONFIG})
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG},
       interceptor = "org.apache.geode.management.internal.cli.commands.AlterRuntimeConfigCommand$AlterRuntimeInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   @SuppressWarnings("deprecation")
   public ResultModel alterRuntimeConfig(
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] memberNameOrId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] group,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT},
           help = CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT__HELP) Integer archiveDiskSpaceLimit,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT},
           help = CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT__HELP) Integer archiveFileSizeLimit,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT},
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT__HELP) Integer logDiskSpaceLimit,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT},
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT__HELP) Integer logFileSizeLimit,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL},
-          optionContext = ConverterHint.LOG_LEVEL,
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL},
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL__HELP) String logLevel,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE},
           help = CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE__HELP) String statisticArchiveFile,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE},
           help = CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE__HELP) Integer statisticSampleRate,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED},
           help = CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED__HELP) Boolean statisticSamplingEnabled,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ},
-          specifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ},
           help = CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ__HELP) Boolean setCopyOnRead,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE},
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE__HELP) Integer lockLease,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT},
           help = CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT__HELP) Integer lockTimeout,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL},
           help = CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL__HELP) Integer messageSyncInterval,
-      @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT},
+      @ShellOption(value = {CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT},
           help = CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT__HELP) Integer searchTimeout) {
 
     Map<String, String> runTimeDistributionConfigAttributes = new HashMap<>();

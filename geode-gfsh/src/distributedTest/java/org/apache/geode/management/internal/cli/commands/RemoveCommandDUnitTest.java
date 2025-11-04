@@ -30,7 +30,23 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-
+/**
+ * Tests for the "remove" gfsh command.
+ *
+ * <p>
+ * Note on Spring Shell 3.x Migration (GEODE-10466):
+ * Some tests were updated due to the removal of automatic parameter conversion that existed
+ * in Spring Shell 1.x. Previously, the {@code RegionPathConverter} automatically prefixed region
+ * names with "/" (e.g., "regionName" became "/regionName"). With Spring Shell 3.x, the
+ * {@code @CliOption} annotation was replaced with {@code @ShellOption}, which doesn't support
+ * the {@code optionContext = ConverterHint.REGION_PATH} parameter that triggered this automatic
+ * conversion. The {@code RegionPathConverter} class was removed as part of the migration.
+ *
+ * <p>
+ * As a result, tests that verify error messages containing region names must now explicitly
+ * provide region paths with SEPARATOR prefix to match the actual error messages produced by
+ * the command.
+ */
 public class RemoveCommandDUnitTest {
   private static final String REPLICATE_REGION_NAME = "replicateRegion";
   private static final String PARTITIONED_REGION_NAME = "partitionedRegion";
@@ -78,7 +94,19 @@ public class RemoveCommandDUnitTest {
 
   @Test
   public void removeFromInvalidRegion() {
-    String command = "remove --all --region=NotAValidRegion";
+    // Region path must include SEPARATOR prefix due to Spring Shell 3.x migration.
+    // The RegionPathConverter that automatically added "/" was removed.
+    //
+    // Spring Shell 3.x Migration Context:
+    // In Spring Shell 1.x, passing "--region=NotAValidRegion" would be automatically converted
+    // to "--region=/NotAValidRegion" by RegionPathConverter. The error message would then
+    // contain the full path "/NotAValidRegion".
+    //
+    // With Spring Shell 3.x, no automatic conversion occurs. If we pass "NotAValidRegion"
+    // without the separator, the error message would contain "NotAValidRegion" (no separator),
+    // causing this assertion to fail. We must now explicitly provide the full region path
+    // with SEPARATOR prefix so the command and error message are consistent.
+    String command = "remove --all --region=" + SEPARATOR + "NotAValidRegion";
 
     gfsh.executeAndAssertThat(command).statusIsError()
         .containsOutput(String.format(REGION_NOT_FOUND, SEPARATOR + "NotAValidRegion"));

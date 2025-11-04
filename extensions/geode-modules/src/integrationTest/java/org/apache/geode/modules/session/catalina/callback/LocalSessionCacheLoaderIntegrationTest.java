@@ -19,8 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.Enumeration;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;

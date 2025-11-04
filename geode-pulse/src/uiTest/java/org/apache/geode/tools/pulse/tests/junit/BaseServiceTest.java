@@ -29,15 +29,15 @@ import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.Cookie;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -144,14 +144,16 @@ public abstract class BaseServiceTest {
     try {
       BasicCookieStore cookieStore = new BasicCookieStore();
       httpclient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
-      HttpUriRequest login = RequestBuilder.post().setUri(new URI(LOGIN_URL))
+      // HttpClient 5.x: RequestBuilder replaced with ClassicRequestBuilder
+      ClassicHttpRequest login = ClassicRequestBuilder.post().setUri(new URI(LOGIN_URL))
           .addParameter("j_username", "admin").addParameter("j_password", "admin").build();
       loginResponse = httpclient.execute(login);
       try {
         HttpEntity entity = loginResponse.getEntity();
         EntityUtils.consume(entity);
-        System.out
-            .println("BaseServiceTest :: HTTP request status : " + loginResponse.getStatusLine());
+        // HttpClient 5.x: getStatusLine() replaced with getCode() and getReasonPhrase()
+        System.out.println("BaseServiceTest :: HTTP request status : " + loginResponse.getCode()
+            + " " + loginResponse.getReasonPhrase());
 
         List<Cookie> cookies = cookieStore.getCookies();
         if (cookies.isEmpty()) {
@@ -182,7 +184,8 @@ public abstract class BaseServiceTest {
     if (httpclient != null) {
       CloseableHttpResponse logoutResponse = null;
       try {
-        HttpUriRequest logout = RequestBuilder.get().setUri(new URI(LOGOUT_URL)).build();
+        // HttpClient 5.x: RequestBuilder replaced with ClassicRequestBuilder
+        ClassicHttpRequest logout = ClassicRequestBuilder.get().setUri(new URI(LOGOUT_URL)).build();
         logoutResponse = httpclient.execute(logout);
         try {
           HttpEntity entity = logoutResponse.getEntity();
@@ -229,13 +232,16 @@ public abstract class BaseServiceTest {
     try {
       doLogin();
 
-      HttpUriRequest pulseupdate =
-          RequestBuilder.get().setUri(new URI(IS_AUTHENTICATED_USER_URL)).build();
+      // HttpClient 5.x: RequestBuilder replaced with ClassicRequestBuilder
+      ClassicHttpRequest pulseupdate =
+          ClassicRequestBuilder.get().setUri(new URI(IS_AUTHENTICATED_USER_URL)).build();
       CloseableHttpResponse response = httpclient.execute(pulseupdate);
       try {
         HttpEntity entity = response.getEntity();
 
-        System.out.println("BaseServiceTest :: HTTP request status : " + response.getStatusLine());
+        // HttpClient 5.x: getStatusLine() replaced with getCode() and getReasonPhrase()
+        System.out.println("BaseServiceTest :: HTTP request status : " + response.getCode()
+            + " " + response.getReasonPhrase());
 
         BufferedReader respReader = new BufferedReader(new InputStreamReader(entity.getContent()));
         StringWriter sw = new StringWriter();

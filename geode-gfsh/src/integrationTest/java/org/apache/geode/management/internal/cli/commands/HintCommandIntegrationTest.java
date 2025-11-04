@@ -38,7 +38,8 @@ public class HintCommandIntegrationTest {
 
   @Test
   public void hintCommandShouldSucceedWhenTopicDoesNotExist() {
-    gfsh.executeAndAssertThat("hint invalidTopic").statusIsSuccess()
+    // Shell 3.x: Must use explicit --topic= syntax instead of positional argument
+    gfsh.executeAndAssertThat("hint --topic=invalidTopic").statusIsSuccess()
         .containsOutput("Unknown topic", "Use hint to view the list of available topics.");
   }
 
@@ -51,18 +52,20 @@ public class HintCommandIntegrationTest {
 
   @Test
   public void hintCommandShouldReturnHintForAllKnownTopics() {
+    // Shell 3.x: Must use explicit --topic= syntax instead of positional argument
     hintHelper.getTopicNames().forEach(
-        topic -> gfsh.executeAndAssertThat("hint " + topic).statusIsSuccess()
+        topic -> gfsh.executeAndAssertThat("hint --topic=" + topic).statusIsSuccess()
             .doesNotContainOutput("Unknown topic"));
   }
 
   @Test
   public void hintCommandShouldIgnoreCase() {
+    // Shell 3.x: Must use explicit --topic= syntax instead of positional argument
     hintHelper.getTopicNames().forEach(
         topic -> {
-          gfsh.executeAndAssertThat("hint " + topic.toLowerCase()).statusIsSuccess()
+          gfsh.executeAndAssertThat("hint --topic=" + topic.toLowerCase()).statusIsSuccess()
               .doesNotContainOutput("Unknown topic");
-          gfsh.executeAndAssertThat("hint " + topic.toUpperCase()).statusIsSuccess()
+          gfsh.executeAndAssertThat("hint --topic=" + topic.toUpperCase()).statusIsSuccess()
               .doesNotContainOutput("Unknown topic");
         });
   }

@@ -18,14 +18,13 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.utils.ClassUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
@@ -45,17 +44,29 @@ public class DescribeDiskStoreCommand extends GfshCommand {
   public static final String GATEWAY_SECTION = "gateway";
   public static final String ASYNC_EVENT_QUEUE_SECTION = "async-event-queue";
 
-  @CliCommand(value = CliStrings.DESCRIBE_DISK_STORE, help = CliStrings.DESCRIBE_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.DESCRIBE_DISK_STORE__HELP, key = CliStrings.DESCRIBE_DISK_STORE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel describeDiskStore(
-      @CliOption(key = CliStrings.MEMBER, mandatory = true,
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = CliStrings.MEMBER,
           help = CliStrings.DESCRIBE_DISK_STORE__MEMBER__HELP) final String memberName,
-      @CliOption(key = CliStrings.DESCRIBE_DISK_STORE__NAME, mandatory = true,
-          optionContext = ConverterHint.DISKSTORE,
+      @ShellOption(value = CliStrings.DESCRIBE_DISK_STORE__NAME,
           help = CliStrings.DESCRIBE_DISK_STORE__NAME__HELP) final String diskStoreName) {
+
+    // Validate required parameters (Spring Shell 3.x compatibility)
+    if (memberName == null && diskStoreName == null) {
+      return ResultModel.createError(
+          "You should specify option (--name, --member) for this command");
+    }
+    if (memberName == null) {
+      return ResultModel.createError(
+          "You should specify option (--member) for this command");
+    }
+    if (diskStoreName == null) {
+      return ResultModel.createError(
+          "You should specify option (--name) for this command");
+    }
 
     return toResultModel(getDiskStoreDescription(memberName, diskStoreName));
 

@@ -13,14 +13,66 @@
   ~ or implied. See the License for the specific language governing permissions and limitations under
   ~ the License.
   -->
+
+<!--
+  Log4j2 configuration for gfsh CLI.
+  
+  CHANGE SUMMARY:
+  ===============
+  This configuration was modified to add file logging capability for gfsh commands.
+  Previously, gfsh only logged to console (STDOUT), which made it impossible to:
+  1. Audit gfsh command history from log files
+  2. Verify password redaction in acceptance tests (GfshCommandRedactionAcceptanceTest)
+  3. Debug gfsh command issues in production environments
+  
+  WHAT WAS ADDED:
+  ===============
+  1. Properties section: Added 'log-file' property that reads from gfsh.log.file system property
+     - This allows HeadlessGfsh (in tests) to specify a custom log file location
+     - Falls back to ${java.io.tmpdir}/gfsh.log if system property is not set
+  
+  2. RollingFile appender: Added LOGFILE appender to write gfsh logs to file
+     - Rotates when log reaches 10MB
+     - Keeps up to 5 backup files
+     - Uses same pattern as console output for consistency
+  
+  3. Root logger: Added LOGFILE appender reference alongside existing STDOUT
+     - Gfsh commands now go to both console AND file
+  
+  ARCHITECTURAL NOTE:
+  ===================
+  Gfsh uses a separate Log4j configuration (log4j2-cli.xml) from the locator/server 
+  components (log4j2.xml). This separation is intentional - gfsh commands should be 
+  logged separately from cluster operations.
+  
+  The system property approach allows programmatic control (e.g., from HeadlessGfsh in tests)
+  while maintaining a sensible default for production use.
+-->
 <Configuration status="WARN" shutdownHook="disable">
   <Properties>
     <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} %memberName &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
+    
+    <!-- ADDED: Log file path property for gfsh command logging
+         Can be customized via gfsh.log.file system property (set by HeadlessGfsh in tests)
+         Defaults to temp directory if not specified -->
+    <Property name="log-file">${sys:gfsh.log.file:-${sys:java.io.tmpdir}/gfsh.log}</Property>
   </Properties>
   <Appenders>
+    <!-- EXISTING: Console appender - unchanged -->
     <Console name="STDOUT" target="SYSTEM_OUT">
       <PatternLayout pattern="${geode-pattern}"/>
     </Console>
+    
+    <!-- ADDED: RollingFile appender for persistent gfsh command logging
+         Enables auditing and testing of gfsh commands including password redaction -->
+    <RollingFile name="LOGFILE" fileName="${log-file}" 
+                 filePattern="${log-file}.%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout pattern="${geode-pattern}"/>
+      <Policies>
+        <SizeBasedTriggeringPolicy size="10MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="5"/>
+    </RollingFile>
   </Appenders>
   <Loggers>
     <Logger name="com.gemstone" level="WARN" additivity="true"/>
@@ -28,6 +80,7 @@
     <Logger name="org.jgroups" level="FATAL" additivity="true"/>
     <Root level="WARN">
       <AppenderRef ref="STDOUT"/>
+      <AppenderRef ref="LOGFILE"/>  <!-- ADDED: Reference to file appender -->
     </Root>
   </Loggers>
 </Configuration>

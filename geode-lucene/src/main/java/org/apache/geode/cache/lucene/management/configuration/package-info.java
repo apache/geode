@@ -15,8 +15,8 @@
 
 @XmlSchema(namespace = "http://geode.apache.org/schema/lucene",
     xmlns = {@XmlNs(prefix = "lucene", namespaceURI = "http://geode.apache.org/schema/lucene")},
-    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+    elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.apache.geode.cache.lucene.management.configuration;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlSchema;

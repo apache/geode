@@ -17,7 +17,7 @@ package org.apache.geode.modules.session.functions;
 
 import java.util.function.Function;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 public class GetMaxInactiveInterval implements Function<HttpServletRequest, String> {

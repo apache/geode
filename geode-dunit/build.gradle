@@ -43,7 +43,8 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-core')
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
-  implementation('org.springframework.shell:spring-shell') {
+  // Spring Shell 3.x uses spring-shell-starter (Spring 6.x migration)
+  implementation('org.springframework.shell:spring-shell-starter') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'

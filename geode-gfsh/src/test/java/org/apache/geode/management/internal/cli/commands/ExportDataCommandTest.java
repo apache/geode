@@ -15,23 +15,30 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
 public class ExportDataCommandTest {
 
   @ClassRule
-  public static GfshParserRule parser = new GfshParserRule();
+  public static GfshParserRule gfsh = new GfshParserRule();
+
+  private ExportDataCommand command;
+
+  @Before
+  public void setUp() {
+    command = new ExportDataCommand();
+  }
 
   @Test
   public void missingMember() throws Exception {
-    GfshParseResult result = parser.parse("export data --region=regionA --file=test");
-    assertThat(result).isNull();
+    // Command parses successfully but fails during execution because cache is null
+    gfsh.executeAndAssertThat(command, "export data --region=regionA --file=test")
+        .statusIsError()
+        .containsOutput("cache");
   }
 }

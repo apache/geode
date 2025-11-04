@@ -17,115 +17,61 @@ package org.apache.geode.management.internal.cli.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.springframework.shell.core.Completion;
 
-import org.apache.geode.management.cli.ConverterHint;
-
+/**
+ * Unit tests for {@link JarDirPathConverter}.
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * - Spring Shell 1.x tests verified both conversion AND file system auto-completion
+ * - Spring Shell 3.x separates concerns: conversion vs completion (ValueProvider)
+ * - These tests focus on conversion logic: passthrough String → String
+ * - File system completion tests should move to a ValueProvider test class
+ *
+ * <p>
+ * REMOVED TESTS (file system completion):
+ * - itFindsJarDirs() - file system traversal to find directories containing JARs
+ * - itFindsDirsWithSubdirs() - directory scanning for subdirectories
+ * - itFindsDirsWithSubdirsAndJars() - combined directory and JAR file scanning
+ * - itFindsNothingWithBadSearch() - file system search validation
+ * - itFindsNothing() - empty result validation for file system search
+ *
+ * <p>
+ * These tests relied on Spring Shell 1.x's {@code getAllPossibleValues()} method for
+ * auto-completion, which is replaced by ValueProvider in Spring Shell 3.x.
+ */
 public class JarDirPathConverterTest {
-  @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
 
   @Test
-  public void itSupportsString() {
-    JarDirPathConverter jarDirPathConverter = new JarDirPathConverter();
-    assertThat(jarDirPathConverter.supports(String.class, ConverterHint.JARDIR)).isTrue();
-    assertThat(jarDirPathConverter.supports(String.class, ConverterHint.JARFILES)).isFalse();
-    assertThat(jarDirPathConverter.supports(Integer.class, ConverterHint.JARDIR)).isFalse();
+  public void testConvertPath() {
+    JarDirPathConverter converter = new JarDirPathConverter();
+    String result = converter.convert("/path/to/lib");
+
+    assertThat(result).isEqualTo("/path/to/lib");
   }
 
   @Test
-  public void itFindsJarDirs() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot(), "testOne", true);
-    File libDir = createFileOrDir(testDir, "lib", true);
-    createFileOrDir(testDir, "empty", true);
-    createFileOrDir(libDir, "jar_one.jar", false);
-    createFileOrDir(libDir, "jar_two.jar", false);
+  public void testConvertRelativePath() {
+    JarDirPathConverter converter = new JarDirPathConverter();
+    String result = converter.convert("../lib");
 
-    JarDirPathConverter jarDirPathConverter = new JarDirPathConverter();
-    List<Completion> completions = new ArrayList<>();
-    jarDirPathConverter.getAllPossibleValues(completions, null, testDir.getPath(), null, null);
-
-    assertThat(completions).hasSize(1);
-    assertThat(completions.get(0).getValue()).endsWith("lib");
+    assertThat(result).isEqualTo("../lib");
   }
 
   @Test
-  public void itFindsDirsWithSubdirs() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
-    File libDir = createFileOrDir(testDir, "lib", true);
-    createFileOrDir(libDir, "file.txt", false);
-    File nonEmptyDir = createFileOrDir(testDir, "nonEmpty", true);
-    createFileOrDir(nonEmptyDir, "subDirOne", true);
-    createFileOrDir(nonEmptyDir, "subDirTwo", true);
+  public void testConvertPathWithSpaces() {
+    JarDirPathConverter converter = new JarDirPathConverter();
+    String result = converter.convert("/path/with spaces/lib");
 
-    JarDirPathConverter jarDirPathConverter = new JarDirPathConverter();
-    List<Completion> completions = new ArrayList<>();
-    jarDirPathConverter.getAllPossibleValues(completions, null, testDir.getPath(), null, null);
-
-    assertThat(completions).hasSize(1);
-    assertThat(completions.get(0).getValue()).endsWith("nonEmpty");
+    assertThat(result).isEqualTo("/path/with spaces/lib");
   }
 
   @Test
-  public void itFindsDirsWithSubdirsAndJars() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
-    File libDir = createFileOrDir(testDir, "lib", true);
-    createFileOrDir(libDir, "file.jar", false);
-    File nonEmptyDir = createFileOrDir(testDir, "nonEmpty", true);
-    createFileOrDir(nonEmptyDir, "subDirOne", true);
-    createFileOrDir(nonEmptyDir, "subDirTwo", true);
+  public void testConvertCurrentDirectory() {
+    JarDirPathConverter converter = new JarDirPathConverter();
+    String result = converter.convert(".");
 
-    JarDirPathConverter jarDirPathConverter = new JarDirPathConverter();
-    List<Completion> completions = new ArrayList<>();
-    jarDirPathConverter.getAllPossibleValues(completions, null, testDir.getPath(), null, null);
-
-    assertThat(completions).hasSize(2);
-    assertThat(completions).containsExactlyInAnyOrder(new Completion(nonEmptyDir.getPath()),
-        new Completion(libDir.getPath()));
-  }
-
-  @Test
-  public void itFindsNothingWithBadSearch() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
-    File libDir = createFileOrDir(testDir, "lib", true);
-    createFileOrDir(libDir, "file.txt", false);
-    File nonEmptyDir = createFileOrDir(testDir, "nonEmpty", true);
-    createFileOrDir(nonEmptyDir, "subDirOne", true);
-    createFileOrDir(nonEmptyDir, "subDirTwo", true);
-
-    JarDirPathConverter jarDirPathConverter = new JarDirPathConverter();
-    List<Completion> completions = new ArrayList<>();
-    jarDirPathConverter.getAllPossibleValues(completions, null, "garbage", null, null);
-
-    assertThat(completions).isEmpty();
-  }
-
-  @Test
-  public void itFindsNothing() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
-    File libDir = createFileOrDir(testDir, "lib", true);
-    createFileOrDir(libDir, "file.txt", false);
-    createFileOrDir(testDir, "empty", true);
-
-    JarDirPathConverter jarDirPathConverter = new JarDirPathConverter();
-    List<Completion> completions = new ArrayList<>();
-    jarDirPathConverter.getAllPossibleValues(completions, null, testDir.getPath(), null, null);
-
-    assertThat(completions).isEmpty();
-  }
-
-  private File createFileOrDir(File parent, String fileOrDirName, boolean isDir) throws Exception {
-    File fileOrDir = new File(parent, fileOrDirName);
-    boolean success = fileOrDir.exists() || (isDir ? fileOrDir.mkdir() : fileOrDir.createNewFile());
-    assertThat(success).isTrue();
-
-    return fileOrDir;
+    assertThat(result).isEqualTo(".");
   }
 }

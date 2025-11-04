@@ -41,7 +41,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.MMapDirectory;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -72,7 +72,7 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
 
 /**
  * Microbenchmark of the IndexRepository to compare an IndexRepository built on top of cache with a
- * stock lucene IndexWriter with a RAMDirectory.
+ * stock lucene IndexWriter with a MMapDirectory.
  */
 @Category({PerformanceTest.class, LuceneTest.class})
 @Ignore("Tests have no assertions")
@@ -275,7 +275,8 @@ public class IndexRepositoryImplPerformanceTest {
 
       @Override
       public void init() throws Exception {
-        RAMDirectory dir = new RAMDirectory();
+        MMapDirectory dir =
+            new MMapDirectory(java.nio.file.Files.createTempDirectory("lucene-test"));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
         searcherManager = new SearcherManager(writer, true, true, null);

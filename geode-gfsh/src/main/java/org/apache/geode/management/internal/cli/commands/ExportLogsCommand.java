@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
@@ -60,42 +59,36 @@ public class ExportLogsCommand extends GfshCommand {
 
   private static final Pattern DISK_SPACE_LIMIT_PATTERN = Pattern.compile("(\\d+)([kmgtKMGT]?)");
 
-  @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
+  @ShellMethod(value = CliStrings.EXPORT_LOGS__HELP, key = CliStrings.EXPORT_LOGS)
   @CliMetaData(isFileDownloadOverHttp = true,
       interceptor = "org.apache.geode.management.internal.cli.commands.ExportLogsInterceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel exportLogs(
-      @CliOption(key = CliStrings.EXPORT_LOGS__DIR,
+      @ShellOption(value = CliStrings.EXPORT_LOGS__DIR,
           help = CliStrings.EXPORT_LOGS__DIR__HELP) String dirName,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.EXPORT_LOGS__GROUP__HELP) String[] groups,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.EXPORT_LOGS__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = CliStrings.EXPORT_LOGS__LOGLEVEL,
-          unspecifiedDefaultValue = DEFAULT_EXPORT_LOG_LEVEL,
-          optionContext = ConverterHint.LOG_LEVEL,
+      @ShellOption(value = CliStrings.EXPORT_LOGS__LOGLEVEL,
+          defaultValue = DEFAULT_EXPORT_LOG_LEVEL,
           help = CliStrings.EXPORT_LOGS__LOGLEVEL__HELP) String logLevel,
-      @CliOption(key = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL, unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL, defaultValue = "false",
           help = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL__HELP) boolean onlyLogLevel,
-      @CliOption(key = CliStrings.EXPORT_LOGS__MERGELOG, unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.EXPORT_LOGS__MERGELOG, defaultValue = "false",
           help = CliStrings.EXPORT_LOGS__MERGELOG__HELP) boolean mergeLog,
-      @CliOption(key = CliStrings.EXPORT_LOGS__STARTTIME,
+      @ShellOption(value = CliStrings.EXPORT_LOGS__STARTTIME,
           help = CliStrings.EXPORT_LOGS__STARTTIME__HELP) String start,
-      @CliOption(key = CliStrings.EXPORT_LOGS__ENDTIME,
+      @ShellOption(value = CliStrings.EXPORT_LOGS__ENDTIME,
           help = CliStrings.EXPORT_LOGS__ENDTIME__HELP) String end,
-      @CliOption(key = CliStrings.EXPORT_LOGS__LOGSONLY, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.EXPORT_LOGS__LOGSONLY, defaultValue = "false",
           help = CliStrings.EXPORT_LOGS__LOGSONLY__HELP) boolean logsOnly,
-      @CliOption(key = CliStrings.EXPORT_LOGS__STATSONLY, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.EXPORT_LOGS__STATSONLY, defaultValue = "false",
           help = CliStrings.EXPORT_LOGS__STATSONLY__HELP) boolean statsOnly,
-      @CliOption(key = CliStrings.EXPORT_LOGS__FILESIZELIMIT,
-          unspecifiedDefaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__UNSPECIFIED_DEFAULT,
-          specifiedDefaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__SPECIFIED_DEFAULT,
+      @ShellOption(value = CliStrings.EXPORT_LOGS__FILESIZELIMIT,
+          defaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__SPECIFIED_DEFAULT,
           help = CliStrings.EXPORT_LOGS__FILESIZELIMIT__HELP) String fileSizeLimit)
       throws Exception {
 

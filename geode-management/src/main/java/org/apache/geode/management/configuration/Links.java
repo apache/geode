@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +27,38 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * this keeps all HATEOAS links related to a particular configuration object.
  * only the map (links) is serialized back to the client, nothing get de-serialized.
+ *
+ * <p>
+ * <strong>Implementation Note: Serializable Interface</strong>
+ * </p>
+ * <p>
+ * This class implements {@link Serializable} because it is used as a field in
+ * {@link org.apache.geode.management.api.ClusterManagementResult}, which must be serializable
+ * for DUnit distributed testing. When ClusterManagementResult objects are passed between JVMs
+ * in DUnit tests, all fields in the object graph must also be serializable.
+ * </p>
+ *
+ * <p>
+ * <strong>Serialization Safety:</strong>
+ * </p>
+ * <ul>
+ * <li>All fields are inherently serializable: String primitives and HashMap (which is
+ * Serializable)</li>
+ * <li>The links field uses HashMap&lt;String, String&gt; which is fully serializable</li>
+ * <li>No transient fields or complex objects that could break serialization</li>
+ * </ul>
+ *
+ * <p>
+ * This change enables ClusterManagementResult to be fully serializable for cross-JVM
+ * communication in DUnit tests without affecting production functionality.
+ * </p>
  */
-public class Links {
+public class Links implements Serializable {
+  /**
+   * Serial version UID for serialization compatibility.
+   * Required for Serializable interface to maintain compatibility across code changes.
+   */
+  private static final long serialVersionUID = 1L;
   public static final String HREF_PREFIX = "#HREF";
   public static final String URI_CONTEXT = "/management";
   public static final String URI_VERSION = "/v1";

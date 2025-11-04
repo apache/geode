@@ -18,8 +18,7 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
-
+import jakarta.servlet.ServletException;
 import org.apache.catalina.Context;
 import org.apache.catalina.Manager;
 import org.apache.catalina.connector.Request;

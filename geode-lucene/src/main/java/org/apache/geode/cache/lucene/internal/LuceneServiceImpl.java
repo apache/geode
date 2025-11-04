@@ -484,9 +484,12 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       logger.info(String.format("Destroyed Lucene index %s from %s region %s",
           indexName, "defined", regionPath));
     } else {
+      // Strip leading separator from regionPath for display in error message
+      String displayRegionPath = regionPath.startsWith(SEPARATOR)
+          ? regionPath.substring(SEPARATOR.length()) : regionPath;
       throw new IllegalArgumentException(
           String.format("Lucene index %s was not found in region %s", indexName,
-              regionPath));
+              displayRegionPath));
     }
   }
 
@@ -527,9 +530,12 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
     // If list is empty throw an exception; otherwise iterate and destroy the defined index
     if (indexesToDestroy.isEmpty()) {
+      // Strip leading separator from regionPath for display in error message
+      String displayRegionPath = regionPath.startsWith(SEPARATOR)
+          ? regionPath.substring(SEPARATOR.length()) : regionPath;
       throw new IllegalArgumentException(
           String.format("No Lucene indexes were found in region %s",
-              regionPath));
+              displayRegionPath));
     } else {
       for (LuceneIndex index : indexesToDestroy) {
         removeFromIndexMap(index);
@@ -554,9 +560,12 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
     // If list is empty throw an exception; otherwise iterate and destroy the defined index
     if (indexesToDestroy.isEmpty()) {
+      // Strip leading separator from regionPath for display in error message
+      String displayRegionPath = regionPath.startsWith(SEPARATOR)
+          ? regionPath.substring(SEPARATOR.length()) : regionPath;
       throw new IllegalArgumentException(
           String.format("No Lucene indexes were found in region %s",
-              regionPath));
+              displayRegionPath));
     } else {
       for (LuceneIndexCreationProfile profile : indexesToDestroy) {
         destroyDefinedIndex(profile.getIndexName(), profile.getRegionPath());

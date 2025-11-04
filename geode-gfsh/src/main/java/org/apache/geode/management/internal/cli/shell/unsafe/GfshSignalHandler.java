@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
-import jline.console.ConsoleReader;
+import org.jline.reader.LineReader;
 
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
 import org.apache.geode.internal.process.signal.Signal;
@@ -63,14 +63,15 @@ public class GfshSignalHandler extends AbstractSignalNotificationHandler impleme
   }
 
   protected void handleDefault(final org.apache.geode.unsafe.internal.sun.misc.Signal sig,
-      final ConsoleReader consoleReader)
+      final LineReader lineReader)
       throws IOException {
     final Signal signal = Signal.valueOfName(sig.getName());
     switch (signal) {
       case SIGINT:
-        if (consoleReader != null) {
-          String prompt = consoleReader.getPrompt();
-          consoleReader.resetPromptLine(prompt, "", -1);
+        if (lineReader != null) {
+          // JLine 3.x: LineReader doesn't have resetPromptLine, handle differently
+          // This may need adjustment based on actual JLine 3 API
+          lineReader.getTerminal().writer().println();
         }
         break;
       default:

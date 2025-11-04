@@ -21,22 +21,51 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.geode.management.cli.ConverterHint;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
+ * Spring Shell 3.x converter for disk store names.
  *
+ * <p>
+ * Converts a disk store name string to itself (passthrough conversion).
+ * Used by commands that operate on disk stores (compact, describe, etc.).
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * - Spring Shell 1.x: Extended BaseStringConverter with getCompletionValues()
+ * - Spring Shell 3.x: Simple Converter<String, String> for conversion only
+ * - Completion logic preserved in getCompletionValues() for ValueProvider use
+ * - Auto-completion should be implemented via ValueProvider (separate concern)
  *
  * @since GemFire 7.0
  */
-public class DiskStoreNameConverter extends BaseStringConverter {
+@Component
+public class DiskStoreNameConverter implements Converter<String, String> {
 
+  /**
+   * Converts a disk store name string (passthrough conversion).
+   *
+   * @param source the disk store name
+   * @return the same disk store name
+   */
   @Override
-  public String getConverterHint() {
-    return ConverterHint.DISKSTORE;
+  public String convert(@NonNull String source) {
+    return source;
   }
 
-  @Override
+  /**
+   * Gets completion values for disk store names from the distributed system.
+   *
+   * <p>
+   * This method is preserved for potential use by a ValueProvider in Spring Shell 3.x.
+   * It queries the distributed system MXBean to get all available disk store names.
+   *
+   * @return set of disk store names available in the distributed system
+   */
   public Set<String> getCompletionValues() {
     SortedSet<String> diskStoreNames = new TreeSet<>();
     Gfsh gfsh = Gfsh.getCurrentInstance();
@@ -56,5 +85,4 @@ public class DiskStoreNameConverter extends BaseStringConverter {
 
     return diskStoreNames;
   }
-
 }

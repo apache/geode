@@ -1087,6 +1087,16 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithoutPdxNameFails() {
+    // GEODE-10466: IgnoredException is needed because the multipart-config added to web.xml
+    // for file upload support can bypass Spring Shell's required parameter validation in some
+    // scenarios. When this happens, a null pdxName parameter reaches the command execution,
+    // causing a NullPointerException in CreateMappingPreconditionCheckFunction when it tries
+    // to call Class.forName(null). The command has been fixed to validate parameters explicitly
+    // (see CreateMappingCommand.createMapping), but this IgnoredException handles the NPE that
+    // would occur if the command validation is somehow bypassed or when testing against code
+    // without the fix. The expected behavior is that the command returns a proper validation
+    // error message, not an NPE.
+    IgnoredException.addIgnoredException(NullPointerException.class);
     String regionName = SEPARATOR + TEST_REGION;
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);

@@ -21,13 +21,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -50,7 +49,7 @@ public class ExportConfigCommand extends GfshCommand {
    * @param group Group or groups for which to write the configuration
    * @return Results of the attempt to write the configuration
    */
-  @CliCommand(value = {CliStrings.EXPORT_CONFIG}, help = CliStrings.EXPORT_CONFIG__HELP)
+  @ShellMethod(value = CliStrings.EXPORT_CONFIG__HELP, key = {CliStrings.EXPORT_CONFIG})
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.ExportConfigCommand$Interceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
@@ -58,13 +57,11 @@ public class ExportConfigCommand extends GfshCommand {
       operation = ResourcePermission.Operation.READ)
   @SuppressWarnings("deprecation")
   public ResultModel exportConfig(
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.EXPORT_CONFIG__MEMBER__HELP) String[] member,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.EXPORT_CONFIG__GROUP__HELP) String[] group,
-      @CliOption(key = {CliStrings.EXPORT_CONFIG__DIR},
+      @ShellOption(value = {CliStrings.EXPORT_CONFIG__DIR},
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
 
     ResultModel crm = new ResultModel();

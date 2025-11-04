@@ -20,13 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.GarbageCollectionFunction;
@@ -39,14 +38,14 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class GCCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.GC, help = CliStrings.GC__HELP)
+  @ShellMethod(value = CliStrings.GC__HELP, key = CliStrings.GC)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel gc(
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.GC__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @ShellOption(value = CliStrings.MEMBER,
           help = CliStrings.GC__MEMBER__HELP) String memberId) {
     Cache cache = getCache();
     ResultModel result = new ResultModel();

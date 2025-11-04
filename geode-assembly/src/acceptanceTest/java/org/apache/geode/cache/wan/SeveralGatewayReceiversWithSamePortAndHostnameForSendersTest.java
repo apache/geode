@@ -135,7 +135,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       throws InterruptedException {
     String senderId = "ln";
     String regionName = "region-wan";
-    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+
+    // Port 20334 is fixed-mapped in docker-compose.yml for HAProxy locator access
+    final int remoteLocPort = 20334;
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -175,7 +177,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   public void testSerialGatewaySenderThreadsConnectToSameReceiver() {
     String senderId = "ln";
     String regionName = "region-wan";
-    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+    final int remoteLocPort = 20334; // Fixed port mapping in docker-compose.yml
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -195,7 +197,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @Test
   public void testTwoSendersWithSameIdShouldUseSameValueForEnforceThreadsConnectToSameServer() {
     String senderId = "ln";
-    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+    final int remoteLocPort = 20334; // Fixed port mapping in docker-compose.yml
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -227,7 +229,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       throws InterruptedException {
     String senderId = "ln";
     String regionName = "region-wan";
-    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+    final int remoteLocPort = 20334; // Fixed port mapping in docker-compose.yml
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -274,7 +276,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       throws InterruptedException {
     String senderId = "ln";
     String regionName = "region-wan";
-    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+    final int remoteLocPort = 20334; // Fixed port mapping in docker-compose.yml
 
     int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
 
@@ -479,16 +481,16 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   }
 
   private static String createGatewayReceiverCommand() {
-    String ipAddress = docker.getIpAddressForService("haproxy", "geode-wan-test");
-    return "create gateway-receiver --hostname-for-senders=" + ipAddress
+    // Use localhost (not docker internal IP) so DUnit VMs on host can reach HAProxy
+    // Port 2324 is fixed-mapped in docker-compose.yml (host:2324 -> container:2324)
+    return "create gateway-receiver --hostname-for-senders=localhost"
         + " --start-port=2324 --end-port=2324 --maximum-time-between-pings=10000";
   }
 
   private static String startLocatorCommand() {
-    String ipAddress = docker.getIpAddressForService("haproxy", "geode-wan-test");
-    return "start locator --name=locator --port=20334 --connect=false --redirect-output --enable-cluster-configuration=true --hostname-for-clients="
-        + ipAddress + " --J=-Dgemfire.distributed-system-id=2";
-
+    // Use localhost (not docker internal IP) so DUnit VMs on host can reach HAProxy
+    // Port 20334 is fixed-mapped in docker-compose.yml (host:20334 -> container:20334)
+    return "start locator --name=locator --port=20334 --connect=false --redirect-output --enable-cluster-configuration=true --hostname-for-clients=localhost --J=-Dgemfire.distributed-system-id=2";
   }
 
 }

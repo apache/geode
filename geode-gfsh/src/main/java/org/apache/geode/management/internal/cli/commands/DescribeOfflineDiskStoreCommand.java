@@ -20,8 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
@@ -31,17 +31,19 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 
 @SuppressWarnings("deprecation")
 public class DescribeOfflineDiskStoreCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE,
-      help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__HELP,
+      key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE)
   @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel describeOfflineDiskStore(
-      @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
-          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
-      @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
-          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
-      @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES,
+      @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME,
+          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP,
+          defaultValue = ShellOption.NULL) String diskStoreName,
+      @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS,
+          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP,
+          defaultValue = ShellOption.NULL) String[] diskDirs,
+      @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES__HELP) Boolean listPdxTypes,
-      @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME,
+      @ShellOption(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__REGIONNAME__HELP) String regionName) {
 
     String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);

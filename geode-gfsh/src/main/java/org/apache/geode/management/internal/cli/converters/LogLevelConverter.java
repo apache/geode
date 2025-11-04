@@ -19,28 +19,55 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
-
-import org.apache.geode.management.cli.ConverterHint;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 /**
+ * Spring Shell 3.x converter for Log4j log levels.
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * This converter provides string-to-string pass-through conversion for log levels.
+ * Spring Shell 1.x used this primarily for auto-completion; Spring Shell 3.x
+ * uses ValueProvider for completion instead.
+ *
+ * <p>
+ * Valid log levels: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
  *
  * @since GemFire 7.0
  */
-public class LogLevelConverter extends BaseStringConverter {
+@Component
+public class LogLevelConverter implements Converter<String, String> {
   private final Set<String> logLevels;
 
   public LogLevelConverter() {
     logLevels = Arrays.stream(Level.values()).map(Level::name).collect(Collectors.toSet());
   }
 
-  @Override
-  public String getConverterHint() {
-    return ConverterHint.LOG_LEVEL;
-  }
-
-  @Override
+  /**
+   * Returns the set of valid log level names for validation.
+   *
+   * @return set of log level names (ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF)
+   */
   public Set<String> getCompletionValues() {
     return logLevels;
   }
 
+  /**
+   * Converts and validates a log level string.
+   *
+   * @param source the log level name (e.g., "INFO", "DEBUG")
+   * @return the validated log level string
+   * @throws IllegalArgumentException if the log level is invalid
+   */
+  @Override
+  public String convert(@NonNull String source) {
+    // Validate that the log level exists
+    if (!logLevels.contains(source.toUpperCase())) {
+      throw new IllegalArgumentException(
+          "Invalid log level: " + source + ". Valid levels: " + logLevels);
+    }
+    return source;
+  }
 }

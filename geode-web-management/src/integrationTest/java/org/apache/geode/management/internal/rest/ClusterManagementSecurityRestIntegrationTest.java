@@ -91,8 +91,25 @@ public class ClusterManagementSecurityRestIntegrationTest {
     testContexts
         .add(new TestContext(get("/v1/regions/regionA/indexes/index1"),
             "CLUSTER:READ:QUERY"));
+    // IMPORTANT: No trailing slash on the POST endpoint URL.
+    //
+    // Historical context: This test previously had a trailing slash (/indexes/) which worked
+    // in Spring Framework 5.x because Spring MVC's AntPathMatcher would automatically match
+    // URLs with/without trailing slashes. However, Spring Framework 6.x (required for Jakarta
+    // EE 10 migration) uses PathPattern matching by default, which enforces strict path matching
+    // per RFC 3986 - trailing slashes are now significant.
+    //
+    // The controller mapping is:
+    // @PostMapping("/regions/{regionName}/indexes") // no trailing slash
+    //
+    // Why this matters for security:
+    // - With correct URL (/indexes): Matches controller → @PreAuthorize enforced → 403 Forbidden
+    // - With trailing slash (/indexes/): No match → routed elsewhere → security bypassed → 200 OK
+    //
+    // This stricter behavior in Spring 6.x actually caught a latent test bug that could have
+    // caused security issues in production. See RegionManagementController.createIndexOnRegion().
     testContexts
-        .add(new TestContext(post("/v1/regions/regionA/indexes/"),
+        .add(new TestContext(post("/v1/regions/regionA/indexes"),
             "CLUSTER:MANAGE:QUERY").setContent(mapper.writeValueAsString(new Index())));
     testContexts
         .add(new TestContext(delete("/v1/regions/regionA/indexes/index1"),

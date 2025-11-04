@@ -20,8 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.resource.ResourceException;
-
+import jakarta.resource.ResourceException;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -15,12 +15,12 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
-import com.mockrunner.mock.web.MockFilterConfig;
-import com.mockrunner.mock.web.WebMockObjectFactory;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.springframework.mock.web.MockFilterConfig;
 
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
+import org.apache.geode.modules.session.internal.filter.SessionCookieConfigServletTestCaseAdapter.WebMockObjectFactory;
 import org.apache.geode.test.junit.categories.SessionTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -36,14 +36,14 @@ public class SessionReplicationJUnitTest extends CommonTests {
     super.setUp();
 
     WebMockObjectFactory factory = getWebMockObjectFactory();
-    MockFilterConfig config = factory.getMockFilterConfig();
-
-    config.setInitParameter(GeodeGlossary.GEMFIRE_PREFIX + "property.mcast-port", "0");
-    config.setInitParameter("cache-type", "peer-to-peer");
+    // Use the filterConfig from the base class
+    filterConfig = new MockFilterConfig(factory.getMockServletContext());
+    filterConfig.addInitParameter(GeodeGlossary.GEMFIRE_PREFIX + "property.mcast-port", "0");
+    filterConfig.addInitParameter("cache-type", "peer-to-peer");
 
     factory.getMockServletContext().setContextPath(CONTEXT_PATH);
 
-    factory.getMockRequest().setRequestURL("/test/foo/bar");
+    factory.getMockRequest().setRequestURI("/test/foo/bar");
     factory.getMockRequest().setContextPath(CONTEXT_PATH);
 
     createFilter(SessionCachingFilter.class);

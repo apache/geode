@@ -20,8 +20,8 @@ import static org.apache.geode.management.internal.cli.commands.DataCommandsUtil
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -29,7 +29,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -41,24 +40,22 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class PutCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  @CliCommand(value = {CliStrings.PUT}, help = CliStrings.PUT__HELP)
+  @ShellMethod(value = CliStrings.PUT__HELP, key = {CliStrings.PUT})
   public ResultModel put(
-      @CliOption(key = {CliStrings.PUT__KEY}, mandatory = true,
+      @ShellOption(value = {CliStrings.PUT__KEY},
           help = CliStrings.PUT__KEY__HELP) String key,
-      @CliOption(key = {CliStrings.PUT__VALUE}, mandatory = true,
+      @ShellOption(value = {CliStrings.PUT__VALUE},
           help = CliStrings.PUT__VALUE__HELP) String value,
-      @CliOption(key = {CliStrings.PUT__REGIONNAME}, mandatory = true,
-          help = CliStrings.PUT__REGIONNAME__HELP,
-          optionContext = ConverterHint.REGION_PATH) String regionPath,
-      @CliOption(key = {CliStrings.PUT__KEYCLASS},
+      @ShellOption(value = {CliStrings.PUT__REGIONNAME},
+          help = CliStrings.PUT__REGIONNAME__HELP) String regionPath,
+      @ShellOption(value = {CliStrings.PUT__KEYCLASS},
           help = CliStrings.PUT__KEYCLASS__HELP) String keyClass,
-      @CliOption(key = {CliStrings.PUT__VALUEKLASS},
+      @ShellOption(value = {CliStrings.PUT__VALUEKLASS},
           help = CliStrings.PUT__VALUEKLASS__HELP) String valueClass,
-      @CliOption(key = {CliStrings.PUT__PUTIFABSENT}, help = CliStrings.PUT__PUTIFABSENT__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean putIfAbsent,
-      @CliOption(key = {CliStrings.IFNOTEXISTS}, help = CliStrings.PUT__PUTIFNOTEXISTS__HELP,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean putIfNotExists) {
+      @ShellOption(value = {CliStrings.PUT__PUTIFABSENT}, help = CliStrings.PUT__PUTIFABSENT__HELP,
+          defaultValue = "false") boolean putIfAbsent,
+      @ShellOption(value = {CliStrings.IFNOTEXISTS}, help = CliStrings.PUT__PUTIFNOTEXISTS__HELP,
+          defaultValue = "false") boolean putIfNotExists) {
 
     Cache cache = getCache();
     authorize(Resource.DATA, Operation.WRITE, regionPath);

@@ -2769,6 +2769,17 @@ public class Cluster extends Thread {
         logger.info("Could not close old connection on reconnect attempt", e);
       }
       jmxConnector = updater.connect(credentials);
+      // Jakarta EE Migration: Ensure cluster is properly initialized after reconnect
+      // This is necessary for credential validation to work correctly
+      if (jmxConnector != null && !isAlive()) {
+        start();
+        try {
+          waitForInitialization(15, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          logger.warn("Interrupted while waiting for cluster initialization after reconnect", e);
+          Thread.currentThread().interrupt();
+        }
+      }
     }
   }
 

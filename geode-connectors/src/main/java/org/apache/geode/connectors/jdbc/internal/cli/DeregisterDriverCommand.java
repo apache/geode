@@ -19,8 +19,8 @@ import static org.apache.geode.connectors.jdbc.internal.cli.ListDriversCommand.N
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -45,13 +45,13 @@ public class DeregisterDriverCommand extends GfshCommand {
   static final String DRIVER_CLASS_NAME_HELP =
       "The name of the driver class contained in a currently deployed jar to be deregistered with the cluster's Driver Manager.";
 
-  @CliCommand(value = DEREGISTER_DRIVER, help = DEREGISTER_DRIVER__HELP)
+  @ShellMethod(value = DEREGISTER_DRIVER__HELP, key = DEREGISTER_DRIVER)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel deregisterDriver(
-      @CliOption(key = DRIVER_CLASS_NAME, help = DRIVER_CLASS_NAME_HELP,
-          mandatory = true) String driverClassName) {
+      @ShellOption(value = DRIVER_CLASS_NAME,
+          help = DRIVER_CLASS_NAME_HELP) String driverClassName) {
     try {
       ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
       if (ccService == null) {

@@ -19,7 +19,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,8 +26,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.servlet.ServletException;
-
+import jakarta.servlet.ServletException;
 import junitparams.Parameters;
 import org.apache.catalina.Context;
 import org.apache.catalina.Manager;
@@ -50,8 +48,10 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
 
   @Before
   public void setUp() {
-    request = spy(Request.class);
-    response = spy(Response.class);
+    // Tomcat 10+: Use mock() instead of spy() to avoid Tomcat Request/Response constructor
+    // complexities
+    request = mock(Request.class);
+    response = mock(Response.class);
     testValve = new TestValve(false);
 
     jvmRouteBinderValve = new JvmRouteBinderValve();
@@ -60,7 +60,14 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
 
   protected void parameterizedSetUp(RegionShortcut regionShortcut) {
     super.parameterizedSetUp(regionShortcut);
-    when(request.getContext()).thenReturn(mock(Context.class));
+    Context mockContext = mock(Context.class);
+    // Tomcat 10+: Mock context configuration to satisfy Jakarta Servlet lifecycle requirements
+    when(mockContext.getApplicationLifecycleListeners()).thenReturn(new Object[0]);
+    when(mockContext.getDistributable()).thenReturn(false);
+    // Configure bidirectional manager-context relationship for session management
+    when(mockContext.getManager()).thenReturn(deltaSessionManager);
+    when(deltaSessionManager.getContext()).thenReturn(mockContext);
+    when(request.getContext()).thenReturn(mockContext);
   }
 
   @Test
@@ -157,9 +164,11 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
     parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn("jvmRoute");
     when(deltaSessionManager.getContextName()).thenReturn(TEST_CONTEXT);
-    when(deltaSessionManager.getContainer()).thenReturn(mock(Context.class));
-    when(((Context) deltaSessionManager.getContainer()).getApplicationLifecycleListeners())
+    Context mockContext = mock(Context.class);
+    // Tomcat 10+: Configure lifecycle listeners for Jakarta Servlet session creation events
+    when(mockContext.getApplicationLifecycleListeners())
         .thenReturn(new Object[] {});
+    when(deltaSessionManager.getTheContext()).thenReturn(mockContext);
     doCallRealMethod().when(deltaSessionManager).findSession(anyString());
 
     when(request.getRequestedSessionId()).thenReturn(TEST_SESSION_ID);

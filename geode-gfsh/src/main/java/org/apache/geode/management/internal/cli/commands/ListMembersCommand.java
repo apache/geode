@@ -18,14 +18,13 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -37,12 +36,11 @@ public class ListMembersCommand extends GfshCommand {
 
   public static final String MEMBERS_SECTION = "members";
 
-  @CliCommand(value = {CliStrings.LIST_MEMBER}, help = CliStrings.LIST_MEMBER__HELP)
+  @ShellMethod(value = CliStrings.LIST_MEMBER__HELP, key = {CliStrings.LIST_MEMBER})
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public ResultModel listMember(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-      optionContext = ConverterHint.MEMBERGROUP,
+  public ResultModel listMember(@ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
       help = CliStrings.LIST_MEMBER__GROUP__HELP) String[] groups) {
 
     ResultModel crm = new ResultModel();

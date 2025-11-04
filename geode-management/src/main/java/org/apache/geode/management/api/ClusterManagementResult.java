@@ -16,6 +16,7 @@ package org.apache.geode.management.api;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,9 +28,60 @@ import org.apache.geode.management.configuration.Links;
 /**
  * This base class provides the common attributes returned from all {@link ClusterManagementService}
  * methods
+ *
+ * <p>
+ * <strong>Implementation Note: Serializable Interface</strong>
+ * </p>
+ * <p>
+ * This class implements {@link Serializable} to support Apache Geode's DUnit distributed testing
+ * framework, which runs tests across multiple JVMs. When test methods return instances of this
+ * class from VM.invoke() calls, DUnit requires the objects to be serializable for cross-JVM
+ * communication via RMI.
+ * </p>
+ *
+ * <p>
+ * <strong>Why This Was Added:</strong>
+ * </p>
+ * <ul>
+ * <li><strong>DUnit Architecture:</strong> DUnit tests execute code in separate JVM processes
+ * (client VM, locator VM, server VM). When a test in one VM invokes a method in another VM
+ * and that method returns a result object, DUnit serializes the object to transmit it across
+ * the JVM boundary.</li>
+ *
+ * <li><strong>Test Pattern Change:</strong> Prior to Jetty 12 migration, authentication tests
+ * expected exceptions (no return values). With Jetty 12 and Spring Security 6 integration,
+ * some tests now validate successful operations and return ClusterManagementResult objects,
+ * requiring serialization support.</li>
+ *
+ * <li><strong>Serialization Verification:</strong> DUnit's MethodInvokerResult.checkSerializable()
+ * validates that all return values implement Serializable, throwing NotSerializableException
+ * if they don't.</li>
+ * </ul>
+ *
+ * <p>
+ * <strong>Serialization Compatibility:</strong>
+ * </p>
+ * <ul>
+ * <li>All fields (statusCode, statusMessage, links) are either primitives, Strings, enums, or
+ * Serializable objects</li>
+ * <li>The {@link Links} class also implements Serializable for complete object graph support</li>
+ * <li>serialVersionUID is explicitly defined to maintain serialization compatibility across
+ * code changes</li>
+ * </ul>
+ *
+ * <p>
+ * This change does not affect production usage - it only enables comprehensive testing in
+ * DUnit's multi-JVM environment.
+ * </p>
  */
 @Experimental
-public class ClusterManagementResult {
+public class ClusterManagementResult implements Serializable {
+  /**
+   * Serial version UID for serialization compatibility.
+   * Required for Serializable interface to maintain compatibility across code changes.
+   */
+  private static final long serialVersionUID = 1L;
+
   /**
    * these status codes generally have a one-to-one mapping to the http status code returned by the
    * REST controller

@@ -29,8 +29,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -72,21 +72,20 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand implements
   static final String PAUSE_EVENT_PROCESSING_HELP =
       "Pause event processing when the async event queue is created";
 
-  @CliCommand(value = COMMAND_NAME, help = COMMAND_HELP)
+  @ShellMethod(value = COMMAND_HELP, key = COMMAND_NAME)
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
-  public ResultModel execute(@CliOption(key = ID, mandatory = true, help = ID_HELP) String id,
-      @CliOption(key = BATCH_SIZE, help = BATCH_SIZE_HELP) Integer batchSize,
-      @CliOption(key = BATCH_TIME_INTERVAL,
+  public ResultModel execute(@ShellOption(value = ID, help = ID_HELP) String id,
+      @ShellOption(value = BATCH_SIZE, help = BATCH_SIZE_HELP) Integer batchSize,
+      @ShellOption(value = BATCH_TIME_INTERVAL,
           help = BATCH_TIME_INTERVAL_HELP) Integer batchTimeInterval,
-      @CliOption(key = MAX_QUEUE_MEMORY, help = MAXIMUM_QUEUE_MEMORY_HELP) Integer maxQueueMemory,
-      @CliOption(key = IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean ifExists,
-      @CliOption(key = PAUSE_EVENT_PROCESSING, help = PAUSE_EVENT_PROCESSING_HELP,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean pauseEventProcessing)
+      @ShellOption(value = MAX_QUEUE_MEMORY,
+          help = MAXIMUM_QUEUE_MEMORY_HELP) Integer maxQueueMemory,
+      @ShellOption(value = IFEXISTS, help = IFEXISTS_HELP, defaultValue = "false") boolean ifExists,
+      @ShellOption(value = PAUSE_EVENT_PROCESSING, help = PAUSE_EVENT_PROCESSING_HELP,
+          defaultValue = "false") boolean pauseEventProcessing)
       throws IOException, SAXException, ParserConfigurationException, TransformerException,
       EntityNotFoundException {
 

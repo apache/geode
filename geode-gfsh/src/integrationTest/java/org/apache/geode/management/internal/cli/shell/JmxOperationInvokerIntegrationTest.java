@@ -140,11 +140,15 @@ public class JmxOperationInvokerIntegrationTest {
             .isCA()
             .generate();
 
+    // Get local IP address for SAN (needed for endpoint validation)
+    final InetAddress localAddress = InetAddress.getLocalHost();
+
     final CertificateMaterial certificate = new CertificateBuilder(CERTIFICATE_EXPIRATION_IN_DAYS,
         CERTIFICATE_ALGORITHM)
             .commonName(hostName)
             .issuedBy(ca)
             .sanDnsName(hostName)
+            .sanIpAddress(localAddress)
             .generate();
 
     final CertStores store = new CertStores(hostName);

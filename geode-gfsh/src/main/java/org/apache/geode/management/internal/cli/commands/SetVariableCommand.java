@@ -15,20 +15,21 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class SetVariableCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.SET_VARIABLE}, help = CliStrings.SET_VARIABLE__HELP)
+  @ShellMethod(value = CliStrings.SET_VARIABLE__HELP, key = {CliStrings.SET_VARIABLE})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public ResultModel setVariable(
-      @CliOption(key = CliStrings.SET_VARIABLE__VAR, mandatory = true,
+      @ShellOption(value = CliStrings.SET_VARIABLE__VAR,
           help = CliStrings.SET_VARIABLE__VAR__HELP) String var,
-      @CliOption(key = CliStrings.SET_VARIABLE__VALUE, mandatory = true,
+      @ShellOption(value = CliStrings.SET_VARIABLE__VALUE,
           help = CliStrings.SET_VARIABLE__VALUE__HELP) String value) {
 
     getGfsh().setEnvProperty(var, String.valueOf(value));

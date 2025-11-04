@@ -31,7 +31,7 @@ public class ResumeAsyncEventQueueDispatcherDUnitTest {
 
   public static final String RESUME_COMMAND = RESUME_ASYNCEVENTQUEUE;
 
-  public static final String LIST_COMMAND = "list async-event-queue";
+  public static final String LIST_COMMAND = "list async-event-queues";
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();

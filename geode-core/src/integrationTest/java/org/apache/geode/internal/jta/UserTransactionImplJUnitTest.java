@@ -22,10 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
-
+import jakarta.transaction.Status;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.UserTransaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

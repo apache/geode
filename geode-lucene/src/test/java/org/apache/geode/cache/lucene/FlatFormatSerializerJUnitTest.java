@@ -149,7 +149,8 @@ public class FlatFormatSerializerJUnitTest {
     Customer customer = new Customer("Tommy Jackson", null, contacts1, null);
     Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
 
-    IndexableField[] fieldsInDoc = doc1.getFields("contacts.revenue");
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    IndexableField[] fieldsInDoc = doc1.getFields("contacts.revenue_point");
     Collection<Object> intResults = getResultCollection(fieldsInDoc, true);
     assertEquals(2, intResults.size());
     assertTrue(intResults.contains(100));
@@ -196,7 +197,8 @@ public class FlatFormatSerializerJUnitTest {
     Integer integer = 15;
     Document doc1 = SerializerTestHelper.invokeSerializer(serializer, integer, fields);
     assertEquals(1, doc1.getFields().size());
-    assertEquals(15, doc1.getField(LuceneService.REGION_VALUE_FIELD).numericValue());
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    assertEquals(15, doc1.getField(LuceneService.REGION_VALUE_FIELD + "_point").numericValue());
   }
 
   @Test

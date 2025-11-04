@@ -32,6 +32,9 @@ limitations under the License.
         https://www.springframework.org/schema/util/spring-util.xsd
   ">
   <context:annotation-config />
+  
+  <!-- Component scan for REST controllers -->
+  <context:component-scan base-package="org.apache.geode.rest.internal.web.controllers"/>
 
   <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
     <mvc:message-converters register-defaults="false">
@@ -58,6 +61,11 @@ limitations under the License.
     </property>
   </bean>
   
+  <!-- GEODE-10466: ObjectMapper configuration for REST API
+       - simpleDateFormat="MM/dd/yyyy" specifies the date format for serialization/deserialization
+       - WRITE_DATES_AS_TIMESTAMPS must be disabled to force Jackson to use the configured date format
+       - Without disabling WRITE_DATES_AS_TIMESTAMPS, Jackson serializes dates as timestamps or ISO-8601
+       - This is critical after Jakarta/Spring 6.x migration due to auto-registered Jackson modules -->
   <bean id="objectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean"
         p:failOnEmptyBeans="true"
         p:indentOutput="true"
@@ -73,6 +81,7 @@ limitations under the License.
     <property name="featuresToDisable">
       <array>
         <util:constant static-field="com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES"/>
+        <util:constant static-field="com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS"/>
       </array>
     </property>
   </bean>

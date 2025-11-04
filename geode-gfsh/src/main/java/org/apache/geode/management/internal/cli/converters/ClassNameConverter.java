@@ -15,48 +15,75 @@
 
 package org.apache.geode.management.internal.cli.converters;
 
-import java.util.List;
-
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 import org.apache.geode.management.configuration.ClassName;
 
 /**
- * Used by Gfsh command options that converts a string to a ClassName Object
+ * Spring Shell 3.x converter for ClassName objects.
  *
- * User can specify either a classname alone or a className followed by a "?" and json properties to
- * initialize the object
+ * <p>
+ * Converts a string to a ClassName object. The string can be:
+ * <ul>
+ * <li>Just a class name: "my.app.CacheLoader"</li>
+ * <li>Class name with JSON properties:
+ * "my.app.CacheLoader{'param1':'value1','param2':'value2'}"</li>
+ * <li>Class name with JSON properties (double quotes):
+ * "my.app.CacheLoader{\"param1\":\"value1\"}"</li>
+ * <li>Empty string or just "{}" returns ClassName.EMPTY</li>
+ * </ul>
  *
- * e.g. --cache-loader=my.app.CacheLoader
- * --cache-loader=my.app.CacheLoader?{"param1":"value1","param2":"value2"}
+ * <p>
+ * Used by Gfsh command options that specify cache loaders, cache writers, cache listeners, etc.
  *
- * Currently, if you specify a json properties after the className, the class needs to be a
- * Declarable for it to be initialized, otherwise, the properties are ignored.
+ * <p>
+ * Example usage:
  *
+ * <pre>
+ * --cache-loader=my.app.CacheLoader
+ * --cache-loader=my.app.CacheLoader{'param1':'value1','param2':'value2'}
+ * </pre>
+ *
+ * <p>
+ * Note: If JSON properties are specified, the class should implement Declarable for proper
+ * initialization. Otherwise, the properties may be ignored.
+ *
+ * @since GemFire 1.0
  */
-public class ClassNameConverter implements Converter<ClassName> {
-  @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return ClassName.class.isAssignableFrom(type);
-  }
+@Component
+public class ClassNameConverter implements Converter<String, ClassName> {
 
+  /**
+   * Converts a string to a ClassName object.
+   *
+   * @param source the string to convert (e.g., "my.app.CacheLoader" or
+   *        "my.app.CacheLoader{'k':'v'}")
+   * @return the ClassName object with parsed class name and initialization properties
+   * @throws IllegalArgumentException if the class name contains invalid characters
+   */
   @Override
-  public ClassName convertFromText(String value, Class<?> targetType, String optionContext) {
-    int index = value.indexOf('{');
+  public ClassName convert(@NonNull String source) {
+    // Handle empty/null input
+    if (source == null || source.trim().isEmpty()) {
+      return ClassName.EMPTY;
+    }
+
+    // Handle just delimiter "{}"
+    if (source.trim().equals("{}")) {
+      return ClassName.EMPTY;
+    }
+
+    int index = source.indexOf('{');
     if (index < 0) {
-      return new ClassName(value);
+      // Just class name, no properties
+      return new ClassName(source);
     } else {
-      String className = value.substring(0, index);
-      String json = value.substring(index);
+      // Class name with JSON properties
+      String className = source.substring(0, index);
+      String json = source.substring(index);
       return new ClassName(className, json);
     }
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    return false;
   }
 }

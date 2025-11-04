@@ -17,9 +17,8 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Abstract class PulseService

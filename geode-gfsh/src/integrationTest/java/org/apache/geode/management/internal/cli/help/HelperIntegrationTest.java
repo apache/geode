@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
 
 import org.apache.geode.management.internal.cli.commands.GfshHelpCommand;
 import org.apache.geode.management.internal.cli.commands.GfshHintCommand;
@@ -41,9 +41,9 @@ public class HelperIntegrationTest {
   private void getHelpCommand() {
     Method[] methods = GfshHelpCommand.class.getMethods();
     for (Method method : methods) {
-      CliCommand cliCommand = method.getDeclaredAnnotation(CliCommand.class);
-      if (cliCommand != null) {
-        helper.addCommand(cliCommand, method);
+      ShellMethod shellMethod = method.getDeclaredAnnotation(ShellMethod.class);
+      if (shellMethod != null) {
+        helper.addCommand(shellMethod, method);
       }
     }
   }
@@ -51,9 +51,9 @@ public class HelperIntegrationTest {
   private void getHintCommand() {
     Method[] methods = GfshHintCommand.class.getMethods();
     for (Method method : methods) {
-      CliCommand cliCommand = method.getDeclaredAnnotation(CliCommand.class);
-      if (cliCommand != null) {
-        helper.addCommand(cliCommand, method);
+      ShellMethod shellMethod = method.getDeclaredAnnotation(ShellMethod.class);
+      if (shellMethod != null) {
+        helper.addCommand(shellMethod, method);
       }
     }
   }
@@ -73,6 +73,13 @@ public class HelperIntegrationTest {
     getHelpCommand();
     String testInput = helper.getHelp("help", -1);
     String[] helpLines = testInput.split("\n");
+    // Shell 3.x: help command output has 12 lines, which includes:
+    // - NAME, command name
+    // - IS AVAILABLE, availability status
+    // - SYNOPSIS, command description
+    // - SYNTAX, command syntax
+    // - PARAMETERS, section header
+    // - parameter name, parameter description (from ShellOption.help()), Required status
     assertThat(helpLines).hasSize(12);
     assertThat(helpLines[0].trim()).isEqualTo("NAME");
     assertThat(helpLines[1].trim()).isEqualTo("help");

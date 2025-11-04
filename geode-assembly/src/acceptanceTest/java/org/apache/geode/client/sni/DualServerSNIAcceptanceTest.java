@@ -24,7 +24,11 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
+import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.util.Properties;
 
 import org.junit.After;
@@ -39,6 +43,9 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.proxy.ProxySocketFactories;
+import org.apache.geode.cache.ssl.CertStores;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.rules.DockerComposeRule;
 
 /**
@@ -70,22 +77,109 @@ public class DualServerSNIAcceptanceTest {
   private static Properties clientCacheProperties;
   private ClientCache cache;
 
+  /**
+   * Sets up the Docker-based test environment with dynamically generated SSL certificates.
+   *
+   * <p>
+   * Jetty 12 (used in Jakarta EE migration) enforces RFC 6125 hostname verification.
+   * When connecting to an IP address like 172.18.0.x:10334, the certificate MUST contain
+   * that IP in the Subject Alternative Name (SAN), or TLS handshake fails with
+   * "SSLHandshakeException: Received fatal alert: handshake_failure".
+   *
+   * <p>
+   * Pre-migration Jetty 9.4 was lenient and didn't require IP SANs, but Jetty 12 strictly
+   * enforces this. Since Docker assigns IPs dynamically (e.g., 172.18.0.2, 172.18.0.3),
+   * we must generate certificates at runtime with actual Docker IPs rather than using
+   * pre-generated keystores.
+   */
   @BeforeClass
-  public static void beforeClass() {
-    docker.setContainerName("locator-maeve", "locator-maeve");
-    docker.setContainerName("server-dolores", "server-dolores");
-    docker.setContainerName("server-clementine", "server-clementine");
+  public static void beforeClass() throws IOException, GeneralSecurityException {
+    // Update service names to match docker-compose.yml (changed during Jakarta migration)
+    docker.setContainerName("geode", "locator-maeve");
+    docker.setContainerName("geode-server-dolores", "server-dolores");
+    docker.setContainerName("geode-server-clementine", "server-clementine");
 
-    docker.loggingExecForService("locator-maeve",
+    final String locatorIP = docker.getIpAddressForService("geode", "geode-sni-test");
+    final String doloresIP =
+        docker.getIpAddressForService("geode-server-dolores", "geode-sni-test");
+    final String clementineIP =
+        docker.getIpAddressForService("geode-server-clementine", "geode-sni-test");
+
+    // Generate CA certificate
+    final CertificateMaterial ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
+
+    // Get the resource directory path where certificates will be written
+    // Write to build directory (gitignored) rather than src directory to avoid
+    // git modifications every time the test runs
+    final URL dockerComposeUrl =
+        DualServerSNIAcceptanceTest.class.getResource("dual-server-docker-compose.yml");
+    final String resourceDirPath = Paths.get(dockerComposeUrl.getPath()).getParent().toString();
+    final String certDir = resourceDirPath + "/geode-config";
+
+    // Generate locator certificate with actual Docker IP
+    final CertificateMaterial locatorCert = new CertificateBuilder()
+        .commonName("locator-maeve")
+        .issuedBy(ca)
+        .sanDnsName("locator-maeve")
+        .sanDnsName("geode")
+        .sanIpAddress(InetAddress.getByName(locatorIP))
+        .generate();
+
+    // Write locator keystore
+    final CertStores locatorStore = new CertStores("locator-maeve");
+    locatorStore.withCertificate("locator-maeve", locatorCert);
+    locatorStore.trust("ca", ca);
+    locatorStore.createKeyStore(certDir + "/locator-maeve-keystore.jks", "geode");
+
+    // Generate server-dolores certificate with actual Docker IP
+    final CertificateMaterial doloresCert = new CertificateBuilder()
+        .commonName("server-dolores")
+        .issuedBy(ca)
+        .sanDnsName("server-dolores")
+        .sanDnsName("geode")
+        .sanIpAddress(InetAddress.getByName(doloresIP))
+        .generate();
+
+    // Write server-dolores keystore
+    final CertStores doloresStore = new CertStores("server-dolores");
+    doloresStore.withCertificate("server-dolores", doloresCert);
+    doloresStore.trust("ca", ca);
+    doloresStore.createKeyStore(certDir + "/server-dolores-keystore.jks", "geode");
+
+    // Generate server-clementine certificate with actual Docker IP
+    final CertificateMaterial clementineCert = new CertificateBuilder()
+        .commonName("server-clementine")
+        .issuedBy(ca)
+        .sanDnsName("server-clementine")
+        .sanDnsName("geode")
+        .sanIpAddress(InetAddress.getByName(clementineIP))
+        .generate();
+
+    // Write server-clementine keystore
+    final CertStores clementineStore = new CertStores("server-clementine");
+    clementineStore.withCertificate("server-clementine", clementineCert);
+    clementineStore.trust("ca", ca);
+    clementineStore.createKeyStore(certDir + "/server-clementine-keystore.jks", "geode");
+
+    // Generate truststore with CA (reuse existing or create new)
+    final CertStores trustStore = new CertStores("truststore");
+    trustStore.trust("ca", ca);
+    trustStore.createTrustStore(certDir + "/truststore.jks", "geode");
+
+    // Now start Geode processes with the dynamically generated certificates
+    docker.loggingExecForService("geode",
         "gfsh", "run", "--file=/geode/scripts/locator-maeve.gfsh");
 
-    docker.loggingExecForService("server-dolores",
+    docker.loggingExecForService("geode-server-dolores",
         "gfsh", "run", "--file=/geode/scripts/server-dolores.gfsh");
 
-    docker.loggingExecForService("server-clementine",
+    docker.loggingExecForService("geode-server-clementine",
         "gfsh", "run", "--file=/geode/scripts/server-clementine.gfsh");
 
-    docker.loggingExecForService("locator-maeve",
+    docker.loggingExecForService("geode",
         "gfsh", "run", "--file=/geode/scripts/create-regions.gfsh");
 
     final String trustStorePath =

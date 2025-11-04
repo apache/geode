@@ -33,7 +33,7 @@ dependencies {
   providedCompile(platform(project(':boms:geode-all-bom')))
 
   implementation('org.springframework.security:spring-security-core')
-  implementation('javax.servlet:javax.servlet-api')
+  implementation('jakarta.servlet:jakarta.servlet-api')
   implementation('mx4j:mx4j') {
     ext.optional = true
   }
@@ -42,10 +42,10 @@ dependencies {
   }
 
   uiTestImplementation('junit:junit')
-  uiTestImplementation('org.apache.httpcomponents:httpcore')
+  uiTestImplementation('org.apache.httpcomponents.client5:httpclient5')
+  uiTestImplementation('org.apache.httpcomponents.core5:httpcore5')
   uiTestImplementation('org.seleniumhq.selenium:selenium-api')
   uiTestImplementation('org.assertj:assertj-core')
-  uiTestImplementation('org.apache.httpcomponents:httpclient')
   uiTestImplementation('org.seleniumhq.selenium:selenium-support')
   implementation('org.springframework:spring-beans')
 
@@ -80,6 +80,7 @@ dependencies {
     exclude module: 'spring-jdbc'
   }
   implementation('org.springframework:spring-context')
+  implementation('org.springframework:spring-aop')
   implementation('org.springframework:spring-web')
   runtimeOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
@@ -89,6 +90,13 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind')
+  // Added jackson-datatype-jsr310 to prevent ClassCastException
+  // Spring 6 auto-discovers Jackson modules via ClassUtils.isPresent(). With Jetty 12
+  // child-first classloading, incomplete Jackson bundle in WAR causes parent classloader to
+  // load some Jackson classes while webapp classloader loads others, creating incompatible
+  // type definitions. This ensures complete Jackson bundle (core + datatypes) loads from
+  // webapp classloader, preventing ClassCastException during Spring initialization.
+  implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
   compileOnly('org.mortbay.jetty:servlet-api')
 

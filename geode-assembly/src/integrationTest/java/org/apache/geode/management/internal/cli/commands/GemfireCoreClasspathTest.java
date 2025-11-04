@@ -37,10 +37,14 @@ public class GemfireCoreClasspathTest {
     File coreDependenciesJar = new File(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     assertNotNull(coreDependenciesJar);
     assertTrue(coreDependenciesJar + " is not a file", coreDependenciesJar.isFile());
+    // Jetty 12 Jakarta EE 10 migration: jetty-servlet/jetty-webapp →
+    // jetty-ee10-servlet/jetty-ee10-webapp
+    // Jetty 12 uses EE environment-specific modules (ee10 for Jakarta EE 10)
     Collection<String> expectedJarDependencies =
         Arrays.asList("antlr", "commons-io", "commons-lang", "commons-logging", "geode",
             "jackson-annotations", "jackson-core", "jackson-databind", "jline", "snappy",
-            "spring-core", "spring-shell", "jetty-server", "jetty-servlet", "jetty-webapp",
+            "spring-core", "spring-shell", "jetty-server", "jetty-ee10-servlet",
+            "jetty-ee10-webapp",
             "jetty-util", "jetty-http", "servlet-api", "jetty-io", "jetty-security", "jetty-xml");
     assertJarFileManifestClassPath(coreDependenciesJar, expectedJarDependencies);
   }

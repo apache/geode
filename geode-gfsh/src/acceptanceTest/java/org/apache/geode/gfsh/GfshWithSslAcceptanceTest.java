@@ -102,12 +102,21 @@ public class GfshWithSslAcceptanceTest {
             .isCA()
             .generate();
 
-    final CertificateMaterial certificate = new CertificateBuilder(CERTIFICATE_EXPIRATION_IN_DAYS,
-        CERTIFICATE_ALGORITHM)
-            .commonName(hostName)
-            .issuedBy(ca)
-            .sanDnsName(hostName)
-            .generate();
+    final CertificateBuilder certificateBuilder =
+        new CertificateBuilder(CERTIFICATE_EXPIRATION_IN_DAYS,
+            CERTIFICATE_ALGORITHM)
+                .commonName(hostName)
+                .issuedBy(ca)
+                .sanDnsName(hostName);
+
+    // Also add IP address as SAN for endpoint identification when using IP addresses
+    try {
+      certificateBuilder.sanIpAddress(InetAddress.getByName(hostName));
+    } catch (Exception e) {
+      // hostName is not an IP address, ignore
+    }
+
+    final CertificateMaterial certificate = certificateBuilder.generate();
 
     final CertStores store = new CertStores(hostName);
     store.withCertificate("geode", certificate);

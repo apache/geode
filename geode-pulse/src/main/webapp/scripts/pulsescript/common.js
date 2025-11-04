@@ -29,6 +29,37 @@ var clusteRGraph;
 var loadMore = false;
 var productname = 'gemfire';
 var currentSelectedAlertId = null;
+
+/**
+ * CSRF Token Support for Spring Security 6.x
+ * 
+ * Jakarta EE 10 Migration: Added CSRF token handling for secure AJAX requests.
+ * Spring Security now requires CSRF tokens for all state-changing operations (POST, PUT, DELETE).
+ * 
+ * This function extracts the CSRF token from the XSRF-TOKEN cookie set by Spring Security's
+ * CookieCsrfTokenRepository. The token must be included in the X-XSRF-TOKEN header for all
+ * AJAX POST requests to prevent Cross-Site Request Forgery attacks.
+ * 
+ * Security Context:
+ * - Pulse uses session-based authentication (form login + session cookies)
+ * - Browsers automatically send session cookies with requests
+ * - CSRF tokens prevent malicious sites from forging authenticated requests
+ * - Token is stored in cookie (readable by JavaScript) and must be sent in header
+ * 
+ * @returns {string|null} The CSRF token value, or null if not found
+ */
+function getCsrfToken() {
+  var name = "XSRF-TOKEN=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var cookies = decodedCookie.split(';');
+  for(var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i].trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length, cookie.length);
+    }
+  }
+  return null;
+}
 var colorCodeForRegions = "#8c9aab"; // Default color for regions
 var colorCodeForSelectedRegion = "#87b025";
 var colorCodeForZeroEntryCountRegions = "#848789";
@@ -68,6 +99,55 @@ function changeLocale(language, pagename) {
   });
 }
 
+/**
+ * Customizes UI elements with internationalized content
+ * 
+ * SECURITY CONSIDERATIONS:
+ * 
+ * This function processes i18n properties and updates DOM elements with dynamic content.
+ * It must properly validate and escape all content to prevent XSS attacks 
+ * (CodeQL rule: js/xss-through-dom).
+ * 
+ * XSS VULNERABILITIES ADDRESSED:
+ * 
+ * 1. UNSAFE HREF ATTRIBUTES:
+ * - customDisplayValue could contain malicious javascript: URLs
+ * - Direct insertion into href attributes enables XSS via link clicks
+ * - Solution: Block javascript: URLs and escape href content
+ * 
+ * 2. UNSAFE IMG SRC ATTRIBUTES:
+ * - customDisplayValue could contain malicious javascript: or data: URLs
+ * - Could enable XSS via image error handlers or malicious data URIs
+ * - Solution: Validate src URLs to allow only safe protocols
+ * 
+ * 3. DOM CONTENT INJECTION:
+ * - Content inserted via .html() method executes as HTML/JavaScript
+ * - I18n properties could be compromised or contain malicious content
+ * - Solution: Use escapeHTML() for all HTML content insertion
+ * 
+ * SECURITY IMPLEMENTATION:
+ * 
+ * - URL Validation: Block javascript: URLs in href attributes
+ * - Protocol Whitelist: Allow only safe protocols for image sources
+ * - HTML Escaping: Apply escapeHTML() to all HTML content
+ * - Error Logging: Log blocked attempts for security monitoring
+ * 
+ * COMPLIANCE:
+ * - Fixes CodeQL vulnerability: js/xss-through-dom (DOM text reinterpretation)
+ * - Follows OWASP XSS prevention guidelines for attribute injection
+ * - Implements secure internationalization content handling
+ * - Enhanced URL validation for src/href attributes with HTML escaping
+ * - Prevents malicious protocol injection (javascript:, vbscript:, data:, etc.)
+ * 
+ * SECURITY ENHANCEMENTS:
+ * 1. HTML escaping applied to all DOM attribute assignments (src, href)
+ * 2. Comprehensive protocol validation to block malicious URLs
+ * 3. Enhanced regex patterns to detect and prevent XSS vectors
+ * 4. Consistent security validation across img src and a href attributes
+ * 
+ * Last updated: Jakarta EE 10 migration (October 2024)
+ * Security review: XSS vulnerabilities and DOM text reinterpretation addressed
+ */
 function customizeUI() {
 
   // common call back function for default and selected languages
@@ -79,9 +159,21 @@ function customizeUI() {
       if ($(this).is("div")) {
         $(this).html(escapeHTML(customDisplayValue));
       } else if ($(this).is("img")) {
-        $(this).attr('src', customDisplayValue);
+        // Security: Validate image src to prevent XSS via javascript: URLs and other malicious protocols
+        if (customDisplayValue && customDisplayValue.match(/^javascript:|^data:(?!image\/)|^vbscript:|^on\w+:/i)) {
+          console.warn("Potentially unsafe image src blocked:", customDisplayValue);
+        } else if (customDisplayValue && !customDisplayValue.match(/^(https?:\/\/|\/|data:image\/|#)/i)) {
+          console.warn("Potentially unsafe image src blocked:", customDisplayValue);
+        } else {
+          $(this).attr('src', escapeHTML(customDisplayValue));
+        }
       } else if ($(this).is("a")) {
-        $(this).attr('href', customDisplayValue);
+        // Security: Validate href to prevent XSS via javascript: URLs and other malicious protocols
+        if (customDisplayValue && customDisplayValue.match(/^javascript:|^vbscript:|^on\w+:|^data:(?!image\/)/i)) {
+          console.warn("Potentially unsafe href blocked:", customDisplayValue);
+        } else {
+          $(this).attr('href', escapeHTML(customDisplayValue));
+        }
       } else if ($(this).is("span")) {
         $(this).html(escapeHTML(customDisplayValue));
       }
@@ -279,14 +371,22 @@ function displayClusterStatus() {
       var data = {
         "pulseData" : this.toJSONObj(postData)
       };
-      $.post("pulseUpdate", data, function(data) {
-        updateRGraphFlags();
-        clusteRGraph.loadJSON(data.clustor);
-        clusteRGraph.compute('end');
-        if (vMode != 8)
-          refreshNodeAccAlerts();
-        clusteRGraph.refresh();
-      }).error(repsonseErrorHandler);
+      // Jakarta EE 10 Migration: Include CSRF token for AJAX POST requests
+      $.ajax({
+        url: "pulseUpdate",
+        type: "POST",
+        headers: { 'X-XSRF-TOKEN': getCsrfToken() },
+        data: data,
+        success: function(data) {
+          updateRGraphFlags();
+          clusteRGraph.loadJSON(data.clustor);
+          clusteRGraph.compute('end');
+          if (vMode != 8)
+            refreshNodeAccAlerts();
+          clusteRGraph.refresh();
+        },
+        error: repsonseErrorHandler
+      });
     }
     // updating tree map
     if (flagActiveTab == "MEM_TREE_MAP_DEF") {
@@ -297,8 +397,14 @@ function displayClusterStatus() {
         "pulseData" : this.toJSONObj(postData)
       };
 
-      $.post("pulseUpdate", data, function(data) {
-        var members = data.members;
+      // Jakarta EE 10 Migration: Include CSRF token for AJAX POST requests
+      $.ajax({
+        url: "pulseUpdate",
+        type: "POST",
+        headers: { 'X-XSRF-TOKEN': getCsrfToken() },
+        data: data,
+        success: function(data) {
+          var members = data.members;
         memberCount = members.length;
         var childerensVal = [];
 
@@ -357,7 +463,9 @@ function displayClusterStatus() {
         };
         clusterMemberTreeMap.loadJSON(json);
         clusterMemberTreeMap.refresh();
-      }).error(repsonseErrorHandler);
+        },
+        error: repsonseErrorHandler
+      });
     }
   }
 }
@@ -702,7 +810,48 @@ function displayAlertCounts(){
 
 }
 
-// function used for generating alerts html div
+/**
+ * Function used for generating alerts HTML div
+ * 
+ * SECURITY CONSIDERATIONS:
+ * 
+ * This function constructs HTML content from user-controlled data and must properly
+ * escape all dynamic content to prevent XSS attacks (CodeQL rule: js/xss-through-dom).
+ * 
+ * XSS VULNERABILITIES ADDRESSED:
+ * 
+ * 1. UNESCAPED MEMBER NAME:
+ * - alertsList.memberName comes from server-side alert data
+ * - Could contain malicious script content if compromised or misconfigured
+ * - Direct insertion into DOM creates XSS vulnerability
+ * - Solution: Use escapeHTML() to sanitize before DOM insertion
+ * 
+ * 2. UNESCAPED ALERT DESCRIPTION:
+ * - alertsList.description contains alert message text
+ * - Could be manipulated by attackers to inject script content
+ * - Both full description and truncated substring vulnerable
+ * - Solution: Escape both full and truncated description content
+ * 
+ * 3. DOM INSERTION WITHOUT SANITIZATION:
+ * - Generated HTML inserted via .html() method in calling code
+ * - Browser interprets content as HTML, executing any embedded scripts
+ * - Malicious content could steal session cookies, redirect users, etc.
+ * 
+ * SECURITY IMPLEMENTATION:
+ * 
+ * - escapeHTML(): Applied to all user-controlled content before HTML construction
+ * - Member names: alertsList.memberName escaped before insertion
+ * - Alert descriptions: Both full and substring content escaped
+ * - HTML entities: Converts dangerous characters (<, >, &, quotes) to safe entities
+ * 
+ * COMPLIANCE:
+ * - Fixes CodeQL vulnerability: js/xss-through-dom
+ * - Follows OWASP XSS prevention guidelines
+ * - Implements input sanitization for web application security
+ * 
+ * Last updated: Jakarta EE 10 migration (October 2024)
+ * Security review: XSS vulnerabilities in notification rendering addressed
+ */
 function generateNotificationAlerts(alertsList, type) {
   var alertDiv = "";
 
@@ -736,7 +885,7 @@ function generateNotificationAlerts(alertsList, type) {
   }
 
   alertDiv = alertDiv + " defaultCursor' id='alertTitle_" + alertsList.id
-      + "'>" + alertsList.memberName + "</div>" + "<p id='alertShortMsg_"
+      + "'>" + escapeHTML(alertsList.memberName) + "</div>" + "<p id='alertShortMsg_"
       + alertsList.id + "' class='tabMessageDetailsBlock ";
 
   if (alertsList.isAcknowledged) {
@@ -747,9 +896,9 @@ function generateNotificationAlerts(alertsList, type) {
 
   var alertDescription = alertsList.description;
   if(alertDescription.length <= 38){
-    alertDiv = alertDiv + " '>" + alertDescription + "</p>";
+    alertDiv = alertDiv + " '>" + escapeHTML(alertDescription) + "</p>";
   }else{
-    alertDiv = alertDiv + " '>" + alertDescription.substring(0,36) + "..</p>";
+    alertDiv = alertDiv + " '>" + escapeHTML(alertDescription.substring(0,36)) + "..</p>";
   }
 
   alertDiv = alertDiv + "<div class='tabMessageDateBlock'>" 
@@ -1329,6 +1478,11 @@ function ajaxPost(pulseUrl, pulseData, pulseCallBackName) {
     url : pulseUrl,
     type : "POST",
     dataType : "json",
+    // Jakarta EE 10 Migration: Include CSRF token in request header
+    // Spring Security 6.x requires X-XSRF-TOKEN header for CSRF protection
+    headers: {
+      'X-XSRF-TOKEN': getCsrfToken()
+    },
     data : {
       "pulseData" : this.toJSONObj(pulseData)
     },

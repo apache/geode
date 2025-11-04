@@ -24,14 +24,13 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.FixedPartitionAttributesInfo;
 import org.apache.geode.management.internal.cli.domain.RegionDescription;
@@ -52,13 +51,14 @@ public class DescribeRegionCommand extends GfshCommand {
   private static final GetRegionDescriptionFunction getRegionDescription =
       new GetRegionDescriptionFunction();
 
-  @CliCommand(value = {CliStrings.DESCRIBE_REGION}, help = CliStrings.DESCRIBE_REGION__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_CONFIG})
+  @ShellMethod(value = CliStrings.DESCRIBE_REGION__HELP, key = {CliStrings.DESCRIBE_REGION})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_CONFIG},
+      interceptor = "org.apache.geode.management.internal.cli.MandatoryParameterValidationInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel describeRegion(
-      @CliOption(key = CliStrings.DESCRIBE_REGION__NAME, optionContext = ConverterHint.REGION_PATH,
-          help = CliStrings.DESCRIBE_REGION__NAME__HELP, mandatory = true) String regionName) {
+      @ShellOption(value = CliStrings.DESCRIBE_REGION__NAME,
+          help = CliStrings.DESCRIBE_REGION__NAME__HELP) String regionName) {
 
     List<?> resultList = getFunctionResultFromMembers(regionName);
 

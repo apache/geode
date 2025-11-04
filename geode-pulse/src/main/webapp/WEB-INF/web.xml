@@ -16,10 +16,12 @@
   limitations under the License.
 -->
 
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+<!-- Jakarta EE 10 migration: Updated from Java EE/Jakarta EE 5.0 to Jakarta EE 6.0 
+     to support Jetty 12 EE10 servlet container -->
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
   <display-name>Pulse</display-name>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>

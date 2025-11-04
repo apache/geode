@@ -33,32 +33,43 @@ dependencies {
   api(project(':geode-core'))
   implementation(project(':geode-common'))
 
+  // Exclude logback from all configurations to avoid conflicts with log4j-slf4j-impl
+  configurations.all {
+    exclude group: 'ch.qos.logback'
+    // Exclude the old log4j-slf4j-impl (for SLF4J 1.x) to avoid conflicts
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    // Exclude log4j-to-slf4j because we use log4j-slf4j2-impl (opposite direction)
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+  }
+
   integrationTestImplementation(project(':extensions:geode-modules'))
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-logging'))
+  integrationTestImplementation(project(':geode-log4j'))
 
-  implementation('javax.servlet:javax.servlet-api')
+  // Add SLF4J 2.x to Log4j bridge for proper logging
+  integrationTestImplementation('org.apache.logging.log4j:log4j-slf4j2-impl')
+
+  implementation('jakarta.servlet:jakarta.servlet-api')
   implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
   implementation('org.slf4j:slf4j-api')
 
-  integrationTestImplementation('com.mockrunner:mockrunner-servlet') {
-    exclude group: 'jboss'
-    exclude group: 'xerces'
-  }
+  // Spring Test 6.x provides Jakarta-compatible mock servlet objects
+  integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('commons-io:commons-io')
-  integrationTestImplementation('javax.servlet:javax.servlet-api')
+  integrationTestImplementation('jakarta.servlet:jakarta.servlet-api')
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.apache.tomcat:jasper:' + DependencyConstraints.get('tomcat6.version'))
   integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestImplementation('org.eclipse.jetty:jetty-http:' + DependencyConstraints.get('jetty.version') + ':tests')
+  // Jetty 12: Servlet support moved to ee10 package for Jakarta EE 10
   integrationTestImplementation('org.eclipse.jetty:jetty-server')
-  integrationTestImplementation('org.eclipse.jetty:jetty-servlet:' + DependencyConstraints.get('jetty.version') + ':tests')
-  integrationTestImplementation('org.eclipse.jetty:jetty-servlet:' + DependencyConstraints.get('jetty.version'))
+  integrationTestImplementation('org.eclipse.jetty.ee10:jetty-ee10-servlet:' + DependencyConstraints.get('jetty.version'))
   integrationTestImplementation('org.eclipse.jetty:jetty-util')
+  integrationTestImplementation('org.eclipse.jetty:jetty-http')
   integrationTestImplementation('org.httpunit:httpunit') {
-    exclude group: 'javax.servlet'
+    exclude group: 'jakarta.servlet'
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }

@@ -25,29 +25,44 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 
 /**
  * this doesn't need to be a rule, since there is no setup and cleanup to do, just a utility
  * to issue rest call. It's different from GeodeHttpClientRule in that it creates a httpClient
  * in every rest call, while GeodeHttpClientRule uses one httpClient for the duration of the
  * entire test.
+ *
+ * <p>
+ * <b>Jakarta EE 10 Migration Changes:</b>
+ * <ul>
+ * <li>Apache HttpComponents 4.x → 5.x (required for Jakarta compatibility)</li>
+ * <li>Package changes: org.apache.http.* → org.apache.hc.client5.* and org.apache.hc.core5.*</li>
+ * <li>Return type: HttpResponse → ClassicHttpResponse</li>
+ * <li>Request base class: HttpRequestBase → HttpUriRequestBase</li>
+ * <li>HttpHost constructor: HttpHost(host, port, scheme) → HttpHost(scheme, host, port)</li>
+ * <li>UsernamePasswordCredentials: String password → char[] password</li>
+ * <li>SSL config: Direct setSSLContext() → Connection manager with SSL socket factory</li>
+ * <li>NoopHostnameVerifier: new instance → static INSTANCE field</li>
+ * </ul>
  */
 public class GeodeDevRestClient {
   public static final String CONTEXT = "/geode/v1";
@@ -72,34 +87,35 @@ public class GeodeDevRestClient {
     this.bindAddress = bindAddress;
     this.restPort = restPort;
     this.useSsl = useSsl;
-    host = new HttpHost(bindAddress, restPort, useSsl ? "https" : "http");
+    // HttpClient 5.x: HttpHost constructor parameter order changed to (scheme, host, port)
+    host = new HttpHost(useSsl ? "https" : "http", bindAddress, restPort);
   }
 
-  public HttpResponse doHEAD(String query, String username, String password) {
+  public ClassicHttpResponse doHEAD(String query, String username, String password) {
     HttpHead httpHead = new HttpHead(context + query);
     return doRequest(httpHead, username, password);
   }
 
-  public HttpResponse doPost(String query, String username, String password, String body) {
+  public ClassicHttpResponse doPost(String query, String username, String password, String body) {
     HttpPost httpPost = new HttpPost(context + query);
     httpPost.addHeader("content-type", "application/json");
     httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPost, username, password);
   }
 
-  public HttpResponse doPut(String query, String username, String password, String body) {
+  public ClassicHttpResponse doPut(String query, String username, String password, String body) {
     HttpPut httpPut = new HttpPut(context + query);
     httpPut.addHeader("content-type", "application/json");
     httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPut, username, password);
   }
 
-  public HttpResponse doGet(String uri, String username, String password) {
+  public ClassicHttpResponse doGet(String uri, String username, String password) {
     HttpGet getRequest = new HttpGet(context + uri);
     return doRequest(getRequest, username, password);
   }
 
-  public HttpResponse doDelete(String uri, String username, String password) {
+  public ClassicHttpResponse doDelete(String uri, String username, String password) {
     HttpDelete httpDelete = new HttpDelete(context + uri);
     return doRequest(httpDelete, username, password);
   }
@@ -133,15 +149,18 @@ public class GeodeDevRestClient {
   /*
    * this handles rest calls. each request creates a different httpClient object
    */
-  public HttpResponse doRequest(HttpRequestBase request, String username, String password) {
+  public ClassicHttpResponse doRequest(HttpUriRequestBase request, String username,
+      String password) {
     HttpClientBuilder clientBuilder = HttpClients.custom();
     HttpClientContext clientContext = HttpClientContext.create();
 
     // configures the clientBuilder and clientContext
     if (username != null) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
+      BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
       credsProvider.setCredentials(new AuthScope(bindAddress, restPort),
-          new UsernamePasswordCredentials(username, password));
+          // HttpClient 5.x: UsernamePasswordCredentials now takes char[] for password (security)
+          new UsernamePasswordCredentials(username,
+              password != null ? password.toCharArray() : null));
       clientBuilder.setDefaultCredentialsProvider(credsProvider);
     }
 
@@ -150,8 +169,17 @@ public class GeodeDevRestClient {
         SSLContext ctx = SSLContext.getInstance("TLS");
         ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()},
             new SecureRandom());
-        clientBuilder.setSSLContext(ctx);
-        clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+        // HttpClient 5.x: SSL configuration changed from direct setSSLContext() to
+        // connection manager with SSL socket factory. This provides more granular SSL control.
+        // NoopHostnameVerifier changed from new instance to static INSTANCE field.
+        HttpClientConnectionManager connectionManager =
+            PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(SSLConnectionSocketFactoryBuilder.create()
+                    .setSslContext(ctx)
+                    .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                    .build())
+                .build();
+        clientBuilder.setConnectionManager(connectionManager);
       }
 
       return clientBuilder.build().execute(host, request, clientContext);

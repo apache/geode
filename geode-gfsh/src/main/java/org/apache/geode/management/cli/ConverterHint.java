@@ -14,11 +14,10 @@
  */
 package org.apache.geode.management.cli;
 
-import org.springframework.shell.core.annotation.CliOption;
 
 /**
- * Used in {@link CliOption} annotations to indicate which converter(s) should or should not be
- * used.
+ * Used in ShellOption annotations to indicate which converter(s) should or should not be
+ * used. Note: In Spring Shell 3.x, these hints are not directly used in the same way.
  *
  * @since GemFire 8.0
  */

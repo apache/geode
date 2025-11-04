@@ -17,13 +17,12 @@ package org.apache.geode.management.internal.cli.commands;
 
 import javax.management.ObjectName;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -34,14 +33,14 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ShowLogCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.SHOW_LOG, help = CliStrings.SHOW_LOG_HELP)
+  @ShellMethod(value = CliStrings.SHOW_LOG_HELP, key = CliStrings.SHOW_LOG)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel showLog(
-      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.SHOW_LOG_MEMBER_HELP, mandatory = true) String memberNameOrId,
-      @CliOption(key = CliStrings.SHOW_LOG_LINE_NUM, unspecifiedDefaultValue = "0",
+      @ShellOption(value = CliStrings.MEMBER,
+          help = CliStrings.SHOW_LOG_MEMBER_HELP) String memberNameOrId,
+      @ShellOption(value = CliStrings.SHOW_LOG_LINE_NUM, defaultValue = "0",
           help = CliStrings.SHOW_LOG_LINE_NUM_HELP) int numberOfLines) {
     DistributedMember targetMember = getMember(memberNameOrId);
     MemberMXBean targetMemberMXBean = getMemberMxBean(targetMember);

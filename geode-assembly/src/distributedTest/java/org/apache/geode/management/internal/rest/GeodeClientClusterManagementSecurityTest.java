@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
@@ -64,6 +65,10 @@ public class GeodeClientClusterManagementSecurityTest {
 
   @Test
   public void withInvalidCredential() {
+    // These authentication failures are expected when testing with invalid credentials
+    IgnoredException.addIgnoredException("Authentication FAILED");
+    IgnoredException.addIgnoredException("invalid username/password");
+
     assertThat(
         new GeodeClusterManagementServiceBuilder()
             .setCache(client.getCache())

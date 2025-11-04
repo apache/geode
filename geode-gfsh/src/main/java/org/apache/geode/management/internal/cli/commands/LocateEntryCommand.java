@@ -20,12 +20,11 @@ import static org.apache.geode.management.internal.cli.commands.DataCommandsUtil
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -37,20 +36,19 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class LocateEntryCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  @CliCommand(value = {CliStrings.LOCATE_ENTRY}, help = CliStrings.LOCATE_ENTRY__HELP)
+  @ShellMethod(value = CliStrings.LOCATE_ENTRY__HELP, key = {CliStrings.LOCATE_ENTRY})
   public ResultModel locateEntry(
-      @CliOption(key = {CliStrings.LOCATE_ENTRY__KEY}, mandatory = true,
+      @ShellOption(value = {CliStrings.LOCATE_ENTRY__KEY},
           help = CliStrings.LOCATE_ENTRY__KEY__HELP) String key,
-      @CliOption(key = {CliStrings.LOCATE_ENTRY__REGIONNAME}, mandatory = true,
-          help = CliStrings.LOCATE_ENTRY__REGIONNAME__HELP,
-          optionContext = ConverterHint.REGION_PATH) String regionPath,
-      @CliOption(key = {CliStrings.LOCATE_ENTRY__KEYCLASS},
+      @ShellOption(value = {CliStrings.LOCATE_ENTRY__REGIONNAME},
+          help = CliStrings.LOCATE_ENTRY__REGIONNAME__HELP) String regionPath,
+      @ShellOption(value = {CliStrings.LOCATE_ENTRY__KEYCLASS},
           help = CliStrings.LOCATE_ENTRY__KEYCLASS__HELP) String keyClass,
-      @CliOption(key = {CliStrings.LOCATE_ENTRY__VALUEKLASS},
+      @ShellOption(value = {CliStrings.LOCATE_ENTRY__VALUEKLASS},
           help = CliStrings.LOCATE_ENTRY__VALUEKLASS__HELP) String valueClass,
-      @CliOption(key = {CliStrings.LOCATE_ENTRY__RECURSIVE},
-          help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean recursive) {
+      @ShellOption(value = {CliStrings.LOCATE_ENTRY__RECURSIVE},
+          help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP,
+          defaultValue = "false") boolean recursive) {
 
     authorize(Resource.DATA, Operation.READ, regionPath, key);
 

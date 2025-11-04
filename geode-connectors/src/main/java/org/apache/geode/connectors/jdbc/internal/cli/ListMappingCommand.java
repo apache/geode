@@ -17,9 +17,9 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.ArrayList;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -27,7 +27,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -46,12 +45,12 @@ public class ListMappingCommand extends GfshCommand {
   private static final String LIST_MAPPING__GROUPS_NAME__HELP =
       "Server Group(s) of the JDBC mappings to list.";
 
-  @CliCommand(value = LIST_MAPPING, help = LIST_MAPPING__HELP)
+  @ShellMethod(value = LIST_MAPPING__HELP, key = LIST_MAPPING)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public ResultModel listMapping(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-      optionContext = ConverterHint.MEMBERGROUP,
+  public ResultModel listMapping(@ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+      defaultValue = ShellOption.NULL,
       help = LIST_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     ArrayList<RegionMapping> mappings = new ArrayList<>();
 
@@ -118,7 +117,7 @@ public class ListMappingCommand extends GfshCommand {
     return result;
   }
 
-  @CliAvailabilityIndicator({LIST_MAPPING})
+  @ShellMethodAvailability({LIST_MAPPING})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
   }

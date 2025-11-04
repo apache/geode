@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -37,6 +36,22 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
 
   @Override
   public ResultModel preExecution(GfshParseResult parseResult) {
+    // Validate that at least one of the required options is specified
+    String query = parseResult.getParamValueAsString("query");
+    String file = parseResult.getParamValueAsString("file");
+    String interactive = parseResult.getParamValueAsString("interactive");
+    String member = parseResult.getParamValueAsString("member");
+
+    boolean hasQuery = StringUtils.isNotBlank(query);
+    boolean hasFile = StringUtils.isNotBlank(file);
+    boolean hasInteractive = "true".equalsIgnoreCase(interactive);
+    boolean hasMember = StringUtils.isNotBlank(member);
+
+    if (!hasQuery && !hasFile && !hasInteractive && !hasMember) {
+      return ResultModel.createError(
+          "You should specify option (--query, --file, --interactive, --member) for this command");
+    }
+
     File outputFile = getOutputFile(parseResult);
 
     if (outputFile != null && outputFile.exists()) {
@@ -81,8 +96,12 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
     return newModel;
   }
 
-  private File getOutputFile(ParseResult parseResult) {
-    return (File) parseResult.getArguments()[1];
+  private File getOutputFile(GfshParseResult parseResult) {
+    String outputFilePath = parseResult.getParamValueAsString("file");
+    if (StringUtils.isBlank(outputFilePath)) {
+      return null;
+    }
+    return new File(outputFilePath);
   }
 
   private void writeResultTableToFile(File file, ResultModel resultModel) throws IOException {

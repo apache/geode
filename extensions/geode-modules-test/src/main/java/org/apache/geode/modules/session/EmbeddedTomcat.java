@@ -15,87 +15,92 @@
 package org.apache.geode.modules.session;
 
 import java.io.File;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
-import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
+import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.core.StandardService;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.realm.MemoryRealm;
-import org.apache.catalina.startup.Embedded;
+import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
+/**
+ * Embedded Tomcat 10+ server for testing session management.
+ * Migrated from deprecated Embedded API to Tomcat 10 programmatic API.
+ */
 public class EmbeddedTomcat {
   private final Log logger = LogFactory.getLog(getClass());
   private final int port;
-  private final Embedded container;
+  private final Tomcat tomcat;
   private final Context rootContext;
 
-  EmbeddedTomcat(int port, String jvmRoute) throws MalformedURLException {
+
+  EmbeddedTomcat(int port, String jvmRoute) {
     this.port = port;
 
-    // create server
-    container = new Embedded();
+    // Create Tomcat instance using programmatic API (Tomcat 10+)
+    tomcat = new Tomcat();
 
-    // The directory to create the Tomcat server configuration under.
-    container.setCatalinaHome("tomcat");
-    container.setRealm(new MemoryRealm());
+    // Set base directory for Tomcat
+    File baseDir = new File("tomcat");
+    baseDir.mkdirs();
+    tomcat.setBaseDir(baseDir.getAbsolutePath());
+    tomcat.setPort(port);
+    tomcat.getHost().setAppBase(baseDir.getAbsolutePath());
 
-    // create webapp loader
-    WebappLoader loader = new WebappLoader(getClass().getClassLoader());
-    // The classes directory for the web application being run.
-    loader.addRepository(new File("target/classes").toURI().toURL().toString());
+    // Set hostname
+    tomcat.setHostname("127.0.0.1");
 
-    // The web resources directory for the web application being run.
-    String webappDir = "";
-    rootContext = container.createContext("", webappDir);
-    rootContext.setLoader(loader);
-    rootContext.setReloadable(true);
-
-    // Otherwise we get NPE when instantiating servlets
-    rootContext.setIgnoreAnnotations(true);
-
-    // create host
-    Host localHost = container.createHost("127.0.0.1", new File("").getAbsolutePath());
-    localHost.addChild(rootContext);
-
-    localHost.setDeployOnStartup(true);
-
-    // create engine
-    Engine engine = container.createEngine();
+    // Configure the engine with JVM route
+    Engine engine = tomcat.getEngine();
     engine.setName("localEngine");
-    engine.addChild(localHost);
-    engine.setDefaultHost(localHost.getName());
     engine.setJvmRoute(jvmRoute);
-    engine.setService(new StandardService());
-    container.addEngine(engine);
 
-    // create http connector
-    Connector httpConnector = container.createConnector((InetAddress) null, port, false);
-    container.addConnector(httpConnector);
-    container.setAwait(true);
+    // Set realm
+    engine.setRealm(new MemoryRealm());
 
-    // Create the JVMRoute valve for session failover
+    // Create web application context
+    String contextPath = "";
+    String docBase = new File("").getAbsolutePath();
+    rootContext = tomcat.addContext(contextPath, docBase);
+
+    // Configure webapp loader - In Tomcat 10+, WebappLoader() no longer takes ClassLoader
+    // Instead, we set the parent class loader after construction
+    WebappLoader loader = new WebappLoader();
+    loader.setLoaderClass(getClass().getClassLoader().getClass().getName());
+    rootContext.setLoader(loader);
+
+    // Configure context
+    if (rootContext instanceof StandardContext) {
+      StandardContext stdContext = (StandardContext) rootContext;
+      stdContext.setReloadable(true);
+      stdContext.setIgnoreAnnotations(true);
+      stdContext.setParentClassLoader(getClass().getClassLoader());
+
+      // In Tomcat 10+, repositories are managed differently
+      // The classes directory will be found automatically via the context docBase
+    }
+
+    // Add JVMRoute valve for session failover
     ValveBase valve = new JvmRouteBinderValve();
-    ((StandardEngine) engine).addValve(valve);
+    if (engine instanceof StandardEngine) {
+      ((StandardEngine) engine).addValve(valve);
+    }
   }
 
   /**
    * Starts the embedded Tomcat server.
    */
   void startContainer() throws LifecycleException {
-    // start server
-    container.start();
+    // Start Tomcat using the programmatic API
+    tomcat.start();
 
     // add shutdown hook to stop server
     Runtime.getRuntime().addShutdownHook(new Thread(this::stopContainer));
@@ -106,31 +111,46 @@ public class EmbeddedTomcat {
    */
   void stopContainer() {
     try {
-      if (container != null) {
-        container.stop();
+      if (tomcat != null && tomcat.getServer() != null) {
+        tomcat.stop();
+        tomcat.destroy();
         logger.info("Stopped container");
       }
     } catch (LifecycleException exception) {
-      logger.warn("Cannot Stop Tomcat" + exception.getMessage());
+      logger.warn("Cannot Stop Tomcat: " + exception.getMessage());
     }
   }
 
   StandardWrapper addServlet(String path, String name, String clazz) {
-    StandardWrapper servlet = (StandardWrapper) rootContext.createWrapper();
-    servlet.setName(name);
-    servlet.setServletClass(clazz);
+    // Use Tomcat's addServlet helper method (Tomcat 10+ API)
+    // This automatically creates the wrapper and adds it to the context
+    tomcat.addServlet(rootContext.getPath(), name, clazz);
+
+    // Get the servlet that was just added
+    StandardWrapper servlet = (StandardWrapper) rootContext.findChild(name);
     servlet.setLoadOnStartup(1);
-
-    rootContext.addChild(servlet);
-    rootContext.addServletMapping(path, name);
-
-    servlet.setParent(rootContext);
+    servlet.addMapping(path);
 
     return servlet;
   }
 
-  Embedded getEmbedded() {
-    return container;
+  /**
+   * Gets the Tomcat instance.
+   * Migrated from getEmbedded() which returned deprecated Embedded class.
+   *
+   * @return the Tomcat instance
+   */
+  Tomcat getTomcat() {
+    return tomcat;
+  }
+
+  /**
+   * @deprecated Use {@link #getTomcat()} instead.
+   *             This method is maintained for backward compatibility.
+   */
+  @Deprecated
+  Tomcat getEmbedded() {
+    return tomcat;
   }
 
   Context getRootContext() {

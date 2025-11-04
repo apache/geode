@@ -185,7 +185,11 @@ public class SystemManagementService extends BaseManagementService {
       FilterConfiguration filterConfiguration =
           new SystemPropertyJmxSerialFilterConfigurationFactory().create();
 
-      agent = managementAgentFactory.create(system.getConfig(), cache, filterConfiguration);
+      // Jakarta EE migration: ManagementAgent needs direct access to internal regions
+      // like __OperationStateRegion. Pass the unwrapped InternalCache instead of the
+      // InternalCacheForClientAccess wrapper which blocks access to internal regions.
+      agent = managementAgentFactory.create(system.getConfig(), cache.getDelegate(),
+          filterConfiguration);
     } else {
       agent = null;
     }

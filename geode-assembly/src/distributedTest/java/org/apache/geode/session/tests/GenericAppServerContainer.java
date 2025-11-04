@@ -32,7 +32,7 @@ import org.junit.Assume;
  * Container for a generic app server
  *
  * Extends {@link ServerContainer} to form a basic container which sets up a GenericAppServer
- * container. Currently being used solely for Jetty 9 containers.
+ * container. Currently being used solely for Jetty 12 containers.
  *
  * The container modifies a copy of the session testing war using the modify_war_file script in
  * order to properly implement geode session replication for generic application servers. That means
@@ -58,6 +58,15 @@ public class GenericAppServerContainer extends ServerContainer {
       Path containerConfigHome,
       String containerDescriptors, IntSupplier portSupplier) throws IOException {
     super(install, rootDir, containerConfigHome, containerDescriptors, portSupplier);
+
+    // Set Jetty 12 EE version for Jakarta EE 10 compatibility
+    // Jetty 12 requires the cargo.jetty.deployer.ee.version property to properly configure
+    // the correct Jakarta EE environment modules (ee10-annotations, ee10-plus, ee10-jsp,
+    // ee10-deploy)
+    if (install
+        .getGenericAppServerVersion() == GenericAppServerInstall.GenericAppServerVersion.JETTY12) {
+      getConfiguration().setProperty("cargo.jetty.deployer.ee.version", "ee10");
+    }
 
     // Setup modify war script file so that it is executable and easily findable
     modifyWarScript = new File(install.getModulePath() + "/bin/modify_war");

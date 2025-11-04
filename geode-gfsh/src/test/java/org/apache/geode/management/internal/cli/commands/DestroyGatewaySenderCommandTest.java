@@ -57,7 +57,10 @@ public class DestroyGatewaySenderCommandTest {
 
   @Test
   public void mandatoryOptions() {
-    assertThat(parser.parse("destroy gateway-sender --member=A")).isNull();
+    // In Shell 3.x, validation happens at execution time via interceptor, not parse time
+    parser.executeAndAssertThat(command, "destroy gateway-sender --member=A")
+        .statusIsError()
+        .containsOutput("You must specify a gateway sender id.");
   }
 
   @Test

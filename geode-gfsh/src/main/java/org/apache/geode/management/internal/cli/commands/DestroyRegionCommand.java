@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -31,7 +31,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.RegionDestroyFunction;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
@@ -44,15 +43,23 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DestroyRegionCommand extends GfshCommand {
-  @CliCommand(value = {CliStrings.DESTROY_REGION}, help = CliStrings.DESTROY_REGION__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @ShellMethod(value = CliStrings.DESTROY_REGION__HELP, key = {CliStrings.DESTROY_REGION})
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
+      interceptor = "org.apache.geode.management.internal.cli.MandatoryParameterValidationInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyRegion(
-      @CliOption(key = CliStrings.DESTROY_REGION__REGION, optionContext = ConverterHint.REGION_PATH,
-          mandatory = true, help = CliStrings.DESTROY_REGION__REGION__HELP) String regionPath,
-      @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists) {
+      @ShellOption(value = CliStrings.DESTROY_REGION__REGION,
+          help = CliStrings.DESTROY_REGION__REGION__HELP) String regionPath,
+      @ShellOption(value = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
+          defaultValue = "false") boolean ifExists) {
+
+    // Validate required parameter
+    // In Shell 3.x, empty strings can be passed for required parameters
+    // Return "Invalid command" to match Shell 1.x behavior
+    if (regionPath == null || regionPath.trim().isEmpty()) {
+      return ResultModel.createError("Invalid command");
+    }
 
     // this finds all the members that host this region. destroy will be called on each of these
     // members since the region might be a scope.LOCAL region

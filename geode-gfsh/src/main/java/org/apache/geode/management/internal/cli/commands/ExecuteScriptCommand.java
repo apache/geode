@@ -17,25 +17,24 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class ExecuteScriptCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.RUN}, help = CliStrings.RUN__HELP)
+  @ShellMethod(value = CliStrings.RUN__HELP, key = {CliStrings.RUN})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public ResultModel executeScript(
-      @CliOption(key = CliStrings.RUN__FILE, optionContext = ConverterHint.FILE, mandatory = true,
+      @ShellOption(value = CliStrings.RUN__FILE,
           help = CliStrings.RUN__FILE__HELP) File file,
-      @CliOption(key = {CliStrings.RUN__QUIET}, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false", help = CliStrings.RUN__QUIET__HELP) boolean quiet,
-      @CliOption(key = {CliStrings.RUN__CONTINUEONERROR}, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.RUN__QUIET}, defaultValue = "false",
+          help = CliStrings.RUN__QUIET__HELP) boolean quiet,
+      @ShellOption(value = {CliStrings.RUN__CONTINUEONERROR}, defaultValue = "false",
           help = CliStrings.RUN__CONTINUEONERROR__HELP) boolean continueOnError) {
     Gfsh gfsh = Gfsh.getCurrentInstance();
     return gfsh.executeScript(file, quiet, continueOnError);

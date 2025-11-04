@@ -19,9 +19,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import javax.transaction.RollbackException;
-import javax.transaction.UserTransaction;
-
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.UserTransaction;
 import org.junit.Test;
 
 import org.apache.geode.cache.CommitConflictException;

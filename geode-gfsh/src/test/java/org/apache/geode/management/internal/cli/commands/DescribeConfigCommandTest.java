@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -50,7 +49,10 @@ public class DescribeConfigCommandTest {
 
   @Test
   public void describeConfigWithoutMemberName() throws Exception {
-    assertThat(parser.parse("describe config")).isNull();
+    // In Shell 3.x, validation happens at execution time via interceptor, not parse time
+    parser.executeAndAssertThat(command, "describe config")
+        .statusIsError()
+        .containsOutput("Invalid command");
   }
 
   @Test

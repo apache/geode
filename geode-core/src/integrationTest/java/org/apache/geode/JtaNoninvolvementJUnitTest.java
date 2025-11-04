@@ -23,8 +23,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.transaction.UserTransaction;
-
+import jakarta.transaction.UserTransaction;
 import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -91,7 +90,7 @@ public class JtaNoninvolvementJUnitTest {
       if (cache == null) {
         createCache(false);
       }
-      javax.transaction.UserTransaction ut = (javax.transaction.UserTransaction) cache
+      jakarta.transaction.UserTransaction ut = (jakarta.transaction.UserTransaction) cache
           .getJNDIContext().lookup("java:/UserTransaction");
       {
         ut.begin();
@@ -119,7 +118,7 @@ public class JtaNoninvolvementJUnitTest {
 
   @Test
   public void test001NoninvolvementMultipleRegions_bug45541() throws Exception {
-    javax.transaction.UserTransaction ut = null;
+    jakarta.transaction.UserTransaction ut = null;
     try {
       if (cache == null) {
         createCache(false);
@@ -156,8 +155,10 @@ public class JtaNoninvolvementJUnitTest {
    */
   @Test
   public void test002IgnoreJTASysProp() throws Exception {
-    javax.transaction.UserTransaction ut = null;
+    jakarta.transaction.UserTransaction ut = null;
     try {
+      // System property must be set BEFORE cache creation because JNDIInvoker.IGNORE_JTA
+      // is read during mapTransactions() which is called from cache initialization
       System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "ignoreJTA", "true");
       createCache(false);
       ut = (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");

@@ -353,6 +353,18 @@ public class AlterGatewaySenderCommandDUnitTest {
 
   }
 
+  /**
+   * Test for Spring Shell 2.x migration: Verifies that the CLEAR marker correctly removes filters.
+   *
+   * This test validates the workaround for Spring Shell 2.x removing the 'specifiedDefaultValue'
+   * annotation parameter. In Spring Shell 1.x, we could use --gateway-event-filter= (with trailing
+   * equals but no value) to clear filters. Spring Shell 2.x strips the '=' and passes null instead,
+   * making it impossible to distinguish "option not provided" from "option provided without value".
+   *
+   * The solution is to require users to explicitly use --gateway-event-filter=CLEAR to remove all
+   * existing filters. This test verifies that the CLEAR marker (case-insensitive) correctly removes
+   * filters that were previously set.
+   */
   @Test
   public void testCreateSerialGatewaySenderAndAlterEventFitersAndRemove() throws Exception {
     gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
@@ -393,11 +405,14 @@ public class AlterGatewaySenderCommandDUnitTest {
       assertThat(sender.getGatewayEventFilters().size()).isEqualTo(1);
     });
 
+    // Spring Shell 2.x: Use explicit CLEAR marker to remove all filters
+    // In Spring Shell 1.x, we could use --gateway-event-filter= (empty value) to clear filters.
+    // Spring Shell 2.x requires the explicit marker --gateway-event-filter=CLEAR instead.
     gfsh.executeAndAssertThat(
-        "alter gateway-sender --id=sender1 --batch-size=111 --alert-threshold=55 --gateway-event-filter")
+        "alter gateway-sender --id=sender1 --batch-size=111 --alert-threshold=55 --gateway-event-filter=CLEAR")
         .statusIsSuccess();
 
-    // verify that server1's event queue has the default value
+    // Verify that all filters have been removed from both servers
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       GatewaySender sender = cache.getGatewaySender("sender1");

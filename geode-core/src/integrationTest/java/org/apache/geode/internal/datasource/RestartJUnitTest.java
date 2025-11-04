@@ -25,8 +25,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
-import javax.transaction.TransactionManager;
-
+import jakarta.transaction.TransactionManager;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;

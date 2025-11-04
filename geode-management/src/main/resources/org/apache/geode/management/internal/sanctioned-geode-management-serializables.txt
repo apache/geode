@@ -1,5 +1,11 @@
 org/apache/geode/management/api/ClusterManagementException,false,result:org/apache/geode/management/api/ClusterManagementResult
+org/apache/geode/management/api/ClusterManagementGetResult,false,entityInfo:org/apache/geode/management/api/EntityInfo
+org/apache/geode/management/api/ClusterManagementListOperationsResult,false,result:java/util/List
+org/apache/geode/management/api/ClusterManagementListResult,false,entities:java/util/Map
+org/apache/geode/management/api/ClusterManagementOperationResult,false,operation:org/apache/geode/management/api/ClusterManagementOperation,operationEnd:java/util/Date,operationId:java/lang/String,operationResult:org/apache/geode/management/runtime/OperationResult,operationStart:java/util/Date,throwable:java/lang/Throwable
 org/apache/geode/management/api/ClusterManagementRealizationException,false,result:org/apache/geode/management/api/ClusterManagementRealizationResult
+org/apache/geode/management/api/ClusterManagementRealizationResult,false,memberStatuses:java/util/List
+org/apache/geode/management/api/ClusterManagementResult,true,1,links:org/apache/geode/management/configuration/Links,statusCode:org/apache/geode/management/api/ClusterManagementResult$StatusCode,statusMessage:java/lang/String
 org/apache/geode/management/api/ClusterManagementResult$StatusCode,false
 org/apache/geode/management/api/CommandType,false
 org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/String,message:java/lang/String,success:boolean
@@ -13,6 +19,7 @@ org/apache/geode/management/configuration/GatewayReceiver,false,endPort:java/lan
 org/apache/geode/management/configuration/GroupableConfiguration,false,group:java/lang/String
 org/apache/geode/management/configuration/Index,false,expression:java/lang/String,indexType:org/apache/geode/management/configuration/IndexType,name:java/lang/String,regionPath:java/lang/String
 org/apache/geode/management/configuration/IndexType,false
+org/apache/geode/management/configuration/Links,true,1,links:java/util/Map,list:java/lang/String,self:java/lang/String
 org/apache/geode/management/configuration/Member,false,id:java/lang/String
 org/apache/geode/management/configuration/Pdx,false,autoSerializer:org/apache/geode/management/configuration/AutoSerializer,diskStoreName:java/lang/String,ignoreUnreadFields:java/lang/Boolean,pdxSerializer:org/apache/geode/management/configuration/ClassName,readSerialized:java/lang/Boolean
 org/apache/geode/management/configuration/Region,false,diskStoreName:java/lang/String,eviction:org/apache/geode/management/configuration/Region$Eviction,expirations:java/util/List,keyConstraint:java/lang/String,name:java/lang/String,redundantCopies:java/lang/Integer,type:org/apache/geode/management/configuration/RegionType,valueConstraint:java/lang/String

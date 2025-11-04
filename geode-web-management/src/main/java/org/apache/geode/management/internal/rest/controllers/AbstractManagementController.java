@@ -15,8 +15,7 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;

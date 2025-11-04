@@ -27,8 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.naming.Context;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.UserTransaction;
 import org.junit.Ignore;
 import org.junit.Test;
 

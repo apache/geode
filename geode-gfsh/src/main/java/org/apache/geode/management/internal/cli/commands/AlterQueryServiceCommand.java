@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -58,16 +58,18 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
   private final AlterQueryServiceFunction alterQueryServiceFunction =
       new AlterQueryServiceFunction();
 
-  @CliCommand(value = COMMAND_NAME, help = COMMAND_HELP)
+  @ShellMethod(value = COMMAND_HELP, key = COMMAND_NAME)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel execute(
-      @CliOption(key = AUTHORIZER_NAME, help = METHOD_AUTHORIZER_NAME_HELP,
-          mandatory = true) String methodAuthorizerName,
-      @CliOption(key = AUTHORIZER_PARAMETERS, help = AUTHORIZER_PARAMETERS_HELP,
-          optionContext = "splittingRegex=" + SPLITTING_REGEX) String[] authorizerParameters,
-      @CliOption(key = FORCE_UPDATE, help = FORCE_UPDATE_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean forceUpdate) {
+      @ShellOption(value = AUTHORIZER_NAME,
+          defaultValue = ShellOption.NULL,
+          help = METHOD_AUTHORIZER_NAME_HELP) String methodAuthorizerName,
+      @ShellOption(value = AUTHORIZER_PARAMETERS,
+          defaultValue = ShellOption.NULL,
+          help = AUTHORIZER_PARAMETERS_HELP) String[] authorizerParameters,
+      @ShellOption(value = FORCE_UPDATE, help = FORCE_UPDATE_HELP,
+          defaultValue = "false") boolean forceUpdate) {
 
     ResultModel result;
     Set<String> parametersSet = new HashSet<>();

@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.lang.SystemUtils;
@@ -38,11 +38,12 @@ import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class StartVsdCommand extends OfflineGfshCommand {
-  @CliCommand(value = CliStrings.START_VSD, help = CliStrings.START_VSD__HELP)
+  @ShellMethod(value = CliStrings.START_VSD__HELP, key = CliStrings.START_VSD)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_M_AND_M, CliStrings.TOPIC_GEODE_STATISTICS})
-  public ResultModel startVsd(@CliOption(key = CliStrings.START_VSD__FILE,
+  public ResultModel startVsd(@ShellOption(value = CliStrings.START_VSD__FILE,
       help = CliStrings.START_VSD__FILE__HELP) final String[] statisticsArchiveFilePathnames)
       throws Exception {
 

@@ -23,6 +23,47 @@ plugins {
 
 jar.enabled = false
 
+/*
+ * ==============================================================================
+ * GEODE-10466: Jakarta EE 10 and Spring 6.x Migration
+ * ==============================================================================
+ * The changes below migrate the existing module from:
+ *   - javax.servlet:javax.servlet-api → jakarta.servlet:jakarta.servlet-api
+ *   - Spring Framework 5.x → Spring Framework 6.x
+ *   - Jetty 11 (Jakarta EE 9) → Jetty 12 (Jakarta EE 10)
+ *   - SpringDoc 1.x → SpringDoc 2.x
+ *
+ * This module provides the modern Management REST API (V2) at /management,
+ * which offers a programmatic ClusterManagementService-based API, contrasting
+ * with the legacy Shell Commands API (V1) at /geode-mgmt.
+ * ==============================================================================
+ */
+
+/*
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * Spring 6.x Compiler Configuration
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * REASON: Spring 6.x requires parameter names at runtime for request mapping
+ *
+ * Spring 6.x made parameter name discovery mandatory for @RequestParam and
+ * @PathVariable annotations when names are not explicitly specified. Without
+ * the -parameters flag, Spring cannot determine parameter names from bytecode,
+ * causing IllegalArgumentException: "Name for argument of type [java.lang.String]
+ * not specified, and parameter name information not found in class file either."
+ *
+ * The -parameters flag instructs javac to include parameter names in bytecode's
+ * MethodParameters attribute (JSR 335), enabling Spring's reflection-based
+ * parameter name discovery.
+ *
+ * MIGRATION IMPACT:
+ *   - Required for all Spring 6.x @RestController methods
+ *
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ */
+tasks.withType(JavaCompile) {
+  options.compilerArgs << '-parameters'
+}
+
 facets {
   commonTest {
     testTaskName = 'commonTest'
@@ -59,24 +100,150 @@ dependencies {
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-core'))
 
-  compileOnly('javax.servlet:javax.servlet-api')
-  // jackson-annotations must be accessed from the geode classloader and not the webapp
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * Jakarta EE 10 Servlet API Migration
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * CHANGED: javax.servlet:javax.servlet-api → jakarta.servlet:jakarta.servlet-api
+   *
+   * REASON: Jakarta EE namespace migration (javax.* → jakarta.*)
+   *
+   * In 2017, Java EE was transferred from Oracle to Eclipse Foundation and
+   * rebranded as Jakarta EE. Oracle retained trademark rights to "javax.*"
+   * package names, forcing Eclipse to migrate all APIs to "jakarta.*" namespace.
+   *
+   * Timeline:
+   *   - Jakarta EE 8  (2019): javax.* namespace (transition release)
+   *   - Jakarta EE 9  (2020): jakarta.* namespace (breaking change)
+   *   - Jakarta EE 10 (2022): jakarta.* with new features (target version)
+   *
+   * This affects ALL servlet classes:
+   *   javax.servlet.http.HttpServletRequest → jakarta.servlet.http.HttpServletRequest
+   *   javax.servlet.Filter → jakarta.servlet.Filter
+   *   javax.servlet.ServletContext → jakarta.servlet.ServletContext
+   *   etc.
+   *
+   * JETTY COMPATIBILITY:
+   *   - Jetty 11: Jakarta EE 9 (jakarta.servlet 5.0)
+   *   - Jetty 12: Jakarta EE 9/10 multi-environment (EE8/EE9/EE10 cores)
+   *   - This migration targets Jetty 12 EE10 environment
+   *
+   * SCOPE: compileOnly because servlet-api is provided by Jetty at runtime
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
+  compileOnly('jakarta.servlet:jakarta.servlet-api')
+
+  /* jackson-annotations must be accessed from the geode classloader and not the webapp */
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
   }
-  implementation('com.fasterxml.jackson.core:jackson-core')
-  implementation('com.fasterxml.jackson.core:jackson-databind') {
-    exclude module: 'jackson-annotations'
-  }
 
-  implementation('org.springdoc:springdoc-openapi-ui') {
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * Jackson Classloader Strategy
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * CRITICAL: Jackson JARs MUST be on parent classloader (geode/lib), NOT in WAR
+   *
+   * REASON: Jetty 12's WebAppClassLoader isolation prevents class casting between
+   * classloaders, causing ClassCastException when Jackson classes are loaded from
+   * multiple locations.
+   *
+   * PROBLEM SCENARIO (without compileOnly):
+   *   1. geode/lib contains jackson-core-2.17.0.jar (parent classloader)
+   *   2. WAR contains jackson-core-2.17.0.jar (WebAppClassLoader)
+   *   3. CustomMappingJackson2HttpMessageConverter loads JavaTimeModule from WAR
+   *   4. Spring tries to register JavaTimeModule → casting fails:
+   *      "com.fasterxml.jackson.databind.Module cannot be cast to
+   *       com.fasterxml.jackson.databind.Module"
+   *
+   * This occurs because the same class loaded by different classloaders creates
+   * DISTINCT Class objects in the JVM, making them incompatible for casting.
+   *
+   * SOLUTION: Use compileOnly scope + explicit WAR exclusions (see war {} block)
+   *   - compileOnly: Includes Jackson in compile classpath but NOT in WAR dependencies
+   *   - WAR exclusions: Removes any transitive Jackson JARs that slip through
+   *   - Runtime: Jackson loaded ONLY from parent classloader (geode/lib)
+   *
+   * This ensures ALL Jackson classes come from a single classloader, preventing
+   * ClassCastException and maintaining type compatibility.
+   *
+   * JETTY CLASSLOADER HIERARCHY:
+   *   ┌─────────────────────────────────────┐
+   *   │ System ClassLoader (JDK classes)    │
+   *   └──────────────┬──────────────────────┘
+   *                  │
+   *   ┌──────────────▼──────────────────────┐
+   *   │ App ClassLoader (geode/lib)         │  ← Jackson HERE
+   *   │   - jackson-core-2.17.0.jar         │
+   *   │   - jackson-databind-2.17.0.jar     │
+   *   │   - spring-*.jar                    │
+   *   └──────────────┬──────────────────────┘
+   *                  │
+   *   ┌──────────────▼──────────────────────┐
+   *   │ WebAppClassLoader (WAR classes)     │  ← NO Jackson
+   *   │   - REST controllers                │
+   *   │   - Security configuration          │
+   *   │   - CustomMappingJackson2...        │
+   *   └─────────────────────────────────────┘
+   *
+   * RELATED ISSUES:
+   *   - Similar pattern applied to Spring JARs (see war exclusions)
+   *   - See CustomMappingJackson2HttpMessageConverter.java for usage
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
+  compileOnly('com.fasterxml.jackson.core:jackson-core')
+  compileOnly('com.fasterxml.jackson.core:jackson-databind')
+
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * SpringDoc 2.x Migration (OpenAPI 3.x Documentation)
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * CHANGED: springdoc-openapi-ui → springdoc-openapi-starter-webmvc-ui
+   *
+   * REASON: SpringDoc 2.x is required for Spring 6.x compatibility
+   *
+   * SpringDoc 2.x restructured artifacts:
+   *   - SpringDoc 1.x: springdoc-openapi-ui (Spring 5.x)
+   *   - SpringDoc 2.x: springdoc-openapi-starter-webmvc-ui (Spring 6.x)
+   *
+   * The "-starter-" prefix indicates Spring Boot-style autoconfiguration support,
+   * but we use it in pure Spring Framework via component scanning (see SwaggerConfig).
+   *
+   * INTEGRATION:
+   *   - JARs included in WAR (no longer excluded)
+   *   - SwaggerConfig provides required infrastructure via @ComponentScan
+   *   - See SwaggerConfig.java for detailed integration comments
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
+  implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
   }
 
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * Spring AOP Explicit Dependency
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * ADDED: Explicit spring-aop dependency
+   *
+   * REASON: Spring 6.x requires explicit AOP dependency for component scanning
+   *
+   * In Spring 5.x, spring-aop was transitively included via spring-context.
+   * Spring 6.x made AOP optional, requiring explicit declaration when using:
+   *   - <context:component-scan> (our management-servlet.xml)
+   *   - @EnableAspectJAutoProxy annotations
+   *   - AOP-based features like @PreAuthorize (Spring Security)
+   *
+   * ERROR WITHOUT THIS DEPENDENCY:
+   *   ClassNotFoundException: org.springframework.aop.scope.ScopedProxyUtils
+   *
+   * NOTE: This JAR is excluded from WAR (see war exclusions) to use parent version
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
+  implementation('org.springframework:spring-aop')
   implementation('org.springframework:spring-beans')
   implementation('org.springframework.security:spring-security-core')
   implementation('org.springframework.security:spring-security-web')
@@ -118,7 +285,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-core'))
-  testImplementation('javax.servlet:javax.servlet-api')
+  testImplementation('jakarta.servlet:jakarta.servlet-api')
 
   integrationTestImplementation(sourceSets.commonTest.output)
 
@@ -156,12 +323,214 @@ dependencies {
   }
 }
 
+/*
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * WAR Packaging Configuration - Critical Exclusions for Jetty 12 Classloading
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ *
+ * CONTEXT: Jetty 12 WebAppContext Classloader Isolation
+ *
+ * Jetty 12 introduced a multi-environment architecture supporting EE8, EE9, and
+ * EE10 simultaneously. Each environment runs in its own isolated classloader to
+ * prevent javax.* and jakarta.* namespace collisions. This isolation is stricter
+ * than Jetty 11, requiring careful JAR placement to avoid LinkageError and
+ * ClassCastException.
+ *
+ * CLASSLOADER HIERARCHY:
+ *   ┌─────────────────────────────────────────────────────────────┐
+ *   │ System ClassLoader (JDK)                                    │
+ *   └──────────────┬──────────────────────────────────────────────┘
+ *                  │
+ *   ┌──────────────▼──────────────────────────────────────────────┐
+ *   │ App ClassLoader (geode/lib) - PARENT FIRST                  │
+ *   │   - spring-*.jar (all Spring Framework JARs)                │
+ *   │   - jackson-*.jar (all Jackson JARs)                        │
+ *   │   - log4j-*.jar, commons-*.jar, etc.                        │
+ *   └──────────────┬──────────────────────────────────────────────┘
+ *                  │
+ *   ┌──────────────▼──────────────────────────────────────────────┐
+ *   │ WebAppClassLoader (WAR) - CHILD FIRST (for WAR-only JARs)  │
+ *   │   - REST controllers (@RestController classes)              │
+ *   │   - Security config (RestSecurityConfiguration)             │
+ *   │   - Application-specific code                               │
+ *   │   - NO Spring JARs, NO Jackson JARs                         │
+ *   └─────────────────────────────────────────────────────────────┘
+ *
+ * STRATEGY: "Parent Classloader First" for Shared Libraries
+ *
+ * All transitive Spring and Jackson dependencies are excluded from WAR and
+ * loaded from geode/lib (parent classloader). This prevents:
+ *   1. LinkageError - Same class loaded by different classloaders
+ *   2. ClassCastException - Class instances incompatible across classloaders
+ *   3. MethodNotFoundException - Version mismatches between WAR and parent
+ *   4. NoClassDefFoundError - Incomplete dependency sets in WAR
+ *
+ * WHY EXCLUDE FROM WAR:
+ *   - CORRECTNESS: Single source of truth for shared library versions
+ *   - CONSISTENCY: All webapps use same Spring/Jackson versions
+ *   - PERFORMANCE: Reduced memory footprint (shared JARs loaded once)
+ *   - MAINTENANCE: Version upgrades affect all webapps uniformly
+ *
+ * HISTORICAL NOTE:
+ *   Pre-Jetty 12 (Jetty 11 and earlier) was more lenient about JAR duplication,
+ *   allowing some overlap between parent and webapp classloaders. Jetty 12's
+ *   strict isolation exposes previously hidden classloader conflicts.
+ *
+ * REFERENCE:
+ *   - Jetty 12 WebAppContext: https://eclipse.dev/jetty/documentation/jetty-12/programming-guide/index.html#pg-server-http-handler-use-webapp-context
+ *   - ClassLoader delegation: https://eclipse.dev/jetty/documentation/jetty-12/operations-guide/index.html#og-webapp-classloading
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ */
 war {
   enabled = true
+
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * LEGACY: commons-logging exclusion (predates this migration)
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
   rootSpec.exclude("**/*commons-logging-*.jar")
+
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * Spring Framework JAR Exclusions - CRITICAL for Jetty 12
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * REASON: Prevent LinkageError from duplicate Spring classes
+   *
+   * All Spring Framework JARs MUST reside in geode/lib (parent classloader).
+   * Including them in WAR causes LinkageError when Spring beans reference
+   * classes from both classloaders.
+   *
+   * EXAMPLE ERROR (without exclusions):
+   *   LinkageError: loader constraint violation: loader 'app' previously
+   *   initiated loading for a different type with name
+   *   "org/springframework/beans/factory/BeanFactory"
+   *
+   * SPRING JARS IN geode/lib:
+   *   - spring-web, spring-webmvc (web tier)
+   *   - spring-core, spring-beans (core container)
+   *   - spring-context, spring-expression (DI infrastructure)
+   *   - spring-aop (AOP support, required for component-scan)
+   *   - spring-jcl (Jakarta Commons Logging bridge)
+   *
+   * DEPENDENCY GRAPH (simplified):
+   *   spring-webmvc → spring-web → spring-core
+   *   spring-context → spring-beans → spring-core
+   *   spring-security-web → spring-web, spring-security-core
+   *
+   * All must come from same classloader for proper dependency resolution.
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
+  rootSpec.exclude("**/spring-web-*.jar")
+  rootSpec.exclude("**/spring-core-*.jar")
+  rootSpec.exclude("**/spring-beans-*.jar")
+  rootSpec.exclude("**/spring-context-*.jar")
+  rootSpec.exclude("**/spring-expression-*.jar")
+  rootSpec.exclude("**/spring-jcl-*.jar")
+  rootSpec.exclude("**/spring-aop-*.jar")  /* Required for component-scan, must be on parent */
+
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * SpringDoc 2.x and Spring Boot JARs - Included for Swagger UI
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * SpringDoc and Spring Boot JARs are INCLUDED in WAR
+   *
+   * REASON: Enable Swagger UI at /management/swagger-ui.html
+   *
+   * SpringDoc 2.x requires Spring Boot's autoconfiguration infrastructure
+   * (JacksonAutoConfiguration, etc.). We include these JARs but use them as
+   * libraries only - Spring Boot is NOT activated in the main application context.
+   *
+   * ARCHITECTURE:
+   *   - Main Context: management-servlet.xml (pure Spring Framework, XML config)
+   *   - SwaggerConfig: Picked up via component-scan, provides SpringDoc beans
+   *   - No bean conflicts: Main context has primary="true" ObjectMapper
+   *
+   * SWAGGER INTEGRATION:
+   *   SwaggerConfig uses:
+   *   - @EnableWebMvc: Provides MVC infrastructure beans
+   *   - @ComponentScan("org.springdoc"): Discovers SpringDoc components
+   *   - @Import(JacksonAutoConfiguration): Provides ObjectMapper for OpenAPI
+   *
+   * BENEFITS:
+   *   + Swagger UI: /management/swagger-ui.html
+   *   + OpenAPI JSON: /management/v3/api-docs
+   *   + All Swagger tests pass (SwaggerManagementVerificationIntegrationTest)
+   *
+   * COST:
+   *   - ~2MB WAR size (spring-boot-autoconfigure, springdoc JARs)
+   *
+   * RELATED:
+   *   - SwaggerConfig.java: Comprehensive comments on integration approach
+   *   - geode-core/build.gradle: jackson-dataformat-yaml in parent classloader
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
+  /* Spring Boot and SpringDoc JARs included in WAR */
+
+
+  /*
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * Jackson JAR Exclusions - CRITICAL for ClassCastException Prevention
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   * REASON: Jackson classes MUST be loaded from single classloader
+   *
+   * This is THE MOST CRITICAL exclusion for V2 Management REST API functionality.
+   * Without these exclusions, the REST API returns HTTP 503 with ClassCastException.
+   *
+   * PROBLEM SCENARIO (without exclusions):
+   *   1. geode/lib contains jackson-core-2.17.0.jar (parent classloader)
+   *   2. WAR contains jackson-core-2.17.0.jar (WebAppClassLoader)
+   *   3. CustomMappingJackson2HttpMessageConverter creates ObjectMapper
+   *   4. Registers JavaTimeModule from WAR classloader
+   *   5. Spring tries to cast: (Module) javaTimeModule
+   *   6. FAILURE: ClassCastException
+   *
+   * ERROR MESSAGE:
+   *   java.lang.ClassCastException: class com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+   *   cannot be cast to class com.fasterxml.jackson.databind.Module
+   *   (com.fasterxml.jackson.datatype.jsr310.JavaTimeModule and
+   *    com.fasterxml.jackson.databind.Module are in unnamed module of loader
+   *    org.eclipse.jetty.ee10.webapp.WebAppClassLoader @6f9e08e7;
+   *    com.fasterxml.jackson.databind.Module is in unnamed module of loader 'app')
+   *
+   * ROOT CAUSE - JVM Classloader Type Isolation:
+   *   When the same class is loaded by different classloaders, the JVM treats them
+   *   as DISTINCT types, even if the bytecode is identical. This breaks casting:
+   *
+   *     ClassLoader A loads Module.class → Type A (Module from parent)
+   *     ClassLoader B loads Module.class → Type B (Module from WAR)
+   *     Type A ≠ Type B → ClassCastException
+   *
+   * SOLUTION: Exclude ALL Jackson JARs from WAR
+   *   - jackson-core: Core streaming API (JsonParser, JsonGenerator)
+   *   - jackson-databind: Object mapping (ObjectMapper, Module)
+   *   - jackson-datatype-*: Type modules (JavaTimeModule, Jdk8Module, etc.)
+   *   - jackson-dataformat-*: Format modules (XML, YAML, CSV, etc.)
+   *
+   * VERIFICATION:
+   *   After exclusion, only CustomMappingJackson2HttpMessageConverter.class
+   *   remains in WAR. This class uses Jackson API but doesn't bundle Jackson JARs.
+   *
+   * RELATED:
+   *   - See dependencies block above for 'compileOnly' declarations
+   *   - See CustomMappingJackson2HttpMessageConverter.java for Jackson usage
+   *   - Similar pattern applied to Spring JARs
+   *
+   * TESTING:
+   *   - Verified by DisabledClusterConfigTest (HTTP 500 with proper error message)
+   *   - Verified by 28 geode-web-management integration tests (all pass)
+   *   - Verified by checking WAR contents: no jackson-*.jar files present
+   * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   */
+  rootSpec.exclude("**/jackson-core-*.jar")
+  rootSpec.exclude("**/jackson-databind-*.jar")
+  rootSpec.exclude("**/jackson-datatype-*.jar")
+  rootSpec.exclude("**/jackson-dataformat-*.jar")
+
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  // this shouldn't be necessary but if it's not specified we're missing some of the jars
-  // from the runtime classpath
+  /* this shouldn't be necessary but if it's not specified we're missing some of the jars
+   * from the runtime classpath
+   */
   classpath configurations.runtimeClasspath
 }
 

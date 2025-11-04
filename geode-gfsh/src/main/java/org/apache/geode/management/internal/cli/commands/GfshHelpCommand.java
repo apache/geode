@@ -15,16 +15,16 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.CommandManagerAware;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class GfshHelpCommand extends OfflineGfshCommand implements CommandManagerAware {
   private CommandManager commandManager = null;
 
@@ -33,11 +33,11 @@ public class GfshHelpCommand extends OfflineGfshCommand implements CommandManage
     this.commandManager = commandManager;
   }
 
-  @CliCommand(value = CliStrings.HELP, help = CliStrings.HELP__HELP)
+  @ShellMethod(value = CliStrings.HELP__HELP, key = {"help"})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP})
   public ResultModel obtainHelp(
-      @CliOption(key = {"", CliStrings.HELP__COMMAND}, optionContext = ConverterHint.HELP,
-          help = CliStrings.HELP__COMMAND__HELP) String buffer) {
+      @ShellOption(value = {CliStrings.HELP__COMMAND},
+          help = CliStrings.HELP__COMMAND__HELP, defaultValue = "") String buffer) {
 
     return ResultModel.createInfo(commandManager.obtainHelp(buffer));
   }

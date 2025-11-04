@@ -32,9 +32,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
-import javax.transaction.TransactionManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.TransactionManager;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
@@ -120,6 +120,17 @@ public class InternalCacheForClientAccess implements InternalCache {
 
   public InternalCacheForClientAccess(InternalCache delegate) {
     this.delegate = delegate;
+  }
+
+  /**
+   * Returns the underlying InternalCache delegate.
+   * This should only be used by internal management/JMX services that need
+   * access to internal regions like __OperationStateRegion.
+   *
+   * @return the unwrapped InternalCache instance
+   */
+  public InternalCache getDelegate() {
+    return delegate;
   }
 
   private void checkForInternalRegion(Region<?, ?> r) {

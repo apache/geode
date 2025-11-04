@@ -26,35 +26,33 @@ import java.util.List;
 import javax.management.remote.JMXServiceURL;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.JdkTool;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class StartJConsoleCommand extends OfflineGfshCommand {
 
-  @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
+  @ShellMethod(value = CliStrings.START_JCONSOLE__HELP, key = CliStrings.START_JCONSOLE)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
       CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
   public ResultModel startJConsole(
-      @CliOption(key = CliStrings.START_JCONSOLE__INTERVAL, unspecifiedDefaultValue = "4",
+      @ShellOption(value = CliStrings.START_JCONSOLE__INTERVAL, defaultValue = "4",
           help = CliStrings.START_JCONSOLE__INTERVAL__HELP) final int interval,
-      @CliOption(key = CliStrings.START_JCONSOLE__NOTILE, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.START_JCONSOLE__NOTILE, defaultValue = "false",
           help = CliStrings.START_JCONSOLE__NOTILE__HELP) final boolean notile,
-      @CliOption(key = CliStrings.START_JCONSOLE__PLUGINPATH,
+      @ShellOption(value = CliStrings.START_JCONSOLE__PLUGINPATH,
           help = CliStrings.START_JCONSOLE__PLUGINPATH__HELP) final String pluginpath,
-      @CliOption(key = CliStrings.START_JCONSOLE__VERSION, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.START_JCONSOLE__VERSION, defaultValue = "false",
           help = CliStrings.START_JCONSOLE__VERSION__HELP) final boolean version,
-      @CliOption(key = CliStrings.START_JCONSOLE__J, optionContext = GfshParser.J_OPTION_CONTEXT,
+      @ShellOption(value = CliStrings.START_JCONSOLE__J,
           help = CliStrings.START_JCONSOLE__J__HELP) final String[] jvmArgs)
       throws InterruptedException, IOException {
     String[] jconsoleCommandLine =

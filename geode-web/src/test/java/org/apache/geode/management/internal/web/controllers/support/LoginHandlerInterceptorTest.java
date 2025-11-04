@@ -34,8 +34,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
-import javax.servlet.http.HttpServletRequest;
-
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

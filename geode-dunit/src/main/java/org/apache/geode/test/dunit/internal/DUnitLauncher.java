@@ -42,6 +42,7 @@ import java.rmi.NotBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -357,6 +358,10 @@ public class DUnitLauncher {
     File[] suspectFiles = getDunitSuspectsDir()
         .listFiles((dir, name) -> name.startsWith(SUSPECT_FILENAME_PREFIX));
 
+    // Handle case where listFiles() returns null (directory doesn't exist or I/O error)
+    if (suspectFiles == null) {
+      return Collections.emptyList();
+    }
     return Arrays.asList(suspectFiles);
   }
 

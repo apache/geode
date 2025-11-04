@@ -39,11 +39,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

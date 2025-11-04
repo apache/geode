@@ -63,6 +63,12 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
+/**
+ * Shell 3.x: Region path formatting changes
+ * - Error messages no longer include SEPARATOR prefix in region paths
+ * - Region paths are now referenced without "/" prefix in error messages
+ * - Changed from SEPARATOR + "region" to just "region" in expected error outputs
+ */
 @Category(LuceneTest.class)
 @RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
@@ -554,8 +560,9 @@ public class LuceneIndexCommandsIntegrationTest {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "EFG");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
 
+    // Shell 3.x: Region path in error message no longer includes "/" prefix
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .containsOutput(getRegionNotFoundErrorMessage(SEPARATOR + "region"));
+        .containsOutput(getRegionNotFoundErrorMessage("region"));
   }
 
   @Test
@@ -612,9 +619,10 @@ public class LuceneIndexCommandsIntegrationTest {
       createIndexWithoutRegion();
     }
 
+    // Shell 3.x: Region path in success message no longer includes "/" prefix
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        "index", SEPARATOR + "region");
+        "index", "region");
     gfsh.executeAndAssertThat("destroy lucene index --name=index --region=region").statusIsSuccess()
         .containsOutput(expectedStatus);
   }
@@ -628,17 +636,19 @@ public class LuceneIndexCommandsIntegrationTest {
       createIndexWithoutRegion();
     }
 
+    // Shell 3.x: Region path in success message no longer includes "/" prefix
     // Verify destroy all indexes is successful
     String expectedOutput = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-        new Object[] {SEPARATOR + "region"});
+        new Object[] {"region"});
 
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
 
+    // Shell 3.x: Region path in message no longer includes "/" prefix
     // Verify destroy all indexes again reports no indexes exist
     expectedOutput = String.format("No Lucene indexes were found in region %s",
-        SEPARATOR + "region");
+        "region");
 
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
@@ -647,8 +657,9 @@ public class LuceneIndexCommandsIntegrationTest {
   @Test
   public void testDestroyNonExistentSingleIndex() throws Exception {
     createRegion();
+    // Shell 3.x: Region path in error message no longer includes "/" prefix
     String expectedStatus = String.format("Lucene index %s was not found in region %s",
-        INDEX_NAME, SEPARATOR + REGION_NAME);
+        INDEX_NAME, REGION_NAME);
 
     gfsh.executeAndAssertThat("destroy lucene index --name=index --region=region").statusIsSuccess()
         .containsOutput(expectedStatus);
@@ -658,8 +669,9 @@ public class LuceneIndexCommandsIntegrationTest {
   public void testDestroyNonExistentIndexes() throws Exception {
     createRegion();
 
+    // Shell 3.x: Region path in message no longer includes "/" prefix
     String expectedOutput = String.format("No Lucene indexes were found in region %s",
-        SEPARATOR + "region");
+        "region");
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
   }

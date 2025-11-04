@@ -32,10 +32,9 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.MethodTarget;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -74,7 +73,27 @@ public class Helper {
 
   private final Map<String, Topic> topics = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private final Map<String, Method> commands = new TreeMap<>();
-  private final Map<String, MethodTarget> availabilityIndicators = new HashMap<>();
+  // Spring Shell 3.x: Store availability indicator methods directly
+  private final Map<String, AvailabilityTarget> availabilityIndicators = new HashMap<>();
+
+  // Helper class to replace Spring Shell 2.x MethodTarget
+  private static class AvailabilityTarget {
+    private final Method method;
+    private final Object target;
+
+    AvailabilityTarget(Method method, Object target) {
+      this.method = method;
+      this.target = target;
+    }
+
+    Method getMethod() {
+      return method;
+    }
+
+    Object getTarget() {
+      return target;
+    }
+  }
 
   public Helper() {
     initTopic(CliStrings.DEFAULT_TOPIC_GEODE, CliStrings.DEFAULT_TOPIC_GEODE__DESC);
@@ -102,9 +121,17 @@ public class Helper {
     topics.put(topic, new Topic(topic, desc));
   }
 
-  public void addCommand(CliCommand command, Method commandMethod) {
+  public void addCommand(ShellMethod command, Method commandMethod) {
+    // Spring Shell 3.x: key contains command names, value contains help text
     // put all the command synonyms in the command map
-    Arrays.stream(command.value()).forEach(cmd -> commands.put(cmd, commandMethod));
+    String[] keys = command.key();
+    if (keys.length == 0) {
+      // If no keys specified, use method name
+      keys = new String[] {commandMethod.getName()};
+    }
+    for (String cmd : keys) {
+      commands.put(cmd, commandMethod);
+    }
 
     // resolve the hint message for each method
     CliMetaData cliMetaData = commandMethod.getDeclaredAnnotation(CliMetaData.class);
@@ -114,19 +141,22 @@ public class Helper {
     String[] related = cliMetaData.relatedTopic();
 
     // for hint message, we only need to show the first synonym
-    String commandString = command.value()[0];
+    String commandString = keys[0];
     Arrays.stream(related).forEach(topic -> {
       Topic foundTopic = topics.get(topic);
       if (foundTopic == null) {
         throw new IllegalArgumentException("No such topic found in the initial map: " + topic);
       }
-      foundTopic.addRelatedCommand(commandString, command.help());
+      foundTopic.addRelatedCommand(commandString, command.value());
     });
   }
 
-  public void addAvailabilityIndicator(CliAvailabilityIndicator availability, MethodTarget target) {
+  public void addAvailabilityIndicator(ShellMethodAvailability availability, Method method,
+      Object target) {
+    // Spring Shell 3.x: Store method and target for availability checking
+    AvailabilityTarget availabilityTarget = new AvailabilityTarget(method, target);
     Arrays.stream(availability.value())
-        .forEach(command -> availabilityIndicators.put(command, target));
+        .forEach(command -> availabilityIndicators.put(command, availabilityTarget));
   }
 
   /**
@@ -150,7 +180,7 @@ public class Helper {
     }
 
     Method m = methodList.get(0);
-    CliCommand cliCommand = m.getDeclaredAnnotation(CliCommand.class);
+    ShellMethod shellMethod = m.getDeclaredAnnotation(ShellMethod.class);
     Annotation[][] annotations = m.getParameterAnnotations();
 
     if (annotations == null || annotations.length == 0) {
@@ -161,14 +191,12 @@ public class Helper {
     // loop through the required options and check that they appear in the buffer
     StringBuilder builder = new StringBuilder();
     for (Annotation[] annotation : annotations) {
-      CliOption cliOption = getAnnotation(annotation, CliOption.class);
-      String option = getPrimaryKey(cliOption);
-      boolean required = cliOption.mandatory();
-      boolean requiredWithEquals = !isNonEmptyAnnotation(cliOption.specifiedDefaultValue());
+      ShellOption shellOption = getAnnotation(annotation, ShellOption.class);
+      String option = getPrimaryKey(shellOption);
+      boolean required = shellOption.defaultValue().equals(ShellOption.NULL);
+      // In Shell 3.x, if an option has a non-null default value, it's not required
+      boolean requiredWithEquals = required;
 
-      if (isNonEmptyAnnotation(cliOption.unspecifiedDefaultValue())) {
-        required = false;
-      }
       if (required) {
         String lookFor = "--" + option + (requiredWithEquals ? "=" : "");
         if (!userInput.contains(lookFor)) {
@@ -178,7 +206,7 @@ public class Helper {
       }
     }
     if (builder.length() > 0) {
-      String commandName = cliCommand.value()[0];
+      String commandName = shellMethod.key().length > 0 ? shellMethod.key()[0] : m.getName();
       builder.append("Use \"help ").append(commandName)
           .append("\" (without the quotes) for detailed usage information.")
           .append(LINE_SEPARATOR);
@@ -209,7 +237,7 @@ public class Helper {
 
     boolean summarize = methodList.size() > 1;
     String helpString = methodList.stream()
-        .map(m -> getHelp(m.getDeclaredAnnotation(CliCommand.class),
+        .map(m -> getHelp(m.getDeclaredAnnotation(ShellMethod.class),
             summarize ? null : m.getParameterAnnotations(),
             summarize ? null : m.getParameterTypes()))
         .map(helpBlock -> helpBlock.toString(terminalWidth))
@@ -256,7 +284,7 @@ public class Helper {
   }
 
   private boolean isAvailable(String command) {
-    MethodTarget target = availabilityIndicators.get(command);
+    AvailabilityTarget target = availabilityIndicators.get(command);
     if (target == null) {
       return true;
     }
@@ -274,7 +302,7 @@ public class Helper {
   private HelpBlock getHelp() {
     HelpBlock root = new HelpBlock();
     commands.keySet().stream().sorted().map(commands::get).forEach(method -> root
-        .addChild(getHelp(method.getDeclaredAnnotation(CliCommand.class), null, null)));
+        .addChild(getHelp(method.getDeclaredAnnotation(ShellMethod.class), null, null)));
 
     return root;
   }
@@ -283,14 +311,16 @@ public class Helper {
    * returns a short description and help string of the command if annotations is null or returns a
    * details description of the command with the syntax and parameter description
    */
-  HelpBlock getHelp(CliCommand cliCommand, Annotation[][] annotations, Class<?>[] parameterTypes) {
-    String commandName = cliCommand.value()[0];
+  HelpBlock getHelp(ShellMethod shellMethod, Annotation[][] annotations,
+      Class<?>[] parameterTypes) {
+    // Spring Shell 3.x: key contains command names, value contains help text
+    String commandName = shellMethod.key().length > 0 ? shellMethod.key()[0] : "";
     boolean isAvailable = isAvailable(commandName);
 
     if (annotations == null && parameterTypes == null) {
       String available = isAvailable ? AVAILABLE : NOT_AVAILABLE;
       HelpBlock help = new HelpBlock(commandName + " (" + available + ")");
-      help.addChild(new HelpBlock(cliCommand.help()));
+      help.addChild(new HelpBlock(shellMethod.value()));
       return help;
     }
 
@@ -306,7 +336,7 @@ public class Helper {
     root.addChild(availability);
 
     // Now add synonyms if any
-    String[] allNames = cliCommand.value();
+    String[] allNames = shellMethod.key();
     if (allNames.length > 1) {
       HelpBlock synonyms = new HelpBlock(SYNONYMS_NAME);
       for (int i = 1; i < allNames.length; i++) {
@@ -316,9 +346,9 @@ public class Helper {
     }
 
     // Now comes the turn to display synopsis if any
-    if (StringUtils.isNotBlank(cliCommand.help())) {
+    if (StringUtils.isNotBlank(shellMethod.value())) {
       HelpBlock synopsis = new HelpBlock(SYNOPSIS_NAME);
-      synopsis.addChild(new HelpBlock(cliCommand.help()));
+      synopsis.addChild(new HelpBlock(shellMethod.value()));
       root.addChild(synopsis);
     }
 
@@ -332,8 +362,8 @@ public class Helper {
     if (annotations.length > 0) {
       HelpBlock options = new HelpBlock(OPTIONS_NAME);
       for (Annotation[] annotation : annotations) {
-        CliOption cliOption = getAnnotation(annotation, CliOption.class);
-        HelpBlock optionNode = getOptionDetail(cliOption);
+        ShellOption shellOption = getAnnotation(annotation, ShellOption.class);
+        HelpBlock optionNode = getOptionDetail(shellOption);
         options.addChild(optionNode);
       }
 
@@ -342,13 +372,21 @@ public class Helper {
     return root;
   }
 
-  HelpBlock getOptionDetail(CliOption cliOption) {
-    HelpBlock optionNode = new HelpBlock(getPrimaryKey(cliOption));
-    String help = cliOption.help();
-    optionNode.addChild(new HelpBlock((StringUtils.isNotBlank(help) ? help : "")));
-    if (getSynonyms(cliOption).size() > 0) {
+  HelpBlock getOptionDetail(ShellOption shellOption) {
+    // Spring Shell 3.x: option name can be an array, use first one
+    String optionKey = getPrimaryKey(shellOption);
+    HelpBlock optionNode = new HelpBlock(optionKey);
+
+    // Spring Shell 3.x: ShellOption.help() provides option description
+    // Only add help text if it's not blank to avoid empty lines
+    String help = shellOption.help();
+    if (StringUtils.isNotBlank(help)) {
+      optionNode.addChild(new HelpBlock(help));
+    }
+
+    if (getSynonyms(shellOption).size() > 0) {
       StringBuilder builder = new StringBuilder();
-      for (String string : getSynonyms(cliOption)) {
+      for (String string : getSynonyms(shellOption)) {
         if (builder.length() > 0) {
           builder.append(",");
         }
@@ -356,16 +394,19 @@ public class Helper {
       }
       optionNode.addChild(new HelpBlock(SYNONYMS_SUB_NAME + builder));
     }
+
+    // In Shell 3.x, mandatory is determined by defaultValue being ShellOption.NULL
+    boolean isMandatory = shellOption.defaultValue().equals(ShellOption.NULL);
     optionNode.addChild(
-        new HelpBlock(REQUIRED_SUB_NAME + ((cliOption.mandatory()) ? TRUE_TOKEN : FALSE_TOKEN)));
-    if (isNonEmptyAnnotation(cliOption.specifiedDefaultValue())) {
+        new HelpBlock(REQUIRED_SUB_NAME + (isMandatory ? TRUE_TOKEN : FALSE_TOKEN)));
+
+    // In Shell 3.x, there's only one defaultValue field
+    if (!shellOption.defaultValue().equals(ShellOption.NULL)
+        && !shellOption.defaultValue().isEmpty()) {
       optionNode.addChild(
-          new HelpBlock(SPECIFIEDDEFAULTVALUE_SUB_NAME + cliOption.specifiedDefaultValue()));
+          new HelpBlock(SPECIFIEDDEFAULTVALUE_SUB_NAME + shellOption.defaultValue()));
     }
-    if (isNonEmptyAnnotation(cliOption.unspecifiedDefaultValue())) {
-      optionNode.addChild(new HelpBlock(
-          UNSPECIFIEDDEFAULTVALUE_VALUE_SUB_NAME + cliOption.unspecifiedDefaultValue()));
-    }
+
     return optionNode;
   }
 
@@ -379,13 +420,15 @@ public class Helper {
     return null;
   }
 
-  String getSyntaxString(String commandName, Annotation[][] annotations, Class[] parameterTypes) {
+  String getSyntaxString(String commandName, Annotation[][] annotations,
+      Class<?>[] parameterTypes) {
     StringBuilder buffer = new StringBuilder();
     buffer.append(commandName);
     for (int i = 0; i < annotations.length; i++) {
-      CliOption cliOption = getAnnotation(annotations[i], CliOption.class);
-      String optionString = getOptionString(cliOption, parameterTypes[i]);
-      if (cliOption.mandatory()) {
+      ShellOption shellOption = getAnnotation(annotations[i], ShellOption.class);
+      String optionString = getOptionString(shellOption, parameterTypes[i]);
+      boolean isMandatory = shellOption.defaultValue().equals(ShellOption.NULL);
+      if (isMandatory) {
         buffer.append(" ").append(optionString);
       } else {
         buffer.append(" [").append(optionString).append("]");
@@ -400,24 +443,27 @@ public class Helper {
    *
    * @return option string
    */
-  private static String getOptionString(CliOption cliOption, Class<?> optionType) {
-    String key0 = cliOption.key()[0];
-    if ("".equals(key0)) {
-      return (cliOption.key()[1]);
+  private static String getOptionString(ShellOption shellOption, Class<?> optionType) {
+    // Spring Shell 3.x: value() returns option names
+    String[] keys = shellOption.value();
+    String key0 = keys.length > 0 ? keys[0] : "";
+    if ("".equals(key0) && keys.length > 1) {
+      return (keys[1]);
     }
 
     StringBuilder buffer = new StringBuilder();
     buffer.append(LONG_OPTION_SPECIFIER).append(key0);
 
-    boolean hasSpecifiedDefault = isNonEmptyAnnotation(cliOption.specifiedDefaultValue());
+    boolean hasDefault = !shellOption.defaultValue().equals(ShellOption.NULL)
+        && !shellOption.defaultValue().isEmpty();
 
-    if (hasSpecifiedDefault) {
+    if (hasDefault) {
       buffer.append("(");
     }
 
     buffer.append(OPTION_VALUE_SPECIFIER).append(VALUE_FIELD);
 
-    if (hasSpecifiedDefault) {
+    if (hasDefault) {
       buffer.append(")?");
     }
 
@@ -433,20 +479,20 @@ public class Helper {
         && (typeToCheck.isArray() || Collection.class.isAssignableFrom(typeToCheck));
   }
 
-  private static String getPrimaryKey(CliOption option) {
-    String[] keys = option.key();
+  private static String getPrimaryKey(ShellOption option) {
+    String[] keys = option.value();
     if (keys.length == 0) {
       throw new RuntimeException("Invalid option keys");
-    } else if ("".equals(keys[0])) {
+    } else if ("".equals(keys[0]) && keys.length > 1) {
       return keys[1];
     } else {
       return keys[0];
     }
   }
 
-  private static List<String> getSynonyms(CliOption option) {
+  private static List<String> getSynonyms(ShellOption option) {
     List<String> synonyms = new ArrayList<>();
-    String[] keys = option.key();
+    String[] keys = option.value();
     if (keys.length < 2) {
       return synonyms;
     }
@@ -483,8 +529,8 @@ public class Helper {
     }
 
     for (Annotation[] annotation : annotations) {
-      CliOption cliOption = getAnnotation(annotation, CliOption.class);
-      optionList.add(getPrimaryKey(cliOption));
+      ShellOption shellOption = getAnnotation(annotation, ShellOption.class);
+      optionList.add(getPrimaryKey(shellOption));
     }
     return optionList;
   }

@@ -31,15 +31,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
@@ -60,22 +59,21 @@ public class ExportStackTraceCommand extends GfshCommand {
    * Current implementation supports writing it to a locator/server side file and returning the
    * location of the file
    */
-  @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
+  @ShellMethod(value = CliStrings.EXPORT_STACKTRACE__HELP, key = CliStrings.EXPORT_STACKTRACE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public ResultModel exportStackTrace(@CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-      optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+  public ResultModel exportStackTrace(@ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
       help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.GROUP) String[] group,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.GROUP) String[] group,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
+      @ShellOption(value = CliStrings.EXPORT_STACKTRACE__FILE,
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
 
-      @CliOption(key = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
+          defaultValue = "false",
           help = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT__HELP) boolean failIfFilePresent)
       throws IOException {
 

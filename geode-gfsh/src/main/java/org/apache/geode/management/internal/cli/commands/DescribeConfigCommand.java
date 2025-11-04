@@ -19,13 +19,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 import org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction;
@@ -49,16 +48,17 @@ public class DescribeConfigCommand extends GfshCommand {
   private final GetMemberConfigInformationFunction getMemberConfigFunction =
       new GetMemberConfigInformationFunction();
 
-  @CliCommand(value = {CliStrings.DESCRIBE_CONFIG}, help = CliStrings.DESCRIBE_CONFIG__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @ShellMethod(value = CliStrings.DESCRIBE_CONFIG__HELP, key = {CliStrings.DESCRIBE_CONFIG})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG},
+      interceptor = "org.apache.geode.management.internal.cli.MandatoryParameterValidationInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel describeConfig(
-      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.DESCRIBE_CONFIG__MEMBER__HELP, mandatory = true) String memberNameOrId,
-      @CliOption(key = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS,
-          help = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS__HELP, unspecifiedDefaultValue = "true",
-          specifiedDefaultValue = "true") boolean hideDefaults) {
+      @ShellOption(value = CliStrings.MEMBER,
+          help = CliStrings.DESCRIBE_CONFIG__MEMBER__HELP) String memberNameOrId,
+      @ShellOption(value = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS,
+          help = CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS__HELP,
+          defaultValue = "true") boolean hideDefaults) {
 
     ResultModel result = new ResultModel();
 

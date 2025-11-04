@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
@@ -34,6 +35,10 @@ public class ManagementRestSecurityConfigurationDUnitTest {
 
   @Test
   public void testWithSecurityManager() {
+    // These authentication failures are expected when testing with invalid/no credentials
+    IgnoredException.addIgnoredException("Authentication FAILED");
+    IgnoredException.addIgnoredException("invalid username/password");
+
     locator = cluster.startLocatorVM(0,
         x -> x.withHttpService().withSecurityManager(SimpleSecurityManager.class));
     GeodeDevRestClient client =

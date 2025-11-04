@@ -27,8 +27,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
-import javax.annotation.Resource;
-
+import jakarta.annotation.Resource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

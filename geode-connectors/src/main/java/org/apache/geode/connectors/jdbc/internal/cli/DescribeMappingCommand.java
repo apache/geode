@@ -29,9 +29,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -40,7 +40,6 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -63,14 +62,14 @@ public class DescribeMappingCommand extends GfshCommand {
 
   public static final String RESULT_SECTION_NAME = "MappingDescription";
 
-  @CliCommand(value = DESCRIBE_MAPPING, help = DESCRIBE_MAPPING__HELP)
+  @ShellMethod(value = DESCRIBE_MAPPING__HELP, key = DESCRIBE_MAPPING)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
-      mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+  public ResultModel describeMapping(@ShellOption(value = DESCRIBE_MAPPING__REGION_NAME,
+      help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          defaultValue = ShellOption.NULL,
           help = DESCRIBE_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     if (regionName.startsWith(SEPARATOR)) {
       regionName = regionName.substring(1);
@@ -200,7 +199,7 @@ public class DescribeMappingCommand extends GfshCommand {
     return MappingCommandUtils.checkForRegion(regionName, cacheConfig, groupName);
   }
 
-  @CliAvailabilityIndicator({DESCRIBE_MAPPING})
+  @ShellMethodAvailability({DESCRIBE_MAPPING})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
   }

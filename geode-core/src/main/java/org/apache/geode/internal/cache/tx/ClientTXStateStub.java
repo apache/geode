@@ -18,8 +18,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.transaction.Status;
-
+import jakarta.transaction.Status;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;

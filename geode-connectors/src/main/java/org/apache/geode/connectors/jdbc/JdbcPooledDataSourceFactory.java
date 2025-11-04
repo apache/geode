@@ -16,6 +16,8 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -64,11 +66,17 @@ public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
   Properties convertToHikari(Properties poolProperties) {
     final int MILLIS_PER_SECOND = 1000;
     Properties result = new Properties();
+
+    // Capture the JDBC URL to extract embedded parameters later
+    String jdbcUrl = null;
+
     for (String name : poolProperties.stringPropertyNames()) {
       String hikariName = convertToCamelCase(name);
       String hikariValue = poolProperties.getProperty(name);
       if (name.equals("connection-url")) {
         hikariName = "jdbcUrl";
+        // Store the URL for parameter extraction
+        jdbcUrl = hikariValue;
       } else if (name.equals("jdbc-driver-class")) {
         hikariName = "driverClassName";
       } else if (name.equals("user-name")) {
@@ -81,7 +89,141 @@ public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
       }
       result.setProperty(hikariName, hikariValue);
     }
+
+    // Extract username and password from JDBC URL query parameters if not explicitly provided.
+    // This is necessary because some JDBC URLs embed credentials in the query string
+    // (e.g., jdbc:postgresql://localhost:5432/db?user=postgres&password=secret).
+    // HikariCP expects these as separate properties, so we extract them from the URL
+    // and set them explicitly, then strip the parameters from the URL.
+    if (jdbcUrl != null && jdbcUrl.contains("?")) {
+      Map<String, String> urlParams = parseUrlParameters(jdbcUrl);
+
+      // Only set username from URL if not explicitly provided via user-name property.
+      // Explicit properties take precedence over URL parameters.
+      if (!result.containsKey("username") && urlParams.containsKey("user")) {
+        String userFromUrl = urlParams.get("user");
+        result.setProperty("username", userFromUrl);
+      }
+
+      // Only set password from URL if not explicitly provided via password property.
+      // Explicit properties take precedence over URL parameters.
+      if (!result.containsKey("password") && urlParams.containsKey("password")) {
+        String passwordFromUrl = urlParams.get("password");
+        result.setProperty("password", passwordFromUrl);
+      }
+
+      // Strip only user and password parameters from the URL since they are now set as separate
+      // properties.
+      // Other parameters (e.g., useSSL, serverTimezone, characterEncoding) must be preserved.
+      // This prevents the JDBC driver from receiving duplicate credentials while maintaining
+      // other important connection properties.
+      String cleanUrl = stripCredentialsFromUrl(jdbcUrl);
+      result.setProperty("jdbcUrl", cleanUrl);
+    }
+
     return result;
+  }
+
+  /**
+   * Parses query string parameters from a JDBC URL.
+   * <p>
+   * Extracts key-value pairs from the query string portion of a JDBC URL.
+   * For example, given "jdbc:postgresql://localhost:5432/db?user=postgres&password=secret",
+   * this method returns a map containing {"user": "postgres", "password": "secret"}.
+   * <p>
+   * This is necessary because JDBC URLs can contain credentials and other configuration
+   * parameters in their query strings, but HikariCP expects these to be provided as
+   * separate properties. By extracting these parameters, we can properly configure
+   * the connection pool regardless of how the URL is formatted.
+   * <p>
+   * Invalid parameter pairs (missing '=' or empty values) are silently skipped to avoid
+   * errors during connection pool initialization.
+   *
+   * @param jdbcUrl the JDBC URL (e.g., "jdbc:postgresql://host:port/db?user=foo&password=bar")
+   * @return a map of parameter names to values; empty map if no query string is present
+   */
+  Map<String, String> parseUrlParameters(String jdbcUrl) {
+    Map<String, String> params = new HashMap<>();
+
+    // Return empty map if URL has no query string
+    if (jdbcUrl == null || !jdbcUrl.contains("?")) {
+      return params;
+    }
+
+    // Extract the query string portion after the '?'
+    String queryString = jdbcUrl.substring(jdbcUrl.indexOf('?') + 1);
+
+    // Split by '&' to get individual parameter pairs
+    String[] pairs = queryString.split("&");
+
+    for (String pair : pairs) {
+      int idx = pair.indexOf('=');
+
+      // Only process valid key=value pairs (skip malformed parameters)
+      // idx > 0 ensures non-empty key, idx < length-1 ensures non-empty value
+      if (idx > 0 && idx < pair.length() - 1) {
+        String key = pair.substring(0, idx);
+        String value = pair.substring(idx + 1);
+        params.put(key, value);
+      }
+    }
+
+    return params;
+  }
+
+  /**
+   * Removes only user and password parameters from a JDBC URL while preserving all other
+   * parameters.
+   * <p>
+   * This method extracts the query string from a JDBC URL, removes the "user" and "password"
+   * parameters, and reconstructs the URL with the remaining parameters. Other important JDBC
+   * parameters like "useSSL", "serverTimezone", "characterEncoding", etc. are preserved.
+   * <p>
+   * For example:
+   * - Input: "jdbc:mysql://localhost:3306/db?user=root&password=secret&useSSL=false"
+   * - Output: "jdbc:mysql://localhost:3306/db?useSSL=false"
+   * <p>
+   * This is necessary because HikariCP sets username and password as separate connection
+   * properties,
+   * and having them in both the URL and as properties could cause conflicts. However, other JDBC
+   * parameters must remain in the URL as they control connection behavior (SSL, timezone, encoding,
+   * etc.)
+   * and are not extracted by HikariCP.
+   *
+   * @param jdbcUrl the JDBC URL potentially containing user/password parameters
+   * @return the URL with user and password parameters removed, but other parameters preserved
+   */
+  String stripCredentialsFromUrl(String jdbcUrl) {
+    if (jdbcUrl == null || !jdbcUrl.contains("?")) {
+      return jdbcUrl;
+    }
+
+    String baseUrl = jdbcUrl.substring(0, jdbcUrl.indexOf('?'));
+    String queryString = jdbcUrl.substring(jdbcUrl.indexOf('?') + 1);
+
+    StringBuilder cleanParams = new StringBuilder();
+    String[] pairs = queryString.split("&");
+
+    for (String pair : pairs) {
+      int idx = pair.indexOf('=');
+      if (idx > 0) {
+        String key = pair.substring(0, idx);
+        // Preserve all parameters except 'user' and 'password'
+        if (!key.equals("user") && !key.equals("password")) {
+          if (cleanParams.length() > 0) {
+            cleanParams.append("&");
+          }
+          cleanParams.append(pair);
+        }
+      }
+    }
+
+    // Return base URL with remaining parameters, or just base URL if no parameters remain
+    if (cleanParams.length() > 0) {
+      return baseUrl + "?" + cleanParams.toString();
+    } else {
+      return baseUrl;
+    }
   }
 
   private String convertToCamelCase(String name) {

@@ -69,8 +69,9 @@ public class DestroyAsyncEventQueueCommandTest {
 
   @Test
   public void mandatoryOption() {
+    // Shell 3.x: Custom validation message for missing required parameter
     gfsh.executeAndAssertThat(command, "destroy async-event-queue").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("You must specify an async event queue id.");
   }
 
   @Test

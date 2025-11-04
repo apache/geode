@@ -24,8 +24,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.apache.juli.logging.Log;
 import org.junit.Rule;
 import org.junit.Test;

@@ -23,12 +23,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -39,26 +38,23 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class ExecuteFunctionCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
+  @ShellMethod(value = CliStrings.EXECUTE_FUNCTION__HELP, key = CliStrings.EXECUTE_FUNCTION)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommand$ExecuteFunctionCommandInterceptor")
   public ResultModel executeFunction(
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, mandatory = true,
+      @ShellOption(value = CliStrings.EXECUTE_FUNCTION__ID,
           help = CliStrings.EXECUTE_FUNCTION__ID__HELP) String functionId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.EXECUTE_FUNCTION__ONGROUPS__HELP) String[] onGroups,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.EXECUTE_FUNCTION__ONMEMBER__HELP) String[] onMembers,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONREGION,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.EXECUTE_FUNCTION__ONREGION,
           help = CliStrings.EXECUTE_FUNCTION__ONREGION__HELP) String onRegion,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__ARGUMENTS,
+      @ShellOption(value = CliStrings.EXECUTE_FUNCTION__ARGUMENTS,
           help = CliStrings.EXECUTE_FUNCTION__ARGUMENTS__HELP) String[] arguments,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__RESULTCOLLECTOR,
+      @ShellOption(value = CliStrings.EXECUTE_FUNCTION__RESULTCOLLECTOR,
           help = CliStrings.EXECUTE_FUNCTION__RESULTCOLLECTOR__HELP) String resultCollector,
-      @CliOption(key = CliStrings.EXECUTE_FUNCTION__FILTER,
+      @ShellOption(value = CliStrings.EXECUTE_FUNCTION__FILTER,
           help = CliStrings.EXECUTE_FUNCTION__FILTER__HELP) String filterString) {
 
     ResultModel resultModel = new ResultModel();

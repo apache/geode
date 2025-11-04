@@ -82,8 +82,9 @@ public class ImportClusterConfigurationCommandTest {
   public void mandatory() {
     gfsh.executeAndAssertThat(command, IMPORT_SHARED_CONFIG).statusIsError()
         .containsOutput("Either a zip file or a xml file is required");
+    // Shell 3.x: Empty string validated by FileConverter, provides specific file type error
     gfsh.executeAndAssertThat(command, IMPORT_SHARED_CONFIG + " --xml-file=''").statusIsError()
-        .containsOutput("Either a zip file or a xml file is required");
+        .containsOutput("Invalid file type. The file extension must be .xml.");
   }
 
   @Test

@@ -87,6 +87,9 @@ public class HttpOperationInvoker implements OperationInvoker {
 
   private boolean connected = false;
 
+  // Flag to indicate if stop() was called intentionally (normal shutdown vs unexpected disconnect)
+  private volatile boolean stoppingIntentionally = false;
+
   /**
    * Constructs an instance of the HttpOperationInvoker class with a reference to the GemFire shell
    * (Gfsh) instance using this HTTP-based OperationInvoker to send commands to the GemFire Manager
@@ -118,9 +121,13 @@ public class HttpOperationInvoker implements OperationInvoker {
       try {
         httpRequester.get(HttpRequester.createURI(baseUrl, "/ping"), String.class);
       } catch (Exception e) {
-        printDebug("An error occurred while connecting to the Manager's HTTP service: %1$s: ",
-            e.getMessage());
-        getGfsh().notifyDisconnect(toString());
+        // Only notify disconnect if we're not intentionally stopping
+        // (to avoid ERROR-level logging during normal shutdown)
+        if (!stoppingIntentionally) {
+          printDebug("An error occurred while connecting to the Manager's HTTP service: %1$s: ",
+              e.getMessage());
+          getGfsh().notifyDisconnect(toString());
+        }
         stop();
       }
     }, DEFAULT_INITIAL_DELAY, DEFAULT_PERIOD, DEFAULT_TIME_UNIT);
@@ -392,6 +399,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    */
   @Override
   public void stop() {
+    stoppingIntentionally = true;
     if (executorService != null) {
       executorService.shutdown();
     }

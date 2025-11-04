@@ -21,15 +21,14 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -41,19 +40,17 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  @CliCommand(value = {CliStrings.GET}, help = CliStrings.GET__HELP)
+  @ShellMethod(value = CliStrings.GET__HELP, key = {CliStrings.GET})
   public ResultModel get(
-      @CliOption(key = {CliStrings.GET__KEY}, mandatory = true,
+      @ShellOption(value = {CliStrings.GET__KEY},
           help = CliStrings.GET__KEY__HELP) String key,
-      @CliOption(key = {CliStrings.GET__REGIONNAME}, mandatory = true,
-          help = CliStrings.GET__REGIONNAME__HELP,
-          optionContext = ConverterHint.REGION_PATH) String regionPath,
-      @CliOption(key = {CliStrings.GET__KEYCLASS},
+      @ShellOption(value = {CliStrings.GET__REGIONNAME},
+          help = CliStrings.GET__REGIONNAME__HELP) String regionPath,
+      @ShellOption(value = {CliStrings.GET__KEYCLASS},
           help = CliStrings.GET__KEYCLASS__HELP) String keyClass,
-      @CliOption(key = {CliStrings.GET__VALUEKLASS},
+      @ShellOption(value = {CliStrings.GET__VALUEKLASS},
           help = CliStrings.GET__VALUEKLASS__HELP) String valueClass,
-      @CliOption(key = CliStrings.GET__LOAD, unspecifiedDefaultValue = "true",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.GET__LOAD, defaultValue = "true",
           help = CliStrings.GET__LOAD__HELP) Boolean loadOnCacheMiss) {
 
     Cache cache = getCache();

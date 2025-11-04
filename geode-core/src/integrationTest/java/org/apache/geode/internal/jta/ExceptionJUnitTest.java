@@ -19,12 +19,11 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
-import javax.transaction.NotSupportedException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
-
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.UserTransaction;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;

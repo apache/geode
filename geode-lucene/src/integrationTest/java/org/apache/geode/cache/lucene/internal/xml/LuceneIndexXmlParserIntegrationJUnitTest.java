@@ -34,7 +34,7 @@ import java.util.Properties;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
-import org.apache.lucene.analysis.standard.ClassicAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -117,7 +117,8 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     Map<String, Class<? extends Analyzer>> expectedFieldAnalyzers = new HashMap<>();
     expectedFieldAnalyzers.put("a", KeywordAnalyzer.class);
     expectedFieldAnalyzers.put("b", SimpleAnalyzer.class);
-    expectedFieldAnalyzers.put("c", ClassicAnalyzer.class);
+    // Lucene upgrade: ClassicAnalyzer replaced with StandardAnalyzer
+    expectedFieldAnalyzers.put("c", StandardAnalyzer.class);
     expectedIndexAnalyzers.put("index", expectedFieldAnalyzers);
     validateExpectedAnalyzers(region, expectedIndexAnalyzers);
   }

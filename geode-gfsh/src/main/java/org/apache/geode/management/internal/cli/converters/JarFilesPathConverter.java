@@ -14,61 +14,47 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import static org.apache.geode.management.internal.cli.converters.JarDirPathConverter.isDirWithDirsOrDirWithJars;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+/**
+ * Spring Shell 3.x converter for JAR file paths (comma-separated list).
+ *
+ * <p>
+ * Converts a comma-separated string of JAR file paths to a String array.
+ * Used by the deploy command's --jar parameter to accept multiple JAR files.
+ *
+ * <p>
+ * Example usage:
+ *
+ * <pre>
+ * deploy --jar=/path/to/app.jar,/path/to/lib.jar
+ * </pre>
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * - Spring Shell 1.x: Used for both conversion AND file system auto-completion
+ * - Spring Shell 3.x: Conversion only; auto-completion via ValueProvider (separate concern)
+ * - This converter focuses on splitting comma-separated paths
+ * - File system completion should be implemented in a separate ValueProvider
+ *
+ * @since GemFire 7.0
+ */
+@Component
+public class JarFilesPathConverter implements Converter<String, String[]> {
 
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-
-import org.apache.geode.management.cli.ConverterHint;
-
-public class JarFilesPathConverter implements Converter<String[]> {
-  private FilePathStringConverter delegate;
-
-  public JarFilesPathConverter() {
-    delegate = new FilePathStringConverter();
-  }
-
-  public void setDelegate(FilePathStringConverter delegate) {
-    this.delegate = delegate;
-  }
-
+  /**
+   * Converts a comma-separated string of JAR file paths to an array.
+   *
+   * @param source the comma-separated JAR file paths
+   * @return array of JAR file paths
+   */
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String[].class.equals(type) && optionContext.contains(ConverterHint.JARFILES);
-  }
-
-  @Override
-  public String[] convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value.split(",");
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    // remove anything before ,
-    int comma = existingData.lastIndexOf(',') + 1;
-    String otherJars = existingData.substring(0, comma);
-    existingData = existingData.substring(comma);
-    List<Completion> allCompletions = new ArrayList<>();
-    delegate.getAllPossibleValues(allCompletions, targetType, existingData, optionContext, target);
-    completions.addAll(allCompletions.stream()
-        .map(Completion::getValue)
-        .filter(JarFilesPathConverter::isDirOrJar)
-        .map(s -> new Completion(otherJars + s))
-        .collect(Collectors.toList()));
-    return allAreJars(completions);
-  }
-
-  private static boolean isDirOrJar(String file) {
-    return isDirWithDirsOrDirWithJars(file) || file.endsWith(".jar");
-  }
-
-  private static boolean allAreJars(List<Completion> completions) {
-    return completions.stream().allMatch(c -> c.getValue().endsWith(".jar"));
+  public String[] convert(@NonNull String source) {
+    if (source == null || source.trim().isEmpty()) {
+      return new String[0];
+    }
+    return source.split(",");
   }
 }

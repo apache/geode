@@ -24,8 +24,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 
-import javax.transaction.Status;
-
+import jakarta.transaction.Status;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
