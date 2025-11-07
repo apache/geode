@@ -38,10 +38,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'liberica'
-    - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
-      uses: gradle/gradle-build-action@v2
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5
       with:
-        arguments: --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
+        gradle-version: wrapper
+    - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
+      run: ./gradlew --console=plain --no-daemon build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test
 
   apiCheck:
      needs: build
@@ -102,7 +104,9 @@ jobs:
        java-version: |
          17
    - name: Setup Gradle
-     uses: gradle/gradle-build-action@v2
+     uses: gradle/actions/setup-gradle@v5
+     with:
+       gradle-version: wrapper
    - name: Set JAVA_TEST_PATH to 17
      run: |
        echo "JAVA_TEST_PATH=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
@@ -149,7 +153,9 @@ jobs:
          java-version: |
            17
      - name: Setup Gradle
-       uses: gradle/gradle-build-action@v2
+       uses: gradle/actions/setup-gradle@v5
+       with:
+         gradle-version: wrapper
      - name: Run integration tests
        run: |
          GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -193,7 +199,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run acceptance tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -235,7 +243,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run wan distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -279,7 +289,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run cq distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -289,9 +301,7 @@ jobs:
           cp gradlew gradlewStrict
           sed -e 's/JAVA_HOME/GRADLE_JVM/g' -i.back gradlewStrict
           GRADLE_JVM=${GRADLE_JVM_PATH} JAVA_TEST_PATH=${JAVA_TEST_PATH} ./gradlewStrict \
-            --parallel \
-            -PparallelDunit \
-            --max-workers=6 \
+            --parallel -PparallelDunit --max-workers=6 \
             -PcompileJVM=${JAVA_BUILD_PATH} \
             -PcompileJVMVer=${JAVA_BUILD_VERSION} \
             -PtestJVM=${JAVA_TEST_PATH} \
@@ -323,7 +333,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run lucene distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -367,7 +379,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run gfsh, web-mgmt, web distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
@@ -413,7 +427,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: wrapper
       - name: Run assembly, connectors, old-client, extensions distributed tests
         run: |
           GRADLE_JVM_PATH=${JAVA_HOME_17_X64}
