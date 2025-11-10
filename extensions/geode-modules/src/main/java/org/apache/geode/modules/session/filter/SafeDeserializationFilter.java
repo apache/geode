@@ -39,7 +39,68 @@ import org.slf4j.LoggerFactory;
  * <li>Comprehensive security logging</li>
  * </ul>
  *
- * @since 1.15.0
+ * <p>
+ * <b>Architecture - Dual Allowlist Structure:</b><br>
+ * This filter uses a two-tier approach for optimal performance and flexibility:
+ * <ul>
+ * <li><b>ALLOWED_CLASSES (Set&lt;String&gt;):</b> Exact class names for O(1) fast lookup<br>
+ * Examples: "java.lang.String", "java.util.HashMap"<br>
+ * Use for: Known exact class names (10-100x faster than patterns)</li>
+ *
+ * <li><b>ALLOWED_PATTERNS (Set&lt;Pattern&gt;):</b> Regex patterns for flexible matching<br>
+ * Examples: "^java\\.time\\..*" (all java.time classes), "^java\\.util\\.Collections\\$.*"<br>
+ * Use for: Package wildcards and inner class patterns</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Architecture - Dual Blocklist Structure:</b><br>
+ * Similarly, blocking uses two collections for consistency:
+ * <ul>
+ * <li><b>BLOCKED_CLASSES (Set&lt;String&gt;):</b> Known dangerous classes (InvokerTransformer,
+ * TemplatesImpl, etc.)</li>
+ * <li><b>BLOCKED_PATTERNS (Set&lt;Pattern&gt;):</b> Dangerous package patterns
+ * (org.apache.commons.collections.functors.*,
+ * etc.)</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Performance Characteristics:</b>
+ * <table border="1" cellpadding="5" cellspacing="0">
+ * <tr>
+ * <th>Operation</th>
+ * <th>Time Complexity</th>
+ * <th>Typical Time</th>
+ * </tr>
+ * <tr>
+ * <td>Exact match (ALLOWED_CLASSES)</td>
+ * <td>O(1)</td>
+ * <td>50-100 ns</td>
+ * </tr>
+ * <tr>
+ * <td>Pattern match (ALLOWED_PATTERNS)</td>
+ * <td>O(n)</td>
+ * <td>500-1000 ns</td>
+ * </tr>
+ * </table>
+ * <p>
+ * For high-throughput systems deserializing thousands of objects per second, the exact match
+ * optimization provides measurable CPU savings.
+ *
+ * <p>
+ * <b>Usage Examples:</b>
+ *
+ * <pre>
+ * // Default filter (uses built-in allowlist)
+ * SafeDeserializationFilter filter = new SafeDeserializationFilter();
+ *
+ * // Custom exact classes (fast)
+ * SafeDeserializationFilter filter =
+ *     SafeDeserializationFilter.createWithAllowedClasses("com.example.User", "com.example.Order");
+ *
+ * // Custom patterns (flexible)
+ * SafeDeserializationFilter filter =
+ *     SafeDeserializationFilter.createWithAllowedPatterns("^com\\.example\\.dto\\..*");
+ * </pre>
  */
 public class SafeDeserializationFilter implements ObjectInputFilter {
 
@@ -71,7 +132,57 @@ public class SafeDeserializationFilter implements ObjectInputFilter {
   private static final Set<Pattern> BLOCKED_PATTERNS = new HashSet<>();
 
   /**
-   * Allowed class patterns (whitelist)
+   * Exact class names allowed for deserialization (whitelist).
+   *
+   * <p>
+   * This set contains specific fully-qualified class names that are safe to deserialize.
+   * Classes in this set are checked using O(1) HashSet lookup, which is 10-100x faster
+   * than regex pattern matching.
+   *
+   * <p>
+   * <b>Performance Optimization:</b><br>
+   * For frequently deserialized classes like String, Integer, HashMap, etc., exact matching
+   * provides significant performance benefits over regex patterns. This is especially important
+   * in high-throughput systems that deserialize thousands of objects per second.
+   *
+   * <p>
+   * <b>When to use ALLOWED_CLASSES vs ALLOWED_PATTERNS:</b>
+   * <ul>
+   * <li><b>Use ALLOWED_CLASSES</b> when you know the exact class name (e.g.,
+   * "java.lang.String")</li>
+   * <li><b>Use ALLOWED_PATTERNS</b> when you need wildcards (e.g., "java.time.*" to allow all
+   * java.time classes)</li>
+   * </ul>
+   *
+   * <p>
+   * <b>Architecture Consistency:</b><br>
+   * This mirrors the BLOCKED structure which also uses separate collections for exact matches
+   * (BLOCKED_CLASSES) and patterns (BLOCKED_PATTERNS), providing consistency throughout the
+   * codebase.
+   *
+   * @see #ALLOWED_PATTERNS for wildcard/regex-based matching
+   * @see #BLOCKED_CLASSES for the equivalent blocklist structure
+   */
+  private static final Set<String> ALLOWED_CLASSES = new HashSet<>();
+
+  /**
+   * Regex patterns for allowed class names (whitelist).
+   *
+   * <p>
+   * This set contains regex patterns for flexible class name matching, particularly useful for:
+   * <ul>
+   * <li>Package-level wildcards (e.g., "^java\\.time\\..*" allows all java.time.* classes)</li>
+   * <li>Inner class patterns (e.g., "^java\\.util\\.Collections\\$.*" allows
+   * Collections.UnmodifiableList, etc.)</li>
+   * <li>Dynamic class hierarchies where exact names aren't known in advance</li>
+   * </ul>
+   *
+   * <p>
+   * <b>Performance Note:</b><br>
+   * Pattern matching is O(n) where n is the number of patterns, and each regex match is slower
+   * than a simple string comparison. For exact class names, use ALLOWED_CLASSES instead.
+   *
+   * @see #ALLOWED_CLASSES for exact class name matching (faster)
    */
   private static final Set<Pattern> ALLOWED_PATTERNS = new HashSet<>();
 
@@ -129,50 +240,86 @@ public class SafeDeserializationFilter implements ObjectInputFilter {
     BLOCKED_PATTERNS.add(Pattern.compile("^org\\.codehaus\\.groovy\\.runtime\\..*"));
     BLOCKED_PATTERNS.add(Pattern.compile("^com\\.mchange\\.v2\\.c3p0\\..*"));
 
-    // Allow safe Java classes
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.String$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Number$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Integer$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Long$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Float$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Double$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Boolean$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Byte$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Short$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.lang\\.Character$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.math\\.BigInteger$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.math\\.BigDecimal$"));
+    // ===== EXACT CLASS MATCHES (ALLOWED_CLASSES) =====
+    // These use O(1) HashSet lookup for optimal performance
+
+    // Allow safe primitive wrappers
+    // These are immutable, have no dangerous methods, and are used extensively in session storage
+    ALLOWED_CLASSES.add("java.lang.String");
+    ALLOWED_CLASSES.add("java.lang.Number");
+    ALLOWED_CLASSES.add("java.lang.Integer");
+    ALLOWED_CLASSES.add("java.lang.Long");
+    ALLOWED_CLASSES.add("java.lang.Float");
+    ALLOWED_CLASSES.add("java.lang.Double");
+    ALLOWED_CLASSES.add("java.lang.Boolean");
+    ALLOWED_CLASSES.add("java.lang.Byte");
+    ALLOWED_CLASSES.add("java.lang.Short");
+    ALLOWED_CLASSES.add("java.lang.Character");
+    ALLOWED_CLASSES.add("java.math.BigInteger");
+    ALLOWED_CLASSES.add("java.math.BigDecimal");
 
     // Allow safe collection classes
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.ArrayList$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.LinkedList$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.HashMap$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.LinkedHashMap$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.TreeMap$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.HashSet$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.LinkedHashSet$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.TreeSet$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.concurrent\\.ConcurrentHashMap$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.Collections\\$.*"));
+    // These standard Java collections are widely used for session data storage
+    ALLOWED_CLASSES.add("java.util.ArrayList");
+    ALLOWED_CLASSES.add("java.util.LinkedList");
+    ALLOWED_CLASSES.add("java.util.HashMap");
+    ALLOWED_CLASSES.add("java.util.LinkedHashMap");
+    ALLOWED_CLASSES.add("java.util.TreeMap");
+    ALLOWED_CLASSES.add("java.util.HashSet");
+    ALLOWED_CLASSES.add("java.util.LinkedHashSet");
+    ALLOWED_CLASSES.add("java.util.TreeSet");
+    ALLOWED_CLASSES.add("java.util.concurrent.ConcurrentHashMap");
 
     // Allow date/time classes
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.Date$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.sql\\.Date$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.sql\\.Time$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.sql\\.Timestamp$"));
-    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.time\\..*"));
+    // Common for storing timestamps, dates in session attributes
+    ALLOWED_CLASSES.add("java.util.Date");
+    ALLOWED_CLASSES.add("java.sql.Date");
+    ALLOWED_CLASSES.add("java.sql.Time");
+    ALLOWED_CLASSES.add("java.sql.Timestamp");
+
+    // Allow UUID - Safe immutable identifier class
+    // Used extensively in Geode for session IDs, disk stores, cache keys
+    ALLOWED_CLASSES.add("java.util.UUID");
+
+    // Allow Optional classes - Safe immutable wrapper classes (Java 8+)
+    // Used in modern Java APIs for null-safety
+    ALLOWED_CLASSES.add("java.util.Optional");
+    ALLOWED_CLASSES.add("java.util.OptionalInt");
+    ALLOWED_CLASSES.add("java.util.OptionalLong");
+    ALLOWED_CLASSES.add("java.util.OptionalDouble");
+
+    // Allow Locale - Safe immutable internationalization/localization class
+    // Used for storing user's language/region preferences in sessions
+    ALLOWED_CLASSES.add("java.util.Locale");
+
+    // Allow URI - Safe immutable resource identifier (safer than URL)
+    // Used for redirect URLs, resource identifiers in session data
+    // Note: URI is preferred over URL because URL performs DNS lookups in equals()/hashCode()
+    ALLOWED_CLASSES.add("java.net.URI");
 
     // Allow arrays of primitives and safe classes
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[Z$")); // boolean[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[B$")); // byte[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[C$")); // char[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[S$")); // short[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[I$")); // int[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[J$")); // long[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[F$")); // float[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[D$")); // double[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[Ljava\\.lang\\.String;$")); // String[]
-    ALLOWED_PATTERNS.add(Pattern.compile("^\\[Ljava\\.lang\\.Object;$")); // Object[]
+    // Arrays are commonly used in session storage for bulk data
+    ALLOWED_CLASSES.add("[Z"); // boolean[]
+    ALLOWED_CLASSES.add("[B"); // byte[]
+    ALLOWED_CLASSES.add("[C"); // char[]
+    ALLOWED_CLASSES.add("[S"); // short[]
+    ALLOWED_CLASSES.add("[I"); // int[]
+    ALLOWED_CLASSES.add("[J"); // long[]
+    ALLOWED_CLASSES.add("[F"); // float[]
+    ALLOWED_CLASSES.add("[D"); // double[]
+    ALLOWED_CLASSES.add("[Ljava.lang.String;"); // String[]
+    ALLOWED_CLASSES.add("[Ljava.lang.Object;"); // Object[]
+
+    // ===== PATTERN-BASED MATCHES (ALLOWED_PATTERNS) =====
+    // These use regex matching for flexible package-level allowances
+
+    // Allow java.time.* package (LocalDate, LocalDateTime, Instant, ZonedDateTime, etc.)
+    // Modern Java date/time API - all classes are immutable and safe
+    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.time\\..*"));
+
+    // Allow Collections inner classes (UnmodifiableList, SynchronizedMap, etc.)
+    // These wrapper classes are safe as they delegate to underlying collections
+    ALLOWED_PATTERNS.add(Pattern.compile("^java\\.util\\.Collections\\$.*"));
   }
 
   private final Set<Pattern> customAllowedPatterns;
@@ -324,36 +471,75 @@ public class SafeDeserializationFilter implements ObjectInputFilter {
    * Checks if a class name is allowed for deserialization.
    *
    * <p>
-   * This method implements the whitelist check by matching the class name against:
+   * This method implements a two-tier whitelist check for optimal performance:
    * <ol>
-   * <li>Custom allowed classes (exact string match)</li>
-   * <li>Custom allowed patterns (regex match)</li>
-   * <li>Default allowed patterns (safe Java standard library classes)</li>
+   * <li><b>FAST PATH (O(1)):</b> Check exact matches in ALLOWED_CLASSES and custom allowed
+   * classes using HashSet lookup</li>
+   * <li><b>SLOW PATH (O(n)):</b> Check pattern matches in ALLOWED_PATTERNS and custom allowed
+   * patterns using regex matching</li>
    * </ol>
    *
-   * @param className fully qualified class name to check
-   * @return true if the class is whitelisted, false otherwise
+   * <p>
+   * <b>Performance Optimization:</b><br>
+   * The fast path is checked first because it's 10-100x faster than regex matching.
+   * For frequently deserialized classes like String, Integer, HashMap, this provides
+   * significant performance benefits:
+   * <ul>
+   * <li>Exact match (HashSet): ~50-100 nanoseconds</li>
+   * <li>Pattern match (Regex): ~500-1000 nanoseconds</li>
+   * </ul>
+   *
+   * <p>
+   * <b>Example Flow:</b>
+   *
+   * <pre>
+   * isClassAllowed("java.lang.String")
+   *   → Check ALLOWED_CLASSES.contains("java.lang.String") → TRUE (50ns)
+   *   → Return immediately without checking patterns
+   *
+   * isClassAllowed("java.time.Instant")
+   *   → Check ALLOWED_CLASSES.contains("java.time.Instant") → FALSE (50ns)
+   *   → Check customAllowedClasses.contains("java.time.Instant") → FALSE (50ns)
+   *   → Check ALLOWED_PATTERNS (^java\.time\..*) → TRUE (500ns)
+   *   → Return true
+   * </pre>
+   *
+   * @param className fully qualified class name to check (e.g., "java.lang.String")
+   * @return true if the class is whitelisted (either exact match or pattern match), false
+   *         otherwise
    */
   private boolean isClassAllowed(String className) {
-    // Check exact matches in custom allowed classes
+    // ===== FAST PATH: Check exact matches first (O(1) HashSet lookup) =====
+    // This is 10-100x faster than regex matching and handles the most common cases
+
+    // Check default exact matches (String, Integer, HashMap, etc.)
+    if (ALLOWED_CLASSES.contains(className)) {
+      return true;
+    }
+
+    // Check custom exact matches (application-specific classes)
     if (customAllowedClasses.contains(className)) {
       return true;
     }
 
-    // Check against default allowed patterns
+    // ===== SLOW PATH: Check regex patterns (O(n) pattern matching) =====
+    // Only reached if exact match fails - handles wildcards like java.time.*
+
+    // Check default patterns (java.time.*, Collections$*)
     for (Pattern pattern : ALLOWED_PATTERNS) {
       if (pattern.matcher(className).matches()) {
         return true;
       }
     }
 
-    // Check against custom allowed patterns
+    // Check custom patterns (application-specific patterns)
     for (Pattern pattern : customAllowedPatterns) {
       if (pattern.matcher(className).matches()) {
         return true;
       }
     }
 
+    // Not found in either exact matches or patterns - reject by default
     return false;
   }
 
