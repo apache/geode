@@ -22,13 +22,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
@@ -111,8 +109,11 @@ public class BufferPool {
         result = acquireLargeBuffer(send, size);
       }
       if (result.capacity() > size) {
+        ByteBuffer original = result;
         result.position(0).limit(size);
         result = result.slice();
+        // Track the slice-to-original mapping to support buffer pool return
+        BufferAttachmentTracker.recordSlice(result, original);
       }
       return result;
     }
@@ -328,25 +329,14 @@ public class BufferPool {
    * If we hand out a buffer that is larger than the requested size we create a
    * "slice" of the buffer having the requested capacity and hand that out instead.
    * When we put the buffer back in the pool we need to find the original, non-sliced,
-   * buffer. This is held in DirectBuffer in its "attachment" field.
+   * buffer. This is tracked using BufferAttachmentTracker.
    *
    * This method is visible for use in debugging and testing. For debugging, invoke this method if
    * you need to see the non-sliced buffer for some reason, such as logging its hashcode.
    */
   @VisibleForTesting
   ByteBuffer getPoolableBuffer(final ByteBuffer buffer) {
-    final Object attachment = DirectBuffer.attachment(buffer);
-
-    if (null == attachment) {
-      return buffer;
-    }
-
-    if (attachment instanceof ByteBuffer) {
-      return (ByteBuffer) attachment;
-    }
-
-    throw new InternalGemFireException("direct byte buffer attachment was not a byte buffer but a "
-        + attachment.getClass().getName());
+    return BufferAttachmentTracker.getOriginal(buffer);
   }
 
   /**
