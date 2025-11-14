@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
-import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.unsafe.internal.com.sun.jmx.remote.security.MBeanServerAccessController;
 import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 
@@ -52,16 +51,10 @@ public class MemberJvmOptions {
    * open needed by {@link AddressableMemoryManager}
    */
   private static final String JAVA_NIO_OPEN = "--add-opens=java.base/java.nio=ALL-UNNAMED";
-  /**
-   * open needed by {@link VMStats50}
-   */
-  private static final String COM_SUN_MANAGEMENT_INTERNAL_OPEN =
-      "--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED";
 
   static final List<String> JAVA_11_OPTIONS = Arrays.asList(
       COM_SUN_JMX_REMOTE_SECURITY_EXPORT,
       SUN_NIO_CH_EXPORT,
-      COM_SUN_MANAGEMENT_INTERNAL_OPEN,
       JAVA_LANG_OPEN,
       JAVA_NIO_OPEN);
 
