@@ -138,17 +138,17 @@ public class BufferAttachmentTrackerTest {
     // Create a single original and slice
     ByteBuffer original = ByteBuffer.allocateDirect(1024);
     ByteBuffer slice = original.slice();
-    
+
     // Record it
     BufferAttachmentTracker.recordSlice(slice, original);
-    
+
     // Immediately retrieve it
     ByteBuffer result = BufferAttachmentTracker.getOriginal(slice);
-    
+
     // Should get back the exact same original
     assertThat(result).isSameAs(original);
     assertThat(result).isNotSameAs(slice);
-    
+
     System.out.println("Original identity: " + System.identityHashCode(original));
     System.out.println("Slice identity: " + System.identityHashCode(slice));
     System.out.println("Result identity: " + System.identityHashCode(result));
@@ -234,4 +234,3 @@ public class BufferAttachmentTrackerTest {
     assertThat(result).isSameAs(original); // Original still works
   }
 }
-
