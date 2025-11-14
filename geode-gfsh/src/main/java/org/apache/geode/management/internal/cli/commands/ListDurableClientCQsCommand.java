@@ -18,13 +18,12 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunction;
@@ -37,21 +36,19 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ListDurableClientCQsCommand extends GfshCommand {
 
-  @CliCommand(value = CliStrings.LIST_DURABLE_CQS, help = CliStrings.LIST_DURABLE_CQS__HELP)
+  @ShellMethod(value = CliStrings.LIST_DURABLE_CQS__HELP, key = CliStrings.LIST_DURABLE_CQS)
   @CliMetaData()
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel listDurableClientCQs(
-      @CliOption(key = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, mandatory = true,
+      @ShellOption(value = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID,
           help = CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID__HELP) final String durableClientId,
 
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          help = CliStrings.LIST_DURABLE_CQS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          help = CliStrings.LIST_DURABLE_CQS__MEMBER__HELP) final String[] memberNameOrId,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          help = CliStrings.LIST_DURABLE_CQS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.LIST_DURABLE_CQS__GROUP__HELP) final String[] group) {
 
     Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 

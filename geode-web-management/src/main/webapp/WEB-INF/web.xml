@@ -13,16 +13,25 @@
   ~ or implied. See the License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
 
   <display-name>Geode Management REST API</display-name>
 
   <description>
     Web deployment descriptor declaring the Geode Management API for Geode.
   </description>
+
+  <listener>
+    <description>
+      Programmatically configures multipart file upload support for the DispatcherServlet.
+      This replaces the &lt;multipart-config&gt; element that was removed in commit 3ef6c393e0
+      to fix Spring Shell parameter binding issues. See MultipartConfigurationListener for details.
+    </description>
+    <listener-class>org.apache.geode.management.internal.configuration.MultipartConfigurationListener</listener-class>
+  </listener>
 
   <filter>
     <filter-name>springSecurityFilterChain</filter-name>

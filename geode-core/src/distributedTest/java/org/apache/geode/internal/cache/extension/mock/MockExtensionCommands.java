@@ -18,9 +18,8 @@ package org.apache.geode.internal.cache.extension.mock;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -45,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands implements CommandMarker {
+public class MockExtensionCommands {
 
   public static final String OPTION_VALUE = "value";
 
@@ -71,11 +70,11 @@ public class MockExtensionCommands implements CommandMarker {
    * @return {@link Result}
    * @since GemFire 8.1
    */
-  @CliCommand(value = CREATE_MOCK_REGION_EXTENSION)
+  @ShellMethod(value = "Creates a mock region extension", key = CREATE_MOCK_REGION_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result createMockRegionExtension(
-      @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
-      @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
+      @ShellOption(value = OPTION_REGION_NAME) final String regionName,
+      @ShellOption(value = OPTION_VALUE) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         CreateMockRegionExtensionFunction.INSTANCE, true,
         CreateMockRegionExtensionFunction.toArgs(regionName, value));
@@ -89,11 +88,11 @@ public class MockExtensionCommands implements CommandMarker {
    * @return {@link Result}
    * @since GemFire 8.1
    */
-  @CliCommand(value = ALTER_MOCK_REGION_EXTENSION)
+  @ShellMethod(value = "Alters a mock region extension", key = ALTER_MOCK_REGION_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result alterMockRegionExtension(
-      @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
-      @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
+      @ShellOption(value = OPTION_REGION_NAME) final String regionName,
+      @ShellOption(value = OPTION_VALUE) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         AlterMockRegionExtensionFunction.INSTANCE, true,
         AlterMockRegionExtensionFunction.toArgs(regionName, value));
@@ -106,10 +105,10 @@ public class MockExtensionCommands implements CommandMarker {
    * @return {@link Result}
    * @since GemFire 8.1
    */
-  @CliCommand(value = DESTROY_MOCK_REGION_EXTENSION)
+  @ShellMethod(value = "Destroys a mock region extension", key = DESTROY_MOCK_REGION_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result destroyMockRegionExtension(
-      @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName) {
+      @ShellOption(value = OPTION_REGION_NAME) final String regionName) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         DestroyMockRegionExtensionFunction.INSTANCE, true,
         DestroyMockRegionExtensionFunction.toArgs(regionName));
@@ -122,10 +121,10 @@ public class MockExtensionCommands implements CommandMarker {
    * @return {@link Result}
    * @since GemFire 8.1
    */
-  @CliCommand(value = CREATE_MOCK_CACHE_EXTENSION)
+  @ShellMethod(value = "Creates a mock cache extension", key = CREATE_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result createMockCacheExtension(
-      @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
+      @ShellOption(value = OPTION_VALUE) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         CreateMockCacheExtensionFunction.INSTANCE, true,
         CreateMockCacheExtensionFunction.toArgs(value));
@@ -138,10 +137,10 @@ public class MockExtensionCommands implements CommandMarker {
    * @return {@link Result}
    * @since GemFire 8.1
    */
-  @CliCommand(value = ALTER_MOCK_CACHE_EXTENSION)
+  @ShellMethod(value = "Alters a mock cache extension", key = ALTER_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result alterMockCacheExtension(
-      @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
+      @ShellOption(value = OPTION_VALUE) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         AlterMockCacheExtensionFunction.INSTANCE, true,
         AlterMockCacheExtensionFunction.toArgs(value));
@@ -153,7 +152,7 @@ public class MockExtensionCommands implements CommandMarker {
    * @return {@link Result}
    * @since GemFire 8.1
    */
-  @CliCommand(value = DESTROY_MOCK_CACHE_EXTENSION)
+  @ShellMethod(value = "Destroys a mock cache extension", key = DESTROY_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result destroyMockCacheExtension() {
     return executeFunctionOnAllMembersTabulateResultPersist(

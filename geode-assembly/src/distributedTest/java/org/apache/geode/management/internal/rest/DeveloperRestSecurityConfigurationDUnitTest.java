@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
@@ -34,6 +35,8 @@ public class DeveloperRestSecurityConfigurationDUnitTest {
 
   @Test
   public void testWithSecurityManager() {
+    // These authentication failures are expected as part of the test
+    IgnoredException.addIgnoredException("Authentication FAILED");
     server = cluster.startServerVM(0,
         x -> x.withRestService()
             .withSecurityManager(SimpleSecurityManager.class));

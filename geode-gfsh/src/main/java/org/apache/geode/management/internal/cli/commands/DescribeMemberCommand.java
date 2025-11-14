@@ -19,14 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -42,13 +41,12 @@ public class DescribeMemberCommand extends GfshCommand {
   private static final GetMemberInformationFunction getMemberInformation =
       new GetMemberInformationFunction();
 
-  @CliCommand(value = {CliStrings.DESCRIBE_MEMBER}, help = CliStrings.DESCRIBE_MEMBER__HELP)
+  @ShellMethod(value = CliStrings.DESCRIBE_MEMBER__HELP, key = {CliStrings.DESCRIBE_MEMBER})
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public ResultModel describeMember(@CliOption(key = CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
-      optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.DESCRIBE_MEMBER__HELP,
-      mandatory = true) String memberNameOrId) {
+  public ResultModel describeMember(@ShellOption(value = CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
+      help = CliStrings.DESCRIBE_MEMBER__HELP) String memberNameOrId) {
     DistributedMember memberToBeDescribed = getMember(memberNameOrId);
 
     ResultCollector<?, ?> rc = executeFunction(getMemberInformation, null, memberToBeDescribed);

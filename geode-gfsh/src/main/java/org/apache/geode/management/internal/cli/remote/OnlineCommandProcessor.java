@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.springframework.shell.core.Parser;
-import org.springframework.shell.event.ParseResult;
-
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.internal.CommandProcessor;
@@ -74,13 +71,13 @@ public class OnlineCommandProcessor implements CommandProcessor {
     }
   }
 
-  protected Parser getParser() {
+  protected GfshParser getParser() {
     synchronized (LOCK) {
       return gfshParser;
     }
   }
 
-  public ParseResult parseCommand(String commentLessLine)
+  public GfshParseResult parseCommand(String commentLessLine)
       throws CommandProcessingException, IllegalStateException {
     if (commentLessLine != null) {
       return getParser().parse(commentLessLine);
@@ -104,7 +101,7 @@ public class OnlineCommandProcessor implements CommandProcessor {
     CommandExecutionContext.setFilePathToShell(stagedFilePaths);
 
     final CommandExecutor commandExecutor = getCommandExecutor();
-    ParseResult parseResult = parseCommand(commentLessLine);
+    GfshParseResult parseResult = parseCommand(commentLessLine);
 
     if (parseResult == null) {
       String version = GemFireVersion.getGemFireVersion();

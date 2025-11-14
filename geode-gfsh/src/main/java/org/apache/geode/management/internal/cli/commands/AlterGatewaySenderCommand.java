@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.cli.functions.AlterGatewaySenderFunction;
@@ -50,34 +49,43 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
       new AlterGatewaySenderFunction();
   private static final Logger logger = LogService.getLogger();
 
-  @CliCommand(value = CliStrings.ALTER_GATEWAYSENDER,
-      help = CliStrings.ALTER_GATEWAYSENDER__HELP)
+  @ShellMethod(value = CliStrings.ALTER_GATEWAYSENDER__HELP, key = CliStrings.ALTER_GATEWAYSENDER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
 
-  public ResultModel alterGatewaySender(@CliOption(key = CliStrings.ALTER_GATEWAYSENDER__ID,
-      mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
+  public ResultModel alterGatewaySender(@ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__ID,
+      defaultValue = ShellOption.NULL,
       help = CliStrings.ALTER_GATEWAYSENDER__ID__HELP) String senderId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__ALERTTHRESHOLD,
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__ALERTTHRESHOLD,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__ALERTTHRESHOLD__HELP) Integer alertThreshold,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__BATCHSIZE,
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__BATCHSIZE,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__BATCHSIZE__HELP) Integer batchSize,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL,
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
-          specifiedDefaultValue = "",
-          // split the input only with comma outside of json string
-          optionContext = "splittingRegex=,(?![^{]*\\})",
-          help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) ClassName[] gatewayEventFilters,
-      @CliOption(key = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
-          specifiedDefaultValue = "true",
+      // Spring Shell 2.x Migration: Changed from ClassName[] to String[] to handle CLEAR marker
+      // In Spring Shell 1.x, we could use @CliOption(specifiedDefaultValue="") to detect when
+      // --gateway-event-filter= was provided without a value, which signaled clearing filters.
+      // Spring Shell 2.x removed 'specifiedDefaultValue' and strips trailing '=' from options,
+      // making it impossible to distinguish "--option" from "--option=". To work around this,
+      // we now accept String[] and check for the special marker "CLEAR" (case-insensitive) to
+      // indicate that all existing filters should be removed. Regular filter class names are
+      // converted to ClassName[] in the method body.
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER,
+          defaultValue = ShellOption.NULL,
+          help = CliStrings.ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP
+              + " Use 'CLEAR' to remove all existing filters.") String[] gatewayEventFiltersStrings,
+      @ShellOption(value = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
+          defaultValue = ShellOption.NULL,
           help = CliStrings.ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) Boolean groupTransactionEvents)
       throws EntityNotFoundException {
 
@@ -87,6 +95,10 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
     if (getConfigurationPersistenceService() == null) {
       return ResultModel.createError("Cluster Configuration Service is not available. "
           + "Please connect to a locator with running Cluster Configuration Service.");
+    }
+
+    if (senderId == null) {
+      return ResultModel.createError("You must specify a gateway sender id.");
     }
 
     final String id = senderId.trim();
@@ -165,13 +177,52 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
       gwConfiguration.setGroupTransactionEvents(groupTransactionEvents);
     }
 
+    // Spring Shell 2.x Migration: Handle gateway event filters with CLEAR marker support
+    //
+    // Background: In Spring Shell 1.x, we used @CliOption(specifiedDefaultValue="") to detect
+    // when users provided --gateway-event-filter= (with trailing equals but no value). This
+    // allowed us to distinguish between:
+    // 1. Option not provided at all (null)
+    // 2. Option provided with empty value (empty string array) -> clear filters
+    // 3. Option provided with values (string array with filter class names) -> set filters
+    //
+    // Problem: Spring Shell 2.x removed the 'specifiedDefaultValue' annotation parameter and
+    // changed the command line parser behavior. The parser now strips trailing '=' characters,
+    // making --gateway-event-filter= identical to --gateway-event-filter. Both result in null
+    // being passed to the command handler, so we can no longer distinguish case 2 from case 1.
+    //
+    // Solution: Introduce a special marker value "CLEAR" (case-insensitive) that users must
+    // explicitly provide to remove all existing filters:
+    // --gateway-event-filter=CLEAR -> clears all filters
+    // --gateway-event-filter=com.example.Filter1,com.example.Filter2 -> sets filters
+    // (option not provided) -> no change to filters
+    //
+    // This is a breaking change from Spring Shell 1.x behavior, but it's the only viable
+    // workaround given Spring Shell 2.x's architectural limitations.
+    ClassName[] gatewayEventFilters = null;
+    if (gatewayEventFiltersStrings != null && gatewayEventFiltersStrings.length > 0) {
+      // Check for special "CLEAR" marker (case-insensitive)
+      if (gatewayEventFiltersStrings.length == 1
+          && gatewayEventFiltersStrings[0].equalsIgnoreCase("CLEAR")) {
+        // Use ClassName.EMPTY to signal that filters should be cleared
+        gatewayEventFilters = new ClassName[] {ClassName.EMPTY};
+      } else {
+        // Convert String[] to ClassName[] for regular filter class names
+        gatewayEventFilters = new ClassName[gatewayEventFiltersStrings.length];
+        for (int i = 0; i < gatewayEventFiltersStrings.length; i++) {
+          gatewayEventFilters[i] = new ClassName(gatewayEventFiltersStrings[i]);
+        }
+      }
+    }
 
     if (gatewayEventFilters != null) {
       modify = true;
       if (gatewayEventFilters.length == 1
           && gatewayEventFilters[0].getClassName().isEmpty()) {
+        // Clear all existing filters
         gwConfiguration.getGatewayEventFilters();
       } else {
+        // Add/replace filters
         gwConfiguration.getGatewayEventFilters()
             .addAll(Arrays.stream(gatewayEventFilters)
                 .map(l -> new DeclarableType(l.getClassName()))

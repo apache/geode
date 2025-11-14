@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -26,8 +25,8 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionService;
@@ -39,7 +38,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -54,17 +52,16 @@ import org.apache.geode.security.ResourcePermission.Resource;
 public class QueryCommand extends GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
-  @CliCommand(value = "query", help = CliStrings.QUERY__HELP)
+  @ShellMethod(value = CliStrings.QUERY__HELP, key = "query")
   @CliMetaData(interceptor = "org.apache.geode.management.internal.cli.commands.QueryInterceptor")
   public ResultModel query(
-      @CliOption(key = CliStrings.QUERY__QUERY, help = CliStrings.QUERY__QUERY__HELP,
-          mandatory = true) final String query,
-      @CliOption(key = "file", help = "File in which to output the results.",
-          optionContext = ConverterHint.FILE) final File outputFile,
-      @CliOption(key = CliStrings.QUERY__INTERACTIVE, unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.QUERY__QUERY, defaultValue = "",
+          help = CliStrings.QUERY__QUERY__HELP) final String query,
+      @ShellOption(value = "file", defaultValue = "",
+          help = "File in which to output the results.") final String outputFile,
+      @ShellOption(value = CliStrings.QUERY__INTERACTIVE, defaultValue = "false",
           help = CliStrings.QUERY__INTERACTIVE__HELP) final boolean interactive,
-      @CliOption(key = CliStrings.MEMBER,
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = CliStrings.MEMBER, defaultValue = "",
           help = CliStrings.QUERY__MEMBER__HELP) final String memberNameOrId) {
 
     DistributedMember targetMember = memberNameOrId == null ? null : getMember(memberNameOrId);

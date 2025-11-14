@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -50,16 +50,15 @@ public class ShutdownCommand extends GfshCommand {
   private static final String DEFAULT_TIME_OUT = "10";
   private static final Logger logger = LogService.getLogger();
 
-  @CliCommand(value = CliStrings.SHUTDOWN, help = CliStrings.SHUTDOWN__HELP)
+  @ShellMethod(value = CliStrings.SHUTDOWN__HELP, key = CliStrings.SHUTDOWN)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_LIFECYCLE},
       interceptor = "org.apache.geode.management.internal.cli.commands.ShutdownCommand$ShutdownCommandInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel shutdown(
-      @CliOption(key = CliStrings.SHUTDOWN__TIMEOUT, unspecifiedDefaultValue = DEFAULT_TIME_OUT,
+      @ShellOption(value = CliStrings.SHUTDOWN__TIMEOUT, defaultValue = DEFAULT_TIME_OUT,
           help = CliStrings.SHUTDOWN__TIMEOUT__HELP) int userSpecifiedTimeout,
-      @CliOption(key = CliStrings.INCLUDE_LOCATORS, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.INCLUDE_LOCATORS, defaultValue = "false",
           help = CliStrings.INCLUDE_LOCATORS_HELP) boolean shutdownLocators)
       throws InterruptedException, ExecutionException, TimeoutException {
 

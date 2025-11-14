@@ -34,7 +34,8 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NoPermissionException;
 import javax.naming.NotContextException;
-import javax.transaction.SystemException;
+
+import jakarta.transaction.SystemException;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Immutable;
@@ -557,14 +558,14 @@ public class ContextImpl implements Context {
       Object boundObject = ctxMaps.get(nameToBind);
       if (boundObject instanceof Context) {
         /*
-         * Let the subcontext bind the object.
+         * Let the subcontext rebind the object.
          */
-        ((Context) boundObject).bind(parsedName.getSuffix(1), obj);
+        ((Context) boundObject).rebind(parsedName.getSuffix(1), obj);
       } else {
         if (boundObject == null) {
-          // Create new subcontext and let it do the binding
+          // Create new subcontext and let it do the rebinding
           Context sub = createSubcontext(nameToBind);
-          sub.bind(parsedName.getSuffix(1), obj);
+          sub.rebind(parsedName.getSuffix(1), obj);
         } else {
           throw new NotContextException(String.format("Expected Context but found %s",
               boundObject));

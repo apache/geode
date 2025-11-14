@@ -46,7 +46,7 @@ RUN apk --no-cache add \
   && echo "https://apk.bell-sw.com/main" | tee -a /etc/apk/repositories \
   && wget -P /etc/apk/keys/ https://apk.bell-sw.com/info@bell-sw.com-5fea454e.rsa.pub \
   && apk add --no-cache \
-    bellsoft-java8 \
+    bellsoft-java17 \
   && apk del \
       wget \
   && gcloud config set core/disable_usage_reporting true \

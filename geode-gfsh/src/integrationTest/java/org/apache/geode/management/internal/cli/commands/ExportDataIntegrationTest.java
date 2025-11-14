@@ -149,7 +149,9 @@ public class ExportDataIntegrationTest {
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeCommand(missingRegionCommand);
-    assertThat(gfsh.getGfshOutput()).contains("You should specify option");
+    // Without the interceptor, the method executes and hits the path validation which throws
+    // IllegalArgumentException
+    assertThat(gfsh.getGfshOutput()).contains("path cannot be null");
   }
 
   @Test

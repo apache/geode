@@ -18,9 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.http.annotation.Experimental;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -31,7 +30,9 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-@Experimental
+// Note: @Experimental annotation removed during HttpComponents 5.x migration
+// The annotation was from org.apache.http.annotation.Experimental which is not available in
+// HttpComponents 5.x
 public class ListDriversCommand extends GfshCommand {
 
   static final String LIST_DRIVERS = "list drivers";
@@ -44,13 +45,14 @@ public class ListDriversCommand extends GfshCommand {
   static final String MEMBER_NAME__HELP = "Name of specific member to list drivers for.";
 
 
-  @CliCommand(value = LIST_DRIVERS, help = LIST_DRIVERS__HELP)
+  @ShellMethod(value = LIST_DRIVERS__HELP, key = LIST_DRIVERS)
   @CliMetaData()
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
 
   public ResultModel listDrivers(
-      @CliOption(key = MEMBER_NAME, help = MEMBER_NAME__HELP) String memberName) {
+      @ShellOption(value = MEMBER_NAME, defaultValue = ShellOption.NULL,
+          help = MEMBER_NAME__HELP) String memberName) {
     ResultModel resultModel = new ResultModel();
     return createTabularResultDataAndGetResult(resultModel, memberName);
   }

@@ -58,6 +58,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -75,6 +76,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
@@ -199,6 +201,15 @@ public class ManagementAgent {
       }
     }
 
+    // Find the V2 Cluster Management REST API WAR file
+    final URI managementRestWar = agentUtil.findWarLocation("geode-web-management");
+    if (managementRestWar == null) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Unable to find Geode V2 Cluster Management REST API WAR file; the new Management API will not be accessible.");
+      }
+    }
+
     // Find the Pulse WAR file
     final URI pulseWar = agentUtil.findWarLocation("geode-pulse");
 
@@ -236,11 +247,49 @@ public class ManagementAgent {
         serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
             securityService);
 
+        // GEODE-10466: Create LocatorClusterManagementService for the V2 Management REST API
+        // For LOCATORS: Skip creation here to avoid race condition. During cache initialization,
+        // ManagementAgent runs before InternalLocator can initialize the persistence service,
+        // resulting in a service instance with null persistence. This caused duplicate instances:
+        // one broken (null persistence) created here, and one correct created by InternalLocator.
+        // Solution: Let InternalLocator.startClusterManagementService() handle service creation
+        // for locators with properly initialized persistence service.
+        // For SERVERS: Create the service here without persistence (servers don't have one).
+        InternalLocator locator = InternalLocator.getLocator();
+
+        if (locator == null) {
+          // This is a server - create the service without persistence
+          LocatorClusterManagementService clusterManagementService =
+              new LocatorClusterManagementService(cache, null);
+
+          serviceAttributes.put(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+              clusterManagementService);
+        }
+
+        // Set auth token enabled parameter for management REST APIs
+        String[] authTokenEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
+        boolean managementAuthTokenEnabled = Arrays.stream(authTokenEnabledComponents)
+            .anyMatch(AuthTokenEnabledComponents::hasManagement);
+        serviceAttributes.put(HttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
+
         // if jmx manager is running, admin rest should be available, either on locator or server
         if (agentUtil.isAnyWarFileAvailable(adminRestWar)) {
           Path adminRestWarPath = Paths.get(adminRestWar);
           httpService.addWebApplication("/gemfire", adminRestWarPath, serviceAttributes);
           httpService.addWebApplication("/geode-mgmt", adminRestWarPath, serviceAttributes);
+        }
+
+        // GEODE-10466: Deploy V2 Cluster Management API at /management context path
+        // For LOCATORS: Skip webapp deployment here because
+        // InternalLocator.startClusterManagementService()
+        // will add it after properly initializing the cluster management service with persistence
+        // service.
+        // This prevents the webapp from using a service instance with null persistence.
+        // For SERVERS: Deploy the webapp here since servers handle service creation immediately
+        // above.
+        if (locator == null && agentUtil.isAnyWarFileAvailable(managementRestWar)) {
+          Path managementRestWarPath = Paths.get(managementRestWar);
+          httpService.addWebApplication("/management", managementRestWarPath, serviceAttributes);
         }
 
         // if jmx manager is running, pulse should be available, either on locator or server
@@ -265,6 +314,12 @@ public class ManagementAgent {
           managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":")
               .concat(String.valueOf(port)).concat("/pulse/"));
         }
+
+        // Start/Restart HTTP server after adding all webapps to ensure proper Jetty 12
+        // Configuration lifecycle
+        // This is critical for ServletContainerInitializer discovery (e.g.,
+        // SpringServletContainerInitializer)
+        httpService.restartHttpServer();
       }
     } catch (Throwable e) {
       setStatusMessage(managerBean, "HTTP service failed to start with "

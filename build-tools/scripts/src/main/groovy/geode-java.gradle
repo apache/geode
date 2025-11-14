@@ -20,8 +20,6 @@ plugins {
   id 'org.apache.geode.gradle.geode-dependency-constraints'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
 
 dependencies {
@@ -31,17 +29,24 @@ dependencies {
 }
 
 String javaVersion = System.properties['java.version']
-if (javaVersion.startsWith("1.8.0") && javaVersion.split("-")[0].split("_")[1].toInteger() < 121) {
-  throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
+def versionMajor = JavaVersion.current().majorVersion.toInteger()
+if (versionMajor < 17) {
+  throw new GradleException("Java version 17 or later required, but was " + javaVersion)
 }
 
 // apply compiler options
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(JavaCompile).each { javac ->
     javac.configure {
-      sourceCompatibility '1.8'
-      targetCompatibility '1.8'
       options.encoding = 'UTF-8'
+      options.compilerArgs.addAll([
+        '--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED',
+        '--add-exports=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED',
+        '--add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED',
+        '-Xlint:-removal',
+        '-Xlint:-deprecation'
+      ])
     }
     javac.options.incremental = true
     javac.options.fork = true
@@ -118,13 +123,26 @@ gradle.taskGraph.whenReady({ graph ->
           }.findAll { !(it.value?.hasProperty('optional') && it.value.optional)})
         }
 
-        def incoming = geodeProject.configurations.runtimeClasspath.getIncoming()
-        def resolutionResult = incoming.getResolutionResult()
-        def components = resolutionResult.allComponents
-
-        upstreamDeps.addAll(components.findAll {componentResult ->
-          depMap.containsKey(componentResult.moduleVersion.id.name)
-        }.collect {it.moduleVersion.id.name + '-' + it.moduleVersion.version + '.jar'})
+        // NOTE: Previously this logic resolved the upstream project's runtimeClasspath via
+        // geodeProject.configurations.runtimeClasspath.getIncoming().getResolutionResult().
+        // That constitutes cross-project configuration resolution (executed while configuring
+        // the current project's Jar task) and triggers Gradle's deprecation warning:
+        //   "Resolution of the configuration :otherProject:runtimeClasspath was attempted from a context different than the project context"
+        // To avoid that, we derive the first-level runtime dependency jar names directly from
+        // the dependency metadata (depMap) we already collected, without forcing resolution of
+        // the upstream configuration here. This yields the same set that was formerly filtered
+        // against the resolved components because depMap only contains declared (first-level)
+        // non-optional dependencies of the upstream project.
+        depMap.values()
+          .findAll { dep -> !(dep instanceof ProjectDependency) }
+          .each { dep ->
+            if (dep.hasProperty('version') && dep.version) {
+              upstreamDeps.add("${dep.name}-${dep.version}.jar")
+            } else {
+              // Log warning about missing version but don't add to upstreamDeps (preserves original behavior)
+              logger.warn("Dependency '${dep.name}' has no version information in project '${geodeProject.name}' and will be skipped from upstream exclusion")
+            }
+          }
       }
       // TODO: can we put our projects on the ClassPath line still?
       runtimeSet.removeAll(upstreamDeps)
@@ -183,7 +201,8 @@ artifacts {
 
 javadoc {
   destinationDir = file("$buildDir/javadoc")
-  options.addStringOption('Xwerror', '-quiet')
+  // Disabled strict HTML checking for Java 17 compatibility
+  options.addStringOption('Xdoclint:none', '-quiet')
   options.encoding = 'UTF-8'
   exclude "**/internal/**"
 

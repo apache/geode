@@ -24,11 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FloatPoint;
-import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexableField;
@@ -89,6 +85,16 @@ public class SerializerUtil {
   /**
    * Add a field to the document.
    *
+   * In Lucene 9.x, Point fields (IntPoint, FloatPoint, etc.) use IndexOptions.NONE for the
+   * inverted index and store data in a separate BKD tree structure. This creates a conflict
+   * when the same field name is used for both text (TextField with
+   * IndexOptions.DOCS_AND_FREQS_AND_POSITIONS)
+   * and numeric types (Point fields with IndexOptions.NONE).
+   *
+   * To support mixed-type indexing on the same field name (required for schema-less indexing),
+   * we store numeric values using NumericDocValuesField which doesn't participate in the
+   * inverted index schema validation, allowing them to coexist with TextField.
+   *
    * @return true if the field was successfully added
    */
   public static boolean addField(Document doc, String field, Object fieldValue) {
@@ -96,13 +102,21 @@ public class SerializerUtil {
     if (clazz == String.class) {
       doc.add(new TextField(field, (String) fieldValue, Store.NO));
     } else if (clazz == Long.class) {
-      doc.add(new LongPoint(field, (Long) fieldValue));
+      // Use LongPoint with "_point" suffix to avoid IndexOptions conflict with TextField on same
+      // field name
+      doc.add(new org.apache.lucene.document.LongPoint(field + "_point", (Long) fieldValue));
     } else if (clazz == Integer.class) {
-      doc.add(new IntPoint(field, (Integer) fieldValue));
+      // Use IntPoint with "_point" suffix to avoid IndexOptions conflict with TextField on same
+      // field name
+      doc.add(new org.apache.lucene.document.IntPoint(field + "_point", (Integer) fieldValue));
     } else if (clazz == Float.class) {
-      doc.add(new FloatPoint(field, (Float) fieldValue));
+      // Use FloatPoint with "_point" suffix to avoid IndexOptions conflict with TextField on same
+      // field name
+      doc.add(new org.apache.lucene.document.FloatPoint(field + "_point", (Float) fieldValue));
     } else if (clazz == Double.class) {
-      doc.add(new DoublePoint(field, (Double) fieldValue));
+      // Use DoublePoint with "_point" suffix to avoid IndexOptions conflict with TextField on same
+      // field name
+      doc.add(new org.apache.lucene.document.DoublePoint(field + "_point", (Double) fieldValue));
     } else {
       return false;
     }

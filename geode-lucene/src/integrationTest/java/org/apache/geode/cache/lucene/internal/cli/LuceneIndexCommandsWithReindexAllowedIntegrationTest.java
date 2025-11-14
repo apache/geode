@@ -56,7 +56,8 @@ public class LuceneIndexCommandsWithReindexAllowedIntegrationTest
   }
 
   @Test
-  public void whenLuceneReindexingInProgressThenListIndexCommandMustExecuteSuccessfully() {
+  public void whenLuceneReindexingInProgressThenListIndexCommandMustExecuteSuccessfully()
+      throws Exception {
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -67,9 +68,19 @@ public class LuceneIndexCommandsWithReindexAllowedIntegrationTest
     AtomicBoolean stopped = new AtomicBoolean();
     Thread ai = new Thread(() -> {
       int count = 0;
-      while (!stopped.get()) {
+      // Limit the number of entries to prevent OOM
+      while (!stopped.get() && count < 1000) {
         server.getCache().getRegion(REGION_NAME).put(count, "hello world" + count);
         count++;
+        // Add a delay every 10 entries to reduce memory pressure
+        if (count % 10 == 0) {
+          try {
+            Thread.sleep(50);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            break;
+          }
+        }
       }
     });
     ai.start();
@@ -80,6 +91,7 @@ public class LuceneIndexCommandsWithReindexAllowedIntegrationTest
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
     stopped.set(true);
+    ai.join(5000); // Wait up to 5 seconds for thread to complete
   }
 
   @Test

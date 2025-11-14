@@ -30,9 +30,9 @@ import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -48,7 +48,6 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -100,40 +99,53 @@ public class CreateMappingCommand extends SingleGfshCommand {
       "By default, an attempt to create a duplicate jdbc mapping is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
   static final String IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE = "Skipping: ";
 
-  @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
+  @ShellMethod(value = CREATE_MAPPING__HELP, key = CREATE_MAPPING)
   @CliMetaData(
-      interceptor = "org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand$Interceptor",
-      relatedTopic = {CliStrings.DEFAULT_TOPIC_GEODE})
+      interceptor = "org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createMapping(
-      @CliOption(key = CREATE_MAPPING__REGION_NAME, mandatory = true,
+      @ShellOption(value = CREATE_MAPPING__REGION_NAME,
           help = CREATE_MAPPING__REGION_NAME__HELP) String regionName,
-      @CliOption(key = CREATE_MAPPING__DATA_SOURCE_NAME, mandatory = true,
+      @ShellOption(value = CREATE_MAPPING__DATA_SOURCE_NAME,
           help = CREATE_MAPPING__DATA_SOURCE_NAME__HELP) String dataSourceName,
-      @CliOption(key = CREATE_MAPPING__TABLE_NAME,
+      @ShellOption(value = CREATE_MAPPING__TABLE_NAME,
+          defaultValue = ShellOption.NULL,
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
-      @CliOption(key = CREATE_MAPPING__PDX_NAME, mandatory = true,
+      @ShellOption(value = CREATE_MAPPING__PDX_NAME,
           help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName,
-      @CliOption(key = CREATE_MAPPING__PDX_CLASS_FILE,
+      @ShellOption(value = CREATE_MAPPING__PDX_CLASS_FILE,
+          defaultValue = ShellOption.NULL,
           help = CREATE_MAPPING__PDX_CLASS_FILE__HELP) String pdxClassFile,
-      @CliOption(key = CREATE_MAPPING__SYNCHRONOUS_NAME,
-          help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous,
-      @CliOption(key = CREATE_MAPPING__ID_NAME, help = CREATE_MAPPING__ID_NAME__HELP) String id,
-      @CliOption(key = CREATE_MAPPING__CATALOG_NAME,
+      @ShellOption(value = CREATE_MAPPING__SYNCHRONOUS_NAME,
+          defaultValue = "false", arity = 0,
+          help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP) boolean synchronous,
+      @ShellOption(value = CREATE_MAPPING__ID_NAME,
+          defaultValue = ShellOption.NULL,
+          help = CREATE_MAPPING__ID_NAME__HELP) String id,
+      @ShellOption(value = CREATE_MAPPING__CATALOG_NAME,
+          defaultValue = ShellOption.NULL,
           help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
-      @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
+      @ShellOption(value = CREATE_MAPPING__SCHEMA_NAME,
+          defaultValue = ShellOption.NULL,
           help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
-      @CliOption(key = CliStrings.IFNOTEXISTS,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
-          help = CREATE_MAPPING__IFNOTEXISTS__HELP) boolean ifNotExists,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = CliStrings.IFNOTEXISTS,
+          defaultValue = "false", arity = 0,
+          help = CliStrings.IFNOTEXISTS_HELP) boolean ifNotExists,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          defaultValue = ShellOption.NULL,
           help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups)
       throws IOException {
     if (regionName.startsWith(SEPARATOR)) {
       regionName = regionName.substring(1);
+    }
+
+    // Validate that at least one of the required parameters is provided
+    // This is needed because multipart-config in web.xml can bypass Spring Shell validation
+    if (StringUtils.isBlank(pdxName) && StringUtils.isBlank(table) &&
+        StringUtils.isBlank(pdxClassFile)) {
+      return ResultModel.createError(
+          "You should specify option (--table, --pdx-name, --pdx-class-file, --synchronous, --id, --catalog, --schema, --if-not-exists, --group) for this command");
     }
 
     String tempPdxClassFilePath = null;
@@ -350,7 +362,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return config.getRegionAttributes();
   }
 
-  @CliAvailabilityIndicator({CREATE_MAPPING})
+  @ShellMethodAvailability({CREATE_MAPPING})
   @SuppressWarnings("unused")
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();

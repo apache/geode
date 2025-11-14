@@ -127,6 +127,9 @@ spotless {
       include '**/*.gradle'
       exclude '**/generated-src/**'
       exclude '**/build/**'
+      // Exclude acceptance test gradle projects - these are standalone test applications
+      // that need hardcoded dependency versions for testing Geode integration
+      exclude 'src/acceptanceTest/resources/gradle-test-projects/**/build.gradle'
     }
 
     // As the method name suggests, bump this number if any of the below "custom" rules change.

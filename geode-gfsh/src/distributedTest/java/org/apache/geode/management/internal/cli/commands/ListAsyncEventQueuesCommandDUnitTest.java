@@ -30,7 +30,28 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-
+/**
+ * Tests for the "list async-event-queues" gfsh command.
+ *
+ * <p>
+ * Note on Command Name (Spring Shell 3.x Migration):
+ * The correct command name is "list async-event-queues" (plural), as defined in
+ * {@link CliStrings#LIST_ASYNC_EVENT_QUEUES}. Previous versions of these tests incorrectly
+ * used "list async-event-queue" (singular).
+ *
+ * <p>
+ * This bug surfaced after the Spring Shell 3.x migration (GEODE-10466) because:
+ * <ul>
+ * <li>Spring Shell 3.x has stricter command name matching and validation</li>
+ * <li>Command names must exactly match the registered command key</li>
+ * <li>Variations or shortened command names are no longer automatically resolved</li>
+ * </ul>
+ *
+ * <p>
+ * In Spring Shell 1.x, the command parser was more lenient and may have accepted
+ * command name variations. With Spring Shell 3.x, attempting to execute
+ * "list async-event-queue" results in: "Command 'list async-event-queue' not found".
+ */
 @Category({AEQTest.class})
 public class ListAsyncEventQueuesCommandDUnitTest {
 
@@ -61,7 +82,9 @@ public class ListAsyncEventQueuesCommandDUnitTest {
     locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
     locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue2", 1);
 
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+    // Note: Command must be "list async-event-queues" (plural), not "list async-event-queue".
+    // See class-level Javadoc for explanation of Spring Shell 3.x migration impact.
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .tableHasRowCount(2).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue2");
 
@@ -70,7 +93,8 @@ public class ListAsyncEventQueuesCommandDUnitTest {
         "create async-event-queue --id=queue --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+    // Command name must be plural ("list async-event-queues")
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .tableHasRowCount(4).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue2")
         .tableHasRowWithValues("Member", "ID", "server-1", "queue")
@@ -81,7 +105,8 @@ public class ListAsyncEventQueuesCommandDUnitTest {
         + MyAsyncEventListener.class.getName() + " --pause-event-processing").statusIsSuccess();
 
     // locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue3", 1);
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+    // Command name must be plural ("list async-event-queues")
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .tableHasRowCount(6)
         .tableHasRowWithValues("Member", "ID", "Created with paused event processing",
             "Currently Paused", "server-1", "queue3",
@@ -100,7 +125,9 @@ public class ListAsyncEventQueuesCommandDUnitTest {
 
   @Test
   public void ensureNoResultIsSuccess() {
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+    // Command name must be plural ("list async-event-queues"), not singular.
+    // The actual command is defined in CliStrings.LIST_ASYNC_EVENT_QUEUES.
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .containsOutput(CliStrings.LIST_ASYNC_EVENT_QUEUES__NO_QUEUES_FOUND_MESSAGE);
   }
 }

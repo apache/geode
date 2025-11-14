@@ -21,8 +21,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.DeadlockDetector;
@@ -40,14 +40,13 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ShowDeadlockCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.SHOW_DEADLOCK, help = CliStrings.SHOW_DEADLOCK__HELP)
+  @ShellMethod(value = CliStrings.SHOW_DEADLOCK__HELP, key = CliStrings.SHOW_DEADLOCK)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL},
       interceptor = "org.apache.geode.management.internal.cli.commands.ShowDeadlockCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public ResultModel showDeadlock(@CliOption(key = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE,
-      help = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP,
-      mandatory = true) String filename) {
+  public ResultModel showDeadlock(@ShellOption(value = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE,
+      help = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP) String filename) {
 
     ResultModel result = new ResultModel();
     try {

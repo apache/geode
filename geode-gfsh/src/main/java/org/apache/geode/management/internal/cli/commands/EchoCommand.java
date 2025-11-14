@@ -18,8 +18,8 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -27,19 +27,26 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class EchoCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
+  @ShellMethod(value = CliStrings.ECHO__HELP, key = {CliStrings.ECHO})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public ResultModel echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
-      mandatory = true, help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
+  public ResultModel echo(@ShellOption(value = {CliStrings.ECHO__STR, ""},
+      help = CliStrings.ECHO__STR__HELP, defaultValue = "") String stringToEcho) {
 
-    if (stringToEcho.equals("$*")) {
+    // When Spring Shell fails to parse command arguments (e.g., complex quoted strings),
+    // it may pass null to this method despite the parameter annotation. This commonly occurs
+    // when gfsh executes multiple commands in sequence with disconnect/reconnect scenarios,
+    // where the command context may be lost. Adding null-safety prevents NPE and gracefully
+    // handles malformed input by treating it as an empty string, maintaining backward compatibility
+    // with scripts that rely on echo for status checks.
+    if (stringToEcho != null && stringToEcho.equals("$*")) {
       Gfsh gfshInstance = getGfsh();
       Map<String, String> envMap = gfshInstance.getEnv();
       Set<Map.Entry<String, String>> setEnvMap = envMap.entrySet();
       return buildResultForEcho(setEnvMap);
     } else {
-      return ResultModel.createInfo(stringToEcho);
+      return ResultModel.createInfo(stringToEcho == null ? "" : stringToEcho);
     }
   }
 

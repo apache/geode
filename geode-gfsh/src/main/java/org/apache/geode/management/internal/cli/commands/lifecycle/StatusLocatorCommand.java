@@ -22,40 +22,39 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class StatusLocatorCommand extends OfflineGfshCommand {
   private static final String SECURITY_PROPERTIES__HELP =
       "The gfsecurity.properties file for configuring SSL to connect to the Locator. The file's path can be absolute or relative to gfsh directory.";
 
-  @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
+  @ShellMethod(value = CliStrings.STATUS_LOCATOR__HELP, key = CliStrings.STATUS_LOCATOR)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public ResultModel statusLocator(
-      @CliOption(key = CliStrings.STATUS_LOCATOR__MEMBER,
-          optionContext = ConverterHint.LOCATOR_MEMBER_IDNAME,
+      @ShellOption(value = CliStrings.STATUS_LOCATOR__MEMBER,
           help = CliStrings.STATUS_LOCATOR__MEMBER__HELP) final String member,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__HOST,
+      @ShellOption(value = CliStrings.STATUS_LOCATOR__HOST,
           help = CliStrings.STATUS_LOCATOR__HOST__HELP) final String locatorHost,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__PORT,
+      @ShellOption(value = CliStrings.STATUS_LOCATOR__PORT,
           help = CliStrings.STATUS_LOCATOR__PORT__HELP) final Integer locatorPort,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__PID,
+      @ShellOption(value = CliStrings.STATUS_LOCATOR__PID,
           help = CliStrings.STATUS_LOCATOR__PID__HELP) final Integer pid,
-      @CliOption(key = CliStrings.STATUS_LOCATOR__DIR,
+      @ShellOption(value = CliStrings.STATUS_LOCATOR__DIR,
           help = CliStrings.STATUS_LOCATOR__DIR__HELP) final String workingDirectory,
-      @CliOption(key = CliStrings.CONNECT__SECURITY_PROPERTIES, optionContext = ConverterHint.FILE,
+      @ShellOption(value = CliStrings.CONNECT__SECURITY_PROPERTIES,
           help = SECURITY_PROPERTIES__HELP) final File gfSecurityPropertiesFile)
       throws Exception {
     Properties properties = new Properties();

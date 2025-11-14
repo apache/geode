@@ -54,6 +54,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.management.internal.cli.GfshParser;
 
 class StartServerCommandTest {
   // JVM options to use with every start command.
@@ -215,8 +216,10 @@ class StartServerCommandTest {
       boolean disableExitWhenOutOfMemory = false;
       expectedJvmOptions.addAll(jdkSpecificOutOfMemoryOptions());
 
+      // Spring Shell 3.x migration: JVM arguments changed from String[] to String
+      // Shell 3.x option parsing changed to handle multi-value options as delimited strings
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
-          serverLauncher, null, null, new Properties(), null, false, new String[0],
+          serverLauncher, null, null, new Properties(), null, false, null,
           disableExitWhenOutOfMemory, null,
           null);
 
@@ -288,8 +291,9 @@ class StartServerCommandTest {
       boolean disableExitWhenOutOfMemory = false;
       expectedJvmOptions.addAll(jdkSpecificOutOfMemoryOptions());
 
+      // Spring Shell 3.x migration: JVM arguments parameter changed from String[] to String
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
-          serverLauncher, null, null, gemfireProperties, null, false, new String[0],
+          serverLauncher, null, null, gemfireProperties, null, false, null,
           disableExitWhenOutOfMemory, null,
           null);
 
@@ -431,9 +435,12 @@ class StartServerCommandTest {
       boolean disableExitWhenOutOfMemory = false;
       expectedJvmOptions.addAll(jdkSpecificOutOfMemoryOptions());
 
+      // Spring Shell 3.x migration: Join JVM arguments array into single delimited string
+      // Shell 3.x changed multi-value option handling to use delimited strings instead of arrays
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
           serverLauncher, gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties,
-          customClasspath, false, customJvmOptions, disableExitWhenOutOfMemory, heapSize, heapSize);
+          customClasspath, false, String.join(GfshParser.J_ARGUMENT_DELIMITER, customJvmOptions),
+          disableExitWhenOutOfMemory, heapSize, heapSize);
 
       verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
           expectedStartCommandSequence, expectedStartCommandOptions);

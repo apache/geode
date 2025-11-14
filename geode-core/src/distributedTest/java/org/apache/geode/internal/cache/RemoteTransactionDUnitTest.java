@@ -38,10 +38,10 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.Ignore;
 import org.junit.Test;

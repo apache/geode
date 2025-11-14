@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -162,9 +162,13 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
     vm3.invoke("populateRRRegion", this::populateRRRegion);
 
-    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction",
+    ClassicHttpResponse response = executeFunctionThroughRestCall("SampleFunction",
         REPLICATE_REGION_NAME, null, null, null, null);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    // Apache HttpComponents 5.x migration: response.getCode() replaces
+    // response.getStatusLine().getStatusCode()
+    // HttpComponents 5.x provides direct access to status code without intermediate StatusLine
+    // object
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     assertCorrectInvocationCount("SampleFunction", 1, vm0, vm1, vm2, vm3);
@@ -181,9 +185,11 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
     vm3.invoke("populatePRRegion", this::populatePRRegion);
 
-    CloseableHttpResponse response =
+    ClassicHttpResponse response =
         executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, null, null, null, null);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    // Apache HttpComponents 5.x: Direct status code access replaces StatusLine.getStatusCode()
+    // Simpler API without intermediate StatusLine wrapper
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     assertCorrectInvocationCount("SampleFunction", 4, vm0, vm1, vm2, vm3);
@@ -199,9 +205,10 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
     vm3.invoke("populatePRRegion", this::populatePRRegion);
 
-    CloseableHttpResponse response =
+    ClassicHttpResponse response =
         executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", null, null, null);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    // Apache HttpComponents 5.x: response.getCode() for direct status access
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     assertCorrectInvocationCount("SampleFunction", 1, vm0, vm1, vm2, vm3);
@@ -228,9 +235,10 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
         + "\"itemNo\":\"599\",\"description\":\"Part X Free on Bumper Offer\","
         + "\"quantity\":\"2\"," + "\"unitprice\":\"5\"," + "\"totalprice\":\"10.00\"}" + "]";
 
-    CloseableHttpResponse response = executeFunctionThroughRestCall("SampleFunction",
+    ClassicHttpResponse response = executeFunctionThroughRestCall("SampleFunction",
         PR_REGION_NAME, null, jsonBody, null, null);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    // Apache HttpComponents 5.x: response.getCode() for direct status access
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     // Assert that only 1 node has executed the function.
@@ -248,7 +256,8 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
     response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", jsonBody,
         null, null);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    // Apache HttpComponents 5.x: response.getCode() for direct status access
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     // Assert that only 1 node has executed the function.

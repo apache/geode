@@ -25,21 +25,19 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
-
-import javax.servlet.http.HttpSession;
+import java.net.ServerSocket;
+import java.nio.file.Paths;
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.util.SocketUtils;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Region;
@@ -53,30 +51,32 @@ public abstract class AbstractSessionsTest {
   private static Region<String, HttpSession> region;
   protected static DeltaSessionManager sessionManager;
 
+  /**
+   * Find an available TCP port.
+   * Replacement for deprecated Spring Framework SocketUtils.findAvailableTcpPort().
+   */
+  private static int findAvailableTcpPort() throws IOException {
+    try (ServerSocket socket = new ServerSocket(0)) {
+      socket.setReuseAddress(true);
+      return socket.getLocalPort();
+    }
+  }
+
   // Set up the servers we need
   protected static void setupServer(final DeltaSessionManager manager) throws Exception {
-    // Use classpath for resource isolation and concurrent resource management
-    URL resourceUrl = AbstractSessionsTest.class.getClassLoader().getResource("tomcat");
-    if (resourceUrl == null) {
-      throw new IllegalStateException("Could not find 'tomcat' resource directory in classpath");
-    }
-
-    File tomcatResourceDir;
-    try {
-      tomcatResourceDir = new File(resourceUrl.toURI());
-    } catch (URISyntaxException e) {
-      throw new IllegalStateException("Invalid URI for tomcat resource directory: " + resourceUrl,
-          e);
-    }
-
-    FileUtils.copyDirectory(tomcatResourceDir, new File("./tomcat"));
-    port = SocketUtils.findAvailableTcpPort();
+    FileUtils.copyDirectory(
+        Paths.get("..", "..", "resources", "integrationTest", "tomcat").toFile(),
+        new File("./tomcat"));
+    port = findAvailableTcpPort();
     server = new EmbeddedTomcat(port, "JVM-1");
 
     final PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
     p2pListener.setProperty(MCAST_PORT, "0");
     p2pListener.setProperty(LOG_LEVEL, "config");
-    server.getEmbedded().addLifecycleListener(p2pListener);
+
+    // In Tomcat 10+, addLifecycleListener is on Server, not Tomcat class
+    server.getTomcat().getServer().addLifecycleListener(p2pListener);
+
     sessionManager = manager;
     sessionManager.setEnableCommitValve(true);
     server.getRootContext().setManager(sessionManager);

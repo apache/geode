@@ -19,9 +19,9 @@ import java.io.IOException;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
-import org.apache.lucene.store.RAMDirectory;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
@@ -52,7 +52,8 @@ public class RawIndexRepositoryFactory extends IndexRepositoryFactory {
       }
       dir = new NIOFSDirectory(location.toPath());
     } else {
-      dir = new RAMDirectory();
+      // Lucene 9.x: RAMDirectory replaced with ByteBuffersDirectory
+      dir = new ByteBuffersDirectory();
     }
     IndexWriterConfig config = new IndexWriterConfig(indexForRaw.getAnalyzer());
     IndexWriter writer = new IndexWriter(dir, config);

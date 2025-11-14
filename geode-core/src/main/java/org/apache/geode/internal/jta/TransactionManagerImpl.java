@@ -25,16 +25,15 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -939,21 +938,49 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   }
 
   /**
+   * Stop the GlobalTXTimeoutMonitor cleanup thread without invalidating the TransactionManager.
+   * This method only stops the background thread that monitors transaction timeouts, leaving
+   * the TransactionManager instance in a usable state.
+   * <p>
+   * Safe to call multiple times. Thread-safe.
+   * <p>
+   * Use this method when you need to stop the cleanup thread during cache shutdown but want to
+   * preserve the TransactionManager for potential reuse (e.g., in servlet environments where
+   * the cache may be reused across servlet reloads).
+   *
+   * @see #refresh() for full shutdown including TransactionManager invalidation
+   */
+  public static void stopCleanupThread() {
+    if (transactionManager != null && transactionManager.cleanUpThread != null) {
+      transactionManager.cleaner.toContinueRunning = false;
+      try {
+        transactionManager.cleanUpThread.interrupt();
+      } catch (Exception e) {
+        LogWriter writer = TransactionUtils.getLogWriter();
+        if (writer.infoEnabled()) {
+          writer.info(
+              "Exception while stopping GlobalTXTimeoutMonitor cleanup thread");
+        }
+      }
+    }
+  }
+
+  /**
    * Shutdown the transactionManager and threads associated with this.
+   * <p>
+   * This method stops the cleanup thread (via {@link #stopCleanupThread()}) and then invalidates
+   * the TransactionManager instance by setting isActive=false and clearing the singleton reference.
+   * <p>
+   * After calling this method, the TransactionManager will throw "TransactionManager invalid"
+   * errors if any operations are attempted. Use {@link #stopCleanupThread()} if you only need
+   * to stop the background thread without invalidating the TransactionManager.
+   *
+   * @see #stopCleanupThread() for stopping the thread without invalidation
    */
   public static void refresh() {
     getTransactionManager();
     transactionManager.isActive = false;
-    transactionManager.cleaner.toContinueRunning = false;
-    try {
-      transactionManager.cleanUpThread.interrupt();
-    } catch (Exception e) {
-      LogWriter writer = TransactionUtils.getLogWriter();
-      if (writer.infoEnabled()) {
-        writer.info(
-            "Exception While cleaning thread before re startup");
-      }
-    }
+    stopCleanupThread();
     /*
      * try { transactionManager.cleanUpThread.join(); } catch (Exception e) { e.printStackTrace(); }
      */

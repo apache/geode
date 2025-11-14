@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
@@ -30,7 +30,6 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneSearchResults;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -50,31 +49,30 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
   /**
    * Internally, we verify the resource operation permissions DATA:READ:[RegionName]
    */
-  @CliCommand(value = LuceneCliStrings.LUCENE_SEARCH_INDEX,
-      help = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP)
+  @ShellMethod(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP,
+      key = LuceneCliStrings.LUCENE_SEARCH_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   public ResultModel searchIndex(
-      @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
+      @ShellOption(value = LuceneCliStrings.LUCENE__INDEX_NAME,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
 
-      @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = LuceneCliStrings.LUCENE__REGION_PATH,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__REGION_HELP) final String regionPath,
 
-      @CliOption(
-          key = {LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,
+      @ShellOption(
+          value = {LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,
               LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRINGS},
-          mandatory = true,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING__HELP) final String queryString,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, mandatory = true,
+      @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP) final String defaultField,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT, unspecifiedDefaultValue = "-1",
+      @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT,
+          defaultValue = "-1",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT__HELP) final int limit,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
+          defaultValue = "false", arity = 0,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly)
       throws Exception {
     authorize(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ, regionPath);
@@ -204,7 +202,7 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
   }
 
 
-  @CliAvailabilityIndicator(LuceneCliStrings.LUCENE_SEARCH_INDEX)
+  @ShellMethodAvailability(LuceneCliStrings.LUCENE_SEARCH_INDEX)
   public boolean indexCommandsAvailable() {
     return super.indexCommandsAvailable();
   }

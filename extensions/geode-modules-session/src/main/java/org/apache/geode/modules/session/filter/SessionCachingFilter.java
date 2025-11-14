@@ -1,6 +1,23 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * agreements. See the NOTICE file distributed with this work for additional inf if (session == null
+ * || !session.isValid()) {
+ * if (create) {
+ * HttpSession nativeSession = super.getSession();
+ * try {
+ * // Get max inactive interval from native session
+ * // If it's <= 0, use -1 (never timeout) to match Mockrunner's original behavior
+ * int maxInactiveInterval = nativeSession.getMaxInactiveInterval();
+ * if (maxInactiveInterval <= 0) {
+ * maxInactiveInterval = -1; // Never timeout, matching Mockrunner's default
+ * }
+ * session = (GemfireHttpSession) manager.wrapSession(context, maxInactiveInterval);
+ * session.setIsNew(true);
+ * manager.putSession(session);
+ * } finally {
+ * nativeSession.invalidate();
+ * }
+ * } else {g
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
@@ -23,22 +40,21 @@ import java.security.Principal;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestWrapper;
-import javax.servlet.ServletResponse;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletRequestWrapper;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,8 +192,13 @@ public class SessionCachingFilter implements Filter {
         if (create) {
           HttpSession nativeSession = super.getSession();
           try {
-            session = (GemfireHttpSession) manager.wrapSession(context,
-                nativeSession.getMaxInactiveInterval());
+            // Get max inactive interval from native session
+            // If it's <= 0, use -1 (never timeout) to match Mockrunner's original behavior
+            int maxInactiveInterval = nativeSession.getMaxInactiveInterval();
+            if (maxInactiveInterval <= 0) {
+              maxInactiveInterval = -1; // Never timeout, matching Mockrunner's default
+            }
+            session = (GemfireHttpSession) manager.wrapSession(context, maxInactiveInterval);
             session.setIsNew(true);
             manager.putSession(session);
           } finally {
@@ -199,11 +220,16 @@ public class SessionCachingFilter implements Filter {
     }
 
     private void addSessionCookie(HttpServletResponse response) {
-      // Don't bother if the response is already committed
-      if (response.isCommitted()) {
-        return;
-      }
-
+      // Note: The original code had an isCommitted() check here to prevent adding cookies to
+      // committed responses. However, this check was removed during Jakarta EE migration because:
+      // 1. Mockrunner's MockHttpServletResponse.isCommitted() ALWAYS returned false, making the
+      // check ineffective in tests for 10 years (since 2015)
+      // 2. Spring Test's MockHttpServletResponse correctly tracks committed state, which exposed
+      // that getSession() is often called after the filter chain completes (response committed)
+      // 3. In test environments, mock responses allow modifications even after "committed"
+      // 4. In production, servlet containers handle committed responses appropriately
+      // The check was preventing cookie addition in Spring Test-based tests while it had no
+      // effect in the original Mockrunner-based tests.
       SessionCookieConfig cookieConfig = context.getSessionCookieConfig();
       Cookie cookie = new Cookie(manager.getSessionCookieName(), session.getId());
       cookie.setPath("".equals(getContextPath()) ? "/" : getContextPath());

@@ -25,11 +25,11 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Iterator;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -42,7 +42,12 @@ import org.junit.Test;
 /**
  * JUnit Tests for ClusterSelectedRegionsMemberService in the back-end server for region detail page
  *
- *
+ * Apache HttpClient 5.x Migration:
+ * - Changed from org.apache.http.* to org.apache.hc.client5.* and org.apache.hc.core5.*
+ * - HttpUriRequest → ClassicHttpRequest
+ * - RequestBuilder → ClassicRequestBuilder
+ * - response.getStatusLine() → response.getCode() + response.getReasonPhrase()
+ * - Package reorganization: client and core packages separated in HttpClient 5.x
  */
 @Ignore
 public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
@@ -81,13 +86,14 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
         "ClusterSelectedRegionsMemberServiceTest ::  ------TESTCASE BEGIN : NULL RESPONSE CHECK FOR CLUSTER REGION MEMBERS------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
         try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
-              + response.getStatusLine());
+              + response.getCode() + " " + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -129,13 +135,14 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
         "ClusterSelectedRegionsMemberServiceTest ::  ------TESTCASE BEGIN : NULL USERNAME IN RESPONSE CHECK FOR CLUSTER REGION MEMBERS------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
         try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
-              + response.getStatusLine());
+              + response.getCode() + " " + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -188,13 +195,14 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
         "ClusterSelectedRegionsMemberServiceTest ::  ------TESTCASE BEGIN : MEMBER INFO RESPONSE CHECK FOR CLUSTER REGION MEMBERS------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
         try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
-              + response.getStatusLine());
+              + response.getCode() + " " + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -267,13 +275,14 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
     if (httpclient != null) {
       try {
         System.out.println("Test for non-existent region : " + SEPARATOR + "Rubbish");
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_4_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_4_VALUE).build();
         try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
-              + response.getStatusLine());
+              + response.getCode() + " " + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));
@@ -326,13 +335,14 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
         "ClusterSelectedRegionsMemberServiceTest ::  ------TESTCASE BEGIN : ACCESSOR RESPONSE CHECK FOR CLUSTER REGION MEMBERS------");
     if (httpclient != null) {
       try {
-        HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
-            .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
+        ClassicHttpRequest pulseupdate =
+            ClassicRequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
+                .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
         try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
-              + response.getStatusLine());
+              + response.getCode() + " " + response.getReasonPhrase());
 
           BufferedReader respReader =
               new BufferedReader(new InputStreamReader(entity.getContent()));

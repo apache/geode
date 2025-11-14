@@ -4,6 +4,7 @@ org/apache/geode/management/cli/CommandServiceException,true,7316102209844678329
 org/apache/geode/management/cli/Result$Status,false,code:int
 org/apache/geode/management/internal/cli/AbstractCliAroundInterceptor$Response,false,text:java/lang/String
 org/apache/geode/management/internal/cli/CliUtils$DeflaterInflaterData,true,1104813333595216795,data:byte[],dataLength:int
+org/apache/geode/management/internal/cli/CompletionContext$Type,false
 org/apache/geode/management/internal/cli/commands/CreateJndiBindingCommand$DATASOURCE_TYPE,false,type:java/lang/String
 org/apache/geode/management/internal/cli/commands/ImportClusterConfigurationCommand$Action,false
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category,false

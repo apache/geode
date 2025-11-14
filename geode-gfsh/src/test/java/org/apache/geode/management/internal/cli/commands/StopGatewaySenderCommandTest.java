@@ -74,9 +74,10 @@ public class StopGatewaySenderCommandTest {
 
   @Test
   public void whenMissingSenderIdCommandReturnsInvalidCommandError() {
+    // Shell 3.x: Custom validation message for missing required parameter
     StopGatewaySenderCommand command = new StopGatewaySenderCommand();
     gfsh.executeAndAssertThat(command, "stop gateway-sender")
-        .statusIsError().containsOutput("Invalid command");
+        .statusIsError().containsOutput("You must specify a gateway sender id.");
   }
 
   @Test

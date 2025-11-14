@@ -70,7 +70,8 @@ public class FileSystem {
     // TODO lock region ?
     final File file = new File(this, name);
     if (null != fileAndChunkRegion.putIfAbsent(name, file)) {
-      throw new IOException("File exists.");
+      // Lucene 9+ requires FileAlreadyExistsException instead of generic IOException
+      throw new java.nio.file.FileAlreadyExistsException(name);
     }
     stats.incFileCreates(1);
 
@@ -81,7 +82,8 @@ public class FileSystem {
   public File putIfAbsentFile(String name, File file) throws IOException {
     // TODO lock region ?
     if (null != fileAndChunkRegion.putIfAbsent(name, file)) {
-      throw new IOException("File exists.");
+      // Lucene 9+ requires FileAlreadyExistsException instead of generic IOException
+      throw new java.nio.file.FileAlreadyExistsException(name);
     }
     stats.incFileCreates(1);
     // TODO unlock region ?

@@ -94,7 +94,7 @@ WHERE <args>:
                         log4j-api.jar
                         log4j-jul.jar
                         fastutil.jar
-                        javax.transactions-api.jar
+                        jakarta.transactions-api.jar
                         jgroups.jar
                         micrometer-core.jar
                         slf4j-api.jar
@@ -275,7 +275,7 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/log4j-api-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-jul-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/fastutil-@FASTUTIL_VERSION@.jar \
-    ${GEODE}/lib/javax.transaction-api-@TX_VERSION@.jar \
+    ${GEODE}/lib/jakarta.transaction-api-@TX_VERSION@.jar \
     ${GEODE}/lib/jetty-http-@JETTY_VERSION@.jar \
     ${GEODE}/lib/jetty-io-@JETTY_VERSION@.jar \
     ${GEODE}/lib/jetty-server-@JETTY_VERSION@.jar \
@@ -286,6 +286,8 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/shiro-core-@SHIRO_VERSION@.jar \
     ${GEODE}/lib/commons-validator-@COMMONS_VALIDATOR_VERSION@.jar \
     ${GEODE}/lib/micrometer-core-@MICROMETER_VERSION@.jar \
+    ${GEODE}/lib/micrometer-commons-@MICROMETER_VERSION@.jar \
+    ${GEODE}/lib/micrometer-observation-@MICROMETER_VERSION@.jar \
     ${LIB_DIR}/geode-modules-${VERSION}.jar \
     ${LIB_DIR}/geode-modules-session-internal-${VERSION}.jar \
     ${LIB_DIR}/slf4j-api-@SLF4J_VERSION@.jar \

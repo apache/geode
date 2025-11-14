@@ -19,8 +19,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.cli.CliMetaData;
@@ -29,14 +29,14 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class ShCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.SH}, help = CliStrings.SH__HELP)
+  @ShellMethod(value = CliStrings.SH__HELP, key = {CliStrings.SH})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public ResultModel sh(
-      @CliOption(key = {"", CliStrings.SH__COMMAND}, mandatory = true,
+      @ShellOption(value = {"", CliStrings.SH__COMMAND},
           help = CliStrings.SH__COMMAND__HELP) String command,
-      @CliOption(key = CliStrings.SH__USE_CONSOLE, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.SH__USE_CONSOLE, defaultValue = "false",
           help = CliStrings.SH__USE_CONSOLE__HELP) boolean useConsole)
       throws IOException {
     ResultModel result = new ResultModel();

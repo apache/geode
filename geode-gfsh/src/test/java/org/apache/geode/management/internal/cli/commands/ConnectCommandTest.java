@@ -64,15 +64,16 @@ public class ConnectCommandTest {
     gfsh = mock(Gfsh.class);
     operationInvoker = mock(OperationInvoker.class);
     when(gfsh.getOperationInvoker()).thenReturn(operationInvoker);
+    when(gfsh.isHeadlessMode()).thenReturn(false);
     // using spy instead of mock because we want to call the real method when we do connect
     connectCommand = spy(ConnectCommand.class);
     when(connectCommand.getGfsh()).thenReturn(gfsh);
     doReturn(properties).when(connectCommand).loadProperties(any());
     result = mock(CommandResult.class);
     resultModel = mock(ResultModel.class);
-    when(connectCommand.httpConnect(any(), any(), anyBoolean())).thenReturn(resultModel);
-    when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
-        .thenReturn(resultModel);
+    doReturn(resultModel).when(connectCommand).httpConnect(any(), any(), anyBoolean());
+    doReturn(resultModel).when(connectCommand).jmxConnect(any(), anyBoolean(), any(), any(),
+        anyBoolean());
     fileCaptor = ArgumentCaptor.forClass(File.class);
   }
 

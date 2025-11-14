@@ -17,13 +17,12 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ManageIndexDefinitionFunction;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
@@ -33,29 +32,35 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DefineIndexCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.DEFINE_INDEX, help = CliStrings.DEFINE_INDEX__HELP)
+  @ShellMethod(value = CliStrings.DEFINE_INDEX__HELP, key = CliStrings.DEFINE_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   public ResultModel defineIndex(
-      @CliOption(key = CliStrings.DEFINE_INDEX_NAME, mandatory = true,
+      @ShellOption(value = CliStrings.DEFINE_INDEX_NAME,
           help = CliStrings.DEFINE_INDEX__HELP) final String indexName,
-      @CliOption(key = CliStrings.DEFINE_INDEX__EXPRESSION, mandatory = true,
+      @ShellOption(value = CliStrings.DEFINE_INDEX__EXPRESSION,
           help = CliStrings.DEFINE_INDEX__EXPRESSION__HELP) final String indexedExpression,
-      @CliOption(key = CliStrings.DEFINE_INDEX__REGION, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.DEFINE_INDEX__REGION,
           help = CliStrings.DEFINE_INDEX__REGION__HELP) String regionPath,
-      @SuppressWarnings("deprecation") @CliOption(key = CliStrings.DEFINE_INDEX__TYPE,
-          unspecifiedDefaultValue = "range",
-          optionContext = ConverterHint.INDEX_TYPE,
+      @SuppressWarnings("deprecation") @ShellOption(value = CliStrings.DEFINE_INDEX__TYPE,
+          defaultValue = "range",
           help = CliStrings.DEFINE_INDEX__TYPE__HELP) final org.apache.geode.cache.query.IndexType indexType) {
 
     ResultModel result = new ResultModel();
 
+    // Normalize region path to include leading separator for index creation.
+    // The regionPath parameter may or may not have the leading separator depending on user input
+    // (e.g., "regionA" vs "/regionA"). However, when the index is later created, the query service
+    // expects the fromClause to be a valid region path with the separator prefix. Without this
+    // normalization, index creation fails with "does not evaluate to a Region Path" error.
+    // This ensures consistency with Geode's convention of using full region paths with separators.
+    String normalizedRegionPath = regionPath.startsWith("/") ? regionPath : "/" + regionPath;
+
     RegionConfig.Index indexInfo = new RegionConfig.Index();
     indexInfo.setName(indexName);
     indexInfo.setExpression(indexedExpression);
-    indexInfo.setFromClause(regionPath);
+    indexInfo.setFromClause(normalizedRegionPath);
     indexInfo.setType(indexType.getName());
 
     IndexDefinition.indexDefinitions.add(indexInfo);
@@ -72,7 +77,8 @@ public class DefineIndexCommand extends GfshCommand {
     infoResult.addLine(CliStrings.format(CliStrings.DEFINE_INDEX__NAME__MSG, indexName));
     infoResult
         .addLine(CliStrings.format(CliStrings.DEFINE_INDEX__EXPRESSION__MSG, indexedExpression));
-    infoResult.addLine(CliStrings.format(CliStrings.DEFINE_INDEX__REGIONPATH__MSG, regionPath));
+    infoResult
+        .addLine(CliStrings.format(CliStrings.DEFINE_INDEX__REGIONPATH__MSG, normalizedRegionPath));
 
     return result;
   }

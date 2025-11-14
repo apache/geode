@@ -28,8 +28,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.transaction.Status;
-
+import jakarta.transaction.Status;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;

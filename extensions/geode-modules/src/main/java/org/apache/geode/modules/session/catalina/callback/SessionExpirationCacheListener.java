@@ -14,8 +14,7 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.session.ManagerBase;
 
 import org.apache.geode.cache.Declarable;

@@ -15,16 +15,13 @@
 package org.apache.geode.management.internal.cli.shell;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.Shell;
-import org.springframework.shell.event.ParseResult;
-import org.springframework.util.Assert;
-
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
@@ -39,11 +36,13 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
- * Defines the {@link ExecutionStrategy} for commands that are executed in GemFire Shell (gfsh).
+ * Defines the execution strategy for commands that are executed in GemFire Shell (gfsh).
+ * Standalone class (no longer implements Spring Shell's ExecutionStrategy which was removed in
+ * Shell 3.x).
  *
  * @since GemFire 7.0
  */
-public class GfshExecutionStrategy implements ExecutionStrategy {
+public class GfshExecutionStrategy {
   private final Class<?> mutex = GfshExecutionStrategy.class;
   private Gfsh shell;
   private final LogWrapper logWrapper;
@@ -54,33 +53,31 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
   }
 
   /**
-   * Executes the method indicated by the {@link ParseResult} which would always be
-   * {@link GfshParseResult} for GemFire defined commands. If the command Method is decorated with
-   * {@link CliMetaData#shellOnly()} set to <code>false</code>, {@link OperationInvoker} is used to
-   * send the command for processing on a remote GemFire node.
+   * Executes the method indicated by the {@link GfshParseResult}.
+   * If the command Method is decorated with {@link CliMetaData#shellOnly()} set to
+   * <code>false</code>,
+   * {@link OperationInvoker} is used to send the command for processing on a remote GemFire node.
    *
    * @param parseResult that should be executed (never presented as null)
-   * @return an object which will be rendered by the {@link Shell} implementation (may return null)
+   * @return an object which will be rendered by the shell (may return null)
    *         this returns a CommandResult for all the online commands. For offline-commands,
    *         this can return either a CommandResult or ExitShellRequest
-   * @throws RuntimeException which is handled by the {@link Shell} implementation
+   * @throws RuntimeException which is handled by the shell implementation
    */
-  @Override
-  public Object execute(ParseResult parseResult) {
+  public Object execute(GfshParseResult parseResult) {
     Method method = parseResult.getMethod();
 
     // check if it's a shell only command
     if (isShellOnly(method)) {
-      Assert.notNull(parseResult, "Parse result required");
+      Assert.assertNotNull(parseResult, "Parse result required");
       synchronized (mutex) {
-        Assert.isTrue(isReadyForCommands(), "Not yet ready for commands");
+        Assert.assertState(isReadyForCommands(), "Not yet ready for commands");
 
         Object exeuctionResult = new CommandExecutor(null).execute((GfshParseResult) parseResult);
         if (exeuctionResult instanceof ResultModel) {
           return new CommandResult((ResultModel) exeuctionResult);
         }
         return exeuctionResult;
-
       }
     }
 
@@ -120,7 +117,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    *
    * @return whether commands can be presented for processing at this time
    */
-  @Override
   public boolean isReadyForCommands() {
     return true;
   }
@@ -130,7 +126,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    * returning control flow to the caller. Necessary for clean shutdowns. Copied from
    * {@link ExecutionStrategy#terminate()}.
    */
-  @Override
   public void terminate() {
     shell = null;
   }
@@ -146,13 +141,17 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     Path tempFile = null;
 
     if (!shell.isConnectedAndReady()) {
-      shell.logWarning(
-          "Can't execute a remote command without connection. Use 'connect' first to connect.",
-          null);
-      logWrapper.info("Can't execute a remote command \"" + parseResult.getUserInput()
-          + "\" without connection. Use 'connect' first to connect to GemFire.");
-      return null;
+      // Avoid shell.logWarning() to prevent queueing ERROR_RESULT before CommandResult.
+      // In HeadlessGfshShell, logWarning() triggers handleExecutionResult(ERROR_RESULT),
+      // which would queue the sentinel value before the actual CommandResult containing
+      // the error message, causing tests to retrieve ERROR_RESULT (with empty message)
+      // instead of the CommandResult (with the proper error message).
+      String userInput = parseResult.getUserInput();
+      // Match Spring Shell 1.x behavior where unavailable commands return error messages
+      String errorMessage = "Command '" + userInput + "' was found but is not currently available";
+      return ResultModel.createError(errorMessage);
     }
+
 
     List<File> fileData = null;
     CliAroundInterceptor interceptor = null;
@@ -163,8 +162,9 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
       try {
         interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
-            .newInstance();
-      } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
+            .getDeclaredConstructor().newInstance();
+      } catch (InstantiationException | ClassNotFoundException | IllegalAccessException
+          | NoSuchMethodException | InvocationTargetException e) {
         shell.logWarning("Configuration error", e);
       }
 

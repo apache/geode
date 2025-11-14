@@ -18,13 +18,12 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CloseDurableClientFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -35,20 +34,18 @@ import org.apache.geode.security.ResourcePermission;
 
 public class CloseDurableClientCommand extends GfshCommand {
 
-  @CliCommand(value = CliStrings.CLOSE_DURABLE_CLIENTS,
-      help = CliStrings.CLOSE_DURABLE_CLIENTS__HELP)
+  @ShellMethod(value = CliStrings.CLOSE_DURABLE_CLIENTS__HELP,
+      key = CliStrings.CLOSE_DURABLE_CLIENTS)
   @CliMetaData()
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   public ResultModel closeDurableClient(
-      @CliOption(key = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, mandatory = true,
+      @ShellOption(value = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID,
           help = CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID__HELP) final String durableClientId,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          help = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER__HELP,
-          optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          help = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER__HELP) final String[] memberNameOrId,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP) final String[] group) {
 
     Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 

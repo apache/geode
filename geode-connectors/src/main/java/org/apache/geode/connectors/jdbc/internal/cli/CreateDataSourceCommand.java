@@ -19,9 +19,9 @@ import static org.apache.geode.lang.Identifiable.exists;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
+import org.apache.geode.management.internal.cli.domain.PoolProperty;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -79,26 +80,38 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           + "For example 'pool.name1' configures the pool and 'name2' configures the database in the following: "
           + "--pool-properties={'name':'pool.name1','value':'value1'},{'name':'name2','value':'value2'}";
 
-  @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
+  // Spring Shell 3.x migration: @ShellMethod replaces @CliCommand with swapped value/key parameters
+  // Shell 3.x uses @ShellMethod with 'key' for command name and 'value' for help text
+  @ShellMethod(value = CREATE_DATA_SOURCE__HELP, key = CREATE_DATA_SOURCE)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
       interceptor = "org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createDataSource(
-      @CliOption(key = POOLED_DATA_SOURCE_FACTORY_CLASS,
+      // Spring Shell 3.x migration: @ShellOption replaces @CliOption, uses 'value' for option name
+      // Shell 3.x changed 'key' → 'value', added explicit defaultValue = ShellOption.NULL for
+      // optional params
+      @ShellOption(value = POOLED_DATA_SOURCE_FACTORY_CLASS,
+          defaultValue = ShellOption.NULL,
           help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP) String pooledDataSourceFactoryClass,
-      @CliOption(key = URL, mandatory = true,
+      @ShellOption(value = URL,
           help = URL__HELP) String url,
-      @CliOption(key = NAME, mandatory = true, help = NAME__HELP) String name,
-      @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
-      @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
-      @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
-      @CliOption(key = POOLED, help = POOLED__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "true") boolean pooled,
-      @CliOption(key = JDBC_DRIVER_CLASS,
+      @ShellOption(value = NAME, help = NAME__HELP) String name,
+      @ShellOption(value = USERNAME, defaultValue = ShellOption.NULL,
+          help = USERNAME__HELP) String username,
+      @ShellOption(value = PASSWORD, defaultValue = ShellOption.NULL,
+          help = PASSWORD__HELP) String password,
+      @ShellOption(value = CliStrings.IFNOTEXISTS,
+          defaultValue = "false", arity = 0,
+          help = IFNOTEXISTS__HELP) boolean ifNotExists,
+      @ShellOption(value = POOLED,
+          defaultValue = "true", arity = 0,
+          help = POOLED__HELP) boolean pooled,
+      @ShellOption(value = JDBC_DRIVER_CLASS,
+          defaultValue = ShellOption.NULL,
           help = JDBC_DRIVER_CLASS__HELP) String jdbcDriver,
-      @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
+      @ShellOption(value = POOL_PROPERTIES,
+          defaultValue = ShellOption.NULL,
           help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
@@ -168,36 +181,10 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     return true;
   }
 
-  @CliAvailabilityIndicator({CREATE_DATA_SOURCE})
+  // Spring Shell 3.x migration: @ShellMethodAvailability replaces @CliAvailabilityIndicator
+  // Shell 3.x uses @ShellMethodAvailability for command availability checking
+  @ShellMethodAvailability({CREATE_DATA_SOURCE})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
-  }
-
-  public static class PoolProperty {
-    private String name;
-    private String value;
-
-    public PoolProperty() {}
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getValue() {
-      return value;
-    }
-
-    public void setValue(String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String toString() {
-      return "PoolProperty [name=" + name + ", value=" + value + "]";
-    }
   }
 }

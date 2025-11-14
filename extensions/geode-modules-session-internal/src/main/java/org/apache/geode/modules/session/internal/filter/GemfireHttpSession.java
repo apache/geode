@@ -26,10 +26,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
-
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +42,18 @@ import org.apache.geode.modules.util.ClassLoaderObjectInputStream;
 
 /**
  * Class which implements a Gemfire persisted {@code HttpSession}
+ *
+ * <p>
+ * <b>Jakarta EE 10 Migration Changes:</b>
+ * <ul>
+ * <li>Removed deprecated {@code HttpSessionContext} methods (removed from Jakarta Servlet API)</li>
+ * <li>Removed deprecated session value methods: getValue(), getValueNames(), putValue(),
+ * removeValue()</li>
+ * <li>Added generics to getAttributeNames() return type: Enumeration →
+ * Enumeration&lt;String&gt;</li>
+ * <li>Removed @SuppressWarnings("deprecation") - no longer needed after deprecated API removal</li>
+ * </ul>
  */
-@SuppressWarnings("deprecation")
 public class GemfireHttpSession implements HttpSession, DataSerializable, Delta {
 
   private static final transient Logger LOG =
@@ -154,10 +162,14 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
 
   /**
    * {@inheritDoc}
+   *
+   * <p>
+   * <b>Jakarta Servlet API change:</b> Return type now includes generics
+   * (Enumeration&lt;String&gt;)
+   * instead of raw Enumeration type. This matches Jakarta Servlet 6.0 specification.
    */
   @Override
-  @SuppressWarnings("unchecked")
-  public Enumeration getAttributeNames() {
+  public Enumeration<String> getAttributeNames() {
     checkValid();
     return Collections.enumeration(attributes.getAttributeNames());
   }
@@ -202,29 +214,12 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
     return context;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public HttpSessionContext getSessionContext() {
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Object getValue(String name) {
-    return getAttribute(name);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public String[] getValueNames() {
-    return attributes.getAttributeNames().toArray(new String[0]);
-  }
+  // Jakarta Servlet API removed deprecated methods (removed from interface):
+  // - getSessionContext() - deprecated since Servlet 2.1
+  // - getValue(String) - replaced by getAttribute(String)
+  // - getValueNames() - replaced by getAttributeNames()
+  // - putValue(String, Object) - replaced by setAttribute(String, Object)
+  // - removeValue(String) - replaced by removeAttribute(String)
 
   /**
    * {@inheritDoc}
@@ -271,26 +266,10 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
    * {@inheritDoc}
    */
   @Override
-  public void putValue(String name, Object value) {
-    setAttribute(name, value);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
   public void removeAttribute(final String name) {
     checkValid();
     LOG.debug("Session {} removing attribute {}", getId(), name);
     attributes.removeAttribute(name);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public void removeValue(String name) {
-    removeAttribute(name);
   }
 
   /**

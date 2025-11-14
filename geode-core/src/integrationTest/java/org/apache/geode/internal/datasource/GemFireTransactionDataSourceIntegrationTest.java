@@ -32,9 +32,9 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

@@ -27,8 +27,8 @@ import javax.management.ObjectName;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
@@ -40,7 +40,6 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -106,21 +105,21 @@ public class ShowMetricsCommand extends GfshCommand {
               Category.region,
               Category.serialization, Category.transaction));
 
-  @CliCommand(value = CliStrings.SHOW_METRICS, help = CliStrings.SHOW_METRICS__HELP)
+  @ShellMethod(value = CliStrings.SHOW_METRICS__HELP, key = CliStrings.SHOW_METRICS)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_STATISTICS},
       interceptor = "org.apache.geode.management.internal.cli.commands.ShowMetricsInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel showMetrics(
-      @CliOption(key = {CliStrings.MEMBER}, optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+      @ShellOption(value = {CliStrings.MEMBER},
           help = CliStrings.SHOW_METRICS__MEMBER__HELP) String memberNameOrId,
-      @CliOption(key = {CliStrings.SHOW_METRICS__REGION}, optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = {CliStrings.SHOW_METRICS__REGION},
           help = CliStrings.SHOW_METRICS__REGION__HELP) String regionName,
-      @CliOption(key = {CliStrings.SHOW_METRICS__FILE},
+      @ShellOption(value = {CliStrings.SHOW_METRICS__FILE},
           help = CliStrings.SHOW_METRICS__FILE__HELP) String export_to_report_to,
-      @CliOption(key = {CliStrings.SHOW_METRICS__CACHESERVER__PORT},
+      @ShellOption(value = {CliStrings.SHOW_METRICS__CACHESERVER__PORT},
           help = CliStrings.SHOW_METRICS__CACHESERVER__PORT__HELP) Integer rawCacheServerPort,
-      @CliOption(key = {CliStrings.SHOW_METRICS__CATEGORY},
+      @ShellOption(value = {CliStrings.SHOW_METRICS__CATEGORY},
           help = CliStrings.SHOW_METRICS__CATEGORY__HELP) String[] categories) {
 
     DistributedMember member = memberNameOrId == null ? null : getMember(memberNameOrId);

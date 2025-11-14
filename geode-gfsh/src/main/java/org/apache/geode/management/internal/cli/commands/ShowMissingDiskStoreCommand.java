@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -43,8 +43,8 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
   public static final String MISSING_DISK_STORES_SECTION = "missing-disk-stores";
   public static final String MISSING_COLOCATED_REGIONS_SECTION = "missing-colocated-regions";
 
-  @CliCommand(value = CliStrings.SHOW_MISSING_DISK_STORE,
-      help = CliStrings.SHOW_MISSING_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.SHOW_MISSING_DISK_STORE__HELP,
+      key = CliStrings.SHOW_MISSING_DISK_STORE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)

@@ -70,9 +70,17 @@ public abstract class VMProvider {
       MemberStarterRule.disconnectDSIfAny();
     });
 
-    // clean up all the files under the working dir if asked to do so
+    // Clean up all files under working dir if requested - with null safety checks
+    // getWorkingDir() may return null, and listFiles() may return null if directory doesn't exist
+    // or I/O error occurs
     if (cleanWorkingDir) {
-      Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
+      File workingDir = getWorkingDir();
+      if (workingDir != null && workingDir.exists()) {
+        File[] files = workingDir.listFiles();
+        if (files != null) {
+          Arrays.stream(files).forEach(FileUtils::deleteQuietly);
+        }
+      }
     }
   }
 

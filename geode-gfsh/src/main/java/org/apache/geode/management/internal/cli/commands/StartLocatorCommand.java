@@ -31,8 +31,9 @@ import javax.net.ssl.SSLException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -43,7 +44,6 @@ import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
@@ -57,71 +57,66 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.HostUtils;
 import org.apache.geode.security.AuthenticationFailedException;
 
+@ShellComponent
 public class StartLocatorCommand extends OfflineGfshCommand {
-  @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
+  @ShellMethod(value = CliStrings.START_LOCATOR__HELP, key = CliStrings.START_LOCATOR)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public ResultModel startLocator(
-      @CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME,
+      @ShellOption(value = CliStrings.START_LOCATOR__MEMBER_NAME,
           help = CliStrings.START_LOCATOR__MEMBER_NAME__HELP) String memberName,
-      @CliOption(key = CliStrings.START_LOCATOR__BIND_ADDRESS,
+      @ShellOption(value = CliStrings.START_LOCATOR__BIND_ADDRESS,
           help = CliStrings.START_LOCATOR__BIND_ADDRESS__HELP) final String bindAddress,
-      @CliOption(key = CliStrings.START_LOCATOR__CLASSPATH,
+      @ShellOption(value = CliStrings.START_LOCATOR__CLASSPATH,
           help = CliStrings.START_LOCATOR__CLASSPATH__HELP) final String classpath,
-      @CliOption(key = CliStrings.START_LOCATOR__FORCE, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_LOCATOR__FORCE, defaultValue = "false",
           help = CliStrings.START_LOCATOR__FORCE__HELP) final Boolean force,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.START_LOCATOR__GROUP__HELP) final String group,
-      @CliOption(key = CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS,
+      @ShellOption(value = CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS,
           help = CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS__HELP) final String hostnameForClients,
-      @CliOption(key = ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
+      @ShellOption(value = ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS,
           help = CliStrings.START_LOCATOR__JMX_MANAGER_HOSTNAME_FOR_CLIENTS__HELP) final String jmxManagerHostnameForClients,
-      @CliOption(key = CliStrings.START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH,
+          defaultValue = "false",
           help = CliStrings.START_LOCATOR__INCLUDE_SYSTEM_CLASSPATH__HELP) final Boolean includeSystemClasspath,
-      @CliOption(key = CliStrings.START_LOCATOR__LOCATORS,
-          optionContext = ConverterHint.LOCATOR_DISCOVERY_CONFIG,
+      @ShellOption(value = CliStrings.START_LOCATOR__LOCATORS,
           help = CliStrings.START_LOCATOR__LOCATORS__HELP) final String locators,
-      @CliOption(key = CliStrings.START_LOCATOR__LOG_LEVEL, optionContext = ConverterHint.LOG_LEVEL,
+      @ShellOption(value = CliStrings.START_LOCATOR__LOG_LEVEL,
           help = CliStrings.START_LOCATOR__LOG_LEVEL__HELP) final String logLevel,
-      @CliOption(key = CliStrings.START_LOCATOR__MCAST_ADDRESS,
+      @ShellOption(value = CliStrings.START_LOCATOR__MCAST_ADDRESS,
           help = CliStrings.START_LOCATOR__MCAST_ADDRESS__HELP) final String mcastBindAddress,
-      @CliOption(key = CliStrings.START_LOCATOR__MCAST_PORT,
+      @ShellOption(value = CliStrings.START_LOCATOR__MCAST_PORT,
           help = CliStrings.START_LOCATOR__MCAST_PORT__HELP) final Integer mcastPort,
-      @CliOption(key = CliStrings.START_LOCATOR__PORT,
+      @ShellOption(value = CliStrings.START_LOCATOR__PORT,
           help = CliStrings.START_LOCATOR__PORT__HELP) final Integer port,
-      @CliOption(key = CliStrings.START_LOCATOR__DIR,
+      @ShellOption(value = CliStrings.START_LOCATOR__DIR,
           help = CliStrings.START_LOCATOR__DIR__HELP) String workingDirectory,
-      @CliOption(key = CliStrings.START_LOCATOR__PROPERTIES, optionContext = ConverterHint.FILE,
+      @ShellOption(value = CliStrings.START_LOCATOR__PROPERTIES,
           help = CliStrings.START_LOCATOR__PROPERTIES__HELP) File gemfirePropertiesFile,
-      @CliOption(key = CliStrings.START_LOCATOR__SECURITY_PROPERTIES,
-          optionContext = ConverterHint.FILE,
+      @ShellOption(value = CliStrings.START_LOCATOR__SECURITY_PROPERTIES,
           help = CliStrings.START_LOCATOR__SECURITY_PROPERTIES__HELP) File gemfireSecurityPropertiesFile,
-      @CliOption(key = CliStrings.START_LOCATOR__INITIALHEAP,
+      @ShellOption(value = CliStrings.START_LOCATOR__INITIALHEAP,
           help = CliStrings.START_LOCATOR__INITIALHEAP__HELP) final String initialHeap,
-      @CliOption(key = CliStrings.START_LOCATOR__MAXHEAP,
+      @ShellOption(value = CliStrings.START_LOCATOR__MAXHEAP,
           help = CliStrings.START_LOCATOR__MAXHEAP__HELP) final String maxHeap,
-      @CliOption(key = CliStrings.START_LOCATOR__J, optionContext = GfshParser.J_OPTION_CONTEXT,
-          help = CliStrings.START_LOCATOR__J__HELP) final String[] jvmArgsOpts,
-      @CliOption(key = CliStrings.START_LOCATOR__CONNECT, unspecifiedDefaultValue = "true",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_LOCATOR__J,
+          help = CliStrings.START_LOCATOR__J__HELP) final String jvmArgsOpts,
+      @ShellOption(value = CliStrings.START_LOCATOR__CONNECT, defaultValue = "true",
           help = CliStrings.START_LOCATOR__CONNECT__HELP) final boolean connect,
-      @CliOption(key = CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION,
-          unspecifiedDefaultValue = "true", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION,
+          defaultValue = "true",
           help = CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION__HELP) final boolean enableSharedConfiguration,
-      @CliOption(key = CliStrings.START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM,
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM,
+          defaultValue = "false",
           help = CliStrings.START_LOCATOR__LOAD__SHARED_CONFIGURATION__FROM__FILESYSTEM__HELP) final boolean loadSharedConfigurationFromDirectory,
-      @CliOption(key = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR, unspecifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR, defaultValue = "",
           help = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR__HELP) final String clusterConfigDir,
-      @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT,
+      @ShellOption(value = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT,
           help = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT__HELP) final Integer httpServicePort,
-      @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS,
+      @ShellOption(value = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS,
           help = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress,
-      @CliOption(key = CliStrings.START_LOCATOR__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_LOCATOR__REDIRECT_OUTPUT, defaultValue = "false",
           help = CliStrings.START_LOCATOR__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
       throws Exception {
     if (StringUtils.isBlank(memberName)) {
@@ -160,7 +155,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
       File gemfireSecurityPropertiesFile,
       String initialHeap,
       String maxHeap,
-      String[] jvmArgsOpts,
+      String jvmArgsOpts,
       boolean connect,
       boolean enableSharedConfiguration,
       boolean loadSharedConfigurationFromDirectory,
@@ -449,7 +444,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
   String[] createStartLocatorCommandLine(final LocatorLauncher launcher,
       final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
       final Properties gemfireProperties, final String userClasspath,
-      final Boolean includeSystemClasspath, final String[] jvmArgsOpts, final String initialHeap,
+      final Boolean includeSystemClasspath, final String jvmArgsOpts, final String initialHeap,
       final String maxHeap) throws MalformedObjectNameException {
     List<String> commandLine = new ArrayList<>();
 
@@ -464,7 +459,13 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
     StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
     StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
-    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
+
+    // Split JVM arguments by the special delimiter used by GfshParser
+    String[] jvmArgsArray = null;
+    if (jvmArgsOpts != null && !jvmArgsOpts.isEmpty()) {
+      jvmArgsArray = jvmArgsOpts.split(GfshParser.J_ARGUMENT_DELIMITER);
+    }
+    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsArray);
     StartMemberUtils.addInitialHeap(commandLine, initialHeap);
     StartMemberUtils.addMaxHeap(commandLine, maxHeap);
 

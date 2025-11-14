@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.jta;
 
-import javax.transaction.Synchronization;
+import jakarta.transaction.Synchronization;
 
 public class SyncImpl implements Synchronization {
   public boolean befCompletion = false;

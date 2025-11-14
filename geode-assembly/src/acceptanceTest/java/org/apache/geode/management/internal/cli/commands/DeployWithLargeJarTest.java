@@ -30,13 +30,15 @@ import org.junit.Test;
 
 import org.apache.geode.test.junit.rules.FolderRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 public class DeployWithLargeJarTest {
 
   private int locatorPort;
+  // Jakarta EE migration: Added explicit http-service-port to avoid port conflicts
+  // with embedded Jetty server used by Jakarta Servlet containers
+  private int httpServicePort;
 
   @Rule(order = 0)
   public FolderRule folderRule = new FolderRule();
@@ -46,6 +48,8 @@ public class DeployWithLargeJarTest {
   @Before
   public void setUp() {
     locatorPort = getRandomAvailableTCPPort();
+    // Jakarta EE migration: Allocate separate port for HTTP service to prevent conflicts
+    httpServicePort = getRandomAvailableTCPPort();
   }
 
   @Test
@@ -57,9 +61,13 @@ public class DeployWithLargeJarTest {
         .map(File::getAbsolutePath)
         .collect(Collectors.joining(","));
 
-    GfshExecution execution = GfshScript
-        .of("start locator --name=locator --max-heap=128m --port=" + locatorPort,
-            "start server --name=server --max-heap=128m --disable-default-server",
+    // Jakarta EE migration: Increased heap from 128m to 256m to accommodate larger Jakarta
+    // libraries
+    // Added explicit http-service-port configuration to avoid random port conflicts
+    GfshScript
+        .of("start locator --name=locator --max-heap=256m --port=" + locatorPort
+            + " --J=-Dgemfire.http-service-port=" + httpServicePort,
+            "start server --name=server --max-heap=256m --disable-default-server",
             "sleep --time=1",
             "deploy --jars=" + commonLibs)
         .execute(gfshRule);

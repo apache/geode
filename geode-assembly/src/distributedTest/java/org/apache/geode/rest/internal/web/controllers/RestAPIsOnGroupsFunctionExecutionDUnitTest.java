@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -68,8 +68,10 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     setupCacheWithGroupsAndFunction();
 
     for (int i = 0; i < 10; i++) {
-      CloseableHttpResponse response =
+      ClassicHttpResponse response =
           executeFunctionThroughRestCall("OnGroupsFunction", null, null, null, "g0,g1", null);
+      // Apache HttpComponents 5.x: assertHttpResponse uses response.getCode() instead of
+      // getStatusLine().getStatusCode()
       assertHttpResponse(response, 200, 3);
     }
 
@@ -85,7 +87,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     // Execute function randomly (in iteration) on all available (per VM) REST end-points and verify
     // its result
     for (int i = 0; i < 10; i++) {
-      CloseableHttpResponse response =
+      ClassicHttpResponse response =
           executeFunctionThroughRestCall("OnGroupsFunction", null, "someKey", null, "g1", null);
       assertHttpResponse(response, 500, 0);
     }
@@ -101,7 +103,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     // Step-3 : Execute function randomly (in iteration) on all available (per VM) REST end-points
     // and verify its result
     for (int i = 0; i < 5; i++) {
-      CloseableHttpResponse response = executeFunctionThroughRestCall("OnGroupsFunction", null,
+      ClassicHttpResponse response = executeFunctionThroughRestCall("OnGroupsFunction", null,
           null, null, "no%20such%20group", null);
       assertHttpResponse(response, 500, 0);
     }
@@ -109,7 +111,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
 
     for (int i = 0; i < 5; i++) {
 
-      CloseableHttpResponse response =
+      ClassicHttpResponse response =
           executeFunctionThroughRestCall("OnGroupsFunction", null, null, null, "gm", null);
       assertHttpResponse(response, 200, 1);
     }

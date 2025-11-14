@@ -17,68 +17,80 @@ package org.apache.geode.management.internal.cli.converters;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.test.junit.rules.GfshParserRule;
-import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
-
+/**
+ * Unit tests for {@link RegionPathConverter}.
+ *
+ * <p>
+ * Tests region path normalization and validation:
+ * <ul>
+ * <li>Adding leading separator when missing</li>
+ * <li>Preserving paths that already have separator</li>
+ * <li>Handling sub-region paths</li>
+ * <li>Rejecting invalid inputs (bare separator)</li>
+ * </ul>
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * <ul>
+ * <li>Removed: getAllPossibleValues() completion tests</li>
+ * <li>Removed: supports() method tests (no longer in Converter interface)</li>
+ * <li>Removed: GfshParserRule and auto-completion tests</li>
+ * <li>Focus: Pure conversion logic only</li>
+ * </ul>
+ */
 public class RegionPathConverterJUnitTest {
-  @ClassRule
-  public static GfshParserRule parser = new GfshParserRule();
-  private static RegionPathConverter converter;
 
-  private static final String[] allRegionPaths =
-      {SEPARATOR + "region1", SEPARATOR + "region2", SEPARATOR + "rg3"};
+  private RegionPathConverter converter;
 
-  @BeforeClass
-  public static void before() {
-    // this will let the parser use the spied converter instead of creating its own
-    converter = parser.spyConverter(RegionPathConverter.class);
-    when(converter.getAllRegionPaths())
-        .thenReturn(Arrays.stream(allRegionPaths).collect(Collectors.toSet()));
-  }
-
-
-  @Test
-  public void testSupports() throws Exception {
-    assertThat(converter.supports(String.class, ConverterHint.REGION_PATH)).isTrue();
+  @BeforeEach
+  public void setUp() {
+    converter = new RegionPathConverter();
   }
 
   @Test
-  public void convert() throws Exception {
-    assertThatThrownBy(() -> converter.convertFromText(SEPARATOR, String.class, ""))
+  public void convertBareSeparatorThrowsException() {
+    assertThatThrownBy(() -> converter.convert(SEPARATOR))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid region path: " + SEPARATOR);
-
-    assertThat(converter.convertFromText("region", String.class, ""))
-        .isEqualTo(SEPARATOR + "region");
-    assertThat(converter.convertFromText(SEPARATOR + "region" + SEPARATOR + "t", String.class, ""))
-        .isEqualTo(SEPARATOR + "region" + SEPARATOR + "t");
   }
 
   @Test
-  public void complete() throws Exception {
-    CommandCandidate candidate = parser.complete("destroy region --name=");
-    assertThat(candidate.size()).isEqualTo(allRegionPaths.length);
-    assertThat(candidate.getFirstCandidate())
-        .isEqualTo("destroy region --name=" + SEPARATOR + "region1");
+  public void convertAddsLeadingSeparatorWhenMissing() {
+    String result = converter.convert("region");
+    assertThat(result).isEqualTo(SEPARATOR + "region");
+  }
 
-    candidate = parser.complete("destroy region --name=" + SEPARATOR);
-    assertThat(candidate.size()).isEqualTo(allRegionPaths.length);
-    assertThat(candidate.getFirstCandidate())
-        .isEqualTo("destroy region --name=" + SEPARATOR + "region1");
+  @Test
+  public void convertPreservesPathWithLeadingSeparator() {
+    String result = converter.convert(SEPARATOR + "region");
+    assertThat(result).isEqualTo(SEPARATOR + "region");
+  }
 
-    candidate = parser.complete("destroy region --name=" + SEPARATOR + "region");
-    assertThat(candidate.size()).isEqualTo(2);
-    assertThat(candidate.getFirstCandidate())
-        .isEqualTo("destroy region --name=" + SEPARATOR + "region1");
+  @Test
+  public void convertHandlesSubRegionPath() {
+    String result = converter.convert(SEPARATOR + "parent" + SEPARATOR + "child");
+    assertThat(result).isEqualTo(SEPARATOR + "parent" + SEPARATOR + "child");
+  }
+
+  @Test
+  public void convertAddsLeadingSeparatorToSubRegionPath() {
+    String result = converter.convert("parent" + SEPARATOR + "child");
+    assertThat(result).isEqualTo(SEPARATOR + "parent" + SEPARATOR + "child");
+  }
+
+  @Test
+  public void convertHandlesComplexRegionNames() {
+    String result = converter.convert("my-region_123");
+    assertThat(result).isEqualTo(SEPARATOR + "my-region_123");
+  }
+
+  @Test
+  public void convertNullReturnsNull() {
+    String result = converter.convert(null);
+    assertThat(result).isNull();
   }
 }

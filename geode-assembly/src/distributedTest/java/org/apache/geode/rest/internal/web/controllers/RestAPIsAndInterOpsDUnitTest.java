@@ -39,15 +39,15 @@ import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -74,6 +74,11 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
+ *
+ * Apache HttpComponents 5.x migration notes:
+ * - ClassicHttpResponse replaces CloseableHttpResponse for synchronous HTTP exchanges
+ * - response.getCode() replaces response.getStatusLine().getStatusCode()
+ * HttpComponents 5.x simplified the API by providing direct status code access
  *
  * @since GemFire 8.0
  */
@@ -282,8 +287,8 @@ public class RestAPIsAndInterOpsDUnitTest
     HttpPost post = new HttpPost(restEndpoint + findAllPeopleQuery);
     post.addHeader("Content-Type", "application/json");
     post.addHeader("Accept", "application/json");
-    CloseableHttpResponse createNamedQueryResponse = httpclient.execute(post);
-    assertThat(createNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(201);
+    ClassicHttpResponse createNamedQueryResponse = httpclient.execute(post);
+    assertThat(createNamedQueryResponse.getCode()).isEqualTo(201);
     assertThat(createNamedQueryResponse.getEntity()).isNotNull();
     createNamedQueryResponse.close();
 
@@ -291,7 +296,7 @@ public class RestAPIsAndInterOpsDUnitTest
     post.addHeader("Content-Type", "application/json");
     post.addHeader("Accept", "application/json");
     createNamedQueryResponse = httpclient.execute(post);
-    assertThat(createNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(201);
+    assertThat(createNamedQueryResponse.getCode()).isEqualTo(201);
     assertThat(createNamedQueryResponse.getEntity()).isNotNull();
     createNamedQueryResponse.close();
 
@@ -299,7 +304,7 @@ public class RestAPIsAndInterOpsDUnitTest
     post.addHeader("Content-Type", "application/json");
     post.addHeader("Accept", "application/json");
     createNamedQueryResponse = httpclient.execute(post);
-    assertThat(createNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(201);
+    assertThat(createNamedQueryResponse.getCode()).isEqualTo(201);
     assertThat(createNamedQueryResponse.getEntity()).isNotNull();
     createNamedQueryResponse.close();
 
@@ -307,8 +312,8 @@ public class RestAPIsAndInterOpsDUnitTest
 
     HttpGet get = new HttpGet(restEndpoint + "/queries");
     httpclient = HttpClients.createDefault();
-    CloseableHttpResponse listAllQueriesResponse = httpclient.execute(get);
-    assertThat(listAllQueriesResponse.getStatusLine().getStatusCode()).isEqualTo(200);
+    ClassicHttpResponse listAllQueriesResponse = httpclient.execute(get);
+    assertThat(listAllQueriesResponse.getCode()).isEqualTo(200);
     assertThat(listAllQueriesResponse.getEntity()).isNotNull();
 
     HttpEntity entity = listAllQueriesResponse.getEntity();
@@ -340,9 +345,9 @@ public class RestAPIsAndInterOpsDUnitTest
     post.addHeader("Accept", "application/json");
     entity = new StringEntity(QUERY_ARGS);
     post.setEntity(entity);
-    CloseableHttpResponse runNamedQueryResponse = httpclient.execute(post);
+    ClassicHttpResponse runNamedQueryResponse = httpclient.execute(post);
 
-    assertThat(runNamedQueryResponse.getStatusLine().getStatusCode()).isEqualTo(200);
+    assertThat(runNamedQueryResponse.getCode()).isEqualTo(200);
     assertThat(runNamedQueryResponse.getEntity()).isNotNull();
   }
 
@@ -407,7 +412,7 @@ public class RestAPIsAndInterOpsDUnitTest
     put.addHeader("Accept", "application/json");
     StringEntity entity = new StringEntity(PERSON_LIST_AS_JSON);
     put.setEntity(entity);
-    CloseableHttpResponse result = httpclient.execute(put);
+    ClassicHttpResponse result = httpclient.execute(put);
     assertThat(result).isNotNull();
 
     // Delete Single keys
@@ -448,7 +453,7 @@ public class RestAPIsAndInterOpsDUnitTest
     get.addHeader("Accept", "application/json");
     CloseableHttpClient httpclient = HttpClients.createDefault();
 
-    CloseableHttpResponse response = httpclient.execute(get);
+    ClassicHttpResponse response = httpclient.execute(get);
     HttpEntity entity = response.getEntity();
     InputStream content = entity.getContent();
     BufferedReader reader = new BufferedReader(new InputStreamReader(content));
@@ -459,7 +464,7 @@ public class RestAPIsAndInterOpsDUnitTest
     }
 
     // validate the status code
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    assertThat(response.getCode()).isEqualTo(200);
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonArray = mapper.readTree(sb.toString());
@@ -475,7 +480,7 @@ public class RestAPIsAndInterOpsDUnitTest
     get.addHeader("Content-Type", "application/json");
     get.addHeader("Accept", "application/json");
     CloseableHttpClient httpclient = HttpClients.createDefault();
-    CloseableHttpResponse response = httpclient.execute(get);
+    ClassicHttpResponse response = httpclient.execute(get);
 
     HttpEntity entity = response.getEntity();
     InputStream content = entity.getContent();
@@ -525,8 +530,8 @@ public class RestAPIsAndInterOpsDUnitTest
     get.addHeader("Content-Type", "application/json");
     get.addHeader("Accept", "application/json");
     httpclient = HttpClients.createDefault();
-    CloseableHttpResponse result = httpclient.execute(get);
-    assertThat(result.getStatusLine().getStatusCode()).isEqualTo(200);
+    ClassicHttpResponse result = httpclient.execute(get);
+    assertThat(result.getCode()).isEqualTo(200);
     assertThat(result.getEntity()).isNotNull();
 
     entity = result.getEntity();
@@ -548,7 +553,7 @@ public class RestAPIsAndInterOpsDUnitTest
     get.addHeader("Accept", "application/json");
     httpclient = HttpClients.createDefault();
     response = httpclient.execute(get);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     entity = response.getEntity();
@@ -569,7 +574,7 @@ public class RestAPIsAndInterOpsDUnitTest
     get.addHeader("Accept", "application/json");
     httpclient = HttpClients.createDefault();
     response = httpclient.execute(get);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     entity = response.getEntity();
@@ -590,7 +595,7 @@ public class RestAPIsAndInterOpsDUnitTest
     get.addHeader("Accept", "application/json");
     httpclient = HttpClients.createDefault();
     response = httpclient.execute(get);
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    assertThat(response.getCode()).isEqualTo(200);
     assertThat(response.getEntity()).isNotNull();
 
     entity = response.getEntity();

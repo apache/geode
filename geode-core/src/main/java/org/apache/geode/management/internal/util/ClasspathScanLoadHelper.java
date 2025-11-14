@@ -57,6 +57,27 @@ public class ClasspathScanLoadHelper implements AutoCloseable {
     return classInfoList.loadClasses().stream().collect(toSet());
   }
 
+  /**
+   * Scans the classpath for concrete (non-abstract, non-interface) subclasses of a parent class.
+   * Added for Spring Shell 3.x migration to support hierarchical command class discovery where
+   * abstract base classes with @ShellComponent have concrete subclasses that need to be loaded.
+   *
+   * @param parentClass the parent class to find subclasses of
+   * @param onlyFromPackages package names to restrict the search
+   * @return set of concrete subclass types found in the specified packages
+   */
+  public Set<Class<?>> scanPackagesForSubclassesOf(Class<?> parentClass,
+      String... onlyFromPackages) {
+    ClassInfoList classInfoList = scanResult.getSubclasses(parentClass.getName())
+        .filter(ci -> !ci.isAbstract() && !ci.isInterface() && ci.isPublic());
+
+    classInfoList = classInfoList
+        .filter(ci -> Arrays.stream(onlyFromPackages)
+            .anyMatch(p -> classMatchesPackage(ci.getName(), p)));
+
+    return classInfoList.loadClasses().stream().collect(toSet());
+  }
+
   public Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation, String... onlyFromPackages) {
     ClassInfoList classInfoList = scanResult.getClassesWithAnnotation(annotation.getName());
 

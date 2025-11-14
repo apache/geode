@@ -16,13 +16,14 @@
 package org.apache.geode.tools.pulse.internal.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
  * Configures Pulse to use the authentication manager defined by the
@@ -32,21 +33,42 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+// @EnableGlobalMethodSecurity deprecated in Spring Security 6.x, replaced by @EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.custom")
 @ImportResource("classpath:pulse-authentication-custom.xml")
 public class CustomSecurityConfig extends DefaultSecurityConfig {
-  private final AuthenticationManager authenticationManager;
+  private final AuthenticationManager customAuthenticationManager;
 
   @Autowired
   CustomSecurityConfig(AuthenticationManager authenticationManager,
       RepositoryLogoutHandler repositoryLogoutHandler) {
     super(repositoryLogoutHandler);
-    this.authenticationManager = authenticationManager;
+    this.customAuthenticationManager = authenticationManager;
   }
 
+  /**
+   * Custom authentication uses an externally defined AuthenticationManager, not UserDetailsService.
+   * Override parent's UserDetailsService bean to prevent it from being used.
+   */
+  @Bean
   @Override
-  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
-    authenticationManagerBuilder.parentAuthenticationManager(authenticationManager);
+  public UserDetailsService userDetailsService() {
+    // Return a dummy UserDetailsService that throws an exception if used
+    // This should not be used since we have a custom AuthenticationManager
+    return username -> {
+      throw new UnsupportedOperationException(
+          "UserDetailsService should not be used with custom authentication");
+    };
+  }
+
+  /**
+   * Expose the custom AuthenticationManager as a bean.
+   * Spring Security 6.x removed configure(AuthenticationManagerBuilder), requiring direct bean
+   * definition.
+   */
+  @Bean
+  public AuthenticationManager authenticationManager() {
+    return customAuthenticationManager;
   }
 }

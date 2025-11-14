@@ -14,76 +14,44 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
+/**
+ * Spring Shell 3.x converter for JAR directory paths.
+ *
+ * <p>
+ * Converts a directory path string to a String. Used by the deploy command's --dir parameter
+ * to specify a directory containing JAR files to deploy.
+ *
+ * <p>
+ * Example usage:
+ *
+ * <pre>
+ * deploy --dir=/path/to/lib
+ * </pre>
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * - Spring Shell 1.x: Used for both conversion AND file system auto-completion
+ * - Spring Shell 3.x: Conversion only; auto-completion via ValueProvider (separate concern)
+ * - This converter is a simple passthrough (String → String)
+ * - File system completion should be implemented in a separate ValueProvider
+ *
+ * @since GemFire 7.0
+ */
+@Component
+public class JarDirPathConverter implements Converter<String, String> {
 
-import org.apache.geode.management.cli.ConverterHint;
-
-public class JarDirPathConverter implements Converter<String> {
-  private FilePathStringConverter delegate;
-
-  public JarDirPathConverter() {
-    delegate = new FilePathStringConverter();
-  }
-
-  public void setDelegate(FilePathStringConverter delegate) {
-    this.delegate = delegate;
-  }
-
+  /**
+   * Converts a directory path string to a String (passthrough).
+   *
+   * @param source the directory path
+   * @return the same directory path
+   */
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && optionContext.contains(ConverterHint.JARDIR);
-  }
-
-  @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    List<Completion> allCompletions = new ArrayList<>();
-    delegate.getAllPossibleValues(allCompletions, targetType, existingData, optionContext, target);
-    completions.addAll(allCompletions.stream()
-        .filter(JarDirPathConverter::isDirWithDirsOrDirWithJars)
-        .collect(Collectors.toList()));
-    return notAllAreJars(completions);
-  }
-
-  static boolean isDirWithDirsOrDirWithJars(Completion dir) {
-    return isDirWithDirsOrDirWithJars(dir.getValue());
-  }
-
-  static boolean isDirWithDirsOrDirWithJars(String dir) {
-    File d = new File(dir);
-    if (!d.isDirectory()) {
-      return false;
-    }
-
-    File[] listing = d.listFiles();
-    if (listing == null) {
-      return false;
-    }
-    return hasSubdirs(listing) || hasJars(listing);
-  }
-
-  private static boolean hasSubdirs(File[] listing) {
-    return Arrays.stream(listing).anyMatch(File::isDirectory);
-  }
-
-  private static boolean hasJars(File[] listing) {
-    return Arrays.stream(listing).anyMatch(f -> f.getName().endsWith(".jar"));
-  }
-
-  private static boolean notAllAreJars(List<Completion> completions) {
-    return completions.stream().anyMatch(c -> !c.getValue().endsWith(".jar"));
+  public String convert(@NonNull String source) {
+    return source;
   }
 }

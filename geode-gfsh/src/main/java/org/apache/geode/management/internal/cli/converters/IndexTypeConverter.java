@@ -14,48 +14,47 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.util.List;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
+import org.apache.geode.cache.query.IndexType;
 
-import org.apache.geode.management.cli.ConverterHint;
-
-/***
- * Added converter to enable auto-completion for index-type
+/**
+ * Converter for Spring Shell 3.x to convert string values to IndexType enum.
  *
+ * <p>
+ * Spring Shell 3.x requires explicit converters for custom types, including enums.
+ * This converter handles string-to-IndexType conversion with synonym support:
+ * <ul>
+ * <li>"range" → FUNCTIONAL</li>
+ * <li>"hash" → HASH</li>
+ * <li>"key" → PRIMARY_KEY</li>
+ * <li>Case-insensitive enum names (FUNCTIONAL, HASH, PRIMARY_KEY)</li>
+ * </ul>
+ *
+ * <p>
+ * Used by CreateIndexCommand and DefineIndexCommand for the --type parameter.
+ *
+ * @since GemFire 1.0
  */
+@Component
 @SuppressWarnings("deprecation")
-public class IndexTypeConverter implements Converter<org.apache.geode.cache.query.IndexType> {
+public class IndexTypeConverter implements Converter<String, IndexType> {
 
+  /**
+   * Converts a string value to an IndexType enum.
+   *
+   * @param source the string to convert (e.g., "range", "hash", "key", "FUNCTIONAL")
+   * @return the corresponding IndexType enum value
+   * @throws IllegalArgumentException if the string is not a valid IndexType or synonym
+   */
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return org.apache.geode.cache.query.IndexType.class.isAssignableFrom(type)
-        && optionContext.contains(ConverterHint.INDEX_TYPE);
-  }
-
-  @Override
-  public org.apache.geode.cache.query.IndexType convertFromText(String value, Class<?> targetType,
-      String optionContext) {
-    switch (value.toLowerCase()) {
-      case "range":
-        return org.apache.geode.cache.query.IndexType.FUNCTIONAL;
-      case "key":
-        return org.apache.geode.cache.query.IndexType.PRIMARY_KEY;
-      case "hash":
-        return org.apache.geode.cache.query.IndexType.HASH;
-    }
-
-    throw new IllegalArgumentException("invalid index type: " + value);
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    completions.add(new Completion("range"));
-    completions.add(new Completion("key"));
-    completions.add(new Completion("hash"));
-    return true;
+  public IndexType convert(@NonNull String source) {
+    // IndexType.valueOfSynonym handles:
+    // - Synonyms: "range" -> FUNCTIONAL, "hash" -> HASH, "key" -> PRIMARY_KEY
+    // - Case-insensitive enum names: "FUNCTIONAL", "functional", etc.
+    // - Throws IllegalArgumentException for invalid values
+    return IndexType.valueOfSynonym(source);
   }
 }

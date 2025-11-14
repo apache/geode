@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
@@ -29,7 +29,6 @@ import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -42,47 +41,46 @@ import org.apache.geode.security.ResourcePermission;
 
 public class CreateGatewayReceiverCommand extends SingleGfshCommand {
 
-  @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER,
-      help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
+  @ShellMethod(value = CliStrings.CREATE_GATEWAYRECEIVER__HELP,
+      key = CliStrings.CREATE_GATEWAYRECEIVER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateGatewayReceiverCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public ResultModel createGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-      optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
+  public ResultModel createGatewayReceiver(
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
 
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) String[] onMember,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
           help = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") Boolean manualStart,
+          defaultValue = "false") Boolean manualStart,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT,
           help = CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT__HELP) Integer startPort,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT,
           help = CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT__HELP) Integer endPort,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS,
           help = CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS__HELP) String bindAddress,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS,
           help = CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS__HELP) Integer maximumTimeBetweenPings,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE,
           help = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE__HELP) Integer socketBufferSize,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER,
           help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilters,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS,
+      @ShellOption(value = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS,
           help = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP) String hostnameForSenders,
 
-      @CliOption(key = CliStrings.IFNOTEXISTS, help = CliStrings.IFNOTEXISTS_HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") Boolean ifNotExists) {
+      @ShellOption(value = CliStrings.IFNOTEXISTS, help = CliStrings.IFNOTEXISTS_HELP,
+          defaultValue = "false") Boolean ifNotExists) {
 
     GatewayReceiverConfig configuration =
         buildConfiguration(manualStart, startPort, endPort, bindAddress, maximumTimeBetweenPings,

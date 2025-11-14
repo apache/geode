@@ -21,36 +21,72 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-
-import org.apache.geode.management.cli.ConverterHint;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 /**
+ * Spring Shell 3.x converter for file path strings.
+ *
+ * <p>
+ * Converts a file path string to itself (passthrough conversion).
+ * Used by commands with file path options (e.g., --cache-xml-file).
+ *
+ * <p>
+ * This converter provides utility methods for file system navigation:
+ * <ul>
+ * <li>{@link #getRoots()} - Returns all file system roots</li>
+ * <li>{@link #getSiblings(String)} - Returns files in the same directory</li>
+ * </ul>
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * - Spring Shell 1.x: Used supports(), convertFromText(), getAllPossibleValues()
+ * - Spring Shell 3.x: Simple Converter<String, String> for conversion only
+ * - Completion logic (getRoots, getSiblings) preserved for ValueProvider use
+ * - Auto-completion should be implemented via ValueProvider (separate concern)
  *
  * @since GemFire 7.0
  */
-public class FilePathStringConverter implements Converter<String> {
+@Component
+public class FilePathStringConverter implements Converter<String, String> {
+
+  /**
+   * Converts a file path string (passthrough conversion).
+   *
+   * @param source the file path string
+   * @return the same file path string
+   */
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && optionContext.contains(ConverterHint.FILE_PATH);
+  public String convert(@NonNull String source) {
+    return source;
   }
 
-  @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
-  }
-
+  /**
+   * Gets all file system roots (e.g., "/" on Unix, "C:\", "D:\" on Windows).
+   *
+   * <p>
+   * This method is preserved for potential use by a ValueProvider in Spring Shell 3.x.
+   *
+   * @return list of absolute paths to all file system roots
+   */
   public List<String> getRoots() {
     File[] roots = File.listRoots();
     return Arrays.stream(roots).map(File::getAbsolutePath).collect(Collectors.toList());
   }
 
   /**
-   * if path is a dir, it will return the list of files under this dir. if path is a filename, it
-   * will return all the siblings of this file
+   * Gets sibling files for completion purposes.
+   *
+   * <p>
+   * If path is a directory, returns files under that directory.
+   * If path is a filename, returns all siblings of that file (files in the same directory).
+   *
+   * <p>
+   * This method is preserved for potential use by a ValueProvider in Spring Shell 3.x.
+   *
+   * @param path the current file path (may be directory or filename)
+   * @return list of files in the target directory, with appropriate path prefix
    */
   public List<String> getSiblings(String path) {
     File currentFile = new File(path);
@@ -84,19 +120,4 @@ public class FilePathStringConverter implements Converter<String> {
         .map(s -> prefix + s)
         .collect(Collectors.toList());
   }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    if (StringUtils.isBlank(existingData)) {
-      getRoots().forEach(path -> completions.add(new Completion(path)));
-      return !completions.isEmpty();
-    }
-
-    getSiblings(existingData).stream().filter(string -> string.startsWith(existingData))
-        .forEach(path -> completions.add(new Completion(path)));
-
-    return !completions.isEmpty();
-  }
-
 }

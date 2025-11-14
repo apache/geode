@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.LogWrapper;
@@ -25,13 +25,12 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class DisconnectCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.DISCONNECT}, help = CliStrings.DISCONNECT__HELP)
+  @ShellMethod(value = CliStrings.DISCONNECT__HELP, key = {CliStrings.DISCONNECT})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX,
       CliStrings.TOPIC_GEODE_MANAGER})
   public ResultModel disconnect() {
-
-
     if (getGfsh() != null && !getGfsh().isConnectedAndReady()) {
       return ResultModel.createInfo("Not connected.");
     }
@@ -49,7 +48,11 @@ public class DisconnectCommand extends OfflineGfshCommand {
       LogWrapper.getInstance().info(CliStrings
           .format(CliStrings.DISCONNECT__MSG__DISCONNECTED, operationInvoker.toString()));
       if (!gfshInstance.isHeadlessMode()) {
-        gfshInstance.setPromptPath(gfshInstance.getEnvAppContextPath());
+        // Reset prompt path to default after disconnect (Shell 3.x uses env property)
+        // Shell 1.x: setPromptPath() method updated prompt directly
+        // Shell 3.x: Set ENV_APP_CONTEXT_PATH; getPromptText() reads it dynamically
+        gfshInstance.setEnvProperty(Gfsh.ENV_APP_CONTEXT_PATH,
+            gfshInstance.getEnvAppContextPath());
       }
     } else {
       infoResultData.addLine(CliStrings.DISCONNECT__MSG__NOTCONNECTED);

@@ -16,9 +16,9 @@
 @XmlSchema(namespace = "http://geode.apache.org/schema/query-config-service",
     xmlns = {@XmlNs(prefix = "query-config-service",
         namespaceURI = "http://geode.apache.org/schema/query-config-service")},
-    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+    elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 
 package org.apache.geode.cache.query.management.configuration;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlSchema;

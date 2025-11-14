@@ -21,12 +21,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunctionArgs;
@@ -52,17 +51,20 @@ public class DestroyAsyncEventQueueCommand extends GfshCommand {
   public static final String DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED =
       "Async event queue \"%s\" destroyed";
 
-  @CliCommand(value = DESTROY_ASYNC_EVENT_QUEUE, help = DESTROY_ASYNC_EVENT_QUEUE__HELP)
+  @ShellMethod(value = DESTROY_ASYNC_EVENT_QUEUE__HELP, key = DESTROY_ASYNC_EVENT_QUEUE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyAsyncEventQueue(
-      @CliOption(key = DESTROY_ASYNC_EVENT_QUEUE__ID, mandatory = true,
+      @ShellOption(value = DESTROY_ASYNC_EVENT_QUEUE__ID,
           help = DESTROY_ASYNC_EVENT_QUEUE__ID__HELP) String aeqId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = DESTROY_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] onGroups,
-      @CliOption(key = IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean ifExists) {
+      @ShellOption(value = IFEXISTS, help = IFEXISTS_HELP,
+          defaultValue = "false") boolean ifExists) {
+    if (aeqId == null) {
+      return ResultModel.createError("You must specify an async event queue id.");
+    }
+
     DestroyAsyncEventQueueFunctionArgs asyncEventQueueDestoryFunctionArgs =
         new DestroyAsyncEventQueueFunctionArgs(aeqId, ifExists);
 

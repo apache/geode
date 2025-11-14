@@ -17,13 +17,14 @@ package org.apache.geode.management.internal.rest.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.servlet.http.HttpServletRequest;
-
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 
@@ -31,11 +32,20 @@ public class JwtAuthenticationFilterTest {
 
   private JwtAuthenticationFilter filter;
   private HttpServletRequest request;
+  private AuthenticationManager authenticationManager;
 
   @Before
   public void before() throws Exception {
     filter = new JwtAuthenticationFilter();
     request = mock(HttpServletRequest.class);
+    authenticationManager = mock(AuthenticationManager.class);
+
+    // Set the authentication manager on the filter
+    filter.setAuthenticationManager(authenticationManager);
+
+    // Configure mock to return the same authentication object it receives
+    when(authenticationManager.authenticate(any(Authentication.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
   }
 
   @Test
@@ -63,7 +73,8 @@ public class JwtAuthenticationFilterTest {
   public void correctHeader() throws Exception {
     when(request.getHeader("Authorization")).thenReturn("Bearer bar");
     Authentication authentication = filter.attemptAuthentication(request, null);
-    assertThat(authentication.getPrincipal().toString()).isEqualTo("Bearer");
+    // The token itself ("bar") is used as both principal and credentials
+    assertThat(authentication.getPrincipal().toString()).isEqualTo("bar");
     assertThat(authentication.getCredentials().toString()).isEqualTo("bar");
   }
 }

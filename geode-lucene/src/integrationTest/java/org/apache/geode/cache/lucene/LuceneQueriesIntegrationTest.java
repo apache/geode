@@ -120,15 +120,16 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     verifyQuery("field1:one_three", DEFAULT_FIELD);
 
     // standard analyzer will tokenize by '@'
+    // In Lucene 9, @ is a special character and needs to be escaped or quoted
     // this query string will be parsed as "one" "three"
     // query will be--field1:one field1:three
-    verifyQuery("field1:one@three", DEFAULT_FIELD, "A", "B", "C");
+    verifyQuery("field1:one\\@three", DEFAULT_FIELD, "A", "B", "C");
 
     HashMap expectedResults = new HashMap();
     expectedResults.put("A", new TestObject(value1, value1));
     expectedResults.put("B", new TestObject(value2, value2));
     expectedResults.put("C", new TestObject(value3, value3));
-    verifyQuery("field1:one@three", DEFAULT_FIELD, expectedResults);
+    verifyQuery("field1:one\\@three", DEFAULT_FIELD, expectedResults);
 
     // keyword analyzer, this query will only match the entry that exactly matches
     // this query string will be parsed as "one three"
@@ -139,7 +140,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // keyword analyzer without double quote. It should be the same as
     // with double quote
     // query will be--field2:one@three
-    verifyQuery("field2:one@three", DEFAULT_FIELD, "C");
+    verifyQuery("field2:one\\@three", DEFAULT_FIELD, "C");
   }
 
   @Test()

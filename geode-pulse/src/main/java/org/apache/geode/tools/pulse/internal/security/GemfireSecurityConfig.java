@@ -16,16 +16,20 @@
 package org.apache.geode.tools.pulse.internal.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @Profile("pulse.authentication.gemfire")
 public class GemfireSecurityConfig extends DefaultSecurityConfig {
   private final AuthenticationProvider authenticationProvider;
@@ -37,8 +41,19 @@ public class GemfireSecurityConfig extends DefaultSecurityConfig {
     authenticationProvider = gemFireAuthenticationProvider;
   }
 
+  @Bean
   @Override
-  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
-    authenticationManagerBuilder.authenticationProvider(authenticationProvider);
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    // Spring Security 6 migration: Explicitly register custom AuthenticationProvider
+    // to ensure GemFire authentication is used instead of the default UserDetailsService
+    httpSecurity.authenticationProvider(authenticationProvider);
+    return super.securityFilterChain(httpSecurity);
+  }
+
+  // Spring Security 6 migration: Provide AuthenticationManager bean for custom authentication
+  // This enables form login to use GemFireAuthenticationProvider for user authentication
+  @Bean
+  public AuthenticationManager authenticationManager() {
+    return new ProviderManager(authenticationProvider);
   }
 }

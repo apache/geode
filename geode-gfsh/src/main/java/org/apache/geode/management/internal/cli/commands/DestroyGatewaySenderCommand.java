@@ -20,8 +20,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -29,7 +29,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunction;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunctionArgs;
@@ -43,23 +42,24 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
   private static final int MBEAN_DELETION_WAIT_TIME = 10000;
 
-  @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
-      help = CliStrings.DESTROY_GATEWAYSENDER__HELP)
+  @ShellMethod(value = CliStrings.DESTROY_GATEWAYSENDER__HELP,
+      key = CliStrings.DESTROY_GATEWAYSENDER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
   public ResultModel destroyGatewaySender(
-      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
-          optionContext = ConverterHint.GATEWAY_SENDER_ID,
+      @ShellOption(value = CliStrings.DESTROY_GATEWAYSENDER__ID,
           help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
-      @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExist) {
+      @ShellOption(value = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
+          defaultValue = "false") boolean ifExist) {
+
+    if (id == null) {
+      return ResultModel.createError("You must specify a gateway sender id.");
+    }
 
     GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
         new GatewaySenderDestroyFunctionArgs(id, ifExist);

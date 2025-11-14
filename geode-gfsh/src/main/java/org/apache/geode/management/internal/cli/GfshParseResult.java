@@ -20,17 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-import org.springframework.shell.event.ParseResult;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
 /**
- * Immutable representation of the outcome of parsing a given shell line. * Extends
- * {@link ParseResult} to add a field to specify the command string that was input by the user.
+ * Immutable representation of the outcome of parsing a given shell line.
+ * Standalone class (no longer extends Spring Shell's ParseResult which was removed in Shell 3.x).
  *
  * <p>
  * Some commands are required to be executed on a remote GemFire managing member. These should be
@@ -41,10 +39,15 @@ import org.apache.geode.management.internal.cli.shell.OperationInvoker;
  *
  * @since GemFire 7.0
  */
-public class GfshParseResult extends ParseResult {
+public class GfshParseResult {
   private String userInput;
   private final String commandName;
   private final Map<String, Object> paramValueMap = new HashMap<>();
+
+  // Fields previously inherited from ParseResult:
+  private final Method method;
+  private final Object instance;
+  private final Object[] arguments;
 
   /**
    * Creates a GfshParseResult instance to represent parsing outcome.
@@ -56,11 +59,19 @@ public class GfshParseResult extends ParseResult {
    */
   protected GfshParseResult(final Method method, final Object instance, final Object[] arguments,
       final String userInput) {
-    super(method, instance, arguments);
+    this.method = method;
+    this.instance = instance;
+    this.arguments = arguments;
     this.userInput = userInput.trim();
 
-    CliCommand cliCommand = method.getAnnotation(CliCommand.class);
-    commandName = cliCommand.value()[0];
+    // Spring Shell 3.x uses @ShellMethod instead of @Command
+    org.springframework.shell.standard.ShellMethod shellMethod =
+        method.getAnnotation(org.springframework.shell.standard.ShellMethod.class);
+    if (shellMethod != null && shellMethod.key().length > 0) {
+      commandName = shellMethod.key()[0];
+    } else {
+      commandName = method.getName();
+    }
 
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     if (arguments == null) {
@@ -69,21 +80,29 @@ public class GfshParseResult extends ParseResult {
 
     for (int i = 0; i < arguments.length; i++) {
       Object argument = arguments[i];
-      if (argument == null) {
+
+      ShellOption option = getOption(parameterAnnotations, i);
+      if (option == null) {
+        // Parameter without @ShellOption annotation - skip it
         continue;
       }
 
-      CliOption cliOption = getCliOption(parameterAnnotations, i);
+      // Store in map using the first value as key (not longNames, which doesn't exist in Shell 3.x)
+      // This map is used for easy access of option values in tests and validation
+      String optionName = option.value().length > 0 ? option.value()[0] : null;
+      if (optionName != null) {
+        paramValueMap.put(optionName, argument);
+      }
 
-      // this maps are used for easy access of option values.
-      // It's used in tests and validation of option values in pre-execution
-      paramValueMap.put(cliOption.key()[0], argument);
-
-      String argumentAsString;
-      if (argument instanceof Object[]) {
-        argumentAsString = StringUtils.join((Object[]) argument, ",");
-      } else {
-        argumentAsString = argument.toString();
+      // Note: argumentAsString was previously computed but not used
+      // Keeping the pattern for potential future use
+      if (argument != null) {
+        String argumentAsString;
+        if (argument instanceof Object[]) {
+          argumentAsString = StringUtils.join((Object[]) argument, ",");
+        } else {
+          argumentAsString = argument.toString();
+        }
       }
     }
   }
@@ -123,11 +142,24 @@ public class GfshParseResult extends ParseResult {
     return commandName;
   }
 
-  private CliOption getCliOption(Annotation[][] parameterAnnotations, int index) {
+  // Getters for fields previously inherited from ParseResult
+  public Method getMethod() {
+    return method;
+  }
+
+  public Object getInstance() {
+    return instance;
+  }
+
+  public Object[] getArguments() {
+    return arguments;
+  }
+
+  private ShellOption getOption(Annotation[][] parameterAnnotations, int index) {
     Annotation[] annotations = parameterAnnotations[index];
     for (Annotation annotation : annotations) {
-      if (annotation instanceof CliOption) {
-        return (CliOption) annotation;
+      if (annotation instanceof ShellOption) {
+        return (ShellOption) annotation;
       }
     }
     return null;

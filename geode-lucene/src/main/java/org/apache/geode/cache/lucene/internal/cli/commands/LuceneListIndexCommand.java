@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -39,11 +39,11 @@ import org.apache.geode.security.ResourcePermission;
 
 public class LuceneListIndexCommand extends LuceneCommandBase {
 
-  @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX,
-      help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
+  @ShellMethod(value = LuceneCliStrings.LUCENE_LIST_INDEX__HELP,
+      key = LuceneCliStrings.LUCENE_LIST_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  public ResultModel listIndex(@CliOption(key = LuceneCliStrings.LUCENE_LIST_INDEX__STATS,
-      specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+  public ResultModel listIndex(@ShellOption(value = LuceneCliStrings.LUCENE_LIST_INDEX__STATS,
+      defaultValue = "false", arity = 0,
       help = LuceneCliStrings.LUCENE_LIST_INDEX__STATS__HELP) final boolean stats) {
 
     authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.READ,
@@ -72,7 +72,7 @@ public class LuceneListIndexCommand extends LuceneCommandBase {
     return sortedResults;
   }
 
-  @CliAvailabilityIndicator({
+  @ShellMethodAvailability({
       LuceneCliStrings.LUCENE_LIST_INDEX,
   })
   public boolean indexCommandsAvailable() {

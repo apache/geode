@@ -21,8 +21,8 @@ import static org.apache.geode.lang.Identifiable.remove;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
@@ -49,14 +49,15 @@ public class DestroyJndiBindingCommand extends SingleGfshCommand {
           + "not exist. Without this option, an error results from the specification "
           + "of a JNDI binding that does not exist.";
 
-  @CliCommand(value = DESTROY_JNDIBINDING, help = DESTROY_JNDIBINDING__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @ShellMethod(value = DESTROY_JNDIBINDING__HELP, key = DESTROY_JNDIBINDING)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
+      interceptor = "org.apache.geode.management.internal.cli.MandatoryParameterValidationInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyJDNIBinding(
-      @CliOption(key = JNDI_NAME, mandatory = true, help = JNDI_NAME__HELP) String jndiName,
-      @CliOption(key = CliStrings.IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean ifExists) {
+      @ShellOption(value = JNDI_NAME, help = JNDI_NAME__HELP) String jndiName,
+      @ShellOption(value = CliStrings.IFEXISTS, help = IFEXISTS_HELP,
+          defaultValue = "false") boolean ifExists) {
 
     InternalConfigurationPersistenceService service =
         getConfigurationPersistenceService();

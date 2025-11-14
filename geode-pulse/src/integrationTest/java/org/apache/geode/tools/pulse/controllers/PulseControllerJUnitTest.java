@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.LENIENT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.parseMediaType;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -126,6 +127,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterDetails() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterDetails\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -139,6 +141,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterDiskThroughput() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterDiskThroughput\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -153,6 +156,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterGCPauses() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterJVMPauses\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -165,6 +169,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterKeyStatistics() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterKeyStatistics\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -178,6 +183,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterMember() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterMembers\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -198,6 +204,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterMembersRGraph() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterMembersRGraph\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -262,6 +269,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterMemoryUsage() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterMemoryUsage\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -274,6 +282,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterRegion() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterRegion\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -309,6 +318,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterRegions() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"ClusterRegions\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -342,6 +352,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterSelectedRegion() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"ClusterSelectedRegion\":{\"regionFullPath\":\"" + REGION_PATH + "\"}}")
             .principal(PRINCIPAL)
@@ -394,6 +405,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForClusterSelectedRegionsMember() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"ClusterSelectedRegionsMember\":{\"regionFullPath\":\"" + REGION_PATH + "\"}}")
             .principal(PRINCIPAL)
@@ -429,7 +441,9 @@ public class PulseControllerJUnitTest {
   @Test
   public void pulseUpdateForClusterWANInfo() throws Exception {
     mockMvc.perform(
-        post("/pulseUpdate").param("pulseData", "{\"ClusterWANInfo\":\"{}\"}")
+        post("/pulseUpdate")
+            .with(csrf())
+            .param("pulseData", "{\"ClusterWANInfo\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
         .andExpect(status().isOk())
@@ -440,6 +454,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberAsynchEventQueues() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"MemberAsynchEventQueues\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
@@ -463,6 +478,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberClients() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"MemberClients\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -485,6 +501,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberDetails() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"MemberDetails\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -507,6 +524,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberDiskThroughput() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"MemberDiskThroughput\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
@@ -522,6 +540,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberGatewayHub() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"MemberGatewayHub\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
@@ -546,6 +565,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberGCPauses() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"MemberGCPauses\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
@@ -558,6 +578,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberHeapUsage() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"MemberHeapUsage\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
@@ -571,6 +592,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberKeyStatistics() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData",
                 "{\"MemberKeyStatistics\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
@@ -586,6 +608,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMemberRegions() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"MemberRegions\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -605,6 +628,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForMembersList() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"MembersList\":{\"memberName\":\"" + MEMBER_NAME + "\"}}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
@@ -617,7 +641,9 @@ public class PulseControllerJUnitTest {
   @Test
   public void pulseUpdateForPulseVersion() throws Exception {
     mockMvc.perform(
-        post("/pulseUpdate").param("pulseData", "{\"PulseVersion\":\"{}\"}")
+        post("/pulseUpdate")
+            .with(csrf())
+            .param("pulseData", "{\"PulseVersion\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
         .andExpect(status().isOk())
@@ -631,7 +657,9 @@ public class PulseControllerJUnitTest {
   @Test
   public void pulseUpdateForQueryStatistics() throws Exception {
     mockMvc.perform(
-        post("/pulseUpdate").param("pulseData", "{\"QueryStatistics\":\"{}\"}")
+        post("/pulseUpdate")
+            .with(csrf())
+            .param("pulseData", "{\"QueryStatistics\":\"{}\"}")
             .principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
         .andExpect(status().isOk())
@@ -644,6 +672,7 @@ public class PulseControllerJUnitTest {
   public void pulseUpdateForSystemAlerts() throws Exception {
     mockMvc.perform(
         post("/pulseUpdate")
+            .with(csrf())
             .param("pulseData", "{\"SystemAlerts\":{\"pageNumber\":\"1\"}}").principal(PRINCIPAL)
             .accept(JSON_MEDIA_TYPE))
         .andExpect(status().isOk())

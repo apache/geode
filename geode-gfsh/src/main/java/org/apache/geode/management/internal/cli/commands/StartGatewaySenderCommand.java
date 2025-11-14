@@ -26,15 +26,14 @@ import java.util.concurrent.Future;
 
 import javax.management.ObjectName;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -45,25 +44,21 @@ import org.apache.geode.security.ResourcePermission;
 
 public class StartGatewaySenderCommand extends GfshCommand {
 
-  @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
+  @ShellMethod(value = CliStrings.START_GATEWAYSENDER__HELP, key = CliStrings.START_GATEWAYSENDER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public ResultModel startGatewaySender(@CliOption(key = CliStrings.START_GATEWAYSENDER__ID,
-      mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
+  public ResultModel startGatewaySender(@ShellOption(value = CliStrings.START_GATEWAYSENDER__ID,
       help = CliStrings.START_GATEWAYSENDER__ID__HELP) String senderId,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.START_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
-      @CliOption(key = CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE,
-          unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE,
+          defaultValue = "false",
           help = CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE__HELP) final Boolean cleanQueues) {
 
     final String id = senderId.trim();

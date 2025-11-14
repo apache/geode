@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.shiro.subject.Subject;
-import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.standard.ShellComponent;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.internal.cli.CommandMarker;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -45,6 +46,7 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
+@ShellComponent
 public abstract class GfshCommand implements CommandMarker {
   public static final String EXPERIMENTAL = "(Experimental) ";
   private InternalCache cache;
@@ -110,6 +112,13 @@ public abstract class GfshCommand implements CommandMarker {
 
   public void setCache(Cache cache) {
     this.cache = (InternalCache) cache;
+  }
+
+  /**
+   * Check if this command has a cache instance set (used for test mocking)
+   */
+  public boolean hasCacheSet() {
+    return this.cache != null;
   }
 
   public boolean isSharedConfigurationRunning() {

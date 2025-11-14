@@ -15,9 +15,9 @@
 
 @XmlSchema(namespace = "http://geode.apache.org/schema/cache",
     xmlns = {@XmlNs(prefix = "", namespaceURI = "http://geode.apache.org/schema/cache")},
-    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+    elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 
 package org.apache.geode.cache.configuration;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlSchema;

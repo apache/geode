@@ -15,7 +15,7 @@
 
 package org.apache.geode.modules.session.internal.common;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;

@@ -30,17 +30,23 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
-  implementation('org.apache.lucene:lucene-analyzers-common')
+  // Lucene 9.x: Artifact renamed from lucene-analyzers-common to lucene-analysis-common
+  implementation('org.apache.lucene:lucene-analysis-common')
   implementation('org.apache.lucene:lucene-queryparser') {
     exclude module: 'lucene-sandbox'
   }
   implementation('org.apache.commons:commons-lang3')
   implementation('org.apache.logging.log4j:log4j-api')
 
+  // JAXB dependencies needed for Java 11+
+  implementation('jakarta.xml.bind:jakarta.xml.bind-api')
+  runtimeOnly('org.glassfish.jaxb:jaxb-runtime')
+
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
-  runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
+  // Lucene 9.x: Artifact renamed from lucene-analyzers-phonetic to lucene-analysis-phonetic
+  runtimeOnly('org.apache.lucene:lucene-analysis-phonetic')
 
 
   testImplementation(project(':geode-junit'))
@@ -61,7 +67,8 @@ dependencies {
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-lucene:geode-lucene-test'))
-  integrationTestImplementation('org.apache.lucene:lucene-analyzers-phonetic')
+  // Lucene 9.x: Artifact renamed from lucene-analyzers-phonetic to lucene-analysis-phonetic
+  integrationTestImplementation('org.apache.lucene:lucene-analysis-phonetic')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
 
@@ -74,5 +81,12 @@ dependencies {
   performanceTestImplementation(project(':geode-lucene:geode-lucene-test'))
 }
 
-//The lucene integration tests don't have any issues that requiring forking
-integrationTest.forkEvery 0
+// Fork more frequently to prevent memory accumulation in integration tests
+integrationTest.forkEvery 5
+
+// Increase heap size for Lucene integration tests to prevent OutOfMemoryError
+// Jakarta migration introduced ByteBuffersDirectory which may have different memory characteristics
+integrationTest {
+  maxHeapSize = '12g'
+  jvmArgs '-XX:+UseG1GC', '-XX:MaxGCPauseMillis=500', '-XX:+HeapDumpOnOutOfMemoryError'
+}

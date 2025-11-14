@@ -19,13 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.UndeployFunction;
@@ -48,15 +47,14 @@ public class UndeployCommand extends GfshCommand {
    * @return The result of the attempt to undeploy
    */
   @SuppressWarnings("unchecked")
-  @CliCommand(value = {CliStrings.UNDEPLOY}, help = CliStrings.UNDEPLOY__HELP)
+  @ShellMethod(value = CliStrings.UNDEPLOY__HELP, key = {CliStrings.UNDEPLOY})
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   public ResultModel undeploy(
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          help = CliStrings.UNDEPLOY__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.UNDEPLOY__GROUP__HELP) String[] groups,
+      @ShellOption(value = {CliStrings.JAR, CliStrings.JARS},
           help = CliStrings.UNDEPLOY__JAR__HELP) String[] jars) {
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);

@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.config;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 public class VersionAdapter extends XmlAdapter<String, String> {
   @Override

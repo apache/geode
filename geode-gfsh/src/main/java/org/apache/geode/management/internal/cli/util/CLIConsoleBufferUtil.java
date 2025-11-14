@@ -14,16 +14,17 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
-import jline.console.ConsoleReader;
+import org.jline.reader.LineReader;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class CLIConsoleBufferUtil {
   public static String processMessegeForExtraCharactersFromConsoleBuffer(String messege) {
 
-    ConsoleReader reader = Gfsh.getConsoleReader();
+    LineReader reader = Gfsh.getConsoleReader();
     if (reader != null) {
-      int bufferLength = reader.getCursorBuffer().length();
+      // JLine 3.x: LineReader doesn't have getCursorBuffer, use getBuffer instead
+      int bufferLength = reader.getBuffer().length();
       if (bufferLength > messege.length()) {
         int appendSpaces = bufferLength - messege.length();
         for (int i = 0; i < appendSpaces; i++) {

@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -71,8 +71,10 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     createCacheForVMs();
 
     for (int i = 0; i < 5; i++) {
-      CloseableHttpResponse response =
+      ClassicHttpResponse response =
           executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, null);
+      // Apache HttpComponents 5.x: assertHttpResponse uses response.getCode() instead of
+      // getStatusLine().getStatusCode()
       assertHttpResponse(response, 200, 4);
     }
 
@@ -97,8 +99,10 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     createCacheForVMs();
 
     for (int i = 0; i < 5; i++) {
-      CloseableHttpResponse response =
+      ClassicHttpResponse response =
           executeFunctionThroughRestCall("OnMembersFunction", null, null, null, null, "m1,m2,m3");
+      // Apache HttpComponents 5.x: assertHttpResponse uses response.getCode() instead of
+      // getStatusLine().getStatusCode()
       assertHttpResponse(response, 200, 3);
     }
 
@@ -113,9 +117,11 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     // restURLs.add(createCacheAndRegisterFunction(vm0.getHost().getHostName(), "m1"));
 
     for (int i = 0; i < 5; i++) {
-      CloseableHttpResponse response = executeFunctionThroughRestCall(
+      ClassicHttpResponse response = executeFunctionThroughRestCall(
           "org.apache.geode.rest.internal.web.controllers.FullyQualifiedFunction", null, null, null,
           null, "m1,m2,m3");
+      // Apache HttpComponents 5.x: assertHttpResponse uses response.getCode() instead of
+      // getStatusLine().getStatusCode()
       assertHttpResponse(response, 200, 3);
     }
 
@@ -131,8 +137,10 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     createCacheForVMs();
 
     for (int i = 0; i < 5; i++) {
-      CloseableHttpResponse response =
+      ClassicHttpResponse response =
           executeFunctionThroughRestCall("OnMembersFunction", null, "key2", null, null, "m1,m2,m3");
+      // Apache HttpComponents 5.x: assertHttpResponse uses response.getCode() instead of
+      // getStatusLine().getStatusCode()
       assertHttpResponse(response, 500, 0);
     }
 

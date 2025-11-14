@@ -16,7 +16,8 @@ package org.apache.geode.internal.ra;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.ResourceException;
+
+import jakarta.resource.ResourceException;
 
 import org.apache.geode.internal.ra.spi.JCAManagedConnection;
 import org.apache.geode.ra.GFConnection;

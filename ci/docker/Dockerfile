@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM bellsoft/liberica-openjdk-debian:8
+FROM bellsoft/liberica-openjdk-debian:17
 ENTRYPOINT []
 
 ARG CHROME_DRIVER_VERSION=2.35

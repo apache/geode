@@ -34,14 +34,13 @@ import java.util.Random;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -113,10 +112,13 @@ public class RestAPITestBase implements Serializable {
     return function.invocationCount;
   }
 
-  CloseableHttpResponse executeFunctionThroughRestCall(String function, String regionName,
+  // Apache HttpComponents 5.x migration: Return type changed from CloseableHttpResponse to
+  // ClassicHttpResponse
+  // HttpComponents 5.x uses ClassicHttpResponse for synchronous HTTP exchanges
+  ClassicHttpResponse executeFunctionThroughRestCall(String function, String regionName,
       String filter, String jsonBody, String groups, String members) {
     System.out.println("Entering executeFunctionThroughRestCall");
-    CloseableHttpResponse value = null;
+    ClassicHttpResponse value = null;
     try {
       CloseableHttpClient httpclient = HttpClients.createDefault();
       Random randomGenerator = new Random();
@@ -160,9 +162,15 @@ public class RestAPITestBase implements Serializable {
     return post;
   }
 
-  void assertHttpResponse(CloseableHttpResponse response, int httpCode,
+  // Apache HttpComponents 5.x migration: Parameter type changed from CloseableHttpResponse to
+  // ClassicHttpResponse
+  // HttpComponents 5.x uses ClassicHttpResponse for synchronous HTTP exchanges
+  void assertHttpResponse(ClassicHttpResponse response, int httpCode,
       int expectedServerResponses) {
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(httpCode);
+    // Apache HttpComponents 5.x: response.getCode() replaces
+    // response.getStatusLine().getStatusCode()
+    // Direct status code access without intermediate StatusLine object
+    assertThat(response.getCode()).isEqualTo(httpCode);
 
     // verify response has body flag, expected is true.
     assertThat(response.getEntity()).isNotNull();
@@ -187,7 +195,7 @@ public class RestAPITestBase implements Serializable {
     }
   }
 
-  private String processHttpResponse(HttpResponse response) {
+  private String processHttpResponse(ClassicHttpResponse response) {
     try {
       HttpEntity entity = response.getEntity();
       InputStream content = entity.getContent();

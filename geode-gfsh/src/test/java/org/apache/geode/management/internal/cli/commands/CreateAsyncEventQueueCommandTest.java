@@ -74,14 +74,16 @@ public class CreateAsyncEventQueueCommandTest {
 
   @Test
   public void mandatoryId() {
+    // Shell 3.x: Parse failures return generic "Error while processing command"
     gfsh.executeAndAssertThat(command, COMMAND + "--listener=xyz").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("Error while processing command");
   }
 
   @Test
   public void mandatoryListener() {
+    // Shell 3.x: Parse failures return generic "Error while processing command"
     gfsh.executeAndAssertThat(command, COMMAND + "--id=id").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("Error while processing command");
   }
 
   @Test
@@ -89,7 +91,7 @@ public class CreateAsyncEventQueueCommandTest {
     // AEQ can not be created on one member since it needs to update CC.
     // This test is to make sure we don't add this option
     gfsh.executeAndAssertThat(command, COMMAND + "--id=id --listener=xyz --member=xyz")
-        .statusIsError().containsOutput("Invalid command");
+        .statusIsError().containsOutput("Error while processing command");
   }
 
   @Test

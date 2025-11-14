@@ -34,8 +34,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.Manager;
 import org.apache.catalina.session.StandardSession;
 import org.apache.juli.logging.Log;

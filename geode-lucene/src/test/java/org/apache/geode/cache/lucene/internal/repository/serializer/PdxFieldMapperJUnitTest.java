@@ -49,7 +49,8 @@ public class PdxFieldMapperJUnitTest {
 
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
-    assertEquals(5, doc.getField("i").numericValue());
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    assertEquals(5, doc.getField("i_point").numericValue());
   }
 
   @Test
@@ -72,7 +73,8 @@ public class PdxFieldMapperJUnitTest {
 
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
-    assertEquals(5, doc.getField("i").numericValue());
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    assertEquals(5, doc.getField("i_point").numericValue());
   }
 
   @Test

@@ -24,15 +24,18 @@ import java.util.Properties;
 
 import javax.management.remote.JMXServiceURL;
 
-import org.springframework.shell.core.CommandMarker;
-
 import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
-public abstract class OfflineGfshCommand implements CommandMarker {
+/**
+ * Base class for gfsh commands that can run offline (without connecting to a locator).
+ * Note: In Spring Shell 3.x migration, @ShellComponent is not used on this base class.
+ * Instead, each concrete command class must be annotated with @ShellComponent.
+ */
+public abstract class OfflineGfshCommand {
 
   public boolean isDebugging() {
     return getGfsh() != null && getGfsh().getDebug();

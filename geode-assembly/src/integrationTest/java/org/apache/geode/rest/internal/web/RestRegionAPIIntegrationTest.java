@@ -36,7 +36,7 @@ import java.util.concurrent.TimeoutException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -307,8 +307,15 @@ public class RestRegionAPIIntegrationTest {
     restClient.doPutAndAssert("/regionA/3", DOCUMENT3).statusIsOk();
 
     // create 5 prepared statements
+    // JAKARTA MIGRATION FIX: Removed trailing slash before query parameters.
+    // Spring Framework 6 changed the default 'useTrailingSlashMatch' behavior from true to false.
+    // URLs with trailing slashes (e.g., "/queries/?id=...") no longer automatically match
+    // controller mappings without trailing slashes (e.g., @RequestMapping("/queries")).
+    // This follows standard REST API conventions where query parameters are appended directly
+    // to the resource path without an intervening slash: "/queries?id=..." not "/queries/?id=..."
+    // See: https://github.com/spring-projects/spring-framework/issues/28552
     for (int i = 0; i < 5; i++) {
-      String urlPrefix = "/queries/?id=" + "Query" + i + "&q=" + URLEncoder.encode(
+      String urlPrefix = "/queries?id=" + "Query" + i + "&q=" + URLEncoder.encode(
           "SELECT book.displayprice FROM " + SEPARATOR
               + "regionA e, e.store.book book  WHERE book.displayprice > $1",
           "UTF-8");

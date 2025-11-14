@@ -101,8 +101,62 @@ public class Log4jLoggingProvider implements LoggingProvider {
     return "true".equals(value);
   }
 
+  /**
+   * Retrieves the Log4j Core LoggerContext, with defensive checks to prevent SLF4J binding
+   * conflicts.
+   *
+   * <p>
+   * JAKARTA MIGRATION NOTE: This method was enhanced during the Jakarta EE / Spring Boot 3.x
+   * migration
+   * to handle potential SLF4J binding conflicts. Spring Boot 3.x includes 'log4j-to-slf4j' by
+   * default,
+   * which can cause ClassCastException when LogManager.getRootLogger() returns an SLF4J logger
+   * instead
+   * of a Log4j logger.
+   *
+   * <p>
+   * The defensive instanceof checks ensure we safely handle cases where:
+   * <ul>
+   * <li>LogManager.getRootLogger() returns org.apache.logging.slf4j.SLF4JLogger (SLF4J binding
+   * active)</li>
+   * <li>LogManager.getContext() returns org.apache.logging.slf4j.SLF4JLoggerContext (SLF4J binding
+   * active)</li>
+   * <li>Normal case: returns org.apache.logging.log4j.core.Logger and LoggerContext</li>
+   * </ul>
+   *
+   * <p>
+   * Global Fix: The root build.gradle excludes 'log4j-to-slf4j' to prevent the circular binding,
+   * but this defensive code provides additional safety.
+   *
+   * @return the Log4j Core LoggerContext
+   * @throws IllegalStateException if Log4j LoggerContext cannot be obtained (SLF4J binding
+   *         misconfiguration)
+   */
   private static LoggerContext getRootLoggerContext() {
-    return ((Logger) LogManager.getRootLogger()).getContext();
+    // Explicitly use Log4j Core's ContextSelector to avoid SLF4J binding conflicts
+    // This ensures we get the Log4j LoggerContext, not SLF4J's LoggerContext
+    try {
+      org.apache.logging.log4j.Logger rootLogger = LogManager.getRootLogger();
+      if (rootLogger instanceof Logger) {
+        LoggerContext context = ((Logger) rootLogger).getContext();
+        if (context instanceof LoggerContext) {
+          return context;
+        }
+      }
+    } catch (ClassCastException e) {
+      // Fall through to alternative approach if cast fails
+    }
+
+    // Alternative: Use Log4j's context selector directly
+    org.apache.logging.log4j.spi.LoggerContext context = LogManager.getContext(false);
+    if (context instanceof LoggerContext) {
+      return (LoggerContext) context;
+    }
+
+    throw new IllegalStateException(
+        "Unable to obtain Log4j LoggerContext. Found: " + context.getClass().getName() +
+            ". This usually indicates SLF4J is binding to LogManager instead of Log4j. " +
+            "Check your classpath for slf4j-reload4j, log4j-to-slf4j, or other SLF4J Log4j bindings.");
   }
 
   private static Configuration getConfiguration() {

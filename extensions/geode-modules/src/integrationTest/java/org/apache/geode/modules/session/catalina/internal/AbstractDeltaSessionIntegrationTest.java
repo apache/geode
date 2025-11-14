@@ -26,8 +26,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.Context;
 import org.apache.catalina.Manager;
 import org.apache.juli.logging.Log;
@@ -62,13 +61,22 @@ public abstract class AbstractDeltaSessionIntegrationTest {
 
   void mockDeltaSessionManager() {
     deltaSessionManager = mock(DeltaSessionManager.class);
+    Context mockContext = mock(Context.class);
+    SessionCache mockSessionCache = mock(SessionCache.class);
+
+    // Configure mock context for Tomcat 10+ getDistributable() and
+    // getApplicationLifecycleListeners() calls
+    when(mockContext.getDistributable()).thenReturn(false);
+    when(mockContext.getApplicationLifecycleListeners()).thenReturn(new Object[0]);
 
     when(deltaSessionManager.getLogger()).thenReturn(mock(Log.class));
     when(deltaSessionManager.getRegionName()).thenReturn(REGION_NAME);
     when(deltaSessionManager.isBackingCacheAvailable()).thenReturn(true);
-    when(deltaSessionManager.getContainer()).thenReturn(mock(Context.class));
-    when(deltaSessionManager.getSessionCache()).thenReturn(mock(SessionCache.class));
-    when(deltaSessionManager.getSessionCache().getOperatingRegion()).thenReturn(httpSessionRegion);
+    when(deltaSessionManager.getTheContext()).thenReturn(mockContext);
+    when(deltaSessionManager.getContext()).thenReturn(mockContext); // StandardSession uses this
+                                                                    // method
+    when(deltaSessionManager.getSessionCache()).thenReturn(mockSessionCache);
+    when(mockSessionCache.getOperatingRegion()).thenReturn(httpSessionRegion);
   }
 
   void parameterizedSetUp(RegionShortcut regionShortcut) {

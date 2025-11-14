@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
 
 import javax.naming.Context;
 import javax.sql.DataSource;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 import javax.transaction.xa.XAException;
 
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;

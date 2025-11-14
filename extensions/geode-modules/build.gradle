@@ -36,8 +36,9 @@ dependencies {
   api(project(':geode-core'))
 
   compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly('javax.servlet:javax.servlet-api')
-  compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('jakarta.servlet:jakarta.servlet-api')
+  compileOnly('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat10.version'))
+  compileOnly('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat10.version'))
 
   implementation('org.apache.commons:commons-lang3')
 
@@ -47,19 +48,22 @@ dependencies {
   testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
-  testImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  testImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat10.version'))
+  testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat10.version'))
 
 
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
-  integrationTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  integrationTestImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat10.version'))
+  integrationTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat10.version'))
 
 
   // distributedTest
   distributedTestImplementation(project(':geode-dunit'))
-  distributedTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  distributedTestImplementation('org.apache.tomcat:tomcat-catalina-ha:' + DependencyConstraints.get('tomcat10.version'))
+  distributedTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat10.version'))
 }
 
 sonarqube {

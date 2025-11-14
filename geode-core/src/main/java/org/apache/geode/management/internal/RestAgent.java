@@ -109,6 +109,12 @@ public class RestAgent {
         Path gemfireAPIWarPath = Paths.get(gemfireAPIWar);
         httpService.addWebApplication("/gemfire-api", gemfireAPIWarPath, securityServiceAttr);
         httpService.addWebApplication("/geode", gemfireAPIWarPath, securityServiceAttr);
+
+        // Start/Restart HTTP server after adding all webapps to ensure proper Jetty 12
+        // Configuration lifecycle
+        // This is critical for ServletContainerInitializer discovery (e.g.,
+        // SpringServletContainerInitializer)
+        httpService.restartHttpServer();
       } else {
         logger.warn("HttpService is not available - could not start Dev REST API");
       }

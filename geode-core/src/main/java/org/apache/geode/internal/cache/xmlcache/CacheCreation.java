@@ -43,9 +43,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import javax.naming.Context;
-import javax.transaction.TransactionManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.TransactionManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;

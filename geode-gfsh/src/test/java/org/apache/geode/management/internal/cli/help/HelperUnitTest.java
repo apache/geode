@@ -25,23 +25,24 @@ import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.internal.cli.commands.DescribeOfflineDiskStoreCommand;
 
 
 public class HelperUnitTest {
+  // SPRING SHELL 3.x: ShellOption.NULL constant value
+  private static final String SHELL_OPTION_NULL = "__NULL__";
+
   private Helper helper;
-  private CliCommand cliCommand;
+  private ShellMethod shellMethod;
   private Method method;
-  private CliAvailabilityIndicator availabilityIndicator;
-  private CommandMarker commandMarker;
+  private ShellMethodAvailability availabilityIndicator;
 
   private Annotation[][] annotations;
-  private CliOption cliOption;
+  private ShellOption shellOption;
 
   private Class<?>[] parameterType;
   private HelpBlock optionBlock;
@@ -52,35 +53,41 @@ public class HelperUnitTest {
 
     Method[] methods = DescribeOfflineDiskStoreCommand.class.getMethods();
     for (Method method1 : methods) {
-      CliCommand cliCommand1 = method1.getDeclaredAnnotation(CliCommand.class);
-      if (cliCommand1 != null) {
-        helper.addCommand(cliCommand1, method1);
+      ShellMethod shellMethod1 = method1.getDeclaredAnnotation(ShellMethod.class);
+      if (shellMethod1 != null) {
+        helper.addCommand(shellMethod1, method1);
       }
     }
 
-    cliCommand = mock(CliCommand.class);
-    when(cliCommand.value()).thenReturn("test,test-synonym".split(","));
-    when(cliCommand.help()).thenReturn("This is a test description");
+    // SPRING SHELL 3.x MIGRATION NOTES:
+    // - ShellMethod.value() returns String (command description), not String[] of command names
+    // - ShellMethod.key() returns String[] of command names/aliases
+    // - ShellOption.defaultValue() == "__NULL__" means MANDATORY
+    // - ShellOption.defaultValue() == other value means OPTIONAL with default
+    shellMethod = mock(ShellMethod.class);
+    when(shellMethod.value()).thenReturn("This is a test description"); // Description text
+    when(shellMethod.key()).thenReturn(new String[] {"test", "test-synonym"}); // Command names
 
     // the tests will test with one parameter and one annotation at a time.
-    cliOption = mock(CliOption.class);
-    when(cliOption.key()).thenReturn("option".split(","));
-    when(cliOption.help()).thenReturn("help of option");
-    when(cliOption.mandatory()).thenReturn(true);
+    // MANDATORY OPTION: defaultValue = "__NULL__"
+    shellOption = mock(ShellOption.class);
+    when(shellOption.value()).thenReturn(new String[] {"option"});
+    when(shellOption.help()).thenReturn("help of option");
+    when(shellOption.defaultValue()).thenReturn(SHELL_OPTION_NULL); // Mandatory!
 
     annotations = new Annotation[1][1];
-    annotations[0][0] = cliOption;
+    annotations[0][0] = shellOption;
 
     parameterType = new Class[1];
     parameterType[0] = String.class;
 
-    availabilityIndicator = mock(CliAvailabilityIndicator.class);
+    availabilityIndicator = mock(ShellMethodAvailability.class);
 
   }
 
   @Test
   public void testGetLongHelp() {
-    HelpBlock helpBlock = helper.getHelp(cliCommand, annotations, parameterType);
+    HelpBlock helpBlock = helper.getHelp(shellMethod, annotations, parameterType);
     String[] helpLines = helpBlock.toString().split(LINE_SEPARATOR);
     assertThat(helpLines.length).isEqualTo(14);
     assertThat(helpLines[0]).isEqualTo(Helper.NAME_NAME);
@@ -93,7 +100,7 @@ public class HelperUnitTest {
 
   @Test
   public void testGetShortHelp() {
-    HelpBlock helpBlock = helper.getHelp(cliCommand, null, null);
+    HelpBlock helpBlock = helper.getHelp(shellMethod, null, null);
     String[] helpLines = helpBlock.toString().split(LINE_SEPARATOR);
     assertThat(helpLines.length).isEqualTo(2);
     assertThat(helpLines[0]).isEqualTo("test (Available)");
@@ -104,27 +111,29 @@ public class HelperUnitTest {
   public void testGetSyntaxStringWithMandatory() {
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test --option=value");
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
         + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
   }
 
   @Test
   public void testGetSyntaxStringWithOutMandatory() {
-    when(cliOption.mandatory()).thenReturn(false);
+    // SPRING SHELL 3.x: Non-mandatory means defaultValue != ShellOption.NULL
+    // Setting to empty string "" means optional with no default value shown
+    when(shellOption.defaultValue()).thenReturn("");
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test [--option=value]");
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
         + LINE_SEPARATOR + "Required: false" + LINE_SEPARATOR);
   }
 
   @Test
   public void testGetSyntaxStringWithSecondaryOptionNameIgnored() {
-    when(cliOption.key()).thenReturn("option,option2".split(","));
+    when(shellOption.value()).thenReturn(new String[] {"option", "option2"});
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test --option=value");
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString())
         .isEqualTo("option" + LINE_SEPARATOR + "help of option" + LINE_SEPARATOR
             + "Synonyms: option2" + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
@@ -132,22 +141,24 @@ public class HelperUnitTest {
 
   @Test
   public void testGetSyntaxStringWithSecondaryOptionName() {
-    when(cliOption.key()).thenReturn(",option2".split(","));
-    when(cliOption.mandatory()).thenReturn(true);
+    // SPRING SHELL 3.x: Positional parameter (first element empty in value array)
+    when(shellOption.value()).thenReturn(new String[] {"", "option2"});
+    when(shellOption.defaultValue()).thenReturn(ShellOption.NULL); // Mandatory positional
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test option2");
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString()).isEqualTo("option2" + LINE_SEPARATOR + "help of option"
         + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
   }
 
   @Test
   public void testGetSyntaxStringWithOptionalSecondaryOptionName() {
-    when(cliOption.key()).thenReturn(",option2".split(","));
-    when(cliOption.mandatory()).thenReturn(false);
+    // SPRING SHELL 3.x: Optional positional parameter
+    when(shellOption.value()).thenReturn(new String[] {"", "option2"});
+    when(shellOption.defaultValue()).thenReturn(""); // Optional (empty default)
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test [option2]");
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString()).isEqualTo("option2" + LINE_SEPARATOR + "help of option"
         + LINE_SEPARATOR + "Required: false" + LINE_SEPARATOR);
   }
@@ -157,33 +168,39 @@ public class HelperUnitTest {
     parameterType[0] = String[].class;
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
     assertThat(syntax).isEqualTo("test --option=value(,value)*");
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
         + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR);
   }
 
   @Test
   public void testGetSyntaxStringWithSpecifiedDefault() {
-    when(cliOption.specifiedDefaultValue()).thenReturn("true");
+    // SPRING SHELL 3.x: defaultValue="true" means optional with default value
+    // Helper wraps optional params in [] and shows "Required: false"
+    when(shellOption.defaultValue()).thenReturn("true");
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
-    assertThat(syntax).isEqualTo("test --option(=value)?");
+    assertThat(syntax).isEqualTo("test [--option(=value)?]"); // [] because optional
 
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
-        + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR
+        + LINE_SEPARATOR + "Required: false" + LINE_SEPARATOR // false because defaultValue !=
+                                                              // "__NULL__"
         + "Default (if the parameter is specified without value): true" + LINE_SEPARATOR);
   }
 
   @Test
   public void testGetSyntaxStringWithDefaultAndStringArray() {
+    // SPRING SHELL 3.x: defaultValue="value1,value2" means optional with default value
+    // Helper wraps optional params in [] and shows "Required: false"
     parameterType[0] = String[].class;
-    when(cliOption.specifiedDefaultValue()).thenReturn("value1,value2");
+    when(shellOption.defaultValue()).thenReturn("value1,value2");
     String syntax = helper.getSyntaxString("test", annotations, parameterType);
-    assertThat(syntax).isEqualTo("test --option(=value)?(,value)*");
+    assertThat(syntax).isEqualTo("test [--option(=value)?(,value)*]"); // [] because optional
 
-    optionBlock = helper.getOptionDetail(cliOption);
+    optionBlock = helper.getOptionDetail(shellOption);
     assertThat(optionBlock.toString()).isEqualTo("option" + LINE_SEPARATOR + "help of option"
-        + LINE_SEPARATOR + "Required: true" + LINE_SEPARATOR
+        + LINE_SEPARATOR + "Required: false" + LINE_SEPARATOR // false because defaultValue !=
+                                                              // "__NULL__"
         + "Default (if the parameter is specified without value): value1,value2" + LINE_SEPARATOR);
   }
 

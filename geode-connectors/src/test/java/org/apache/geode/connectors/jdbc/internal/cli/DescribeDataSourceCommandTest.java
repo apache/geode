@@ -81,8 +81,9 @@ public class DescribeDataSourceCommandTest {
 
   @Test
   public void missingMandatory() {
+    // Shell 3.x: Command parses but fails at execution with proper error
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
-        .containsOutput("Invalid command: describe data-source");
+        .containsOutput("Data source: null not found");
   }
 
   @Test

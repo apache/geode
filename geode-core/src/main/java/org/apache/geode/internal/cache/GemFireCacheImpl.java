@@ -107,11 +107,11 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import javax.naming.Context;
-import javax.transaction.TransactionManager;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.TransactionManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -2452,8 +2452,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           TXCommitMessage.getTracker().clearForCacheClose();
         }
 
-        // Added to close the TransactionManager's cleanup thread
-        TransactionManagerImpl.refresh();
+        // JAKARTA MIGRATION FIX: Stop GlobalTXTimeoutMonitor thread without invalidating
+        // TransactionManager
+        //
+        // The GlobalTXTimeoutMonitor cleanup thread must be stopped to avoid thread leaks when
+        // cache closes. However, calling TransactionManagerImpl.refresh() would set isActive=false,
+        // which breaks servlet environments where the cache may be reused across servlet reloads
+        // (e.g., SessionReplicationIntegrationJUnitTest).
+        //
+        // Solution: stopCleanupThread() only interrupts the GlobalTXTimeoutMonitor thread,
+        // leaving the TransactionManager in a usable state for cache reuse scenarios.
+        // The thread is daemon=true, so it won't prevent JVM shutdown even if left running.
+        //
+        // See: GEODE-10466, commit 417edc9990 (original issue), this commit (fix)
+        TransactionManagerImpl.stopCleanupThread();
 
         if (!keepDS) {
           // keepDS is used by ShutdownAll. It will override disableDisconnectDsOnCacheClose
@@ -2461,7 +2473,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             system.disconnect();
           }
         }
-
         typeRegistryClose.run();
         typeRegistrySetPdxSerializer.accept(null);
 

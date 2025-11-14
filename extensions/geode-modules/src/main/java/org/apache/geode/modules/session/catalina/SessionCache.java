@@ -16,8 +16,7 @@ package org.apache.geode.modules.session.catalina;
 
 import java.util.Set;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.Session;
 
 import org.apache.geode.cache.GemFireCache;

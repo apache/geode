@@ -30,8 +30,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.Context;
 import org.apache.catalina.Session;
 import org.apache.juli.logging.Log;

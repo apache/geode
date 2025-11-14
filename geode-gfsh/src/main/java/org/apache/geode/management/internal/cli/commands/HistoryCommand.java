@@ -21,8 +21,8 @@ import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -32,14 +32,14 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class HistoryCommand extends OfflineGfshCommand {
-  @CliCommand(value = CliStrings.HISTORY, help = CliStrings.HISTORY__HELP)
+  @ShellMethod(value = CliStrings.HISTORY__HELP, key = CliStrings.HISTORY)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public ResultModel history(
-      @CliOption(key = {CliStrings.HISTORY__FILE},
+      @ShellOption(value = {CliStrings.HISTORY__FILE},
           help = CliStrings.HISTORY__FILE__HELP) String saveHistoryTo,
-      @CliOption(key = {CliStrings.HISTORY__CLEAR}, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = {CliStrings.HISTORY__CLEAR}, defaultValue = "false",
           help = CliStrings.HISTORY__CLEAR__HELP) Boolean clearHistory)
       throws IOException {
     // process clear history
@@ -63,7 +63,8 @@ public class HistoryCommand extends OfflineGfshCommand {
       }
 
       GfshHistory gfshHistory = gfsh.getGfshHistory();
-      Iterator<?> it = gfshHistory.entries();
+      // In JLine 3.x, use iterator() instead of entries()
+      Iterator<?> it = gfshHistory.iterator();
 
       ResultModel result = new ResultModel();
       InfoResultModel histories = result.addInfo("history");
