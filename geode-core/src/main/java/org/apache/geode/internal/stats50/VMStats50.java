@@ -23,15 +23,14 @@ import java.lang.management.MemoryUsage;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
-
-import com.sun.management.OperatingSystemMXBean;
-import com.sun.management.UnixOperatingSystemMXBean;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.management.OperatingSystemMXBean;
+import com.sun.management.UnixOperatingSystemMXBean;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticDescriptor;
@@ -61,7 +60,7 @@ public class VMStats50 implements VMStatsContract {
   private static final ClassLoadingMXBean clBean;
   @Immutable
   private static final MemoryMXBean memBean;
-  
+
   /**
    * Platform-specific OperatingSystemMXBean providing extended metrics beyond the standard
    * java.lang.management.OperatingSystemMXBean. This interface is in the exported
@@ -70,7 +69,7 @@ public class VMStats50 implements VMStatsContract {
    */
   @Immutable
   private static final OperatingSystemMXBean platformOsBean;
-  
+
   /**
    * Unix-specific OperatingSystemMXBean providing file descriptor metrics.
    * Only available on Unix-like platforms (Linux, macOS, Solaris, etc.).
@@ -78,7 +77,7 @@ public class VMStats50 implements VMStatsContract {
    */
   @Immutable
   private static final UnixOperatingSystemMXBean unixOsBean;
-  
+
   @Immutable
   private static final ThreadMXBean threadBean;
 
@@ -154,25 +153,25 @@ public class VMStats50 implements VMStatsContract {
   static {
     clBean = ManagementFactory.getClassLoadingMXBean();
     memBean = ManagementFactory.getMemoryMXBean();
-    
+
     // Initialize platform-specific MXBeans using direct interface casting.
     // This approach eliminates the need for reflection and --add-opens flags.
     // The com.sun.management package is exported by jdk.management module,
     // making these interfaces accessible without module violations.
     OperatingSystemMXBean tempPlatformBean = null;
     UnixOperatingSystemMXBean tempUnixBean = null;
-    
+
     try {
       // Get the standard OperatingSystemMXBean
-      java.lang.management.OperatingSystemMXBean stdOsBean = 
+      java.lang.management.OperatingSystemMXBean stdOsBean =
           ManagementFactory.getOperatingSystemMXBean();
-      
+
       // Cast to com.sun.management.OperatingSystemMXBean for extended metrics
       // This interface is in the exported com.sun.management package
       if (stdOsBean instanceof OperatingSystemMXBean) {
         tempPlatformBean = (OperatingSystemMXBean) stdOsBean;
       }
-      
+
       // Check for Unix-specific interface
       // This is only available on Unix-like platforms (Linux, macOS, Solaris)
       if (stdOsBean instanceof UnixOperatingSystemMXBean) {
@@ -197,7 +196,7 @@ public class VMStats50 implements VMStatsContract {
       platformOsBean = tempPlatformBean;
       unixOsBean = tempUnixBean;
     }
-    
+
     threadBean = ManagementFactory.getThreadMXBean();
     if (THREAD_STATS_ENABLED) {
       if (threadBean.isThreadCpuTimeSupported()) {
@@ -627,7 +626,7 @@ public class VMStats50 implements VMStatsContract {
       try {
         long maxFd = unixOsBean.getMaxFileDescriptorCount();
         vmStats.setLong(unix_fdLimitId, maxFd);
-        
+
         long openFd = unixOsBean.getOpenFileDescriptorCount();
         vmStats.setLong(unix_fdsOpenId, openFd);
       } catch (VirtualMachineError err) {
