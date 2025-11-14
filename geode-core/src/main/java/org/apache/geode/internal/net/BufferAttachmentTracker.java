@@ -17,7 +17,7 @@ package org.apache.geode.internal.net;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Tracks the relationship between sliced ByteBuffers and their original parent buffers.
@@ -28,18 +28,28 @@ import java.util.WeakHashMap;
  * the original. We need to track this relationship so that when returning buffers to
  * the pool, we return the original pooled buffer, not the slice.
  *
- * This class uses WeakHashMap so that slice buffers can be garbage collected when no
- * longer referenced, without preventing cleanup of the tracking entry.
+ * This class uses ConcurrentHashMap which provides thread-safe access without
+ * requiring external synchronization. Callers must explicitly call removeTracking()
+ * to clean up entries when buffers are returned to the pool.
  */
 class BufferAttachmentTracker {
 
   /**
    * Maps sliced buffers to their original parent buffers.
-   * Uses WeakHashMap with slice buffer as key so entries are automatically
-   * cleaned up when the slice is no longer referenced.
+   * Uses ConcurrentHashMap for thread-safe, high-performance concurrent access.
+   * Entries must be explicitly removed via removeTracking() to prevent memory leaks.
+   *
+   * Note: This static mutable field is intentionally designed for global buffer tracking
+   * across the application. The PMD.StaticFieldsMustBeImmutable warning is suppressed
+   * because:
+   * 1. Mutable shared state is required to track buffer relationships across all threads
+   * 2. ConcurrentHashMap provides lock-free thread-safe operations (get/put/remove)
+   * 3. All methods use atomic operations; no compound operations need external locking
+   * 4. This is the most efficient design for this use case
    */
+  @SuppressWarnings("PMD.StaticFieldsMustBeImmutable")
   private static final Map<ByteBuffer, ByteBuffer> sliceToOriginal =
-      new WeakHashMap<>();
+      new ConcurrentHashMap<>();
 
   /**
    * Records that a slice buffer was created from an original buffer.
@@ -47,7 +57,7 @@ class BufferAttachmentTracker {
    * @param slice the sliced ByteBuffer
    * @param original the original ByteBuffer that was sliced
    */
-  static synchronized void recordSlice(ByteBuffer slice, ByteBuffer original) {
+  static void recordSlice(ByteBuffer slice, ByteBuffer original) {
     sliceToOriginal.put(slice, original);
   }
 
@@ -58,7 +68,7 @@ class BufferAttachmentTracker {
    * @param buffer the buffer to look up, which may be a slice
    * @return the original pooled buffer, or the buffer itself if not a slice
    */
-  static synchronized ByteBuffer getOriginal(ByteBuffer buffer) {
+  static ByteBuffer getOriginal(ByteBuffer buffer) {
     ByteBuffer original = sliceToOriginal.get(buffer);
     return original != null ? original : buffer;
   }
@@ -69,21 +79,21 @@ class BufferAttachmentTracker {
    *
    * @param buffer the buffer to stop tracking
    */
-  static synchronized void removeTracking(ByteBuffer buffer) {
+  static void removeTracking(ByteBuffer buffer) {
     sliceToOriginal.remove(buffer);
   }
 
   /**
    * For testing: returns the current size of the tracking map.
    */
-  static synchronized int getTrackingMapSize() {
+  static int getTrackingMapSize() {
     return sliceToOriginal.size();
   }
 
   /**
    * For testing: clears all tracking entries.
    */
-  static synchronized void clearTracking() {
+  static void clearTracking() {
     sliceToOriginal.clear();
   }
 }
