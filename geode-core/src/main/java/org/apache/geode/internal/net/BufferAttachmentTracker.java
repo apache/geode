@@ -16,8 +16,9 @@
 package org.apache.geode.internal.net;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Tracks the relationship between sliced ByteBuffers and their original parent buffers.
@@ -28,28 +29,31 @@ import java.util.concurrent.ConcurrentHashMap;
  * the original. We need to track this relationship so that when returning buffers to
  * the pool, we return the original pooled buffer, not the slice.
  *
- * This class uses ConcurrentHashMap which provides thread-safe access without
- * requiring external synchronization. Callers must explicitly call removeTracking()
+ * This class uses IdentityHashMap (synchronized) which provides thread-safe access
+ * using object identity rather than equals(). This is critical because ByteBuffer.equals()
+ * compares buffer content and can throw IndexOutOfBoundsException if buffer position/limit
+ * is modified after being used as a map key. Callers must explicitly call removeTracking()
  * to clean up entries when buffers are returned to the pool.
  */
 class BufferAttachmentTracker {
 
   /**
-   * Maps sliced buffers to their original parent buffers.
-   * Uses ConcurrentHashMap for thread-safe, high-performance concurrent access.
+   * Maps sliced buffers to their original parent buffers using object identity.
+   * Uses synchronized IdentityHashMap for thread-safe access without relying on
+   * ByteBuffer.equals() or hashCode(), which can be problematic when buffer state changes.
    * Entries must be explicitly removed via removeTracking() to prevent memory leaks.
    *
    * Note: This static mutable field is intentionally designed for global buffer tracking
    * across the application. The PMD.StaticFieldsMustBeImmutable warning is suppressed
    * because:
    * 1. Mutable shared state is required to track buffer relationships across all threads
-   * 2. ConcurrentHashMap provides lock-free thread-safe operations (get/put/remove)
-   * 3. All methods use atomic operations; no compound operations need external locking
+   * 2. IdentityHashMap uses object identity (==) avoiding equals()/hashCode() issues
+   * 3. Collections.synchronizedMap provides thread-safe operations
    * 4. This is the most efficient design for this use case
    */
   @SuppressWarnings("PMD.StaticFieldsMustBeImmutable")
   private static final Map<ByteBuffer, ByteBuffer> sliceToOriginal =
-      new ConcurrentHashMap<>();
+      Collections.synchronizedMap(new IdentityHashMap<>());
 
   /**
    * Records that a slice buffer was created from an original buffer.
