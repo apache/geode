@@ -67,6 +67,7 @@ import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.membership.utils.AvailablePort.Keeper;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -92,6 +93,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public abstract class MemberStarterRule<T> extends SerializableExternalResource implements Member {
   private final int availableJmxPort;
   private final int availableHttpPort;
+  private final Keeper jmxPortKeeper;
+  private final Keeper httpPortKeeper;
+  private final Keeper memberPortKeeper;
 
   protected int memberPort;
   protected int jmxPort = -1; // -1 means not start on servere, 0 means use default, >0 means preset
@@ -120,9 +124,14 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public MemberStarterRule(UniquePortSupplier portSupplier) {
-    availableJmxPort = portSupplier.getAvailablePort();
-    availableHttpPort = portSupplier.getAvailablePort();
-    memberPort = portSupplier.getAvailablePort();
+    // Hold Keepers to prevent TOCTOU race between allocation and binding
+    jmxPortKeeper = portSupplier.getAvailablePortKeeper();
+    httpPortKeeper = portSupplier.getAvailablePortKeeper();
+    memberPortKeeper = portSupplier.getAvailablePortKeeper();
+
+    availableJmxPort = jmxPortKeeper.getPort();
+    availableHttpPort = httpPortKeeper.getPort();
+    memberPort = memberPortKeeper.getPort();
 
     // initial values
     properties.setProperty(MCAST_PORT, "0");
@@ -351,6 +360,22 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // do it here since only here, we can guarantee the name is present
     if (logFile) {
       properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath());
+    }
+  }
+
+  /**
+   * Release all port keepers after ports have been bound. This should be called after the
+   * member/locator/server has successfully started and bound to the ports.
+   */
+  protected void releasePortKeepers() {
+    if (jmxPortKeeper != null) {
+      jmxPortKeeper.release();
+    }
+    if (httpPortKeeper != null) {
+      httpPortKeeper.release();
+    }
+    if (memberPortKeeper != null) {
+      memberPortKeeper.release();
     }
   }
 

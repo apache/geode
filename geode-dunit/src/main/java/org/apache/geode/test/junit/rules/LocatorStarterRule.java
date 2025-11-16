@@ -86,6 +86,10 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
   }
 
   public void startLocator() {
+    // Release port keepers just before starting to minimize TOCTOU window
+    // We held them from construction until now to prevent other tests from grabbing them
+    releasePortKeepers();
+
     try {
       // this will start a jmx manager and admin rest service by default
       locator = (InternalLocator) startLocatorAndDS(memberPort, null, properties);

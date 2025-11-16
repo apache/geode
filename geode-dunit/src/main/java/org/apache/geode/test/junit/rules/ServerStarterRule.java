@@ -194,6 +194,10 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   }
 
   public void startServer() {
+    // Release port keepers just before starting to minimize TOCTOU window
+    // We held them from construction until now to prevent other tests from grabbing them
+    releasePortKeepers();
+
     if (servers == null) {
       servers = new ArrayList<>();
     }
