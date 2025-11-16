@@ -134,14 +134,35 @@ public class AvailablePortHelper {
   }
 
   private static int availablePort(int protocol) {
-    while (true) {
-      int port = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
-      if (port > AVAILABLE_PORTS_UPPER_BOUND) {
-        continue;
-      }
+    // For SOCKET protocol, use Keeper pattern to minimize TOCTOU race window
+    // For other protocols, fall back to isPortAvailable
+    if (protocol == SOCKET) {
+      while (true) {
+        int port = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
+        if (port > AVAILABLE_PORTS_UPPER_BOUND) {
+          continue;
+        }
 
-      if (isPortAvailable(port, protocol, getAddress(protocol))) {
-        return port;
+        // Use Keeper to hold the port, reducing TOCTOU window
+        Keeper keeper = isPortKeepable(port, protocol, getAddress(protocol));
+        if (keeper != null) {
+          // Release immediately but port is now registered in GLOBAL_USED_PORTS
+          // This reduces (but doesn't eliminate) the TOCTOU window
+          keeper.release();
+          return port;
+        }
+      }
+    } else {
+      // MULTICAST protocol - use old method
+      while (true) {
+        int port = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
+        if (port > AVAILABLE_PORTS_UPPER_BOUND) {
+          continue;
+        }
+
+        if (isPortAvailable(port, protocol, getAddress(protocol))) {
+          return port;
+        }
       }
     }
   }
