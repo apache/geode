@@ -19,8 +19,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntSupplier;
 
-import org.apache.geode.internal.membership.utils.AvailablePort.Keeper;
-
 /**
  * Supplies unique ports that have not already been supplied by any instance of PortSupplier.
  * Uses a static shared set to coordinate port allocation across all test classes running in
@@ -52,27 +50,6 @@ public class UniquePortSupplier {
         return port;
       }
       // If add returned false, port was already claimed by another instance, try again
-    }
-  }
-
-  /**
-   * Returns a Keeper that holds the port until released. This eliminates the TOCTOU race window
-   * between port allocation and binding. The caller must call keeper.release() after binding.
-   *
-   * @return a Keeper object that holds the ServerSocket open
-   */
-  public Keeper getAvailablePortKeeper() {
-    while (true) {
-      Keeper keeper = AvailablePortHelper.getRandomAvailableTCPPortKeepers(1).get(0);
-      int port = keeper.getPort();
-
-      // Atomically add only if not already present
-      if (GLOBAL_USED_PORTS.add(port)) {
-        return keeper;
-      }
-      // If add returned false, port was already claimed by another instance,
-      // release this keeper and try again
-      keeper.release();
     }
   }
 
