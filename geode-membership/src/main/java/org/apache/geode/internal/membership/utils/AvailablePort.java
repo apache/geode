@@ -309,45 +309,6 @@ public class AvailablePort {
     }
   }
 
-  /**
-   * Returns a Keeper that holds an available port in the range 20001 to 29999.
-   * The Keeper keeps the port bound until released, preventing TOCTOU race conditions.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @return A Keeper object holding the port, or null if no port could be allocated
-   * @throws IllegalArgumentException if protocol is unknown or MULTICAST
-   */
-  public static Keeper getRandomAvailablePortKeeper(int protocol) {
-    return getRandomAvailablePortKeeper(protocol, getAddress(protocol));
-  }
-
-  /**
-   * Returns a Keeper that holds an available port in the range 20001 to 29999.
-   * The Keeper keeps the port bound until released, preventing TOCTOU race conditions.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @param addr the bind-address to use
-   * @return A Keeper object holding the port, or null if no port could be allocated
-   * @throws IllegalArgumentException if protocol is unknown or MULTICAST
-   */
-  public static Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr) {
-    if (protocol != SOCKET) {
-      throw new IllegalArgumentException("Keeper only supports SOCKET protocol");
-    }
-
-    int maxAttempts = AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND;
-    for (int attempt = 0; attempt < maxAttempts; attempt++) {
-      int port =
-          rand.nextInt(AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND)
-              + AVAILABLE_PORTS_LOWER_BOUND;
-      Keeper keeper = isPortKeepable(port, protocol, addr);
-      if (keeper != null) {
-        return keeper;
-      }
-    }
-    return null;
-  }
-
   @Immutable
   public static final Random rand;
 

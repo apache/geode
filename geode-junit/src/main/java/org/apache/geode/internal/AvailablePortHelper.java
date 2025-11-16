@@ -134,35 +134,18 @@ public class AvailablePortHelper {
   }
 
   private static int availablePort(int protocol) {
-    // For SOCKET protocol, use Keeper pattern to minimize TOCTOU race window
-    // For other protocols, fall back to isPortAvailable
-    if (protocol == SOCKET) {
-      while (true) {
-        int port = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
-        if (port > AVAILABLE_PORTS_UPPER_BOUND) {
-          continue;
-        }
-
-        // Use Keeper to hold the port, reducing TOCTOU window
-        Keeper keeper = isPortKeepable(port, protocol, getAddress(protocol));
-        if (keeper != null) {
-          // Release immediately but port is now registered in GLOBAL_USED_PORTS
-          // This reduces (but doesn't eliminate) the TOCTOU window
-          keeper.release();
-          return port;
-        }
+    while (true) {
+      int port = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
+      if (port > AVAILABLE_PORTS_UPPER_BOUND) {
+        continue;
       }
-    } else {
-      // MULTICAST protocol - use old method
-      while (true) {
-        int port = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
-        if (port > AVAILABLE_PORTS_UPPER_BOUND) {
-          continue;
-        }
 
-        if (isPortAvailable(port, protocol, getAddress(protocol))) {
+      if (isPortAvailable(port, protocol, getAddress(protocol))) {
+        // Coordinate with UniquePortSupplier to prevent port collision in parallel tests
+        if (UniquePortSupplier.tryClaimPort(port)) {
           return port;
         }
+        // Port was already claimed by another parallel test, try next port
       }
     }
   }

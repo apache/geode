@@ -60,4 +60,15 @@ public class UniquePortSupplier {
   static void clearGlobalCache() {
     GLOBAL_USED_PORTS.clear();
   }
+
+  /**
+   * Try to claim a port in the global cache. Returns true if the port was successfully claimed
+   * (wasn't already in use), false otherwise.
+   *
+   * @param port the port to claim
+   * @return true if successfully claimed, false if already in use
+   */
+  static boolean tryClaimPort(int port) {
+    return GLOBAL_USED_PORTS.add(port);
+  }
 }
