@@ -1213,10 +1213,9 @@ public class Gfsh implements Runnable {
   }
 
   public void printAsInfo(String message) {
-    // Always print to stdout for user-facing messages like banner
-    println(message);
-    // Also log to file if not in headless mode
-    if (!isHeadlessMode) {
+    if (isHeadlessMode) {
+      println(message);
+    } else {
       logger.info(message);
     }
   }
@@ -1640,13 +1639,12 @@ public class Gfsh implements Runnable {
   @Override
   public void run() {
     try {
-      // Print banner before initializing terminal to ensure it's visible
-      printBannerAndWelcome();
       // Initialize terminal and line reader before starting prompt loop
       if (!isHeadlessMode) {
         initializeTerminal();
         createConsoleReader();
       }
+      printBannerAndWelcome();
       promptLoop();
     } catch (Exception e) {
       gfshFileLogger.severe("Error in shell main loop", e);
