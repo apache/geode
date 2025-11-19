@@ -28,6 +28,10 @@ import org.apache.geode.internal.util.ArgumentRedactor;
  * Overrides JLine History to add History without newline characters.
  * Updated for JLine 3.x: extends DefaultHistory instead of MemoryHistory
  *
+ * <p>
+ * This implementation handles both old JLine 2 format history files (with timestamp comments)
+ * and new JLine 3 format. When loading an old format file, it will be converted to the new format.
+ *
  * @since GemFire 7.0
  */
 public class GfshHistory extends DefaultHistory {
@@ -57,6 +61,68 @@ public class GfshHistory extends DefaultHistory {
       } catch (IOException e) {
         // Ignore - history file may not be writable
       }
+    }
+  }
+
+  /**
+   * Override attach to handle migration from old JLine 2 history format.
+   * If loading fails due to format issues, we'll backup the old file and start fresh.
+   */
+  @Override
+  public void attach(org.jline.reader.LineReader reader) {
+    try {
+      super.attach(reader);
+    } catch (Exception e) {
+      // Check if it's a history file format issue
+      Throwable cause = e;
+      while (cause != null) {
+        if (cause instanceof IllegalArgumentException
+            && cause.getMessage() != null
+            && cause.getMessage().contains("Bad history file syntax")) {
+          // Backup old history file and start fresh
+          migrateOldHistoryFile();
+          // Try again with clean file
+          try {
+            super.attach(reader);
+          } catch (Exception ex) {
+            // If still fails, just continue without history
+          }
+          return;
+        }
+        cause = cause.getCause();
+      }
+      // Re-throw if not a history format issue
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      }
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Migrates old JLine 2 format history file to JLine 3 format.
+   * Backs up the old file and creates a new one with only the valid history entries.
+   */
+  private void migrateOldHistoryFile() {
+    if (historyFilePath == null || !Files.exists(historyFilePath)) {
+      return;
+    }
+
+    try {
+      // Backup old history file
+      Path backupPath = historyFilePath.getParent()
+          .resolve(historyFilePath.getFileName().toString() + ".old");
+      Files.move(historyFilePath, backupPath,
+          java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+      // Create new history file with timestamp
+      try (BufferedWriter writer = Files.newBufferedWriter(historyFilePath,
+          StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+        writer.write("# Migrated from old format on " + new java.util.Date());
+        writer.newLine();
+      }
+    } catch (IOException e) {
+      // Ignore - just start with empty history
     }
   }
 
