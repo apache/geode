@@ -24,7 +24,7 @@ Build from source or use the TAR distribution to install <%=vars.product_name_lo
 1.  Set the JAVA\_HOME environment variable.
 
     ``` pre
-    JAVA_HOME=/usr/java/jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
+    JAVA_HOME=/usr/java/jdk-<%=vars.min_java_version%>.0.<%=vars.min_java_update%>
     export JAVA_HOME
     ```
 
@@ -54,7 +54,7 @@ Build from source or use the TAR distribution to install <%=vars.product_name_lo
 1.  Set the JAVA\_HOME environment variable. For example:
 
     ``` pre
-    $ set JAVA_HOME="C:\Program Files\Java\jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>" 
+    $ set JAVA_HOME="C:\Program Files\Java\jdk-<%=vars.min_java_version%>.0.<%=vars.min_java_update%>" 
     ```
 
 2.  Install Gradle, version 2.3 or a more recent version.
@@ -85,20 +85,20 @@ Build from source or use the TAR distribution to install <%=vars.product_name_lo
 2.  Expand the .tgz file, where `path_to_product` is an absolute path, and the file name will vary due to the version number:
 
     ``` pre
-    $ tar -zxvf apache-geode-1.1.0.tgz -C path_to_product
+    $ tar -zxvf apache-geode-2.0.0.tgz -C path_to_product
     ```
 
 3.  Set the JAVA\_HOME environment variable. On Linux/Unix platforms:
 
     ``` pre
-    JAVA_HOME=/usr/java/jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
+    JAVA_HOME=/usr/java/jdk-<%=vars.min_java_version%>.0.<%=vars.min_java_update%>
     export JAVA_HOME
     ```
 
     On Windows platforms:
 
     ``` pre
-    set JAVA_HOME="C:\Program Files\Java\jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>"
+    set JAVA_HOME="C:\Program Files\Java\jdk-<%=vars.min_java_version%>.0.<%=vars.min_java_update%>"
     ```
 
 4.  Add the <%=vars.product_name%> scripts to your PATH environment variable. On Linux/Unix platforms:
