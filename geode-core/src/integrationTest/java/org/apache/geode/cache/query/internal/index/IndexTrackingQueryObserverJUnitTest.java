@@ -17,7 +17,9 @@ package org.apache.geode.cache.query.internal.index;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.junit.After;
@@ -161,6 +163,60 @@ public class IndexTrackingQueryObserverJUnitTest {
     assertTrue(rslts instanceof Integer);
 
     assertEquals(results.size(), ((Integer) rslts).intValue());
+  }
+
+  /**
+   * Test for GEODE-10526: afterIndexLookup should handle null indexMap gracefully
+   *
+   * This test verifies that afterIndexLookup does not throw NullPointerException
+   * when the ThreadLocal indexMap has not been initialized. This can occur in
+   * partitioned region queries when afterIndexLookup is called without a
+   * corresponding beforeIndexLookup call, or when beforeIndexLookup fails
+   * before initializing the ThreadLocal.
+   */
+  @Test
+  public void testAfterIndexLookupWithUninitializedThreadLocal() {
+    // Create a new IndexTrackingQueryObserver without initializing its ThreadLocal
+    IndexTrackingQueryObserver observer = new IndexTrackingQueryObserver();
+
+    // Create a mock result collection
+    Collection<Object> results = new ArrayList<>();
+    results.add(new Object());
+
+    try {
+      // Call afterIndexLookup without calling beforeIndexLookup first
+      // This simulates the scenario where the ThreadLocal is not initialized
+      // Before the fix, this would throw NullPointerException at line 110
+      observer.afterIndexLookup(results);
+
+      // If we reach here, the fix is working correctly
+      // The method should return gracefully when indexMap is null
+    } catch (NullPointerException e) {
+      fail("GEODE-10526: afterIndexLookup should not throw NullPointerException when "
+          + "ThreadLocal is uninitialized. This indicates the null check is missing. "
+          + "Exception: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Test for GEODE-10526: afterIndexLookup should handle null results parameter
+   *
+   * Verify that the existing null check for results parameter still works.
+   */
+  @Test
+  public void testAfterIndexLookupWithNullResults() {
+    IndexTrackingQueryObserver observer = new IndexTrackingQueryObserver();
+
+    try {
+      // Call afterIndexLookup with null results
+      // This should return early without any exceptions
+      observer.afterIndexLookup(null);
+
+      // Success - method handled null results correctly
+    } catch (Exception e) {
+      fail("afterIndexLookup should handle null results parameter gracefully. "
+          + "Exception: " + e.getMessage());
+    }
   }
 
 }
