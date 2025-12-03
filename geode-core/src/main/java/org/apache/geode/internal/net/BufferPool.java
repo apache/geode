@@ -22,13 +22,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPool {
@@ -111,8 +109,11 @@ public class BufferPool {
         result = acquireLargeBuffer(send, size);
       }
       if (result.capacity() > size) {
+        ByteBuffer original = result;
         result.position(0).limit(size);
         result = result.slice();
+        // Track the slice-to-original mapping to support buffer pool return
+        BufferAttachmentTracker.recordSlice(result, original);
       }
       return result;
     }
@@ -159,19 +160,14 @@ public class BufferPool {
         // it was garbage collected
         updateBufferStats(-defaultSize, ref.getSend(), true);
       } else {
+        // Reset the buffer to full capacity - clear() resets position and sets limit to capacity
         bb.clear();
-        if (defaultSize > size) {
-          bb.limit(size);
-        }
         return bb;
       }
       ref = bufferTempQueue.poll();
     }
     result = ByteBuffer.allocateDirect(defaultSize);
     updateBufferStats(defaultSize, send, true);
-    if (defaultSize > size) {
-      result.limit(size);
-    }
     return result;
   }
 
@@ -267,15 +263,49 @@ public class BufferPool {
   }
 
   ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
+    // This method is used by NioPlainEngine and NioSslEngine which need full-capacity buffers
+    // that can be reused for multiple read/write operations. We should NOT create slices here.
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);
       case TRACKED_SENDER:
-        return acquireDirectSenderBuffer(capacity);
+        return acquireDirectSenderBufferNonSliced(capacity);
       case TRACKED_RECEIVER:
-        return acquireDirectReceiveBuffer(capacity);
+        return acquireDirectReceiveBufferNonSliced(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type);
+  }
+
+  /**
+   * Acquire a direct sender buffer without slicing - returns a buffer with capacity >= requested
+   * size
+   */
+  private ByteBuffer acquireDirectSenderBufferNonSliced(int size) {
+    if (!useDirectBuffers) {
+      return ByteBuffer.allocate(size);
+    }
+
+    if (size <= MEDIUM_BUFFER_SIZE) {
+      return acquirePredefinedFixedBuffer(true, size);
+    } else {
+      return acquireLargeBuffer(true, size);
+    }
+  }
+
+  /**
+   * Acquire a direct receive buffer without slicing - returns a buffer with capacity >= requested
+   * size
+   */
+  private ByteBuffer acquireDirectReceiveBufferNonSliced(int size) {
+    if (!useDirectBuffers) {
+      return ByteBuffer.allocate(size);
+    }
+
+    if (size <= MEDIUM_BUFFER_SIZE) {
+      return acquirePredefinedFixedBuffer(false, size);
+    } else {
+      return acquireLargeBuffer(false, size);
+    }
   }
 
   ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
@@ -310,11 +340,13 @@ public class BufferPool {
    */
   private void releaseBuffer(ByteBuffer buffer, boolean send) {
     if (buffer.isDirect()) {
-      buffer = getPoolableBuffer(buffer);
-      BBSoftReference bbRef = new BBSoftReference(buffer, send);
-      if (buffer.capacity() <= SMALL_BUFFER_SIZE) {
+      ByteBuffer original = getPoolableBuffer(buffer);
+      // Clean up tracking for this buffer to prevent memory leaks
+      BufferAttachmentTracker.removeTracking(buffer);
+      BBSoftReference bbRef = new BBSoftReference(original, send);
+      if (original.capacity() <= SMALL_BUFFER_SIZE) {
         bufferSmallQueue.offer(bbRef);
-      } else if (buffer.capacity() <= MEDIUM_BUFFER_SIZE) {
+      } else if (original.capacity() <= MEDIUM_BUFFER_SIZE) {
         bufferMiddleQueue.offer(bbRef);
       } else {
         bufferLargeQueue.offer(bbRef);
@@ -328,25 +360,14 @@ public class BufferPool {
    * If we hand out a buffer that is larger than the requested size we create a
    * "slice" of the buffer having the requested capacity and hand that out instead.
    * When we put the buffer back in the pool we need to find the original, non-sliced,
-   * buffer. This is held in DirectBuffer in its "attachment" field.
+   * buffer. This is tracked using BufferAttachmentTracker.
    *
    * This method is visible for use in debugging and testing. For debugging, invoke this method if
    * you need to see the non-sliced buffer for some reason, such as logging its hashcode.
    */
   @VisibleForTesting
   ByteBuffer getPoolableBuffer(final ByteBuffer buffer) {
-    final Object attachment = DirectBuffer.attachment(buffer);
-
-    if (null == attachment) {
-      return buffer;
-    }
-
-    if (attachment instanceof ByteBuffer) {
-      return (ByteBuffer) attachment;
-    }
-
-    throw new InternalGemFireException("direct byte buffer attachment was not a byte buffer but a "
-        + attachment.getClass().getName());
+    return BufferAttachmentTracker.getOriginal(buffer);
   }
 
   /**
