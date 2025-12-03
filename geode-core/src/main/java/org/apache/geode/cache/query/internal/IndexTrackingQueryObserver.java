@@ -105,6 +105,15 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     // append the size of the lookup results (and bucket id if its an Index on bucket)
     // to IndexInfo results Map.
     Map indexMap = (Map) indexInfo.get();
+
+    // Guard against uninitialized ThreadLocal in partitioned queries
+    if (indexMap == null) {
+      // beforeIndexLookup was not called or did not complete successfully.
+      // This can occur in partitioned region query execution across buckets
+      // when exceptions occur or when query execution paths bypass beforeIndexLookup.
+      return;
+    }
+
     Index index = (Index) lastIndexUsed.get();
     if (index != null) {
       IndexInfo indexInfo = (IndexInfo) indexMap.get(getIndexName(index, lastKeyUsed.get()));
