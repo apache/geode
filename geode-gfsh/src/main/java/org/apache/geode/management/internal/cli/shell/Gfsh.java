@@ -23,6 +23,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
@@ -1094,6 +1097,9 @@ public class Gfsh implements Runnable {
   }
 
   protected LineReader createConsoleReader() {
+    // Check and migrate old history file format before creating LineReader
+    migrateHistoryFileIfNeeded();
+
     // Create GfshCompleter with our parser to enable TAB completion
     GfshCompleter completer = new GfshCompleter(this.parser);
 
@@ -1108,6 +1114,50 @@ public class Gfsh implements Runnable {
 
     this.lineReader = lineReader;
     return lineReader;
+  }
+
+  /**
+   * Checks if the history file exists and is in old JLine 2 format.
+   * If so, backs it up and creates a new empty history file.
+   */
+  private void migrateHistoryFileIfNeeded() {
+    try {
+      Path historyPath = Paths.get(getHistoryFileName());
+      if (!Files.exists(historyPath)) {
+        return;
+      }
+
+      // Check if file contains old format markers (lines starting with // or complex format)
+      java.util.List<String> lines = Files.readAllLines(historyPath);
+      boolean hasOldFormat = false;
+      for (String line : lines) {
+        String trimmed = line.trim();
+        // Old format had // comments and complex history format
+        if (trimmed.startsWith("//") || trimmed.startsWith("#")) {
+          hasOldFormat = true;
+          break;
+        }
+        // JLine 3 format should be simple: just command lines or :time:command format
+        // If we see anything complex, assume old format
+        if (trimmed.contains(":") && !trimmed.matches("^\\d+:\\d+:.*")) {
+          // Might be old format - be conservative and migrate
+          hasOldFormat = true;
+          break;
+        }
+      }
+
+      if (hasOldFormat) {
+        // Backup old history file
+        Path backupPath = historyPath.getParent()
+            .resolve(historyPath.getFileName().toString() + ".old");
+        Files.move(historyPath, backupPath,
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        gfshFileLogger.info("Migrated old history file format. Backup saved to: " + backupPath);
+      }
+    } catch (IOException e) {
+      // Ignore - history migration is not critical
+      gfshFileLogger.warning("Could not migrate history file", e);
+    }
   }
 
   protected void logCommandToOutput(String processedLine) {
@@ -1589,10 +1639,27 @@ public class Gfsh implements Runnable {
   @Override
   public void run() {
     try {
+      // Initialize terminal and line reader before starting prompt loop
+      if (!isHeadlessMode) {
+        initializeTerminal();
+        createConsoleReader();
+      }
       printBannerAndWelcome();
       promptLoop();
     } catch (Exception e) {
       gfshFileLogger.severe("Error in shell main loop", e);
+    }
+  }
+
+  /**
+   * Initializes the JLine 3 Terminal for interactive shell use.
+   * This must be called before creating the LineReader.
+   */
+  private void initializeTerminal() throws IOException {
+    if (terminal == null) {
+      terminal = TerminalBuilder.builder()
+          .system(true)
+          .build();
     }
   }
 }
