@@ -29,15 +29,9 @@ import java.util.List;
 import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.unsafe.internal.com.sun.jmx.remote.security.MBeanServerAccessController;
-import org.apache.geode.unsafe.internal.sun.nio.ch.DirectBuffer;
 
 public class MemberJvmOptions {
   static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
-  /**
-   * export needed by {@link DirectBuffer}
-   */
-  private static final String SUN_NIO_CH_EXPORT =
-      "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED";
   /**
    * export needed by {@link MBeanServerAccessController}
    */
@@ -55,7 +49,6 @@ public class MemberJvmOptions {
 
   static final List<String> JAVA_11_OPTIONS = Arrays.asList(
       COM_SUN_JMX_REMOTE_SECURITY_EXPORT,
-      SUN_NIO_CH_EXPORT,
       COM_SUN_MANAGEMENT_INTERNAL_OPEN,
       JAVA_LANG_OPEN);
 
