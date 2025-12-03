@@ -48,7 +48,6 @@ public class MemberJvmOptions {
 
   static final List<String> JAVA_11_OPTIONS = Arrays.asList(
       COM_SUN_JMX_REMOTE_SECURITY_EXPORT,
-      SUN_NIO_CH_EXPORT,
       JAVA_LANG_OPEN,
       JAVA_NIO_OPEN);
 
