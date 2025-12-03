@@ -188,7 +188,10 @@ public class VMStats50 implements VMStatsContract {
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
-      logger.warn("Unable to access platform OperatingSystemMXBean: {}", ex.getMessage());
+      logger.warn(
+          "Unable to access platform OperatingSystemMXBean for statistics collection. "
+              + "This affects monitoring metrics but does not impact core Geode functionality: {}",
+          ex.getMessage());
       SystemFailure.checkFailure();
       tempPlatformBean = null;
       tempUnixBean = null;
@@ -586,7 +589,9 @@ public class VMStats50 implements VMStatsContract {
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
     vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
-    vmStats.setInt(cpusId, platformOsBean.getAvailableProcessors());
+    if (platformOsBean != null) {
+      vmStats.setInt(cpusId, platformOsBean.getAvailableProcessors());
+    }
     vmStats.setInt(threadsId, threadBean.getThreadCount());
     vmStats.setInt(daemonThreadsId, threadBean.getDaemonThreadCount());
     vmStats.setInt(peakThreadsId, threadBean.getPeakThreadCount());
