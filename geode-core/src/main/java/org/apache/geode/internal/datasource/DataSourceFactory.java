@@ -34,11 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import jakarta.resource.spi.ConnectionManager;
+import jakarta.resource.spi.ManagedConnectionFactory;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MutableForTesting;

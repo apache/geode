@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.InternalCache;
@@ -51,19 +51,18 @@ public class RebalanceCommand extends GfshCommand {
   @VisibleForTesting
   public static String THREAD_NAME = "RebalanceCommand";
 
-  @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
+  @ShellMethod(value = CliStrings.REBALANCE__HELP, key = CliStrings.REBALANCE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel rebalance(
-      @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION,
+      @ShellOption(value = CliStrings.REBALANCE__INCLUDEREGION,
           help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
-      @CliOption(key = CliStrings.REBALANCE__EXCLUDEREGION,
+      @ShellOption(value = CliStrings.REBALANCE__EXCLUDEREGION,
           help = CliStrings.REBALANCE__EXCLUDEREGION__HELP) String[] excludeRegions,
-      @CliOption(key = CliStrings.REBALANCE__TIMEOUT, unspecifiedDefaultValue = "-1",
+      @ShellOption(value = CliStrings.REBALANCE__TIMEOUT, defaultValue = "-1",
           help = CliStrings.REBALANCE__TIMEOUT__HELP) long timeout,
-      @CliOption(key = CliStrings.REBALANCE__SIMULATE, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @ShellOption(value = CliStrings.REBALANCE__SIMULATE, defaultValue = "false",
           help = CliStrings.REBALANCE__SIMULATE__HELP) boolean simulate) {
 
     ExecutorService commandExecutors =

@@ -79,7 +79,7 @@ public class ShellCommandsController extends AbstractCommandsController {
 
   private static final String DEFAULT_INDEX_TYPE = "range";
 
-  @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST}, value = "/management/commands")
+  @RequestMapping(method = {RequestMethod.POST}, value = "/management/commands")
   public ResponseEntity<InputStreamResource> command(@RequestParam(value = "cmd") String command,
       @RequestParam(value = "resources", required = false) MultipartFile[] fileResource)
       throws IOException {

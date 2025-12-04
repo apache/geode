@@ -28,19 +28,18 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpSession;
-
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpSession;
 import org.apache.jasper.servlet.JspServlet;
+import org.eclipse.jetty.ee10.servlet.FilterHolder;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.http.HttpTester;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -59,6 +58,13 @@ import org.apache.geode.util.internal.GeodeGlossary;
 /**
  * In-container testing using Jetty. This allows us to test context listener events as well as
  * dispatching actions.
+ *
+ * Uses Jetty 12 with Jakarta Servlet 6.0 and HttpTester for servlet testing.
+ * Previous MockRunner (mockrunner-servlet) library has not been updated for Jakarta EE 10
+ * and Jakarta Servlet 6.0 API. Jetty's HttpTester provides Jakarta-compatible servlet container
+ * simulation with proper Cookie API (jakarta.servlet.http.Cookie) and request/response testing.
+ * This approach allows testing of session replication with the actual Jakarta servlet
+ * implementation.
  */
 @Category({SessionTest.class})
 @RunWith(PerTestClassLoaderRunner.class)
@@ -96,7 +102,7 @@ public class SessionReplicationIntegrationJUnitTest {
         gemfireLogFile.getAbsolutePath());
     filterHolder.setInitParameter("cache-type", "peer-to-peer");
 
-    servletHolder = tester.addServlet(BasicServlet.class, "/hello");
+    servletHolder = tester.addServlet(BasicServlet.class.getName(), "/hello");
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     /*
@@ -281,7 +287,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     servletHolder.setInitParameter("test.callback", "callback_1");
 
-    ServletHolder sh2 = tester.addServlet(BasicServlet.class, "/request2");
+    ServletHolder sh2 = tester.addServlet(BasicServlet.class.getName(), "/request2");
     sh2.setInitParameter("test.callback", "callback_2");
 
     tester.start();
@@ -321,7 +327,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     servletHolder.setInitParameter("test.callback", "callback_1");
 
-    ServletHolder sh2 = tester.addServlet(BasicServlet.class, "/request2");
+    ServletHolder sh2 = tester.addServlet(BasicServlet.class.getName(), "/request2");
     sh2.setInitParameter("test.callback", "callback_2");
 
     tester.start();
@@ -403,7 +409,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     servletHolder.setInitParameter("test.callback", "callback_1");
 
-    ServletHolder sh2 = tester.addServlet(BasicServlet.class, "/request2");
+    ServletHolder sh2 = tester.addServlet(BasicServlet.class.getName(), "/request2");
     sh2.setInitParameter("test.callback", "callback_2");
 
     tester.start();
@@ -821,7 +827,7 @@ public class SessionReplicationIntegrationJUnitTest {
     tester.setAttribute("callback_1", c_1);
     tester.setAttribute("callback_2", c_2);
 
-    ServletHolder sh = tester.addServlet(BasicServlet.class, "/dispatch");
+    ServletHolder sh = tester.addServlet(BasicServlet.class.getName(), "/dispatch");
     sh.setInitParameter("test.callback", "callback_2");
 
     tester.start();
@@ -973,7 +979,7 @@ public class SessionReplicationIntegrationJUnitTest {
     tester.setAttribute("callback_1", c_1);
     tester.setAttribute("callback_2", c_2);
 
-    ServletHolder sh = tester.addServlet(BasicServlet.class, "/dispatch");
+    ServletHolder sh = tester.addServlet(BasicServlet.class.getName(), "/dispatch");
     sh.setInitParameter("test.callback", "callback_2");
 
     tester.start();
@@ -1013,7 +1019,7 @@ public class SessionReplicationIntegrationJUnitTest {
     tester.setAttribute("callback_1", c_1);
     tester.setAttribute("callback_2", c_2);
 
-    ServletHolder sh = tester.addServlet(BasicServlet.class, "/dispatch");
+    ServletHolder sh = tester.addServlet(BasicServlet.class.getName(), "/dispatch");
     sh.setInitParameter("test.callback", "callback_2");
 
     tester.start();
@@ -1030,7 +1036,7 @@ public class SessionReplicationIntegrationJUnitTest {
   // @Test
   public void testJsp() throws Exception {
     tester.setResourceBase("target/test-classes");
-    ServletHolder jspHolder = tester.addServlet(JspServlet.class, "/test/*");
+    ServletHolder jspHolder = tester.addServlet(JspServlet.class.getName(), "/test/*");
     jspHolder.setInitOrder(1);
 
     jspHolder.setInitParameter("scratchdir", tmpdir.toString());

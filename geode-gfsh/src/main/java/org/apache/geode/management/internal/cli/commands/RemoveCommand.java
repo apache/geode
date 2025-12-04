@@ -20,15 +20,14 @@ import static org.apache.geode.management.internal.cli.commands.DataCommandsUtil
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -42,16 +41,15 @@ public class RemoveCommand extends GfshCommand {
   public static final String REGION_NOT_FOUND = "Region <%s> not found in any of the members";
 
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
-  @CliCommand(value = {CliStrings.REMOVE}, help = CliStrings.REMOVE__HELP)
+  @ShellMethod(value = CliStrings.REMOVE__HELP, key = {CliStrings.REMOVE})
   public ResultModel remove(
-      @CliOption(key = {CliStrings.REMOVE__REGION}, mandatory = true,
-          help = CliStrings.REMOVE__REGION__HELP,
-          optionContext = ConverterHint.REGION_PATH) String regionPath,
-      @CliOption(key = {CliStrings.REMOVE__KEY}, help = CliStrings.REMOVE__KEY__HELP,
-          specifiedDefaultValue = "") String key,
-      @CliOption(key = CliStrings.REMOVE__ALL, help = CliStrings.REMOVE__ALL__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean removeAllKeys,
-      @CliOption(key = {CliStrings.REMOVE__KEYCLASS},
+      @ShellOption(value = {CliStrings.REMOVE__REGION},
+          help = CliStrings.REMOVE__REGION__HELP) String regionPath,
+      @ShellOption(value = {CliStrings.REMOVE__KEY},
+          help = CliStrings.REMOVE__KEY__HELP) String key,
+      @ShellOption(value = CliStrings.REMOVE__ALL, help = CliStrings.REMOVE__ALL__HELP,
+          defaultValue = "false") boolean removeAllKeys,
+      @ShellOption(value = {CliStrings.REMOVE__KEYCLASS},
           help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
     Cache cache = getCache();
 

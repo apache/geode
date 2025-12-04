@@ -19,6 +19,7 @@ import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -81,6 +82,19 @@ public class ProcessControllerFactoryIntegrationTest {
 
     // assert
     assertThat(controller).isInstanceOf(MBeanOrFileProcessController.class);
+  }
+
+  @Test
+  public void createProcessController_returnsFileProcessController() throws Exception {
+    // arrange
+    when(parameters.getDirectory()).thenReturn(new File("./"));
+
+    // act
+    ProcessController controller =
+        factory.createProcessController(parameters);
+
+    // assert
+    assertThat(controller).isInstanceOf(FileProcessController.class);
   }
 
   @Test

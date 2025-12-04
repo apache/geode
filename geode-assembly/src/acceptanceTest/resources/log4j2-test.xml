@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+  ~ agreements. See the NOTICE file distributed with this work for additional information regarding
+  ~ copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance with the License. You may obtain a
+  ~ copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software distributed under the License
+  ~ is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+  ~ or implied. See the License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+
+<!--
+  Log4j2 configuration for acceptance tests.
+  
+  WHY THIS FILE EXISTS:
+  =====================
+  This is a NEW file created to support gfsh command logging in tests.
+  
+  Log4j has a specific loading order:
+  1. log4j2-test.xml (if present in test classpath) - HIGHEST PRIORITY
+  2. log4j2.xml (standard configuration)
+  3. Default configuration (console only)
+  
+  By providing log4j2-test.xml in src/acceptanceTest/resources, we ensure:
+  - Test environment uses file logging (not just console)
+  - Consistent configuration between production log4j2-cli.xml and test environment
+  - Tests can verify gfsh command logging behavior (e.g., password redaction)
+  
+  RELATIONSHIP TO OTHER LOG CONFIGS:
+  ==================================
+  - log4j2.xml: Used by locator/server components (NOT used by gfsh)
+  - log4j2-cli.xml: Used by gfsh CLI in production (modified to add file logging)
+  - log4j2-test.xml: THIS FILE - Ensures tests use same file logging as production
+  
+  WHY FILE LOGGING MATTERS:
+  =========================
+  The GfshCommandRedactionAcceptanceTest needs to verify that:
+  1. Gfsh commands are logged (not just to console, but persistently)
+  2. Passwords in commands are redacted (********) in the logs
+  3. Gfsh logs are separate from locator logs (different files)
+  
+  Without file logging, these tests would be impossible to implement.
+  
+  SYSTEM PROPERTY USAGE:
+  ======================
+  The gfsh.log.file system property is set by HeadlessGfsh constructor before
+  initializing the shell. This allows tests to:
+  - Specify a temporary test-specific log file location
+  - Read back the log file to verify command logging and redaction
+  - Clean up test files after test completion
+-->
+<Configuration status="WARN" packages="org.apache.geode.logging.internal.log4j">
+  <Properties>
+    <!-- Read log file path from system property set by HeadlessGfsh -->
+    <Property name="log-file">${sys:gfsh.log.file:-${sys:java.io.tmpdir}/gfsh.log}</Property>
+    <!-- Geode log pattern for cache member logs (servers and clients) -->
+    <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} %memberName &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
+  </Properties>
+
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout>
+        <pattern>[%-5p %d{yyyy/MM/dd HH:mm:ss.SSS z} %c{1}] %m%n</pattern>
+      </PatternLayout>
+    </Console>
+
+    <!-- File appender for gfsh commands - mirrors production configuration
+         Pattern includes thread name (%t) for debugging test execution -->
+    <RollingFile name="LOGFILE" fileName="${log-file}"
+                 filePattern="${log-file}-%i"
+                 ignoreExceptions="false">
+      <PatternLayout>
+        <pattern>[%-5p %d{yyyy/MM/dd HH:mm:ss.SSS z} %t %c{1}] %m%n</pattern>
+      </PatternLayout>
+      <Policies>
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="5"/>
+    </RollingFile>
+
+    <!-- Geode-specific appenders for cache member logging (servers and clients)
+         These are dynamically configured by the LoggingSession when a cache is created -->
+    <GeodeLogWriter name="LOGWRITER">
+      <PatternLayout pattern="${geode-pattern}"/>
+    </GeodeLogWriter>
+    <GeodeLogWriter name="SECURITYLOGWRITER" security="true">
+      <PatternLayout pattern="${geode-pattern}"/>
+    </GeodeLogWriter>
+  </Appenders>
+
+  <Loggers>
+    <!-- Security logger writes to SECURITYLOGWRITER only (not to Root appenders) -->
+    <Logger name="org.apache.geode.security" level="INFO" additivity="false">
+      <AppenderRef ref="SECURITYLOGWRITER"/>
+    </Logger>
+
+    <Root level="INFO">
+      <AppenderRef ref="STDOUT"/>
+      <AppenderRef ref="LOGFILE"/>  <!-- gfsh command logging -->
+      <AppenderRef ref="LOGWRITER"/> <!-- Cache member (server/client) logging -->
+    </Root>
+  </Loggers>
+</Configuration>

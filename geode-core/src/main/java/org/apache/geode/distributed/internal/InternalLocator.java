@@ -818,9 +818,22 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       logger.info("Using existing cache for locator.");
       ((InternalDistributedSystem) system).handleResourceEvent(ResourceEvent.LOCATOR_START, this);
     }
-    startJmxManagerLocationService(internalCache);
 
-    startClusterManagementService();
+    // GEODE-10466: Start configuration persistence service BEFORE creating cluster management
+    // service
+    // to prevent race condition. Previously, cache creation triggered JMX manager which called
+    // ManagementAgent.loadWebApplications(), creating a LocatorClusterManagementService with null
+    // persistenceService. This caused "Cluster configuration service needs to be enabled" errors.
+    // By initializing persistence service here (after cache is created but before cluster
+    // management
+    // service), we ensure the service has a valid persistence reference when created.
+    startConfigurationPersistenceService();
+
+    // Now initialize cluster management service with the valid persistence service
+    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
+    startClusterManagementService(internalCache, agentUtil);
+
+    startJmxManagerLocationService(internalCache);
   }
 
   @VisibleForTesting
@@ -874,7 +887,14 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           }
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
+
           x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
+
+          // Start/Restart HTTP server after adding webapp to ensure proper Jetty 12 Configuration
+          // lifecycle
+          // This is critical for ServletContainerInitializer discovery (e.g.,
+          // SpringServletContainerInitializer)
+          x.restartHttpServer();
         } catch (Throwable e) {
           logger.warn("Unable to start management service: {}", e.getMessage());
         }

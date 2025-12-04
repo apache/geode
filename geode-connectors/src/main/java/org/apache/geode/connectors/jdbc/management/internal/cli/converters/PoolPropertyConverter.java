@@ -15,43 +15,26 @@
 package org.apache.geode.connectors.jdbc.management.internal.cli.converters;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceCommand;
+import org.apache.geode.management.internal.cli.domain.PoolProperty;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /***
  * Converter for CreateDataSourceCommand's --pool-properties option.
- *
+ * Spring Shell 3.x automatically handles String to custom type conversion
+ * through standard Spring converters registered as beans.
  */
-public class PoolPropertyConverter
-    implements Converter<CreateDataSourceCommand.PoolProperty> {
+public class PoolPropertyConverter {
 
   private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
-  @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return CreateDataSourceCommand.PoolProperty.class.isAssignableFrom(type);
-  }
-
-  @Override
-  public CreateDataSourceCommand.PoolProperty convertFromText(String value,
-      Class<?> targetType, String optionContext) {
+  public static PoolProperty convert(String value) {
     try {
-      return mapper.readValue(value, CreateDataSourceCommand.PoolProperty.class);
+      return mapper.readValue(value, PoolProperty.class);
     } catch (IOException e) {
       throw new IllegalArgumentException("invalid json: \"" + value + "\" details: " + e);
     }
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    return false;
   }
 }

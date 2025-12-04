@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.ra.spi;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.LocalTransaction;
-import javax.resource.spi.LocalTransactionException;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.LocalTransaction;
+import jakarta.resource.spi.LocalTransactionException;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;

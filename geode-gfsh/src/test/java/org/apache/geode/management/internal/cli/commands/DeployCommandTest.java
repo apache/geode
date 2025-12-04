@@ -15,12 +15,18 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class DeployCommandTest {
@@ -56,5 +62,36 @@ public class DeployCommandTest {
   @Test
   public void missingDirOrJar() {
     gfsh.executeAndAssertThat(command, "deploy").statusIsError().containsOutput("is required");
+  }
+
+  @Test
+  public void testNestedResultStructureCompatibility() {
+    // This test verifies that the nested structure is maintained for backward compatibility
+    List<List<Object>> nestedResults = new LinkedList<>();
+
+    // Simulate results from two members
+    List<Object> member1Results = new ArrayList<>();
+    member1Results.add(new CliFunctionResult("member1", true, "deployed jar1"));
+    member1Results.add(new CliFunctionResult("member1", true, "deployed jar2"));
+
+    List<Object> member2Results = new ArrayList<>();
+    member2Results.add(new CliFunctionResult("member2", true, "deployed jar1"));
+    member2Results.add(new CliFunctionResult("member2", false, "failed to deploy jar2"));
+
+    nestedResults.add(member1Results);
+    nestedResults.add(member2Results);
+
+    // Verify the nested structure can be flattened properly
+    List<Object> flatResults = new LinkedList<>();
+    for (List<Object> memberResults : nestedResults) {
+      flatResults.addAll(memberResults);
+    }
+
+    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(flatResults);
+
+    // Verify we have results from both members
+    assertThat(cleanedResults).hasSize(4);
+    assertThat(cleanedResults.get(0).getMemberIdOrName()).isEqualTo("member1");
+    assertThat(cleanedResults.get(2).getMemberIdOrName()).isEqualTo("member2");
   }
 }

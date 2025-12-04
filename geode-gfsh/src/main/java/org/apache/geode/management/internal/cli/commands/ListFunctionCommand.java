@@ -19,12 +19,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ListFunctionFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -37,18 +36,16 @@ import org.apache.geode.security.ResourcePermission;
 public class ListFunctionCommand extends GfshCommand {
   private final ListFunctionFunction listFunctionFunction = new ListFunctionFunction();
 
-  @CliCommand(value = CliStrings.LIST_FUNCTION, help = CliStrings.LIST_FUNCTION__HELP)
+  @ShellMethod(value = CliStrings.LIST_FUNCTION__HELP, key = CliStrings.LIST_FUNCTION)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel listFunction(
-      @CliOption(key = CliStrings.LIST_FUNCTION__MATCHES,
+      @ShellOption(value = CliStrings.LIST_FUNCTION__MATCHES,
           help = CliStrings.LIST_FUNCTION__MATCHES__HELP) String matches,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.LIST_FUNCTION__GROUP__HELP) String[] groups,
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.LIST_FUNCTION__MEMBER__HELP) String[] members) {
     Set<DistributedMember> targetMembers = findMembers(groups, members);
 

@@ -22,8 +22,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -35,7 +35,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.cli.functions.RegionAlterFunction;
@@ -47,54 +46,48 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 public class AlterRegionCommand extends SingleGfshCommand {
-  @CliCommand(value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
+  @ShellMethod(value = CliStrings.ALTER_REGION__HELP, key = CliStrings.ALTER_REGION)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   public ResultModel alterRegion(
-      @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.ALTER_REGION__REGION,
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.ALTER_REGION__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
+      @ShellOption(value = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
-      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
-          specifiedDefaultValue = "INVALIDATE",
+      @ShellOption(value = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction entryExpirationIdleTimeAction,
-      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE,
+      @ShellOption(value = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE,
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
-      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
-          specifiedDefaultValue = "INVALIDATE",
+      @ShellOption(value = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
-      @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY, specifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
           help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName entryIdleTimeCustomExpiry,
-      @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY, specifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY,
           help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName entryTTLCustomExpiry,
-      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
+      @ShellOption(value = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
-      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
-          specifiedDefaultValue = "INVALIDATE",
+      @ShellOption(value = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction regionExpirationIdleTimeAction,
-      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL,
+      @ShellOption(value = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
-      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION,
-          specifiedDefaultValue = "INVALIDATE",
+      @ShellOption(value = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) ExpirationAction regionExpirationTTLAction,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER, specifiedDefaultValue = "",
-          // split the input only with comma outside of json string
-          optionContext = "splittingRegex=,(?![^{]*\\})",
+      @ShellOption(value = CliStrings.ALTER_REGION__CACHELISTENER, // split the input only with
+                                                                   // comma outside of json
+                                                                   // string,(?![^{]*\\})",
           help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) ClassName[] cacheListeners,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.ALTER_REGION__CACHELOADER,
           help = CliStrings.ALTER_REGION__CACHELOADER__HELP) ClassName cacheLoader,
-      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.ALTER_REGION__CACHEWRITER,
           help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) ClassName cacheWriter,
-      @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID, specifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
           help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
-      @CliOption(key = CliStrings.ALTER_REGION__GATEWAYSENDERID, specifiedDefaultValue = "",
+      @ShellOption(value = CliStrings.ALTER_REGION__GATEWAYSENDERID,
           help = CliStrings.ALTER_REGION__GATEWAYSENDERID__HELP) String[] gatewaySenderIds,
-      @CliOption(key = CliStrings.ALTER_REGION__CLONINGENABLED, specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.ALTER_REGION__CLONINGENABLED,
           help = CliStrings.ALTER_REGION__CLONINGENABLED__HELP) Boolean cloningEnabled,
-      @CliOption(key = CliStrings.ALTER_REGION__EVICTIONMAX, specifiedDefaultValue = "0",
+      @ShellOption(value = CliStrings.ALTER_REGION__EVICTIONMAX,
           help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP) Integer evictionMax) {
     authorize(Resource.DATA, Operation.MANAGE, regionPath);
 
@@ -151,19 +144,31 @@ public class AlterRegionCommand extends SingleGfshCommand {
             (regionExpirationTTLAction == null) ? null : regionExpirationTTLAction.toXmlString(),
             null));
     if (cacheLoader != null) {
-      regionAttributesType.setCacheLoader(
-          new DeclarableType(cacheLoader.getClassName(), cacheLoader.getInitProperties()));
+      // Shell 3.x: Empty string converted to ClassName.EMPTY to signal removal
+      if (cacheLoader.equals(ClassName.EMPTY)) {
+        regionAttributesType.setCacheLoader(DeclarableType.EMPTY);
+      } else {
+        regionAttributesType.setCacheLoader(
+            new DeclarableType(cacheLoader.getClassName(), cacheLoader.getInitProperties()));
+      }
     }
 
     if (cacheWriter != null) {
-      regionAttributesType.setCacheWriter(
-          new DeclarableType(cacheWriter.getClassName(), cacheWriter.getInitProperties()));
+      // Shell 3.x: Empty string converted to ClassName.EMPTY to signal removal
+      if (cacheWriter.equals(ClassName.EMPTY)) {
+        regionAttributesType.setCacheWriter(DeclarableType.EMPTY);
+      } else {
+        regionAttributesType.setCacheWriter(
+            new DeclarableType(cacheWriter.getClassName(), cacheWriter.getInitProperties()));
+      }
     }
 
     if (cacheListeners != null) {
+      // Shell 3.x: Empty string in array converted to ClassName.EMPTY to signal removal
       regionAttributesType.getCacheListeners().addAll(
           Arrays.stream(cacheListeners)
-              .map(l -> new DeclarableType(l.getClassName(), l.getInitProperties()))
+              .map(l -> l.equals(ClassName.EMPTY) ? DeclarableType.EMPTY
+                  : new DeclarableType(l.getClassName(), l.getInitProperties()))
               .collect(Collectors.toList()));
     }
 

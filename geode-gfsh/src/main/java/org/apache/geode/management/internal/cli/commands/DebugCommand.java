@@ -15,21 +15,22 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class DebugCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.DEBUG}, help = CliStrings.DEBUG__HELP)
+  @ShellMethod(value = CliStrings.DEBUG__HELP, key = {CliStrings.DEBUG})
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   public ResultModel debug(
-      @CliOption(key = CliStrings.DEBUG__STATE, unspecifiedDefaultValue = "OFF", mandatory = true,
-          optionContext = "debug", help = CliStrings.DEBUG__STATE__HELP) String state) {
+      @ShellOption(value = CliStrings.DEBUG__STATE, defaultValue = "OFF",
+          help = CliStrings.DEBUG__STATE__HELP) String state) {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
     if (gfshInstance != null) {
       // Handle state

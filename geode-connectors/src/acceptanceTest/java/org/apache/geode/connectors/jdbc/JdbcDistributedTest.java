@@ -859,8 +859,13 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createJdbcDataSource() throws Exception {
+    // Quote the URL to prevent gfsh command parser from splitting on '=' characters.
+    // Without quotes, a URL like "jdbc:postgresql://host:port/db?user=postgres" would be
+    // incorrectly parsed by gfsh, splitting "?user=postgres" into "?user" (losing the value).
+    // The quotes ensure the entire URL including query parameters is passed as a single argument.
     final String commandStr =
-        "create data-source --pooled --name=" + DATA_SOURCE_NAME + " --url=" + getConnectionUrl();
+        "create data-source --pooled --name=" + DATA_SOURCE_NAME + " --url=\"" + getConnectionUrl()
+            + "\"";
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

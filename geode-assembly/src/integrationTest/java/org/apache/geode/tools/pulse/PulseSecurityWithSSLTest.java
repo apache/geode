@@ -45,7 +45,7 @@ import java.util.Properties;
 
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -84,8 +84,8 @@ public class PulseSecurityWithSSLTest {
     locator.withSecurityManager(SimpleSecurityManager.class).withProperties(securityProps)
         .startLocator();
 
-    HttpResponse response = client.loginToPulse("data", "wrongPassword");
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(302);
+    ClassicHttpResponse response = client.loginToPulse("data", "wrongPassword");
+    assertThat(response.getCode()).isEqualTo(302);
     assertThat(response.getFirstHeader("Location").getValue())
         .contains("/pulse/login.html?error=BAD_CREDS");
 
@@ -95,7 +95,6 @@ public class PulseSecurityWithSSLTest {
     response = client.post("/pulse/pulseUpdate", "pulseData",
         "{\"SystemAlerts\": {\"pageNumber\":\"1\"},\"ClusterDetails\":{}}");
     String body = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-
     assertThat(JsonPath.parse(body).read("$.SystemAlerts.connectedFlag", Boolean.class)).isTrue();
   }
 
@@ -127,10 +126,9 @@ public class PulseSecurityWithSSLTest {
     client.loginToPulseAndVerify("cluster", "cluster");
 
     // Ensure that the backend JMX connection is working too
-    HttpResponse response = client.post("/pulse/pulseUpdate", "pulseData",
+    ClassicHttpResponse response = client.post("/pulse/pulseUpdate", "pulseData",
         "{\"SystemAlerts\": {\"pageNumber\":\"1\"},\"ClusterDetails\":{}}");
     String body = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-
     assertThat(JsonPath.parse(body).read("$.SystemAlerts.connectedFlag", Boolean.class)).isTrue();
   }
 }

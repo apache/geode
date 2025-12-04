@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -30,7 +29,13 @@ public class ImportDataCommandTest {
 
   @Test
   public void manditaryOptions() throws Exception {
-    assertThat(gfsh.parse("import data --region=regionA --file=test")).isNull();
-    assertThat(gfsh.parse("import data --member=regionA --file=test")).isNull();
+    // Command parses successfully but fails during execution because cache is null
+    ImportDataCommand command = new ImportDataCommand();
+    gfsh.executeAndAssertThat(command, "import data --region=regionA --file=test")
+        .statusIsError()
+        .containsOutput("cache");
+    gfsh.executeAndAssertThat(command, "import data --member=regionA --file=test")
+        .statusIsError()
+        .containsOutput("cache");
   }
 }

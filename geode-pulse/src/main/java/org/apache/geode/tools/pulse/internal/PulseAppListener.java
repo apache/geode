@@ -22,8 +22,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

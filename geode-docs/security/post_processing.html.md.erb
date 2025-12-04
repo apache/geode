@@ -1,0 +1,74 @@
+---
+title:  Post Processing of Region Data
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The  `PostProcessor` interface allows the definition of a callback
+that is invoked after any and all client and `gfsh` operations that get data,
+but before the data is returned.
+It permits the callback to intervene and format the data
+that is to be returned.
+The callbacks must not modify the region data,
+only the data to be returned.
+
+The `processRegionValue` method is given the principal of the 
+operation requester.
+The operation will already have been completed, 
+implying that the principal will have been authorized to complete
+the requested operation.
+The post processing can therefore format the returned data based
+on the identity of the requester (principal).
+
+By default, the key and value parameters to the `processRegionValue` method
+are references to the region entry.
+Modify copies of these parameters to avoid changing the region entries.
+[Copy on Read Behavior](../basic_config/data_entries_custom_classes/copy_on_read.html) discusses the issue.
+
+<!-- GEODE-2153 aims to make this possible:
+A use of post processing will be to sanitize or mask out sensitive
+region information,
+while providing the remainder of a region entry unchanged.
+An implementation can alter the entry for some requesters,
+but not other requesters.
+-->
+
+The `processRegionValue` method is invoked for these API calls:
+ 
+- `Region.get`
+- `Region.getAll`
+- `Query.execute`
+- `CqQuery.execute`
+- `CqQuery.executeWithInitialResults`
+- `CqListener.onEvent`
+- for a relevant region event from `CacheListener.afterUpdate` for which
+there is interest registered with `Region.registerInterest` 
+
+Care should be taken when designing a system that implements the
+post processing callback.
+It incurs the performance penalty of an extra method invocation
+on every get operation.
+
+## Implement Post Processing
+
+Complete these items to implement post processing.
+
+- Define the `security-post-processor` property.
+See [Enable Security with Property Definitions](enable_security.html)
+for details about this property.
+- Implement the  `processRegionValue` method of the `PostProcessor` interface.

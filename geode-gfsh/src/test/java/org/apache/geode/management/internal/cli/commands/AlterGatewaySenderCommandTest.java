@@ -99,8 +99,9 @@ public class AlterGatewaySenderCommandTest {
 
   @Test
   public void mandatoryOption() {
+    // Shell 3.x: Custom validation error replaces generic "Invalid command"
     gfsh.executeAndAssertThat(command, "alter gateway-sender").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("You must specify a gateway sender id.");
   }
 
   @Test
@@ -111,8 +112,9 @@ public class AlterGatewaySenderCommandTest {
 
   @Test
   public void unknownOption() {
+    // In Spring Shell 3.x, unknown options cause parse failure
     gfsh.executeAndAssertThat(command, "alter gateway-sender --id=sender1 --status").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("Error while processing command");
   }
 
   @Test

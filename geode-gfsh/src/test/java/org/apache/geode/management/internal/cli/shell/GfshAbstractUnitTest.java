@@ -30,7 +30,10 @@ import org.junit.Test;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
 
-
+/**
+ * Base test class for Gfsh unit tests.
+ * Migrated from Spring Shell 1.x to Spring Shell 3.x.
+ */
 public class GfshAbstractUnitTest {
   protected Gfsh gfsh;
   protected String testString;
@@ -89,31 +92,34 @@ public class GfshAbstractUnitTest {
     assertThat(gfsh.getEnvAppContextPath()).isEqualTo("test");
   }
 
+  /**
+   * Spring Shell 3.x Migration:
+   * Changed from org.springframework.shell.core.CommandResult to CommandResult.
+   * Gfsh.executeCommand() now returns CommandResult directly.
+   */
   @Test
   public void executeCommandShouldSubstituteVariablesWhenNeededAndDelegateToDefaultImplementation() {
     gfsh = spy(Gfsh.class);
-    org.springframework.shell.core.CommandResult commandResult;
+    CommandResult commandResult;
 
     // No '$' character, should only delegate to default implementation.
     commandResult = gfsh.executeCommand("echo --string=ApacheGeode!");
-    assertThat(commandResult.isSuccess()).isTrue();
+    assertThat(commandResult.getStatus()).isEqualTo(CommandResult.Status.OK);
     verify(gfsh, times(0)).expandProperties("echo --string=ApacheGeode!");
-    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
-        .isEqualTo("ApacheGeode!");
+    assertThat(commandResult.asString().trim()).isEqualTo("ApacheGeode!");
 
     // '$' character present, should expand properties and delegate to default implementation.
     commandResult = gfsh.executeCommand("echo --string=SYS_USER:${SYS_USER}");
-    assertThat(commandResult.isSuccess()).isTrue();
+    assertThat(commandResult.getStatus()).isEqualTo(CommandResult.Status.OK);
     verify(gfsh, times(1)).expandProperties("echo --string=SYS_USER:${SYS_USER}");
-    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
+    assertThat(commandResult.asString().trim())
         .isEqualTo("SYS_USER:" + System.getProperty("user.name"));
 
     // '$' character present but not variable referenced, should try to expand, find nothing (no
     // replacement) and delegate to default implementation.
     commandResult = gfsh.executeCommand("echo --string=MyNameIs:$USER_NAME");
-    assertThat(commandResult.isSuccess()).isTrue();
+    assertThat(commandResult.getStatus()).isEqualTo(CommandResult.Status.OK);
     verify(gfsh, times(1)).expandProperties("echo --string=MyNameIs:$USER_NAME");
-    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
-        .isEqualTo("MyNameIs:$USER_NAME");
+    assertThat(commandResult.asString().trim()).isEqualTo("MyNameIs:$USER_NAME");
   }
 }

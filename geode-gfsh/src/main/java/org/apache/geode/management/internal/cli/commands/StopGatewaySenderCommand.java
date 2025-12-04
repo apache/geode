@@ -26,14 +26,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -61,21 +60,22 @@ public class StopGatewaySenderCommand extends GfshCommand {
   }
 
   @SuppressWarnings("unused") // invoked by spring shell
-  @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
+  @ShellMethod(value = CliStrings.STOP_GATEWAYSENDER__HELP, key = CliStrings.STOP_GATEWAYSENDER)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public ResultModel stopGatewaySender(@CliOption(key = CliStrings.STOP_GATEWAYSENDER__ID,
-      mandatory = true, optionContext = ConverterHint.GATEWAY_SENDER_ID,
+  public ResultModel stopGatewaySender(@ShellOption(value = CliStrings.STOP_GATEWAYSENDER__ID,
       help = CliStrings.STOP_GATEWAYSENDER__ID__HELP) String senderId,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.STOP_GATEWAYSENDER__GROUP__HELP) String[] onGroup,
 
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
+
+    if (senderId == null) {
+      return ResultModel.createError("You must specify a gateway sender id.");
+    }
 
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 

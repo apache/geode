@@ -23,8 +23,8 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
@@ -44,12 +44,12 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeClientCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
+  @ShellMethod(value = CliStrings.DESCRIBE_CLIENT__HELP, key = CliStrings.DESCRIBE_CLIENT)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public ResultModel describeClient(@CliOption(key = CliStrings.DESCRIBE_CLIENT__ID,
-      mandatory = true, help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId)
+  public ResultModel describeClient(@ShellOption(value = CliStrings.DESCRIBE_CLIENT__ID,
+      help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId)
       throws Exception {
     ResultModel result = new ResultModel();
 

@@ -19,7 +19,7 @@ package org.apache.geode.management.api;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
@@ -38,7 +38,8 @@ public class ConnectionConfig {
   private int port;
   private String username;
   private String password;
-  private HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+  // NoopHostnameVerifier changed from instantiable class to enum singleton in HttpComponents 5.x
+  private HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
   private SSLContext sslContext;
   private String authToken;
   private boolean followRedirects;

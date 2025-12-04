@@ -51,7 +51,12 @@ import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
 
 /**
- * The QueryingController class serves all HTTP REST requests related to the gemfire querying
+ * The QueryingController class serves all HTTP REST requests related to the gemfire querying.
+ *
+ * Spring Security 6.x Migration:
+ * - Changed @PreAuthorize authorize() to authorizeBoolean()
+ * - Spring Security 6.x authorize() returns AuthorizationDecision instead of boolean
+ * - Use authorizeBoolean() for direct boolean evaluation in @PreAuthorize expressions
  *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
@@ -95,7 +100,7 @@ public class QueryAccessController extends AbstractBaseController {
       @ApiResponse(responseCode = "500", description = "if GemFire throws an error or exception")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
-  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
   public ResponseEntity<?> list() {
     logger.debug("Listing all parametrized Queries in GemFire...");
 
@@ -124,7 +129,7 @@ public class QueryAccessController extends AbstractBaseController {
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "409", description = "QueryId already assigned to other query."),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
   public ResponseEntity<?> create(@RequestParam("id") final String queryId,
       @RequestParam(value = "q", required = false) String oqlInUrl,
       @RequestBody(required = false) final String oqlInBody) {
@@ -166,7 +171,7 @@ public class QueryAccessController extends AbstractBaseController {
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
-  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
   public ResponseEntity<String> runAdhocQuery(@RequestParam("q") String oql) {
     logger.debug("Running an adhoc Query ({})...", oql);
 
@@ -226,7 +231,7 @@ public class QueryAccessController extends AbstractBaseController {
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
-  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
   public ResponseEntity<String> runNamedQuery(@PathVariable("query") String queryId,
       @RequestBody String arguments) {
     logger.debug("Running named Query with ID ({})...", queryId);
@@ -306,7 +311,7 @@ public class QueryAccessController extends AbstractBaseController {
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "404", description = "queryId does not exist."),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
   public ResponseEntity<?> update(@PathVariable("query") final String queryId,
       @RequestParam(value = "q", required = false) String oqlInUrl,
       @RequestBody(required = false) final String oqlInBody) {
@@ -337,7 +342,7 @@ public class QueryAccessController extends AbstractBaseController {
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "404", description = "queryId does not exist."),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception")})
-  @PreAuthorize("@securityService.authorize('DATA', 'WRITE')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'WRITE')")
   public ResponseEntity<?> delete(@PathVariable("query") final String queryId) {
     logger.debug("Deleting a named, parametrized Query with ID ({}).", queryId);
 

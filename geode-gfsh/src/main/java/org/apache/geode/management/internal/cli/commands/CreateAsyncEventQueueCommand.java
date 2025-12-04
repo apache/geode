@@ -21,14 +21,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CreateAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -38,60 +37,58 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
-  @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE,
-      help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
+  @ShellMethod(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP,
+      key = CliStrings.CREATE_ASYNC_EVENT_QUEUE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   public ResultModel createAsyncEventQueue(
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, mandatory = true,
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP) String id,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL,
+          defaultValue = "false",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL__HELP) boolean parallel,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION,
+          defaultValue = "false",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION__HELP) boolean enableBatchConflation,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE,
-          unspecifiedDefaultValue = "100",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE,
+          defaultValue = "100",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE__HELP) int batchSize,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL,
-          unspecifiedDefaultValue = AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL + "",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL,
+          defaultValue = AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL + "",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL__HELP) int batchTimeInterval,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT,
+          defaultValue = "false",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT__HELP) boolean persistent,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE,
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE__HELP) String diskStore,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS,
-          unspecifiedDefaultValue = "true", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS,
+          defaultValue = "true",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP) boolean diskSynchronous,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY,
+          defaultValue = "false",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY__HELP) boolean forwardExpirationDestroy,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY,
-          unspecifiedDefaultValue = "100",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY,
+          defaultValue = "100",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP) int maxQueueMemory,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS,
-          unspecifiedDefaultValue = "1",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS,
+          defaultValue = "1",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS__HELP) int dispatcherThreads,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY,
-          unspecifiedDefaultValue = "KEY",
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY,
+          defaultValue = "KEY",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY__HELP) String orderPolicy,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER,
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER__HELP) String[] gatewayEventFilters,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER,
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER__HELP) String gatewaySubstitutionListener,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER, mandatory = true,
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER__HELP) String listener,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE,
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP) String[] listenerParamsAndValues,
-      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PAUSE_EVENT_PROCESSING,
+      @ShellOption(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PAUSE_EVENT_PROCESSING,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PAUSE_EVENT_PROCESSING__HELP,
-          unspecifiedDefaultValue = "false",
-          specifiedDefaultValue = "true") boolean pauseEventProcessing) {
+          defaultValue = "false") boolean pauseEventProcessing) {
 
     if (persistent) {
       authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,

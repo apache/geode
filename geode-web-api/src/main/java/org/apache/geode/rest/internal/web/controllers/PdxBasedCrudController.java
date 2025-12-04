@@ -19,12 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -50,6 +49,11 @@ import org.apache.geode.rest.internal.web.util.ArrayUtils;
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on
  * region
  *
+ * Spring Security 6.x Migration:
+ * - Changed @PreAuthorize authorize() to authorizeBoolean()
+ * - Spring Security 6.x authorize() returns AuthorizationDecision instead of boolean
+ * - Use authorizeBoolean() for direct boolean evaluation in @PreAuthorize expressions
+ *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
  */
@@ -68,6 +72,25 @@ public class PdxBasedCrudController extends CommonCrudController {
   @Override
   protected String getRestApiVersion() {
     return REST_API_VERSION;
+  }
+
+  /**
+   * List all available resources (Regions) in the GemFire cluster.
+   * This overrides the parent method to provide the mapping at /v1 instead of /.
+   *
+   * @return JSON document containing all regions
+   */
+  @RequestMapping(method = RequestMethod.GET, value = "", produces = {APPLICATION_JSON_UTF8_VALUE})
+  @Operation(summary = "list all resources (Regions)",
+      description = "List all available resources (Regions) in the Geode cluster")
+  @ApiResponses({@ApiResponse(responseCode = "200", description = "OK."),
+      @ApiResponse(responseCode = "401", description = "Invalid Username or Password."),
+      @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
+      @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
+  @Override
+  public ResponseEntity<?> regions() {
+    return super.regions();
   }
 
   /**
@@ -90,7 +113,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(responseCode = "404", description = "Region does not exist."),
       @ApiResponse(responseCode = "409", description = "Key already exist in region."),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('DATA', 'WRITE', #region)")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'WRITE', #region)")
   public ResponseEntity<?> create(@PathVariable("region") String region,
       @RequestParam(value = "key", required = false) String key, @RequestBody final String json) {
     key = generateKey(key);
@@ -150,7 +173,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "404", description = "Region does not exist."),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ', #region)")
   public ResponseEntity<?> read(@PathVariable("region") String region,
       @RequestParam(value = "limit",
           defaultValue = DEFAULT_GETALL_RESULT_LIMIT) final String limit,
@@ -195,7 +218,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         if (maxLimit < 0) {
           String errorMessage =
               String.format("Negative limit param (%1$s) is not valid!", maxLimit);
-          return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+          return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
         }
 
         int mapSize = keys.size();
@@ -210,11 +233,12 @@ public class PdxBasedCrudController extends CommonCrudController {
         // limit param is not specified in proper format. set the HTTPHeader
         // for BAD_REQUEST
         String errorMessage = String.format("limit param (%1$s) is not valid!", limit);
-        return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+        return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
       }
     }
 
     headers.set(HttpHeaders.CONTENT_LOCATION, toUri(region, keyList).toASCIIString());
+    headers.setContentType(APPLICATION_JSON_UTF8);
     return new ResponseEntity<RegionData<?>>(data, headers, HttpStatus.OK);
   }
 
@@ -248,6 +272,7 @@ public class PdxBasedCrudController extends CommonCrudController {
     logger.debug("Reading data for keys ({}) in Region ({})", ArrayUtils.toString(keys), region);
     securityService.authorize("READ", region, keys);
     final HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(APPLICATION_JSON_UTF8);
     if (keys.length == 1) {
       /* GET op on single key */
       Object value = getValue(region, keys[0]);
@@ -277,7 +302,7 @@ public class PdxBasedCrudController extends CommonCrudController {
         String errorMessage = String.format(
             "ignoreMissingKey param (%1$s) is not valid. valid usage is ignoreMissingKey=true!",
             ignoreMissingKey);
-        return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+        return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
       }
 
       final Map<Object, Object> valueObjs = getValues(region, keys);
@@ -353,7 +378,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(responseCode = "409",
           description = "For CAS, @old value does not match to the current value in region"),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('WRITE', #region, #keys)")
+  @PreAuthorize("@securityService.authorizeBoolean('WRITE', #region, #keys)")
   public ResponseEntity<?> update(@PathVariable("region") String region,
       @PathVariable("keys") String[] keys,
       @RequestParam(value = "op", defaultValue = "PUT") final String opValue,
@@ -365,17 +390,19 @@ public class PdxBasedCrudController extends CommonCrudController {
       String errorMessage = String.format(
           "The op parameter (%1$s) is not valid. Valid values are PUT, REPLACE, or CAS.",
           opValue);
-      return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+      return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
     }
     if (keys.length > 1) {
       updateMultipleKeys(region, keys, json);
       HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(APPLICATION_JSON_UTF8);
       headers.setLocation(toUri(region, StringUtils.arrayToCommaDelimitedString(keys)));
       return new ResponseEntity<>(headers, HttpStatus.OK);
     } else {
       // put case
       Object existingValue = updateSingleKey(region, keys[0], json, opValue);
       final HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(APPLICATION_JSON_UTF8);
       headers.setLocation(toUri(region, keys[0]));
       return new ResponseEntity<>(existingValue, headers,
           (existingValue == null ? HttpStatus.OK : HttpStatus.CONFLICT));
@@ -433,7 +460,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       String errorMessage = String.format(
           "The op parameter (%1$s) is not valid. Valid values are PUT, CREATE, REPLACE, or CAS.",
           opValue);
-      return new ResponseEntity<>(convertErrorAsJson(errorMessage), HttpStatus.BAD_REQUEST);
+      return convertErrorAsJson(HttpStatus.BAD_REQUEST, errorMessage);
     }
 
     if (decodedKeys.length > 1) {
@@ -469,7 +496,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       @ApiResponse(responseCode = "403", description = "Insufficient privileges for operation."),
       @ApiResponse(responseCode = "404", description = "Region does not exist."),
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
-  @PreAuthorize("@securityService.authorize('DATA', 'READ', #region)")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ', #region)")
   public ResponseEntity<?> size(@PathVariable("region") String region) {
     logger.debug("Determining the number of entries in Region ({})...", region);
 

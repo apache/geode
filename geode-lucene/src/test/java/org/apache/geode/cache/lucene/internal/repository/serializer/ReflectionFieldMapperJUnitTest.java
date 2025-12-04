@@ -45,20 +45,22 @@ public class ReflectionFieldMapperJUnitTest {
 
     assertEquals(5, doc1.getFields().size());
     assertEquals("a", doc1.getField("s").stringValue());
-    assertEquals(1, doc1.getField("i").numericValue());
-    assertEquals(2L, doc1.getField("l").numericValue());
-    assertEquals(3.0, doc1.getField("d").numericValue());
-    assertEquals(4.0f, doc1.getField("f").numericValue());
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    assertEquals(1, doc1.getField("i_point").numericValue());
+    assertEquals(2L, doc1.getField("l_point").numericValue());
+    assertEquals(3.0, doc1.getField("d_point").numericValue());
+    assertEquals(4.0f, doc1.getField("f_point").numericValue());
 
     Document doc2 = invokeSerializer(mapper2, type2, allFields);
 
     assertEquals(6, doc2.getFields().size());
     assertEquals("a", doc2.getField("s").stringValue());
     assertEquals("b", doc2.getField("s2").stringValue());
-    assertEquals(1, doc2.getField("i").numericValue());
-    assertEquals(2L, doc2.getField("l").numericValue());
-    assertEquals(3.0, doc2.getField("d").numericValue());
-    assertEquals(4.0f, doc2.getField("f").numericValue());
+    // Lucene 9.x: numeric fields are indexed with "_point" suffix to avoid IndexOptions conflicts
+    assertEquals(1, doc2.getField("i_point").numericValue());
+    assertEquals(2L, doc2.getField("l_point").numericValue());
+    assertEquals(3.0, doc2.getField("d_point").numericValue());
+    assertEquals(4.0f, doc2.getField("f_point").numericValue());
   }
 
   @Test

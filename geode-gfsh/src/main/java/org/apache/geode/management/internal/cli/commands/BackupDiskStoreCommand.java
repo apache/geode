@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
@@ -47,16 +47,16 @@ public class BackupDiskStoreCommand extends GfshCommand {
    * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
    * is persistent
    */
-  @CliCommand(value = CliStrings.BACKUP_DISK_STORE, help = CliStrings.BACKUP_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.BACKUP_DISK_STORE__HELP, key = CliStrings.BACKUP_DISK_STORE)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.READ)
   public ResultModel backupDiskStore(
-      @CliOption(key = CliStrings.BACKUP_DISK_STORE__DISKDIRS,
-          help = CliStrings.BACKUP_DISK_STORE__DISKDIRS__HELP, mandatory = true) String targetDir,
-      @CliOption(key = CliStrings.BACKUP_DISK_STORE__BASELINEDIR,
+      @ShellOption(value = CliStrings.BACKUP_DISK_STORE__DISKDIRS,
+          help = CliStrings.BACKUP_DISK_STORE__DISKDIRS__HELP) String targetDir,
+      @ShellOption(value = CliStrings.BACKUP_DISK_STORE__BASELINEDIR,
           help = CliStrings.BACKUP_DISK_STORE__BASELINEDIR__HELP) String baselineDir,
-      @CliOption(key = CliStrings.BACKUP_INCLUDE_DISK_STORES,
+      @ShellOption(value = CliStrings.BACKUP_INCLUDE_DISK_STORES,
           help = CliStrings.BACKUP_INCLUDE_DISK_STORES__HELP) String[] includeDiskStores) {
 
     authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,

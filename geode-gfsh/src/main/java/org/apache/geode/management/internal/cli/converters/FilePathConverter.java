@@ -15,45 +15,75 @@
 package org.apache.geode.management.internal.cli.converters;
 
 import java.io.File;
-import java.util.List;
 
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-
-import org.apache.geode.management.cli.ConverterHint;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 /**
+ * Spring Shell 3.x converter for File objects.
+ *
+ * <p>
+ * Converts a file path string to a {@link File} object.
+ * Used by commands with file options (e.g., --file for run command).
+ *
+ * <p>
+ * This converter delegates file system completion to {@link FilePathStringConverter}.
+ * For auto-completion, use the completion methods from FilePathStringConverter:
+ * <ul>
+ * <li>{@link FilePathStringConverter#getRoots()}</li>
+ * <li>{@link FilePathStringConverter#getSiblings(String)}</li>
+ * </ul>
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * - Spring Shell 1.x: Used supports(), convertFromText(), getAllPossibleValues()
+ * - Spring Shell 3.x: Simple Converter<String, File> for conversion only
+ * - Completion delegated to FilePathStringConverter utility methods
+ * - Auto-completion should be implemented via ValueProvider (separate concern)
  *
  * @since GemFire 7.0
  */
-public class FilePathConverter implements Converter<File> {
+@Component
+public class FilePathConverter implements Converter<String, File> {
   private FilePathStringConverter delegate;
 
+  /**
+   * Creates a FilePathConverter with a default delegate.
+   */
   public FilePathConverter() {
     delegate = new FilePathStringConverter();
   }
 
+  /**
+   * Sets a custom delegate for file path completion logic.
+   *
+   * <p>
+   * This is primarily used for testing to inject a mock delegate.
+   *
+   * @param delegate the FilePathStringConverter to use for completion
+   */
   public void setDelegate(FilePathStringConverter delegate) {
     this.delegate = delegate;
   }
 
-  @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return File.class.equals(type) && optionContext.contains(ConverterHint.FILE);
+  /**
+   * Gets the current delegate.
+   *
+   * @return the FilePathStringConverter delegate
+   */
+  public FilePathStringConverter getDelegate() {
+    return delegate;
   }
 
+  /**
+   * Converts a file path string to a File object.
+   *
+   * @param source the file path string
+   * @return File object representing the path
+   */
   @Override
-  public File convertFromText(String value, Class<?> targetType, String optionContext) {
-    return new File(value);
+  public File convert(@NonNull String source) {
+    return new File(source);
   }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    return delegate.getAllPossibleValues(completions, targetType, existingData, optionContext,
-        target);
-  }
-
-
 }

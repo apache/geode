@@ -20,7 +20,8 @@ import java.sql.Statement;
 
 import javax.naming.Context;
 import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
+
+import jakarta.transaction.UserTransaction;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;

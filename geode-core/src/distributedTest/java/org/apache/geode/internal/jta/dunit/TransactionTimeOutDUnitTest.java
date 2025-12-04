@@ -34,9 +34,9 @@ import java.util.Properties;
 
 import javax.naming.Context;
 import javax.sql.DataSource;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;

@@ -42,10 +42,15 @@ dependencies {
   }
 
   providedCompile(platform(project(':boms:geode-all-bom')))
-  providedCompile('javax.servlet:javax.servlet-api')
+  providedCompile('jakarta.servlet:jakarta.servlet-api')
   providedCompile('org.apache.logging.log4j:log4j-api')
 
   implementation('org.springframework:spring-webmvc')
+  // Spring 6.x requires explicit spring-aop dependency
+  // Previously implicit via transitive dependencies, now must be declared explicitly
+  // for component scanning to work. Missing this causes ClassNotFoundException during
+  // Spring context initialization.
+  implementation('org.springframework:spring-aop')
   implementation('org.apache.commons:commons-lang3')
 
   runtimeOnly('org.springframework:spring-aspects') {
@@ -76,6 +81,14 @@ integrationTest.dependsOn(war)
 
 war {
   enabled = true
+  // Exclude Spring modules that exist in geode/lib (system classpath) to prevent LinkageError
+  rootSpec.exclude("**/spring-web-*.jar")
+  rootSpec.exclude("**/spring-core-*.jar")
+  rootSpec.exclude("**/spring-beans-*.jar")
+  rootSpec.exclude("**/spring-context-*.jar")
+  rootSpec.exclude("**/spring-expression-*.jar")
+  rootSpec.exclude("**/spring-jcl-*.jar")
+  rootSpec.exclude("**/spring-aop-*.jar")  // spring-context needs spring-aop for component scanning
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 

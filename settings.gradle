@@ -19,7 +19,16 @@ import org.gradle.util.GradleVersion
 
 pluginManagement {
   includeBuild('build-tools/geode-dependency-management')
-  includeBuild('build-tools/geode-repeat-test') {
+  includeBuild('build-tools/geode-annotation-processor')
+  includeBuild('build-tools/scripts')
+}
+
+plugins {
+  id 'com.gradle.develocity' version '3.18.2'
+  id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.2'
+}
+
+includeBuild('build-tools/geode-repeat-test') {
     dependencySubstitution {
       substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test') using project(':')
     }
@@ -33,27 +42,18 @@ pluginManagement {
     dependencySubstitution {
       substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-testing-isolation') using project(':')
     }
-  }
-  includeBuild('build-tools/geode-annotation-processor')
-  includeBuild('build-tools/scripts')
-}
-
-plugins {
-  id 'com.gradle.enterprise' version '3.13.2'
-  id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.10'
 }
 
 def isGithubActions = System.getenv('GITHUB_ACTIONS') != null
 def isJenkins = System.getenv('JENKINS_URL') != null
 def isCI = isGithubActions || isJenkins
 
-gradleEnterprise {
-  server = "https://ge.apache.org"
+develocity {
+  server = "https://develocity.apache.org"
+  projectId = "geode"
   buildScan {
-    capture { taskInputFiles = true }
     uploadInBackground = !isCI
-    publishAlways()
-    publishIfAuthenticated()
+    publishing.onlyIf { it.isAuthenticated() }
     obfuscation {
       // This obfuscates the IP addresses of the build machine in the build scan.
       // Alternatively, the build scan will provide the hostname for troubleshooting host-specific issues.
@@ -98,9 +98,7 @@ include 'geode-connectors'
 include 'geode-http-service'
 include 'extensions:geode-modules'
 include 'extensions:geode-modules-test'
-include 'extensions:geode-modules-tomcat7'
-include 'extensions:geode-modules-tomcat8'
-include 'extensions:geode-modules-tomcat9'
+include 'extensions:geode-modules-tomcat10'
 include 'extensions:geode-modules-session-internal'
 include 'extensions:geode-modules-session'
 include 'extensions:geode-modules-assembly'
@@ -146,7 +144,7 @@ buildCache {
     enabled = !isCI
   }
 
-  remote(gradleEnterprise.buildCache) {
+  remote(develocity.buildCache) {
     enabled = false
   }
 }

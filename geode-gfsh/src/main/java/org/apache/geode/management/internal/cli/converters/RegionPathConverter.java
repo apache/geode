@@ -16,73 +16,69 @@ package org.apache.geode.management.internal.cli.converters;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 /**
+ * Spring Shell 3.x converter for region paths.
+ *
+ * <p>
+ * Converts a region path string to a normalized region path with proper separator prefix.
+ * Used by commands that operate on regions (destroy, alter, describe, etc.).
+ *
+ * <p>
+ * Conversion rules:
+ * <ul>
+ * <li>Adds {@link org.apache.geode.cache.Region#SEPARATOR} prefix if missing</li>
+ * <li>Rejects bare separator "/" as invalid</li>
+ * <li>Preserves sub-region paths: "/parent/child"</li>
+ * </ul>
+ *
+ * <p>
+ * Example conversions:
+ *
+ * <pre>
+ * "region"           → "/region"
+ * "/region"          → "/region"
+ * "parent/child"     → "/parent/child"
+ * "/parent/child"    → "/parent/child"
+ * "/"                → IllegalArgumentException
+ * </pre>
+ *
+ * <p>
+ * SPRING SHELL 3.x MIGRATION NOTE:
+ * - Spring Shell 1.x: Converter handled both conversion AND region name completion
+ * - Spring Shell 3.x: Conversion only; completion via ValueProvider
+ * - Conversion logic preserved: adds SEPARATOR prefix, validates input
+ * - Completion logic removed: getAllPossibleValues(), getAllRegionPaths()
  *
  * @since GemFire 7.0
  */
-public class RegionPathConverter implements Converter<String> {
-  @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && optionContext.contains(ConverterHint.REGION_PATH);
-  }
+@Component
+public class RegionPathConverter implements Converter<String, String> {
 
+  /**
+   * Converts a region path string to a normalized region path.
+   *
+   * @param source the region path (with or without leading separator)
+   * @return normalized region path with leading separator
+   * @throws IllegalArgumentException if source is just the separator "/"
+   */
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    // When value is null, this should not be called. this is here for safety reasons
-    if (value == null) {
+  public String convert(@NonNull String source) {
+    if (source == null) {
       return null;
     }
 
-    if (value.equals(SEPARATOR)) {
-      throw new IllegalArgumentException("invalid region path: " + value);
+    if (source.equals(SEPARATOR)) {
+      throw new IllegalArgumentException("invalid region path: " + source);
     }
 
-    if (!value.startsWith(SEPARATOR)) {
-      value = SEPARATOR + value;
+    if (!source.startsWith(SEPARATOR)) {
+      source = SEPARATOR + source;
     }
-    return value;
+
+    return source;
   }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    Set<String> regionPathSet = getAllRegionPaths();
-
-    for (String regionPath : regionPathSet) {
-      if (existingData != null) {
-        if (regionPath.startsWith(existingData)) {
-          completions.add(new Completion(regionPath));
-        }
-      } else {
-        completions.add(new Completion(regionPath));
-      }
-    }
-
-    return !completions.isEmpty();
-  }
-
-  public Set<String> getAllRegionPaths() {
-    Set<String> regionPathSet = Collections.emptySet();
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh != null && gfsh.isConnectedAndReady()) {
-      String[] regionPaths =
-          gfsh.getOperationInvoker().getDistributedSystemMXBean().listAllRegionPaths();
-      regionPathSet = Arrays.stream(regionPaths).collect(Collectors.toSet());
-    }
-    return regionPathSet;
-  }
-
 }

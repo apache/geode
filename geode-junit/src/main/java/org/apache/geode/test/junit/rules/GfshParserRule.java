@@ -14,21 +14,18 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.mockito.Mockito.spy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.rules.ExternalResource;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
 
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.Completion;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
@@ -51,7 +48,13 @@ public class GfshParserRule extends ExternalResource {
   }
 
   public GfshParseResult parse(String command) {
-    return parser.parse(command);
+    try {
+      return parser.parse(command);
+    } catch (IllegalArgumentException e) {
+      // In Spring Shell 3.x, parsing errors throw IllegalArgumentException
+      // Return null to maintain compatibility with existing error handling
+      return null;
+    }
   }
 
   /**
@@ -63,10 +66,16 @@ public class GfshParserRule extends ExternalResource {
    */
   @Deprecated
   public <T> CommandResult executeCommandWithInstance(T instance, String command) {
+    // Register the command instance BEFORE parsing
+    // This allows the parser to find commands from external modules (e.g., geode-connectors)
+    commandManager.add(instance);
+
     GfshParseResult parseResult = parse(command);
 
     if (parseResult == null) {
-      return new CommandResult(ResultModel.createError("Invalid command: " + command));
+      // Return error message format matching CommandExecutor behavior
+      return new CommandResult(ResultModel.createError(
+          "Error while processing command <" + command + "> Reason : Invalid command syntax"));
     }
 
     CliAroundInterceptor interceptor = null;
@@ -106,28 +115,22 @@ public class GfshParserRule extends ExternalResource {
     return new CommandResultAssert(result);
   }
 
+  /**
+   * Spring Shell 3.x: Command completion support.
+   * Provides tab completion support using GfshParser.completeAdvanced().
+   */
   public CommandCandidate complete(String command) {
     List<Completion> candidates = new ArrayList<>();
     int cursor = parser.completeAdvanced(command, command.length(), candidates);
     return new CommandCandidate(command, cursor, candidates);
   }
 
-  public <T extends Converter> T spyConverter(Class<T> klass) {
-    Set<Converter<?>> converters = parser.getConverters();
-    T foundConverter = null, spy = null;
-    for (Converter converter : converters) {
-      if (klass.isAssignableFrom(converter.getClass())) {
-        foundConverter = (T) converter;
-        break;
-      }
-    }
-    if (foundConverter != null) {
-      parser.remove(foundConverter);
-      spy = spy(foundConverter);
-      parser.add(spy);
-    }
-    return spy;
-  }
+  /**
+   * Spring Shell 3.x Migration Note: The spyConverter() method was removed.
+   * Spring Shell 3.x removed the Converter interface that this method depended on.
+   * Tests that used spyConverter() need to be updated to use Spring's built-in
+   * conversion mechanism or custom parameter resolvers.
+   */
 
   public GfshParser getParser() {
     return parser;

@@ -34,4 +34,5 @@ org.apache.geode.management.internal.cli.converters.LocatorIdNameConverter
 org.apache.geode.management.internal.cli.converters.LogLevelConverter
 org.apache.geode.management.internal.cli.converters.MemberGroupConverter
 org.apache.geode.management.internal.cli.converters.MemberIdNameConverter
+org.apache.geode.management.internal.cli.converters.PoolPropertyConverter
 org.apache.geode.management.internal.cli.converters.RegionPathConverter

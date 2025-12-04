@@ -9,8 +9,6 @@ package org.apache.geode.management.internal.cli.shell.jline;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import org.springframework.shell.support.util.OsUtils;
-
 /**
  * A buffer that can contain ANSI text.
  *
@@ -336,7 +334,8 @@ public class ANSIBuffer {
     return new ANSIBuffer() {
       @Override
       public ANSIBuffer reverse(final String str) {
-        if (OsUtils.isWindows()) {
+        // Shell 3.x: Removed dependency on Spring Shell's OsUtils, use standard Java API
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
           return super.reverse(str).append(ANSICodes.attrib(esc));
         }
         return super.reverse(str);

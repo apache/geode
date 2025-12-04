@@ -84,8 +84,9 @@ public class DescribeMappingCommandTest {
 
   @Test
   public void requiredParameter() {
+    // Shell 3.x: Command parses but fails at execution with proper error
     gfsh.executeAndAssertThat(command, "describe jdbc-mapping").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("because \"regionName\" is null");
   }
 
   @Test

@@ -15,4 +15,12 @@
 # limitations under the License.
 #
 
-start locator --name=locator-maeve --connect=false --redirect-output --bind-address=locator-maeve --http-service-bind-address=locator-maeve --jmx-manager-hostname-for-clients=locator-maeve --hostname-for-clients=locator-maeve --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks --J=-Dgemfire.forceDnsUse=true --J=-Djdk.tls.trustNameService=true
+# NOTE: The following JVM flags were removed as they caused locator startup failures
+# in the Docker test environment:
+#   --J=-Dgemfire.forceDnsUse=true
+#   --J=-Djdk.tls.trustNameService=true
+# These flags are incompatible with the Docker container environment and cause the
+# locator process to exit with status 1. The working SingleServerSNIAcceptanceTest
+# configuration does not use these flags.
+
+start locator --name=locator-maeve --connect=false --redirect-output --bind-address=locator-maeve --http-service-bind-address=locator-maeve --jmx-manager-hostname-for-clients=locator-maeve --hostname-for-clients=locator-maeve --properties-file=/geode/config/gemfire.properties --security-properties-file=/geode/config/gfsecurity.properties --J=-Dgemfire.ssl-keystore=/geode/config/locator-maeve-keystore.jks

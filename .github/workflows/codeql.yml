@@ -42,7 +42,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     env:
-      GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     permissions:
       actions: read
       contents: read
@@ -60,9 +60,9 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Setup Java JDK
-      uses: actions/setup-java@v2.3.1
+      uses: actions/setup-java@v4.7.1
       with:
-        java-version: 8
+        java-version: 17
         distribution: temurin
         cache: gradle
 

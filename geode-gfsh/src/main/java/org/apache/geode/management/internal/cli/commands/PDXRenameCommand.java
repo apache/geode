@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.Collection;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
@@ -32,18 +32,18 @@ import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 
 public class PDXRenameCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
+  @ShellMethod(value = CliStrings.PDX_RENAME__HELP, key = CliStrings.PDX_RENAME)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  public ResultModel pdxRename(@CliOption(key = CliStrings.PDX_RENAME_OLD, mandatory = true,
+  public ResultModel pdxRename(@ShellOption(value = CliStrings.PDX_RENAME_OLD,
       help = CliStrings.PDX_RENAME_OLD__HELP) String oldClassName,
 
-      @CliOption(key = CliStrings.PDX_RENAME_NEW, mandatory = true,
+      @ShellOption(value = CliStrings.PDX_RENAME_NEW,
           help = CliStrings.PDX_RENAME_NEW__HELP) String newClassName,
 
-      @CliOption(key = CliStrings.PDX_DISKSTORE, mandatory = true,
+      @ShellOption(value = CliStrings.PDX_DISKSTORE,
           help = CliStrings.PDX_DISKSTORE__HELP) String diskStore,
 
-      @CliOption(key = CliStrings.PDX_DISKDIR, mandatory = true,
+      @ShellOption(value = CliStrings.PDX_DISKDIR,
           help = CliStrings.PDX_DISKDIR__HELP) String[] diskDirs)
       throws Exception {
 

@@ -19,7 +19,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -48,7 +48,7 @@ public class DescribeQueryServiceCommand extends GfshCommand {
       "No cluster config found and no distributed members found.";
   public static final String AUTHORIZER_CLASS_NAME = "Method Authorizer Class";
 
-  @CliCommand(value = COMMAND_NAME, help = COMMAND_HELP)
+  @ShellMethod(value = COMMAND_HELP, key = COMMAND_NAME)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel execute() {

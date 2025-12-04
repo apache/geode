@@ -147,7 +147,8 @@ public class IndexRepositoryImpl implements IndexRepository {
     IndexSearcher searcher = searcherManager.acquire();
     try {
       TopDocs docs = searcher.search(query, limit);
-      totalHits = docs.totalHits;
+      // Lucene 9.x: totalHits is now a TotalHits object with value field
+      totalHits = (int) docs.totalHits.value;
       for (ScoreDoc scoreDoc : docs.scoreDocs) {
         Document doc = searcher.doc(scoreDoc.doc);
         Object key = SerializerUtil.getKey(doc);
@@ -220,8 +221,14 @@ public class IndexRepositoryImpl implements IndexRepository {
         return 0;
       }
       try {
-        return writer.numDocs();
-      } catch (AlreadyClosedException e) {
+        // Lucene 9.x: IndexWriter.numDocs() removed - use searcherManager to get reader
+        IndexSearcher searcher = searcherManager.acquire();
+        try {
+          return searcher.getIndexReader().numDocs();
+        } finally {
+          searcherManager.release(searcher);
+        }
+      } catch (AlreadyClosedException | IOException e) {
         // ignore
         return 0;
       }

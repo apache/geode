@@ -21,8 +21,8 @@ import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.carrotsearch.randomizedtesting.rules.SystemPropertiesRestoreRule;
-import org.apache.lucene.store.BaseDirectoryTestCase;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.tests.store.BaseDirectoryTestCase;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 

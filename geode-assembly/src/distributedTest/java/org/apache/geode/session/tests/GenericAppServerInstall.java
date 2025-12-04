@@ -23,27 +23,27 @@ import java.util.function.IntSupplier;
  * Container install for a generic app server
  *
  * Extends {@link ContainerInstall} to form a basic installer which downloads and sets up an
- * installation to build a container off of. Currently being used solely for Jetty 9 installation.
+ * installation to build a container off of. Currently being used solely for Jetty 12 installation.
  *
  * This install is used to setup many different generic app server containers using
  * {@link GenericAppServerContainer}.
  *
  * In theory, adding support for additional appserver installations should just be a matter of
  * adding new elements to the {@link GenericAppServerVersion} enumeration, since this install does
- * not do much modification of the installation itself. There is very little (maybe no) Jetty 9
+ * not do much modification of the installation itself. There is very little (maybe no) Jetty 12
  * specific code outside of the {@link GenericAppServerVersion}.
  */
 public class GenericAppServerInstall extends ContainerInstall {
-  private static final String JETTY_VERSION = "9.4.47.v20220610";
+  private static final String JETTY_VERSION = "12.0.27";
 
   /**
    * Get the version number, download URL, and container name of a generic app server using
    * hardcoded keywords
    *
-   * Currently the only supported keyword instance is JETTY9.
+   * Currently supports JETTY12 for Jakarta EE 10 compatibility.
    */
   public enum GenericAppServerVersion {
-    JETTY9(9, "jetty-distribution-" + JETTY_VERSION + ".zip", "jetty");
+    JETTY12(12, "jetty-home-" + JETTY_VERSION + ".zip", "jetty");
 
     private final int version;
     private final String downloadURL;
@@ -116,6 +116,15 @@ public class GenericAppServerInstall extends ContainerInstall {
   @Override
   public String getInstallDescription() {
     return version.name() + "_" + getConnectionType().getName();
+  }
+
+  /**
+   * Get the GenericAppServerVersion for this installation
+   *
+   * @return the version of the generic app server
+   */
+  public GenericAppServerVersion getGenericAppServerVersion() {
+    return version;
   }
 
   /**

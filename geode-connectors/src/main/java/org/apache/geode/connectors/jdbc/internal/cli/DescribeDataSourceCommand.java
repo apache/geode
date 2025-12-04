@@ -18,9 +18,9 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -47,11 +47,11 @@ public class DescribeDataSourceCommand extends GfshCommand {
   static final String DATA_SOURCE_PROPERTIES_SECTION = "data-source-properties";
   static final String REGIONS_USING_DATA_SOURCE_SECTION = "regions-using-data-source";
 
-  @CliCommand(value = DESCRIBE_DATA_SOURCE, help = DESCRIBE_DATA_SOURCE__HELP)
+  @ShellMethod(value = DESCRIBE_DATA_SOURCE__HELP, key = DESCRIBE_DATA_SOURCE)
   @CliMetaData
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public ResultModel describeDataSource(@CliOption(key = "name", mandatory = true,
+  public ResultModel describeDataSource(@ShellOption(value = "name",
       help = "Name of the data source to describe") String dataSourceName) {
 
     ResultModel resultModel = new ResultModel();
@@ -135,7 +135,7 @@ public class DescribeDataSourceCommand extends GfshCommand {
     table.accumulate("Value", value != null ? value : "");
   }
 
-  @CliAvailabilityIndicator({DESCRIBE_DATA_SOURCE})
+  @ShellMethodAvailability({DESCRIBE_DATA_SOURCE})
   public boolean commandAvailable() {
     return isOnlineCommandAvailable();
   }

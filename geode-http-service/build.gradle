@@ -26,9 +26,14 @@ dependencies {
   implementation(project(':geode-logging'))
 
   implementation('org.apache.logging.log4j:log4j-api')
-  implementation('org.eclipse.jetty:jetty-webapp')
+  // Jetty 12: webapp module moved to ee10 package for Jakarta EE 10 (Servlet 6.0)
+  implementation('org.eclipse.jetty.ee10:jetty-ee10-webapp')
+  // Jetty 12: annotations module for ServletContainerInitializer discovery
+  implementation('org.eclipse.jetty.ee10:jetty-ee10-annotations')
   implementation('org.eclipse.jetty:jetty-server')
   implementation('org.apache.commons:commons-lang3')
+  // spring-aop needed for Spring context component scanning in deployed WARs
+  implementation('org.springframework:spring-aop')
 
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-common')) {

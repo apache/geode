@@ -21,19 +21,16 @@ import static org.apache.geode.management.rest.internal.Constants.INCLUDE_CLASS_
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.apache.http.Header;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.message.BasicHeader;
+import javax.net.ssl.SSLContext;
+
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -135,25 +132,66 @@ public class RestTemplateClusterManagementServiceTransport
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
 
-    if (connectionConfig.getFollowRedirects()) {
-      clientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
-    }
-    // configures the clientBuilder
-    if (connectionConfig.getAuthToken() != null) {
-      List<Header> defaultHeaders = Collections.singletonList(
-          new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + connectionConfig.getAuthToken()));
-      clientBuilder.setDefaultHeaders(defaultHeaders);
-    } else if (connectionConfig.getUsername() != null) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(
-          new AuthScope(connectionConfig.getHost(), connectionConfig.getPort()),
-          new UsernamePasswordCredentials(connectionConfig.getUsername(),
-              connectionConfig.getPassword()));
-      clientBuilder.setDefaultCredentialsProvider(credsProvider);
+    // HttpClient 5.x: Configure redirect handling
+    // By default, HttpClient 5.x follows redirects. We need to disable if not wanted.
+    if (!connectionConfig.getFollowRedirects()) {
+      clientBuilder.disableRedirectHandling();
     }
 
-    clientBuilder.setSSLContext(connectionConfig.getSslContext());
-    clientBuilder.setSSLHostnameVerifier(connectionConfig.getHostnameVerifier());
+    // configures the clientBuilder
+    if (connectionConfig.getAuthToken() != null) {
+      // Spring 6.x / HttpClient 5.x: Use RestTemplate interceptor to add Authorization header
+      // This ensures the header is properly added to each request
+      this.restTemplate.getInterceptors().add((request, body, execution) -> {
+        String authHeader = "Bearer " + connectionConfig.getAuthToken();
+        request.getHeaders().set(HttpHeaders.AUTHORIZATION, authHeader);
+        return execution.execute(request, body);
+      });
+    } else if (connectionConfig.getUsername() != null && connectionConfig.getPassword() != null) {
+      // Apache HttpClient 5.x requires explicit preemptive authentication
+      // Using RestTemplate interceptor to add Authorization header to every request
+      final String auth = connectionConfig.getUsername() + ":" + connectionConfig.getPassword();
+      final byte[] encodedAuth =
+          java.util.Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+      final String authHeader = "Basic " + new String(encodedAuth, StandardCharsets.UTF_8);
+
+      this.restTemplate.getInterceptors().add((request, body, execution) -> {
+        request.getHeaders().set(HttpHeaders.AUTHORIZATION, authHeader);
+        return execution.execute(request, body);
+      });
+    }
+
+    // Configure SSL context and hostname verifier (HttpClient 5.x approach)
+    // Only configure SSL if we have a non-null SSL context
+    if (connectionConfig.getSslContext() != null) {
+      SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+          connectionConfig.getSslContext(),
+          connectionConfig.getHostnameVerifier());
+
+      HttpClientConnectionManager connectionManager =
+          PoolingHttpClientConnectionManagerBuilder.create()
+              .setSSLSocketFactory(sslSocketFactory)
+              .build();
+
+      clientBuilder.setConnectionManager(connectionManager);
+    } else if (connectionConfig.getHostnameVerifier() != null) {
+      // If only hostname verifier is set without SSL context, we need to use the default SSL
+      // context
+      try {
+        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+            SSLContext.getDefault(),
+            connectionConfig.getHostnameVerifier());
+
+        HttpClientConnectionManager connectionManager =
+            PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(sslSocketFactory)
+                .build();
+
+        clientBuilder.setConnectionManager(connectionManager);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to configure SSL with default context", e);
+      }
+    }
 
     requestFactory.setHttpClient(clientBuilder.build());
     restTemplate.setRequestFactory(requestFactory);
@@ -222,9 +260,10 @@ public class RestTemplateClusterManagementServiceTransport
 
   @Override
   public boolean isConnected() {
+    String pingUrl = URI_VERSION + "/ping";
     try {
-      return "pong"
-          .equals(restTemplate.getForEntity(URI_VERSION + "/ping", String.class).getBody());
+      String responseBody = restTemplate.getForEntity(pingUrl, String.class).getBody();
+      return "pong".equals(responseBody);
     } catch (RestClientException e) {
       return false;
     }
@@ -262,7 +301,13 @@ public class RestTemplateClusterManagementServiceTransport
       File file = ((HasFile) config).getFile();
       if (file != null) {
         content.add(HasFile.FILE_PARAM, new FileSystemResource(file));
-        content.add(HasFile.CONFIG_PARAM, config);
+        // Serialize config to JSON string for Spring 6.x multipart handling
+        try {
+          String configJson = GeodeJsonMapper.getMapper().writeValueAsString(config);
+          content.add(HasFile.CONFIG_PARAM, configJson);
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to serialize configuration to JSON", e);
+        }
         return new HttpEntity<>(content, headers);
       }
     }

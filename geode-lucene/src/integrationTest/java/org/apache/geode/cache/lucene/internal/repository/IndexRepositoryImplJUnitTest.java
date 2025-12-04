@@ -39,6 +39,7 @@ import java.util.function.IntSupplier;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.SearcherManager;
@@ -161,7 +162,8 @@ public class IndexRepositoryImplJUnitTest {
     Mockito.when(serializer.toDocuments(any(), any()))
         .thenThrow(new RuntimeException("SerializerException"));
     repo.update("key1", new Type2("bacon maple bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
-    verify(writerSpy, never()).updateDocuments(any(), any());
+    // Specify explicit types for Mockito any() matchers to avoid ambiguity
+    verify(writerSpy, never()).updateDocuments(any(Term.class), any(Iterable.class));
   }
 
   @Test
@@ -172,9 +174,10 @@ public class IndexRepositoryImplJUnitTest {
     repo = new DummyIndexRepositoryImpl(region, writerSpy, serializer, stats, userRegion,
         mock(DistributedLockService.class), "lockName", index);
     Mockito.when(serializer.toDocuments(any(), any())).thenReturn(Collections.emptyList());
-    Mockito.doReturn(0L).when(writerSpy).updateDocuments(any(), any());
+    // Specify explicit types for Mockito any() matchers to avoid ambiguity
+    Mockito.doReturn(0L).when(writerSpy).updateDocuments(any(Term.class), any(Iterable.class));
     repo.update("key1", new Type2("bacon maple bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
-    verify(writerSpy).updateDocuments(any(), any());
+    verify(writerSpy).updateDocuments(any(Term.class), any(Iterable.class));
   }
 
   @Test

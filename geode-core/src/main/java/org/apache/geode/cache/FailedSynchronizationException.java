@@ -15,9 +15,9 @@
 
 package org.apache.geode.cache;
 
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.UserTransaction;
 
 /**
  * Thrown when a cache transaction fails to register with the <code>UserTransaction</code> (aka JTA

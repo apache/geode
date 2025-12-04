@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,17 +31,15 @@ import java.util.Set;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementAgent;
@@ -54,6 +53,7 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.cli.security.SecurePathResolver;
 import org.apache.geode.management.internal.cli.util.DeploymentInfoTableUtil;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -62,8 +62,50 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.security.ResourcePermission;
 
+/**
+ * Deploy one or more JAR files to members of a group or all members.
+ *
+ * SECURITY CONSIDERATIONS:
+ *
+ * This command handles JAR file uploads and path operations that require careful security
+ * validation to prevent path injection attacks (CodeQL rule: java/path-injection).
+ *
+ * PATH INJECTION VULNERABILITIES ADDRESSED:
+ *
+ * 1. UNVALIDATED FILE PATH ACCESS:
+ * - The jarFullPaths list comes from CommandExecutionContext.getFilePathFromShell()
+ * - These paths represent user-uploaded files that could contain malicious paths
+ * - Direct use in new FileInputStream(jarFullPath) creates path injection vulnerability
+ * - Solution: Validate all file paths before accessing them
+ *
+ * 2. PATH TRAVERSAL PREVENTION:
+ * - User-controlled paths could contain "../" sequences to access files outside intended
+ * directories
+ * - Malicious paths could read sensitive system files like "/etc/passwd"
+ * - Solution: Reject paths containing traversal sequences and validate file types
+ *
+ * 3. FILE TYPE AND EXISTENCE VALIDATION:
+ * - Ensure uploaded files are regular JAR files, not directories or special files
+ * - Verify files exist and are readable before attempting to process them
+ * - Solution: Add comprehensive file validation before FileInputStream creation
+ *
+ * SECURITY IMPLEMENTATION:
+ *
+ * - validateJarPath(): Added path validation and file type checking for each JAR file
+ * - File operations: All file access now validated before processing
+ * - Error handling: Secure error messages that don't expose sensitive path information
+ *
+ * COMPLIANCE:
+ * - Fixes CodeQL vulnerability: java/path-injection
+ * - Follows OWASP guidelines for file upload security
+ * - Implements defense-in-depth for path handling in deployment operations
+ *
+ * Last updated: Jakarta EE 10 migration (October 2024)
+ * Security review: Path injection vulnerabilities in deployment command addressed
+ */
 public class DeployCommand extends GfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
+  private final SecurePathResolver pathResolver = new SecurePathResolver(null);
 
   /**
    * Deploy one or more JAR files to members of a group or all members.
@@ -73,18 +115,18 @@ public class DeployCommand extends GfshCommand {
    * @param dir Directory of JAR files to deploy
    * @return The result of the attempt to deploy
    */
-  @CliCommand(value = {CliStrings.DEPLOY}, help = CliStrings.DEPLOY__HELP)
+  @ShellMethod(value = CliStrings.DEPLOY__HELP, key = {CliStrings.DEPLOY})
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommand$Interceptor",
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   public ResultModel deploy(
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, optionContext = ConverterHint.JARFILES,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
+          help = CliStrings.DEPLOY__GROUP__HELP) String[] groups,
+      @ShellOption(value = {CliStrings.JAR, CliStrings.JARS},
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
-      @CliOption(key = {CliStrings.DEPLOY__DIR}, optionContext = ConverterHint.JARDIR,
+      @ShellOption(value = {CliStrings.DEPLOY__DIR},
           help = CliStrings.DEPLOY__DIR__HELP) String dir)
       throws IOException {
 
@@ -104,7 +146,12 @@ public class DeployCommand extends GfshCommand {
 
     results = deployJars(jarFullPaths, targetMembers, results, exporter);
 
-    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
+    // Flatten the nested results for processing while maintaining backward compatibility
+    List<Object> flatResults = new LinkedList<>();
+    for (List<Object> memberResults : results) {
+      flatResults.addAll(memberResults);
+    }
+    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(flatResults);
 
     List<DeploymentInfo> deploymentInfos =
         DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults);
@@ -131,13 +178,21 @@ public class DeployCommand extends GfshCommand {
     for (DistributedMember member : targetMembers) {
       List<RemoteInputStream> remoteStreams = new ArrayList<>();
       List<String> jarNames = new ArrayList<>();
+      List<Object> memberResults = new ArrayList<>();
       try {
         for (String jarFullPath : jarFullPaths) {
+          // Security: Validate JAR file path to prevent path injection attacks (CWE-22)
+          validateJarPath(jarFullPath);
+
+          // Security: Resolve path securely using SecurePathResolver
+          // This prevents path traversal attacks by validating canonical paths
+          Path validatedPath = pathResolver.resolveSecurePath(jarFullPath, true, true);
+
           FileInputStream fileInputStream = null;
           try {
-            fileInputStream = new FileInputStream(jarFullPath);
+            fileInputStream = new FileInputStream(validatedPath.toFile());
             remoteStreams.add(exporter.export(new SimpleRemoteInputStream(fileInputStream)));
-            jarNames.add(FilenameUtils.getName(jarFullPath));
+            jarNames.add(validatedPath.getFileName().toString());
           } catch (Exception ex) {
             if (fileInputStream != null) {
               try {
@@ -155,9 +210,10 @@ public class DeployCommand extends GfshCommand {
                 new Object[] {jarNames, remoteStreams}, member);
 
         @SuppressWarnings("unchecked")
-        final List<List<Object>> resultCollectorResult =
-            (List<List<Object>>) resultCollector.getResult();
-        results.add(resultCollectorResult.get(0));
+        final List<CliFunctionResult> resultCollectorResult =
+            (List<CliFunctionResult>) resultCollector.getResult();
+        memberResults.addAll(resultCollectorResult);
+        results.add(memberResults);
       } finally {
         for (RemoteInputStream ris : remoteStreams) {
           try {
@@ -173,7 +229,15 @@ public class DeployCommand extends GfshCommand {
 
   private void verifyJarContent(List<String> jarNames) {
     for (String jarName : jarNames) {
-      File jar = new File(jarName);
+      // Security: Validate path before File operations
+      Path validatedPath;
+      try {
+        validatedPath = pathResolver.resolveSecurePath(jarName, true, true);
+      } catch (SecurityException e) {
+        throw new IllegalArgumentException("Invalid JAR path: " + e.getMessage(), e);
+      }
+
+      File jar = validatedPath.toFile();
       if (!JarFileUtils.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jar.getName());
@@ -191,6 +255,7 @@ public class DeployCommand extends GfshCommand {
    */
   public static class Interceptor extends AbstractCliAroundInterceptor {
     private final DecimalFormat numFormatter = new DecimalFormat("###,##0.00");
+    private final SecurePathResolver pathResolver = new SecurePathResolver(null);
 
     /**
      *
@@ -213,14 +278,38 @@ public class DeployCommand extends GfshCommand {
       ResultModel result = new ResultModel();
       if (jars != null) {
         for (String jar : jars) {
-          File jarFile = new File(jar);
+          // Security: Validate path before File operations
+          Path validatedJarPath;
+          try {
+            validatedJarPath = pathResolver.resolveSecurePath(jar, true, true);
+          } catch (SecurityException e) {
+            // Provide user-friendly error messages for common cases
+            if (e.getMessage().contains("does not exist")) {
+              return ResultModel.createError(jar + " not found.");
+            }
+            return ResultModel.createError("Invalid JAR path: " + e.getMessage());
+          }
+
+          File jarFile = validatedJarPath.toFile();
           if (!jarFile.exists()) {
             return ResultModel.createError(jar + " not found.");
           }
           result.addFile(jarFile, FileResultModel.FILE_TYPE_FILE);
         }
       } else {
-        File fileDir = new File(dir);
+        // Security: Validate directory path before File operations
+        Path validatedDirPath;
+        try {
+          validatedDirPath = pathResolver.resolveSecurePath(dir, true, false);
+        } catch (SecurityException e) {
+          // Provide user-friendly error messages for common cases
+          if (e.getMessage().contains("does not exist")) {
+            return ResultModel.createError(dir + " not a directory");
+          }
+          return ResultModel.createError("Invalid directory path: " + e.getMessage());
+        }
+
+        File fileDir = validatedDirPath.toFile();
         if (!fileDir.isDirectory()) {
           return ResultModel.createError(dir + " is not a directory");
         }
@@ -242,6 +331,47 @@ public class DeployCommand extends GfshCommand {
       }
 
       return result;
+    }
+  }
+
+  /**
+   * Security: Validates JAR file paths to prevent path injection attacks.
+   *
+   * <p>
+   * This method addresses CodeQL vulnerability java/path-injection by delegating to
+   * {@link SecurePathResolver} for comprehensive path validation.
+   *
+   * <p>
+   * SECURITY FEATURES (via SecurePathResolver):
+   * <ul>
+   * <li>Canonical path resolution (prevents symlink attacks)</li>
+   * <li>Path traversal detection (blocks ../, ~, etc.)</li>
+   * <li>System directory access prevention</li>
+   * <li>File type and existence validation</li>
+   * <li>JAR content validation</li>
+   * </ul>
+   *
+   * @param jarPath The JAR file path to validate
+   * @throws IllegalArgumentException if the path is invalid or unsafe
+   */
+  private void validateJarPath(String jarPath) {
+    try {
+      // Security: Use SecurePathResolver for comprehensive path validation
+      Path validatedPath = pathResolver.resolveSecurePath(jarPath, true, true);
+
+      // Additional JAR-specific validation
+      String filename = validatedPath.getFileName().toString().toLowerCase();
+      if (!filename.endsWith(".jar")) {
+        throw new SecurityException("File is not a JAR file: " + filename);
+      }
+
+      // Validate JAR content to ensure it's a valid JAR archive
+      if (!JarFileUtils.hasValidJarContent(validatedPath.toFile())) {
+        throw new SecurityException("File does not contain valid JAR content");
+      }
+
+    } catch (SecurityException e) {
+      throw new IllegalArgumentException("Invalid JAR file path: " + e.getMessage(), e);
     }
   }
 }

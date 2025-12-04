@@ -14,8 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.security;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
@@ -30,12 +29,53 @@ public class RestSecurityService implements ServletContextAware {
 
   private SecurityService securityService;
 
-  public boolean authorize(String resource, String operation) {
-    return authorize(resource, operation, null, null);
+  /**
+   * Boolean version for @PreAuthorize annotations - does not throw exceptions
+   */
+  public boolean authorizeBoolean(String resource, String operation) {
+    return authorizeBoolean(resource, operation, null, null);
   }
 
-  public boolean authorize(String resource, String operation, String region) {
-    return authorize(resource, operation, region, null);
+  /**
+   * Boolean version for @PreAuthorize annotations - does not throw exceptions
+   */
+  public boolean authorizeBoolean(String resource, String operation, String region) {
+    return authorizeBoolean(resource, operation, region, null);
+  }
+
+  /**
+   * Boolean version for @PreAuthorize annotations - does not throw exceptions
+   */
+  public boolean authorizeBoolean(String resource, String operation, String region, String key) {
+    try {
+      securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
+          key);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * Void version for imperative security checks - throws exceptions on failure
+   */
+  public void authorize(String resource, String operation) {
+    authorize(resource, operation, null, null);
+  }
+
+  /**
+   * Void version for imperative security checks - throws exceptions on failure
+   */
+  public void authorize(String resource, String operation, String region) {
+    authorize(resource, operation, region, null);
+  }
+
+  /**
+   * Void version for imperative security checks - throws exceptions on failure
+   */
+  public void authorize(String resource, String operation, String region, String key) {
+    securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
+        key);
   }
 
   /**
@@ -45,25 +85,31 @@ public class RestSecurityService implements ServletContextAware {
     securityService.authorize(permission);
   }
 
-
   /**
-   * calls used in @PreAuthorize tag needs to return a boolean
+   * Boolean version for @PreAuthorize annotations with array of keys - does not throw exceptions
    */
-  public boolean authorize(String resource, String operation, String region, String key) {
-    securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
-        key);
-    return true;
-  }
-
-  public boolean authorize(String operation, String region, String[] keys) {
-    boolean authorized = false;
+  public boolean authorizeBoolean(String operation, String region, String[] keys) {
+    if (keys == null || keys.length == 0) {
+      return true; // No keys to authorize
+    }
     for (String key : keys) {
-      authorized = authorize("DATA", operation, region, key);
-      if (!authorized) {
+      if (!authorizeBoolean("DATA", operation, region, key)) {
         return false;
       }
     }
     return true;
+  }
+
+  /**
+   * Void version for imperative security checks with array of keys - throws exceptions on failure
+   */
+  public void authorize(String operation, String region, String[] keys) {
+    if (keys == null || keys.length == 0) {
+      return; // No keys to authorize
+    }
+    for (String key : keys) {
+      authorize("DATA", operation, region, key);
+    }
   }
 
   public Object postProcess(String regionPath, Object key, Object value,

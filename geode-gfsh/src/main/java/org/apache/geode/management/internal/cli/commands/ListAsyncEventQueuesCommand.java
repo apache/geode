@@ -22,7 +22,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.standard.ShellMethod;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.GfshCommand;
@@ -42,8 +42,8 @@ public class ListAsyncEventQueuesCommand extends GfshCommand {
   private static final String ASYNC_EVENT_QUEUES_TABLE_SECTION = "Async Event Queues";
   private static final String MEMBER_ERRORS_TABLE_SECTION = "Member Errors";
 
-  @CliCommand(value = CliStrings.LIST_ASYNC_EVENT_QUEUES,
-      help = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP)
+  @ShellMethod(value = CliStrings.LIST_ASYNC_EVENT_QUEUES__HELP,
+      key = CliStrings.LIST_ASYNC_EVENT_QUEUES)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel listAsyncEventQueues() {

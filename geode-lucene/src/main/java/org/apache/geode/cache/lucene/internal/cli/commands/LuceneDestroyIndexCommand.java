@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
@@ -33,7 +33,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -47,19 +46,24 @@ public class LuceneDestroyIndexCommand extends LuceneCommandBase {
   private static final LuceneDestroyIndexFunction destroyIndexFunction =
       new LuceneDestroyIndexFunction();
 
-  @CliCommand(value = LuceneCliStrings.LUCENE_DESTROY_INDEX,
-      help = LuceneCliStrings.LUCENE_DESTROY_INDEX__HELP)
+  @ShellMethod(value = LuceneCliStrings.LUCENE_DESTROY_INDEX__HELP,
+      key = LuceneCliStrings.LUCENE_DESTROY_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  public ResultModel destroyIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME,
+  public ResultModel destroyIndex(@ShellOption(value = LuceneCliStrings.LUCENE__INDEX_NAME,
+      defaultValue = ShellOption.NULL,
       help = LuceneCliStrings.LUCENE_DESTROY_INDEX__NAME__HELP) final String indexName,
 
-      @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
-          help = LuceneCliStrings.LUCENE_DESTROY_INDEX__REGION_HELP) final String regionPath) {
+      @ShellOption(value = LuceneCliStrings.LUCENE__REGION_PATH,
+          help = LuceneCliStrings.LUCENE_DESTROY_INDEX__REGION_HELP) String regionPath) {
 
     if (indexName != null && StringUtils.isEmpty(indexName)) {
       return ResultModel.createInfo(
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
+    }
+
+    // Normalize region path to include leading separator
+    if (!regionPath.startsWith(org.apache.geode.cache.Region.SEPARATOR)) {
+      regionPath = org.apache.geode.cache.Region.SEPARATOR + regionPath;
     }
 
     authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.MANAGE,
@@ -105,6 +109,14 @@ public class LuceneDestroyIndexCommand extends LuceneCommandBase {
 
     ResultModel result = new ResultModel();
     TabularResultModel tabularResult = result.addTable("lucene-indexes");
+
+    // Strip leading separator from regionPath for display purposes
+    String displayRegionPath = regionPath;
+    if (displayRegionPath.startsWith(org.apache.geode.cache.Region.SEPARATOR)) {
+      displayRegionPath =
+          displayRegionPath.substring(org.apache.geode.cache.Region.SEPARATOR.length());
+    }
+
     for (CliFunctionResult cliFunctionResult : cliFunctionResults) {
       tabularResult.accumulate("Member", cliFunctionResult.getMemberIdOrName());
       if (cliFunctionResult.isSuccessful()) {
@@ -112,10 +124,10 @@ public class LuceneDestroyIndexCommand extends LuceneCommandBase {
             indexName == null
                 ? CliStrings.format(
                     LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
-                    new Object[] {regionPath})
+                    new Object[] {displayRegionPath})
                 : CliStrings.format(
                     LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-                    indexName, regionPath));
+                    indexName, displayRegionPath));
       } else {
         tabularResult.accumulate("Status", cliFunctionResult.getMessage());
       }
@@ -128,7 +140,7 @@ public class LuceneDestroyIndexCommand extends LuceneCommandBase {
         .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
   }
 
-  @CliAvailabilityIndicator(LuceneCliStrings.LUCENE_DESTROY_INDEX)
+  @ShellMethodAvailability(LuceneCliStrings.LUCENE_DESTROY_INDEX)
   public boolean indexCommandsAvailable() {
     return super.indexCommandsAvailable();
   }

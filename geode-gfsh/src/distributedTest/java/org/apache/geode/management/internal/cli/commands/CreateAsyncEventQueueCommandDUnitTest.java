@@ -106,7 +106,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
 
     // list the queue to verify the result
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+    // Note: Command name is "list async-event-queues" (plural), not "list async-event-queue"
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .tableHasRowCount(3).tableHasRowWithValues("Member", "ID", "Batch Size",
             "Persistent", "Disk Store", "Max Memory", "server-2", "queue2", "1024", "true",
             "diskStore2", "512");
@@ -126,7 +127,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
 
     // list the queue to verify the the queue has start paused set to false
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+    // Note: Command name is "list async-event-queues" (plural), not "list async-event-queue"
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .tableHasRowCount(1).tableHasRowWithValues("Member", "ID", "Batch Size",
             "Persistent", "Disk Store", "Max Memory", "Created with paused event processing",
             "Currently Paused", "server-1",
@@ -140,7 +142,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
 
     // list the queue to verify the the queue has start paused set to true
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+    // Note: Command name is "list async-event-queues" (plural), not "list async-event-queue"
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .tableHasRowCount(2).tableHasRowWithValues("Member", "ID", "Batch Size",
             "Persistent", "Disk Store", "Max Memory", "Created with paused event processing",
             "Currently Paused", "server-1",

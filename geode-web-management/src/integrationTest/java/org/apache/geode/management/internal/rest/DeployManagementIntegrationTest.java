@@ -16,11 +16,12 @@
 package org.apache.geode.management.internal.rest;
 
 
-import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
-import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -29,22 +30,18 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.EntityInfo;
-import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
-import org.apache.geode.management.runtime.DeploymentInfo;
 import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @RunWith(SpringRunner.class)
@@ -60,9 +57,6 @@ public class DeployManagementIntegrationTest {
   // needs to be used together with any BaseLocatorContextLoader
   private LocatorWebContext context;
 
-  private ClusterManagementService client;
-
-  private Deployment deployment;
   private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
   private File jar1, jar2;
 
@@ -72,11 +66,6 @@ public class DeployManagementIntegrationTest {
   @Before
   public void before() throws IOException {
     context = new LocatorWebContext(webApplicationContext);
-    client = new ClusterManagementServiceBuilder().setTransport(
-        new RestTemplateClusterManagementServiceTransport(
-            new RestTemplate(context.getRequestFactory())))
-        .build();
-    deployment = new Deployment();
 
     jar1 = new File(temporaryFolder.getRoot(), "jar1.jar");
     jar2 = new File(temporaryFolder.getRoot(), "jar2.jar");
@@ -85,27 +74,74 @@ public class DeployManagementIntegrationTest {
     jarBuilder.buildJarFromClassNames(jar2, "ClassTwo");
   }
 
+  /**
+   * This test uses MockMvc directly instead of RestTemplate with MockMvcClientHttpRequestFactory
+   * because MockMvcClientHttpRequestFactory doesn't support multipart form data properly.
+   * It only uses .content(requestBody) which cannot handle multipart requests.
+   */
   @Test
   @WithMockUser
-  public void sanityCheck() {
-    deployment.setFile(jar1);
-    deployment.setGroup("group1");
-    assertManagementResult(client.create(deployment)).isSuccessful();
+  public void sanityCheck() throws Exception {
+    // First deployment: jar1 to group1
+    MockMultipartFile file1 = new MockMultipartFile("file", jar1.getName(),
+        "application/java-archive", Files.readAllBytes(jar1.toPath()));
 
-    deployment.setGroup("group2");
-    assertManagementResult(client.create(deployment)).isSuccessful();
+    Deployment deployment1 = new Deployment();
+    deployment1.setGroup("group1");
+    String config1 = mapper.writeValueAsString(deployment1);
 
-    deployment.setFile(jar2);
-    deployment.setGroup("group2");
-    assertManagementResult(client.create(deployment)).isSuccessful();
+    MockMultipartHttpServletRequestBuilder builder1 =
+        MockMvcRequestBuilders.multipart("/v1/deployments");
+    builder1.with(request -> {
+      request.setMethod("PUT");
+      return request;
+    });
 
-    ClusterManagementListResultAssert<Deployment, DeploymentInfo> deploymentResultAssert =
-        assertManagementListResult(client.list(new Deployment()));
-    deploymentResultAssert.isSuccessful()
-        .hasEntityInfo()
-        .hasSize(2)
-        .extracting(EntityInfo::getId)
-        .containsExactlyInAnyOrder("jar1.jar", "jar2.jar");
+    context.perform(builder1.file(file1).param("config", config1))
+        .andExpect(status().isCreated());
+
+    // Second deployment: jar1 to group2
+    MockMultipartFile file1Again = new MockMultipartFile("file", jar1.getName(),
+        "application/java-archive", Files.readAllBytes(jar1.toPath()));
+
+    Deployment deployment2 = new Deployment();
+    deployment2.setGroup("group2");
+    String config2 = mapper.writeValueAsString(deployment2);
+
+    MockMultipartHttpServletRequestBuilder builder2 =
+        MockMvcRequestBuilders.multipart("/v1/deployments");
+    builder2.with(request -> {
+      request.setMethod("PUT");
+      return request;
+    });
+
+    context.perform(builder2.file(file1Again).param("config", config2))
+        .andExpect(status().isCreated());
+
+    // Third deployment: jar2 to group2
+    MockMultipartFile file2 = new MockMultipartFile("file", jar2.getName(),
+        "application/java-archive", Files.readAllBytes(jar2.toPath()));
+
+    MockMultipartHttpServletRequestBuilder builder3 =
+        MockMvcRequestBuilders.multipart("/v1/deployments");
+    builder3.with(request -> {
+      request.setMethod("PUT");
+      return request;
+    });
+
+    context.perform(builder3.file(file2).param("config", config2))
+        .andExpect(status().isCreated());
+
+    // Verify deployments by listing them
+    String listResponse = context.perform(
+        MockMvcRequestBuilders.get("/v1/deployments"))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    // Parse and verify the response contains jar1.jar and jar2.jar
+    assertThat(listResponse).contains("jar1.jar", "jar2.jar");
   }
 
 

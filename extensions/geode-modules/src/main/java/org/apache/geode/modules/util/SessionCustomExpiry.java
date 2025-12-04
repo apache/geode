@@ -16,7 +16,7 @@ package org.apache.geode.modules.util;
 
 import java.io.Serializable;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.Declarable;

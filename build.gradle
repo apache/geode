@@ -58,7 +58,30 @@ allprojects {
 
   repositories {
     mavenCentral()
-    maven { url "https://repo.spring.io/release" }
+    maven { 
+      url "https://jakarta.oss.sonatype.org/content/repositories/releases/"
+      name "Jakarta EE Releases"
+    }
+  }
+
+  // CRITICAL: Fix for Log4j/SLF4J circular binding conflict introduced during Jakarta/Spring Boot 3.x migration
+  // 
+  // Root Cause:
+  // - Geode uses Log4j Core directly and includes 'log4j-slf4j-impl' (routes SLF4J calls → Log4j)
+  // - Spring Boot 3.x includes 'spring-boot-starter-logging' which brings in 'log4j-to-slf4j' (routes Log4j calls → SLF4J)
+  // - Having BOTH creates a circular binding: SLF4J → Log4j → SLF4J
+  // 
+  // Symptoms:
+  // - ClassCastException: org.apache.logging.slf4j.SLF4JLogger cannot be cast to org.apache.logging.log4j.core.Logger
+  // - ClassCastException: org.apache.logging.slf4j.SLF4JLoggerContext cannot be cast to org.apache.logging.log4j.core.LoggerContext
+  // - Occurs in Log4jLoggingProvider.getRootLoggerContext() when LogManager.getRootLogger() returns SLF4J logger instead of Log4j logger
+  //
+  // Solution:
+  // Exclude 'log4j-to-slf4j' globally. Geode's logging architecture requires Log4j Core to be the primary logging implementation,
+  // with SLF4J calls being routed TO Log4j (via log4j-slf4j-impl), not the other way around.
+  //
+  configurations.all {
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
   }
 
   buildRoot = buildRoot.trim()
@@ -206,7 +229,8 @@ if (project.hasProperty('askpass')) {
 }
 
 gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
-    it.tasks.withType(Test)
-  }.flatten()
+  def allTestTasks = rootProject.subprojects.collect { it.tasks.withType(Test) }.flatten()
+  def cr = tasks.getByName('combineReports') as TestReport
+  cr.reportOn allTestTasks
+  cr.dependsOn allTestTasks
 })

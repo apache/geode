@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
@@ -36,14 +36,14 @@ import org.apache.geode.management.internal.cli.util.DiskStoreValidater;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class ValidateDiskStoreCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.VALIDATE_DISK_STORE, help = CliStrings.VALIDATE_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.VALIDATE_DISK_STORE__HELP, key = CliStrings.VALIDATE_DISK_STORE)
   @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel validateDiskStore(
-      @CliOption(key = CliStrings.VALIDATE_DISK_STORE__NAME, mandatory = true,
+      @ShellOption(value = CliStrings.VALIDATE_DISK_STORE__NAME,
           help = CliStrings.VALIDATE_DISK_STORE__NAME__HELP) String diskStoreName,
-      @CliOption(key = CliStrings.VALIDATE_DISK_STORE__DISKDIRS, mandatory = true,
+      @ShellOption(value = CliStrings.VALIDATE_DISK_STORE__DISKDIRS,
           help = CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
-      @CliOption(key = CliStrings.VALIDATE_DISK_STORE__J,
+      @ShellOption(value = CliStrings.VALIDATE_DISK_STORE__J,
           help = CliStrings.VALIDATE_DISK_STORE__J__HELP) String[] jvmProps) {
 
     String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);

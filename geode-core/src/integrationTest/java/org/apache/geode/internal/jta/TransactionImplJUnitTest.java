@@ -23,9 +23,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
-import javax.transaction.Synchronization;
-import javax.transaction.UserTransaction;
-
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.UserTransaction;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

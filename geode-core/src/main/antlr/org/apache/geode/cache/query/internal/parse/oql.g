@@ -133,8 +133,23 @@ DIGIT : ('\u0030'..'\u0039' |
        '\u1040'..'\u1049')
     ;
 
+// Exclude Unicode digit ranges to prevent lexical nondeterminism with DIGIT rule
 protected
-ALL_UNICODE : ('\u0061'..'\ufffd')	
+ALL_UNICODE : ('\u0061'..'\u065f' |   // exclude Arabic-Indic digits
+               '\u066a'..'\u06ef' |   // exclude Extended Arabic-Indic digits  
+               '\u06fa'..'\u0965' |   // exclude Devanagari digits
+               '\u0970'..'\u09e5' |   // exclude Bengali digits
+               '\u09f0'..'\u0a65' |   // exclude Gurmukhi digits
+               '\u0a70'..'\u0ae5' |   // exclude Gujarati digits
+               '\u0af0'..'\u0b65' |   // exclude Oriya digits
+               '\u0b70'..'\u0be6' |   // exclude Tamil digits (note: Tamil starts at 0be7)
+               '\u0bf0'..'\u0c65' |   // exclude Telugu digits
+               '\u0c70'..'\u0ce5' |   // exclude Kannada digits
+               '\u0cf0'..'\u0d65' |   // exclude Malayalam digits
+               '\u0d70'..'\u0e4f' |   // exclude Thai digits
+               '\u0e5a'..'\u0ecf' |   // exclude Lao digits
+               '\u0eda'..'\u103f' |   // exclude Myanmar digits
+               '\u104a'..'\ufffd')    // rest of Unicode
     ;
 
 /*
@@ -556,11 +571,16 @@ projectionAttributes :
 
 projection!{ AST node  = null;}:
         
-            lb1:identifier TOK_COLON!  ( tok1:aggregateExpr{node = #tok1;} | tok2:expr{node = #tok2;})
+            // Use syntactic predicate to resolve nondeterminism between aggregateExpr and expr.
+            // The predicate checks for aggregate function keywords (sum, avg, min, max, count) followed by '('.
+            // Without this, the parser cannot determine which alternative to choose when it sees these keywords,
+            // since they can also be used as identifiers in regular expressions.
+            lb1:identifier TOK_COLON!  ( (("sum"|"avg"|"min"|"max"|"count") TOK_LPAREN)=> tok1:aggregateExpr{node = #tok1;} | tok2:expr{node = #tok2;})
             { #projection = #([PROJECTION, "projection",
             "org.apache.geode.cache.query.internal.parse.ASTProjection"],  node, #lb1); } 
         |
-            (tok3:aggregateExpr{node = #tok3;} | tok4:expr{node = #tok4;})
+            // Same syntactic predicate as above to handle projections without a label (identifier:)
+            ((("sum"|"avg"|"min"|"max"|"count") TOK_LPAREN)=> tok3:aggregateExpr{node = #tok3;} | tok4:expr{node = #tok4;})
             (
                 "as"
                 lb2: identifier
@@ -943,7 +963,10 @@ collectionExpr :
 aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
 
              !("sum" {aggFunc = SUM;} | "avg" {aggFunc = AVG;} )
-              TOK_LPAREN ("distinct"! {distinctOnly = true;} ) ? tokExpr1:expr TOK_RPAREN 
+              // Use greedy option to resolve nondeterminism with optional 'distinct' keyword.
+              // Greedy tells the parser to match 'distinct' whenever it appears, rather than
+              // being ambiguous about whether to match it or skip directly to the expression.
+              TOK_LPAREN (options {greedy=true;}: "distinct"! {distinctOnly = true;} ) ? tokExpr1:expr TOK_RPAREN 
               { #aggregateExpr = #([AGG_FUNC, "aggregate", "org.apache.geode.cache.query.internal.parse.ASTAggregateFunc"],
               #tokExpr1); 
                 ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(aggFunc);
@@ -960,8 +983,9 @@ aggregateExpr  { int aggFunc = -1; boolean distinctOnly = false; }:
              
              |
               "count"^<AST=org.apache.geode.cache.query.internal.parse.ASTAggregateFunc>
+              // Same greedy option as above for count's optional 'distinct' keyword
               TOK_LPAREN!  ( TOK_STAR <AST=org.apache.geode.cache.query.internal.parse.ASTDummy>
-              | ("distinct"! {distinctOnly = true;} ) ? expr ) TOK_RPAREN! 
+              | (options {greedy=true;}: "distinct"! {distinctOnly = true;} ) ? expr ) TOK_RPAREN! 
               {  
                  ((ASTAggregateFunc)#aggregateExpr).setAggregateFunctionType(COUNT);
                  #aggregateExpr.setText("aggregate");

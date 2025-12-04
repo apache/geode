@@ -29,14 +29,14 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -161,7 +161,11 @@ public class RestAPICompatibilityTest {
         StringEntity jsonStringEntity =
             new StringEntity(entry.getValue()[0], ContentType.DEFAULT_TEXT);
         post.setEntity(jsonStringEntity);
-        CloseableHttpResponse response = httpClient.execute(post);
+        // Apache HttpComponents 5.x migration: execute() returns HttpResponse, cast to
+        // ClassicHttpResponse
+        // HttpComponents 5.x execute() returns base interface HttpResponse, need cast for
+        // synchronous operations
+        ClassicHttpResponse response = (ClassicHttpResponse) httpClient.execute(post);
 
         HttpEntity entity = response.getEntity();
         InputStream content = entity.getContent();
@@ -191,7 +195,10 @@ public class RestAPICompatibilityTest {
         HttpGet get =
             new HttpGet("http://localhost:" + locator +
                 commandExpectedResponsePair[0]);
-        CloseableHttpResponse response = httpclient.execute(get);
+        // Apache HttpComponents 5.x migration: execute() returns HttpResponse, cast to
+        // ClassicHttpResponse
+        // HttpComponents 5.x execute() returns base interface, need cast for synchronous operations
+        ClassicHttpResponse response = (ClassicHttpResponse) httpclient.execute(get);
         HttpEntity entity = response.getEntity();
         InputStream content = entity.getContent();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(content))) {

@@ -79,10 +79,12 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
           }
         } catch (IllegalArgumentException e) {
           // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
-          String fullRegionPath =
-              regionPath.startsWith(SEPARATOR) ? regionPath : SEPARATOR + regionPath;
+          // Note: The error message uses the region path without leading separator
+          String displayRegionPath =
+              regionPath.startsWith(SEPARATOR) ? regionPath.substring(SEPARATOR.length())
+                  : regionPath;
           String indexNotFoundMessage = String.format("Lucene index %s was not found in region %s",
-              indexName, fullRegionPath);
+              indexName, displayRegionPath);
           if (!e.getLocalizedMessage().equals(indexNotFoundMessage)) {
             throw e;
           }

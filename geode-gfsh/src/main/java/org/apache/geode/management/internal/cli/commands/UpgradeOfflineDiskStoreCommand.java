@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
@@ -36,18 +36,18 @@ import org.apache.geode.management.internal.cli.util.DiskStoreUpgrader;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class UpgradeOfflineDiskStoreCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE,
-      help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__HELP)
+  @ShellMethod(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE__HELP,
+      key = CliStrings.UPGRADE_OFFLINE_DISK_STORE)
   @CliMetaData(shellOnly = true, relatedTopic = CliStrings.TOPIC_GEODE_DISKSTORE)
   public ResultModel upgradeOfflineDiskStore(
-      @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME, mandatory = true,
+      @ShellOption(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME__HELP) String diskStoreName,
-      @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
+      @ShellOption(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
-      @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE,
-          unspecifiedDefaultValue = "-1",
+      @ShellOption(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE,
+          defaultValue = "-1",
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE__HELP) long maxOplogSize,
-      @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
+      @ShellOption(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
 
     String validatedDirectories = DiskStoreCommandsUtils.validatedDirectories(diskDirs);

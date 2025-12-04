@@ -346,10 +346,19 @@ public class CliStrings {
       "The batch time interval for the gateway sender.";
 
   public static final String ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER = "gateway-event-filter";
+  // Note: Spring Shell 2.x migration removed the 'specifiedDefaultValue' annotation parameter
+  // that was previously used in Spring Shell 1.x. In Spring Shell 1.x, we could use
+  // @CliOption(specifiedDefaultValue="") to detect when a user provided an option without a value
+  // (e.g., --gateway-event-filter=). This allowed us to distinguish between "option not provided"
+  // and "option provided with empty value" to clear filters. Spring Shell 2.x removed this feature
+  // and strips the trailing '=' from options, making both "--gateway-event-filter" and
+  // "--gateway-event-filter=" identical. To work around this limitation, we now require users to
+  // explicitly use a special marker value "CLEAR" (case-insensitive) to remove all filters.
   public static final String ALTER_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP =
       "The list of fully qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender.\n"
           + "This serves as a callback for users to filter out events before dispatching to the remote distributed system.\n"
-          + "E.g gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2";
+          + "E.g gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2\n"
+          + "Use 'CLEAR' (case-insensitive) to remove all existing filters. E.g gateway-event-filter=CLEAR";
 
   public static final String ALTER_GATEWAYSENDER__GROUPTRANSACTIONEVENTS =
       "group-transaction-events";

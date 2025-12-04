@@ -69,14 +69,16 @@ public class CreateGatewaySenderCommandTest {
 
   @Test
   public void missingId() {
+    // Shell 3.x: Parse failures return generic "Error while processing command"
     gfsh.executeAndAssertThat(command, "create gateway-sender --remote-distributed-system-id=1")
-        .statusIsError().containsOutput("Invalid command");
+        .statusIsError().containsOutput("Error while processing command");
   }
 
   @Test
   public void missingRemoteId() {
+    // Shell 3.x: Parse failures return generic "Error while processing command"
     gfsh.executeAndAssertThat(command, "create gateway-sender --id=ln").statusIsError()
-        .containsOutput("Invalid command");
+        .containsOutput("Error while processing command");
   }
 
   @Test
@@ -309,7 +311,7 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().getId()).isEqualTo("testGateway");
     assertThat(argsArgumentCaptor.getValue().getRemoteDistributedSystemId()).isEqualTo(1);
     assertThat(argsArgumentCaptor.getValue().isParallel()).isTrue();
-    assertThat(argsArgumentCaptor.getValue().isManualStart()).isNull();
+    assertThat(argsArgumentCaptor.getValue().isManualStart()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isTrue();
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isTrue();

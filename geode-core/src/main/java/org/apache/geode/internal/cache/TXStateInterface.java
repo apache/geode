@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.transaction.Synchronization;
+import jakarta.transaction.Synchronization;
 
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region.Entry;

@@ -20,9 +20,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;

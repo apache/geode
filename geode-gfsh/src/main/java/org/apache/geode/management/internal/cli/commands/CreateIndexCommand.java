@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -35,7 +35,6 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
@@ -50,31 +49,27 @@ public class CreateIndexCommand extends GfshCommand {
   @Immutable
   private static final CreateIndexFunction createIndexFunction = new CreateIndexFunction();
 
-  @CliCommand(value = CliStrings.CREATE_INDEX, help = CliStrings.CREATE_INDEX__HELP)
+  @ShellMethod(value = CliStrings.CREATE_INDEX__HELP, key = CliStrings.CREATE_INDEX)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   @SuppressWarnings("deprecation")
-  public ResultModel createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
+  public ResultModel createIndex(@ShellOption(value = CliStrings.CREATE_INDEX__NAME,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__EXPRESSION, mandatory = true,
+      @ShellOption(value = CliStrings.CREATE_INDEX__EXPRESSION,
           help = CliStrings.CREATE_INDEX__EXPRESSION__HELP) final String indexedExpression,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__REGION, mandatory = true,
-          optionContext = ConverterHint.REGION_PATH,
+      @ShellOption(value = CliStrings.CREATE_INDEX__REGION,
           help = CliStrings.CREATE_INDEX__REGION__HELP) String regionPath,
 
-      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CREATE_INDEX__MEMBER__HELP) final String[] memberNameOrID,
 
-      @CliOption(key = CliStrings.CREATE_INDEX__TYPE, unspecifiedDefaultValue = "range",
-          optionContext = ConverterHint.INDEX_TYPE,
+      @ShellOption(value = CliStrings.CREATE_INDEX__TYPE, defaultValue = "range",
           help = CliStrings.CREATE_INDEX__TYPE__HELP) final org.apache.geode.cache.query.IndexType indexType,
 
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CREATE_INDEX__GROUP__HELP) String[] groups) {
 
     // first find out what groups this region belongs to when using cluster configuration
@@ -115,7 +110,10 @@ public class CreateIndexCommand extends GfshCommand {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName(indexName);
     index.setExpression(indexedExpression);
-    index.setFromClause(regionPath);
+    // Normalize regionPath to always have leading slash for FROM clause
+    String normalizedRegionPath =
+        regionPath.startsWith(SEPARATOR) ? regionPath : SEPARATOR + regionPath;
+    index.setFromClause(normalizedRegionPath);
     if (indexType == org.apache.geode.cache.query.IndexType.PRIMARY_KEY) {
       index.setKeyIndex(true);
     } else {

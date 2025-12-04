@@ -21,8 +21,8 @@ import static org.apache.geode.management.internal.i18n.CliStrings.REDUNDANCY_IN
 import static org.apache.geode.management.internal.i18n.CliStrings.STATUS_REDUNDANCY;
 import static org.apache.geode.management.internal.i18n.CliStrings.STATUS_REDUNDANCY_HELP;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -31,14 +31,14 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class StatusRedundancyCommand extends RedundancyCommand {
-  @CliCommand(value = STATUS_REDUNDANCY, help = STATUS_REDUNDANCY_HELP)
+  @ShellMethod(value = STATUS_REDUNDANCY_HELP, key = STATUS_REDUNDANCY)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.READ)
   public ResultModel executeStatusRedundancy(
-      @CliOption(key = REDUNDANCY_INCLUDE_REGION,
+      @ShellOption(value = REDUNDANCY_INCLUDE_REGION,
           help = REDUNDANCY_INCLUDE_REGION_HELP) String[] includeRegions,
-      @CliOption(key = REDUNDANCY_EXCLUDE_REGION,
+      @ShellOption(value = REDUNDANCY_EXCLUDE_REGION,
           help = REDUNDANCY_EXCLUDE_REGION_HELP) String[] excludeRegions) {
 
     return super.execute(includeRegions, excludeRegions, false, true);

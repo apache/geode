@@ -19,8 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
@@ -28,7 +28,6 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -39,19 +38,18 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DestroyFunctionCommand extends GfshCommand {
-  @CliCommand(value = CliStrings.DESTROY_FUNCTION, help = CliStrings.DESTROY_FUNCTION__HELP)
+  @ShellMethod(value = CliStrings.DESTROY_FUNCTION__HELP, key = CliStrings.DESTROY_FUNCTION)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.DestroyFunctionCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   // TODO: Add optioncontext for functionId
   public ResultModel destroyFunction(
-      @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,
+      @ShellOption(value = CliStrings.DESTROY_FUNCTION__ID,
           help = CliStrings.DESTROY_FUNCTION__HELP) String functionId,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.MEMBERGROUP,
+      @ShellOption(value = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.DESTROY_FUNCTION__ONGROUPS__HELP) String[] groups,
-      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
+      @ShellOption(value = CliStrings.MEMBER,
           help = CliStrings.DESTROY_FUNCTION__ONMEMBER__HELP) String memberId) {
     try {
       Cache cache = getCache();

@@ -14,16 +14,26 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
-import jline.UnsupportedTerminal;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+
+import org.jline.terminal.impl.DumbTerminal;
 
 /**
  * Used when gfsh is run in Head Less mode. Doesn't support ANSI.
+ * Updated for JLine 3.x: extends DumbTerminal for basic functionality
  *
  * @since GemFire 7.0
  */
-public class GfshUnsupportedTerminal extends UnsupportedTerminal {
-  @Override
-  public synchronized boolean isAnsiSupported() {
-    return false;
+public class GfshUnsupportedTerminal extends DumbTerminal {
+
+  public GfshUnsupportedTerminal() throws IOException {
+    this(System.in, System.out);
+  }
+
+  public GfshUnsupportedTerminal(InputStream input, OutputStream output) throws IOException {
+    super("unsupported", "dumb", input, output, Charset.defaultCharset());
   }
 }

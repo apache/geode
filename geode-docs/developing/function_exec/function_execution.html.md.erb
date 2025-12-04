@@ -44,7 +44,7 @@ Code the methods you need for the function. These steps do not have to be done i
 - If the function should be run with an authorization level other than
 the default of `DATA:WRITE`,
 implement an override of the `Function.getRequiredPermissions()` method.
-See [Authorization of Function Execution](../../managing/security/implementing_authorization.html#AuthorizeFcnExecution) for details on this method.
+See [Authorization of Function Execution](../../security/implementing_authorization.html#AuthorizeFcnExecution) for details on this method.
 - Code the `execute` method to perform the work of the function.
     1.  Make `execute` thread safe to accommodate simultaneous invocations.
     2.  For high availability, code `execute` to accommodate multiple identical calls to the function. Use the `RegionFunctionContext` `isPossibleDuplicate` to determine whether the call may be a high-availability re-execution. This boolean is set to true on execution failure and is false otherwise.

@@ -15,18 +15,19 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
+@org.springframework.shell.standard.ShellComponent
 public class SleepCommand extends OfflineGfshCommand {
-  @CliCommand(value = {CliStrings.SLEEP}, help = CliStrings.SLEEP__HELP)
+  @ShellMethod(value = CliStrings.SLEEP__HELP, key = {CliStrings.SLEEP})
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public ResultModel sleep(@CliOption(key = {CliStrings.SLEEP__TIME}, unspecifiedDefaultValue = "3",
+  public ResultModel sleep(@ShellOption(value = {CliStrings.SLEEP__TIME}, defaultValue = "3",
       help = CliStrings.SLEEP__TIME__HELP) double time) {
     try {
       LogWrapper.getInstance().fine("Sleeping for " + time + "seconds.");

@@ -29,8 +29,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
-
+import jakarta.servlet.http.HttpSession;
 import org.apache.juli.logging.Log;
 import org.junit.Test;
 

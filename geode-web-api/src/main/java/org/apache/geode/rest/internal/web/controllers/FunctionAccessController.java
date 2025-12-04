@@ -56,6 +56,11 @@ import org.apache.geode.security.ResourcePermission;
 /**
  * The FunctionsController class serving REST Requests related to the function execution
  *
+ * Spring Security 6.x Migration:
+ * - Changed @PreAuthorize authorize() to authorizeBoolean()
+ * - Spring Security 6.x authorize() returns AuthorizationDecision instead of boolean
+ * - Use authorizeBoolean() for direct boolean evaluation in @PreAuthorize expressions
+ *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
  */
@@ -92,7 +97,7 @@ public class FunctionAccessController extends AbstractBaseController {
       @ApiResponse(responseCode = "500", description = "GemFire throws an error or exception.")})
   @ResponseBody
   @ResponseStatus(HttpStatus.OK)
-  @PreAuthorize("@securityService.authorize('DATA', 'READ')")
+  @PreAuthorize("@securityService.authorizeBoolean('DATA', 'READ')")
   public ResponseEntity<?> list() {
     logger.debug("Listing all registered Functions in GemFire...");
 

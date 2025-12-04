@@ -31,11 +31,11 @@ import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;

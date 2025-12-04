@@ -15,14 +15,14 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.standard.ShellMethodAvailability;
 
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class CommandAvailabilityIndicator extends GfshCommand {
 
-  @CliAvailabilityIndicator({CliStrings.LIST_CLIENTS, CliStrings.DESCRIBE_CLIENT,
+  @ShellMethodAvailability({CliStrings.LIST_CLIENTS, CliStrings.DESCRIBE_CLIENT,
       CliStrings.DESCRIBE_CONFIG, CliStrings.EXPORT_CONFIG, CliStrings.ALTER_RUNTIME_CONFIG,
       CliStrings.ALTER_REGION, CliStrings.CREATE_REGION, CliStrings.DESTROY_REGION,
       CliStrings.REBALANCE, CliStrings.GET, CliStrings.PUT, CliStrings.REMOVE,

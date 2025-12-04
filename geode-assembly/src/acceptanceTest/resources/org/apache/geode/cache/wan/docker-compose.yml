@@ -50,6 +50,9 @@ services:
     image: 'haproxy:2.1'
     networks:
       geode-wan-test:
+    ports:
+      - "20334:20334"  # WAN locator port - fixed mapping
+      - "2324:2324"    # Gateway receiver port - fixed mapping
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
 networks:

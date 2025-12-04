@@ -1,0 +1,82 @@
+---
+title:  Security Implementation Introduction and Overview
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## Security Features
+
+Encryption, SSL secure communication, authentication, and authorization 
+features help to secure the cluster.
+
+Security features include:
+
+-   **A single security interface for all components**. The single
+authentication and authorization mechanism simplifies the security
+implementation.
+It views and interacts with all components in a consistent manner. 
+-   **System-wide role-based access control**.
+Roles regiment authorized operations requested by the various components.
+-   **SSL communication**. Allows configuration of connections to be 
+SSL-based, rather than plain socket connections.
+You can enable SSL separately for peer-to-peer, client, JMX, gateway senders and receivers, and HTTP connections.
+-   **Post processing of region data**. Return values for operations that
+return region values may be formatted.
+-   **Serialization**. Control and filter object serialization, particularly 
+ in the context of security and performance.
+
+## Overview
+
+An authentication and authorization mechanism forms the core of
+the internal security of the cluster.
+Communications may be further protected by enabling SSL for
+data in transit.
+
+Authentication verifies the identity of communicating components,
+leading to control over participation.
+The variety of participants include peer members, servers,
+clients, originators of JMX operations, Pulse,
+gateway senders and receivers representing WAN members of the system,
+and commands arriving from `gfsh` on behalf of system users
+or administrators.
+
+Connection requests trigger the invocation of an authentication
+callback.
+This special-purpose callback is written as part of the application,
+and it attempts to authenticate the requester by whatever
+algorithm it chooses. 
+The result is either a returned principal representing the requester's
+authenticated identity or an exception indicating that the requester
+has not been authenticated.
+The principal becomes part of any request for operations,
+which go through the authorization process.
+
+
+Given authentication,
+isolation and access to cache data and system state can be further
+protected by implementing the authorization mechanism,
+also implemented as a special-purpose callback as part of the application.
+For example, the protection may be to permit only certain system administrators
+to start and stop servers. 
+The authority to do this needs to be limited to specific
+verified accounts, preventing those without the authorization. 
+An implementation of the authorization callback will require
+that an authenticate identity accompanies all requests to the system,
+and that the system maintains a representation of which identities
+are permitted to complete which actions or cache commands.
+
