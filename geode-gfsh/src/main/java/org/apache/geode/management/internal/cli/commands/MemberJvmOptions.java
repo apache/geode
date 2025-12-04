@@ -38,9 +38,9 @@ public class MemberJvmOptions {
   private static final String COM_SUN_JMX_REMOTE_SECURITY_EXPORT =
       "--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED";
   /**
-   * open needed by {@link UnsafeThreadLocal}
+   * open needed by {@link AddressableMemoryManager}
    */
-  private static final String JAVA_LANG_OPEN = "--add-opens=java.base/java.lang=ALL-UNNAMED";
+  private static final String JAVA_NIO_OPEN = "--add-opens=java.base/java.nio=ALL-UNNAMED";
   /**
    * open needed by {@link AddressableMemoryManager}
    */

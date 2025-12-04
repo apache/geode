@@ -14,72 +14,68 @@
  */
 package org.apache.geode.distributed.internal.deadlock;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
- * Most of this thread local is safe to use, except for the getValue(Thread) method. That is not
- * guaranteed to be correct. But for our deadlock detection tool I think it's good enough, and this
- * class provides a very low overhead way for us to record what thread holds a particular resource.
+ * A ThreadLocal implementation that allows reading values from arbitrary threads, useful for
+ * deadlock detection. This implementation uses a WeakHashMap to track values per thread without
+ * requiring reflection or JVM internal access.
  *
+ * <p>
+ * Unlike standard ThreadLocal, this class maintains an additional mapping that allows querying the
+ * value for any thread, not just the current thread. This is useful for deadlock detection where
+ * we need to inspect what resources other threads are holding.
+ * </p>
  *
+ * <p>
+ * The implementation uses WeakHashMap with Thread keys to ensure threads can be garbage collected
+ * when they terminate, preventing memory leaks.
+ * </p>
  */
 public class UnsafeThreadLocal<T> extends ThreadLocal<T> {
   /**
-   * Dangerous method. Uses reflection to extract the thread local for a given thread.
+   * Maps threads to their values. Uses WeakHashMap so terminated threads can be GC'd. Synchronized
+   * to ensure thread-safe access.
+   */
+  private final Map<Thread, T> threadValues =
+      java.util.Collections.synchronizedMap(new WeakHashMap<>());
+
+  /**
+   * Sets the value for the current thread and records it in the cross-thread map.
+   */
+  @Override
+  public void set(T value) {
+    super.set(value);
+    if (value != null) {
+      threadValues.put(Thread.currentThread(), value);
+    } else {
+      threadValues.remove(Thread.currentThread());
+    }
+  }
+
+  /**
+   * Removes the value for the current thread from both the ThreadLocal and the cross-thread map.
+   */
+  @Override
+  public void remove() {
+    super.remove();
+    threadValues.remove(Thread.currentThread());
+  }
+
+  /**
+   * Gets the value for an arbitrary thread, useful for deadlock detection.
    *
-   * Unlike get(), this method does not set the initial value if none is found
+   * <p>
+   * Unlike get(), this method does not set the initial value if none is found. Returns null if the
+   * specified thread has no value set.
+   * </p>
    *
+   * @param thread the thread whose value to retrieve
+   * @return the value for the specified thread, or null if none exists
    */
   public T get(Thread thread) {
-    return (T) get(this, thread);
-  }
-
-  private static Object get(ThreadLocal threadLocal, Thread thread) {
-    try {
-      Object threadLocalMap =
-          invokePrivate(threadLocal, "getMap", new Class[] {Thread.class}, new Object[] {thread});
-
-      if (threadLocalMap != null) {
-        Object entry = invokePrivate(threadLocalMap, "getEntry", new Class[] {ThreadLocal.class},
-            new Object[] {threadLocal});
-        if (entry != null) {
-          return getPrivate(entry, "value");
-        }
-      }
-      return null;
-    } catch (Exception e) {
-      throw new RuntimeException("Unable to extract thread local", e);
-    }
-  }
-
-  private static Object getPrivate(Object object, String fieldName) throws SecurityException,
-      NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-    Field field = object.getClass().getDeclaredField(fieldName);
-    field.setAccessible(true);
-    return field.get(object);
-  }
-
-  private static Object invokePrivate(Object object, String methodName, Class[] argTypes,
-      Object[] args) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
-      IllegalAccessException, InvocationTargetException {
-
-    Method method = null;
-    Class clazz = object.getClass();
-    while (method == null) {
-      try {
-        method = clazz.getDeclaredMethod(methodName, argTypes);
-      } catch (NoSuchMethodException e) {
-        clazz = clazz.getSuperclass();
-        if (clazz == null) {
-          throw e;
-        }
-      }
-    }
-    method.setAccessible(true);
-    Object result = method.invoke(object, args);
-    return result;
+    return threadValues.get(thread);
   }
 
 }
