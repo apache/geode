@@ -20,10 +20,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
-import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.management.OperatingSystemMXBean;
+import com.sun.management.UnixOperatingSystemMXBean;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticDescriptor;
@@ -41,7 +41,6 @@ import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -61,20 +60,24 @@ public class VMStats50 implements VMStatsContract {
   private static final ClassLoadingMXBean clBean;
   @Immutable
   private static final MemoryMXBean memBean;
-  @Immutable
-  private static final OperatingSystemMXBean osBean;
+
   /**
-   * This is actually an instance of UnixOperatingSystemMXBean but this class is not available on
-   * Windows so needed to make this a runtime check.
+   * Platform-specific OperatingSystemMXBean providing extended metrics beyond the standard
+   * java.lang.management.OperatingSystemMXBean. This interface is in the exported
+   * com.sun.management package and provides processCpuTime and other platform metrics.
+   * Available on all platforms.
    */
   @Immutable
-  private static final Object unixBean;
+  private static final OperatingSystemMXBean platformOsBean;
+
+  /**
+   * Unix-specific OperatingSystemMXBean providing file descriptor metrics.
+   * Only available on Unix-like platforms (Linux, macOS, Solaris, etc.).
+   * Gracefully null on Windows and other non-Unix platforms.
+   */
   @Immutable
-  private static final Method getMaxFileDescriptorCount;
-  @Immutable
-  private static final Method getOpenFileDescriptorCount;
-  @Immutable
-  private static final Method getProcessCpuTime;
+  private static final UnixOperatingSystemMXBean unixOsBean;
+
   @Immutable
   private static final ThreadMXBean threadBean;
 
@@ -150,52 +153,53 @@ public class VMStats50 implements VMStatsContract {
   static {
     clBean = ManagementFactory.getClassLoadingMXBean();
     memBean = ManagementFactory.getMemoryMXBean();
-    osBean = ManagementFactory.getOperatingSystemMXBean();
-    {
-      Method m1 = null;
-      Method m2 = null;
-      Method m3 = null;
-      Object bean = null;
-      try {
-        Class c =
-            ClassPathLoader.getLatest().forName("com.sun.management.UnixOperatingSystemMXBean");
-        if (c.isInstance(osBean)) {
-          m1 = c.getMethod("getMaxFileDescriptorCount");
-          m2 = c.getMethod("getOpenFileDescriptorCount");
-          bean = osBean;
-        } else {
-          // leave them null
-        }
-        // Always set ProcessCpuTime
-        m3 = osBean.getClass().getMethod("getProcessCpuTime");
-        if (m3 != null) {
-          m3.setAccessible(true);
-        }
-      } catch (VirtualMachineError err) {
-        SystemFailure.initiateFailure(err);
-        // If this ever returns, rethrow the error. We're poisoned
-        // now, so don't let this thread continue.
-        throw err;
-      } catch (Throwable ex) {
-        // Whenever you catch Error or Throwable, you must also
-        // catch VirtualMachineError (see above). However, there is
-        // _still_ a possibility that you are dealing with a cascading
-        // error condition, so you also need to check to see if the JVM
-        // is still usable:
-        logger.warn(ex.getMessage());
-        SystemFailure.checkFailure();
-        // must be on a platform that does not support unix mxbean
-        bean = null;
-        m1 = null;
-        m2 = null;
-        m3 = null;
-      } finally {
-        unixBean = bean;
-        getMaxFileDescriptorCount = m1;
-        getOpenFileDescriptorCount = m2;
-        getProcessCpuTime = m3;
+
+    // Initialize platform-specific MXBeans using direct interface casting.
+    // This approach eliminates the need for reflection and --add-opens flags.
+    // The com.sun.management package is exported by jdk.management module,
+    // making these interfaces accessible without module violations.
+    OperatingSystemMXBean tempPlatformBean = null;
+    UnixOperatingSystemMXBean tempUnixBean = null;
+
+    try {
+      // Get the standard OperatingSystemMXBean
+      java.lang.management.OperatingSystemMXBean stdOsBean =
+          ManagementFactory.getOperatingSystemMXBean();
+
+      // Cast to com.sun.management.OperatingSystemMXBean for extended metrics
+      // This interface is in the exported com.sun.management package
+      if (stdOsBean instanceof OperatingSystemMXBean) {
+        tempPlatformBean = (OperatingSystemMXBean) stdOsBean;
       }
+
+      // Check for Unix-specific interface
+      // This is only available on Unix-like platforms (Linux, macOS, Solaris)
+      if (stdOsBean instanceof UnixOperatingSystemMXBean) {
+        tempUnixBean = (UnixOperatingSystemMXBean) stdOsBean;
+      }
+    } catch (VirtualMachineError err) {
+      SystemFailure.initiateFailure(err);
+      // If this ever returns, rethrow the error. We're poisoned
+      // now, so don't let this thread continue.
+      throw err;
+    } catch (Throwable ex) {
+      // Whenever you catch Error or Throwable, you must also
+      // catch VirtualMachineError (see above). However, there is
+      // _still_ a possibility that you are dealing with a cascading
+      // error condition, so you also need to check to see if the JVM
+      // is still usable:
+      logger.warn(
+          "Unable to access platform OperatingSystemMXBean for statistics collection. "
+              + "This affects monitoring metrics but does not impact core Geode functionality: {}",
+          ex.getMessage());
+      SystemFailure.checkFailure();
+      tempPlatformBean = null;
+      tempUnixBean = null;
+    } finally {
+      platformOsBean = tempPlatformBean;
+      unixOsBean = tempUnixBean;
     }
+
     threadBean = ManagementFactory.getThreadMXBean();
     if (THREAD_STATS_ENABLED) {
       if (threadBean.isThreadCpuTimeSupported()) {
@@ -242,7 +246,7 @@ public class VMStats50 implements VMStatsContract {
         true));
     sds.add(f.createLongCounter("processCpuTime", "CPU timed used by the process in nanoseconds.",
         "nanoseconds"));
-    if (unixBean != null) {
+    if (unixOsBean != null) {
       sds.add(f.createLongGauge("fdLimit", "Maximum number of file descriptors", "fds", true));
       sds.add(f.createLongGauge("fdsOpen", "Current number of open file descriptors", "fds"));
     }
@@ -260,7 +264,7 @@ public class VMStats50 implements VMStatsContract {
     totalMemoryId = vmType.nameToId("totalMemory");
     maxMemoryId = vmType.nameToId("maxMemory");
     processCpuTimeId = vmType.nameToId("processCpuTime");
-    if (unixBean != null) {
+    if (unixOsBean != null) {
       unix_fdLimitId = vmType.nameToId("fdLimit");
       unix_fdsOpenId = vmType.nameToId("fdsOpen");
     } else {
@@ -585,7 +589,9 @@ public class VMStats50 implements VMStatsContract {
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
     vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
-    vmStats.setInt(cpusId, osBean.getAvailableProcessors());
+    if (platformOsBean != null) {
+      vmStats.setInt(cpusId, platformOsBean.getAvailableProcessors());
+    }
     vmStats.setInt(threadsId, threadBean.getThreadCount());
     vmStats.setInt(daemonThreadsId, threadBean.getDaemonThreadCount());
     vmStats.setInt(peakThreadsId, threadBean.getPeakThreadCount());
@@ -596,32 +602,38 @@ public class VMStats50 implements VMStatsContract {
     vmStats.setLong(totalMemoryId, rt.totalMemory());
     vmStats.setLong(maxMemoryId, rt.maxMemory());
 
-    // Compute processCpuTime separately, if not accessible ignore
-    try {
-      if (getProcessCpuTime != null) {
-        Object v = getProcessCpuTime.invoke(osBean);
-        vmStats.setLong(processCpuTimeId, (Long) v);
+    // Collect process CPU time using public com.sun.management API.
+    // No reflection or setAccessible() required - this is a properly
+    // exported interface method from the jdk.management module.
+    if (platformOsBean != null) {
+      try {
+        long cpuTime = platformOsBean.getProcessCpuTime();
+        vmStats.setLong(processCpuTimeId, cpuTime);
+      } catch (VirtualMachineError err) {
+        SystemFailure.initiateFailure(err);
+        // If this ever returns, rethrow the error. We're poisoned
+        // now, so don't let this thread continue.
+        throw err;
+      } catch (Throwable ex) {
+        // Whenever you catch Error or Throwable, you must also
+        // catch VirtualMachineError (see above). However, there is
+        // _still_ a possibility that you are dealing with a cascading
+        // error condition, so you also need to check to see if the JVM
+        // is still usable:
+        SystemFailure.checkFailure();
       }
-    } catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error. We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    } catch (Throwable ex) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above). However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
     }
 
-    if (unixBean != null) {
+    // Collect Unix-specific file descriptor metrics.
+    // This interface is only implemented on Unix-like platforms;
+    // gracefully null on Windows.
+    if (unixOsBean != null) {
       try {
-        Object v = getMaxFileDescriptorCount.invoke(unixBean);
-        vmStats.setLong(unix_fdLimitId, (Long) v);
-        v = getOpenFileDescriptorCount.invoke(unixBean);
-        vmStats.setLong(unix_fdsOpenId, (Long) v);
+        long maxFd = unixOsBean.getMaxFileDescriptorCount();
+        vmStats.setLong(unix_fdLimitId, maxFd);
+
+        long openFd = unixOsBean.getOpenFileDescriptorCount();
+        vmStats.setLong(unix_fdsOpenId, openFd);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
