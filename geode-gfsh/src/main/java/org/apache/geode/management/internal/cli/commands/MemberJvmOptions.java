@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
+import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.unsafe.internal.com.sun.jmx.remote.security.MBeanServerAccessController;
 
@@ -38,9 +38,9 @@ public class MemberJvmOptions {
   private static final String COM_SUN_JMX_REMOTE_SECURITY_EXPORT =
       "--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED";
   /**
-   * open needed by {@link UnsafeThreadLocal}
+   * open needed by {@link AddressableMemoryManager}
    */
-  private static final String JAVA_LANG_OPEN = "--add-opens=java.base/java.lang=ALL-UNNAMED";
+  private static final String JAVA_NIO_OPEN = "--add-opens=java.base/java.nio=ALL-UNNAMED";
   /**
    * open needed by {@link VMStats50}
    */
@@ -50,7 +50,7 @@ public class MemberJvmOptions {
   static final List<String> JAVA_11_OPTIONS = Arrays.asList(
       COM_SUN_JMX_REMOTE_SECURITY_EXPORT,
       COM_SUN_MANAGEMENT_INTERNAL_OPEN,
-      JAVA_LANG_OPEN);
+      JAVA_NIO_OPEN);
 
   public static List<String> getMemberJvmOptions() {
     if (isJavaVersionAtLeast(JAVA_11)) {
