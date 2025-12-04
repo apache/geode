@@ -122,7 +122,7 @@ class DependencyConstraints {
         // Pinning transitive dependency from spring-security-oauth2 to clean up our licenses.
         api(group: 'com.nimbusds', name: 'oauth2-oidc-sdk', version: '8.9')
         api(group: 'jakarta.activation', name: 'jakarta.activation-api', version: get('jakarta.activation.version'))
-        api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.1')
+        api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.1.1')
         api(group: 'jakarta.mail', name: 'jakarta.mail-api', version: get('jakarta.mail.version'))
         api(group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: get('jakarta.xml.bind.version'))
         api(group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.2')
