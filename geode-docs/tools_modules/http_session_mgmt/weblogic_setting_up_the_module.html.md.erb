@@ -73,7 +73,7 @@ To modify your war or ear file manually, make the following updates:
     -   geode-serialization jar
     -   geode-membership jar
     -   geode-tcp-server jar
-    -   javax.transaction-api jar
+    -   jakarta.transaction-api jar
     -   jgroups jar
     -   log4j-api jar
     -   log4j-core jar
@@ -89,28 +89,28 @@ If you are deploying an ear file:
     ``` pre
     Manifest-Version: 1.0
     Built-By: joe
-    Build-Jdk: 1.8.0_77
+    Build-Jdk: 17.0.16
     Created-By: Apache Maven
     Archiver-Version: Plexus Archiver
-    Class-Path: lib/geode-modules-1.0.0.jar
-    lib/geode-modules-session-internal-1.0.0.jar
-    lib/geode-modules-session-1.0.0.jar
-    lib/slf4j-api-1.7.7.jar
-    lib/slf4j-jdk14-1.7.7.jar
+    Class-Path: lib/geode-modules-2.0.0.jar
+    lib/geode-modules-session-internal-2.0.0.jar
+    lib/geode-modules-session-2.0.0.jar
+    lib/slf4j-api-2.0.17.jar
+    lib/slf4j-jdk14-2.0.17.jar
     lib/antlr-2.7.7.jar
-    lib/geode-membership.1.0.0.jar
-    lib/geode-tcp.1.0.0.jar
-    lib/fastutil-7.0.2.jar
-    lib/geode-core-1.0.0.jar
-    lib/geode-common.1.0.0.jar
-    lib/geode-management.1.0.0.jar
-    lib/geode-logging.1.0.0.jar
-    lib/geode-serialization.1.0.0.jar
-    lib/javax.transaction-api-1.3.jar
-    lib/jgroups-3.6.8.Final.jar
-    lib/log4j-api-2.5.jar
-    lib/log4j-core-2.5.jar
-    lib/log4j-jul-2.5.jar
+    lib/geode-membership-2.0.0.jar
+    lib/geode-tcp-server-2.0.0.jar
+    lib/fastutil-8.5.8.jar
+    lib/geode-core-2.0.0.jar
+    lib/geode-common-2.0.0.jar
+    lib/geode-management-2.0.0.jar
+    lib/geode-logging-2.0.0.jar
+    lib/geode-serialization-2.0.0.jar
+    lib/jakarta.transaction-api-2.0.1.jar
+    lib/jgroups-3.6.20.Final.jar
+    lib/log4j-api-2.17.2.jar
+    lib/log4j-core-2.17.2.jar
+    lib/log4j-jul-2.17.2.jar
     ```
 
 ## <a id="weblogic_setting_up_the_module__section_20294A39368D4402AEFB3D074E8D5887" class="no-quick-link"></a>Peer-to-Peer Setup
@@ -182,8 +182,8 @@ $ gfsh start server \
     --name=server1 \
     --server-port=0 \
     --locators=localhost[10334] \
-    --classpath=<moduleDir>/lib/geode-modules-1.0.0.jar:\
-<moduleDir>/lib/geode-modules-session-internal-1.0.0.jar
+    --classpath=<moduleDir>/lib/geode-modules-2.0.0.jar:\
+<moduleDir>/lib/geode-modules-session-internal-2.0.0.jar
 ```
 
 Once the application server is started, the <%=vars.product_name%> client will automatically launch within the application server process.
@@ -193,10 +193,10 @@ Once the application server is started, the <%=vars.product_name%> client will a
 You can verify that <%=vars.product_name%> has successfully started by inspecting the application server log file. For example:
 
 ``` pre
-info 2016/04/18 10:04:18.685 PDT <localhost-startStop-2> tid=0x1a]
+info 2025/04/18 10:04:18.685 PDT <localhost-startStop-2> tid=0x1a]
 Initializing <%=vars.product_name%> Modules
-Java version:   1.0.0 user1 041816 2016-11-18 08:46:17 -0700
-javac 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
+Java version:   2.0.0 user1 041816 2025-11-18 08:46:17 -0700
+javac <%=vars.min_java_version%>.0.<%=vars.min_java_update%>
 Native version: native code unavailable
 Source revision: 19dd8eb1907e0beb2aa3e0a17d5f12c6cbec6968
 Source repository: develop

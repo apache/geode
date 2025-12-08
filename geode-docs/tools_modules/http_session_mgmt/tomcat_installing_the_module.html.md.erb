@@ -21,12 +21,12 @@ limitations under the License.
 
 This topic describes how to install the HTTP session management module for Tomcat.
 
-1.  If you have not already installed Tomcat, download the desired version from the [Apache Website](http://tomcat.apache.org/) and install it.
+1.  If you have not already installed Tomcat, download version 10.1 or later from the [Apache Website](http://tomcat.apache.org/) and install it. **Note:** Geode only supports Tomcat 10.1 and later versions (Jakarta EE). Support for Tomcat 7, 8, and 9 has been discontinued.
 2.  Following the Apache Tomcat convention, this page assumes the CATALINA_HOME environment variable is set to the root directory of the "binary" Tomcat distribution.
-  For example, if Apache Tomcat is installed in `/usr/bin/apache-tomcat-9.0.62` then
+  For example, if Apache Tomcat is installed in `/opt/apache-tomcat-10.1.30` then
 
     ```
-    CATALINA_HOME=/usr/bin/apache-tomcat-9.0.62
+    CATALINA_HOME=/opt/apache-tomcat-10.1.30
     ```
     Define $CATALINA_HOME if it is not already defined.
   
@@ -48,12 +48,15 @@ This adds jar files to the `lib` subdirectory and XML files to the `conf` subdir
     unzip $GEODE_HOME/tools/Modules/Apache_Geode_Modules-SERVER-VERSION-Tomcat.zip
     ```
 
-
-6.  Copy all of the jar files from the <%=vars.product_name%> `lib` subdirectory to the `lib` subdirectory of your Tomcat server (`$CATALINA_HOME/lib`):
+6.  **CRITICAL:** Copy all of the jar files from the <%=vars.product_name%> `lib` subdirectory to the `lib` subdirectory of your Tomcat server (`$CATALINA_HOME/lib`). 
+    
+    **The module zip file alone does not contain all required dependencies.** You must copy all Geode libraries including `geode-core`, `geode-common`, Jakarta Transaction API, and other runtime dependencies:
 
     ```
     cd $CATALINA_HOME/lib
     cp $GEODE_HOME/lib/*.jar .
     ```
+    
+    **Note:** Without these libraries, Tomcat will fail to start with `ClassNotFoundException` errors for Geode classes. The Geode session management module requires the complete Geode runtime, not just the module JARs included in the zip file.
 
 Proceed to [Setting Up the HTTP Module for Tomcat](./tomcat_setting_up_the_module.html) to complete your Tomcat configuration.

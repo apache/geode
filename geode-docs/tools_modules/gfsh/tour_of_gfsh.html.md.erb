@@ -61,7 +61,7 @@ as locator1 is currently online.
 Process ID: 67666
 Uptime: 6 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
-Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
+Java Version: <%=vars.min_java_version%>.0.<%=vars.min_java_update%>
 Log File: /home/username/gfsh_tutorial/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true
  -Dgemfire.load-cluster-configuration-from-dir=false
@@ -180,16 +180,12 @@ Starting a <%=vars.product_name%> Server in /home/username/gfsh_tutorial/server1
 ...
 Server in /home/username/gfsh_tutorial/server1 on 192.0.2.0[40404] as server1
 is currently online.
-Process ID: 68375
-Uptime: 4 seconds
+Process ID: 49601
+Uptime: 2 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
-Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
-Log File: /home/username//gfsh_tutorial/server1/server1.log
-JVM Arguments: -Dgemfire.locators=localhost[10334]
- -Dgemfire.use-cluster-configuration=true -Dgemfire.start-dev-rest-api=false
- -XX:OnOutOfMemoryError=kill -KILL %p
- -Dgemfire.launcher.registerSignalHandlers=true
- -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Java Version: <%=vars.min_java_version%>.0.<%=vars.min_java_update%>
+Log File: /home/username/gfsh_tutorial/server1/server1.log
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true
 Class-Path: /home/username/geode/geode-assembly/build/install/apache-geode/lib
 /geode-core-1.2.0.jar:/home/username/geode/geode-assembly/build/install
 /apache-geode/lib/geode-dependencies.jar
@@ -299,7 +295,7 @@ server2 is currently online.
 Process ID: 68423
 Uptime: 4 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
-Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
+Java Version: <%=vars.min_java_version%>.0.<%=vars.min_java_update%>
 Log File: /home/username/gfsh_tutorial/server2/server2.log
 JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334]
  -Dgemfire.use-cluster-configuration=true -Dgemfire.start-dev-rest-api=false
