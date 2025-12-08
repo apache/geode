@@ -21,7 +21,7 @@ public_host: localhost
 sections:
 - repository:
     name: geode-docs
-  directory: docs/guide/115
+  directory: docs/guide/20
   subnav_template: geode-subnav
 
 template_variables:
@@ -29,11 +29,11 @@ template_variables:
   product_name: Geode
   product_name_lowercase: geode
   product_version: '2.0'
-  product_version_nodot: '115'
-  product_version_old_minor: '1.14'
-  product_version_geode: '1.15'
-  min_java_version: '8'
-  min_java_update: '121'
+  product_version_nodot: '20'
+  product_version_old_minor: '1.15'
+  product_version_geode: '2.0'
+  min_java_version: '17'
+  min_java_update: '16'
   support_url: http://geode.apache.org/community
   product_url: http://geode.apache.org/
   book_title: Apache Geode Documentation

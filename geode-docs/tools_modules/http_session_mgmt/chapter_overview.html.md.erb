@@ -21,7 +21,9 @@ limitations under the License.
 
 The <%=vars.product_name_long%> HTTP Session Management modules provide fast, scalable, and reliable session replication for HTTP servers without requiring application changes.
 
-<%=vars.product_name_long%> offers HTTP session management modules for tc Server, Tomcat, and AppServers.
+<%=vars.product_name_long%> offers HTTP session management modules for Tomcat and AppServers.
+
+**Note:** As of version 2.x, Geode only supports Tomcat 10.1 and later versions (Jakarta EE namespace). Support for Tomcat 7, 8, 9, and Pivotal tc Server has been discontinued.
 
 These modules are included with the <%=vars.product_name_long%> product distribution, and installation .zip files can be found in the `tools/Modules` directory of your product installation.
 
@@ -49,13 +51,9 @@ These modules are included with the <%=vars.product_name_long%> product distribu
 
     This section describes the configuration of non-sticky sessions.
 
--   **[HTTP Session Management Module for Pivotal tc Server](../../tools_modules/http_session_mgmt/session_mgmt_tcserver.html)**
-
-    This section describes how to set up and use the HTTP session management module with tc Server templates.
-
 -   **[HTTP Session Management Module for Tomcat](../../tools_modules/http_session_mgmt/session_mgmt_tomcat.html)**
 
-    You set up and use the module by modifying the Tomcat's `server.xml` and `context.xml` files.
+    You set up and use the module by modifying Tomcat's `server.xml` and `context.xml` files. Supports Tomcat 10.1 and later (Jakarta EE).
 
 -   **[HTTP Session Management Module for AppServers](../../tools_modules/http_session_mgmt/session_mgmt_weblogic.html)**
 

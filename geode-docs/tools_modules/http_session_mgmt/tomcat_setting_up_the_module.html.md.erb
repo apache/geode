@@ -27,31 +27,36 @@ Configuration is slightly different depending on the topology you are setting up
 
 <img src="../../images_svg/http_module_p2p_with_locator.svg" id="tomcat_setting_up_the_module__image_bsm_2gf_sv" class="image" />
 
-To run <%=vars.product_name%> in a peer-to-peer configuration, add the following line to Tomcat's `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
+To run <%=vars.product_name%> in a peer-to-peer configuration, you must first start a <%=vars.product_name%> locator, then configure Tomcat to join the cluster as a peer member.
+
+### Starting the Locator
+
+Start a <%=vars.product_name%> locator using `gfsh`:
+
+``` pre
+$ gfsh start locator --name=locator1 --port=10334
+```
+
+The locator coordinates membership in the peer-to-peer cache.
+
+### Configuring Tomcat
+
+Add the following line to Tomcat's `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
 
 ``` pre
 <Listener className="org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener"
         locators="localhost[10334]" />
 ```
 
-Depending on the version of Tomcat you are using, add one of the following lines to `$CATALINA_HOME$/conf/context.xml` within the `<Context>` tag:
+Add the following line to `$CATALINA_HOME$/conf/context.xml` within the `<Context>` tag:
 
-For Tomcat 7.0:
-
-``` pre
-<Manager className="org.apache.geode.modules.session.Tomcat7DeltaSessionManager"/> 
-```
-For Tomcat 8.0 and 8.5:
+For Tomcat 10.1 and later (Jakarta EE 10):
 
 ``` pre
-<Manager className="org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager"/> 
+<Manager className="org.apache.geode.modules.session.catalina.Tomcat10DeltaSessionManager"/> 
 ```
 
-For Tomcat 9.0:
-
-``` pre
-<Manager className="org.apache.geode.modules.session.catalina.Tomcat9DeltaSessionManager"/> 
-```
+**Note:** Tomcat 10.1+ implements Jakarta EE 10 with Servlet 6.0 specification and uses the Jakarta EE namespace (`jakarta.servlet.*`) instead of the legacy `javax.servlet.*` namespace. Ensure your application has been migrated to Jakarta EE 10 before using this module. Support for Tomcat 7, 8, and 9 has been discontinued.
 
 ## <a id="tomcat_setting_up_the_module_cs" class="no-quick-link"></a>Client/Server Setup
 
@@ -63,41 +68,37 @@ To run <%=vars.product_name%> in a client/server configuration, the application 
 <Listener className="org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener"/>
 ```
 
-Depending on the version of Tomcat you are using, add one of the following lines to `$CATALINA_HOME$/conf/context.xml` within the `<Context>` tag:
+Add the following line to `$CATALINA_HOME$/conf/context.xml` within the `<Context>` tag:
 
-For Tomcat 7.0:
-
-``` pre
-<Manager className="org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager"/> 
-```
-
-For Tomcat 8.0 and 8.5:
+For Tomcat 10.1 and later (Jakarta EE 10):
 
 ``` pre
-<Manager className="org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager"/> 
+<Manager className="org.apache.geode.modules.session.catalina.Tomcat10DeltaSessionManager"/> 
 ```
 
-For Tomcat 9.0:
-
-``` pre
-<Manager className="org.apache.geode.modules.session.catalina.Tomcat9DeltaSessionManager"/> 
-```
+**Note:** Tomcat 10.1+ implements Jakarta EE 10 with Servlet 6.0 specification and uses the Jakarta EE namespace (`jakarta.servlet.*`) instead of the legacy `javax.servlet.*` namespace. Ensure your application has been migrated to Jakarta EE 10 before using this module. Support for Tomcat 7, 8, and 9 has been discontinued.
 
 The application server operates as a <%=vars.product_name%> client in this configuration.
 
-Set the CLASSPATH environment variable. For a client/server set up using Apache Tomcat v9 and Geode v1.13,
-the CLASSPATH setting should be similar to the following. Adjust filenames and version numbers as needed for your implementation.
+### Setting the CLASSPATH
+
+Set the CLASSPATH environment variable to include Tomcat and <%=vars.product_name%> module libraries. This CLASSPATH is required when starting the locator and server.
+
+For a client/server setup using Apache Tomcat v10.1+ and Geode v2.x, the CLASSPATH should include:
 
 ``` pre
-CLASSPATH="$CATALINA_HOME/lib/geode-modules-1.13.3.jar:\
-$CATALINA_HOME/lib/geode-modules-tomcat9-1.13.3.jar:\
-$CATALINA_HOME/lib/servlet-api.jar:\
-$CATALINA_HOME/lib/catalina.jar:\
-$CATALINA_HOME/lib/tomcat-util.jar:\
-$CATALINA_HOME/bin/tomcat-juli.jar"
+export CLASSPATH=$CATALINA_HOME/lib/servlet-api.jar:$CATALINA_HOME/lib/catalina.jar:$CATALINA_HOME/bin/tomcat-juli.jar:$GEODE_HOME/lib/geode-modules-2.x.x.jar:$GEODE_HOME/lib/geode-modules-tomcat10-2.x.x.jar
 ```
 
-Start the locator and server using `gfsh`:
+Example with explicit paths:
+
+``` pre
+CLASSPATH=/opt/apache-tomcat-10.1.x/lib/servlet-api.jar:/opt/apache-tomcat-10.1.x/lib/catalina.jar:/opt/apache-tomcat-10.1.x/bin/tomcat-juli.jar:/opt/geode-2.x/lib/geode-modules-2.x.x.jar:/opt/geode-2.x/lib/geode-modules-tomcat10-2.x.x.jar
+```
+
+### Starting the Locator and Server
+
+Start the locator and server using `gfsh` with the configured CLASSPATH:
 
 ``` pre
 $ gfsh start locator --name=locator1 --classpath=$CLASSPATH
@@ -107,7 +108,7 @@ $ gfsh start server --name=server1 --locators=localhost[10334] --server-port=0 \
 
 ## <a id="tomcat_setting_up_the_module__section_2B97047AB30A4C549D91AD258657FBA6" class="no-quick-link"></a>Starting the Application Server
 
-Once you've updated the configuration, you are now ready to start your tc Server or Tomcat instance. Refer to your application server documentation for starting the application server. Once started, <%=vars.product_name%> will automatically launch within the application server process.
+Once you've updated the XML configuration files, you are now ready to start your Tomcat instance. Refer to your application server documentation for starting the application server. Once started, <%=vars.product_name%> will automatically launch within the application server process.
 
 **Note:**
 <%=vars.product_name%> session state management provides its own clustering functionality. If you are using <%=vars.product_name%>, you should NOT turn on Tomcat clustering as well.
@@ -117,8 +118,65 @@ Once you've updated the configuration, you are now ready to start your tc Server
 You can verify that <%=vars.product_name%> has successfully started by inspecting the Tomcat log file. For example:
 
 ``` pre
-15-Jul-2021 10:25:11.483 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/Users/user/workspace/apache-tomcat-9.0.62/webapps/host-manager] has finished in [1,688] ms
-15-Jul-2021 10:25:11.486 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
-15-Jul-2021 10:25:11.493 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [11682] milliseconds
+15-Jul-2025 10:25:11.483 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/Users/user/workspace/apache-tomcat-10.1.x/webapps/host-manager] has finished in [1,688] ms
+15-Jul-2025 10:25:11.486 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+15-Jul-2025 10:25:11.493 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [11682] milliseconds
 ```
+
+### Verifying Cluster Topology
+
+You can verify the cluster configuration by using `gfsh` to list cluster members.
+
+**For Peer-to-Peer Configuration:**
+
+``` pre
+$ gfsh -e "connect --locator=localhost[10334]" -e "list members"
+```
+
+You should see two members: the locator and the Tomcat server. The Tomcat server appears as a full member of the <%=vars.product_name%> distributed system.
+
+``` pre
+Member Count : 2
+
+   Name     | Id
+----------- | -------------------------------------
+locator1    | 192.168.1.100(locator1:12345:locator)
+TomcatNode  | 192.168.1.100(67890)
+```
+
+**For Client/Server Configuration:**
+
+``` pre
+$ gfsh -e "connect --locator=localhost[10334]" -e "list members"
+```
+
+You should see two members: the locator and the cache server. The Tomcat server does NOT appear in the member list because it operates as a lightweight client.
+
+``` pre
+Member Count : 2
+
+   Name     | Id
+----------- | -------------------------------------
+locator1    | 192.168.1.100(locator1:12345:locator)
+server1     | 192.168.1.100(server1:67890)
+```
+
+## <a id="tomcat_setting_up_the_module__section_troubleshooting" class="no-quick-link"></a>Troubleshooting
+
+**Problem:** Tomcat logs show `ClassNotFoundException: org.apache.geode.modules.util.BootstrappingFunction` (client/server only)
+
+**Solution:** Ensure you started the locator and server with the `--classpath` option as shown in the client/server configuration. The <%=vars.product_name%> server must have access to the session module classes.
+
+---
+
+**Problem:** Tomcat fails with "Connection refused" when connecting to locator (peer-to-peer only)
+
+**Solution:** Ensure the <%=vars.product_name%> locator is running before starting Tomcat. Use `gfsh list members` or `lsof -i :10334` to verify the locator is listening on the configured port.
+
+---
+
+**Problem:** Web applications fail to deploy with session manager errors
+
+**Solution:** Check that you completed all installation steps, including copying all JAR files from `$GEODE_HOME/lib` to `$CATALINA_HOME/lib` as described in [Installing the HTTP Module for Tomcat](./tomcat_installing_the_module.html).
+
 
