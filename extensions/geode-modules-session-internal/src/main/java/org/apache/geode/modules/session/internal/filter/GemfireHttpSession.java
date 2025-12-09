@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
@@ -144,8 +145,15 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
           oos.writeObject(obj);
           oos.close();
 
+          // Create filter from user configuration for secure deserialization
+          String filterPattern = getServletContext()
+              .getInitParameter("serializable-object-filter");
+          ObjectInputFilter filter = filterPattern != null
+              ? ObjectInputFilter.Config.createFilter(filterPattern)
+              : null;
+
           ObjectInputStream ois = new ClassLoaderObjectInputStream(
-              new ByteArrayInputStream(baos.toByteArray()), loader);
+              new ByteArrayInputStream(baos.toByteArray()), loader, filter);
           tmpObj = ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
           LOG.error("Exception while recreating attribute '" + name + "'", e);
