@@ -110,11 +110,11 @@ public class HttpRequester {
       public void handleError(final ClientHttpResponse response) throws IOException {
         String body = IOUtils.toString(response.getBody(), StandardCharsets.UTF_8);
         final String message = String.format("The HTTP request failed with: %1$d - %2$s.",
-            response.getRawStatusCode(), body);
+            response.getStatusCode().value(), body);
 
-        if (response.getRawStatusCode() == 401) {
+        if (response.getStatusCode().value() == 401) {
           throw new AuthenticationFailedException(message);
-        } else if (response.getRawStatusCode() == 403) {
+        } else if (response.getStatusCode().value() == 403) {
           throw new NotAuthorizedException(message);
         } else {
           throw new RuntimeException(message);
