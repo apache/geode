@@ -1,0 +1,325 @@
+---
+title: Securing HTTP Session Deserialization
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This topic describes how to configure session deserialization security using ObjectInputFilter (JEP 290) to protect against deserialization vulnerabilities.
+
+## <a id="overview" class="no-quick-link"></a>Overview
+
+Apache Geode HTTP Session Management uses Java serialization to store session attributes in the distributed cache. To protect against deserialization attacks, you can configure an ObjectInputFilter that controls which classes are allowed to be deserialized.
+
+**Key Benefits:**
+
+- **Application-Level Security**: Each web application defines its own security policy
+- **Zero-Downtime Configuration**: Changes take effect on WAR deployment, no cluster restart required
+- **Defense in Depth**: Explicit allowlist prevents gadget chain attacks
+- **Backward Compatible**: Existing applications continue to work without configuration
+
+## <a id="security-warning" class="no-quick-link"></a>Security Warning
+
+**Without a configured filter, session deserialization has NO restrictions.** Any serializable class can be deserialized, leaving your application vulnerable to:
+
+- Remote Code Execution (RCE)
+- Denial of Service (DoS)  
+- Arbitrary object instantiation attacks
+
+**Always configure a deserialization filter for production deployments.**
+
+## <a id="basic-config" class="no-quick-link"></a>Basic Configuration
+
+### Step 1: Add Filter Pattern to web.xml
+
+Add a context parameter to your application's `web.xml`:
+
+``` xml
+<web-app>
+  <context-param>
+    <param-name>serializable-object-filter</param-name>
+    <param-value>com.myapp.model.**;java.lang.**;!*</param-value>
+  </context-param>
+  
+  <!-- Your existing filter configuration -->
+  <filter>
+    <filter-name>gemfire-session-filter</filter-name>
+    <filter-class>org.apache.geode.modules.session.filter.SessionCachingFilter</filter-class>
+  </filter>
+  <!-- ... -->
+</web-app>
+```
+
+### Step 2: Deploy WAR File
+
+Deploy or redeploy your WAR file to the application server. The filter takes effect immediately—no cluster restart required.
+
+## <a id="pattern-syntax" class="no-quick-link"></a>Pattern Syntax
+
+The filter pattern follows [JEP 290](https://openjdk.org/jeps/290) syntax:
+
+| Pattern | Meaning |
+|---------|---------|
+| `com.myapp.**` | Allow all classes in `com.myapp` package and subpackages |
+| `com.myapp.model.User` | Allow specific class only |
+| `java.lang.**` | Allow all classes in `java.lang` package |
+| `!com.dangerous.**` | Explicitly reject package (takes precedence) |
+| `!*` | Reject everything else (default deny) |
+
+**Pattern Evaluation Order:**
+
+1. Patterns are evaluated left-to-right
+2. Rejection patterns (`!`) take precedence over allowlist patterns
+3. First matching pattern determines the result
+4. Always end with `!*` for default deny
+
+## <a id="examples" class="no-quick-link"></a>Configuration Examples
+
+### Minimal Configuration
+
+Allow only your application models and essential Java classes:
+
+``` xml
+<param-value>
+  com.myapp.model.**;
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+### E-Commerce Application
+
+``` xml
+<param-value>
+  com.shop.model.**;
+  com.shop.cart.**;
+  com.payment.dto.**;
+  java.lang.**;java.util.**;java.time.**;
+  !*
+</param-value>
+```
+
+### Multi-Module Application
+
+``` xml
+<param-value>
+  com.company.common.**;
+  com.company.customer.**;
+  com.company.order.**;
+  java.lang.**;java.util.**;java.math.BigDecimal;
+  !com.company.internal.**;
+  !*
+</param-value>
+```
+
+### Rejecting Specific Classes
+
+``` xml
+<param-value>
+  com.myapp.**;
+  !com.myapp.deprecated.**;
+  !com.myapp.legacy.OldClass;
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+## <a id="multi-app" class="no-quick-link"></a>Multi-Application Deployments
+
+Each web application has its own isolated security policy:
+
+**Application 1 (E-commerce):**
+``` xml
+<param-value>
+  com.shop.model.**;
+  com.payment.**;
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+**Application 2 (Analytics):**
+``` xml
+<param-value>
+  com.analytics.**;
+  com.ml.models.**;
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+**Application 3 (CMS):**
+``` xml
+<param-value>
+  com.cms.content.**;
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+Each application's sessions can only deserialize classes allowed by its specific filter pattern.
+
+## <a id="best-practices" class="no-quick-link"></a>Best Practices
+
+### 1. Use Explicit Allowlists
+
+**Don't:**
+``` xml
+<param-value>*</param-value>  <!-- Allows everything, insecure -->
+```
+
+**Do:**
+``` xml
+<param-value>
+  com.myapp.safe.**;
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+### 2. Always End with `!*`
+
+This creates a default-deny policy where only explicitly allowed classes can be deserialized.
+
+### 3. Be Specific with Package Names
+
+**Less secure:**
+``` xml
+<param-value>com.**;!*</param-value>  <!-- Too broad -->
+```
+
+**More secure:**
+``` xml
+<param-value>com.myapp.model.**;!*</param-value>  <!-- Specific -->
+```
+
+### 4. Include Essential Java Packages
+
+Most applications need these:
+``` xml
+java.lang.**;
+java.util.**;
+java.time.**;
+```
+
+### 5. Test Thoroughly
+
+After configuring the filter:
+
+1. Test all session operations (create, read, update, delete)
+2. Verify session attributes deserialize correctly
+3. Test session failover scenarios
+4. Monitor logs for `ObjectInputFilter` rejections
+
+## <a id="troubleshooting" class="no-quick-link"></a>Troubleshooting
+
+### ClassNotFoundException or Deserialization Failures
+
+**Symptom:** Session attributes fail to deserialize after adding filter
+
+**Solution:** Add the missing class package to your filter pattern:
+
+``` xml
+<param-value>
+  com.myapp.model.**;
+  com.thirdparty.library.**;  <!-- Add missing package -->
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+### Filter Not Taking Effect
+
+**Symptom:** Filter pattern changes don't apply
+
+**Solution:**
+
+1. Verify `web.xml` is packaged correctly in the WAR
+2. Redeploy the WAR file completely
+3. Check application server logs for errors
+4. Verify parameter name is exactly `serializable-object-filter`
+
+### Session Attribute Classes Rejected
+
+**Symptom:** Logs show "ObjectInputFilter rejected class: com.myapp.NewClass"
+
+**Solution:** Add the class or package to your allowlist:
+
+``` xml
+<param-value>
+  com.myapp.model.**;
+  com.myapp.NewClass;  <!-- Add specific class -->
+  java.lang.**;java.util.**;
+  !*
+</param-value>
+```
+
+## <a id="migration" class="no-quick-link"></a>Migration Guide
+
+### For Existing Applications
+
+1. **Identify Session Attribute Classes**
+   - List all classes stored in HTTP sessions
+   - Include transitive dependencies (classes referenced by session objects)
+
+2. **Create Filter Pattern**
+   - Start with your application packages
+   - Add essential Java packages
+   - End with `!*`
+
+3. **Test in Development**
+   - Deploy with filter enabled
+   - Exercise all session operations
+   - Fix any deserialization failures
+
+4. **Deploy to Production**
+   - Add filter to `web.xml`
+   - Redeploy WAR file (zero downtime)
+   - Monitor logs for unexpected rejections
+
+### Backward Compatibility
+
+**Without Filter Configuration:**
+- Sessions continue to work as before
+- No breaking changes
+- No security protection (vulnerable)
+
+**With Filter Configuration:**
+- Explicit security policy enforced
+- Only allowed classes can be deserialized
+- Protected against deserialization attacks
+
+## <a id="security-reference" class="no-quick-link"></a>Security Reference
+
+### JEP 290
+
+The filter implementation uses Java's [JEP 290: Filter Incoming Serialization Data](https://openjdk.org/jeps/290), which provides:
+
+- Per-stream filtering capability
+- Pattern-based class allowlists/denylists
+- Built-in protection against known gadget chains
+
+### Additional Resources
+
+- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)
+- [Java Serialization Security Best Practices](https://www.oracle.com/java/technologies/javase/seccodeguide.html#8)
+
+## <a id="related-topics" class="no-quick-link"></a>Related Topics
+
+- [Setting Up the HTTP Module for Tomcat](tomcat_setting_up_the_module.html)
+- [Setting Up the HTTP Module for tc Server](tc_setting_up_the_module.html)
+- [HTTP Session Management Quick Start](quick_start.html)
