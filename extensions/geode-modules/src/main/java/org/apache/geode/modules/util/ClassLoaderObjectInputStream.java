@@ -40,7 +40,9 @@ public class ClassLoaderObjectInputStream extends ObjectInputStream {
       throws IOException {
     super(in);
     this.loader = loader;
-    setObjectInputFilter(filter);
+    if (filter != null) {
+      setObjectInputFilter(filter);
+    }
   }
 
   /**
