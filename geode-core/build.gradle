@@ -178,6 +178,8 @@ dependencies {
   //  The antlr configuration is used by the antlr plugin, which compiles grammar
   // files used by the query engine
   antlr 'antlr:antlr'
+  // antlr is also needed at compile scope because it's used in public query API classes
+  api('antlr:antlr')
 
   // External
   //------------------------------------------------------------
@@ -214,8 +216,8 @@ dependencies {
   //Jgroups is a core component of our membership system.
   implementation('org.jgroups:jgroups')
 
-  //Antlr is used by the query engine.
-  implementation('antlr:antlr')
+  //Antlr is used by the query engine and its objects end up in public API (query AST classes).
+  api('antlr:antlr')
 
   //Jackson annotations is used in gfsh
   implementation('com.fasterxml.jackson.core:jackson-annotations')
@@ -296,8 +298,9 @@ dependencies {
   implementation('net.java.dev.jna:jna')
   implementation('net.java.dev.jna:jna-platform')
 
-  //JOptSimple is used by gfsh. A couple of usages have leaked into DiskStore
-  implementation('net.sf.jopt-simple:jopt-simple')
+  //JOptSimple is used by gfsh and in public API classes (ServerLauncher, LocatorLauncher)
+  //and core persistence code (AbstractDiskRegion, DiskRegion)
+  api('net.sf.jopt-simple:jopt-simple')
 
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
