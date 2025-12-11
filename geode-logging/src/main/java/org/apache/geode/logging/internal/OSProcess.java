@@ -134,7 +134,6 @@ public class OSProcess {
    * @param env any extra environment variables as key,value map; these will be in addition to those
    *        inherited from the parent process and will overwrite same keys
    * @return the process id of the created process; -1 on failure
-   * @exception SecurityException if the current thread cannot create a subprocess.
    */
   public static int bgexec(String[] cmdarray, File workdir, File logfile, boolean inheritLogfile,
       Map<String, String> env) throws IOException {
