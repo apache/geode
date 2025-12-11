@@ -232,6 +232,10 @@ class DependencyConstraints {
       entry('jackson-datatype-jsr310')
     }
 
+    dependencySet(group: 'com.fasterxml.jackson.dataformat', version: get('jackson.version')) {
+      entry('jackson-dataformat-yaml')
+    }
+
     dependencySet(group: 'com.jayway.jsonpath', version: '2.7.0') {
       entry('json-path-assert')
       entry('json-path')
