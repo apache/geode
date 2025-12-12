@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
@@ -79,6 +80,13 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
   private ServletContext context;
 
   /**
+   * Cached ObjectInputFilter to avoid recreating on every deserialization.
+   * Initialized lazily on first use with double-checked locking.
+   */
+  private volatile ObjectInputFilter cachedFilter;
+  private volatile boolean filterLogged = false;
+
+  /**
    * A session becomes invalid if it is explicitly invalidated or if it expires.
    */
   private boolean isValid = true;
@@ -105,6 +113,34 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
         return new GemfireHttpSession();
       }
     });
+  }
+
+  /**
+   * Gets or creates the cached ObjectInputFilter. Uses double-checked locking to avoid
+   * unnecessary synchronization after initialization.
+   *
+   * @return the cached ObjectInputFilter, or null if no filter is configured
+   */
+  private ObjectInputFilter getOrCreateFilter() {
+    if (cachedFilter == null && !filterLogged) {
+      synchronized (this) {
+        if (cachedFilter == null && !filterLogged) {
+          String filterPattern = getServletContext()
+              .getInitParameter("serializable-object-filter");
+
+          if (filterPattern != null) {
+            cachedFilter = ObjectInputFilter.Config.createFilter(filterPattern);
+            LOG.info("ObjectInputFilter configured with pattern: {}", filterPattern);
+          } else {
+            LOG.warn("No ObjectInputFilter configured. Session deserialization is not protected " +
+                "against malicious payloads. Configure 'serializable-object-filter' in web.xml " +
+                "to enable deserialization security.");
+          }
+          filterLogged = true;
+        }
+      }
+    }
+    return cachedFilter;
   }
 
   /**
@@ -144,8 +180,11 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
           oos.writeObject(obj);
           oos.close();
 
+          // Get or create cached filter for secure deserialization
+          ObjectInputFilter filter = getOrCreateFilter();
+
           ObjectInputStream ois = new ClassLoaderObjectInputStream(
-              new ByteArrayInputStream(baos.toByteArray()), loader);
+              new ByteArrayInputStream(baos.toByteArray()), loader, filter);
           tmpObj = ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
           LOG.error("Exception while recreating attribute '" + name + "'", e);
