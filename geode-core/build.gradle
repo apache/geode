@@ -274,6 +274,10 @@ dependencies {
 
   //The resource-API is used by the JCA support.
   api('jakarta.resource:jakarta.resource-api')
+  // Explicitly declare jakarta.annotation-api to override the 2.1.0 version
+  // transitively brought by jakarta.resource-api:2.1.0, ensuring consistency
+  // with Spring Boot 3.3.4 which requires 2.1.1
+  api('jakarta.annotation:jakarta.annotation-api')
   api('jakarta.transaction:jakarta.transaction-api')
 
 
