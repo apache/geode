@@ -131,7 +131,8 @@ include 'geode-server-all'
  '1.13.1',
  '1.13.8',
  '1.14.0', // Include for SSL protocol configuration changes in 1.14.0
- '1.14.4'].each {
+ '1.14.4',
+ '2.0.0'].each {
   include 'geode-old-versions:'.concat(it)
 }
 
