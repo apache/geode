@@ -16,23 +16,22 @@
 
 FROM bellsoft/liberica-openjdk-alpine:17
 
-RUN echo "This is a TEMPLATE, DO NOT build from this Dockerfile.  Instead checkout master or any released support/x.y branch." ; exit 1
 
 # runtime dependencies
 RUN apk add --no-cache \
 		bash \
 		ncurses
 
-ENV GEODE_GPG $$PLACEHOLDER$$
+ENV GEODE_GPG 5C3DA8FBB1052F4DF1DEB1EF62F7DA41B7D8F26C
 
 ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # https://geode.apache.org/releases/
-ENV GEODE_VERSION $$PLACEHOLDER$$
+ENV GEODE_VERSION 2.0.0
 # Binaries TGZ SHA-256
 # https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
-ENV GEODE_SHA256 $$PLACEHOLDER$$
+ENV GEODE_SHA256 8e53f8d843a13db2294fa61ef12f7ad40f9c316eb88843b1336b1b7d06f39343
 
 # http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
 
@@ -47,7 +46,6 @@ RUN set -eux; \
 	; do \
 		target="$(basename "$file")"; \
 		for url in \
-			"https://www.apache.org/dyn/closer.lua/$file?action=download" \
 			"https://downloads.apache.org/$file" \
 			"https://archive.apache.org/dist/$file" \
 		; do \
