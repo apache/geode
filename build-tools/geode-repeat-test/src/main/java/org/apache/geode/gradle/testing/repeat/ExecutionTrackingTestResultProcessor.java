@@ -25,6 +25,7 @@ import org.gradle.api.internal.tasks.testing.TestDescriptorInternal;
 import org.gradle.api.internal.tasks.testing.TestResultProcessor;
 import org.gradle.api.internal.tasks.testing.TestStartEvent;
 import org.gradle.api.internal.tasks.testing.worker.WorkerTestClassProcessor;
+import org.gradle.api.tasks.testing.TestFailure;
 import org.gradle.api.tasks.testing.TestOutputEvent;
 
 /**
@@ -68,7 +69,8 @@ public class ExecutionTrackingTestResultProcessor implements TestResultProcessor
   }
 
   @Override
-  public void failure(Object testId, Throwable result) {
+  public void failure(Object testId, TestFailure result) {
+    // TestResultProcessor interface was updated in Gradle 7.6.6 to use TestFailure instead of Throwable
     processor.failure(testId, result);
   }
 

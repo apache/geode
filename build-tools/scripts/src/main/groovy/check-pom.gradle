@@ -174,7 +174,10 @@ tasks.register('updateExpectedPom', Copy) {
     expectedPomFile.toFile().withWriter { writer ->
       groovy.xml.XmlUtil.serialize(pomRoot).eachLine { line ->
         line = line.replaceFirst(/></, ">\n<")
-        writer.writeLine(line)
+        // Skip lines that contain only whitespace
+        if (line.trim().length() > 0) {
+          writer.writeLine(line)
+        }
       }
     }
   }

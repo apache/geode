@@ -71,12 +71,20 @@ publishing {
             }
           }
         }
-        afterEvaluate {
-          withXml {
-            def providerAsElement = asElement()
-            providerAsElement.insertBefore(
-                providerAsElement.ownerDocument().createComment(apacheLicense),
-                providerAsElement.firstChild)
+      }
+      
+      // Use afterEvaluate to post-process the generated POM file
+      project.afterEvaluate {
+        tasks.withType(GenerateMavenPom).configureEach { task ->
+          task.doLast {
+            // Remove extra blank lines from the generated POM
+            def pomFile = task.destination
+            if (pomFile.exists()) {
+              def content = pomFile.text
+              // Remove lines that contain only whitespace
+              content = content.replaceAll(/(?m)^\s+$\n/, '')
+              pomFile.text = content
+            }
           }
         }
       }

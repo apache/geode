@@ -141,7 +141,11 @@ public class AvailablePortHelper {
       }
 
       if (isPortAvailable(port, protocol, getAddress(protocol))) {
-        return port;
+        // Coordinate with UniquePortSupplier to prevent port collision in parallel tests
+        if (UniquePortSupplier.tryClaimPort(port)) {
+          return port;
+        }
+        // Port was already claimed by another parallel test, try next port
       }
     }
   }
