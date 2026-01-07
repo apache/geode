@@ -29,8 +29,10 @@ plugins {
 // These options specify the Maven coordinates (groupId:artifactId) for the generated plugin
 // descriptors, suppressing the warnings and allowing compilation to succeed.
 //
+// Apply only to main source compilation, as integration tests don't trigger the annotation processor.
+//
 // Reference: https://issues.apache.org/jira/browse/LOG4J2-3642
-tasks.withType(JavaCompile) {
+tasks.named('compileJava').configure {
   options.compilerArgs += [
     '-Alog4j.graalvm.groupId=org.apache.geode',
     '-Alog4j.graalvm.artifactId=geode-log4j'
