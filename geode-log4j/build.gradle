@@ -84,7 +84,12 @@ dependencies {
   // Log4j 2.20.0+ moved test utilities to log4j-core-test with new package names:
   // org.apache.logging.log4j.junit → org.apache.logging.log4j.core.test.junit
   // org.apache.logging.log4j.test → org.apache.logging.log4j.core.test
-  integrationTestImplementation('org.apache.logging.log4j:log4j-core-test')
+  // log4j-core-test 2.25.3 transitively depends on assertj-core 3.27.3, but Geode's
+  // custom AssertJ assertions were built against 3.22.0. Force 3.22.0 to avoid
+  // NoSuchMethodError: CommonValidations.failIfEmptySinceActualIsNotEmpty
+  integrationTestImplementation('org.apache.logging.log4j:log4j-core-test') {
+    exclude group: 'org.assertj', module: 'assertj-core'
+  }
   integrationTestImplementation('org.assertj:assertj-core')
 
   distributedTestImplementation(project(':geode-junit')) {
