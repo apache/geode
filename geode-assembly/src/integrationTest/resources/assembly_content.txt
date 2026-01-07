@@ -1012,11 +1012,11 @@ lib/jna-platform-5.11.0.jar
 lib/joda-time-2.12.7.jar
 lib/jopt-simple-5.0.4.jar
 lib/jul-to-slf4j-2.0.16.jar
-lib/log4j-api-2.17.2.jar
-lib/log4j-core-2.17.2.jar
-lib/log4j-jcl-2.17.2.jar
-lib/log4j-jul-2.17.2.jar
-lib/log4j-slf4j-impl-2.17.2.jar
+lib/log4j-api-2.25.3.jar
+lib/log4j-core-2.25.3.jar
+lib/log4j-jcl-2.25.3.jar
+lib/log4j-jul-2.25.3.jar
+lib/log4j-slf4j-impl-2.25.3.jar
 lib/logback-classic-1.5.11.jar
 lib/logback-core-1.5.11.jar
 lib/lucene-analysis-common-9.12.3.jar
