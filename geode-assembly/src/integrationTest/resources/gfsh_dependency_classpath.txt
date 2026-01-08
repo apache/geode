@@ -32,11 +32,11 @@ jaxb-runtime-4.0.2.jar
 jaxb-core-4.0.2.jar
 jakarta.xml.bind-api-4.0.2.jar
 jopt-simple-5.0.4.jar
-log4j-slf4j-impl-2.17.2.jar
-log4j-core-2.17.2.jar
-log4j-jcl-2.17.2.jar
-log4j-jul-2.17.2.jar
-log4j-api-2.17.2.jar
+log4j-slf4j-impl-2.25.3.jar
+log4j-core-2.25.3.jar
+log4j-jcl-2.25.3.jar
+log4j-jul-2.25.3.jar
+log4j-api-2.25.3.jar
 spring-aop-6.1.14.jar
 spring-shell-autoconfigure-3.3.3.jar
 spring-shell-standard-commands-3.3.3.jar
