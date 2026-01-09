@@ -307,7 +307,7 @@ public class ServerConnectionTest {
     ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
     ServerConnection spy = spy(serverConnection);
     Map<ServerSideHandshake, MutableInt> cleanupTable = mock(Map.class);
-    when(cleanupTable.get(any())).thenReturn(mock(MutableInt.class));
+    when(cleanupTable.get(any())).thenReturn(new MutableInt(0));
     doReturn(cleanupTable).when(clientHealthMonitor).getCleanupTable();
     doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupProxyIdTable();
     spy.setClientUserAuths(clientUserAuths);

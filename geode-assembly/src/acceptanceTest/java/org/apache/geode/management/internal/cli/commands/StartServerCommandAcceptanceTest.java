@@ -103,7 +103,7 @@ public class StartServerCommandAcceptanceTest {
     Boolean configurationLineFound = Boolean.FALSE;
     LineIterator lineIterator = FileUtils.lineIterator(logFile.toFile());
     while (lineIterator.hasNext()) {
-      String line = lineIterator.nextLine();
+      String line = lineIterator.next();
       if (line.contains("CacheServer Configuration:")) {
         configurationLineFound = Boolean.TRUE;
         assertThat(line).contains("max-threads=100");
@@ -152,7 +152,7 @@ public class StartServerCommandAcceptanceTest {
     boolean configurationLineFound = false;
     LineIterator lineIterator = FileUtils.lineIterator(logFile.toFile());
     while (lineIterator.hasNext()) {
-      String line = lineIterator.nextLine();
+      String line = lineIterator.next();
       if (line.contains("CacheServer Configuration:")) {
         configurationLineFound = true;
         assertThat(line).contains("max-threads=50");

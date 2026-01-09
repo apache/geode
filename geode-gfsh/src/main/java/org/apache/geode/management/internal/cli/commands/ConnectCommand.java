@@ -123,7 +123,7 @@ public class ConnectCommand extends OfflineGfshCommand {
           .createInfo("Already connected to: " + getGfsh().getOperationInvoker().toString());
     }
 
-    if (StringUtils.startsWith(url, "https")) {
+    if (url != null && url.startsWith("https")) {
       useSsl = true;
     }
 
