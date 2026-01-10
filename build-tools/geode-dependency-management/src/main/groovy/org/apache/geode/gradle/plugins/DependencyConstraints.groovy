@@ -39,7 +39,7 @@ class DependencyConstraints {
     deps.put("fastutil.version", "8.5.8")
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.20.Final")
-    deps.put("log4j.version", "2.17.2")
+    deps.put("log4j.version", "2.25.3")
     deps.put("micrometer.version", "1.9.1")
     deps.put("shiro.version", "1.13.0")
     deps.put("slf4j-api.version", "1.7.32")
@@ -215,6 +215,7 @@ class DependencyConstraints {
     dependencySet(group: 'org.apache.logging.log4j', version: get('log4j.version')) {
       entry('log4j-api')
       entry('log4j-core')
+      entry('log4j-core-test')
       entry('log4j-jcl')
       entry('log4j-jul')
       entry('log4j-slf4j-impl')

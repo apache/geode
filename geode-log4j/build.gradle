@@ -21,6 +21,14 @@ plugins {
   id 'jmh'
 }
 
+// Suppress Log4j 2.25.3 GraalVM annotation processor warning
+tasks.withType(JavaCompile) {
+  options.compilerArgs.addAll([
+    '-Alog4j.graalvm.groupId=org.apache.geode',
+    '-Alog4j.graalvm.artifactId=geode-log4j'
+  ])
+}
+
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
@@ -63,8 +71,10 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.apache.logging.log4j:log4j-core::tests')
-  integrationTestImplementation('org.apache.logging.log4j:log4j-core::test-sources')
+  integrationTestImplementation('org.apache.logging.log4j:log4j-core-test') {
+    exclude group: 'org.apache.maven'
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-api-test'
+  }
   integrationTestImplementation('org.assertj:assertj-core')
 
   distributedTestImplementation(project(':geode-junit')) {
