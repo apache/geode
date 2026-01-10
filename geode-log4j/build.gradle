@@ -74,9 +74,13 @@ dependencies {
   // Log4j 2.20.0+ moved test utilities to log4j-core-test with new package names:
   // org.apache.logging.log4j.junit → org.apache.logging.log4j.core.test.junit
   // org.apache.logging.log4j.test → org.apache.logging.log4j.core.test
-  // log4j-core-test 2.25.3 transitively depends on assertj-core 3.27.3, but Geode's
-  // custom AssertJ assertions were built against 3.22.0. Force 3.22.0 to avoid
-  // NoSuchMethodError: CommonValidations.failIfEmptySinceActualIsNotEmpty
+  // log4j-core-test 2.25.3 requires the following exclusions:
+  // - assertj-core 3.27.3: conflicts with Geode's 3.22.0 custom assertions
+  //   (NoSuchMethodError: CommonValidations.failIfEmptySinceActualIsNotEmpty)
+  // - maven-core 3.9.10: causes Gradle dependency resolution conflict with Guava
+  // - log4j-api-test: brings JUnit 5.13.2 transitively
+  // - junit.jupiter/platform 5.13.2: conflicts with project's JUnit 5.8.2
+  //   (JUnitException: OutputDirectoryProvider not available due to version mismatch)
   integrationTestImplementation('org.apache.logging.log4j:log4j-core-test') {
     exclude group: 'org.apache.maven'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api-test'
