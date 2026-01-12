@@ -33,7 +33,7 @@ class DependencyConstraints {
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
     // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
-    deps.put("commons-io.version", "2.15.1")
+    deps.put("commons-io.version", "2.18.0")
     deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
     deps.put("fastutil.version", "8.5.8")
