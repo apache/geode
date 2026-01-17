@@ -62,7 +62,7 @@ jobs:
     - name: Setup Java JDK
       uses: actions/setup-java@v4.7.1
       with:
-        java-version: 17
+        java-version: 8
         distribution: temurin
         cache: gradle
 
