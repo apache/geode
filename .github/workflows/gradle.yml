@@ -19,9 +19,9 @@ name: develop
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "support/2.0" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "support/2.0" ]
 
 permissions:
   contents: read
