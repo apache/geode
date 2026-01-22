@@ -73,7 +73,10 @@ public class OplogEntryIdSetTest {
 
   @Test
   public void addMethodOverflowsWhenInternalAddThrowsIllegalArgumentException() {
-    int testEntries = 1000;
+    // Use a small number of test entries to avoid triggering the threshold-based overflow
+    // The DRF_HASHMAP_OVERFLOW_THRESHOLD may be set to a small value (e.g., 10) by other tests
+    // and since it's a static final field, we can't change it at runtime
+    int testEntries = 5;
     int magicInt = testEntries + 1;
     long magicLong = 0x00000000FFFFFFFFL + testEntries + 1;
 
