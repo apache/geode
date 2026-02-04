@@ -1017,8 +1017,6 @@ lib/log4j-core-2.25.3.jar
 lib/log4j-jcl-2.25.3.jar
 lib/log4j-jul-2.25.3.jar
 lib/log4j-slf4j-impl-2.25.3.jar
-lib/logback-classic-1.5.11.jar
-lib/logback-core-1.5.11.jar
 lib/lucene-analysis-common-9.12.3.jar
 lib/lucene-analysis-phonetic-9.12.3.jar
 lib/lucene-core-9.12.3.jar
