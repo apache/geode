@@ -340,9 +340,11 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     try {
       Constructor<?> cons = fixedIdClass.getConstructor((Class<Object>[]) null);
       cons.setAccessible(true);
-      if (!cons.isAccessible()) {
+      //Based on canAccess doc - since this is constructor, the obj must be null
+      if (!cons.canAccess(null)) {
         throw new IllegalArgumentException(
-            "default constructor not accessible " + "for DSFID=" + fixedId + ": " + fixedIdClass);
+            "default constructor failed reflective access check (canAccess) for DSFID="
+                + fixedId + ": " + fixedIdClass);
       }
       if (fixedId >= Byte.MIN_VALUE && fixedId <= Byte.MAX_VALUE) {
         int index = fixedId + Byte.MAX_VALUE + 1;
