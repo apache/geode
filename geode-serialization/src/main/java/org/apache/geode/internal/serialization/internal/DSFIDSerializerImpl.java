@@ -340,7 +340,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     try {
       Constructor<?> cons = fixedIdClass.getConstructor((Class<Object>[]) null);
       cons.setAccessible(true);
-      //Based on canAccess doc - since this is constructor, the obj must be null
+      // Based on canAccess doc - since this is constructor, the obj must be null
       if (!cons.canAccess(null)) {
         throw new IllegalArgumentException(
             "default constructor failed reflective access check (canAccess) for DSFID="
