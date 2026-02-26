@@ -19,7 +19,6 @@ import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOG
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.config.Ini;
-import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.session.mgt.DefaultSessionManager;
@@ -41,14 +40,20 @@ public class SecurityManagerProvider {
   public SecurityManagerProvider(String shiroConfig) {
     securityManager = null;
 
-    IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
-    // we will need to make sure that shiro uses a case sensitive permission resolver
-    Ini.Section main = factory.getIni().addSection("main");
+    // Shiro 2.1.0: IniSecurityManagerFactory is removed. Use Ini and DefaultSecurityManager
+    // directly.
+    Ini ini = new Ini();
+    ini.loadFromPath("classpath:" + shiroConfig);
+    Ini.Section main = ini.getSection("main");
+    if (main == null) {
+      main = ini.addSection("main");
+    }
     main.put("geodePermissionResolver", GeodePermissionResolver.class.getName());
     if (!main.containsKey("iniRealm.permissionResolver")) {
       main.put("iniRealm.permissionResolver", "$geodePermissionResolver");
     }
-    shiroManager = factory.getInstance();
+    // Shiro 2.1.0: create a DefaultSecurityManager
+    shiroManager = new DefaultSecurityManager();
   }
 
 

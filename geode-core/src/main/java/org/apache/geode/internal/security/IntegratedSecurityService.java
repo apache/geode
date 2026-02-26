@@ -28,8 +28,10 @@ import org.apache.commons.lang3.SerializationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.ShiroException;
 import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.config.ConfigurationException;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
@@ -173,7 +175,7 @@ public class IntegratedSecurityService implements SecurityService {
       currentUser.login(token);
     } catch (UnavailableSecurityManagerException e) {
       throw new CacheClosedException("Cache is closed.");
-    } catch (ShiroException e) {
+    } catch (AuthenticationException | ConfigurationException e) {
       logger.info("error logging in: " + token.getPrincipal());
       Throwable cause = e.getCause();
       if (cause == null) {
@@ -199,7 +201,7 @@ public class IntegratedSecurityService implements SecurityService {
     try {
       logger.debug("Logging out " + currentUser.getPrincipal());
       currentUser.logout();
-    } catch (ShiroException e) {
+    } catch (AuthenticationException e) {
       logger.info("error logging out: " + currentUser.getPrincipal());
       throw new GemFireSecurityException(e.getMessage(), e);
     }
@@ -286,7 +288,7 @@ public class IntegratedSecurityService implements SecurityService {
 
     try {
       currentUser.checkPermission(context);
-    } catch (ShiroException e) {
+    } catch (AuthorizationException e) {
       String message = currentUser.getPrincipal() + " not authorized for " + context;
       logger.info("NotAuthorizedException: {}", message);
       throw new NotAuthorizedException(message, e);
