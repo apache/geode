@@ -26,6 +26,8 @@ dependencies {
   api(platform(project(':boms:geode-all-bom')))
   implementation('jakarta.servlet:jakarta.servlet-api')
   implementation(project(':geode-deployment:geode-deployment-legacy'))
+  // Include Shiro runtime in the test WAR so containers can load Shiro classes
+  runtimeOnly 'org.apache.shiro:shiro-core:2.1.0'
 }
 
 war {
