@@ -99,7 +99,9 @@ public class SecurityServiceFactory {
       Method getSecurityManager = securityUtils.getMethod("getSecurityManager");
       Object sm = getSecurityManager.invoke(null);
       return sm != null;
-    } catch (ClassNotFoundException | NoClassDefFoundError | LinkageError e) {
+    } catch (ClassNotFoundException e) {
+      return false;
+    } catch (LinkageError e) {
       return false;
     } catch (Exception e) {
       return false;
