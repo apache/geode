@@ -21,6 +21,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.config.Ini;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.session.mgt.DefaultSessionManager;
 import org.apache.shiro.session.mgt.SessionManager;
 
@@ -41,7 +42,7 @@ public class SecurityManagerProvider {
     securityManager = null;
 
     // Shiro 2.1.0: IniSecurityManagerFactory is removed. Use Ini and DefaultSecurityManager
-    // directly.
+    // directly. Create an IniRealm from the Ini so realms are properly configured.
     Ini ini = new Ini();
     ini.loadFromPath("classpath:" + shiroConfig);
     Ini.Section main = ini.getSection("main");
@@ -52,8 +53,31 @@ public class SecurityManagerProvider {
     if (!main.containsKey("iniRealm.permissionResolver")) {
       main.put("iniRealm.permissionResolver", "$geodePermissionResolver");
     }
-    // Shiro 2.1.0: create a DefaultSecurityManager
-    shiroManager = new DefaultSecurityManager();
+
+    // Build an IniRealm from the loaded Ini and set GeodePermissionResolver explicitly.
+    // Create the realm first, set the GeodePermissionResolver, then attach the Ini
+    // so the realm parses roles/permissions using our resolver.
+    IniRealm iniRealm = new IniRealm();
+    iniRealm.setPermissionResolver(new GeodePermissionResolver());
+    iniRealm.setIni(ini);
+    // If the realm exposes an init method, ensure it is initialized (defensive).
+    try {
+      java.lang.reflect.Method init = iniRealm.getClass().getMethod("init");
+      if (init != null) {
+        init.invoke(iniRealm);
+      }
+    } catch (Throwable t) {
+      // Not critical if method is absent or invocation fails, but log for diagnostics.
+      logger.debug("IniRealm init invocation failed; continuing without init", t);
+    }
+
+    // Create a DefaultSecurityManager backed by the IniRealm so realms exist.
+    shiroManager = new DefaultSecurityManager((Realm) iniRealm);
+
+    // try to increase global session timeout similar to other provider constructors
+    if (shiroManager instanceof DefaultSecurityManager) {
+      increaseShiroGlobalSessionTimeout((DefaultSecurityManager) shiroManager);
+    }
   }
 
 
