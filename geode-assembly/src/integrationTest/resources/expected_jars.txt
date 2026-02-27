@@ -9,6 +9,7 @@ antlr-runtime
 asm
 asm-commons
 asm-tree
+bcprov-jdk18on
 byte-buddy
 classgraph
 classmate
@@ -109,6 +110,8 @@ shiro-crypto-cipher
 shiro-crypto-core
 shiro-crypto-hash
 shiro-event
+shiro-hashes-argon
+shiro-hashes-bcrypt
 shiro-lang
 slf4j-api
 snakeyaml
