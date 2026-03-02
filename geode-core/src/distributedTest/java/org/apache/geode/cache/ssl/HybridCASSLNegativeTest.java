@@ -34,7 +34,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 /**
  * Negative tests for hybrid TLS configuration.
  * Validates that improper configurations are properly rejected with appropriate errors.
- * 
+ *
  * These tests verify the troubleshooting scenarios documented in the security guide:
  * - Missing clientAuth EKU causes "certificate_unknown" alert
  * - Wrong CA trust causes PKIX path validation failure
@@ -42,22 +42,22 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  */
 @Category({ClientServerTest.class})
 public class HybridCASSLNegativeTest {
-  
+
   private HybridCATestFixture fixture;
-  
+
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
-  
+
   @Before
   public void setup() {
     fixture = new HybridCATestFixture();
     fixture.setup();
-    
+
     // Ignore expected exceptions during locator/server shutdown with SSL
     IgnoredException.addIgnoredException("Could not stop Locator");
     IgnoredException.addIgnoredException("ForcedDisconnectException");
   }
-  
+
   /**
    * Tests that a server configured to trust the wrong CA rejects client connections.
    * Expected error: PKIX path validation failed
@@ -69,45 +69,45 @@ public class HybridCASSLNegativeTest {
         .commonName("Wrong CA")
         .isCA()
         .generate();
-    
+
     // Server certificate from public CA
     CertificateMaterial serverCert = fixture.createServerCertificate("server-1");
-    
+
     // Server trusts wrong CA (not the private CA that issued client cert)
     CertStores serverStore = CertStores.serverStore();
     serverStore.withCertificate("server", serverCert);
     serverStore.trust("wrongCA", wrongCA); // Should trust privateCA instead
-    
+
     Properties serverProps = serverStore.propertiesWith(ALL, true, true);
-    
+
     MemberVM locator = cluster.startLocatorVM(0, serverProps);
     MemberVM server = cluster.startServerVM(1, serverProps, locator.getPort());
-    
+
     server.invoke(() -> {
       ClusterStartupRule.getCache()
           .createRegionFactory(RegionShortcut.REPLICATE)
           .create("testRegion");
     });
-    
+
     // Client with private-CA certificate
     CertStores clientStore = fixture.createClientStores("1");
     Properties clientProps = clientStore.propertiesWith(ALL, true, true);
-    
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
     IgnoredException.addIgnoredException("sun.security.validator.ValidatorException");
     IgnoredException.addIgnoredException("PKIX path");
     IgnoredException.addIgnoredException("java.io.IOException");
     IgnoredException.addIgnoredException("Broken pipe");
-    
+
     // Client connection should fail with PKIX path validation error
     assertThatThrownBy(() -> {
       cluster.startClientVM(2, clientProps,
           ccf -> ccf.addPoolLocator("localhost", locator.getPort()));
     }).hasCauseInstanceOf(javax.net.ssl.SSLHandshakeException.class);
-    
+
     IgnoredException.removeAllExpectedExceptions();
   }
-  
+
   /**
    * Tests that a client configured to trust the wrong CA rejects server connections.
    * Expected error: PKIX path validation failed
@@ -119,46 +119,46 @@ public class HybridCASSLNegativeTest {
         .commonName("Wrong CA")
         .isCA()
         .generate();
-    
+
     // Server with correct configuration
     CertStores serverStore = fixture.createServerStores("1");
     Properties serverProps = serverStore.propertiesWith(ALL, true, true);
-    
+
     MemberVM locator = cluster.startLocatorVM(0, serverProps);
     MemberVM server = cluster.startServerVM(1, serverProps, locator.getPort());
-    
+
     server.invoke(() -> {
       ClusterStartupRule.getCache()
           .createRegionFactory(RegionShortcut.REPLICATE)
           .create("testRegion");
     });
-    
+
     // Client trusts wrong CA (not the public CA that issued server cert)
     CertificateMaterial clientCert = fixture.createClientCertificate("client-1");
     CertStores clientStore = CertStores.clientStore();
     clientStore.withCertificate("client", clientCert);
     clientStore.trust("wrongCA", wrongCA); // Should trust publicCA instead
-    
+
     Properties clientProps = clientStore.propertiesWith(ALL, true, true);
-    
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
     IgnoredException.addIgnoredException("sun.security.validator.ValidatorException");
     IgnoredException.addIgnoredException("PKIX path");
     IgnoredException.addIgnoredException("java.security.cert.CertificateException");
-    
+
     // Client connection should fail with PKIX path validation error
     assertThatThrownBy(() -> {
       cluster.startClientVM(2, clientProps,
           ccf -> ccf.addPoolLocator("localhost", locator.getPort()));
     }).hasCauseInstanceOf(javax.net.ssl.SSLHandshakeException.class);
-    
+
     IgnoredException.removeAllExpectedExceptions();
   }
-  
+
   /**
    * Tests that a client certificate without clientAuth EKU is rejected.
    * Expected error: certificate_unknown (as documented in troubleshooting guide)
-   * 
+   *
    * This validates the critical requirement that client certificates must have
    * the clientAuth Extended Key Usage.
    */
@@ -166,84 +166,86 @@ public class HybridCASSLNegativeTest {
   public void testClientCertificateMissingClientAuthEKU() throws Exception {
     CertStores serverStore = fixture.createServerStores("1");
     Properties serverProps = serverStore.propertiesWith(ALL, true, true);
-    
+
     MemberVM locator = cluster.startLocatorVM(0, serverProps);
     MemberVM server = cluster.startServerVM(1, serverProps, locator.getPort());
-    
+
     server.invoke(() -> {
       ClusterStartupRule.getCache()
           .createRegionFactory(RegionShortcut.REPLICATE)
           .create("testRegion");
     });
-    
+
     // Client certificate WITHOUT clientAuth EKU
-    CertificateMaterial clientCert = fixture.createClientCertificateWithoutClientAuthEKU("client-1");
+    CertificateMaterial clientCert =
+        fixture.createClientCertificateWithoutClientAuthEKU("client-1");
     CertStores clientStore = CertStores.clientStore();
     clientStore.withCertificate("client", clientCert);
     clientStore.trust("publicCA", fixture.getPublicCA());
-    
+
     Properties clientProps = clientStore.propertiesWith(ALL, true, true);
-    
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
     IgnoredException.addIgnoredException("certificate_unknown");
     IgnoredException.addIgnoredException("java.io.IOException");
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection reset");
-    
+
     // Connection should fail with certificate_unknown or handshake failure
     assertThatThrownBy(() -> {
       cluster.startClientVM(2, clientProps,
           ccf -> ccf.addPoolLocator("localhost", locator.getPort()));
     }).hasCauseInstanceOf(javax.net.ssl.SSLHandshakeException.class);
-    
+
     IgnoredException.removeAllExpectedExceptions();
   }
-  
+
   /**
    * Tests that a server certificate without subjectAltName fails hostname verification.
    * Expected error: No subject alternative names present (when endpoint identification enabled)
-   * 
-   * This validates the requirement that server certificates must include SAN for hostname verification.
+   *
+   * This validates the requirement that server certificates must include SAN for hostname
+   * verification.
    */
   @Test
   public void testServerCertificateMissingSAN() throws Exception {
     // Server certificate without SAN
     CertificateMaterial serverCert = fixture.createServerCertificateWithoutSAN("server-1");
-    
+
     CertStores serverStore = CertStores.serverStore();
     serverStore.withCertificate("server", serverCert);
     serverStore.trust("privateCA", fixture.getPrivateCA());
-    
+
     Properties serverProps = serverStore.propertiesWith(ALL, true, true);
     serverProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
-    
+
     MemberVM locator = cluster.startLocatorVM(0, serverProps);
     MemberVM server = cluster.startServerVM(1, serverProps, locator.getPort());
-    
+
     server.invoke(() -> {
       ClusterStartupRule.getCache()
           .createRegionFactory(RegionShortcut.REPLICATE)
           .create("testRegion");
     });
-    
+
     CertStores clientStore = fixture.createClientStores("1");
     Properties clientProps = clientStore.propertiesWith(ALL, true, true);
     clientProps.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
-    
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
     IgnoredException.addIgnoredException("java.security.cert.CertificateException");
     IgnoredException.addIgnoredException("No subject alternative");
     IgnoredException.addIgnoredException("No name matching");
-    
+
     // Connection should fail with hostname verification error
     assertThatThrownBy(() -> {
       cluster.startClientVM(2, clientProps,
           ccf -> ccf.addPoolLocator("localhost", locator.getPort()));
     }).hasCauseInstanceOf(javax.net.ssl.SSLHandshakeException.class);
-    
+
     IgnoredException.removeAllExpectedExceptions();
   }
-  
+
   /**
    * Tests that mutual authentication is enforced when ssl-require-authentication=true.
    * A server without a client certificate in its keystore should not be able to join as a client.
@@ -252,37 +254,37 @@ public class HybridCASSLNegativeTest {
   public void testMutualAuthenticationEnforced() throws Exception {
     CertStores serverStore = fixture.createServerStores("1");
     Properties serverProps = serverStore.propertiesWith(ALL, true, true);
-    
+
     MemberVM locator = cluster.startLocatorVM(0, serverProps);
     MemberVM server = cluster.startServerVM(1, serverProps, locator.getPort());
-    
+
     server.invoke(() -> {
       ClusterStartupRule.getCache()
           .createRegionFactory(RegionShortcut.REPLICATE)
           .create("testRegion");
     });
-    
+
     // Create a "client" with no certificate in keystore, only truststore
     CertStores invalidClientStore = CertStores.clientStore();
     // Only trust, no certificate
     invalidClientStore.trust("publicCA", fixture.getPublicCA());
-    
+
     Properties clientProps = invalidClientStore.propertiesWith(ALL, true, true);
-    
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
     IgnoredException.addIgnoredException("bad_certificate");
     IgnoredException.addIgnoredException("java.io.IOException");
     IgnoredException.addIgnoredException("Broken pipe");
-    
+
     // Connection should fail - server requires client authentication
     assertThatThrownBy(() -> {
       cluster.startClientVM(2, clientProps,
           ccf -> ccf.addPoolLocator("localhost", locator.getPort()));
     }).hasCauseInstanceOf(javax.net.ssl.SSLHandshakeException.class);
-    
+
     IgnoredException.removeAllExpectedExceptions();
   }
-  
+
   /**
    * Tests that a server certificate without serverAuth EKU might be rejected
    * (behavior depends on TLS implementation, but good practice to include it).
@@ -296,28 +298,28 @@ public class HybridCASSLNegativeTest {
         .sanDnsName("localhost")
         // Intentionally omit serverAuthEKU()
         .generate();
-    
+
     CertStores serverStore = CertStores.serverStore();
     serverStore.withCertificate("server", serverCert);
     serverStore.trust("privateCA", fixture.getPrivateCA());
-    
+
     Properties serverProps = serverStore.propertiesWith(ALL, true, true);
-    
+
     MemberVM locator = cluster.startLocatorVM(0, serverProps);
     MemberVM server = cluster.startServerVM(1, serverProps, locator.getPort());
-    
+
     server.invoke(() -> {
       ClusterStartupRule.getCache()
           .createRegionFactory(RegionShortcut.REPLICATE)
           .create("testRegion");
     });
-    
+
     CertStores clientStore = fixture.createClientStores("1");
     Properties clientProps = clientStore.propertiesWith(ALL, true, true);
-    
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
     IgnoredException.addIgnoredException("extended key usage");
-    
+
     // Some TLS implementations may reject this, others may accept
     // The test documents that including serverAuth EKU is best practice
     try {
@@ -333,7 +335,7 @@ public class HybridCASSLNegativeTest {
       IgnoredException.removeAllExpectedExceptions();
     }
   }
-  
+
   /**
    * Tests mixed configuration where one server has correct hybrid TLS and another doesn't.
    * The misconfigured server should fail to join the cluster.
@@ -342,43 +344,43 @@ public class HybridCASSLNegativeTest {
   public void testMisconfiguredServerCannotJoinCluster() throws Exception {
     CertStores locatorStore = fixture.createLocatorStores("1");
     Properties locatorProps = locatorStore.propertiesWith(ALL, true, true);
-    
+
     MemberVM locator = cluster.startLocatorVM(0, locatorProps);
-    
+
     // First server with correct configuration
     CertStores serverStore1 = fixture.createServerStores("1");
     Properties serverProps1 = serverStore1.propertiesWith(ALL, true, true);
     MemberVM server1 = cluster.startServerVM(1, serverProps1, locator.getPort());
-    
+
     // Second server with wrong CA certificates
     CertificateMaterial wrongCA = new CertificateBuilder()
         .commonName("Wrong CA")
         .isCA()
         .generate();
-    
+
     CertificateMaterial wrongServerCert = new CertificateBuilder()
         .commonName("server-2")
         .issuedBy(wrongCA)
         .serverAuthEKU()
         .sanDnsName("localhost")
         .generate();
-    
+
     CertStores serverStore2 = CertStores.serverStore();
     serverStore2.withCertificate("server", wrongServerCert);
     serverStore2.trust("wrongCA", wrongCA);
-    
+
     Properties serverProps2 = serverStore2.propertiesWith(ALL, true, true);
-    
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
     IgnoredException.addIgnoredException("PKIX path");
     IgnoredException.addIgnoredException("ForcedDisconnectException");
     IgnoredException.addIgnoredException("java.io.IOException");
-    
+
     // Second server should fail to join cluster
     assertThatThrownBy(() -> {
       cluster.startServerVM(2, serverProps2, locator.getPort());
     }).hasCauseInstanceOf(java.io.IOException.class);
-    
+
     IgnoredException.removeAllExpectedExceptions();
   }
 }
