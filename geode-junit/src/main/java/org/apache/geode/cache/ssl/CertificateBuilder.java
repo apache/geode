@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import sun.security.util.ObjectIdentifier;
 import sun.security.x509.AlgorithmId;
 import sun.security.x509.BasicConstraintsExtension;
 import sun.security.x509.CertificateAlgorithmId;
@@ -39,6 +40,7 @@ import sun.security.x509.CertificateValidity;
 import sun.security.x509.CertificateVersion;
 import sun.security.x509.CertificateX509Key;
 import sun.security.x509.DNSName;
+import sun.security.x509.ExtendedKeyUsageExtension;
 import sun.security.x509.GeneralName;
 import sun.security.x509.GeneralNames;
 import sun.security.x509.IPAddressName;
@@ -64,6 +66,7 @@ public class CertificateBuilder {
   private final List<InetAddress> ipAddresses;
   private boolean isCA;
   private CertificateMaterial issuer;
+  private final List<ObjectIdentifier> extendedKeyUsages;
 
   public CertificateBuilder() {
     this(30, "SHA256withRSA");
@@ -74,6 +77,7 @@ public class CertificateBuilder {
     this.algorithm = algorithm;
     dnsNames = new ArrayList<>();
     ipAddresses = new ArrayList<>();
+    extendedKeyUsages = new ArrayList<>();
   }
 
   private static GeneralName dnsGeneralName(String name) {
@@ -128,6 +132,38 @@ public class CertificateBuilder {
   public CertificateBuilder issuedBy(CertificateMaterial issuer) {
     this.issuer = issuer;
     return this;
+  }
+
+  /**
+   * Add Extended Key Usage purposes to the certificate.
+   * Common purposes:
+   * - "1.3.6.1.5.5.7.3.1" = serverAuth (TLS Web Server Authentication)
+   * - "1.3.6.1.5.5.7.3.2" = clientAuth (TLS Web Client Authentication)
+   * - "1.3.6.1.5.5.7.3.3" = codeSigning
+   */
+  public CertificateBuilder extendedKeyUsage(String... oids) {
+    try {
+      for (String oid : oids) {
+        extendedKeyUsages.add(ObjectIdentifier.of(oid));
+      }
+    } catch (IOException ex) {
+      throw new UncheckedIOException(ex);
+    }
+    return this;
+  }
+
+  /**
+   * Add TLS Web Client Authentication Extended Key Usage (for client certificates).
+   */
+  public CertificateBuilder clientAuthEKU() {
+    return extendedKeyUsage("1.3.6.1.5.5.7.3.2");
+  }
+
+  /**
+   * Add TLS Web Server Authentication Extended Key Usage (for server certificates).
+   */
+  public CertificateBuilder serverAuthEKU() {
+    return extendedKeyUsage("1.3.6.1.5.5.7.3.1");
   }
 
   private GeneralNames san() throws IOException {
@@ -208,6 +244,12 @@ public class CertificateBuilder {
 
         BasicConstraintsExtension basicConstraints = new BasicConstraintsExtension(true, 0);
         extensions.set(BasicConstraintsExtension.NAME, basicConstraints);
+      }
+
+      if (!extendedKeyUsages.isEmpty()) {
+        ExtendedKeyUsageExtension ekuExtension =
+            new ExtendedKeyUsageExtension(new java.util.Vector<>(extendedKeyUsages));
+        extensions.set(ExtendedKeyUsageExtension.NAME, ekuExtension);
       }
 
       if (!extensions.getAllExtensions().isEmpty()) {
