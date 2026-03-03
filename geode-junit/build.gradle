@@ -29,9 +29,10 @@ compileJava {
 }
 
 javadoc {
-  // Add --add-exports for sun.security packages needed for CertificateBuilder javadoc generation
-  options.addStringOption('-add-exports', 'java.base/sun.security.x509=ALL-UNNAMED')
-  options.addStringOption('-add-exports', 'java.base/sun.security.util=ALL-UNNAMED')
+  // Exclude classes that use internal sun.security packages to avoid javadoc errors
+  options.addBooleanOption('Xdoclint:none', true)
+  exclude '**/CertificateBuilder.java'
+  exclude '**/HybridCATestFixture.java'
 }
 
 dependencies {
