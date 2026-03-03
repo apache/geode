@@ -1,0 +1,301 @@
+---
+title:  Server-only TLS with Alternative Client Authentication
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This page is part of the
+[Public CA Client Authentication EKU Mitigation guide](public_ca_client_auth_eku_mitigations.html).
+It describes how to configure <%=vars.product_name%> with TLS for transport
+encryption while authenticating clients at the application layer — removing the
+dependency on client certificates and the `clientAuth` EKU entirely.
+
+## <a id="soa_summary" class="no-quick-link"></a>Summary
+
+When server-only TLS is configured:
+
+- **All network traffic is encrypted in both directions** by TLS. Enabling TLS
+  on a <%=vars.product_name%> component (`ssl-enabled-components`) causes the
+  underlying JSSE socket/engine to encrypt all data for that component regardless
+  of whether client certificates are required.
+- **Client authentication uses application-layer mechanisms** — username/password,
+  token-based auth, LDAP/AD, or other custom `SecurityManager` implementations —
+  rather than TLS handshake client certificates.
+
+**When to choose this option:**
+
+- Client certificates are operationally impractical to distribute or rotate.
+- You already have or can build an application-layer authentication system.
+- You want the simplest migration path: keep TLS encryption, remove client certs.
+- You need a solution that works for both client/server and peer-to-peer (P2P)
+  cache topologies.
+
+## <a id="soa_transport_clarification" class="no-quick-link"></a>Transport Encryption Clarification
+
+A common question is whether disabling client certificate authentication (`ssl-require-authentication=false`)
+reduces transport security.  It does not.
+
+<%=vars.product_name%> TLS is implemented at the socket/engine layer by JSSE.
+Once a TLS connection is established, all bytes exchanged over that connection
+are encrypted and authenticated by the negotiated cipher suite — in both the
+client-to-server and server-to-client directions.  Client certificate
+authentication is a separate step in the TLS handshake that establishes the
+*client's identity*; it has no effect on the *confidentiality or integrity* of
+the channel.
+
+Setting `ssl-require-authentication=false` disables mandatory client certificate
+presentation during the handshake.  The TLS session is still established and
+data continues to flow over an encrypted channel.
+
+## <a id="soa_config" class="no-quick-link"></a>Configuration
+
+### Enable TLS on Servers and Locators (Server-only TLS)
+
+``` pre
+# Enable TLS for all components
+ssl-enabled-components=all
+
+# Server presents its certificate; client verifies it
+ssl-keystore=/etc/geode/server-keystore.jks
+ssl-keystore-password=<password>
+ssl-keystore-type=JKS
+
+# Do NOT require client certificates
+ssl-require-authentication=false
+
+# Optional but recommended: validate the server hostname from the client side
+ssl-endpoint-identification-enabled=true
+```
+
+**Note:** `ssl-require-authentication=false` is the key change from a full mTLS
+deployment.  The server still presents its own certificate and all transport
+remains TLS-encrypted.
+
+For component-specific control (for example, requiring mTLS on `cluster` but
+not on `server`), use the component-specific property variants:
+
+``` pre
+cluster-ssl-require-authentication=true
+server-ssl-require-authentication=false
+```
+
+### Configure Application-layer Client Authentication
+
+<%=vars.product_name%> supports pluggable authentication through:
+
+- **`AuthInitialize`** — a client-side interface whose `getCredentials()` method
+  injects credentials (as a `Properties` object) into each connection attempt.
+- **`SecurityManager`** — a server-side interface that receives the credentials
+  and enforces authentication and authorization.
+
+**Username / password (simplest approach):**
+
+``` pre
+# Client-side: supply credentials using an AuthInitialize implementation
+security-client-auth-init=org.apache.geode.security.templates.UserPasswordAuthInit.create
+
+# Server-side: validate credentials with a SecurityManager implementation
+security-manager=com.example.geode.security.MySecurityManager
+```
+
+A minimal `SecurityManager` implementation:
+
+```java
+public class MySecurityManager implements SecurityManager {
+    @Override
+    public Object authenticate(Properties credentials) throws AuthenticationFailedException {
+        String user = credentials.getProperty(ResourceConstants.USER_NAME);
+        String pass = credentials.getProperty(ResourceConstants.PASSWORD);
+        // validate against your directory / token store
+        if (!isValid(user, pass)) {
+            throw new AuthenticationFailedException("Invalid credentials for user: " + user);
+        }
+        return user; // returned value becomes the principal
+    }
+
+    @Override
+    public boolean authorize(Object principal, ResourcePermission permission) {
+        return true; // add fine-grained authorization here
+    }
+}
+```
+
+**Token-based authentication (JWT / OAuth bearer tokens):**
+
+Implement `AuthInitialize` to supply a token string and a `SecurityManager` to
+validate and decode that token:
+
+```java
+// Client side
+public class TokenAuthInit implements AuthInitialize {
+    public static AuthInitialize create() { return new TokenAuthInit(); }
+
+    @Override
+    public Properties getCredentials(Properties securityProps, DistributedMember server,
+                                     boolean isPeer) {
+        Properties creds = new Properties();
+        creds.setProperty("bearer-token", System.getenv("GEODE_BEARER_TOKEN"));
+        return creds;
+    }
+}
+```
+
+**LDAP / Active Directory:**
+
+Implement `SecurityManager.authenticate()` to verify the supplied credentials
+against an LDAP server using the standard `javax.naming.ldap` API or JNDI.
+
+## <a id="soa_p2p_topology" class="no-quick-link"></a>Peer-to-Peer (P2P) Topology Support
+
+This approach works for **both** client/server and peer-to-peer cache topologies.
+In P2P topologies, members authenticate with each other using the same
+application-layer authentication mechanism.
+
+**P2P Configuration:**
+
+``` pre
+ssl-enabled-components=all
+ssl-keystore=/etc/geode/peer-keystore.jks
+ssl-keystore-password=<password>
+ssl-truststore=/etc/geode/peer-truststore.jks
+ssl-truststore-password=<password>
+
+# Disable certificate-based peer authentication
+ssl-require-authentication=false
+ssl-endpoint-identification-enabled=true
+
+# Application-layer peer authentication
+security-peer-auth-init=com.example.geode.security.PeerAuthInit.create
+security-manager=com.example.geode.security.MySecurityManager
+security-username=${PEER_USERNAME}
+security-password=${PEER_PASSWORD}
+```
+
+**Authorization Requirement:**
+
+Peers joining a P2P cluster must have `CLUSTER:MANAGE` permission. The
+`SecurityManager.authorize()` method validates this during peer join:
+
+```java
+@Override
+public boolean authorize(Object principal, ResourcePermission permission) {
+    // Peer joining cluster must have CLUSTER:MANAGE
+    if (permission.getResource() == Resource.CLUSTER && 
+        permission.getOperation() == Operation.MANAGE) {
+        return hasClusterManagePermission(principal);
+    }
+    return authorizeDataOperation(principal, permission);
+}
+```
+
+## <a id="soa_client_driver" class="no-quick-link"></a>Client Driver Changes
+
+When migrating from mTLS to server-only TLS + credential auth:
+
+1. **Remove** the client keystore (`ssl-keystore`) configuration from client
+   driver properties — clients no longer present a certificate.
+2. **Add** credential injection via `security-client-auth-init` (or the
+   equivalent driver API for non-Java clients).
+3. Clients still need a truststore (or rely on the system trust store) to verify
+   the server certificate.
+
+Minimal client configuration example (Java thin client):
+
+``` pre
+# Keep truststore to verify the server cert
+ssl-enabled-components=all
+ssl-truststore=/etc/geode/client-truststore.jks
+ssl-truststore-password=<password>
+ssl-endpoint-identification-enabled=true
+
+# No ssl-keystore needed for server-only TLS
+
+# Credential injection
+security-client-auth-init=org.apache.geode.security.templates.UserPasswordAuthInit.create
+security-username=myuser
+security-password=mypassword
+```
+
+## <a id="soa_rotation" class="no-quick-link"></a>Server Certificate Rotation
+
+Server keystores can still be rotated without restart using
+`FileWatchingX509ExtendedKeyManager`.  Write the new server keystore atomically
+(create temp file, write, rename) to the path configured in `ssl-keystore`, and
+the file watcher reloads the `KeyManager` transparently.
+
+## <a id="soa_security_considerations" class="no-quick-link"></a>Security Considerations
+
+- Even without mutual certificate authentication, confidentiality and integrity
+  are preserved by TLS.  However, transport-level client identity assurances
+  (binding a TLS session to a certificate) are not available.  Enforce strong
+  application-layer authentication in your `SecurityManager`.
+- Protect credential stores.  Do not store plaintext passwords in configuration
+  files; set passwords from environment variables in start scripts, or use a secrets
+  management system.
+- Consider short-lived session tokens, rate limiting on login endpoints, and
+  audit logging within your `SecurityManager`.
+- If supported by your client driver, use per-connection or per-operation
+  credentials rather than long-lived shared secrets.
+
+## <a id="soa_verification" class="no-quick-link"></a>Verification
+
+**Enable JSSE debug logging** to confirm the cipher suite and handshake flow:
+
+```
+-Djavax.net.debug=ssl,handshake
+```
+
+When `ssl-require-authentication=false`, the handshake completes without requesting
+or presenting client certificates.
+
+**Common issues:**
+
+| Symptom | Likely cause |
+|---|---|
+| `SSLHandshakeException: PKIX path building failed` | Client truststore does not contain the server's CA |
+| `AuthenticationFailedException` | `SecurityManager` rejected credentials; check logs for detail |
+| `SSLHandshakeException` requesting a client cert | A component still has `ssl-require-authentication=true`; verify per-component settings |
+
+## <a id="soa_migration_path" class="no-quick-link"></a>Phased Migration Path
+
+If you need to migrate a running cluster without downtime:
+
+1. Deploy a `SecurityManager` that accepts both the old certificate principal
+   (extracted from existing mTLS sessions) **and** the new username/password
+   credentials.  This allows both old (cert) and new (credential) clients to
+   coexist.
+2. Gradually roll client drivers to credential-based auth.
+3. Once all clients use credential auth, change `ssl-require-authentication=false`
+   on servers and remove client keystore configuration from clients.
+4. (Optional) Remove the old CA from server truststores once no cert-based
+   clients remain.
+
+## <a id="soa_references" class="no-quick-link"></a>References
+
+- [Configuring SSL](implementing_ssl.html) — component SSL properties
+- [Authentication](authentication_overview.html) — `AuthInitialize` and
+  `SecurityManager` concepts
+- [Public CA Client Authentication EKU Mitigations](public_ca_client_auth_eku_mitigations.html) — overview and other mitigation options
+- `SSLConfig` and `SSLConfigurationFactory`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/SSLConfig.java`
+- `SocketCreator`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/SocketCreator.java`
+- `FileWatchingX509ExtendedKeyManager`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/filewatch/FileWatchingX509ExtendedKeyManager.java`
+- `AuthInitialize` test templates:
+  `geode-core/src/test/java/org/apache/geode/security/templates/UserPasswordAuthInit.java`
