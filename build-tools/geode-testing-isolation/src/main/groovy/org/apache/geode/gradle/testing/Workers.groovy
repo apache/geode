@@ -32,6 +32,8 @@ class Workers {
             ProcessLauncher processLauncher,
             MessagingServer messagingServer) {
         def workerImplementationFactory = donor.workerImplementationFactory
+        // Gradle 7.5.1+: jvmVersionDetector moved from workerImplementationFactory to donor
+        def jvmVersionDetector = donor.jvmVersionDetector
         return new LauncherProxyWorkerProcessFactory(
                 donor.loggingManager,
                 messagingServer,
@@ -40,7 +42,7 @@ class Workers {
                 workerImplementationFactory.gradleUserHomeDir,
                 workerImplementationFactory.temporaryFileProvider,
                 donor.execHandleFactory,
-                workerImplementationFactory.jvmVersionDetector,
+                jvmVersionDetector,
                 donor.outputEventListener,
                 donor.memoryManager,
                 processLauncher)

@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-dunit</artifactId>
@@ -52,12 +36,12 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>geode-core</artifactId>
           <groupId>*</groupId>
+          <artifactId>geode-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -67,8 +51,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -78,8 +62,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -89,8 +73,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -100,8 +84,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -111,8 +95,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -122,8 +106,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -133,8 +117,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -144,12 +128,12 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>geode-core</artifactId>
           <groupId>*</groupId>
+          <artifactId>geode-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -159,8 +143,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -170,8 +154,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -181,8 +165,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -192,8 +176,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -203,8 +187,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -214,36 +198,36 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>cglib</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-core</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>asm</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>spring-aop</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>guava</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
+          <groupId>*</groupId>
           <artifactId>aopalliance</artifactId>
-          <groupId>*</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>spring-context-support</artifactId>
           <groupId>*</groupId>
+          <artifactId>spring-context-support</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>
@@ -254,8 +238,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -265,12 +249,12 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>junit-dep</artifactId>
           <groupId>*</groupId>
+          <artifactId>junit-dep</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -280,8 +264,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -291,8 +275,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -302,8 +286,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -313,8 +297,8 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -324,12 +308,12 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>hamcrest</artifactId>
           <groupId>*</groupId>
+          <artifactId>hamcrest</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

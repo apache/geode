@@ -54,7 +54,8 @@ public class UncheckedUtilsTest {
     List<String> wrongType = uncheckedCast(rawList);
 
     Throwable thrown = catchThrowable(() -> {
-      String str = wrongType.get(0); // This should throw ClassCastException
+      // Explicit assignment needed to trigger ClassCastException in newer Gradle versions
+      String str = wrongType.get(0);
     });
 
     assertThat(thrown).isInstanceOf(ClassCastException.class);

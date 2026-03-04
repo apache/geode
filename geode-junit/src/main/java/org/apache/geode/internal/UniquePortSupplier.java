@@ -14,18 +14,23 @@
  */
 package org.apache.geode.internal;
 
-import java.util.HashSet;
+
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntSupplier;
-import java.util.stream.IntStream;
 
 /**
- * Supplies unique ports that have not already been supplied by this instance of PortSupplier
+ * Supplies unique ports that have not already been supplied by any instance of PortSupplier.
+ * Uses a static shared set to coordinate port allocation across all test classes running in
+ * parallel, preventing port collisions in highly parallel test environments.
  */
 public class UniquePortSupplier {
 
+  // Static shared set to prevent port collisions across all UniquePortSupplier instances
+  // in parallel test execution (e.g., CI with --max-workers=12)
+  private static final Set<Integer> GLOBAL_USED_PORTS = ConcurrentHashMap.newKeySet();
+
   private final IntSupplier supplier;
-  private final Set<Integer> usedPorts = new HashSet<>();
 
   public UniquePortSupplier() {
     supplier = AvailablePortHelper::getRandomAvailableTCPPort;
@@ -35,13 +40,35 @@ public class UniquePortSupplier {
     this.supplier = supplier;
   }
 
-  public synchronized int getAvailablePort() {
-    int result = IntStream.generate(supplier)
-        .filter(port -> !usedPorts.contains(port))
-        .findFirst()
-        .getAsInt();
+  public int getAvailablePort() {
+    // Keep trying until we successfully claim a port that hasn't been claimed by another instance
+    while (true) {
+      int port = supplier.getAsInt();
 
-    usedPorts.add(result);
-    return result;
+      // Atomically add only if not already present
+      if (GLOBAL_USED_PORTS.add(port)) {
+        return port;
+      }
+      // If add returned false, port was already claimed by another instance, try again
+    }
+  }
+
+  /**
+   * Clears the global cache of used ports. This is primarily for testing purposes to ensure
+   * clean state between test runs.
+   */
+  static void clearGlobalCache() {
+    GLOBAL_USED_PORTS.clear();
+  }
+
+  /**
+   * Try to claim a port in the global cache. Returns true if the port was successfully claimed
+   * (wasn't already in use), false otherwise.
+   *
+   * @param port the port to claim
+   * @return true if successfully claimed, false if already in use
+   */
+  static boolean tryClaimPort(int port) {
+    return GLOBAL_USED_PORTS.add(port);
   }
 }
