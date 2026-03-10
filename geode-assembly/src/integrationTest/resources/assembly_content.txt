@@ -923,7 +923,6 @@ lib/antlr-runtime-3.5.2.jar
 lib/asm-9.8.jar
 lib/asm-commons-9.8.jar
 lib/asm-tree-9.8.jar
-lib/byte-buddy-1.14.9.jar
 lib/classgraph-4.8.147.jar
 lib/classmate-1.5.1.jar
 lib/commons-beanutils-1.11.0.jar
@@ -1042,7 +1041,7 @@ lib/shiro-crypto-hash-1.13.0.jar
 lib/shiro-event-1.13.0.jar
 lib/shiro-lang-1.13.0.jar
 lib/slf4j-api-2.0.17.jar
-lib/snakeyaml-2.2.jar
+lib/snakeyaml-2.3.jar
 lib/snappy-0.5.jar
 lib/spring-aop-6.1.14.jar
 lib/spring-beans-6.1.14.jar
