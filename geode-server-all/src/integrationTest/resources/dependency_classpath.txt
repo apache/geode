@@ -141,7 +141,6 @@ jakarta.inject-api-2.0.1.jar
 jakarta.validation-api-3.0.2.jar
 jboss-logging-3.4.3.Final.jar
 classmate-1.5.1.jar
-logback-core-1.5.11.jar
 shiro-hashes-argon2-2.1.0.jar
 shiro-hashes-bcrypt-2.1.0.jar
 bcprov-jdk18on-1.82.jar
