@@ -80,8 +80,11 @@ allprojects {
   // Exclude 'log4j-to-slf4j' globally. Geode's logging architecture requires Log4j Core to be the primary logging implementation,
   // with SLF4J calls being routed TO Log4j (via log4j-slf4j-impl), not the other way around.
   //
+  // Logback is unused (transitive from spring-boot-starter-logging). Geode uses Log4j 2 for all logging.
+  //
   configurations.all {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+    exclude group: 'ch.qos.logback'
   }
 
   buildRoot = buildRoot.trim()

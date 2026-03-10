@@ -84,8 +84,6 @@ log4j-core
 log4j-jcl
 log4j-jul
 log4j-slf4j-impl
-logback-classic
-logback-core
 lucene-analysis-common
 lucene-analysis-phonetic
 lucene-core
