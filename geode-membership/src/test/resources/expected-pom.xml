@@ -55,6 +55,10 @@
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -65,6 +69,10 @@
         <exclusion>
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -77,6 +85,10 @@
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -87,6 +99,10 @@
         <exclusion>
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -99,6 +115,10 @@
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -109,6 +129,10 @@
         <exclusion>
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -121,6 +145,10 @@
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -132,6 +160,10 @@
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -142,6 +174,10 @@
         <exclusion>
           <artifactId>log4j-to-slf4j</artifactId>
           <groupId>org.apache.logging.log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>ch.qos.logback</groupId>
         </exclusion>
       </exclusions>
     </dependency>
