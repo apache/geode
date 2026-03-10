@@ -117,7 +117,6 @@ micrometer-observation-1.14.0.jar
 spring-jcl-6.1.14.jar
 micrometer-commons-1.14.0.jar
 LatencyUtils-2.0.3.jar
-snakeyaml-2.2.jar
 reactor-core-3.6.10.jar
 jline-console-3.26.3.jar
 jline-builtins-3.26.3.jar
