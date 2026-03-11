@@ -127,9 +127,9 @@ jline-style-3.26.3.jar
 jline-terminal-3.26.3.jar
 ST4-4.3.3.jar
 txw2-4.0.2.jar
-asm-commons-9.8.jar
-asm-tree-9.8.jar
-asm-9.8.jar
+asm-commons-9.9.1.jar
+asm-tree-9.9.1.jar
+asm-9.9.1.jar
 reactive-streams-1.0.4.jar
 jline-native-3.26.3.jar
 antlr-runtime-3.5.2.jar

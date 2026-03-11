@@ -920,9 +920,9 @@ lib/ST4-4.3.3.jar
 lib/angus-activation-2.0.0.jar
 lib/antlr-2.7.7.jar
 lib/antlr-runtime-3.5.2.jar
-lib/asm-9.8.jar
-lib/asm-commons-9.8.jar
-lib/asm-tree-9.8.jar
+lib/asm-9.9.1.jar
+lib/asm-commons-9.9.1.jar
+lib/asm-tree-9.9.1.jar
 lib/byte-buddy-1.14.9.jar
 lib/classgraph-4.8.147.jar
 lib/classmate-1.5.1.jar
