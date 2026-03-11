@@ -10,7 +10,6 @@ asm
 asm-commons
 asm-tree
 bcprov-jdk18on
-byte-buddy
 classgraph
 classmate
 commons-beanutils
