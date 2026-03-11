@@ -9,7 +9,6 @@ antlr-runtime
 asm
 asm-commons
 asm-tree
-byte-buddy
 classgraph
 classmate
 commons-beanutils

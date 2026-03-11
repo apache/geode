@@ -53,8 +53,8 @@ class DependencyConstraints {
     deps.put("slf4j-api.version", "2.0.17")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.17.0")
-    deps.put("jackson.databind.version", "2.17.0")
+    deps.put("jackson.version", "2.18.6")
+    deps.put("jackson.databind.version", "2.18.6")
     // Spring Framework 6.x Migration
     deps.put("springshell.version", "3.3.3")
     deps.put("springframework.version", "6.1.14")

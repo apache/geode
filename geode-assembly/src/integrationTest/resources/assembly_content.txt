@@ -923,7 +923,6 @@ lib/antlr-runtime-3.5.2.jar
 lib/asm-9.9.1.jar
 lib/asm-commons-9.9.1.jar
 lib/asm-tree-9.9.1.jar
-lib/byte-buddy-1.14.9.jar
 lib/classgraph-4.8.147.jar
 lib/classmate-1.5.1.jar
 lib/commons-beanutils-1.11.0.jar
@@ -964,12 +963,12 @@ lib/httpclient5-5.4.4.jar
 lib/httpcore5-5.3.4.jar
 lib/httpcore5-h2-5.3.4.jar
 lib/istack-commons-runtime-4.1.1.jar
-lib/jackson-annotations-2.17.0.jar
-lib/jackson-core-2.17.0.jar
-lib/jackson-databind-2.17.0.jar
-lib/jackson-dataformat-yaml-2.17.0.jar
-lib/jackson-datatype-joda-2.17.0.jar
-lib/jackson-datatype-jsr310-2.17.0.jar
+lib/jackson-annotations-2.18.6.jar
+lib/jackson-core-2.18.6.jar
+lib/jackson-databind-2.18.6.jar
+lib/jackson-dataformat-yaml-2.18.6.jar
+lib/jackson-datatype-joda-2.18.6.jar
+lib/jackson-datatype-jsr310-2.18.6.jar
 lib/jakarta.activation-api-2.1.3.jar
 lib/jakarta.annotation-api-2.1.1.jar
 lib/jakarta.el-api-5.0.0.jar
@@ -1042,7 +1041,7 @@ lib/shiro-crypto-hash-1.13.0.jar
 lib/shiro-event-1.13.0.jar
 lib/shiro-lang-1.13.0.jar
 lib/slf4j-api-2.0.17.jar
-lib/snakeyaml-2.2.jar
+lib/snakeyaml-2.3.jar
 lib/snappy-0.5.jar
 lib/spring-aop-6.1.14.jar
 lib/spring-beans-6.1.14.jar
