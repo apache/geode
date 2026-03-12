@@ -57,8 +57,8 @@ class DependencyConstraints {
     deps.put("jackson.databind.version", "2.18.6")
     // Spring Framework 6.x Migration
     deps.put("springshell.version", "3.3.3")
-    deps.put("springframework.version", "6.1.14")
-    deps.put("springboot.version", "3.3.5")
+    deps.put("springframework.version", "6.1.21")
+    deps.put("springboot.version", "3.3.13")
     deps.put("springsecurity.version", "6.3.4")
     deps.put("springhateoas.version", "2.3.3")
     deps.put("springldap.version", "3.2.7")
