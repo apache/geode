@@ -56,7 +56,7 @@ jakarta.enterprise.cdi-api-4.0.1.jar
 jakarta.interceptor-api-2.1.0.jar
 jakarta.annotation-api-2.1.1.jar
 jakarta.transaction-api-2.0.1.jar
-shiro-core-1.13.0.jar
+shiro-core-2.1.0.jar
 jgroups-3.6.20.Final.jar
 commons-validator-1.7.jar
 fastutil-8.5.8.jar
@@ -82,7 +82,7 @@ lucene-analysis-common-9.12.3.jar
 lucene-queryparser-9.12.3.jar
 lucene-queries-9.12.3.jar
 lucene-core-9.12.3.jar
-shiro-config-ogdl-1.13.0.jar
+shiro-config-ogdl-2.1.0.jar
 commons-beanutils-1.11.0.jar
 commons-codec-1.15.jar
 commons-collections-3.2.2.jar
@@ -98,13 +98,13 @@ jetty-session-12.0.33.jar
 jetty-plus-12.0.33.jar
 jetty-security-12.0.33.jar
 jetty-server-12.0.33.jar
-shiro-cache-1.13.0.jar
-shiro-crypto-hash-1.13.0.jar
-shiro-crypto-cipher-1.13.0.jar
-shiro-config-core-1.13.0.jar
-shiro-event-1.13.0.jar
-shiro-crypto-core-1.13.0.jar
-shiro-lang-1.13.0.jar
+shiro-cache-2.1.0.jar
+shiro-crypto-hash-2.1.0.jar
+shiro-crypto-cipher-2.1.0.jar
+shiro-config-core-2.1.0.jar
+shiro-event-2.1.0.jar
+shiro-crypto-core-2.1.0.jar
+shiro-lang-2.1.0.jar
 jetty-xml-12.0.33.jar
 jetty-http-12.0.33.jar
 jetty-io-12.0.33.jar
@@ -140,3 +140,6 @@ jakarta.inject-api-2.0.1.jar
 jakarta.validation-api-3.0.2.jar
 jboss-logging-3.4.3.Final.jar
 classmate-1.5.1.jar
+shiro-hashes-argon2-2.1.0.jar
+shiro-hashes-bcrypt-2.1.0.jar
+bcprov-jdk18on-1.82.jar
