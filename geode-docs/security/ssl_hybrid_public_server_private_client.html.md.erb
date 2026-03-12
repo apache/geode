@@ -297,7 +297,7 @@ into the watched path so the watcher reads a complete file.
 - The hybrid model splits trust roots: public CA governs server identity;
   private CA governs client identity.  Compromise of one does not directly
   compromise the other.
-- Protect the private CA private key carefully.  Prefer an offline root + online
+- Protect the private CA private key carefully.  Prefer to use an offline root + online
   issuing intermediate topology.  Consider a Hardware Security Module (HSM) for the issuing intermediate.
 - Keep client certificate lifetimes short (days to weeks) and automate renewal.
 - **Verify certificate Extended Key Usage (EKU) requirements:**
