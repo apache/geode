@@ -1,0 +1,147 @@
+---
+title:  Mitigating Public CA Client Authentication EKU Changes
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Public Certificate Authorities (CAs) are removing or restricting issuance
+of the Client Authentication Extended Key Usage (EKU) from publicly-issued
+leaf certificates. Deployments that relied on public-CA-signed client
+certificates for mutual TLS (mTLS) client authentication must migrate to an
+alternative approach.
+
+**This guide does not apply to you if:**
+
+- Your deployment already uses an enterprise or internal CA for mTLS, **or**
+- Your deployment uses a public CA chain that includes client CA certificates
+  and those certificates are unaffected by the EKU policy change.
+
+**This guide applies to you if:**
+
+- Your deployment used public-CA-issued client certificates for mTLS, **and**
+- Those certificates no longer contain the `clientAuth` EKU, or the CA will
+  no longer issue them.
+
+## <a id="eku_background" class="no-quick-link"></a>Background
+
+<%=vars.product_name%> uses JSSE (`SSLContext`, `SSLEngine`, `SSLSocket`,
+`TrustManager`, `KeyManager`) for all TLS connections. Per-component SSL
+configuration is resolved via `SSLConfig` and `SSLConfigurationFactory`.
+Keystores and truststores are watched at runtime by `FileWatchingX509ExtendedKeyManager`
+and `FileWatchingX509ExtendedTrustManager`, backed by `PollingFileWatcher`,
+which reloads credential material when files change on disk without a server
+restart.
+
+When a Java TLS peer presents a certificate in a role that requires client
+authentication, the JSSE stack checks that the certificate's Extended Key Usage
+extension contains `id-kp-clientAuth` (OID 1.3.6.1.5.5.7.3.2). If that OID is
+absent, the TLS handshake fails with an authentication error. Because public CAs
+are ceasing to include this OID in publicly-issued leaf certificates,
+public-CA-signed client certificates can no longer be used for mTLS.
+
+## <a id="eku_decision_guide" class="no-quick-link"></a>Choosing a Mitigation
+
+Select the option that best fits your operational environment:
+
+| Scenario | Recommended option |
+|---|---|
+| You can operate or integrate with an enterprise PKI | [Internal / Enterprise CA for mTLS](ssl_internal_ca_mtls.html) |
+| Client certificates are impractical; you prefer credential-based auth | [Server-only TLS + alternative client authentication](ssl_server_only_tls_alt_auth.html) |
+| Servers must use a public-CA certificate (external trust) but clients need a controllable identity | [Hybrid: public-CA server certificates + private-CA client certificates](ssl_hybrid_public_server_private_client.html) |
+
+You may combine approaches: for example, running the hybrid model in production
+while temporarily using server-only TLS + credentials during a phased migration.
+
+## <a id="eku_common_features" class="no-quick-link"></a>Key <%=vars.product_name%> Features Used by All Mitigations
+
+- **Per-component SSL configuration** — `ssl-enabled-components` and associated
+  `ssl-keystore` / `ssl-truststore` properties allow independent TLS settings for
+  `cluster`, `server`, `locator`, `gateway`, `jmx`, and `web` components.  See
+  [Configuring SSL](implementing_ssl.html).
+- **`ssl-require-authentication`** — controls whether servers require client
+  certificates during the TLS handshake.  Set to `true` for mTLS; `false` for
+  server-only TLS.
+- **File-watching keystore reload** — `FileWatchingX509ExtendedKeyManager` and
+  `FileWatchingX509ExtendedTrustManager` automatically reload keystore and
+  truststore files when they are atomically replaced on disk.  Configure by
+  pointing `ssl-keystore` / `ssl-truststore` at the watched path.
+- **Pluggable authentication** — `AuthInitialize` (client-side credential
+  injection) and `SecurityManager` (server-side enforcement) support
+  username/password, token, and custom authentication without requiring client
+  certificates.
+
+## <a id="eku_migration_checklist" class="no-quick-link"></a>Migration Checklist
+
+1. **Inventory** — Identify all clients, members, and locators that present a
+   public-CA-signed client certificate during TLS handshake.
+2. **Choose a mitigation** — Use the decision table above to select an approach
+   (or a phased combination).
+3. **Provision credentials** — Issue replacement certificates from an internal/
+   private CA, or configure application-layer authentication.
+4. **Update truststores** — Update server truststores to include the new CA(s)
+   before rotating client credentials to avoid handshake failures during the
+   rollout.
+5. **Deploy and verify** — Roll out the new configuration component by component.
+   Use `openssl s_client` and JSSE debug logging (`-Djavax.net.debug=ssl,handshake`)
+   to verify handshake behavior at each step.
+6. **Remove old credentials** — Once all clients have migrated, remove the
+   public-CA trust anchor from server truststores if it is no longer needed.
+
+## <a id="eku_quick_verify" class="no-quick-link"></a>Quick Verification
+
+Test that the server certificate chain and (if applicable) client certificate
+chain are seen and accepted:
+
+```bash
+# Server-only TLS verification (no client certificate required)
+openssl s_client -connect geode-server.example.com:10334 -showcerts
+
+# mTLS verification (present client cert and key)
+openssl s_client -connect geode-server.example.com:10334 \
+  -cert client.crt -key client.key \
+  -CAfile server-trust-anchor.pem -showcerts
+```
+
+Enable JSSE debug on client JVMs for detailed handshake tracing:
+
+```bash
+java -Djavax.net.debug=ssl,handshake -jar my-geode-client.jar
+```
+
+## <a id="eku_mitigation_pages" class="no-quick-link"></a>Mitigation Guides
+
+-   **[Internal / Enterprise CA for mTLS](ssl_internal_ca_mtls.html)**
+
+    Run an internal or enterprise CA (offline root + issuing intermediate, or
+    enterprise PKI automation such as HashiCorp Vault or Smallstep) to issue
+    client certificates. The internal CA is the trust anchor for client
+    authentication; public CA EKU policies are irrelevant.
+
+-   **[Server-only TLS + Alternative Client Authentication](ssl_server_only_tls_alt_auth.html)**
+
+    Retain TLS encryption for all connections but disable mandatory client
+    certificate authentication.  Authenticate clients at the application layer
+    using <%=vars.product_name%>'s existing `AuthInitialize` / `SecurityManager`
+    framework (username/password, tokens, or a custom implementation).
+
+-   **[Hybrid: Public-CA Server Certs + Private-CA Client Certs](ssl_hybrid_public_server_private_client.html)**
+
+    Keep server certificates signed by a public CA (preserving external trust)
+    while issuing client certificates from an internal/private CA. Server
+    truststores include the private CA; client truststores use the public CA
+    (or the system trust store) for server certificate validation.
