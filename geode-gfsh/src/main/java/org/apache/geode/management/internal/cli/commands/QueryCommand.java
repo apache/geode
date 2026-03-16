@@ -84,8 +84,8 @@ public class QueryCommand extends GfshCommand {
 
     boolean limitAdded = false;
 
-    if (!StringUtils.containsIgnoreCase(query, " limit")
-        && !StringUtils.containsIgnoreCase(query, " count(")) {
+    if (!query.toLowerCase().contains(" limit")
+        && !query.toLowerCase().contains(" count(")) {
       query = query + " limit " + CommandExecutionContext.getShellFetchSize();
       limitAdded = true;
     }

@@ -15,8 +15,7 @@
 package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
 
@@ -37,7 +36,7 @@ public class FixedPartitionAttributesInfo implements Serializable {
     if (obj instanceof FixedPartitionAttributesInfo) {
       FixedPartitionAttributesInfo fpaInfo = (FixedPartitionAttributesInfo) obj;
       return numBuckets == fpaInfo.getNumBuckets()
-          && StringUtils.equals(partitionName, fpaInfo.getPartitionName())
+          && Objects.equals(partitionName, fpaInfo.getPartitionName())
           && isPrimary == fpaInfo.isPrimary();
 
     } else {

@@ -20,8 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
@@ -152,9 +151,9 @@ public class PartitionAttributesInfo implements Serializable {
   public boolean equals(Object obj) {
     if (obj instanceof PartitionAttributesInfo) {
       PartitionAttributesInfo paInfo = (PartitionAttributesInfo) obj;
-      return StringUtils.equals(getColocatedWith(), paInfo.getColocatedWith())
+      return Objects.equals(getColocatedWith(), paInfo.getColocatedWith())
           && getLocalMaxMemory() == paInfo.getLocalMaxMemory()
-          && StringUtils.equals(getPartitionResolverName(), paInfo.getPartitionResolverName())
+          && Objects.equals(getPartitionResolverName(), paInfo.getPartitionResolverName())
           && getRecoveryDelay() == paInfo.getRecoveryDelay()
           && getRedundantCopies() == paInfo.getRedundantCopies()
           && getStartupRecoveryDelay() == paInfo.getStartupRecoveryDelay()
