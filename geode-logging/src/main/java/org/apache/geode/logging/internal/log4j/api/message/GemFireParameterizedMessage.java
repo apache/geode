@@ -199,6 +199,7 @@ public class GemFireParameterizedMessage implements Message {
    * @return the message pattern.
    */
   @Override
+  @SuppressWarnings("deprecation")
   public String getFormat() {
     return messagePattern;
   }

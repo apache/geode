@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.junit.LoggerContextRule;
+import org.apache.logging.log4j.core.test.junit.LoggerContextRule;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
