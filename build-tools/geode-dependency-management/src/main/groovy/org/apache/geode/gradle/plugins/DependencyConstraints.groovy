@@ -42,7 +42,7 @@ class DependencyConstraints {
     deps.put("log4j.version", "2.25.3")
     deps.put("micrometer.version", "1.9.1")
     deps.put("shiro.version", "1.13.0")
-    deps.put("slf4j-api.version", "1.7.32")
+    deps.put("slf4j-api.version", "1.7.36")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.18.6")
     deps.put("jackson.databind.version", "2.18.6")
