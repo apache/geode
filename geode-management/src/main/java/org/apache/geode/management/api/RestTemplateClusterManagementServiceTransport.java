@@ -30,7 +30,7 @@ import javax.net.ssl.SSLContext;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -164,13 +164,13 @@ public class RestTemplateClusterManagementServiceTransport
     // Configure SSL context and hostname verifier (HttpClient 5.x approach)
     // Only configure SSL if we have a non-null SSL context
     if (connectionConfig.getSslContext() != null) {
-      SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+      DefaultClientTlsStrategy sslSocketFactory = new DefaultClientTlsStrategy(
           connectionConfig.getSslContext(),
           connectionConfig.getHostnameVerifier());
 
       HttpClientConnectionManager connectionManager =
           PoolingHttpClientConnectionManagerBuilder.create()
-              .setSSLSocketFactory(sslSocketFactory)
+              .setTlsSocketStrategy(sslSocketFactory)
               .build();
 
       clientBuilder.setConnectionManager(connectionManager);
@@ -178,13 +178,13 @@ public class RestTemplateClusterManagementServiceTransport
       // If only hostname verifier is set without SSL context, we need to use the default SSL
       // context
       try {
-        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+        DefaultClientTlsStrategy sslSocketFactory = new DefaultClientTlsStrategy(
             SSLContext.getDefault(),
             connectionConfig.getHostnameVerifier());
 
         HttpClientConnectionManager connectionManager =
             PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
+                .setTlsSocketStrategy(sslSocketFactory)
                 .build();
 
         clientBuilder.setConnectionManager(connectionManager);

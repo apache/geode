@@ -21,6 +21,8 @@ import static java.util.stream.Collectors.joining;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -232,7 +234,17 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
 
     for (ClassLoader classLoader : getClassLoaders()) {
       try {
-        return Proxy.getProxyClass(classLoader, classObjs);
+        // Proxy.getProxyClass is deprecated, so use the recommended way to create a proxy class.
+        // Only used to get the proxy class, so the handler can be a no-op.
+        InvocationHandler invocationHandler = new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] methodArgs) {
+            return null;
+          }
+        };
+        // create a new Proxy instance to get the proxy class
+        Object proxy = Proxy.newProxyInstance(classLoader, classObjs, invocationHandler);
+        return proxy.getClass();
       } catch (SecurityException sex) {
         // Continue to next classloader
       } catch (IllegalArgumentException iaex) {
