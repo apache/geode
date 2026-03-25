@@ -145,9 +145,12 @@ public class MapIndexStore implements IndexStore {
   @Override
   public CloseableIterator<IndexStoreEntry> descendingIterator(Object start, boolean startInclusive,
       Object end, boolean endInclusive, Collection keysToRemove) {
-    // @todo change to descending once it is supported
-    return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive, end, endInclusive),
-        keysToRemove, indexOnValues, indexOnRegionKeys);
+    if (start == null) {
+      return descendingIterator(end, endInclusive, keysToRemove);
+    }
+    return new MapIndexStoreIterator(
+        indexMap.descendingIterator(start, startInclusive, end, endInclusive), keysToRemove,
+        indexOnValues, indexOnRegionKeys);
   }
 
   @Override
