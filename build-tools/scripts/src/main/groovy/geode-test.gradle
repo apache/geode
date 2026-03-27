@@ -91,12 +91,14 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
     TestPropertiesWriter.writeTestProperties(buildDir, name)
   }
   outputs.upToDateWhen { false }
+  outputs.doNotCacheIf("Forced rerun") { true }
 }
 
 if (project.hasProperty("forceTest")) {
   // All test facets already force rerun.  Only :test can be upToDate.
   test {
     outputs.upToDateWhen { false }
+    outputs.doNotCacheIf("Forced rerun") { true }
   }
 }
 
@@ -148,6 +150,7 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   testFramework.options.excludeTags += "org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks"
 
   outputs.upToDateWhen { false }
+  outputs.doNotCacheIf("Forced rerun") { true }
 
   if (project.hasProperty("failOnNoMatchingTests")) {
     filter {
