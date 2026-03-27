@@ -228,10 +228,9 @@ if (project.hasProperty('askpass')) {
   }
 }
 
-subprojects {
-  tasks.withType(Test).configureEach { testTask ->
-    def cr = rootProject.tasks.getByName('combineReports') as TestReport
-    cr.reportOn testTask
-    cr.mustRunAfter testTask
-  }
-}
+gradle.taskGraph.whenReady({ graph ->
+  def allTestTasks = rootProject.subprojects.collect { it.tasks.withType(Test) }.flatten()
+  def cr = tasks.getByName('combineReports') as TestReport
+  cr.reportOn allTestTasks
+  cr.dependsOn allTestTasks
+})
