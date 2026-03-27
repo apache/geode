@@ -232,6 +232,6 @@ subprojects {
   tasks.withType(Test).configureEach { testTask ->
     def cr = rootProject.tasks.getByName('combineReports') as TestReport
     cr.reportOn testTask
-    cr.dependsOn testTask
+    cr.mustRunAfter testTask
   }
 }
