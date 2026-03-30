@@ -31,7 +31,6 @@ rat {
 
     // gradle
     '**/.gradle/**',
-    'geode-old-versions/[0-9]*/**',
     'gradlew',
     'gradlew.bat',
     'gradle/wrapper/gradle-wrapper.properties',
