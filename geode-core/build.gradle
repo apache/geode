@@ -222,6 +222,8 @@ dependencies {
 
   //Jackson databind is used in gfsh, and also in pdx
   implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
+  implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
