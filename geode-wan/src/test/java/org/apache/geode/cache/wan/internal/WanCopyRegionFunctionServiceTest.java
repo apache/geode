@@ -154,7 +154,7 @@ public class WanCopyRegionFunctionServiceTest {
   }
 
   @Test
-  public void severalExecuteWithDifferentRegionOrSenderAreAllowed() {
+  public void severalExecuteWithDifferentRegionOrSenderAreAllowed() throws InterruptedException {
     int executions = 5;
     CountDownLatch latch = new CountDownLatch(executions);
     for (int i = 0; i < executions; i++) {
@@ -172,11 +172,16 @@ public class WanCopyRegionFunctionServiceTest {
               return null;
             }
           });
+
+      // Wait for this specific execution to be registered before starting the next one
+      // This ensures we don't have a race where multiple tasks try to start simultaneously
+      // and only some get registered before we check the count
+      await().untilAsserted(
+          () -> assertThat(service.getNumberOfCurrentExecutions()).isGreaterThanOrEqualTo(i + 1));
     }
 
-    // Wait for the functions to start execution
-    await().untilAsserted(
-        () -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
+    // Verify all executions are registered
+    assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions);
 
     // End executions
     for (int i = 0; i < executions; i++) {
