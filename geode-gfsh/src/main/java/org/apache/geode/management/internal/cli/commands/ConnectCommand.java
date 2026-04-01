@@ -31,6 +31,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
@@ -117,7 +118,7 @@ public class ConnectCommand extends OfflineGfshCommand {
           .createInfo("Already connected to: " + getGfsh().getOperationInvoker().toString());
     }
 
-    if (StringUtils.startsWith(url, "https")) {
+    if (Strings.CS.startsWith(url, "https")) {
       useSsl = true;
     }
 

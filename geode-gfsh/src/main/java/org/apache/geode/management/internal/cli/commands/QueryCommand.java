@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.standard.ShellMethod;
@@ -81,8 +82,8 @@ public class QueryCommand extends GfshCommand {
 
     boolean limitAdded = false;
 
-    if (!StringUtils.containsIgnoreCase(query, " limit")
-        && !StringUtils.containsIgnoreCase(query, " count(")) {
+    if (!Strings.CI.contains(query, " limit")
+        && !Strings.CI.contains(query, " count(")) {
       query = query + " limit " + CommandExecutionContext.getShellFetchSize();
       limitAdded = true;
     }

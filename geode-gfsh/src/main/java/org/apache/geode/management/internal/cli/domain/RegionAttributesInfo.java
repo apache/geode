@@ -15,13 +15,7 @@
 package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -364,7 +358,7 @@ public class RegionAttributesInfo implements Serializable {
           Boolean.toString(cloningEnabled));
     }
 
-    if (!StringUtils.equals(RegionAttributesDefault.COMPRESSOR_CLASS_NAME, compressorClassName)) {
+    if (!Objects.equals(RegionAttributesDefault.COMPRESSOR_CLASS_NAME, compressorClassName)) {
       nonDefaultAttributes.put(RegionAttributesNames.COMPRESSOR, compressorClassName);
     }
 
