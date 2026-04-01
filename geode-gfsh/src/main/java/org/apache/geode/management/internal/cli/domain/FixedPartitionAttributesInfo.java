@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
-
 import org.apache.geode.cache.FixedPartitionAttributes;
 
 public class FixedPartitionAttributesInfo implements Serializable {

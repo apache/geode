@@ -608,8 +608,8 @@ public class RegionFunctionArgs implements Serializable {
         try {
           Class<?> sizerClass = ClassPathLoader.getLatest().forName(objectSizer);
           sizer = (ObjectSizer) sizerClass.getDeclaredConstructor().newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                NoSuchMethodException | InvocationTargetException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+            | NoSuchMethodException | InvocationTargetException e) {
           throw new IllegalArgumentException(
               "Unable to instantiate class " + objectSizer + " - " + e);
         }

@@ -107,7 +107,8 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
 
   @SuppressWarnings("unchecked")
   ResultCollector<Object, List<Object>> parseResultCollector(String resultCollectorName)
-      throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+      throws ClassNotFoundException, IllegalAccessException, InstantiationException,
+      NoSuchMethodException, InvocationTargetException {
     if (resultCollectorName != null && resultCollectorName.length() > 0) {
       return (ResultCollector<Object, List<Object>>) ClassPathLoader.getLatest()
           .forName(resultCollectorName)

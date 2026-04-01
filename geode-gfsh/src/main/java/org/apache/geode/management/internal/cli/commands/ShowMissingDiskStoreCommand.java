@@ -83,11 +83,11 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
     // Set<ColocatedRegionDetails>. We want to return a List of all of the ColocatedRegionDetails,
     // and ignore the PersistentMemberIds
     return results.stream().filter(Set.class::isInstance)
-            .map(Set.class::cast)
-            .flatMap(s -> ((Set<?>) s).stream())
-            .filter(ColocatedRegionDetails.class::isInstance)
-            .map(ColocatedRegionDetails.class::cast)
-            .collect(Collectors.toList());
+        .map(Set.class::cast)
+        .flatMap(s -> ((Set<?>) s).stream())
+        .filter(ColocatedRegionDetails.class::isInstance)
+        .map(ColocatedRegionDetails.class::cast)
+        .collect(Collectors.toList());
   }
 
   private ResultModel toMissingDiskStoresTabularResult(
