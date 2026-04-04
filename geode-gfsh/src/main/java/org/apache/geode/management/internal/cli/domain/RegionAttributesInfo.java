@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -364,7 +365,7 @@ public class RegionAttributesInfo implements Serializable {
           Boolean.toString(cloningEnabled));
     }
 
-    if (!StringUtils.equals(RegionAttributesDefault.COMPRESSOR_CLASS_NAME, compressorClassName)) {
+    if (!Objects.equals(RegionAttributesDefault.COMPRESSOR_CLASS_NAME, compressorClassName)) {
       nonDefaultAttributes.put(RegionAttributesNames.COMPRESSOR, compressorClassName);
     }
 

@@ -113,7 +113,7 @@ public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.Async
       String listenerClassName = config.getAsyncEventListener().getClassName();
       Object listenerInstance;
       Class<?> listenerClass = InternalDataSerializer.getCachedClass(listenerClassName);
-      listenerInstance = listenerClass.newInstance();
+      listenerInstance = listenerClass.getDeclaredConstructor().newInstance();
 
       List<ParameterType> parameters = config.getAsyncEventListener().getParameters();
       Properties listenerProperties = new Properties();
