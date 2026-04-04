@@ -90,12 +90,12 @@ echo "============================================================"
 echo "Checking java..."
 echo "============================================================"
 [ -z "$JAVA_HOME" ] && JAVA=java || JAVA=$JAVA_HOME/bin/java
-if ! $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 1.8' ; then
-  echo "Please set JAVA_HOME to use JDK 8 to compile Geode for release"
+if ! $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 17' ; then
+  echo "Please set JAVA_HOME to use JDK 17 to compile Geode for release"
   exit 1
 fi
 if $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = Oracle' ; then
-  echo "Please set JAVA_HOME to use an Open JDK 8 such as from https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=hotspot to compile Geode for release"
+  echo "Please set JAVA_HOME to use an Open JDK 17 such as from https://adoptium.net to compile Geode for release"
   exit 1
 else
   $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = '
@@ -277,7 +277,8 @@ BMDIR=apache-geode-benchmarks-${VERSION}-src
 BMTAR=${BMDIR}.tgz
 git clean -dxf
 mkdir ../${BMDIR}
-cp -r .travis.yml * ../${BMDIR}
+cp -r * ../${BMDIR} 2>/dev/null || true
+[ -f .travis.yml ] && cp .travis.yml ../${BMDIR}
 tar czf ${BMTAR} -C .. ${BMDIR}
 rm -Rf ../${BMDIR}
 gpg --armor -u ${SIGNING_KEY} -b ${BMTAR}
