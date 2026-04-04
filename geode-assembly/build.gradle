@@ -107,6 +107,11 @@ sourceSets {
     }
     output.dir(webServersDir, builtBy: 'downloadWebServers')
   }
+  // Javadoc-only stubs (Tomcat legacy classes) compiled separately so we can exclude their
+  // packages from published Javadoc output while still resolving symbols.
+  javadocStubs {
+    java.srcDir 'src/javadocStubs/java'
+  }
 }
 
 // Add JVM module access for Jetty 12 session tests
@@ -170,6 +175,16 @@ dependencies {
   javadocOnly(project(':extensions:geode-modules'))
   javadocOnly(project(':extensions:geode-modules-session'))
   javadocOnly(project(':extensions:geode-modules-tomcat10'))
+
+  // Add common external dependencies needed for Javadoc generation
+  javadocOnly(platform(project(':boms:geode-all-bom')))
+
+  // Add FindBugs annotations for javadoc compilation
+  javadocOnly('com.github.stephenc.findbugs:findbugs-annotations')
+
+  // Add Tomcat dependencies for modules javadoc compilation - use newer version for compatibility
+  javadocOnly('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat9.version'))
+  javadocOnly('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat9.version'))
 
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-gfsh'))
@@ -351,15 +366,21 @@ tasks.register('defaultCacheConfig', JavaExec) {
 }
 
 def getDependencyProjectsFor(String configurationName) {
-  List<Project> rval = configurations[configurationName].allDependencies.collect {
+  List<Project> rval = configurations[configurationName].allDependencies.findAll {
+    it.hasProperty('dependencyProject') && it.dependencyProject != null
+  }.collect {
     it.dependencyProject
   }.collect {
     def projs = [it]
     if ((it as Project).pluginManager.hasPlugin('java-library')) {
-      (it as Project).configurations.api.dependencies.collect {
+      (it as Project).configurations.api.dependencies.findAll {
+        it.hasProperty('dependencyProject') && it.dependencyProject != null
+      }.collect {
         projs += it.dependencyProject
       }
-      (it as Project).configurations.runtimeOnly.dependencies.collect {
+      (it as Project).configurations.runtimeOnly.dependencies.findAll {
+        it.hasProperty('dependencyProject') && it.dependencyProject != null
+      }.collect {
         projs += it.dependencyProject
       }
     }
@@ -396,6 +417,26 @@ tasks.register('gfshDepsJar', Jar) {
   }
 }
 
+// Extract legacy Tomcat 6 jars needed only to satisfy Javadoc for old session manager classes
+// (LifecycleSupport, SerializablePrincipal) without altering runtime dependencies.
+def legacyTomcatDir = "$buildDir/legacyTomcat"
+tasks.register('extractLegacyTomcatForJavadoc') {
+  description = 'Extracts legacy Tomcat catalina jars for Javadoc symbol resolution.'
+  outputs.dir(legacyTomcatDir)
+  dependsOn configurations.webServerTomcat6
+  doLast {
+    delete legacyTomcatDir
+    copy {
+      from { zipTree(configurations.webServerTomcat6.singleFile) }
+      // Include the full Tomcat 6 lib set so packages like org.apache.catalina.ha.session
+      // (SerializablePrincipal) and util.LifecycleSupport are present. We keep it scoped
+      // to Javadoc only via this extracted directory rather than adding runtime deps.
+      include '**/lib/*.jar'
+      into legacyTomcatDir
+    }
+  }
+}
+
 tasks.register('docs', Javadoc) {
   def docsDir = file("$buildDir/javadocs")
   // Removed -Xwerror to avoid treating HTML5 compatibility warnings as errors
@@ -405,16 +446,51 @@ tasks.register('docs', Javadoc) {
   title = "${productName} ${project.version}"
   destinationDir = docsDir
 
-  getDependencyProjectsFor('javadocOnly').forEach() { Project proj ->
+  // Do NOT add the javadocStubs sources directly; we only want them on the classpath, not in output.
+
+  def docProjects = getDependencyProjectsFor('javadocOnly').findAll { proj ->
+    proj.hasProperty('sourceSets')
+  }
+
+  // Ensure compilation is done before aggregating docs
+  dependsOn(docProjects.collect { it.tasks.named('classes') })
+  dependsOn(tasks.named('javadocStubsClasses'))
+
+  // Collect source, includes, and excludes from project javadoc tasks
+  docProjects.forEach { proj ->
+    source proj.sourceSets.main.allJava
+
+    // Collect includes and excludes from individual project javadoc tasks when available
     proj.tasks.withType(Javadoc).findAll { it.enabled }.each { javadocTask ->
-      source += javadocTask.source
-      classpath += javadocTask.classpath
-      excludes += javadocTask.excludes
       includes += javadocTask.includes
+      excludes += javadocTask.excludes
     }
   }
 
+  // Common exclude patterns retained (may overlap with per-project excludes)
+  exclude '**/internal/**'
+  exclude '**/test/**'
+
+
+  // Use javadocOnly configuration with transitive dependencies to get external libraries
+  // This avoids cross-project configuration resolution while including necessary dependencies
+  // Include legacy Tomcat jars for symbol resolution of older session manager classes
+  dependsOn(tasks.named('extractLegacyTomcatForJavadoc'))
+  // Use a lazy FileCollection for legacy Tomcat jars so extraction runs before it is resolved
+  // Broaden legacy Tomcat inclusion (Option 2) to all jars in Tomcat6 lib so that
+  // org.apache.catalina.util.LifecycleSupport and org.apache.catalina.ha.session.SerializablePrincipal
+  // (present in clustering/ha related jars) are available to Javadoc without excluding sources.
+  def legacyCatalinaJars = files { fileTree(legacyTomcatDir).matching { include '*.jar' } }
+  classpath = configurations.javadocOnly +
+      files(docProjects.collect { proj -> proj.sourceSets.main.output }) +
+      legacyCatalinaJars +
+      sourceSets.javadocStubs.output
+
+  options.addStringOption('Xwerror','-quiet')
+
   include 'org/apache/geode/**/'
+  // Exclude all catalina packages (real or stub) from published Javadoc output
+  exclude 'org/apache/catalina/**'
 
   doLast {
     rootProject.subprojects.each { project ->
