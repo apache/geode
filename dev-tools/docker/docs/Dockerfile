@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ruby:2.6.8
+FROM --platform=linux/amd64 ruby:2.6.8
 
 LABEL Vendor="Apache Geode"
 LABEL version=unstable
