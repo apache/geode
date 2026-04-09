@@ -60,8 +60,8 @@ lucene-queryparser-9.12.3.jar
 lucene-queries-9.12.3.jar
 lucene-core-9.12.3.jar
 httpclient5-5.4.4.jar
-httpcore5-h2-5.3.4.jar
-httpcore5-5.3.4.jar
+httpcore5-h2-5.3.6.jar
+httpcore5-5.3.6.jar
 HikariCP-4.0.3.jar
 antlr-2.7.7.jar
 istack-commons-runtime-4.1.1.jar
