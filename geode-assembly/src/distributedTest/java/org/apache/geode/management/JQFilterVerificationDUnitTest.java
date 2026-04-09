@@ -97,10 +97,10 @@ public class JQFilterVerificationDUnitTest {
     client = new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
     JsonNode jsonObject =
         client.doGetAndAssert("/v3/api-docs").getJsonObject().get("paths");
-    Iterator<Map.Entry<String, JsonNode>> urls = jsonObject.fields();
+    Iterator<Map.Entry<String, JsonNode>> urls = jsonObject.properties().iterator();
     while (urls.hasNext()) {
       Map.Entry<String, JsonNode> url = urls.next();
-      Iterator<Map.Entry<String, JsonNode>> methods = url.getValue().fields();
+      Iterator<Map.Entry<String, JsonNode>> methods = url.getValue().properties().iterator();
       while (methods.hasNext()) {
         Map.Entry<String, JsonNode> method = methods.next();
         // gather all the rest endpoint that has jqFilter defined.

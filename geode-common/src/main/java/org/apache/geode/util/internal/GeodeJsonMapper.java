@@ -41,13 +41,15 @@ public class GeodeJsonMapper {
         .enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES)
         .enable(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL)
         .build();
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    mapper.setDefaultPropertyInclusion(
+        JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY));
     return mapper;
   }
 
   public static ObjectMapper getMapperWithAlwaysInclusion() {
     ObjectMapper mapper = getMapper();
-    mapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
+    mapper.setDefaultPropertyInclusion(
+        JsonInclude.Value.construct(JsonInclude.Include.ALWAYS, JsonInclude.Include.ALWAYS));
     return mapper;
   }
 
