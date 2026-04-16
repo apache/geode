@@ -173,8 +173,8 @@ class DependencyConstraints {
         api(group: 'org.apache.derby', name: 'derby', version: '10.14.2.0')
         // Apache HttpComponents 5.x - Modern HTTP client with HTTP/2 support
         api(group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.4.4')
-        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.3.4')
-        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5-h2', version: '5.3.4')
+        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.3.6')
+        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5-h2', version: '5.3.6')
         // Legacy HttpComponents 4.x (keep temporarily during migration, remove after complete)
         api(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13')
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.15')

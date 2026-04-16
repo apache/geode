@@ -26,8 +26,8 @@ jackson-core-2.21.2.jar
 jackson-datatype-joda-2.21.2.jar
 jackson-databind-2.21.2.jar
 httpclient5-5.4.4.jar
-httpcore5-h2-5.3.4.jar
-httpcore5-5.3.4.jar
+httpcore5-h2-5.3.6.jar
+httpcore5-5.3.6.jar
 HikariCP-4.0.3.jar
 commons-lang3-3.18.0.jar
 jaxb-runtime-4.0.2.jar
