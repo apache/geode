@@ -46,7 +46,7 @@ class DependencyConstraints {
     deps.put("jakarta.annotation.version", "2.1.1")
     deps.put("jakarta.ejb.version", "4.0.1")
     deps.put("jgroups.version", "3.6.20.Final")
-    deps.put("log4j.version", "2.25.3")
+    deps.put("log4j.version", "2.25.4")
     deps.put("log4j-slf4j2-impl.version", "2.23.1")
     deps.put("micrometer.version", "1.14.0")
     deps.put("shiro.version", "2.1.0")
