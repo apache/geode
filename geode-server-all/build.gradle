@@ -75,7 +75,7 @@ jar {
 ].each {
   tasks.named(it).configure {
     systemProperty 'test.buildVersion', version
-    systemProperty 'test.buildDirectory', buildDir
+    systemProperty 'test.buildDirectory', '..'
     dependsOn(tasks.named('jar'))
   }
 }
