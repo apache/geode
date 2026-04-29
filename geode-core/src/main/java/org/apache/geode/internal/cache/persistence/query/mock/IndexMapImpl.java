@@ -107,6 +107,16 @@ public class IndexMapImpl implements IndexMap {
   }
 
   @Override
+  public CloseableIterator<IndexEntry> descendingIterator(Object start, boolean startInclusive,
+      Object end, boolean endInclusive) {
+    byte[] startBytes = startInclusive ? ByteComparator.MIN_BYTES : ByteComparator.MAX_BYTES;
+    byte[] endBytes = endInclusive ? ByteComparator.MAX_BYTES : ByteComparator.MIN_BYTES;
+    return new Itr(map
+        .subMap(new Pair(start, startBytes), startInclusive, new Pair(end, endBytes), endInclusive)
+        .descendingMap().entrySet().iterator());
+  }
+
+  @Override
   public CloseableIterator<CachedDeserializable> keyIterator(Object start, boolean startInclusive,
       Object end, boolean endInclusive) {
     byte[] startBytes = startInclusive ? ByteComparator.MIN_BYTES : ByteComparator.MAX_BYTES;
