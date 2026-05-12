@@ -50,6 +50,8 @@ class DependencyConstraints {
     deps.put("log4j-slf4j2-impl.version", "2.23.1")
     deps.put("micrometer.version", "1.14.0")
     deps.put("shiro.version", "2.1.0")
+    // GEODE-10583: Pin Bouncy Castle (transitive via shiro-crypto-hash) to a fixed version
+    deps.put("bouncycastle.version", "1.84")
     deps.put("slf4j-api.version", "2.0.17")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
@@ -179,6 +181,8 @@ class DependencyConstraints {
         api(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13')
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.15')
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
+        // GEODE-10583: Pin Bouncy Castle provider (pulled in via shiro-crypto-hash) to 1.84
+        api(group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: get('bouncycastle.version'))
         api(group: 'org.assertj', name: 'assertj-core', version: '3.22.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.2.0')
         api(group: 'org.buildobjects', name: 'jproc', version: '2.8.0')
