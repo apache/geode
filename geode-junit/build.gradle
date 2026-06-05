@@ -20,18 +20,8 @@ plugins {
   id 'geode-publish-java'
 }
 
-compileJava {
-  // -Xlint:-sunapi flag removed as it doesn't exist in Java 17
-  // Added --add-exports for sun.security packages needed for CertificateBuilder
-  options.compilerArgs << '-XDenableSunApiLintControl'
-  options.compilerArgs << '--add-exports=java.base/sun.security.x509=ALL-UNNAMED'
-  options.compilerArgs << '--add-exports=java.base/sun.security.util=ALL-UNNAMED'
-}
-
 javadoc {
-  // Exclude classes that use internal sun.security packages to avoid javadoc errors
   options.addBooleanOption('Xdoclint:none', true)
-  exclude '**/CertificateBuilder.java'
   exclude '**/HybridCATestFixture.java'
 }
 
@@ -67,6 +57,9 @@ dependencies {
 
   api('org.apache.commons:commons-lang3')
   api('org.apache.logging.log4j:log4j-api')
+
+  // GEODE-10509: X.509 certificate building for the CertificateBuilder test utility
+  implementation('org.bouncycastle:bcpkix-jdk18on')
 
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')
