@@ -39,7 +39,7 @@ jobs:
         java-version: '17'
         distribution: 'liberica'
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v5
+      uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
       with:
         gradle-version: wrapper
     - name: Run 'build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain' with Gradle
@@ -104,7 +104,7 @@ jobs:
        java-version: |
          17
    - name: Setup Gradle
-     uses: gradle/actions/setup-gradle@v5
+     uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
      with:
        gradle-version: wrapper
    - name: Set JAVA_TEST_PATH to 17
@@ -153,7 +153,7 @@ jobs:
          java-version: |
            17
      - name: Setup Gradle
-       uses: gradle/actions/setup-gradle@v5
+       uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
        with:
          gradle-version: wrapper
      - name: Run integration tests
@@ -199,7 +199,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           gradle-version: wrapper
       - name: Run acceptance tests
@@ -243,7 +243,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           gradle-version: wrapper
       - name: Run wan distributed tests
@@ -289,7 +289,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           gradle-version: wrapper
       - name: Run cq distributed tests
@@ -333,7 +333,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           gradle-version: wrapper
       - name: Run lucene distributed tests
@@ -379,7 +379,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           gradle-version: wrapper
       - name: Run gfsh, web-mgmt, web distributed tests
@@ -427,7 +427,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           gradle-version: wrapper
       - name: Run assembly, connectors, old-client, extensions distributed tests
