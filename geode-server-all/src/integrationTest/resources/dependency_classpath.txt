@@ -23,6 +23,7 @@ jackson-datatype-jsr310-2.21.2.jar
 jackson-annotations-2.21.jar
 jackson-dataformat-yaml-2.21.2.jar
 jackson-core-2.21.2.jar
+jackson-datatype-jdk8-2.21.2.jar
 jackson-datatype-joda-2.21.2.jar
 jackson-databind-2.21.2.jar
 httpclient5-5.4.4.jar
@@ -118,7 +119,7 @@ slf4j-api-2.0.17.jar
 micrometer-observation-1.14.0.jar
 micrometer-commons-1.14.0.jar
 LatencyUtils-2.0.3.jar
-snakeyaml-2.3.jar
+snakeyaml-2.5.jar
 spring-jcl-6.1.21.jar
 asm-commons-9.9.1.jar
 asm-tree-9.9.1.jar
