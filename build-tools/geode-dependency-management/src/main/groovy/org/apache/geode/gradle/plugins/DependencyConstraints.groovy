@@ -238,6 +238,7 @@ class DependencyConstraints {
     dependencySet(group: 'com.fasterxml.jackson.datatype', version: get('jackson.version')) {
       entry('jackson-datatype-joda')
       entry('jackson-datatype-jsr310')
+      entry('jackson-datatype-jdk8')
     }
 
     dependencySet(group: 'com.fasterxml.jackson.dataformat', version: get('jackson.version')) {

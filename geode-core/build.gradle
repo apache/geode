@@ -395,6 +395,7 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+  integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
 
   // The block below is only for the deprecated admin mbeans API
   integrationTestRuntimeOnly('commons-modeler:commons-modeler')
