@@ -961,8 +961,8 @@ lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/hibernate-validator-8.0.2.Final.jar
 lib/httpclient5-5.4.4.jar
-lib/httpcore5-5.3.6.jar
-lib/httpcore5-h2-5.3.6.jar
+lib/httpcore5-5.4.3.jar
+lib/httpcore5-h2-5.4.3.jar
 lib/istack-commons-runtime-4.1.1.jar
 lib/jackson-annotations-2.21.jar
 lib/jackson-core-2.21.5.jar
@@ -1044,7 +1044,7 @@ lib/shiro-hashes-argon2-2.1.0.jar
 lib/shiro-hashes-bcrypt-2.1.0.jar
 lib/shiro-lang-2.1.0.jar
 lib/slf4j-api-2.0.17.jar
-lib/snakeyaml-2.3.jar
+lib/snakeyaml-2.5.jar
 lib/snappy-0.5.jar
 lib/spring-aop-6.1.21.jar
 lib/spring-beans-6.1.21.jar

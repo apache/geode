@@ -60,8 +60,8 @@ lucene-queryparser-9.12.3.jar
 lucene-queries-9.12.3.jar
 lucene-core-9.12.3.jar
 httpclient5-5.4.4.jar
-httpcore5-h2-5.3.6.jar
-httpcore5-5.3.6.jar
+httpcore5-h2-5.4.3.jar
+httpcore5-5.4.3.jar
 HikariCP-4.0.3.jar
 antlr-2.7.7.jar
 istack-commons-runtime-4.1.1.jar
@@ -91,6 +91,10 @@ jakarta.transaction-api-2.0.1.jar
 joda-time-2.12.7.jar
 jna-platform-5.11.0.jar
 jna-5.11.0.jar
+shiro-hashes-argon2-2.1.0.jar
+shiro-hashes-bcrypt-2.1.0.jar
+shiro-crypto-hash-2.1.0.jar
+bcprov-jdk18on-1.84.jar
 jetty-ee-12.0.33.jar
 jetty-session-12.0.33.jar
 jetty-plus-12.0.33.jar
@@ -99,14 +103,11 @@ jetty-server-12.0.33.jar
 snappy-0.5.jar
 jgroups-3.6.20.Final.jar
 shiro-cache-2.1.0.jar
-shiro-crypto-hash-2.1.0.jar
 shiro-crypto-cipher-2.1.0.jar
 shiro-config-core-2.1.0.jar
 shiro-event-2.1.0.jar
 shiro-crypto-core-2.1.0.jar
 shiro-lang-2.1.0.jar
-shiro-hashes-argon2-2.1.0.jar
-shiro-hashes-bcrypt-2.1.0.jar
 jetty-xml-12.0.33.jar
 jetty-http-12.0.33.jar
 jetty-io-12.0.33.jar
@@ -115,10 +116,12 @@ jul-to-slf4j-2.0.17.jar
 jetty-jndi-12.0.33.jar
 jetty-util-12.0.33.jar
 slf4j-api-2.0.17.jar
+jackson-annotations-2.21.jar
 micrometer-observation-1.14.0.jar
 spring-jcl-6.1.21.jar
 micrometer-commons-1.14.0.jar
 LatencyUtils-2.0.3.jar
+snakeyaml-2.5.jar
 reactor-core-3.6.10.jar
 jline-console-3.26.3.jar
 jline-builtins-3.26.3.jar
@@ -127,7 +130,6 @@ jline-style-3.26.3.jar
 jline-terminal-3.26.3.jar
 ST4-4.3.3.jar
 txw2-4.0.2.jar
-snakeyaml-2.3.jar
 asm-commons-9.9.1.jar
 asm-tree-9.9.1.jar
 asm-9.9.1.jar
@@ -142,4 +144,3 @@ jboss-logging-3.4.3.Final.jar
 classmate-1.5.1.jar
 jakarta.el-api-5.0.0.jar
 jakarta.inject-api-2.0.1.jar
-bcprov-jdk18on-1.84.jar
