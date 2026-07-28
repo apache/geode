@@ -35,6 +35,7 @@ jackson-annotations
 jackson-core
 jackson-databind
 jackson-dataformat-yaml
+jackson-datatype-jdk
 jackson-datatype-joda
 jackson-datatype-jsr
 jakarta.activation-api
