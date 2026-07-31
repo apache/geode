@@ -41,7 +41,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -170,7 +169,8 @@ public class ShellCommandsController extends AbstractCommandsController {
     ObjectName name = ObjectName.getInstance(decode(objectName));
     QueryExp query = null;
     if (queryExpressionBase64 != null) {
-      query = (QueryExp) IOUtils.deserializeObject(Base64.getDecoder().decode(queryExpressionBase64));
+      query =
+          (QueryExp) IOUtils.deserializeObject(Base64.getDecoder().decode(queryExpressionBase64));
     }
     final Set<ObjectName> objectNames = getMBeanServer().queryNames(name, query);
     return new ResponseEntity<>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
