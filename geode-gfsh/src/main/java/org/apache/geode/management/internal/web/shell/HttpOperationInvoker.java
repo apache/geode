@@ -41,7 +41,6 @@ import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
-import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 import org.apache.geode.management.internal.web.http.support.HttpRequester;
 import org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFactory;
 
