@@ -20,6 +20,7 @@ import static org.apache.geode.management.internal.web.util.UriUtils.decode;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.QueryExp;
 import javax.management.ReflectionException;
 
 import org.apache.commons.io.FileUtils;
@@ -55,7 +57,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
-import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 import org.apache.geode.util.internal.GeodeConverter;
 
 /**
@@ -162,11 +163,16 @@ public class ShellCommandsController extends AbstractCommandsController {
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/mbean/query")
-  public ResponseEntity<?> queryNames(@RequestBody final QueryParameterSource query)
-      throws IOException {
+  public ResponseEntity<?> queryNames(@RequestParam("objectName") final String objectName,
+      @RequestParam(value = "queryExpression", required = false) final String queryExpressionBase64)
+      throws Exception {
     // Exceptions are caught by the @ExceptionHandler AbstractCommandsController.handleAppException
-    final Set<ObjectName> objectNames =
-        getMBeanServer().queryNames(query.getObjectName(), query.getQueryExpression());
+    ObjectName name = ObjectName.getInstance(decode(objectName));
+    QueryExp query = null;
+    if (queryExpressionBase64 != null) {
+      query = (QueryExp) IOUtils.deserializeObject(Base64.getDecoder().decode(queryExpressionBase64));
+    }
+    final Set<ObjectName> objectNames = getMBeanServer().queryNames(name, query);
     return new ResponseEntity<>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
   }
 

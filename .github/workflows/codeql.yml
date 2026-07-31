@@ -55,7 +55,7 @@ jobs:
           - language: go
             build-mode: autobuild
           - language: java
-            build-mode: manual
+            build-mode: none
           - language: javascript
             build-mode: none
           - language: python
