@@ -172,7 +172,8 @@ public class ShellCommandsController extends AbstractCommandsController {
     QueryExp query = null;
     if (queryExpressionBase64 != null) {
       byte[] decodedBytes = Base64.getDecoder().decode(queryExpressionBase64);
-      try (ValidatingObjectInputStream ois = new ValidatingObjectInputStream(new ByteArrayInputStream(decodedBytes))) {
+      try (ValidatingObjectInputStream ois =
+          new ValidatingObjectInputStream(new ByteArrayInputStream(decodedBytes))) {
         ois.accept("javax.management.*", "java.lang.*", "java.util.*");
         query = (QueryExp) ois.readObject();
       }
