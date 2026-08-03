@@ -28,11 +28,11 @@ jackson-datatype-jsr310-2.21.5.jar
 jackson-databind-2.21.5.jar
 swagger-annotations-2.2.1.jar
 jopt-simple-5.0.4.jar
-log4j-slf4j-impl-2.25.4.jar
-log4j-core-2.25.4.jar
-log4j-jcl-2.25.4.jar
-log4j-jul-2.25.4.jar
-log4j-api-2.25.4.jar
+log4j-slf4j-impl-2.25.5.jar
+log4j-core-2.25.5.jar
+log4j-jcl-2.25.5.jar
+log4j-jul-2.25.5.jar
+log4j-api-2.25.5.jar
 spring-context-5.3.20.jar
 spring-core-5.3.20.jar
 lucene-analyzers-phonetic-6.6.6.jar
