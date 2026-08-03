@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.web.shell;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Base64;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -40,7 +41,6 @@ import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
-import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 import org.apache.geode.management.internal.web.http.support.HttpRequester;
 import org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFactory;
 
@@ -376,8 +376,13 @@ public class HttpOperationInvoker implements OperationInvoker {
   public Set<ObjectName> queryNames(final ObjectName objectName, final QueryExp queryExpression) {
     final URI link = HttpRequester.createURI(baseUrl, "/mbean/query");
 
-    Object content = new QueryParameterSource(objectName, queryExpression);
     try {
+      final MultiValueMap<String, Object> content = new LinkedMultiValueMap<String, Object>();
+      content.add("objectName", objectName.toString());
+      if (queryExpression != null) {
+        content.add("queryExpression",
+            Base64.getEncoder().encodeToString(IOUtils.serializeObject(queryExpression)));
+      }
       return (Set<ObjectName>) IOUtils
           .deserializeObject(httpRequester.post(link, content, byte[].class));
     } catch (Exception e) {
