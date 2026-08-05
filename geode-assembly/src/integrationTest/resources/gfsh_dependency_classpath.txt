@@ -64,7 +64,7 @@ jetty-servlet-9.4.57.v20241219.jar
 jetty-security-9.4.57.v20241219.jar
 jetty-server-9.4.57.v20241219.jar
 javax.servlet-api-3.1.0.jar
-joda-time-2.10.14.jar
+joda-time-2.12.7.jar
 jna-platform-5.11.0.jar
 jna-5.11.0.jar
 snappy-0.5.jar
