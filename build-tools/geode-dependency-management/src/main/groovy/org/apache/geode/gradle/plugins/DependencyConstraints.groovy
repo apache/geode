@@ -52,7 +52,7 @@ class DependencyConstraints {
     deps.put("shiro.version", "3.0.0")
     // GEODE-10583: Pin Bouncy Castle (transitive via shiro-crypto-hash) to a fixed version
     deps.put("bouncycastle.version", "1.85")
-    deps.put("slf4j-api.version", "2.0.17")
+    deps.put("slf4j-api.version", "2.0.18")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.21.5")

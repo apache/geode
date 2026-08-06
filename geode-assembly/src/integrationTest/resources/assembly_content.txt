@@ -1012,7 +1012,7 @@ lib/jna-5.11.0.jar
 lib/jna-platform-5.11.0.jar
 lib/joda-time-2.12.7.jar
 lib/jopt-simple-5.0.4.jar
-lib/jul-to-slf4j-2.0.17.jar
+lib/jul-to-slf4j-2.0.18.jar
 lib/log4j-api-2.25.5.jar
 lib/log4j-core-2.25.5.jar
 lib/log4j-jcl-2.25.5.jar
@@ -1044,7 +1044,7 @@ lib/shiro-event-3.0.0.jar
 lib/shiro-hashes-argon2-3.0.0.jar
 lib/shiro-hashes-bcrypt-3.0.0.jar
 lib/shiro-lang-3.0.0.jar
-lib/slf4j-api-2.0.17.jar
+lib/slf4j-api-2.0.18.jar
 lib/snakeyaml-2.5.jar
 lib/snappy-0.5.jar
 lib/spring-aop-6.1.21.jar
