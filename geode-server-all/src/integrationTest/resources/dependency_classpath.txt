@@ -124,7 +124,7 @@ asm-commons-9.9.1.jar
 asm-tree-9.9.1.jar
 asm-9.9.1.jar
 txw2-4.0.2.jar
-bcprov-jdk18on-1.84.jar
+bcprov-jdk18on-1.85.jar
 reactor-core-3.6.10.jar
 jline-console-3.26.3.jar
 jline-builtins-3.26.3.jar
