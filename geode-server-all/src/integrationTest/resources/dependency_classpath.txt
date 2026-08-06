@@ -122,9 +122,9 @@ micrometer-commons-1.15.12.jar
 LatencyUtils-2.0.3.jar
 snakeyaml-2.5.jar
 spring-jcl-6.1.21.jar
-asm-commons-9.9.1.jar
-asm-tree-9.9.1.jar
-asm-9.9.1.jar
+asm-commons-9.10.1.jar
+asm-tree-9.10.1.jar
+asm-9.10.1.jar
 txw2-4.0.2.jar
 reactor-core-3.6.10.jar
 jline-console-3.26.3.jar
