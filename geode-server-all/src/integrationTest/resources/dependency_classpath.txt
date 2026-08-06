@@ -97,7 +97,7 @@ joda-time-2.12.7.jar
 shiro-hashes-argon2-3.0.0.jar
 shiro-hashes-bcrypt-3.0.0.jar
 shiro-crypto-hash-3.0.0.jar
-bcprov-jdk18on-1.84.jar
+bcprov-jdk18on-1.85.jar
 jetty-ee-12.0.33.jar
 jetty-session-12.0.33.jar
 jetty-plus-12.0.33.jar
