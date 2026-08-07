@@ -98,22 +98,22 @@ shiro-hashes-argon2-3.0.0.jar
 shiro-hashes-bcrypt-3.0.0.jar
 shiro-crypto-hash-3.0.0.jar
 bcprov-jdk18on-1.85.jar
-jetty-ee-12.0.33.jar
-jetty-session-12.0.33.jar
-jetty-plus-12.0.33.jar
-jetty-security-12.0.33.jar
-jetty-server-12.0.33.jar
+jetty-ee-12.0.37.jar
+jetty-session-12.0.37.jar
+jetty-plus-12.0.37.jar
+jetty-security-12.0.37.jar
+jetty-server-12.0.37.jar
 shiro-cache-3.0.0.jar
 shiro-crypto-cipher-3.0.0.jar
 shiro-config-core-3.0.0.jar
 shiro-event-3.0.0.jar
 shiro-crypto-core-3.0.0.jar
 shiro-lang-3.0.0.jar
-jetty-xml-12.0.33.jar
-jetty-http-12.0.33.jar
-jetty-io-1git 2.0.33.jar
-jetty-jndi-12.0.33.jar
-jetty-util-12.0.33.jar
+jetty-xml-12.0.37.jar
+jetty-http-12.0.37.jar
+jetty-io-1git 2.0.37.jar
+jetty-jndi-12.0.37.jar
+jetty-util-12.0.37.jar
 spring-boot-starter-logging-3.3.13.jar
 jul-to-slf4j-2.0.18.jar
 slf4j-api-2.0.18.jar
