@@ -72,6 +72,8 @@ jline-native
 jline-reader
 jline-style
 jline-terminal
+jline-terminal-ffm
+jline-terminal-jni
 jna
 jna-platform
 joda-time

@@ -128,6 +128,8 @@ jline-builtins-3.26.3.jar
 jline-reader-3.26.3.jar
 jline-style-3.26.3.jar
 jline-terminal-3.26.3.jar
+jline-terminal-jni-3.26.3.jar
+jline-terminal-ffm-3.26.3.jar
 ST4-4.3.3.jar
 txw2-4.0.2.jar
 asm-commons-9.10.1.jar
