@@ -132,6 +132,8 @@ jline-builtins-3.26.3.jar
 jline-reader-3.26.3.jar
 jline-style-3.26.3.jar
 jline-terminal-3.26.3.jar
+jline-terminal-jni-3.26.3.jar
+jline-terminal-ffm-3.26.3.jar
 ST4-4.3.3.jar
 jakarta.enterprise.lang-model-4.0.1.jar
 reactive-streams-1.0.4.jar
