@@ -1007,6 +1007,8 @@ lib/jline-native-3.26.3.jar
 lib/jline-reader-3.26.3.jar
 lib/jline-style-3.26.3.jar
 lib/jline-terminal-3.26.3.jar
+lib/jline-terminal-ffm-3.26.3.jar
+lib/jline-terminal-jni-3.26.3.jar
 lib/jna-5.11.0.jar
 lib/jna-platform-5.11.0.jar
 lib/joda-time-2.12.7.jar

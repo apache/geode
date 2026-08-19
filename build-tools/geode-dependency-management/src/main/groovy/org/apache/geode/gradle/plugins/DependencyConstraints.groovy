@@ -108,6 +108,8 @@ class DependencyConstraints {
 
     project.dependencies {
       constraints {
+        api('org.jline:jline-terminal-jni:3.26.3')
+        api('org.jline:jline-terminal-ffm:3.26.3')   
         // informal, inter-group dependencySet
         api(group: 'antlr', name: 'antlr', version: get('antlr.version'))
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
