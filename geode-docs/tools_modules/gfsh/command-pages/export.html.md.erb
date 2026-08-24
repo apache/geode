@@ -165,6 +165,22 @@ In this scenario, partitioned region data is exported simultaneously on all host
 | <span class="keyword parmname">&#8209;&#8209;dir</span>   | Directory to which the exported data is to be written. Required if &#8209;&#8209;parallel is true. Cannot be specified at the same time as &#8209;&#8209;file.|
 | <span class="keyword parmname">&#8209;&#8209;parallel</span>   | Export local data on each node to a directory on that machine. Available for partitioned regions only.  |
 
+**Export locations:**
+
+The snapshot is written by the member named in `--member`, on that member's host. A member writes
+exports into its own working directory (and sub-directories of it). To export somewhere else, such
+as a mounted backup location, set the `gemfire.export.data.dirs` system property on the member to
+the additional directories, separated by the platform's path separator:
+
+``` pre
+-Dgemfire.export.data.dirs=/mnt/backup/geode:/var/exports/geode
+```
+
+A path containing a `..` segment is not accepted, and a path that resolves outside the configured
+directories is rejected by the member.
+
+**Required permission:** `DATA:READ` on the exported region, plus `CLUSTER:WRITE`.
+
 **Example Commands:**
 
 ``` pre
