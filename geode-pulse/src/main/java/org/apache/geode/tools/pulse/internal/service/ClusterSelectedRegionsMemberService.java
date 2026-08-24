@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,7 +147,9 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
       return regionMemberJSON;
     } else {
       ObjectNode responseJSON = mapper.createObjectNode();
-      responseJSON.put("errorOnRegion", "Region [" + selectedRegionFullPath + "] is not available");
+      responseJSON.put("errorOnRegion",
+          "Region [" + StringEscapeUtils.escapeHtml4(selectedRegionFullPath)
+              + "] is not available");
       return responseJSON;
     }
   }
