@@ -75,7 +75,7 @@ commons-digester-2.1.jar
 commons-io-2.19.0.jar
 commons-logging-1.3.5.jar
 classgraph-4.8.147.jar
-micrometer-core-1.14.0.jar
+micrometer-core-1.15.12.jar
 HdrHistogram-2.2.2.jar
 fastutil-8.5.8.jar
 jakarta.resource-api-2.1.0.jar
@@ -115,9 +115,9 @@ jul-to-slf4j-2.0.17.jar
 jetty-jndi-12.0.33.jar
 jetty-util-12.0.33.jar
 slf4j-api-2.0.17.jar
-micrometer-observation-1.14.0.jar
+micrometer-observation-1.15.12.jar
 spring-jcl-6.1.21.jar
-micrometer-commons-1.14.0.jar
+micrometer-commons-1.15.12.jar
 LatencyUtils-2.0.3.jar
 reactor-core-3.6.10.jar
 jline-console-3.26.3.jar
