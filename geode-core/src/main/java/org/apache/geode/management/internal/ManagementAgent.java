@@ -296,7 +296,14 @@ public class ManagementAgent {
         // we need to pass in the sllConfig to pulse because it needs it to make jmx connection
         if (agentUtil.isAnyWarFileAvailable(pulseWar)) {
           System.setProperty(PULSE_EMBEDDED_PROP, "true");
-          System.setProperty(PULSE_HOST_PROP, "" + config.getJmxManagerBindAddress());
+          // When JmxManagerBindAddress is empty (bind all interfaces), Pulse must connect to
+          // localhost rather than the empty string. An empty host in the JMX URL resolves to
+          // InetAddress.getLocalHost(), which on Linux/Docker gives the container's bridge IP
+          // (e.g. 172.17.0.2) instead of 127.0.0.1. The embedded keystore only contains
+          // IPAddress:127.0.0.1 as a SAN, so the SSL handshake fails on any non-loopback IP.
+          String jmxBindAddress = config.getJmxManagerBindAddress();
+          System.setProperty(PULSE_HOST_PROP,
+              jmxBindAddress.isEmpty() ? "localhost" : jmxBindAddress);
           System.setProperty(PULSE_PORT_PROP, "" + config.getJmxManagerPort());
 
           final SocketCreator jmxSocketCreator =

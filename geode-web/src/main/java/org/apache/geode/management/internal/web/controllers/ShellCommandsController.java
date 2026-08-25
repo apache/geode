@@ -17,9 +17,11 @@ package org.apache.geode.management.internal.web.controllers;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.apache.geode.management.internal.web.util.UriUtils.decode;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,9 +31,11 @@ import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.QueryExp;
 import javax.management.ReflectionException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -39,7 +43,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,7 +58,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
-import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 import org.apache.geode.util.internal.GeodeConverter;
 
 /**
@@ -162,11 +164,21 @@ public class ShellCommandsController extends AbstractCommandsController {
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/mbean/query")
-  public ResponseEntity<?> queryNames(@RequestBody final QueryParameterSource query)
-      throws IOException {
+  public ResponseEntity<?> queryNames(@RequestParam("objectName") final String objectName,
+      @RequestParam(value = "queryExpression", required = false) final String queryExpressionBase64)
+      throws Exception {
     // Exceptions are caught by the @ExceptionHandler AbstractCommandsController.handleAppException
-    final Set<ObjectName> objectNames =
-        getMBeanServer().queryNames(query.getObjectName(), query.getQueryExpression());
+    ObjectName name = ObjectName.getInstance(decode(objectName));
+    QueryExp query = null;
+    if (queryExpressionBase64 != null) {
+      byte[] decodedBytes = Base64.getDecoder().decode(queryExpressionBase64);
+      try (ValidatingObjectInputStream ois =
+          new ValidatingObjectInputStream(new ByteArrayInputStream(decodedBytes))) {
+        ois.accept("javax.management.*", "java.lang.*", "java.util.*");
+        query = (QueryExp) ois.readObject();
+      }
+    }
+    final Set<ObjectName> objectNames = getMBeanServer().queryNames(name, query);
     return new ResponseEntity<>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
   }
 

@@ -46,18 +46,18 @@ class DependencyConstraints {
     deps.put("jakarta.annotation.version", "2.1.1")
     deps.put("jakarta.ejb.version", "4.0.1")
     deps.put("jgroups.version", "3.6.20.Final")
-    deps.put("log4j.version", "2.25.4")
+    deps.put("log4j.version", "2.25.5")
     deps.put("log4j-slf4j2-impl.version", "2.23.1")
-    deps.put("micrometer.version", "1.14.0")
-    deps.put("shiro.version", "2.1.0")
+    deps.put("micrometer.version", "1.15.12")
+    deps.put("shiro.version", "3.0.0")
     // GEODE-10583: Pin Bouncy Castle (transitive via shiro-crypto-hash) to a fixed version
-    deps.put("bouncycastle.version", "1.84")
-    deps.put("slf4j-api.version", "2.0.17")
+    deps.put("bouncycastle.version", "1.85")
+    deps.put("slf4j-api.version", "2.0.18")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.21.2")
+    deps.put("jackson.version", "2.21.5")
     deps.put("jackson.annotations.version", "2.21")
-    deps.put("jackson.databind.version", "2.21.2")
+    deps.put("jackson.databind.version", "2.21.5")
     // Spring Framework 6.x Migration
     deps.put("springshell.version", "3.3.3")
     deps.put("springframework.version", "6.1.21")
@@ -85,7 +85,7 @@ class DependencyConstraints {
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
     // Jetty 12.0.x for Jakarta EE 10 (Servlet 6.0) compatibility
     // Jetty 12 reorganized modules under ee10, ee9, ee8 packages
-    deps.put("jetty.version", "12.0.33")
+    deps.put("jetty.version", "12.0.37")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
@@ -108,6 +108,8 @@ class DependencyConstraints {
 
     project.dependencies {
       constraints {
+        api('org.jline:jline-terminal-jni:3.26.3')
+        api('org.jline:jline-terminal-ffm:3.26.3')   
         // informal, inter-group dependencySet
         api(group: 'antlr', name: 'antlr', version: get('antlr.version'))
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
@@ -175,8 +177,8 @@ class DependencyConstraints {
         api(group: 'org.apache.derby', name: 'derby', version: '10.14.2.0')
         // Apache HttpComponents 5.x - Modern HTTP client with HTTP/2 support
         api(group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.4.4')
-        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.3.6')
-        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5-h2', version: '5.3.6')
+        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.4.3')
+        api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5-h2', version: '5.4.3')
         // Legacy HttpComponents 4.x (keep temporarily during migration, remove after complete)
         api(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13')
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.15')
