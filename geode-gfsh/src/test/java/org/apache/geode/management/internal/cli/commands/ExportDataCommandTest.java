@@ -16,10 +16,17 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -29,9 +36,33 @@ public class ExportDataCommandTest {
   @ClassRule
   public static GfshParserRule parser = new GfshParserRule();
 
+  /** A command whose option values are checked without contacting a member. */
+  private ExportDataCommand commandWithMember() {
+    ExportDataCommand withMember = spy(ExportDataCommand.class);
+    doNothing().when(withMember).authorize(any(), any(), anyString());
+    doReturn(mock(DistributedMember.class)).when(withMember).getMember(anyString());
+    return withMember;
+  }
+
   @Test
   public void missingMember() throws Exception {
     GfshParseResult result = parser.parse("export data --region=regionA --file=test");
     assertThat(result).isNull();
+  }
+
+  @Test
+  public void fileOptionWithParentDirectorySegmentIsRejected() {
+    parser.executeAndAssertThat(commandWithMember(),
+        "export data --member=server1 --region=regionA --file=exports/../regionA.gfd")
+        .statusIsError()
+        .containsOutput("must not contain a \"..\" path segment");
+  }
+
+  @Test
+  public void dirOptionWithParentDirectorySegmentIsRejected() {
+    parser.executeAndAssertThat(commandWithMember(),
+        "export data --member=server1 --region=regionA --dir=exports/../elsewhere")
+        .statusIsError()
+        .containsOutput("must not contain a \"..\" path segment");
   }
 }
