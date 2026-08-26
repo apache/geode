@@ -79,6 +79,7 @@ joda-time
 jopt-simple
 json-path
 json-smart
+jspecify
 jul-to-slf4j
 lang-tag
 log4j-api
