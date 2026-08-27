@@ -185,6 +185,8 @@ class DependencyConstraints {
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
         // GEODE-10583: Pin Bouncy Castle provider (pulled in via shiro-crypto-hash) to 1.84
         api(group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: get('bouncycastle.version'))
+        // GEODE-10509: Bouncy Castle PKIX for X.509 certificate building in test utilities
+        api(group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: get('bouncycastle.version'))
         api(group: 'org.assertj', name: 'assertj-core', version: '3.22.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.2.0')
         api(group: 'org.buildobjects', name: 'jproc', version: '2.8.0')

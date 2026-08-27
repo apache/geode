@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.ssl;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -30,28 +28,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import sun.security.util.ObjectIdentifier;
-import sun.security.x509.AlgorithmId;
-import sun.security.x509.BasicConstraintsExtension;
-import sun.security.x509.CertificateAlgorithmId;
-import sun.security.x509.CertificateExtensions;
-import sun.security.x509.CertificateSerialNumber;
-import sun.security.x509.CertificateValidity;
-import sun.security.x509.CertificateVersion;
-import sun.security.x509.CertificateX509Key;
-import sun.security.x509.DNSName;
-import sun.security.x509.ExtendedKeyUsageExtension;
-import sun.security.x509.GeneralName;
-import sun.security.x509.GeneralNames;
-import sun.security.x509.IPAddressName;
-import sun.security.x509.KeyIdentifier;
-import sun.security.x509.KeyUsageExtension;
-import sun.security.x509.SubjectAlternativeNameExtension;
-import sun.security.x509.SubjectKeyIdentifierExtension;
-import sun.security.x509.X500Name;
-import sun.security.x509.X509CertImpl;
-import sun.security.x509.X509CertInfo;
-
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 /**
  * Class which allows easily building certificates. It can also be used to build
@@ -66,7 +57,7 @@ public class CertificateBuilder {
   private final List<InetAddress> ipAddresses;
   private boolean isCA;
   private CertificateMaterial issuer;
-  private final List<ObjectIdentifier> extendedKeyUsages;
+  private final List<ASN1ObjectIdentifier> extendedKeyUsages;
 
   public CertificateBuilder() {
     this(30, "SHA256withRSA");
@@ -81,27 +72,15 @@ public class CertificateBuilder {
   }
 
   private static GeneralName dnsGeneralName(String name) {
-    try {
-      return new GeneralName(new DNSName(name));
-    } catch (IOException ex) {
-      throw new UncheckedIOException(ex);
-    }
+    return new GeneralName(GeneralName.dNSName, name);
   }
 
   private static GeneralName ipGeneralName(InetAddress hostAddress) {
-    try {
-      return new GeneralName(new IPAddressName(hostAddress.getAddress()));
-    } catch (IOException ex) {
-      throw new UncheckedIOException(ex);
-    }
+    return new GeneralName(GeneralName.iPAddress, hostAddress.getHostAddress());
   }
 
   public CertificateBuilder commonName(String cn) {
-    try {
-      name = new X500Name("O=Geode, CN=" + cn);
-    } catch (IOException ex) {
-      throw new UncheckedIOException(ex);
-    }
+    name = new X500Name("O=Geode, CN=" + cn);
     return this;
   }
 
@@ -142,12 +121,8 @@ public class CertificateBuilder {
    * - "1.3.6.1.5.5.7.3.3" = codeSigning
    */
   public CertificateBuilder extendedKeyUsage(String... oids) {
-    try {
-      for (String oid : oids) {
-        extendedKeyUsages.add(ObjectIdentifier.of(oid));
-      }
-    } catch (IOException ex) {
-      throw new UncheckedIOException(ex);
+    for (String oid : oids) {
+      extendedKeyUsages.add(new ASN1ObjectIdentifier(oid));
     }
     return this;
   }
@@ -166,17 +141,17 @@ public class CertificateBuilder {
     return extendedKeyUsage("1.3.6.1.5.5.7.3.1");
   }
 
-  private GeneralNames san() throws IOException {
-    GeneralNames names = new GeneralNames();
-    for (String name : dnsNames) {
-      names.add(CertificateBuilder.dnsGeneralName(name));
+  private GeneralNames subjectAlternativeNames() {
+    List<GeneralName> names = new ArrayList<>();
+    for (String dnsName : dnsNames) {
+      names.add(CertificateBuilder.dnsGeneralName(dnsName));
     }
 
     for (InetAddress address : ipAddresses) {
       names.add(CertificateBuilder.ipGeneralName(address));
     }
 
-    return names;
+    return new GeneralNames(names.toArray(new GeneralName[0]));
   }
 
   public CertificateMaterial generate() {
@@ -202,71 +177,47 @@ public class CertificateBuilder {
   private X509Certificate generate(PublicKey publicKey, PrivateKey privateKey) {
     Date from = new Date();
     Date to = new Date(from.getTime() + days * 86_400_000L);
+    BigInteger serialNumber = new BigInteger(64, new SecureRandom());
 
-    CertificateValidity interval = new CertificateValidity(from, to);
-    BigInteger sn = new BigInteger(64, new SecureRandom());
-
-    X509CertInfo info = new X509CertInfo();
+    X500Name issuerName;
+    if (issuer == null) {
+      // This is a self-signed certificate
+      issuerName = name;
+    } else {
+      issuerName =
+          X500Name.getInstance(issuer.getCertificate().getSubjectX500Principal().getEncoded());
+    }
 
     try {
-      info.set(X509CertInfo.VALIDITY, interval);
-      info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
-      info.set(X509CertInfo.SUBJECT, name);
-      info.set(X509CertInfo.KEY, new CertificateX509Key(publicKey));
-      info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
-      AlgorithmId algo = AlgorithmId.get("MD5withRSA");
-      info.set(X509CertInfo.ALGORITHM_ID, new CertificateAlgorithmId(algo));
+      JcaX509v3CertificateBuilder certBuilder =
+          new JcaX509v3CertificateBuilder(issuerName, serialNumber, from, to, name, publicKey);
 
-      if (issuer == null) {
-        // This is a self-signed certificate
-        info.set(X509CertInfo.ISSUER, name);
-      } else {
-        info.set(X509CertInfo.ISSUER, issuer.getCertificate().getSubjectDN());
-      }
+      JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils();
+      certBuilder.addExtension(Extension.subjectKeyIdentifier, false,
+          extensionUtils.createSubjectKeyIdentifier(publicKey));
 
-      CertificateExtensions extensions = new CertificateExtensions();
-
-      byte[] keyIdBytes = new KeyIdentifier(publicKey).getIdentifier();
-      SubjectKeyIdentifierExtension keyIdentifier = new SubjectKeyIdentifierExtension(keyIdBytes);
-      extensions.set(SubjectKeyIdentifierExtension.NAME, keyIdentifier);
-
-      GeneralNames subjectAltNames = san();
-      if (!subjectAltNames.isEmpty()) {
-        SubjectAlternativeNameExtension altNames =
-            new SubjectAlternativeNameExtension(subjectAltNames);
-        extensions.set(SubjectAlternativeNameExtension.NAME, altNames);
+      GeneralNames subjectAltNames = subjectAlternativeNames();
+      if (subjectAltNames.getNames().length > 0) {
+        certBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAltNames);
       }
 
       if (isCA) {
-        KeyUsageExtension usageExtension = new KeyUsageExtension();
-        usageExtension.set(KeyUsageExtension.KEY_CERTSIGN, true);
-        extensions.set(KeyUsageExtension.NAME, usageExtension);
-
-        BasicConstraintsExtension basicConstraints = new BasicConstraintsExtension(true, 0);
-        extensions.set(BasicConstraintsExtension.NAME, basicConstraints);
+        certBuilder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.keyCertSign));
+        certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(0));
       }
 
       if (!extendedKeyUsages.isEmpty()) {
-        ExtendedKeyUsageExtension ekuExtension =
-            new ExtendedKeyUsageExtension(new java.util.Vector<>(extendedKeyUsages));
-        extensions.set(ExtendedKeyUsageExtension.NAME, ekuExtension);
+        KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsages.size()];
+        for (int i = 0; i < extendedKeyUsages.size(); i++) {
+          keyPurposeIds[i] = KeyPurposeId.getInstance(extendedKeyUsages.get(i));
+        }
+        certBuilder.addExtension(Extension.extendedKeyUsage, false,
+            new ExtendedKeyUsage(keyPurposeIds));
       }
 
-      if (!extensions.getAllExtensions().isEmpty()) {
-        info.set(X509CertInfo.EXTENSIONS, extensions);
-      }
-
-      // Sign the cert to identify the algorithm that's used.
-      X509CertImpl cert = new X509CertImpl(info);
-      cert.sign(privateKey, algorithm);
-
-      // Update the algorithm, and resign.
-      algo = (AlgorithmId) cert.get(X509CertImpl.SIG_ALG);
-      info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
-      cert = new X509CertImpl(info);
-      cert.sign(privateKey, algorithm);
-
-      return cert;
+      ContentSigner signer = new JcaContentSignerBuilder(algorithm).build(privateKey);
+      X509CertificateHolder certHolder = certBuilder.build(signer);
+      return new JcaX509CertificateConverter().getCertificate(certHolder);
     } catch (Exception ex) {
       throw new RuntimeException("Unable to create certificate", ex);
     }

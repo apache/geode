@@ -249,7 +249,6 @@ gradle.taskGraph.whenReady({ graph ->
                 "--add-opens=java.xml/jdk.xml.internal=ALL-UNNAMED",
                 "--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED",
 
-                "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
                 "--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED",
         ]
 
