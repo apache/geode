@@ -59,7 +59,7 @@ lucene-analysis-common-9.12.3.jar
 lucene-queryparser-9.12.3.jar
 lucene-queries-9.12.3.jar
 lucene-core-9.12.3.jar
-httpclient5-5.4.4.jar
+httpclient5-5.6.4.jar
 httpcore5-h2-5.4.3.jar
 httpcore5-5.4.3.jar
 HikariCP-4.0.3.jar
