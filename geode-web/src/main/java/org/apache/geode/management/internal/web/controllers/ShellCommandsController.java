@@ -34,6 +34,7 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -169,8 +170,12 @@ public class ShellCommandsController extends AbstractCommandsController {
     ObjectName name = ObjectName.getInstance(decode(objectName));
     QueryExp query = null;
     if (queryExpressionBase64 != null) {
-      query =
-          (QueryExp) IOUtils.deserializeObject(Base64.getDecoder().decode(queryExpressionBase64));
+      try (ValidatingObjectInputStream ois = ValidatingObjectInputStream.builder()
+          .setByteArray(Base64.getDecoder().decode(queryExpressionBase64))
+          .accept("javax.management.*", "java.lang.*", "java.util.*")
+          .get()) {
+        query = (QueryExp) ois.readObject();
+      }
     }
     final Set<ObjectName> objectNames = getMBeanServer().queryNames(name, query);
     return new ResponseEntity<>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
