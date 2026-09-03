@@ -123,7 +123,7 @@ micrometer-commons-1.16.7.jar
 jspecify-1.0.1.jar
 LatencyUtils-2.0.3.jar
 snakeyaml-2.5.jar
-reactor-core-3.6.10.jar
+reactor-core-3.8.7.jar
 jline-console-3.26.3.jar
 jline-builtins-3.26.3.jar
 jline-reader-3.26.3.jar
