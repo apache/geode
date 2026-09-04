@@ -21,12 +21,12 @@ spring-shell-starter-3.3.3.jar
 spring-web-6.1.21.jar
 commons-lang3-3.18.0.jar
 rmiio-2.1.2.jar
-jackson-datatype-jsr310-2.21.5.jar
-jackson-dataformat-yaml-2.21.5.jar
-jackson-datatype-joda-2.21.5.jar
-jackson-core-2.21.5.jar
-jackson-datatype-jdk8-2.21.5.jar
-jackson-databind-2.21.5.jar
+jackson-datatype-jsr310-2.21.6.jar
+jackson-dataformat-yaml-2.21.6.jar
+jackson-datatype-joda-2.21.6.jar
+jackson-core-2.21.6.jar
+jackson-datatype-jdk8-2.21.6.jar
+jackson-databind-2.21.6.jar
 swagger-annotations-2.2.22.jar
 jaxb-runtime-4.0.2.jar
 jaxb-core-4.0.2.jar
@@ -123,7 +123,7 @@ micrometer-commons-1.16.7.jar
 jspecify-1.0.1.jar
 LatencyUtils-2.0.3.jar
 snakeyaml-2.5.jar
-reactor-core-3.6.10.jar
+reactor-core-3.8.7.jar
 jline-console-3.26.3.jar
 jline-builtins-3.26.3.jar
 jline-reader-3.26.3.jar
