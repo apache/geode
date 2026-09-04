@@ -130,7 +130,7 @@ micrometer-commons-1.16.7.jar
 jspecify-1.0.1.jar
 LatencyUtils-2.0.3.jar
 snakeyaml-2.5.jar
-reactor-core-3.6.10.jar
+reactor-core-3.8.7.jar
 ST4-4.3.3.jar
 txw2-4.0.2.jar
 asm-commons-9.10.1.jar

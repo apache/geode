@@ -134,7 +134,7 @@ asm-commons-9.10.1.jar
 asm-tree-9.10.1.jar
 asm-9.10.1.jar
 txw2-4.0.2.jar
-reactor-core-3.6.10.jar
+reactor-core-3.8.7.jar
 ST4-4.3.3.jar
 jakarta.enterprise.lang-model-4.0.1.jar
 reactive-streams-1.0.4.jar
