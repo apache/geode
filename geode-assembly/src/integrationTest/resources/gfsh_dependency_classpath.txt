@@ -56,7 +56,7 @@ commons-digester-2.1.jar
 commons-io-2.11.0.jar
 commons-logging-1.2.jar
 classgraph-4.8.146.jar
-micrometer-core-1.9.0.jar
+micrometer-core-1.16.7.jar
 fastutil-8.5.8.jar
 javax.resource-api-1.7.1.jar
 jetty-webapp-9.4.57.v20241219.jar
@@ -82,7 +82,10 @@ javax.activation-api-1.2.0.jar
 jline-2.12.jar
 lucene-queries-6.6.6.jar
 spring-jcl-5.3.20.jar
-HdrHistogram-2.1.12.jar
+micrometer-commons-1.16.7.jar
+micrometer-observation-1.16.7.jar
+jspecify-1.0.1.jar
+HdrHistogram-2.2.2.jar
 LatencyUtils-2.0.3.jar
 javax.transaction-api-1.3.jar
 jetty-xml-9.4.57.v20241219.jar

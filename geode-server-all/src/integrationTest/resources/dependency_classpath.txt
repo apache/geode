@@ -70,9 +70,12 @@ spring-shell-1.2.0.RELEASE.jar
 jaxb-impl-2.3.2.jar
 jna-platform-5.11.0.jar
 log4j-jul-2.25.5.jar
-HdrHistogram-2.1.12.jar
+HdrHistogram-2.2.2.jar
 jackson-annotations-2.21.jar
-micrometer-core-1.9.1.jar
+micrometer-commons-1.16.7.jar
+micrometer-core-1.16.7.jar
+micrometer-observation-1.16.7.jar
+jspecify-1.0.1.jar
 shiro-config-ogdl-1.13.0.jar
 geode-log4j-0.0.0.jar
 lucene-analyzers-phonetic-6.6.6.jar
