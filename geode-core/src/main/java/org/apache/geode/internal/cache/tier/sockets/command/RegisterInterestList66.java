@@ -79,7 +79,7 @@ public class RegisterInterestList66 extends BaseCommand {
     // Retrieve the InterestResultPolicy
     final InterestResultPolicy policy;
     try {
-      policy = (InterestResultPolicy) clientMessage.getPart(1).getObject();
+      policy = readInterestResultPolicy(clientMessage.getPart(1));
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
