@@ -25,12 +25,14 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.HostnameVerificationPolicy;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -164,7 +166,7 @@ public class RestTemplateClusterManagementServiceTransport
     // Configure SSL context and hostname verifier (HttpClient 5.x approach)
     // Only configure SSL if we have a non-null SSL context
     if (connectionConfig.getSslContext() != null) {
-      DefaultClientTlsStrategy sslSocketFactory = new DefaultClientTlsStrategy(
+      DefaultClientTlsStrategy sslSocketFactory = createTlsStrategy(
           connectionConfig.getSslContext(),
           connectionConfig.getHostnameVerifier());
 
@@ -178,7 +180,7 @@ public class RestTemplateClusterManagementServiceTransport
       // If only hostname verifier is set without SSL context, we need to use the default SSL
       // context
       try {
-        DefaultClientTlsStrategy sslSocketFactory = new DefaultClientTlsStrategy(
+        DefaultClientTlsStrategy sslSocketFactory = createTlsStrategy(
             SSLContext.getDefault(),
             connectionConfig.getHostnameVerifier());
 
@@ -195,6 +197,25 @@ public class RestTemplateClusterManagementServiceTransport
 
     requestFactory.setHttpClient(clientBuilder.build());
     restTemplate.setRequestFactory(requestFactory);
+  }
+
+  /**
+   * Builds the TLS strategy used for HTTPS connections.
+   *
+   * <p>
+   * When the caller supplies a {@link HostnameVerifier}, that verifier alone decides whether the
+   * peer's certificate matches the endpoint, so the strategy is created with
+   * {@link HostnameVerificationPolicy#CLIENT}. Without an explicit verifier the strategy keeps the
+   * library's own endpoint identification.
+   * </p>
+   */
+  private static DefaultClientTlsStrategy createTlsStrategy(SSLContext sslContext,
+      HostnameVerifier hostnameVerifier) {
+    if (hostnameVerifier == null) {
+      return new DefaultClientTlsStrategy(sslContext);
+    }
+    return new DefaultClientTlsStrategy(sslContext, HostnameVerificationPolicy.CLIENT,
+        hostnameVerifier);
   }
 
   @Override
