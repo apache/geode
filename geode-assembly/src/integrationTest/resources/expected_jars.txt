@@ -56,6 +56,7 @@ joda-time
 jopt-simple
 json-path
 json-smart
+jspecify
 lang-tag
 log4j-api
 log4j-core
@@ -67,7 +68,9 @@ lucene-analyzers-phonetic
 lucene-core
 lucene-queries
 lucene-queryparser
+micrometer-commons
 micrometer-core
+micrometer-observation
 mx4j
 mx4j-remote
 mx4j-tools

@@ -39,13 +39,13 @@ import io.micrometer.core.instrument.noop.NoopGauge;
 import io.micrometer.core.instrument.noop.NoopLongTaskTimer;
 import io.micrometer.core.instrument.noop.NoopMeter;
 import io.micrometer.core.instrument.noop.NoopTimer;
-import io.micrometer.core.lang.NonNullApi;
-import io.micrometer.core.lang.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 
-@NonNullApi
+@NullMarked
 public class NoopMeterRegistry extends MeterRegistry {
 
   @Immutable

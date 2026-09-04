@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands.lifecycle;
 
-import static io.micrometer.core.instrument.util.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 
 import java.util.concurrent.TimeUnit;
