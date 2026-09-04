@@ -82,6 +82,8 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -91,6 +93,9 @@ public abstract class BaseCommand implements Command {
 
   @Immutable
   private static final byte[] OK_BYTES = new byte[] {0};
+
+  /** Length of the serialized form of an interest result policy: code, identifier, ordinal. */
+  private static final int INTEREST_RESULT_POLICY_FORM_LENGTH = 3;
 
   public static final int MAXIMUM_CHUNK_SIZE =
       Integer.getInteger("BridgeServer.MAXIMUM_CHUNK_SIZE", 100);
@@ -870,6 +875,39 @@ public abstract class BaseCommand implements Command {
       handleThrowable(null, servConn, e);
     }
     return requestMsg;
+  }
+
+  /**
+   * Reads the interest result policy carried by the given message part.
+   *
+   * <p>
+   * The policy is written by the client in the fixed-identifier form of
+   * {@link InterestResultPolicy}. Only that form is accepted here, so the part is read as a policy
+   * and a part in any other form is refused.
+   *
+   * @param policyPart the message part holding the interest result policy
+   * @return the policy the part describes
+   * @throws IOException if the part is not in the expected form
+   */
+  protected static @NotNull InterestResultPolicy readInterestResultPolicy(
+      final @NotNull Part policyPart) throws IOException, ClassNotFoundException {
+    if (!hasInterestResultPolicyForm(policyPart)) {
+      throw new IOException("The interest result policy part is not in the expected form.");
+    }
+    return (InterestResultPolicy) policyPart.getObject();
+  }
+
+  private static boolean hasInterestResultPolicyForm(final @NotNull Part policyPart) {
+    if (!policyPart.isObject()) {
+      return false;
+    }
+    final byte[] serializedForm = policyPart.getSerializedForm();
+    return serializedForm != null
+        && serializedForm.length == INTEREST_RESULT_POLICY_FORM_LENGTH
+        && serializedForm[0] == DSCODE.DS_FIXED_ID_BYTE.toByte()
+        && serializedForm[1] == DataSerializableFixedID.INTEREST_RESULT_POLICY
+        && serializedForm[2] >= InterestResultPolicy.NONE.getOrdinal()
+        && serializedForm[2] <= InterestResultPolicy.KEYS_VALUES.getOrdinal();
   }
 
   protected static void fillAndSendRegisterInterestResponseChunks(
