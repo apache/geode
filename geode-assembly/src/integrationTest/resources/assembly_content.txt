@@ -960,7 +960,7 @@ lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/hibernate-validator-8.0.2.Final.jar
-lib/httpclient5-5.4.4.jar
+lib/httpclient5-5.6.4.jar
 lib/httpcore5-5.4.3.jar
 lib/httpcore5-h2-5.4.3.jar
 lib/istack-commons-runtime-4.1.1.jar
