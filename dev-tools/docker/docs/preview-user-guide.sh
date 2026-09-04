@@ -26,7 +26,7 @@ trap cleanup EXIT
 # geode-book folder to the image context
 cp ../../../geode-book/Gemfile* .
 
-docker build -t geodedocs/temp:1.0 .
+docker build --platform linux/amd64 -t geodedocs/temp:1.0 .
 
 # "geode-book/final_app" and "geode-book/output" are created inside the container,
 # so it is necessary to use the current user to avoid these folders owned by
@@ -35,7 +35,7 @@ GEODE_BOOK="$(pwd)/../../../geode-book"
 GEODE_DOCS="$(pwd)/../../../geode-docs"
 MY_UID=$(id -u)
 MY_GID=$(id -g)
-docker run -it -p 9292:9292 --user $MY_UID:$MY_GID \
+docker run -it --platform linux/amd64 -p 9292:9292 --user $MY_UID:$MY_GID \
     --workdir="/home/$USER" \
     --volume="/etc/group:/etc/group:ro" \
     --volume="/etc/passwd:/etc/passwd:ro" \
