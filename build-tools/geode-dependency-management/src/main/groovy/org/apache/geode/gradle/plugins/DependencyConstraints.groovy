@@ -48,16 +48,16 @@ class DependencyConstraints {
     deps.put("jgroups.version", "3.6.20.Final")
     deps.put("log4j.version", "2.25.5")
     deps.put("log4j-slf4j2-impl.version", "2.23.1")
-    deps.put("micrometer.version", "1.15.12")
+    deps.put("micrometer.version", "1.16.7")
     deps.put("shiro.version", "3.0.0")
     // GEODE-10583: Pin Bouncy Castle (transitive via shiro-crypto-hash) to a fixed version
     deps.put("bouncycastle.version", "1.85")
     deps.put("slf4j-api.version", "2.0.18")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
-    deps.put("jackson.version", "2.21.5")
+    deps.put("jackson.version", "2.21.6")
     deps.put("jackson.annotations.version", "2.21")
-    deps.put("jackson.databind.version", "2.21.5")
+    deps.put("jackson.databind.version", "2.21.6")
     // Spring Framework 6.x Migration
     deps.put("springshell.version", "3.3.3")
     deps.put("springframework.version", "6.1.21")
@@ -66,6 +66,9 @@ class DependencyConstraints {
     deps.put("springhateoas.version", "2.3.3")
     deps.put("springldap.version", "3.2.7")
     deps.put("springdoc.version", "2.6.0")
+
+    // Pin Reactor Core (transitive via spring-shell-core) to a fixed version
+    deps.put("reactor-core.version", "3.8.7")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -149,6 +152,8 @@ class DependencyConstraints {
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
+        // Pin Reactor Core (pulled in via spring-shell-core) to 3.8.7
+        api(group: 'io.projectreactor', name: 'reactor-core', version: get('reactor-core.version'))
         api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.22')
         api(group: 'org.hdrhistogram', name: 'HdrHistogram', version: '2.2.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
@@ -176,7 +181,7 @@ class DependencyConstraints {
         api(group: 'org.apache.commons', name: 'commons-text', version: 1.9)
         api(group: 'org.apache.derby', name: 'derby', version: '10.14.2.0')
         // Apache HttpComponents 5.x - Modern HTTP client with HTTP/2 support
-        api(group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.4.4')
+        api(group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4')
         api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.4.3')
         api(group: 'org.apache.httpcomponents.core5', name: 'httpcore5-h2', version: '5.4.3')
         // Legacy HttpComponents 4.x (keep temporarily during migration, remove after complete)

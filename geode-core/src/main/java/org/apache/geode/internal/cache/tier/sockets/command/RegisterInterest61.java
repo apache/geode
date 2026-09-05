@@ -78,7 +78,7 @@ public class RegisterInterest61 extends BaseCommand {
 
     final InterestResultPolicy policy;
     try {
-      policy = (InterestResultPolicy) clientMessage.getPart(2).getObject();
+      policy = readInterestResultPolicy(clientMessage.getPart(2));
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -113,6 +113,10 @@ public class RegisterInterest61 extends BaseCommand {
     Object key;
     try {
       final Part keyPart = clientMessage.getPart(4);
+      if (interestType == InterestType.REGULAR_EXPRESSION && keyPart.isObject()) {
+        throw new IOException(
+            "The key part of a regular expression request is not in the expected form.");
+      }
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
