@@ -231,7 +231,7 @@ else
   echo "Updating brew"
   echo "============================================================"
   set -x
-  cd ${BREW_DIR}/Formula
+  cd ${BREW_DIR}/Formula/a
   git pull
   git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git || true
   if ! git fetch myfork ; then
