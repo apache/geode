@@ -438,6 +438,9 @@ distributions {
     contents {
       from rootProject.tasks.writeBuildInfo
       from (rootDir) {
+        // Provided by the writeBuildInfo task above; the root copy is present only when
+        // building from an unpacked source distribution.
+        exclude '.buildinfo'
         exclude 'KEYS'
         exclude '**/gradlew'
         exclude '**/gradlew.bat'
