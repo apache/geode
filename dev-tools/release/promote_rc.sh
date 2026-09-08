@@ -627,7 +627,8 @@ svn update
 #identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=3
 set +x
-ls | awk -F. '/^[0-9]/{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
+#the awk END block emits the per-line latest patch in unspecified order, so sort numerically before taking the newest few
+ls | awk -F. '/^[0-9]/{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'| sort -t. -k1,1n -k2,2n -k3,3n |tail -$RELEASES_TO_KEEP > ../keep
 echo Keeping releases: $(cat ../keep)
 rm -f ../did.remove
 (ls | grep '^[0-9]'; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
