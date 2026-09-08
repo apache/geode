@@ -346,12 +346,16 @@ echo ""
 echo "============================================================"
 echo "Building Native docker image"
 echo "============================================================"
-set -x
-cd ${GEODE_NATIVE}/docker
-docker build . || docker build . || docker build .
-docker build -t apachegeode/geode-native-build:${VERSION} .
-[ -n "$LATER" ] || docker build -t apachegeode/geode-native-build:latest .
-set +x
+if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
+  set -x
+  cd ${GEODE_NATIVE}/docker
+  docker build . || docker build . || docker build .
+  docker build -t apachegeode/geode-native-build:${VERSION} .
+  [ -n "$LATER" ] || docker build -t apachegeode/geode-native-build:latest .
+  set +x
+else
+  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image build"
+fi
 
 
 echo ""
@@ -370,11 +374,15 @@ echo ""
 echo "============================================================"
 echo "Publishing Native docker image"
 echo "============================================================"
-set -x
-cd ${GEODE_NATIVE}/docker
-docker push apachegeode/geode-native-build:${VERSION}
-[ -n "$LATER" ] || docker push apachegeode/geode-native-build:latest
-set +x
+if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
+  set -x
+  cd ${GEODE_NATIVE}/docker
+  docker push apachegeode/geode-native-build:${VERSION}
+  [ -n "$LATER" ] || docker push apachegeode/geode-native-build:latest
+  set +x
+else
+  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image push"
+fi
 
 
 if [ -z "$LATER" ] ; then
