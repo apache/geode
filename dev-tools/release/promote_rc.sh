@@ -525,12 +525,17 @@ if [ -z "$LATER" ] ; then
 fi
 set -x
 git add settings.gradle
-git diff --staged --color | cat
-git commit -m "$JIRA: ${action} ${VERSION} as old version
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git diff --staged --color | cat
+  git commit -m "$JIRA: ${action} ${VERSION} as old version
 
 ${action} ${VERSION} in old versions${BENCHMSG} on develop
 to enable rolling upgrade tests from ${VERSION}${ser}"
-git push -u myfork
+  git push -u myfork
+  DID_OLDVER=true
+else
+  echo "develop does not track ${VERSION_MM} in old versions; nothing to commit"
+fi
 set +x
 
 
@@ -668,7 +673,7 @@ PATCH="${VERSION##*.}"
 cd ${GEODE}/../..
 echo "Final steps (some gaps in numbering is normal since not all steps apply to all releases):"
 [ -n "$LATER" ] || echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
-echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
+[ -z "$DID_OLDVER" ] || echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
 [ -n "$LATER" ] || echo "3b.Go to https://github.com/${GITHUB_USER}/geode-native/pull/new/update-to-geode-${VERSION} and create the pull request"
 [ -n "$LATER" ] && tag=":${VERSION}" || tag=""
 echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
