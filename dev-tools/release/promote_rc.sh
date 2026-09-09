@@ -293,10 +293,6 @@ set -x
 cd ${GEODE_NATIVE}
 git pull -r
 set +x
-if [ -r .travis.yml ] ; then
-  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
-      -i.bak .travis.yml
-fi
 sed -e "s/GEODE_VERSION=.*/GEODE_VERSION=${VERSION}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
