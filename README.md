@@ -2,7 +2,7 @@
     
 [![Apache Geode logo](https://geode.apache.org/img/Apache_Geode_logo.png)](http://geode.apache.org)
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](https://formulae.brew.sh/formula/apache-geode) [![Docker Pulls](https://img.shields.io/docker/pulls/apachegeode/geode.svg)](https://hub.docker.com/r/apachegeode/geode/) 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](https://formulae.brew.sh/formula/apache-geode) [![Docker Pulls](https://img.shields.io/docker/pulls/apache/geode.svg)](https://hub.docker.com/r/apache/geode/) 
 
 </div>
 
@@ -44,7 +44,7 @@ latency and 24x7 availability requirements.
 
 You can download Apache Geode from the
 [website](https://geode.apache.org/releases/), run a Docker
-[image](https://hub.docker.com/r/apachegeode/geode/), or install with
+[image](https://hub.docker.com/r/apache/geode/), or install with
 [Homebrew](https://formulae.brew.sh/formula/apache-geode) on OSX. Application developers
 can load dependencies from [Maven
 Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22).
