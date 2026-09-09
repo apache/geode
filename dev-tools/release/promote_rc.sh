@@ -333,9 +333,25 @@ if ! docker build . ; then
   fi
 fi
 mv Dockerfile.backup Dockerfile
-docker build -t apachegeode/geode:${VERSION} .
-[ -n "$LATER" ] || docker build -t apachegeode/geode:latest .
+docker build -t apache/geode:${VERSION} .
+[ -n "$LATER" ] || docker build -t apache/geode:latest .
 set +x
+
+
+echo ""
+echo "============================================================"
+echo "Building Native docker image"
+echo "============================================================"
+if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
+  set -x
+  cd ${GEODE_NATIVE}/docker
+  docker build . || docker build . || docker build .
+  docker build -t apache/geode-native-build:${VERSION} .
+  [ -n "$LATER" ] || docker build -t apache/geode-native-build:latest .
+  set +x
+else
+  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image build"
+fi
 
 
 echo ""
@@ -345,9 +361,24 @@ echo "============================================================"
 set -x
 cd ${GEODE}/docker
 docker login
-docker push apachegeode/geode:${VERSION}
-[ -n "$LATER" ] || docker push apachegeode/geode:latest
+docker push apache/geode:${VERSION}
+[ -n "$LATER" ] || docker push apache/geode:latest
 set +x
+
+
+echo ""
+echo "============================================================"
+echo "Publishing Native docker image"
+echo "============================================================"
+if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
+  set -x
+  cd ${GEODE_NATIVE}/docker
+  docker push apache/geode-native-build:${VERSION}
+  [ -n "$LATER" ] || docker push apache/geode-native-build:latest
+  set +x
+else
+  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image push"
+fi
 
 
 if [ -z "$LATER" ] ; then
@@ -650,7 +681,7 @@ echo "Final steps (some gaps in numbering is normal since not all steps apply to
 [ -z "$DID_OLDVER" ] || echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
 [ -n "$LATER" ] || echo "3b.Go to https://github.com/${GITHUB_USER}/geode-native/pull/new/update-to-geode-${VERSION} and create the pull request"
 [ -n "$LATER" ] && tag=":${VERSION}" || tag=""
-echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
+echo "4. Validate docker image: docker run -it apache/geode${tag}"
 [ -n "$LATER" ] && caveat=" (UNLESS they are still unreleased on a later patch branch)"
 echo "5. Mark ${VERSION} as Released in Jira and Bulk-transition JIRA issues fixed in this release to Closed${caveat}"
 echo "5b.Publish to GitHub ( https://github.com/apache/geode/tags then Create Release from the 2nd ... menu ), filling out the form as follows:"
@@ -668,7 +699,7 @@ echo "8. Check that ${VERSION} documentation has been published to https://geode
 echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
 [ "${PATCH}" -ne 0 ] || echo "10. If 3rd-party dependencies haven't been bumped in awhile, ask on the dev list for a volunteer (details in dev-tools/dependencies/README.md)"
 [ "${PATCH}" -ne 0 ] || [ "${MINOR}" -lt 15 ] || echo "11. In accordance with Geode's N-2 support policy, propose on the dev list that the time has come to ${0%/*}/end_of_support.sh -v ${MAJOR}.$((MINOR - 3))"
-[ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apache/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 [ -n "$LATER" ] || andnative=", geode-benchmarks, and geode-native"
 echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bump from develop to those branches of geode${andnative}."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=semver-management"
