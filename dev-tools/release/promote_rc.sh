@@ -293,10 +293,6 @@ set -x
 cd ${GEODE_NATIVE}
 git pull -r
 set +x
-if [ -r .travis.yml ] ; then
-  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
-      -i.bak .travis.yml
-fi
 sed -e "s/GEODE_VERSION=.*/GEODE_VERSION=${VERSION}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
@@ -344,22 +340,6 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Building Native docker image"
-echo "============================================================"
-if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
-  set -x
-  cd ${GEODE_NATIVE}/docker
-  docker build . || docker build . || docker build .
-  docker build -t apachegeode/geode-native-build:${VERSION} .
-  [ -n "$LATER" ] || docker build -t apachegeode/geode-native-build:latest .
-  set +x
-else
-  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image build"
-fi
-
-
-echo ""
-echo "============================================================"
 echo "Publishing Geode docker image"
 echo "============================================================"
 set -x
@@ -368,21 +348,6 @@ docker login
 docker push apachegeode/geode:${VERSION}
 [ -n "$LATER" ] || docker push apachegeode/geode:latest
 set +x
-
-
-echo ""
-echo "============================================================"
-echo "Publishing Native docker image"
-echo "============================================================"
-if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
-  set -x
-  cd ${GEODE_NATIVE}/docker
-  docker push apachegeode/geode-native-build:${VERSION}
-  [ -n "$LATER" ] || docker push apachegeode/geode-native-build:latest
-  set +x
-else
-  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image push"
-fi
 
 
 if [ -z "$LATER" ] ; then
