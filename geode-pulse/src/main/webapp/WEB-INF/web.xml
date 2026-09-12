@@ -49,7 +49,10 @@
   <session-config>
     <cookie-config>
       <http-only>true</http-only>
-      <comment>__SAME_SITE_STRICT__</comment>
+      <attribute>
+        <attribute-name>SameSite</attribute-name>
+        <attribute-value>Strict</attribute-value>
+      </attribute>
     </cookie-config>
   </session-config>
 
