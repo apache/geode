@@ -181,7 +181,7 @@ gradle.taskGraph.whenReady({ graph ->
       }
 
       maxHeapSize '768m'
-      jvmArgs += ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
+      jvmArgs += ['-XX:+HeapDumpOnOutOfMemoryError', '-XX:+ExitOnOutOfMemoryError', '-ea']
       if (project.hasProperty('testJVMVer') && testJVMVer.toInteger() >= 9) {
         jvmArgs += [
                 "--add-opens=java.base/java.io=ALL-UNNAMED",
