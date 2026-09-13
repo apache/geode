@@ -31,6 +31,10 @@ plugins {
   id "org.sonarqube" version "3.3" apply false
   id 'me.champeau.gradle.jmh' version '0.5.3' apply false
   id "de.undercouch.download" version "5.0.1" apply false
+  // GEODE-10481: SBOM generation. Declared but NOT applied here (see the SBOM block below);
+  // pinned to the CycloneDX 1.x line because 2.x/3.x require Gradle 8+, while Geode currently
+  // builds on Gradle 7.3.3.
+  id "org.cyclonedx.bom" version "1.7.4" apply false
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
   id 'geode-publish-artifacts' apply false
   id 'geode-publish-common' apply false
@@ -43,6 +47,7 @@ plugins {
 }
 
 import org.apache.geode.gradle.plugins.PasswordDialog
+import org.apache.geode.gradle.plugins.SbomSupport
 
 
 wrapper {
@@ -163,6 +168,25 @@ tasks.register('generate') {
   // This task is a no-op, with other tasks
   // injecting themselves as a task dependency into this task.  E.g., via
   // `afterEvaluate.rootProject.generate.dependsOn(generateProto)`
+}
+
+// GEODE-10481: Software Bill of Materials (SBOM) foundation -- Phase 1 / PR 1.
+// Scaffolding only: SBOM generation is OFF by default (see 'geode.sbom.enabled' in
+// gradle.properties) and no SBOM is produced by any existing task. Later phases wire the
+// CycloneDX plugin (declared 'apply false' above) into the build behind that flag.
+// The version-comparison logic lives in SbomSupport (build-tools/geode-build-tools) so it is
+// covered by a unit test (SbomSupportTest).
+tasks.register('validateGradleCompatibility') {
+  group = 'verification'
+  description = "Checks that the running Gradle version supports SBOM generation (GEODE-10481)."
+  doLast {
+    def current = org.gradle.util.GradleVersion.current().version
+    if (!SbomSupport.isCurrentGradleVersionSupported()) {
+      throw new GradleException("SBOM generation (GEODE-10481) requires Gradle >= " +
+          "${SbomSupport.MINIMUM_GRADLE_VERSION}, but this build is using ${current}.")
+    }
+    logger.lifecycle("Gradle ${current} satisfies the SBOM minimum (${SbomSupport.MINIMUM_GRADLE_VERSION}).")
+  }
 }
 
 tasks.register('printTestClasspath') {
