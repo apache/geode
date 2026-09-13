@@ -268,10 +268,16 @@ public class DiskStoreImpl implements DiskStore {
   public static boolean SET_IGNORE_PREALLOCATE = false;
 
   /**
-   * This system property turns on synchronous writes just the the init file.
+   * This system property turns on synchronous writes just the init file.
    */
-  static final boolean SYNC_IF_WRITES =
-      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "syncMetaDataWrites");
+  static final boolean SYNC_IF_WRITES = true;
+
+
+  /**
+   * This system property turns on synchronous writes just for the init file during compaction.
+   */
+  static final boolean SYNC_IF_COMPACTION_WRITES =
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "syncMetaDataCompactionWrites");
 
   /**
    * For testing - to keep track of files for which fallocate happened
