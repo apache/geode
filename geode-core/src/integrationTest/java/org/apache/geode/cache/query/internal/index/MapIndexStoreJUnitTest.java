@@ -163,6 +163,23 @@ public class MapIndexStoreJUnitTest {
     }
   }
 
+  private void validateDescendingRangeIterator(CloseableIterator<IndexStoreEntry> iterator,
+      int reverseStart, int reverseEndInclusive) {
+    try {
+      for (int i = reverseStart; i >= reverseEndInclusive; i--) {
+        IndexStoreEntry ise = iterator.next();
+        if (Integer.parseInt((String) ise.getDeserializedKey()) != i) {
+          fail("descending range iterator did not return the expected reverse order");
+        }
+      }
+      assertEquals("descending range iterator returned extra values", false, iterator.hasNext());
+    } finally {
+      if (iterator != null) {
+        iterator.close();
+      }
+    }
+  }
+
   /**
    * Helper method to test index storage iterators
    */
@@ -281,6 +298,26 @@ public class MapIndexStoreJUnitTest {
     String startValue = "" + 0;
     String endValue = "" + 9;
     helpTestStartAndEndIterator(region, startValue, true, endValue, false, numValues - 1);
+  }
+
+  @Test
+  public void testDescendingRangeIteratorReturnsReverseOrder() throws IMQException {
+    addValues(region, numValues);
+
+    CloseableIterator<IndexStoreEntry> iterator =
+        indexDataStructure.descendingIterator("2", true, "7", true, null);
+
+    validateDescendingRangeIterator(iterator, 7, 2);
+  }
+
+  @Test
+  public void testDescendingRangeIteratorHonorsExclusiveBounds() throws IMQException {
+    addValues(region, numValues);
+
+    CloseableIterator<IndexStoreEntry> iterator =
+        indexDataStructure.descendingIterator("2", false, "7", false, null);
+
+    validateDescendingRangeIterator(iterator, 6, 3);
   }
 
 

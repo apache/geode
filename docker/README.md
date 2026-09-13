@@ -9,17 +9,17 @@ docker build .
 If you're updating the image for a release, tag the build with the version:
 
 ```
-docker build -t apachegeode/geode:{version} .
-docker build -t apachegeode/geode:latest .
+docker build -t apache/geode:{version} .
+docker build -t apache/geode:latest .
 ```
 
 Once it's tagged, push to DockerHub:
 
 ```
-docker push apachegeode/geode:{version}
+docker push apache/geode:{version}
 ```
 
-* You need to be authenticated in DockerHub and be an administrator of the project.  Ask for permissions at *dev@geode.apache.org*.
+* You need to be authenticated in DockerHub and be a member of the `apache` organization with write access to this repository.  Ask for permissions at *private@geode.apache.org*.
 * This may take a while depending on your internet connection.
 
 # Starting a locator and gfsh
@@ -27,7 +27,7 @@ docker push apachegeode/geode:{version}
 1. Execute the following command to run the container and start `gfsh`:
 
 ```
-docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode
+docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apache/geode
 ```
 
 From this point you can pretty much follow [Apache Geode in 5 minutes](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes) for example:

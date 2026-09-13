@@ -40,6 +40,9 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-databind')
   implementation('io.swagger.core.v3:swagger-annotations')
 
+  runtimeOnly('org.jline:jline-terminal-jni')
+  runtimeOnly('org.jline:jline-terminal-ffm')
+
   // JAXB dependencies needed for Java 11+
   implementation('jakarta.xml.bind:jakarta.xml.bind-api')
   runtimeOnly('org.glassfish.jaxb:jaxb-runtime')

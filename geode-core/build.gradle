@@ -222,6 +222,8 @@ dependencies {
 
   //Jackson databind is used in gfsh, and also in pdx
   implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
+  implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
@@ -393,6 +395,7 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+  integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
 
   // The block below is only for the deprecated admin mbeans API
   integrationTestRuntimeOnly('commons-modeler:commons-modeler')
@@ -438,6 +441,7 @@ dependencies {
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
+sourcesJar.dependsOn(generateGrammarSource)
 
 distributedTest {
   // Some tests have inner tests that should be ignored

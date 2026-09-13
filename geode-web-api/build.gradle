@@ -57,15 +57,21 @@ dependencies {
 
   // jackson-annotations must be accessed from the geode classloader and not the webapp
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
-  implementation('com.fasterxml.jackson.core:jackson-core')
-  implementation('com.fasterxml.jackson.core:jackson-databind'){
-    exclude module: 'jackson-annotations'
-  }
+  compileOnly('com.fasterxml.jackson.core:jackson-core')
+  compileOnly('com.fasterxml.jackson.core:jackson-databind')
+  compileOnly('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
+  compileOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+  compileOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
+  compileOnly('com.fasterxml.jackson.dataformat:jackson-dataformat-yaml')
 
   // SpringDoc 2.x uses new artifact name (Spring 6.x migration)
   implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
+    exclude module: 'jackson-core'
+    exclude module: 'jackson-databind'
+    exclude module: 'jackson-dataformat-yaml'
+    exclude module: 'jackson-datatype-jsr310'
   }
 
   implementation('org.springframework:spring-beans')
@@ -122,6 +128,10 @@ sourceSets {
 
 war {
   enabled = true
+  rootSpec.exclude("**/jackson-core-*.jar")
+  rootSpec.exclude("**/jackson-databind-*.jar")
+  rootSpec.exclude("**/jackson-datatype-*.jar")
+  rootSpec.exclude("**/jackson-dataformat-*.jar")
   rootSpec.exclude("**/*commons-logging-*.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   // this shouldn't be necessary but if it's not specified we're missing some of the jars

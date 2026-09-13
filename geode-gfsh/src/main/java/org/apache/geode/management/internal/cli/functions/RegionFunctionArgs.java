@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -606,8 +607,9 @@ public class RegionFunctionArgs implements Serializable {
       if (objectSizer != null) {
         try {
           Class<?> sizerClass = ClassPathLoader.getLatest().forName(objectSizer);
-          sizer = (ObjectSizer) sizerClass.newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+          sizer = (ObjectSizer) sizerClass.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+            | NoSuchMethodException | InvocationTargetException e) {
           throw new IllegalArgumentException(
               "Unable to instantiate class " + objectSizer + " - " + e);
         }

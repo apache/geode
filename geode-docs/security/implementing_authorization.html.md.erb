@@ -154,7 +154,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | execute function                       | Defaults to DATA:WRITE. Override `Function.getRequiredPermissions` to change the permission.   |
 | export cluster-configuration           | CLUSTER:READ                     |
 | export config                          | CLUSTER:READ                     |
-| export data                            | CLUSTER:READ                     |
+| export data                            | DATA:READ:RegionName and CLUSTER:WRITE  |
 | export logs                            | CLUSTER:READ                     |
 | export offline-disk-store              | CLUSTER:READ                     |
 | export stack-traces                    | CLUSTER:READ                     |

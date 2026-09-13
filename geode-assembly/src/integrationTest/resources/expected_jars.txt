@@ -35,6 +35,7 @@ jackson-annotations
 jackson-core
 jackson-databind
 jackson-dataformat-yaml
+jackson-datatype-jdk
 jackson-datatype-joda
 jackson-datatype-jsr
 jakarta.activation-api
@@ -71,12 +72,15 @@ jline-native
 jline-reader
 jline-style
 jline-terminal
+jline-terminal-ffm
+jline-terminal-jni
 jna
 jna-platform
 joda-time
 jopt-simple
 json-path
 json-smart
+jspecify
 jul-to-slf4j
 lang-tag
 log4j-api

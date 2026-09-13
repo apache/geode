@@ -96,6 +96,12 @@ public interface IndexMap {
   CloseableIterator<IndexEntry> descendingIterator();
 
   /**
+   * Return all of the IndexEntries in the range between start and end, in descending order.
+   */
+  CloseableIterator<IndexEntry> descendingIterator(Object start, boolean startInclusive,
+      Object end, boolean endInclusive);
+
+  /**
    * Return all of the region keys from start to end.
    */
   CloseableIterator<CachedDeserializable> keyIterator(Object start, boolean startInclusive,

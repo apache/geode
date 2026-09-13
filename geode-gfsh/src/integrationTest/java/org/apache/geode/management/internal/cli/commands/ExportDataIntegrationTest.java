@@ -17,6 +17,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.management.internal.cli.functions.ExportDataFunction.EXPORT_DATA_DIRS_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
@@ -31,6 +32,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.DataSerializable;
@@ -57,6 +59,9 @@ public class ExportDataIntegrationTest {
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private Region<String, Object> region;
   private Path snapshotFile;
@@ -87,6 +92,8 @@ public class ExportDataIntegrationTest {
     region = server.getCache().getRegion(TEST_REGION_NAME);
     loadRegion("value");
     Path basePath = tempDir.getRoot().toPath();
+    // configure the test's temporary folder as an export destination
+    System.setProperty(EXPORT_DATA_DIRS_PROPERTY, basePath.toString());
     snapshotFile = basePath.resolve(SNAPSHOT_FILE);
     snapshotDir = basePath.resolve(SNAPSHOT_DIR);
   }

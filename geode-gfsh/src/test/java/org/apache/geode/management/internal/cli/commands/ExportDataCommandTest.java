@@ -15,10 +15,18 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
@@ -34,11 +42,35 @@ public class ExportDataCommandTest {
     command = new ExportDataCommand();
   }
 
+  /** A command whose option values are checked without contacting a member. */
+  private ExportDataCommand commandWithMember() {
+    ExportDataCommand withMember = spy(ExportDataCommand.class);
+    doNothing().when(withMember).authorize(any(), any(), anyString());
+    doReturn(mock(DistributedMember.class)).when(withMember).getMember(anyString());
+    return withMember;
+  }
+
   @Test
   public void missingMember() throws Exception {
     // Command parses successfully but fails during execution because cache is null
     gfsh.executeAndAssertThat(command, "export data --region=regionA --file=test")
         .statusIsError()
         .containsOutput("cache");
+  }
+
+  @Test
+  public void fileOptionWithParentDirectorySegmentIsRejected() {
+    gfsh.executeAndAssertThat(commandWithMember(),
+        "export data --member=server1 --region=regionA --file=exports/../regionA.gfd")
+        .statusIsError()
+        .containsOutput("must not contain a \"..\" path segment");
+  }
+
+  @Test
+  public void dirOptionWithParentDirectorySegmentIsRejected() {
+    gfsh.executeAndAssertThat(commandWithMember(),
+        "export data --member=server1 --region=regionA --dir=exports/../elsewhere")
+        .statusIsError()
+        .containsOutput("must not contain a \"..\" path segment");
   }
 }

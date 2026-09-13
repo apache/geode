@@ -28,6 +28,8 @@ import java.util.TreeSet;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.InternalGemFireException;
@@ -71,6 +73,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     mapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,
         true);
+    mapper.registerModule(new Jdk8Module());
+    mapper.registerModule(new JavaTimeModule());
     return mapper;
   }
 

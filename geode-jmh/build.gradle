@@ -43,14 +43,14 @@ jar {
 
 test {
   jvmArgs += [
-    '-javaagent:' + jar.outputs.files.singleFile
+    "-javaagent:../libs/${jar.archiveFileName.get()}"
   ]
   dependsOn jar
 }
 
 repeatUnitTest {
   jvmArgs += [
-    '-javaagent:' + jar.outputs.files.singleFile
+    "-javaagent:../libs/${jar.archiveFileName.get()}"
   ]
   dependsOn jar
 }

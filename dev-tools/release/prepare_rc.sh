@@ -90,12 +90,12 @@ echo "============================================================"
 echo "Checking java..."
 echo "============================================================"
 [ -z "$JAVA_HOME" ] && JAVA=java || JAVA=$JAVA_HOME/bin/java
-if ! $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 1.8' ; then
-  echo "Please set JAVA_HOME to use JDK 8 to compile Geode for release"
+if ! $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 17' ; then
+  echo "Please set JAVA_HOME to use JDK 17 to compile Geode for release"
   exit 1
 fi
 if $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = Oracle' ; then
-  echo "Please set JAVA_HOME to use an Open JDK 8 such as from https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=hotspot to compile Geode for release"
+  echo "Please set JAVA_HOME to use an Open JDK 17 such as from https://adoptium.net to compile Geode for release"
   exit 1
 else
   $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = '
@@ -171,7 +171,7 @@ git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/g
 git clone --single-branch --branch develop git@github.com:apache/geode-native.git geode-native-develop
 git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-benchmarks.git
 git clone --single-branch --branch develop git@github.com:apache/geode-benchmarks.git geode-benchmarks-develop
-git clone --single-branch --branch master git@github.com:Homebrew/homebrew-core.git
+git clone --single-branch --branch main git@github.com:Homebrew/homebrew-core.git
 
 svn checkout https://dist.apache.org/repos/dist --depth empty
 svn update --set-depth immediates --parents dist/release/geode

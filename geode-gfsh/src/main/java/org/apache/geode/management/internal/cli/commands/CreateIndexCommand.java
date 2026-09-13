@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
@@ -166,7 +166,7 @@ public class CreateIndexCommand extends GfshCommand {
   // returned here should not have "."
   String getValidRegionName(String regionPath) {
     String regionName = regionPath.trim().split(" ")[0];
-    regionName = StringUtils.removeStart(regionName, SEPARATOR);
+    regionName = Strings.CS.removeStart(regionName, SEPARATOR);
     if (regionName.contains(".")) {
       regionName = regionName.substring(0, regionName.indexOf('.'));
     }

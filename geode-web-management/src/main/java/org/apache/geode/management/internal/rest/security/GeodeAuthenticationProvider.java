@@ -74,18 +74,6 @@ import org.apache.geode.security.GemFireSecurityException;
  * </ul>
  *
  * <p>
- * <b>Debug Logging Enhancements:</b>
- * </p>
- * <ul>
- * <li>Added comprehensive logging throughout authentication process for troubleshooting</li>
- * <li>Logs authentication mode (token vs username/password)</li>
- * <li>Logs credential extraction and SecurityService interaction</li>
- * <li>Logs success/failure outcomes with error details</li>
- * <li>Logs servlet context initialization (SecurityService and authTokenEnabled flag
- * retrieval)</li>
- * </ul>
- *
- * <p>
  * <b>ServletContextAware Implementation:</b>
  * </p>
  * <ul>
@@ -109,25 +97,17 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-    logger.info("authenticate() called - principal: {}, credentials type: {}, authTokenEnabled: {}",
-        authentication.getName(),
-        authentication.getCredentials() != null
-            ? authentication.getCredentials().getClass().getSimpleName() : "null",
-        authTokenEnabled);
-
     Properties credentials = new Properties();
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
 
-    logger.info("Extracted - username: {}, password: {}", username, password);
-
     if (authTokenEnabled) {
-      logger.info("Auth token mode - setting TOKEN property with value: {}", password);
+      logger.debug("Authenticating with a token.");
       if (password != null) {
         credentials.setProperty(ResourceConstants.TOKEN, password);
       }
     } else {
-      logger.info("Username/password mode - setting USER_NAME and PASSWORD properties");
+      logger.debug("Authenticating with a user name and password.");
       if (username != null) {
         credentials.put(ResourceConstants.USER_NAME, username);
       }
@@ -136,14 +116,12 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
       }
     }
 
-    logger.info("Calling securityService.login() with credentials: {}", credentials);
     try {
       securityService.login(credentials);
-      logger.info("Login successful - creating UsernamePasswordAuthenticationToken");
       return new UsernamePasswordAuthenticationToken(username, password,
           AuthorityUtils.NO_AUTHORITIES);
     } catch (GemFireSecurityException e) {
-      logger.error("Login failed with GemFireSecurityException: {}", e.getMessage(), e);
+      logger.debug("Authentication was not successful.", e);
       throw new BadCredentialsException(e.getLocalizedMessage(), e);
     }
   }
@@ -159,14 +137,11 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
 
   @Override
   public void setServletContext(ServletContext servletContext) {
-    logger.info("setServletContext() called");
-
     securityService = (SecurityService) servletContext
         .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
-    logger.info("SecurityService from servlet context: {}", securityService);
 
     authTokenEnabled =
         (Boolean) servletContext.getAttribute(HttpService.AUTH_TOKEN_ENABLED_PARAM);
-    logger.info("authTokenEnabled from servlet context: {}", authTokenEnabled);
+    logger.debug("Authentication token mode enabled: {}", authTokenEnabled);
   }
 }

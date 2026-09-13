@@ -88,7 +88,8 @@ public class Index extends AbstractConfiguration<IndexInfo> implements RegionSco
     }
 
     String regionName = regionPath.trim().split(" ")[0];
-    regionName = StringUtils.removeStart(regionName, SEPARATOR);
+    regionName =
+        regionName.startsWith(SEPARATOR) ? regionName.substring(SEPARATOR.length()) : regionName;
     if (regionName.contains(".")) {
       regionName = regionName.substring(0, regionName.indexOf('.'));
     }
