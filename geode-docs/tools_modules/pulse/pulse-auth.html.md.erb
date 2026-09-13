@@ -23,10 +23,7 @@ Pulse requires all users to authenticate themselves before they can use the Puls
 
 If you run Pulse in embedded mode, the Pulse application runs on the JMX Manager node and no JMX authentication is required. You do not need to specify valid JMX credentials to start an embedded Pulse application.
 
-If you host Pulse on a web application server (non-embedded mode) and you configure JMX authentication on the <%=vars.product_name%> manager node, then the Pulse Web application must authenticate itself with the manager node when it starts. Specify the credentials of a valid JMX user account in the `pulse.properties` file, as described in [Hosting Pulse on a Web Application Server](pulse-hosted.html).
-
-**Note:**
-The credentials that you specify must have both read and write privileges in the JMX Manager node. See [Configuring a JMX Manager](../../managing/management/jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6).
+If you host Pulse on a web application server (non-embedded mode) and you configure JMX authentication on the <%=vars.product_name%> manager node, Pulse does not use a separate account of its own. Activate the <%=vars.product_name%> security profile, described below, and each user signs in with their own credentials, which Pulse uses to connect to the JMX Manager.
 
 ## <a id="pulse-auth-https"></a>Configuring Pulse to use HTTPS
 
