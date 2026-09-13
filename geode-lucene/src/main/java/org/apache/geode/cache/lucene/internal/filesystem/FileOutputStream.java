@@ -22,6 +22,8 @@ import java.util.Arrays;
 
 class FileOutputStream extends OutputStream {
 
+  private static final int INITIAL_BUFFER_SIZE = 8 * 1024;
+
   private final File file;
   private ByteBuffer buffer;
   private boolean open = true;
@@ -30,7 +32,6 @@ class FileOutputStream extends OutputStream {
 
   public FileOutputStream(final File file) {
     this.file = file;
-    buffer = ByteBuffer.allocate(file.getChunkSize());
     length = file.length;
     chunks = file.chunks;
     if (chunks > 0 && file.length % file.getChunkSize() != 0) {
@@ -39,7 +40,11 @@ class FileOutputStream extends OutputStream {
       // are full except for the last chunk.
       chunks--;
       byte[] previousChunkData = file.getFileSystem().getChunk(file, chunks);
+      buffer = ByteBuffer.allocate(
+          Math.min(Math.max(INITIAL_BUFFER_SIZE, previousChunkData.length), file.getChunkSize()));
       buffer.put(previousChunkData);
+    } else {
+      buffer = ByteBuffer.allocate(Math.min(INITIAL_BUFFER_SIZE, file.getChunkSize()));
     }
   }
 
@@ -47,9 +52,7 @@ class FileOutputStream extends OutputStream {
   public void write(final int b) throws IOException {
     assertOpen();
 
-    if (buffer.remaining() == 0) {
-      flushBuffer();
-    }
+    ensureCapacity();
 
     buffer.put((byte) b);
     length++;
@@ -60,9 +63,7 @@ class FileOutputStream extends OutputStream {
     assertOpen();
 
     while (len > 0) {
-      if (buffer.remaining() == 0) {
-        flushBuffer();
-      }
+      ensureCapacity();
 
       final int min = Math.min(buffer.remaining(), len);
       buffer.put(b, off, min);
@@ -83,6 +84,30 @@ class FileOutputStream extends OutputStream {
       open = false;
       buffer = null;
     }
+  }
+
+  /**
+   * Makes room for at least one more byte. The buffer grows until it reaches the chunk size, and a
+   * chunk is written only once it is full.
+   */
+  private void ensureCapacity() {
+    if (buffer.remaining() > 0) {
+      return;
+    }
+    if (buffer.capacity() < file.getChunkSize()) {
+      growBuffer();
+    } else {
+      flushBuffer();
+    }
+  }
+
+  private void growBuffer() {
+    int newCapacity =
+        Math.min(Math.max(buffer.capacity() * 2, INITIAL_BUFFER_SIZE), file.getChunkSize());
+    ByteBuffer larger = ByteBuffer.allocate(newCapacity);
+    buffer.flip();
+    larger.put(buffer);
+    buffer = larger;
   }
 
   private void flushBuffer() {
