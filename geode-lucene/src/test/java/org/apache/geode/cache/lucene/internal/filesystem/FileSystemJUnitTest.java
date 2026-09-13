@@ -143,6 +143,56 @@ public class FileSystemJUnitTest {
   }
 
   /**
+   * A test that every chunk except the last is full when a file is written in small pieces and
+   * then appended to one byte at a time.
+   */
+  @Test
+  public void testChunksAreFullExceptLast() throws Exception {
+    File file = system.createFile("testFile");
+
+    byte[] data = getRandomBytes(FileSystem.CHUNK_SIZE * 2 + SMALL_CHUNK);
+    OutputStream outputStream = file.getOutputStream();
+    int offset = 0;
+    while (offset < data.length) {
+      int len = Math.min(SMALL_CHUNK, data.length - offset);
+      outputStream.write(data, offset, len);
+      offset += len;
+    }
+    outputStream.close();
+
+    assertEquals(data.length, file.getLength());
+    assertEquals(3, file.chunks);
+    assertEquals(FileSystem.CHUNK_SIZE, system.getChunk(file, 0).length);
+    assertEquals(FileSystem.CHUNK_SIZE, system.getChunk(file, 1).length);
+    assertEquals(SMALL_CHUNK, system.getChunk(file, 2).length);
+
+    byte[] appended = getRandomBytes(FileSystem.CHUNK_SIZE);
+    OutputStream appendStream = file.getOutputStream();
+    for (byte b : appended) {
+      appendStream.write(b);
+    }
+    appendStream.close();
+
+    assertEquals(data.length + appended.length, file.getLength());
+    assertEquals(4, file.chunks);
+    assertEquals(FileSystem.CHUNK_SIZE, system.getChunk(file, 2).length);
+    assertEquals(SMALL_CHUNK, system.getChunk(file, 3).length);
+
+    byte[] expected = new byte[data.length + appended.length];
+    System.arraycopy(data, 0, expected, 0, data.length);
+    System.arraycopy(appended, 0, expected, data.length, appended.length);
+    byte[] actual = new byte[expected.length];
+    InputStream is = file.getInputStream();
+    int read = 0;
+    int count;
+    while (read < actual.length && (count = is.read(actual, read, actual.length - read)) > 0) {
+      read += count;
+    }
+    is.close();
+    assertArrayEquals(expected, actual);
+  }
+
+  /**
    * A test of cloning a a FileInputStream. The clone should start from where the original was
    * positioned, but they should not hurt each other.
    */
