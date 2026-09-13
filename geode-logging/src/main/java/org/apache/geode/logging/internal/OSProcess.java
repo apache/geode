@@ -134,9 +134,6 @@ public class OSProcess {
    * @param env any extra environment variables as key,value map; these will be in addition to those
    *        inherited from the parent process and will overwrite same keys
    * @return the process id of the created process; -1 on failure
-   * @exception SecurityException if the current thread cannot create a subprocess.
-   * @see java.lang.SecurityException
-   * @see java.lang.SecurityManager#checkExec(java.lang.String)
    */
   public static int bgexec(String[] cmdarray, File workdir, File logfile, boolean inheritLogfile,
       Map<String, String> env) throws IOException {
@@ -196,10 +193,6 @@ public class OSProcess {
     if (!cmd.exists()) {
       throw new IOException(String.format("the executable %s does not exist",
           cmd.getPath()));
-    }
-    SecurityManager security = System.getSecurityManager();
-    if (security != null) {
-      security.checkExec(cmdarray[0]);
     }
     if (workdir != null && !workdir.isDirectory()) {
       String curDir = new File("").getAbsolutePath();
