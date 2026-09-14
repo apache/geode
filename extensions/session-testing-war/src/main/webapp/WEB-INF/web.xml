@@ -27,6 +27,12 @@ limitations under the License.
     Test war file for geode session management
   </description>
 
+  <!-- Deserialization Security Configuration -->
+  <context-param>
+    <param-name>serializable-object-filter</param-name>
+    <param-value>java.lang.*;java.util.*;java.time.*;javax.servlet.**;org.apache.geode.modules.session.**;!org.apache.commons.collections.**;!org.springframework.beans.**;!*;maxdepth=50;maxrefs=10000;maxarray=10000;maxbytes=100000</param-value>
+  </context-param>
+
     <servlet>
     <description>
       Some test servlet

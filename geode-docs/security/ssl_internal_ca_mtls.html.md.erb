@@ -1,0 +1,216 @@
+---
+title:  Internal / Enterprise CA for mTLS
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This page is part of the
+[Public CA Client Authentication EKU Mitigation guide](public_ca_client_auth_eku_mitigations.html).
+It describes how to use an internal or enterprise Certificate Authority (CA) to
+issue client certificates so that <%=vars.product_name%> mutual TLS (mTLS) continues
+to work after public CAs cease including the `clientAuth` EKU in publicly-issued
+leaf certificates.
+
+## <a id="ica_summary" class="no-quick-link"></a>Summary
+
+Operate an internal or enterprise CA to issue client certificates (and optionally
+server certificates) for <%=vars.product_name%> mTLS.  This removes dependency on
+public CA EKU policies, centralizes client identity issuance, and enables
+fine-grained lifecycle control (rotation, short-lived certificates, automated
+enrollment).
+
+**When to choose this option:**
+
+- You can operate or integrate with an internal PKI (self-managed CA, HashiCorp
+  Vault PKI, Smallstep, Active Directory Certificate Services, or similar).
+- You want strong, certificate-based mutual authentication between clients and
+  servers with full lifecycle control.
+
+## <a id="ica_topology" class="no-quick-link"></a>Recommended CA Topology
+
+- **Offline root CA** — kept in air-gapped or cold storage; used only to sign
+  intermediate CA certificates.
+- **Online issuing intermediate CA** — used to sign leaf certificates for servers
+  and clients.  In the event the intermediate is compromised, only it (not the
+  root) needs to be rotated.
+- Use separate issuing CAs per environment (production, staging, development) to
+  prevent cross-environment trust leakage.
+- Enforce short certificate lifetimes for client leaf certificates (recommended:
+  1–30 days) to minimise the impact of compromise and to avoid CRL/OCSP
+  complexity. Short-lived certificates with automation provide:
+  * Reduced compromise windows (compromised certificates expire quickly)
+  * Elimination of manual coordination for renewals
+  * Zero-downtime operations via <%=vars.product_name%>'s file-watching
+    credential managers
+  * Consistent security posture through automated enforcement of required
+    EKUs and extensions
+
+## <a id="ica_cert_issuance" class="no-quick-link"></a>Certificate Issuance
+
+Use your internal PKI tools (OpenSSL, HashiCorp Vault, Active Directory Certificate
+Services, etc.) to issue certificates with your internal CA. Client certificates
+**must include the `clientAuth` Extended Key Usage** to function with <%=vars.product_name%>
+mTLS.
+
+**Key requirements:**
+
+- **Client certificates:** Must have `extendedKeyUsage=clientAuth`
+- **Server certificates:** Must have `extendedKeyUsage=serverAuth` and must include
+  `subjectAltName` with DNS names or IP addresses for hostname verification
+  (when `ssl-endpoint-identification-enabled=true`)
+- **Certificate chain:** Ensure leaf certificates are signed by a CA that is
+  trusted by the peer's truststore
+
+## <a id="ica_keystore_prep" class="no-quick-link"></a>Keystore and Truststore Preparation
+
+Prepare Java keystores (PKCS12 or JKS format) containing:
+
+- **Keystore:** Private key and certificate chain (for the component's identity)
+- **Truststore:** CA certificates used to validate peer certificates
+
+<%=vars.product_name%> supports PKCS12 (recommended) and JKS keystore formats.
+For detailed instructions on creating and managing keystores, see
+[SSL Sample Implementation](ssl_example.html).
+
+**Key points:**
+
+- **Server truststores:** Import your internal CA certificate(s) to validate client
+  certificates
+- **Client truststores:** Import CA certificate(s) to validate server certificates
+- **Password protection:** Use environment variables, secure vaults, or file-based
+  configuration with restricted permissions
+
+## <a id="ica_geode_config" class="no-quick-link"></a><%=vars.product_name%> Configuration
+
+**Server / locator (requires client certs from the internal CA):**
+
+``` pre
+ssl-enabled-components=all
+ssl-keystore=/etc/geode/server-keystore.jks
+ssl-keystore-password=<password>
+ssl-keystore-type=JKS
+ssl-truststore=/etc/geode/server-truststore.jks
+ssl-truststore-password=<password>
+ssl-truststore-type=JKS
+ssl-require-authentication=true
+ssl-endpoint-identification-enabled=true
+```
+
+**Client (presents an internal-CA-issued client cert):**
+
+``` pre
+ssl-enabled-components=all
+ssl-keystore=/etc/geode/client-keystore.jks
+ssl-keystore-password=<password>
+ssl-keystore-type=JKS
+ssl-truststore=/etc/geode/client-truststore.jks
+ssl-truststore-password=<password>
+ssl-truststore-type=JKS
+ssl-require-authentication=true
+ssl-endpoint-identification-enabled=true
+```
+
+The client truststore must contain the trust anchor used to verify the server's
+certificate (the public CA root if the server used a public-CA cert, or the
+internal root if the server cert was also issued by the internal CA).
+
+For component-specific keystores (different certs per role), use
+`server-ssl-keystore`, `locator-ssl-keystore`, etc.
+
+## <a id="ica_rotation" class="no-quick-link"></a>Rotation and Hot-Reload
+
+<%=vars.product_name%> ships `FileWatchingX509ExtendedKeyManager` and
+`FileWatchingX509ExtendedTrustManager`, backed by `PollingFileWatcher`, which
+monitor keystore and truststore files on disk and reload them when they change —
+no server restart required.
+
+**Best practices for rotation tooling:**
+
+- Write new keystore/truststore files atomically: create a temporary file, write
+  it, then `rename()` it into the watched path so the file watcher sees a clean
+  update.
+- Use short certificate lifetimes and automate renewal before expiry.  Automation
+  tools such as HashiCorp Vault agent, Smallstep's `step-ca`, or custom ACME
+  clients can write renewed keystores atomically to the watched path.
+- When rotating the issuing CA, stage the new CA cert in server truststores before
+  rotating client certificates to avoid handshake failures during the overlap
+  window.
+
+## <a id="ica_automation" class="no-quick-link"></a>Enrollment Automation
+
+If you operate an existing enterprise PKI automation platform, integrate it
+rather than building a bespoke CA:
+
+- **HashiCorp Vault PKI**: Vault agent authenticates (using AppRole, Kubernetes
+  auth, or a token) and writes short-lived client certs atomically to
+  `/var/geode/`. `FileWatchingX509ExtendedKeyManager` picks up the rotation.
+- **Smallstep (`step-ca` / `step` CLI)**: Use `step ca certificate` to enroll and
+  renew client certificates; integrate with `step-sds` or a custom renewer that
+  writes PKCS12/JKS files atomically.
+- **ACME automation**: If your internal CA supports ACME, use an ACME client
+  (e.g., Certbot with a custom hook) to issue and renew client credentials.
+
+The key integration pattern in all cases:
+1. Automation authenticates to the CA.
+2. CA issues a short-lived client cert.
+3. Automation writes the keystore atomically to the watched path.
+4. `FileWatchingX509ExtendedKeyManager` reloads the credential without restart.
+
+## <a id="ica_revocation" class="no-quick-link"></a>Revocation Strategy
+
+- **Short-lived certificates (recommended):** Use 1–30 day lifetimes with
+  automated renewal.  Because certificates expire soon, CRL/OCSP infrastructure
+  is not required.
+- **CRL or OCSP (longer-lived certs):** If longer certificate lifetimes are
+  required, publish a CRL distribution point or OCSP responder as part of your
+  internal CA, and configure the JVM trust policy accordingly.
+
+## <a id="ica_verification" class="no-quick-link"></a>Verification and Troubleshooting
+
+**Enable JSSE debug logging** to diagnose SSL/TLS handshake issues:
+
+```
+-Djavax.net.debug=ssl,handshake
+```
+
+**Common issues:**
+
+| Symptom | Likely cause |
+|---|---|
+| `PKIX path building failed` | Truststore does not include the CA that signed the peer's certificate |
+| `certificate_unknown` alert | Client certificate lacks the required `clientAuth` Extended Key Usage, or server certificate lacks `serverAuth` EKU |
+| `no available certificate` | Keystore path/password incorrect or file permissions restrict access |
+| Handshake fails after rotation | New keystore file was not written atomically; file watcher may have read a partial file |
+| `No subject alternative names` | Server certificate does not include a DNS SAN matching the hostname used by the client |
+
+Check <%=vars.product_name%> logs for messages from `FileWatchingX509ExtendedKeyManager`
+(initialization and reload events) and for `SSLHandshakeException` details.
+
+## <a id="ica_references" class="no-quick-link"></a>References
+
+- [Configuring SSL](implementing_ssl.html) — general SSL configuration for
+  <%=vars.product_name%>
+- [SSL Sample Implementation](ssl_example.html) — example keystore/truststore
+  setup in <%=vars.product_name%>
+- [Public CA Client Authentication EKU Mitigations](public_ca_client_auth_eku_mitigations.html) — overview and other mitigation options
+- `FileWatchingX509ExtendedKeyManager`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/filewatch/FileWatchingX509ExtendedKeyManager.java`
+- `SSLConfig` and `SSLConfigurationFactory`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/SSLConfig.java`
+- `SocketCreator`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/SocketCreator.java`

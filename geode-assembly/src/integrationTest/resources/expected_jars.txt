@@ -9,7 +9,7 @@ antlr-runtime
 asm
 asm-commons
 asm-tree
-byte-buddy
+bcprov-jdk18on
 classgraph
 classmate
 commons-beanutils
@@ -35,6 +35,7 @@ jackson-annotations
 jackson-core
 jackson-databind
 jackson-dataformat-yaml
+jackson-datatype-jdk
 jackson-datatype-joda
 jackson-datatype-jsr
 jakarta.activation-api
@@ -71,12 +72,15 @@ jline-native
 jline-reader
 jline-style
 jline-terminal
+jline-terminal-ffm
+jline-terminal-jni
 jna
 jna-platform
 joda-time
 jopt-simple
 json-path
 json-smart
+jspecify
 jul-to-slf4j
 lang-tag
 log4j-api
@@ -84,8 +88,6 @@ log4j-core
 log4j-jcl
 log4j-jul
 log4j-slf4j-impl
-logback-classic
-logback-core
 lucene-analysis-common
 lucene-analysis-phonetic
 lucene-core
@@ -111,6 +113,8 @@ shiro-crypto-cipher
 shiro-crypto-core
 shiro-crypto-hash
 shiro-event
+shiro-hashes-argon
+shiro-hashes-bcrypt
 shiro-lang
 slf4j-api
 snakeyaml

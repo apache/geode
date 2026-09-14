@@ -19,10 +19,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -152,6 +157,44 @@ public class JSONFormatterJUnitTest {
         actualTestObject);
   }
 
+  @Test
+  public void verifyJsonToPdxInstanceConversionWithOptionalField() {
+    OptionalValueHolder expectedValue = new OptionalValueHolder(Optional.of("typed-json"));
+    String json = jsonWithType(OptionalValueHolder.class, "\"optionalValue\":\"typed-json\"");
+
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(json);
+    Object actualValue = pdxInstance.getObject();
+
+    assertEquals(OptionalValueHolder.class, actualValue.getClass());
+    assertEquals(expectedValue, actualValue);
+  }
+
+  @Test
+  public void verifyJsonToPdxInstanceConversionWithLocalDateField() {
+    LocalDateValueHolder expectedValue = new LocalDateValueHolder(LocalDate.of(2026, 3, 29));
+    String json = jsonWithType(LocalDateValueHolder.class, "\"localDateValue\":\"2026-03-29\"");
+
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(json);
+    Object actualValue = pdxInstance.getObject();
+
+    assertEquals(LocalDateValueHolder.class, actualValue.getClass());
+    assertEquals(expectedValue, actualValue);
+  }
+
+  @Test
+  public void geodePdxInstanceObjectMapperCanDeserializeJava8Types() {
+    TimedType expectedValue = new TimedType(LocalDate.of(2026, 3, 29));
+
+    ObjectNode objectNode = java8ObjectMapper().valueToTree(expectedValue);
+    objectNode.put("@type", TimedType.class.getName());
+
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(objectNode.toString());
+    Object actualValue = pdxInstance.getObject();
+
+    assertEquals(TimedType.class, actualValue.getClass());
+    assertEquals(expectedValue, actualValue);
+  }
+
   /**
    * this test validates json document, where field has value and null Then it verifies we create
    * only one pdx type id for that
@@ -218,6 +261,121 @@ public class JSONFormatterJUnitTest {
 
     } finally {
       System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "false");
+    }
+  }
+
+  private static String jsonWithType(Class<?> type, String fields) {
+    return "{\"@type\":\"" + type.getName() + "\"," + fields + "}";
+  }
+
+  private static ObjectMapper java8ObjectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    return objectMapper;
+  }
+
+  public static class OptionalValueHolder {
+    private Optional<String> optionalValue;
+
+    public OptionalValueHolder() {}
+
+    OptionalValueHolder(Optional<String> optionalValue) {
+      this.optionalValue = optionalValue;
+    }
+
+    public Optional<String> getOptionalValue() {
+      return optionalValue;
+    }
+
+    public void setOptionalValue(Optional<String> optionalValue) {
+      this.optionalValue = optionalValue;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+      if (this == object) {
+        return true;
+      }
+      if (!(object instanceof OptionalValueHolder)) {
+        return false;
+      }
+      OptionalValueHolder that = (OptionalValueHolder) object;
+      return Objects.equals(optionalValue, that.optionalValue);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(optionalValue);
+    }
+  }
+
+  public static class LocalDateValueHolder {
+    private LocalDate localDateValue;
+
+    public LocalDateValueHolder() {}
+
+    LocalDateValueHolder(LocalDate localDateValue) {
+      this.localDateValue = localDateValue;
+    }
+
+    public LocalDate getLocalDateValue() {
+      return localDateValue;
+    }
+
+    public void setLocalDateValue(LocalDate localDateValue) {
+      this.localDateValue = localDateValue;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+      if (this == object) {
+        return true;
+      }
+      if (!(object instanceof LocalDateValueHolder)) {
+        return false;
+      }
+      LocalDateValueHolder that = (LocalDateValueHolder) object;
+      return Objects.equals(localDateValue, that.localDateValue);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(localDateValue);
+    }
+  }
+
+  public static class TimedType {
+    private LocalDate localDate;
+
+    public TimedType() {}
+
+    TimedType(LocalDate localDate) {
+      this.localDate = localDate;
+    }
+
+    public LocalDate getLocalDate() {
+      return localDate;
+    }
+
+    public void setLocalDate(LocalDate localDate) {
+      this.localDate = localDate;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+      if (this == object) {
+        return true;
+      }
+      if (!(object instanceof TimedType)) {
+        return false;
+      }
+      TimedType timedType = (TimedType) object;
+      return Objects.equals(localDate, timedType.localDate);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(localDate);
     }
   }
 }

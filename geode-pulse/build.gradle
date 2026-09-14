@@ -97,6 +97,7 @@ dependencies {
   // type definitions. This ensures complete Jackson bundle (core + datatypes) loads from
   // webapp classloader, preventing ClassCastException during Spring initialization.
   implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+  implementation('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
 
   compileOnly('org.mortbay.jetty:servlet-api')
 

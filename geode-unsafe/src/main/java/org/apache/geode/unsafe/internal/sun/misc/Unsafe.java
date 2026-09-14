@@ -26,6 +26,33 @@ import java.lang.reflect.Field;
 public class Unsafe {
 
   private final sun.misc.Unsafe unsafe;
+
+  // Cached field offsets for ByteBuffer access
+  // These are computed once and reused to avoid repeated reflection
+  private static final long BUFFER_ADDRESS_FIELD_OFFSET;
+  private static final long BUFFER_CAPACITY_FIELD_OFFSET;
+
+  static {
+    long addressOffset = -1;
+    long capacityOffset = -1;
+    try {
+      Field unsafeField = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+      unsafeField.setAccessible(true);
+      sun.misc.Unsafe unsafeInstance = (sun.misc.Unsafe) unsafeField.get(null);
+
+      // Get field offsets for Buffer fields
+      Field addressField = java.nio.Buffer.class.getDeclaredField("address");
+      addressOffset = unsafeInstance.objectFieldOffset(addressField);
+
+      Field capacityField = java.nio.Buffer.class.getDeclaredField("capacity");
+      capacityOffset = unsafeInstance.objectFieldOffset(capacityField);
+    } catch (Exception e) {
+      // If initialization fails, offsets remain -1
+    }
+    BUFFER_ADDRESS_FIELD_OFFSET = addressOffset;
+    BUFFER_CAPACITY_FIELD_OFFSET = capacityOffset;
+  }
+
   {
     sun.misc.Unsafe tmp;
     try {
@@ -209,5 +236,60 @@ public class Unsafe {
 
   public void putOrderedObject(Object o, long offset, Object x) {
     unsafe.putOrderedObject(o, offset, x);
+  }
+
+  /**
+   * Gets the native memory address from a DirectByteBuffer using field offset.
+   * This method accesses the 'address' field of java.nio.Buffer directly via Unsafe,
+   * which does not require --add-opens flags (unlike method reflection with setAccessible()).
+   *
+   * @param buffer the DirectByteBuffer to get the address from
+   * @return the native memory address
+   */
+  public long getBufferAddress(Object buffer) {
+    if (BUFFER_ADDRESS_FIELD_OFFSET == -1) {
+      throw new RuntimeException("Buffer address field offset not initialized");
+    }
+    return unsafe.getLong(buffer, BUFFER_ADDRESS_FIELD_OFFSET);
+  }
+
+  /**
+   * Sets the native memory address for a ByteBuffer using field offset.
+   * This allows wrapping an arbitrary memory address as a ByteBuffer.
+   *
+   * @param buffer the ByteBuffer to set the address for
+   * @param address the native memory address
+   */
+  public void setBufferAddress(Object buffer, long address) {
+    if (BUFFER_ADDRESS_FIELD_OFFSET == -1) {
+      throw new RuntimeException("Buffer address field offset not initialized");
+    }
+    unsafe.putLong(buffer, BUFFER_ADDRESS_FIELD_OFFSET, address);
+  }
+
+  /**
+   * Gets the capacity from a ByteBuffer using field offset.
+   *
+   * @param buffer the ByteBuffer to get the capacity from
+   * @return the buffer capacity
+   */
+  public int getBufferCapacity(Object buffer) {
+    if (BUFFER_CAPACITY_FIELD_OFFSET == -1) {
+      throw new RuntimeException("Buffer capacity field offset not initialized");
+    }
+    return unsafe.getInt(buffer, BUFFER_CAPACITY_FIELD_OFFSET);
+  }
+
+  /**
+   * Sets the capacity for a ByteBuffer using field offset.
+   *
+   * @param buffer the ByteBuffer to set the capacity for
+   * @param capacity the capacity value
+   */
+  public void setBufferCapacity(Object buffer, int capacity) {
+    if (BUFFER_CAPACITY_FIELD_OFFSET == -1) {
+      throw new RuntimeException("Buffer capacity field offset not initialized");
+    }
+    unsafe.putInt(buffer, BUFFER_CAPACITY_FIELD_OFFSET, capacity);
   }
 }

@@ -24,8 +24,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
-import org.apache.shiro.ShiroException;
 import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
@@ -53,7 +53,7 @@ public class IntegratedSecurityServiceTest {
   private org.apache.shiro.mgt.SecurityManager shiroManager;
 
   private IntegratedSecurityService securityService;
-  private ShiroException shiroException;
+  private AuthenticationException shiroException;
   private Properties properties;
 
   @Before
@@ -68,7 +68,7 @@ public class IntegratedSecurityServiceTest {
     when(mockSubject.getPrincipal()).thenReturn("principal");
     when(mockSubject.getSession()).thenReturn(mock(Session.class));
 
-    shiroException = mock(ShiroException.class);
+    shiroException = mock(AuthenticationException.class);
     properties = new Properties();
 
     securityService = new IntegratedSecurityService(provider, null);
@@ -189,7 +189,7 @@ public class IntegratedSecurityServiceTest {
     doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
     assertThatThrownBy(() -> securityService.login(properties))
         .isInstanceOf(AuthenticationFailedException.class)
-        .hasCauseInstanceOf(ShiroException.class)
+        .hasCauseInstanceOf(AuthenticationException.class)
         .hasMessageContaining("Authentication error. Please check your credentials");
   }
 

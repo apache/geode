@@ -25,12 +25,14 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.HostnameVerificationPolicy;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -164,13 +166,13 @@ public class RestTemplateClusterManagementServiceTransport
     // Configure SSL context and hostname verifier (HttpClient 5.x approach)
     // Only configure SSL if we have a non-null SSL context
     if (connectionConfig.getSslContext() != null) {
-      SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+      DefaultClientTlsStrategy sslSocketFactory = createTlsStrategy(
           connectionConfig.getSslContext(),
           connectionConfig.getHostnameVerifier());
 
       HttpClientConnectionManager connectionManager =
           PoolingHttpClientConnectionManagerBuilder.create()
-              .setSSLSocketFactory(sslSocketFactory)
+              .setTlsSocketStrategy(sslSocketFactory)
               .build();
 
       clientBuilder.setConnectionManager(connectionManager);
@@ -178,13 +180,13 @@ public class RestTemplateClusterManagementServiceTransport
       // If only hostname verifier is set without SSL context, we need to use the default SSL
       // context
       try {
-        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
+        DefaultClientTlsStrategy sslSocketFactory = createTlsStrategy(
             SSLContext.getDefault(),
             connectionConfig.getHostnameVerifier());
 
         HttpClientConnectionManager connectionManager =
             PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
+                .setTlsSocketStrategy(sslSocketFactory)
                 .build();
 
         clientBuilder.setConnectionManager(connectionManager);
@@ -195,6 +197,25 @@ public class RestTemplateClusterManagementServiceTransport
 
     requestFactory.setHttpClient(clientBuilder.build());
     restTemplate.setRequestFactory(requestFactory);
+  }
+
+  /**
+   * Builds the TLS strategy used for HTTPS connections.
+   *
+   * <p>
+   * When the caller supplies a {@link HostnameVerifier}, that verifier alone decides whether the
+   * peer's certificate matches the endpoint, so the strategy is created with
+   * {@link HostnameVerificationPolicy#CLIENT}. Without an explicit verifier the strategy keeps the
+   * library's own endpoint identification.
+   * </p>
+   */
+  private static DefaultClientTlsStrategy createTlsStrategy(SSLContext sslContext,
+      HostnameVerifier hostnameVerifier) {
+    if (hostnameVerifier == null) {
+      return new DefaultClientTlsStrategy(sslContext);
+    }
+    return new DefaultClientTlsStrategy(sslContext, HostnameVerificationPolicy.CLIENT,
+        hostnameVerifier);
   }
 
   @Override

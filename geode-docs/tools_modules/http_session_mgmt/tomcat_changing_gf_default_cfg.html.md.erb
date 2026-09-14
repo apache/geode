@@ -82,7 +82,7 @@ To edit <%=vars.product_name%> cache properties such as the name and the charact
 
 ``` pre
 <Manager 
-  className="org.apache.geode.modules.session.catalina.Tomcat9DeltaSessionManager"
+  className="org.apache.geode.modules.session.catalina.Tomcat10DeltaSessionManager"
   property-name="property-value" 
   property-name="property-value" 
   ...
@@ -93,11 +93,13 @@ For example, this entry creates a partitioned region by the name of "my\_region"
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
-      Tomcat9DeltaSessionManager" 
+      Tomcat10DeltaSessionManager" 
   regionAttributesId="PARTITION_REDUNDANT" 
   regionName="my_region" 
 /> 
 ```
+
+**Note:** For Tomcat 10.1 and later, use `Tomcat10DeltaSessionManager`. Support for Tomcat 7, 8, and 9 has been discontinued.
 
 The following parameters are the cache configuration parameters that can be added to Tomcat's `context.xml` file.
 

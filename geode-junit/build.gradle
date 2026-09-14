@@ -20,18 +20,6 @@ plugins {
   id 'geode-publish-java'
 }
 
-compileJava {
-  // -Xlint:-sunapi flag removed as it doesn't exist in Java 17
-  // Added --add-exports for sun.security.x509 package access needed for CertificateBuilder
-  options.compilerArgs << '-XDenableSunApiLintControl'
-  options.compilerArgs << '--add-exports=java.base/sun.security.x509=ALL-UNNAMED'
-}
-
-javadoc {
-  // Add --add-exports for sun.security.x509 package access needed for CertificateBuilder javadoc generation
-  options.addStringOption('-add-exports', 'java.base/sun.security.x509=ALL-UNNAMED')
-}
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
@@ -75,6 +63,7 @@ dependencies {
   implementation('org.junit.vintage:junit-vintage-engine')
 
   implementation('pl.pragmatists:JUnitParams')
+  implementation('org.bouncycastle:bcpkix-jdk18on')
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-serialization'))

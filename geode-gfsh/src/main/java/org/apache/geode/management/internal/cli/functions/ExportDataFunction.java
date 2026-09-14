@@ -15,6 +15,9 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -27,18 +30,33 @@ import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /***
  * Function which carries out the export of a region to a file on a member. Uses the
  * RegionSnapshotService to export the data
  *
- *
+ * <p>
+ * Export destinations are resolved to their canonical form and must be within the export
+ * directories configured for this member.
  */
 public class ExportDataFunction extends CliFunction<String[]> {
   private static final long serialVersionUID = 1L;
 
   private static final String ID =
       "org.apache.geode.management.internal.cli.functions.ExportDataFunction";
+
+  /**
+   * System property naming additional directories this member writes {@code export data} snapshots
+   * into. Several directories may be listed, separated by {@link File#pathSeparator}. Exports into
+   * sub-directories of a configured directory are included.
+   *
+   * <p>
+   * The member's working directory is always configured, since that is where a relative export
+   * path resolves to, so when this property is not set it is the only export destination.
+   */
+  public static final String EXPORT_DATA_DIRS_PROPERTY =
+      GeodeGlossary.GEMFIRE_PREFIX + "export.data.dirs";
 
   @Override
   public String getId() {
@@ -62,7 +80,7 @@ public class ExportDataFunction extends CliFunction<String[]> {
     String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
     if (region != null) {
       RegionSnapshotService<Object, Object> snapshotService = region.getSnapshotService();
-      final File exportFile = new File(fileName);
+      final File exportFile = resolveExportFile(fileName);
       if (parallel) {
         SnapshotOptions<Object, Object> options = new SnapshotOptionsImpl<>().setParallelMode(true);
         snapshotService.save(exportFile, SnapshotFormat.GEODE, options);
@@ -80,5 +98,43 @@ public class ExportDataFunction extends CliFunction<String[]> {
     }
 
     return result;
+  }
+
+  /**
+   * Resolves the requested export path against the export directories configured for this member.
+   *
+   * @param fileName the path requested by the caller, which may be relative or absolute
+   * @return the canonical file to export to
+   * @throws IllegalArgumentException if the path is not within a configured export directory
+   */
+  static File resolveExportFile(String fileName) throws IOException {
+    File exportFile = new File(fileName).getCanonicalFile();
+    List<File> exportDirs = configuredExportDirs();
+
+    for (File exportDir : exportDirs) {
+      if (exportFile.toPath().startsWith(exportDir.toPath())) {
+        return exportFile;
+      }
+    }
+
+    throw new IllegalArgumentException(String.format(
+        "Cannot export to %s: the path is not within the export directories configured for this member (%s). Use the %s system property to configure additional directories.",
+        exportFile, exportDirs, EXPORT_DATA_DIRS_PROPERTY));
+  }
+
+  private static List<File> configuredExportDirs() throws IOException {
+    List<File> exportDirs = new ArrayList<>();
+    exportDirs.add(new File(System.getProperty("user.dir")).getCanonicalFile());
+
+    String configuredDirs = System.getProperty(EXPORT_DATA_DIRS_PROPERTY);
+    if (configuredDirs != null) {
+      for (String configuredDir : configuredDirs.split(File.pathSeparator)) {
+        if (!configuredDir.trim().isEmpty()) {
+          exportDirs.add(new File(configuredDir.trim()).getCanonicalFile());
+        }
+      }
+    }
+
+    return exportDirs;
   }
 }

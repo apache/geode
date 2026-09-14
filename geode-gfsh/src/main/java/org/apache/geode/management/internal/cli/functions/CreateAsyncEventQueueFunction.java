@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +114,7 @@ public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.Async
       String listenerClassName = config.getAsyncEventListener().getClassName();
       Object listenerInstance;
       Class<?> listenerClass = InternalDataSerializer.getCachedClass(listenerClassName);
-      listenerInstance = listenerClass.newInstance();
+      listenerInstance = listenerClass.getDeclaredConstructor().newInstance();
 
       List<ParameterType> parameters = config.getAsyncEventListener().getParameters();
       Properties listenerProperties = new Properties();
@@ -152,11 +153,12 @@ public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.Async
   }
 
   private Object newInstance(String className)
-      throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+      throws ClassNotFoundException, IllegalAccessException, InstantiationException,
+      NoSuchMethodException, InvocationTargetException {
     if (Strings.isNullOrEmpty(className)) {
       return null;
     }
 
-    return ClassPathLoader.getLatest().forName(className).newInstance();
+    return ClassPathLoader.getLatest().forName(className).getDeclaredConstructor().newInstance();
   }
 }

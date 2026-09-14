@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -115,6 +116,45 @@ public class CompactRangeIndexIndexMapJUnitTest {
     IndexManager.IS_TEST_EXPANSION = oldTestExpansionValue;
   }
 
+  @Test
+  public void testDescendingRangeQueryWithLimitReturnsSameOrderForMapIndexStore() throws Exception {
+    String queryString = "Select * from " + SEPARATOR
+        + "portfolios p where p.ID >= 2 and p.ID <= 7 order by p.ID desc limit 3";
+
+    Cache cache = CacheUtils.getCache();
+    QueryService queryService = cache.getQueryService();
+    int numEntries = 20;
+    boolean oldTestLDMValue = IndexManager.IS_TEST_LDM;
+    boolean oldTestExpansionValue = IndexManager.IS_TEST_EXPANSION;
+
+    try {
+      IndexManager.IS_TEST_LDM = false;
+      IndexManager.IS_TEST_EXPANSION = false;
+      Region region = createReplicatedRegion("portfolios");
+      createPortfolios(region, numEntries);
+
+      queryService.createIndex("IDIndex", "p.ID", SEPARATOR + "portfolios p");
+      SelectResults memResults = (SelectResults) queryService.newQuery(queryString).execute();
+      validatePortfolioOrder(memResults, 7, 6, 5);
+      queryService.removeIndexes();
+      region.destroyRegion();
+
+      IndexManager.IS_TEST_LDM = true;
+      IndexManager.IS_TEST_EXPANSION = true;
+      region = createLDMRegion("portfolios");
+      createPortfolios(region, numEntries);
+
+      queryService.createIndex("IDIndex", "p.ID", SEPARATOR + "portfolios p");
+      SelectResults ldmResults = (SelectResults) queryService.newQuery(queryString).execute();
+      validatePortfolioOrder(ldmResults, 7, 6, 5);
+      queryService.removeIndexes();
+      region.destroyRegion();
+    } finally {
+      IndexManager.IS_TEST_LDM = oldTestLDMValue;
+      IndexManager.IS_TEST_EXPANSION = oldTestExpansionValue;
+    }
+  }
+
   // executes queries against both no index and ldm index
   // compares size counts of both and compares results
   private void testIndexAndQuery(String indexExpression, String regionPath, String queryString)
@@ -185,6 +225,16 @@ public class CompactRangeIndexIndexMapJUnitTest {
     attributesFactory.setDataPolicy(DataPolicy.REPLICATE);
     RegionAttributes regionAttributes = attributesFactory.create();
     return cache.createRegion(regionName, regionAttributes);
+  }
+
+  private void validatePortfolioOrder(SelectResults results, int... expectedIds) {
+    assertEquals("Unexpected result size", expectedIds.length, results.size());
+    Iterator iterator = results.iterator();
+    for (int expectedId : expectedIds) {
+      Portfolio portfolio = (Portfolio) iterator.next();
+      assertEquals("Unexpected portfolio order", expectedId, portfolio.getID());
+    }
+    assertEquals("Returned more results than expected", false, iterator.hasNext());
   }
 
   private void createPortfolios(Region region, int num) {

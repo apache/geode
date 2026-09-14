@@ -33,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -46,6 +47,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -98,6 +100,9 @@ public class RegisterInterest61Test {
     when(cache.getRegion(isA(String.class))).thenReturn(uncheckedCast(mock(LocalRegion.class)));
     when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
+    final Part policyPart = new Part();
+    policyPart.setPartState(BlobHelper.serializeToBlob(InterestResultPolicy.KEYS_VALUES), true);
+
     when(durablePart.getObject()).thenReturn(DURABLE);
 
     when(interestTypePart.getInt()).thenReturn(0);
@@ -107,7 +112,7 @@ public class RegisterInterest61Test {
     when(message.getNumberOfParts()).thenReturn(6);
     when(message.getPart(eq(0))).thenReturn(regionNamePart);
     when(message.getPart(eq(1))).thenReturn(interestTypePart);
-    when(message.getPart(eq(2))).thenReturn(mock(Part.class));
+    when(message.getPart(eq(2))).thenReturn(policyPart);
     when(message.getPart(eq(3))).thenReturn(durablePart);
     when(message.getPart(eq(4))).thenReturn(keyPart);
     when(message.getPart(eq(5))).thenReturn(notifyPart);
