@@ -277,8 +277,7 @@ BMDIR=apache-geode-benchmarks-${VERSION}-src
 BMTAR=${BMDIR}.tgz
 git clean -dxf
 mkdir ../${BMDIR}
-cp -r * ../${BMDIR} 2>/dev/null || true
-[ -f .travis.yml ] && cp .travis.yml ../${BMDIR}
+cp -r * ../${BMDIR}
 tar czf ${BMTAR} -C .. ${BMDIR}
 rm -Rf ../${BMDIR}
 gpg --armor -u ${SIGNING_KEY} -b ${BMTAR}
