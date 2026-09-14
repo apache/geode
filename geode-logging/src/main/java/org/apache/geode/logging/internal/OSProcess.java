@@ -134,6 +134,7 @@ public class OSProcess {
    * @param env any extra environment variables as key,value map; these will be in addition to those
    *        inherited from the parent process and will overwrite same keys
    * @return the process id of the created process; -1 on failure
+   * @throws SecurityException if a security manager denies execution of the requested command
    */
   public static int bgexec(String[] cmdarray, File workdir, File logfile, boolean inheritLogfile,
       Map<String, String> env) throws IOException {
@@ -193,6 +194,13 @@ public class OSProcess {
     if (!cmd.exists()) {
       throw new IOException(String.format("the executable %s does not exist",
           cmd.getPath()));
+    }
+    // GEODE-10531: ProcessBuilder checks the shell, not the requested executable. Retain
+    // this check until support for the legacy SecurityManager policy is explicitly retired.
+    @SuppressWarnings("removal")
+    SecurityManager security = System.getSecurityManager();
+    if (security != null) {
+      security.checkExec(cmdarray[0]);
     }
     if (workdir != null && !workdir.isDirectory()) {
       String curDir = new File("").getAbsolutePath();
