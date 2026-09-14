@@ -2,7 +2,7 @@
     
 [![Apache Geode logo](https://geode.apache.org/img/Apache_Geode_logo.png)](http://geode.apache.org)
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](https://formulae.brew.sh/formula/apache-geode) [![Docker Pulls](https://img.shields.io/docker/pulls/apache/geode.svg)](https://hub.docker.com/r/apache/geode/) [![Docker Pulls (legacy)](https://img.shields.io/docker/pulls/apachegeode/geode.svg?label=docker%20pulls%20%28legacy%29)](https://hub.docker.com/r/apachegeode/geode/) 
+[![Build Status](https://github.com/apache/geode/actions/workflows/gradle.yml/badge.svg?branch=develop)](https://github.com/apache/geode/actions/workflows/gradle.yml?query=branch%3Adevelop) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](https://formulae.brew.sh/formula/apache-geode) [![Docker Pulls](https://img.shields.io/docker/pulls/apache/geode.svg)](https://hub.docker.com/r/apache/geode/) [![Docker Pulls (legacy)](https://img.shields.io/docker/pulls/apachegeode/geode.svg?label=docker%20pulls%20%28legacy%29)](https://hub.docker.com/r/apachegeode/geode/) 
 
 </div>
 
