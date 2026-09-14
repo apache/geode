@@ -39,13 +39,10 @@ import io.micrometer.core.instrument.noop.NoopGauge;
 import io.micrometer.core.instrument.noop.NoopLongTaskTimer;
 import io.micrometer.core.instrument.noop.NoopMeter;
 import io.micrometer.core.instrument.noop.NoopTimer;
-import io.micrometer.core.lang.NonNullApi;
-import io.micrometer.core.lang.Nullable;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 
-@NonNullApi
 public class NoopMeterRegistry extends MeterRegistry {
 
   @Immutable
@@ -71,7 +68,7 @@ public class NoopMeterRegistry extends MeterRegistry {
   }
 
   @Override
-  protected <T> Gauge newGauge(Meter.Id id, @Nullable T obj, ToDoubleFunction<T> valueFunction) {
+  protected <T> Gauge newGauge(Meter.Id id, T obj, ToDoubleFunction<T> valueFunction) {
     return new NoopGauge(id);
   }
 

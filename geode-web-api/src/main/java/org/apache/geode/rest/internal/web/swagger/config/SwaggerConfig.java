@@ -59,6 +59,10 @@ public class SwaggerConfig implements WebApplicationInitializer, WebMvcConfigure
   @Override
   public void configurePathMatch(PathMatchConfigurer configurer) {
     PathPatternParser parser = new PathPatternParser();
+    // When Geode requires Spring Framework 6.2+ as a minimum, this explicit PathPatternParser
+    // configuration for optional trailing slashes can be replaced by configuring UrlHandlerFilter
+    // (e.g., via a filter registration or equivalent configuration) to handle trailing-slash
+    // matching instead of customize it here in configurePathMatch.
     parser.setMatchOptionalTrailingSeparator(true);
     configurer.setPatternParser(parser);
   }

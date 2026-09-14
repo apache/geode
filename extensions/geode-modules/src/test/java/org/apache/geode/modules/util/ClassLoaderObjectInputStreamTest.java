@@ -21,6 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InvalidClassException;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -160,6 +162,144 @@ public class ClassLoaderObjectInputStreamTest {
 
     File getTempFile() {
       return null;
+    }
+  }
+
+  @Test
+  public void filterRejectsUnauthorizedClasses() throws Exception {
+    // Arrange: Create filter that only allows java.lang and java.util classes
+    ObjectInputFilter filter = ObjectInputFilter.Config.createFilter("java.lang.*;java.util.*;!*");
+    TestSerializable testObject = new TestSerializable("test");
+    byte[] serializedData = serialize(testObject);
+
+    // Act & Assert: Deserialization should be rejected by filter
+    assertThatThrownBy(() -> {
+      try (ClassLoaderObjectInputStream ois = new ClassLoaderObjectInputStream(
+          new ByteArrayInputStream(serializedData),
+          Thread.currentThread().getContextClassLoader(),
+          filter)) {
+        ois.readObject();
+      }
+    }).isInstanceOf(InvalidClassException.class);
+  }
+
+  @Test
+  public void filterAllowsAuthorizedClasses() throws Exception {
+    // Arrange: Create filter that allows this test class package
+    ObjectInputFilter filter = ObjectInputFilter.Config.createFilter(
+        "java.lang.*;java.util.*;org.apache.geode.modules.util.**;!*");
+    TestSerializable testObject = new TestSerializable("test data");
+    byte[] serializedData = serialize(testObject);
+
+    // Act: Deserialize with filter
+    Object deserialized;
+    try (ClassLoaderObjectInputStream ois = new ClassLoaderObjectInputStream(
+        new ByteArrayInputStream(serializedData),
+        Thread.currentThread().getContextClassLoader(),
+        filter)) {
+      deserialized = ois.readObject();
+    }
+
+    // Assert: Object should be successfully deserialized
+    assertThat(deserialized).isInstanceOf(TestSerializable.class);
+    assertThat(((TestSerializable) deserialized).getData()).isEqualTo("test data");
+  }
+
+  @Test
+  public void nullFilterAllowsAllClasses() throws Exception {
+    // Arrange: Null filter means no filtering (backward compatibility)
+    TestSerializable testObject = new TestSerializable("unfiltered data");
+    byte[] serializedData = serialize(testObject);
+
+    // Act: Deserialize with null filter
+    Object deserialized;
+    try (ClassLoaderObjectInputStream ois = new ClassLoaderObjectInputStream(
+        new ByteArrayInputStream(serializedData),
+        Thread.currentThread().getContextClassLoader(),
+        null)) {
+      deserialized = ois.readObject();
+    }
+
+    // Assert: Object should be successfully deserialized
+    assertThat(deserialized).isInstanceOf(TestSerializable.class);
+    assertThat(((TestSerializable) deserialized).getData()).isEqualTo("unfiltered data");
+  }
+
+  @Test
+  public void deprecatedConstructorStillWorks() throws Exception {
+    // Arrange: Use deprecated constructor without filter
+    TestSerializable testObject = new TestSerializable("legacy code");
+    byte[] serializedData = serialize(testObject);
+
+    // Act: Deserialize using deprecated constructor
+    Object deserialized;
+    try (ClassLoaderObjectInputStream ois = new ClassLoaderObjectInputStream(
+        new ByteArrayInputStream(serializedData),
+        Thread.currentThread().getContextClassLoader())) {
+      deserialized = ois.readObject();
+    }
+
+    // Assert: Object should be successfully deserialized (backward compatibility)
+    assertThat(deserialized).isInstanceOf(TestSerializable.class);
+    assertThat(((TestSerializable) deserialized).getData()).isEqualTo("legacy code");
+  }
+
+  @Test
+  public void filterEnforcesResourceLimits() throws Exception {
+    // Arrange: Create filter with very low depth limit
+    ObjectInputFilter filter = ObjectInputFilter.Config.createFilter("maxdepth=2;*");
+    NestedSerializable nested = new NestedSerializable(
+        new NestedSerializable(
+            new NestedSerializable(null))); // Depth of 3
+    byte[] serializedData = serialize(nested);
+
+    // Act & Assert: Should reject due to depth limit
+    assertThatThrownBy(() -> {
+      try (ClassLoaderObjectInputStream ois = new ClassLoaderObjectInputStream(
+          new ByteArrayInputStream(serializedData),
+          Thread.currentThread().getContextClassLoader(),
+          filter)) {
+        ois.readObject();
+      }
+    }).isInstanceOf(InvalidClassException.class);
+  }
+
+  /**
+   * Helper method to serialize an object to byte array
+   */
+  private byte[] serialize(Object obj) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(obj);
+    }
+    return baos.toByteArray();
+  }
+
+  /**
+   * Test class for serialization testing
+   */
+  static class TestSerializable implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final String data;
+
+    TestSerializable(String data) {
+      this.data = data;
+    }
+
+    String getData() {
+      return data;
+    }
+  }
+
+  /**
+   * Nested test class for depth limit testing
+   */
+  static class NestedSerializable implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final NestedSerializable nested;
+
+    NestedSerializable(NestedSerializable nested) {
+      this.nested = nested;
     }
   }
 }

@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -88,9 +89,20 @@ public class SecurityServiceFactory {
 
   private static boolean isShiroInUse() {
     // Don't import Shiro otherwise clients must include on classpath
+    // Use reflective lookup without initializing the class and be defensive about
+    // ClassNotFound/NoClassDef/Linkage errors which can occur when the webapp
+    // classloader does not provide Shiro runtime. If any such error occurs,
+    // treat Shiro as not in use to avoid hard failures during webapp startup.
     try {
-      return null != Class.forName("org.apache.shiro.SecurityUtils").getMethod("getSecurityManager")
-          .invoke(null);
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
+      Class<?> securityUtils = Class.forName("org.apache.shiro.SecurityUtils", false, cl);
+      Method getSecurityManager = securityUtils.getMethod("getSecurityManager");
+      Object sm = getSecurityManager.invoke(null);
+      return sm != null;
+    } catch (ClassNotFoundException e) {
+      return false;
+    } catch (LinkageError e) {
+      return false;
     } catch (Exception e) {
       return false;
     }

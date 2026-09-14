@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.apache.geode.management.internal.functions.CliFunctionResult.StatusState.ERROR;
 import static org.apache.geode.management.internal.functions.CliFunctionResult.StatusState.OK;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -106,10 +107,12 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
 
   @SuppressWarnings("unchecked")
   ResultCollector<Object, List<Object>> parseResultCollector(String resultCollectorName)
-      throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+      throws ClassNotFoundException, IllegalAccessException, InstantiationException,
+      NoSuchMethodException, InvocationTargetException {
     if (resultCollectorName != null && resultCollectorName.length() > 0) {
       return (ResultCollector<Object, List<Object>>) ClassPathLoader.getLatest()
           .forName(resultCollectorName)
+          .getDeclaredConstructor()
           .newInstance();
     } else {
       return null;

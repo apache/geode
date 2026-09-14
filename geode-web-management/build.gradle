@@ -196,6 +196,10 @@ dependencies {
    */
   compileOnly('com.fasterxml.jackson.core:jackson-core')
   compileOnly('com.fasterxml.jackson.core:jackson-databind')
+  compileOnly('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
+  compileOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+  compileOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
+  compileOnly('com.fasterxml.jackson.dataformat:jackson-dataformat-yaml')
 
   /*
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -221,6 +225,10 @@ dependencies {
   implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
+    exclude module: 'jackson-core'
+    exclude module: 'jackson-databind'
+    exclude module: 'jackson-dataformat-yaml'
+    exclude module: 'jackson-datatype-jsr310'
   }
 
   /*
@@ -428,6 +436,13 @@ war {
   rootSpec.exclude("**/spring-expression-*.jar")
   rootSpec.exclude("**/spring-jcl-*.jar")
   rootSpec.exclude("**/spring-aop-*.jar")  /* Required for component-scan, must be on parent */
+  rootSpec.exclude("**/spring-boot-*.jar")
+  rootSpec.exclude("**/jakarta.activation-api-*.jar")
+  rootSpec.exclude("**/jakarta.xml.bind-api-*.jar")
+  rootSpec.exclude("**/jakarta.validation-api-*.jar")
+  rootSpec.exclude("**/micrometer-*.jar")
+  rootSpec.exclude("**/snakeyaml-*.jar")
+  rootSpec.exclude("**/commons-lang3-*.jar")
 
   /*
    * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

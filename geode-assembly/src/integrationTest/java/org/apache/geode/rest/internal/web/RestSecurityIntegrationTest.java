@@ -107,6 +107,8 @@ public class RestSecurityIntegrationTest {
     assertResponse(restClient.doPost("/queries?id=0&q=", "user", "user", ""))
         .hasStatusCode(403);
     assertResponse(restClient.doPost("/queries?id=0&q=", "dataRead", "dataRead", ""))
+        .hasStatusCode(403);
+    assertResponse(restClient.doPost("/queries?id=0&q=", "dataWrite", "dataWrite", ""))
         .hasStatusCode(500);
   }
 
@@ -127,6 +129,8 @@ public class RestSecurityIntegrationTest {
     assertResponse(restClient.doPut("/queries/id", "user", "user", "{\"id\" : \"foo\"}"))
         .hasStatusCode(403);
     assertResponse(restClient.doPut("/queries/id", "dataRead", "dataRead", "{\"id\" : \"foo\"}"))
+        .hasStatusCode(403);
+    assertResponse(restClient.doPut("/queries/id", "dataWrite", "dataWrite", "{\"id\" : \"foo\"}"))
         .hasStatusCode(404);
   }
 

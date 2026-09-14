@@ -25,15 +25,16 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.shiro.ShiroException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
-import org.apache.shiro.codec.CodecException;
 import org.apache.shiro.config.ConfigurationException;
 import org.apache.shiro.crypto.UnknownAlgorithmException;
 import org.apache.shiro.dao.InvalidResourceUsageException;
 import org.apache.shiro.env.RequiredTypeException;
-import org.apache.shiro.io.SerializationException;
+import org.apache.shiro.lang.ShiroException;
+import org.apache.shiro.lang.codec.CodecException;
+import org.apache.shiro.lang.io.SerializationException;
+import org.apache.shiro.lang.util.InstantiationException;
 import org.apache.shiro.ldap.UnsupportedAuthenticationMechanismException;
 import org.apache.shiro.session.SessionException;
 import org.apache.shiro.session.StoppedSessionException;
@@ -91,7 +92,7 @@ public class InternalDataSerializerShiroAcceptListTest {
 
   @Test
   public void acceptsInstantiationException() throws IOException, ClassNotFoundException {
-    trySerializingObject(new org.apache.shiro.util.InstantiationException("testing"),
+    trySerializingObject(new InstantiationException("testing"),
         propertiesWithoutFilter());
   }
 

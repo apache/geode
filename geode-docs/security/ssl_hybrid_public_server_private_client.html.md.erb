@@ -1,0 +1,331 @@
+---
+title:  Hybrid TLS — Public-CA Server Certs with Private-CA Client Certs
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This page is part of the
+[Public CA Client Authentication EKU Mitigation guide](public_ca_client_auth_eku_mitigations.html).
+It describes a hybrid model in which <%=vars.product_name%> server certificates
+are issued by a public CA (preserving external trust) while client certificates
+are issued by an internal or private CA (preserving control over `clientAuth` EKU
+and certificate lifecycle).
+
+## <a id="hyb_summary" class="no-quick-link"></a>Summary
+
+**For Client/Server Topology:**
+
+| Certificate role | Issued by |
+|---|---|
+| Server certificate (servers / locators present to clients) | Public CA |
+| Peer-to-peer certificates (servers / locators authenticate to each other) | Public CA |
+| Client certificate (clients present to servers) | Internal / private CA |
+
+**For Peer-to-Peer (P2P) Topology:**
+
+| Certificate role | Issued by |
+|---|---|
+| Peer certificate (peers authenticate to each other) | Public CA |
+| Client certificate (clients present to peers, if applicable) | Internal / private CA |
+
+**Why this model:**
+
+- Servers and peers are reachable from the public internet or from clients that
+  trust public CAs — keeping server/peer certificates public-CA-issued avoids distributing
+  a custom root to all clients.
+- Servers and peers use public-CA-issued certificates to authenticate to each other
+  during cluster formation and peer-to-peer communication.
+- Clients are controlled endpoints (application services, internal consumers) —
+  issuing their certificates from an internal CA provides full control over the
+  `clientAuth` EKU, certificate lifetime, and revocation.
+- Public CA EKU policy changes for client certificates are irrelevant because
+  client certificates never come from the public CA.
+
+**When to choose this option:**
+
+- Your server endpoints are externally visible and must be trusted by external
+  clients using the public trust store.
+- You can operate or integrate with an internal CA for client certificate
+  issuance.
+- You want to retain full mTLS (mutual certificate authentication) rather than
+  switching to application-layer credential auth.
+
+## <a id="hyb_architecture" class="no-quick-link"></a>Architecture
+
+**For Client/Server Topology:**
+
+```
+                 Public CA trust chain
+                 (server certificate)
+  Client ──────────────────────────────▶ Server
+         ◀────────────────────────────── Server
+         validates server certificate via
+         public CA / system trust store
+
+                 Private CA trust chain
+                 (client cert)
+  Client ──────────────────────────────▶ Server
+                                          validates client certificate via
+                                          server truststore containing
+                                          private CA certificate
+
+```
+
+**For Peer-to-Peer Topology:**
+
+```
+                 Public CA trust chain
+                 (peer-to-peer)
+  Peer ◀──────────────────────────────▶ Peer
+       Each peer uses public-CA-issued certificate
+       to authenticate to other peers;
+       validation via public CA in peer truststore
+
+                 Private CA trust chain
+                 (client-to-peer, if accepting clients)
+  Client ──────────────────────────────▶ Peer
+                                          validates client certificate via
+                                          peer truststore containing
+                                          private CA certificate
+```
+
+**Key trust relationships:**
+
+- **Server keystore** — contains the public-CA-issued server leaf certificate and
+  its private key (and intermediate chain).
+- **Server truststore** — contains **both** the public CA (for validating other
+  servers/locators in peer-to-peer communication) **and** the private/internal CA
+  certificate(s) (for validating client certificates during the mTLS handshake).
+- **Peer keystore** (P2P topology) — contains the public-CA-issued peer certificate
+  and its private key (for peer-to-peer authentication).
+- **Peer truststore** (P2P topology) — contains **both** the public CA (for validating
+  other peers) **and** the private CA (for validating client certificates if the peer
+  accepts client connections).
+- **Client keystore** — contains the private-CA-issued client leaf certificate
+  and its private key.
+- **Client truststore** — contains the public CA root (or relies on the JVM
+  system trust store) to validate the server certificate.
+
+## <a id="hyb_prerequisites" class="no-quick-link"></a>Prerequisites
+
+- A server certificate chain issued by a public CA, valid for the server's
+  hostnames (DNS SANs).  Obtain this from your public CA provider.
+- An internal/private CA capable of issuing client leaf certificates with the
+  `clientAuth` EKU.  Options include HashiCorp Vault PKI, Smallstep `step-ca`,
+  Active Directory Certificate Services, or a self-managed OpenSSL CA.
+- Secure tooling to distribute keystores and truststores to servers and clients.
+
+## <a id="hyb_step_by_step" class="no-quick-link"></a>Step-by-Step Configuration
+
+### Step 1 — Prepare the server keystore (public CA)
+
+Obtain a server certificate from a public CA for your <%=vars.product_name%> server
+hostnames. **Ensure the server certificate includes the `serverAuth` Extended Key
+Usage and a `subjectAltName` (SAN) field with the server's DNS names** for hostname
+verification. Convert the certificate and private key into a Java keystore (PKCS12
+or JKS format). See [SSL Sample Implementation](ssl_example.html) for keystore
+preparation details.
+
+### Step 2 — Prepare the server truststore (both CAs)
+
+Import **both** CA certificates into the server truststore:
+
+1. Import your internal/private CA certificate(s) so servers can validate client
+   certificates issued by your internal CA.
+2. Import the public CA certificate(s) so servers can validate other servers and
+   locators during peer-to-peer cluster communication.
+
+If your <%=vars.product_name%> cluster uses SSL for peer-to-peer communication
+(e.g., `ssl-enabled-components=all` or includes `cluster`/`locator` components),
+servers must trust the public CA that issued other members' certificates.
+
+### Step 3 — Issue client certificates from the internal CA
+
+Use your internal PKI to issue client certificates. **Ensure the client certificates
+include the `clientAuth` Extended Key Usage** (required for client authentication
+in mTLS). Without this EKU, the server will reject the client certificate with a
+`certificate_unknown` TLS alert. Create a client keystore containing the client
+private key and certificate chain.
+
+### Step 4 — Prepare the client truststore (public CA for server validation)
+
+Clients must be able to validate the server's public-CA-issued certificate.
+In most cases the JVM system trust store already contains public CA roots and
+no additional configuration is needed. If you need to use a custom truststore,
+import the public CA root certificate(s).
+
+### Step 5 — Configure <%=vars.product_name%> server / locator
+
+``` pre
+ssl-enabled-components=all
+
+# Server keystore: public-CA-issued server certificate
+ssl-keystore=/etc/geode/server-keystore.jks
+ssl-keystore-password=<password>
+ssl-keystore-type=JKS
+
+# Server truststore: BOTH public CA (for peer-to-peer) and private CA (for clients)
+ssl-truststore=/etc/geode/server-truststore.jks
+ssl-truststore-password=<password>
+ssl-truststore-type=JKS
+
+# Require client certificates in the TLS handshake
+ssl-require-authentication=true
+
+# Validate server hostname from the client side
+ssl-endpoint-identification-enabled=true
+```
+
+### Step 6 — Configure <%=vars.product_name%> client
+
+``` pre
+ssl-enabled-components=all
+
+# Client keystore: private-CA-issued client certificate
+ssl-keystore=/etc/geode/client-keystore.jks
+ssl-keystore-password=<password>
+ssl-keystore-type=JKS
+
+# Client truststore: public CA root (validates server certificate)
+# If using system trust store, ssl-use-default-context=true may be sufficient
+ssl-truststore=/etc/geode/client-truststore.jks
+ssl-truststore-password=<password>
+ssl-truststore-type=JKS
+
+# Require server certificate authentication
+ssl-require-authentication=true
+
+ssl-endpoint-identification-enabled=true
+```
+
+## <a id="hyb_p2p_topology" class="no-quick-link"></a>P2P Topology Configuration
+
+In a peer-to-peer (P2P) topology, all members are peers with equal standing.
+Each peer acts as both a server (for other peers and clients) and a client (when
+connecting to other peers). This requires careful certificate and trust store
+configuration.
+
+**Key P2P requirements:**
+
+- Each peer presents a **public-CA-issued certificate** for peer-to-peer authentication
+  (so peers can authenticate each other using the public CA trust chain).
+- Each peer's truststore must contain **both** CAs:
+  - The **public CA** (to validate certificates from other peers during cluster
+    formation and ongoing peer-to-peer communication).
+  - The **private CA** (to validate client certificates if the peer also accepts
+    client connections).
+
+**Example P2P member configuration:**
+
+``` pre
+ssl-enabled-components=all
+
+# Peer keystore: public-CA-issued certificate (for peer-to-peer auth)
+ssl-keystore=/etc/geode/peer-keystore.jks
+ssl-keystore-password=<password>
+ssl-keystore-type=JKS
+
+# Peer truststore: BOTH public CA (other peers) and private CA (clients)
+ssl-truststore=/etc/geode/peer-truststore.jks
+ssl-truststore-password=<password>
+ssl-truststore-type=JKS
+
+ssl-require-authentication=true
+ssl-endpoint-identification-enabled=true
+```
+
+**Client configuration for P2P clusters:**
+
+If clients connect to the P2P cluster, their configuration remains the same as
+in the client/server topology described above (private-CA-issued client keystore,
+public-CA truststore for server validation).
+
+## <a id="hyb_rotation" class="no-quick-link"></a>Certificate Rotation and Hot-Reload
+
+<%=vars.product_name%>'s `FileWatchingX509ExtendedKeyManager` and
+`FileWatchingX509ExtendedTrustManager` monitor the configured keystore and
+truststore paths and reload them when files change on disk — no restart required.
+
+**Rotation workflow:**
+
+| What rotates | Procedure |
+|---|---|
+| Server certificate (public CA renewal) | Write new `server-keystore.jks` atomically; `FileWatchingX509ExtendedKeyManager` reloads it |
+| Client certificate (private CA rotation) | Automation writes new `client.p12` / JKS atomically; `FileWatchingX509ExtendedKeyManager` reloads it |
+| Private CA rollover | Import new private CA certificate into `server-truststore.jks` before client certificates rotate; do a rolling truststore push or atomic file replacement |
+| Public CA root renewal | Update `client-truststore.jks` on all clients and `server-truststore.jks` on all servers/locators (or rely on JVM trust store update) |
+
+Write files atomically — create a temp file, write it fully, then `rename()` it
+into the watched path so the watcher reads a complete file.
+
+## <a id="hyb_verification" class="no-quick-link"></a>Verification and Troubleshooting
+
+**Enable JSSE debug logging** to diagnose SSL/TLS handshake issues:
+
+```
+-Djavax.net.debug=ssl,handshake
+```
+
+**Common issues:**
+
+| Symptom | Likely cause |
+|---|---|
+| Server handshake fails: `PKIX path building failed` | Server truststore does not include the private CA that signed the client certificate |
+| Client handshake fails: `PKIX path building failed` | Client truststore does not include the public CA that signed the server certificate |
+| Peer-to-peer handshake fails: `PKIX path building failed` | Server/locator/peer truststore missing public CA needed to validate other cluster members |
+| `certificate_unknown` TLS alert from server | Client certificate is missing the `clientAuth` EKU, or is not trusted — verify private CA import into server truststore and EKU presence |
+| `certificate_unknown` TLS alert during P2P handshake | Peer certificate is missing the `serverAuth` EKU, or the peer's public CA is not trusted — verify public CA import into peer truststore and EKU presence |
+| `No subject alternative names` | Server or peer certificate does not include a DNS SAN matching the hostname used by the connecting party |
+
+## <a id="hyb_security_notes" class="no-quick-link"></a>Security Considerations
+
+- The hybrid model splits trust roots: public CA governs server identity;
+  private CA governs client identity.  Compromise of one does not directly
+  compromise the other.
+- Protect the private CA private key carefully.  Prefer to use an offline root + online
+  issuing intermediate topology.  Consider a Hardware Security Module (HSM) for the issuing intermediate.
+- Keep client certificate lifetimes short (days to weeks) and automate renewal.
+- **Verify certificate Extended Key Usage (EKU) requirements:**
+  * Server certificates **must** include the `serverAuth` EKU.
+  * Client certificates **must** include the `clientAuth` EKU.
+  * Peer certificates (P2P topology) **must** include the `serverAuth` EKU for
+    peer-to-peer authentication.
+  * Java JSSE enforces EKU checking by default and will reject certificates
+    without the appropriate EKU with a `certificate_unknown` alert.
+- **Peer-to-peer authentication considerations:**
+  * In client/server topology, servers and locators use public-CA-issued
+    certificates to authenticate to each other during cluster formation and
+    peer-to-peer communication. The server truststore must contain both the
+    public CA (for peer validation) and the private CA (for client validation).
+  * In P2P topology, all peers use public-CA-issued certificates to
+    authenticate to each other. Each peer's truststore must contain both the
+    public CA (for peer validation) and the private CA (for client validation
+    if the peer accepts client connections).
+
+## <a id="hyb_references" class="no-quick-link"></a>References
+
+- [Configuring SSL](implementing_ssl.html) — complete property reference
+- [Internal / Enterprise CA for mTLS](ssl_internal_ca_mtls.html) — detailed
+  internal-CA set-up guidance
+- [Public CA Client Authentication EKU Mitigations](public_ca_client_auth_eku_mitigations.html) — overview and other mitigation options
+- `SSLConfig` and `SSLConfigurationFactory`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/SSLConfig.java`
+- `FileWatchingX509ExtendedKeyManager`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/filewatch/FileWatchingX509ExtendedKeyManager.java`
+- `SocketCreator`:
+  `geode-core/src/main/java/org/apache/geode/internal/net/SocketCreator.java`

@@ -110,8 +110,13 @@ tasks.register('createGeodeClasspathsFile') {
   }
 }
 
+tasks.register('deleteOldGeodeVersions', Delete) {
+  delete subprojects.collect { it.projectDir }
+}
+
 tasks.named('clean') {
   dependsOn subprojects.collect { it.tasks.named('clean') }
+  finalizedBy deleteOldGeodeVersions
 }
 
 project.createGeodeClasspathsFile.mustRunAfter(clean)
@@ -141,3 +146,6 @@ tasks.register('geodeOldVersionClasspathsJar', Jar) {
 artifacts {
   classpathsOutput tasks.named('geodeOldVersionClasspathsJar')
 }
+
+test.finalizedBy rootProject.tasks.combineReports
+rootProject.tasks.combineReports.mustRunAfter test
