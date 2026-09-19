@@ -28,10 +28,10 @@ ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # https://geode.apache.org/releases/
-ENV GEODE_VERSION 2.0.2
+ENV GEODE_VERSION 2.0.3
 # Binaries TGZ SHA-256
 # https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
-ENV GEODE_SHA256 a1a875d5df88d80ae2953def1b0811ee8a466010a5b897682356740bdf19bb7c
+ENV GEODE_SHA256 23dd1cbf5c6ed49909a596f0b49c0ec73f6f3c7e6fec20c07d32af3543684825
 
 # http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
 
