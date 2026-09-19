@@ -25,7 +25,6 @@ pluginManagement {
 
 plugins {
   id 'com.gradle.develocity' version '3.18.2'
-  id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.2'
 }
 
 includeBuild('build-tools/geode-repeat-test') {
@@ -132,9 +131,7 @@ include 'geode-server-all'
  '1.13.8',
  '1.14.0', // Include for SSL protocol configuration changes in 1.14.0
  '1.14.4',
- '2.0.2',
- '2.0.2',
- '2.0.2'].each {
+ '2.0.3'].each {
   include 'geode-old-versions:'.concat(it)
 }
 
