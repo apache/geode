@@ -41,8 +41,6 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
-    env:
-      DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     permissions:
       actions: read
       contents: read
@@ -95,6 +93,8 @@ jobs:
     #   ./location_of_script_within_repo/buildscript.sh
     - run: ./gradlew dev installDist --no-daemon --no-build-cache
       if: matrix.language == 'java'
+      env:
+        DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
