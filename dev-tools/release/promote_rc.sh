@@ -84,6 +84,8 @@ GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 GEODE_BENCHMARKS_DEVELOP=$WORKSPACE/geode-benchmarks-develop
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
+DOCKER_BUILDER=geode-release
+DOCKER_PLATFORMS=linux/amd64,linux/arm64
 set +x
 
 if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_NATIVE_DEVELOP" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$GEODE_BENCHMARKS_DEVELOP" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
@@ -314,6 +316,9 @@ echo "Building Geode docker image"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
+#the default docker driver builds only for the host architecture, so use a
+#container-driver builder, which can produce a manifest covering both
+docker buildx inspect ${DOCKER_BUILDER} >/dev/null 2>&1 || docker buildx create --name ${DOCKER_BUILDER} --driver docker-container --bootstrap
 sed -e '/www.apache.org.dyn.closer/d' -i.backup Dockerfile
 if ! docker build . ; then
   echo retrying in 1 minute...
@@ -333,8 +338,6 @@ if ! docker build . ; then
   fi
 fi
 mv Dockerfile.backup Dockerfile
-docker build -t apache/geode:${VERSION} .
-[ -n "$LATER" ] || docker build -t apache/geode:latest .
 set +x
 
 
@@ -361,8 +364,11 @@ echo "============================================================"
 set -x
 cd ${GEODE}/docker
 docker login
-docker push apache/geode:${VERSION}
-[ -n "$LATER" ] || docker push apache/geode:latest
+#a multi-platform result cannot be loaded into the local image store, so the
+#tagged image is built and pushed in a single step
+latesttag=""
+[ -n "$LATER" ] || latesttag="-t apache/geode:latest"
+docker buildx build --builder ${DOCKER_BUILDER} --platform ${DOCKER_PLATFORMS} -t apache/geode:${VERSION} ${latesttag} --push .
 set +x
 
 
