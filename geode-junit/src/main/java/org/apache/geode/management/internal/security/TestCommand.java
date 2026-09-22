@@ -135,7 +135,7 @@ public class TestCommand {
     // Data Commands
     createTestCommand("rebalance --include-region=RegionA", ResourcePermissions.DATA_MANAGE);
     createTestCommand("export data --region=RegionA --file=export.txt --member=exportMember",
-        regionARead);
+        regionARead, ResourcePermissions.CLUSTER_WRITE);
     createTestCommand("import data --region=RegionA --file=import.txt --member=importMember",
         regionAWrite);
     createTestCommand("put --key=key1 --value=value1 --region=RegionA", regionAWrite);

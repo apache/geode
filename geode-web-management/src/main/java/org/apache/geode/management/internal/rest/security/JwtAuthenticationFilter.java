@@ -70,32 +70,19 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
  * properly
  * log authentication failures. This helps diagnose JWT authentication issues in production.</li>
  * </ul>
- *
- * <p>
- * <b>Debug Logging:</b>
- * </p>
- * <ul>
- * <li>Added comprehensive logging throughout authentication flow for troubleshooting</li>
- * <li>Logs: filter initialization, authentication requirements check, token parsing, authentication
- * attempts, success/failure outcomes</li>
- * </ul>
  */
 public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
   private static final Logger logger = LogManager.getLogger();
 
   public JwtAuthenticationFilter() {
     super("/**");
-    logger.info("JwtAuthenticationFilter initialized");
   }
 
   @Override
   protected boolean requiresAuthentication(HttpServletRequest request,
       HttpServletResponse response) {
     String header = request.getHeader("Authorization");
-    boolean requires = header != null && header.startsWith("Bearer ");
-    logger.info("requiresAuthentication() - URI: {}, Authorization header: {}, requires: {}",
-        request.getRequestURI(), header, requires);
-    return requires;
+    return header != null && header.startsWith("Bearer ");
   }
 
   @Override
@@ -103,33 +90,24 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
       HttpServletResponse response) throws AuthenticationException {
 
     String header = request.getHeader("Authorization");
-    logger.info("attemptAuthentication() - URI: {}, Authorization header: {}",
-        request.getRequestURI(), header);
 
     if (header == null || !header.startsWith("Bearer ")) {
-      logger.error("No JWT token found - header: {}", header);
-      throw new BadCredentialsException("No JWT token found in request headers, header: " + header);
+      throw new BadCredentialsException("No JWT token found in request headers");
     }
 
     String[] tokens = header.split(" ", 2);
-    logger.info("Split token - length: {}, token[0]: {}, token[1]: {}",
-        tokens.length, tokens[0], tokens.length > 1 ? tokens[1] : "N/A");
 
     if (tokens.length != 2) {
-      logger.error("Wrong authentication header format: {}", header);
-      throw new BadCredentialsException("Wrong authentication header format: " + header);
+      throw new BadCredentialsException("Wrong authentication header format");
     }
 
     // FIX: Pass the token as credentials (password), not "Bearer" as username
     // GeodeAuthenticationProvider expects the token in the credentials/password field
     UsernamePasswordAuthenticationToken authToken =
         new UsernamePasswordAuthenticationToken(tokens[1], tokens[1]);
-    logger.info("Created UsernamePasswordAuthenticationToken - principal: {}, credentials: {}",
-        authToken.getPrincipal(), authToken.getCredentials());
 
     // CRITICAL: Call AuthenticationManager to actually authenticate the token
     // AbstractAuthenticationProcessingFilter expects us to return an authenticated token
-    logger.info("Calling getAuthenticationManager().authenticate()");
     return getAuthenticationManager().authenticate(authToken);
   }
 
@@ -137,8 +115,6 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
   protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
       FilterChain chain, Authentication authResult)
       throws IOException, ServletException {
-    logger.info("successfulAuthentication() - authResult: {}, principal: {}",
-        authResult, authResult != null ? authResult.getPrincipal() : "null");
     super.successfulAuthentication(request, response, chain, authResult);
 
     // As this authentication is in HTTP header, after success we need to continue the request
@@ -150,8 +126,7 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
   protected void unsuccessfulAuthentication(HttpServletRequest request,
       HttpServletResponse response, AuthenticationException failed)
       throws IOException, ServletException {
-    logger.error("unsuccessfulAuthentication() - URI: {}, exception: {}",
-        request.getRequestURI(), failed.getMessage(), failed);
+    logger.debug("Authentication was not successful for {}.", request.getRequestURI(), failed);
     super.unsuccessfulAuthentication(request, response, failed);
   }
 }

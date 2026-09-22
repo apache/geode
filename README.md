@@ -2,7 +2,7 @@
     
 [![Apache Geode logo](https://geode.apache.org/img/Apache_Geode_logo.png)](http://geode.apache.org)
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](https://formulae.brew.sh/formula/apache-geode) [![Docker Pulls](https://img.shields.io/docker/pulls/apachegeode/geode.svg)](https://hub.docker.com/r/apachegeode/geode/) 
+[![Build Status](https://github.com/apache/geode/actions/workflows/gradle.yml/badge.svg?branch=develop)](https://github.com/apache/geode/actions/workflows/gradle.yml?query=branch%3Adevelop) [![CodeQL](https://github.com/apache/geode/actions/workflows/codeql.yml/badge.svg?branch=develop)](https://github.com/apache/geode/actions/workflows/codeql.yml?query=branch%3Adevelop) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Maven Central](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Forg%2Fapache%2Fgeode%2Fgeode-core%2Fmaven-metadata.xml&query=concat%28%22v%22%2C%2F%2Fversion%5Bstarts-with%28text%28%29%2C%222.%22%29%5D%5Blast%28%29%5D%2C%22%20%7C%20v%22%2C%2F%2Fversion%5Bstarts-with%28text%28%29%2C%221.15%22%29%5D%5Blast%28%29%5D%29&label=maven-central)](https://central.sonatype.com/artifact/org.apache.geode/geode-core/versions) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](https://formulae.brew.sh/formula/apache-geode) [![Docker Pulls](https://img.shields.io/docker/pulls/apache/geode.svg)](https://hub.docker.com/r/apache/geode/) [![Docker Pulls (legacy)](https://img.shields.io/docker/pulls/apachegeode/geode.svg?label=docker%20pulls%20%28legacy%29)](https://hub.docker.com/r/apachegeode/geode/) 
 
 </div>
 
@@ -44,7 +44,7 @@ latency and 24x7 availability requirements.
 
 You can download Apache Geode from the
 [website](https://geode.apache.org/releases/), run a Docker
-[image](https://hub.docker.com/r/apachegeode/geode/), or install with
+[image](https://hub.docker.com/r/apache/geode/), or install with
 [Homebrew](https://formulae.brew.sh/formula/apache-geode) on OSX. Application developers
 can load dependencies from [Maven
 Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22).

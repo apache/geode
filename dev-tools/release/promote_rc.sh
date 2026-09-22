@@ -84,6 +84,8 @@ GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 GEODE_BENCHMARKS_DEVELOP=$WORKSPACE/geode-benchmarks-develop
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
+DOCKER_BUILDER=geode-release
+DOCKER_PLATFORMS=linux/amd64,linux/arm64
 set +x
 
 if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_NATIVE_DEVELOP" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$GEODE_BENCHMARKS_DEVELOP" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
@@ -231,7 +233,7 @@ else
   echo "Updating brew"
   echo "============================================================"
   set -x
-  cd ${BREW_DIR}/Formula
+  cd ${BREW_DIR}/Formula/a
   git pull
   git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git || true
   if ! git fetch myfork ; then
@@ -293,10 +295,6 @@ set -x
 cd ${GEODE_NATIVE}
 git pull -r
 set +x
-if [ -r .travis.yml ] ; then
-  sed -e "s/geode-native-build:[latest0-9.]*/geode-native-build:${VERSION}/" \
-      -i.bak .travis.yml
-fi
 sed -e "s/GEODE_VERSION=.*/GEODE_VERSION=${VERSION}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
@@ -318,6 +316,9 @@ echo "Building Geode docker image"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
+#the default docker driver builds only for the host architecture, so use a
+#container-driver builder, which can produce a manifest covering both
+docker buildx inspect ${DOCKER_BUILDER} >/dev/null 2>&1 || docker buildx create --name ${DOCKER_BUILDER} --driver docker-container --bootstrap
 sed -e '/www.apache.org.dyn.closer/d' -i.backup Dockerfile
 if ! docker build . ; then
   echo retrying in 1 minute...
@@ -337,8 +338,6 @@ if ! docker build . ; then
   fi
 fi
 mv Dockerfile.backup Dockerfile
-docker build -t apachegeode/geode:${VERSION} .
-[ -n "$LATER" ] || docker build -t apachegeode/geode:latest .
 set +x
 
 
@@ -346,12 +345,16 @@ echo ""
 echo "============================================================"
 echo "Building Native docker image"
 echo "============================================================"
-set -x
-cd ${GEODE_NATIVE}/docker
-docker build . || docker build . || docker build .
-docker build -t apachegeode/geode-native-build:${VERSION} .
-[ -n "$LATER" ] || docker build -t apachegeode/geode-native-build:latest .
-set +x
+if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
+  set -x
+  cd ${GEODE_NATIVE}/docker
+  docker build . || docker build . || docker build .
+  docker build -t apache/geode-native-build:${VERSION} .
+  [ -n "$LATER" ] || docker build -t apache/geode-native-build:latest .
+  set +x
+else
+  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image build"
+fi
 
 
 echo ""
@@ -361,8 +364,11 @@ echo "============================================================"
 set -x
 cd ${GEODE}/docker
 docker login
-docker push apachegeode/geode:${VERSION}
-[ -n "$LATER" ] || docker push apachegeode/geode:latest
+#a multi-platform result cannot be loaded into the local image store, so the
+#tagged image is built and pushed in a single step
+latesttag=""
+[ -n "$LATER" ] || latesttag="-t apache/geode:latest"
+docker buildx build --builder ${DOCKER_BUILDER} --platform ${DOCKER_PLATFORMS} -t apache/geode:${VERSION} ${latesttag} --push .
 set +x
 
 
@@ -370,11 +376,15 @@ echo ""
 echo "============================================================"
 echo "Publishing Native docker image"
 echo "============================================================"
-set -x
-cd ${GEODE_NATIVE}/docker
-docker push apachegeode/geode-native-build:${VERSION}
-[ -n "$LATER" ] || docker push apachegeode/geode-native-build:latest
-set +x
+if [ -f ${GEODE_NATIVE}/docker/Dockerfile ] ; then
+  set -x
+  cd ${GEODE_NATIVE}/docker
+  docker push apache/geode-native-build:${VERSION}
+  [ -n "$LATER" ] || docker push apache/geode-native-build:latest
+  set +x
+else
+  echo "geode-native has no docker/Dockerfile on this branch; skipping the native image push"
+fi
 
 
 if [ -z "$LATER" ] ; then
@@ -525,12 +535,17 @@ if [ -z "$LATER" ] ; then
 fi
 set -x
 git add settings.gradle
-git diff --staged --color | cat
-git commit -m "$JIRA: ${action} ${VERSION} as old version
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git diff --staged --color | cat
+  git commit -m "$JIRA: ${action} ${VERSION} as old version
 
 ${action} ${VERSION} in old versions${BENCHMSG} on develop
 to enable rolling upgrade tests from ${VERSION}${ser}"
-git push -u myfork
+  git push -u myfork
+  DID_OLDVER=true
+else
+  echo "develop does not track ${VERSION_MM} in old versions; nothing to commit"
+fi
 set +x
 
 
@@ -627,7 +642,8 @@ svn update
 #identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=3
 set +x
-ls | awk -F. '/^[0-9]/{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
+#the awk END block emits the per-line latest patch in unspecified order, so sort numerically before taking the newest few
+ls | awk -F. '/^[0-9]/{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'| sort -t. -k1,1n -k2,2n -k3,3n |tail -$RELEASES_TO_KEEP > ../keep
 echo Keeping releases: $(cat ../keep)
 rm -f ../did.remove
 (ls | grep '^[0-9]'; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
@@ -668,10 +684,10 @@ PATCH="${VERSION##*.}"
 cd ${GEODE}/../..
 echo "Final steps (some gaps in numbering is normal since not all steps apply to all releases):"
 [ -n "$LATER" ] || echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
-echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
+[ -z "$DID_OLDVER" ] || echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
 [ -n "$LATER" ] || echo "3b.Go to https://github.com/${GITHUB_USER}/geode-native/pull/new/update-to-geode-${VERSION} and create the pull request"
 [ -n "$LATER" ] && tag=":${VERSION}" || tag=""
-echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
+echo "4. Validate docker image: docker run -it apache/geode${tag}"
 [ -n "$LATER" ] && caveat=" (UNLESS they are still unreleased on a later patch branch)"
 echo "5. Mark ${VERSION} as Released in Jira and Bulk-transition JIRA issues fixed in this release to Closed${caveat}"
 echo "5b.Publish to GitHub ( https://github.com/apache/geode/tags then Create Release from the 2nd ... menu ), filling out the form as follows:"
@@ -689,7 +705,7 @@ echo "8. Check that ${VERSION} documentation has been published to https://geode
 echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
 [ "${PATCH}" -ne 0 ] || echo "10. If 3rd-party dependencies haven't been bumped in awhile, ask on the dev list for a volunteer (details in dev-tools/dependencies/README.md)"
 [ "${PATCH}" -ne 0 ] || [ "${MINOR}" -lt 15 ] || echo "11. In accordance with Geode's N-2 support policy, propose on the dev list that the time has come to ${0%/*}/end_of_support.sh -v ${MAJOR}.$((MINOR - 3))"
-[ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apache/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 [ -n "$LATER" ] || andnative=", geode-benchmarks, and geode-native"
 echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bump from develop to those branches of geode${andnative}."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=semver-management"

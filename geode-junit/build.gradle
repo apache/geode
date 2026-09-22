@@ -71,6 +71,7 @@ dependencies {
   implementation('org.junit.vintage:junit-vintage-engine')
 
   implementation('pl.pragmatists:JUnitParams')
+  implementation('org.bouncycastle:bcpkix-jdk18on')
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-serialization'))

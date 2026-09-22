@@ -17,7 +17,7 @@
 
 benchmarks:
   baseline_branch_default: ''
-  baseline_version_default: '2.0.1'
+  baseline_version_default: '2.0.3'
   benchmark_branch: ((geode-build-branch))
   flavors:
   - title: 'base'
@@ -76,7 +76,7 @@ java_test_versions:
   version: 17
 
 metadata:
-  initial_version: 1.16.0-((semver-prerelease-token)).0
+  initial_version: 2.1.0-((semver-prerelease-token)).0
   mass_test_run_iterations: 100
 
 publish_artifacts:

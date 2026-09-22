@@ -158,7 +158,7 @@ public class RestSecurityPostProcessorTest {
     // Install the named query
     assertResponse(
         restClient.doPost("/queries?id=selectCustomer&q=" + URLEncoder.encode(namedQuery, "UTF-8"),
-            "dataReader", "1234567", ""))
+            "dataUser", "1234567", ""))
                 .hasStatusCode(201);
 
     // Verify the query has been installed
