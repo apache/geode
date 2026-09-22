@@ -58,9 +58,22 @@ tasks.register('checkPom') {
     }
   }
 
+  // Renders a node so that sibling elements compare equal regardless of the order the POM
+  // generator emits them in (for example <groupId> and <artifactId> within an <exclusion>).
+  // Element order carries no meaning in these blocks, and the comparison below already ignores
+  // the order of the <dependency> elements themselves.
+  def canonicalForm
+  canonicalForm = { node ->
+    def childNodes = node.children().findAll { it instanceof Node }
+    if (childNodes.isEmpty()) {
+      return "${node.name()}=${node.text()}"
+    }
+    return "${node.name()}[" + childNodes.collect { canonicalForm(it) }.sort().join(',') + "]"
+  }
+
   def dependenciesBlocksMatch = { actual, expected ->
-    def actualTreeSet = actual.dependencies.dependency.collect {it.toString()}.toSet()
-    def expectedTreeSet = expected.dependencies.dependency.collect {it.toString()}.toSet()
+    def actualTreeSet = actual.dependencies.dependency.collect {canonicalForm(it)}.toSet()
+    def expectedTreeSet = expected.dependencies.dependency.collect {canonicalForm(it)}.toSet()
     actualTreeSet.equals(expectedTreeSet)
   }
 
