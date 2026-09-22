@@ -417,26 +417,6 @@ tasks.register('gfshDepsJar', Jar) {
   }
 }
 
-// Extract legacy Tomcat 6 jars needed only to satisfy Javadoc for old session manager classes
-// (LifecycleSupport, SerializablePrincipal) without altering runtime dependencies.
-def legacyTomcatDir = "$buildDir/legacyTomcat"
-tasks.register('extractLegacyTomcatForJavadoc') {
-  description = 'Extracts legacy Tomcat catalina jars for Javadoc symbol resolution.'
-  outputs.dir(legacyTomcatDir)
-  dependsOn configurations.webServerTomcat6
-  doLast {
-    delete legacyTomcatDir
-    copy {
-      from { zipTree(configurations.webServerTomcat6.singleFile) }
-      // Include the full Tomcat 6 lib set so packages like org.apache.catalina.ha.session
-      // (SerializablePrincipal) and util.LifecycleSupport are present. We keep it scoped
-      // to Javadoc only via this extracted directory rather than adding runtime deps.
-      include '**/lib/*.jar'
-      into legacyTomcatDir
-    }
-  }
-}
-
 tasks.register('docs', Javadoc) {
   def docsDir = file("$buildDir/javadocs")
   // Removed -Xwerror to avoid treating HTML5 compatibility warnings as errors
@@ -448,8 +428,10 @@ tasks.register('docs', Javadoc) {
 
   // Do NOT add the javadocStubs sources directly; we only want them on the classpath, not in output.
 
+  // Only aggregate projects that actually compile Java sources.  Platform (BOM) projects appear
+  // on the javadocOnly configuration but have no source sets or 'classes' task to depend on.
   def docProjects = getDependencyProjectsFor('javadocOnly').findAll { proj ->
-    proj.hasProperty('sourceSets')
+    proj.pluginManager.hasPlugin('java')
   }
 
   // Ensure compilation is done before aggregating docs
@@ -474,16 +456,11 @@ tasks.register('docs', Javadoc) {
 
   // Use javadocOnly configuration with transitive dependencies to get external libraries
   // This avoids cross-project configuration resolution while including necessary dependencies
-  // Include legacy Tomcat jars for symbol resolution of older session manager classes
-  dependsOn(tasks.named('extractLegacyTomcatForJavadoc'))
-  // Use a lazy FileCollection for legacy Tomcat jars so extraction runs before it is resolved
-  // Broaden legacy Tomcat inclusion (Option 2) to all jars in Tomcat6 lib so that
-  // org.apache.catalina.util.LifecycleSupport and org.apache.catalina.ha.session.SerializablePrincipal
-  // (present in clustering/ha related jars) are available to Javadoc without excluding sources.
-  def legacyCatalinaJars = files { fileTree(legacyTomcatDir).matching { include '*.jar' } }
+  // The javadocStubs output supplies the older session manager symbols
+  // (org.apache.catalina.util.LifecycleSupport, org.apache.catalina.ha.session.SerializablePrincipal)
+  // that are absent from the Tomcat version on the javadocOnly configuration.
   classpath = configurations.javadocOnly +
       files(docProjects.collect { proj -> proj.sourceSets.main.output }) +
-      legacyCatalinaJars +
       sourceSets.javadocStubs.output
 
   options.addStringOption('Xwerror','-quiet')
