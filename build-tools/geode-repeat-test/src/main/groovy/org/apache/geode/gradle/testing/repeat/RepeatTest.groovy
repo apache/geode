@@ -23,7 +23,7 @@ import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.Input
 import org.gradle.internal.time.Clock
-import org.gradle.internal.work.WorkerLeaseRegistry
+import org.gradle.internal.work.WorkerLeaseService
 
 public class RepeatTest extends Test {
 
@@ -53,7 +53,7 @@ public class RepeatTest extends Test {
             super.createTestExecuter().workerFactory,
             getActorFactory(),
             getModuleRegistry(),
-            getServices().get(WorkerLeaseRegistry.class),
+            getServices().get(WorkerLeaseService.class),
             getServices().get(StartParameter.class).getMaxWorkerCount(),
             getServices().get(Clock.class),
             getServices().get(DocumentationRegistry.class),

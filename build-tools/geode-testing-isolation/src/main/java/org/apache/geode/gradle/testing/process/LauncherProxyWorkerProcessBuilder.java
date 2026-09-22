@@ -128,6 +128,12 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
     delegate.enableJvmMemoryInfoPublishing(shouldPublish);
   }
 
+  @SuppressWarnings("deprecation")
+  @Override
+  public WorkerProcessBuilder setUseLegacyAddOpens(boolean useLegacyAddOpens) {
+    return delegate.setUseLegacyAddOpens(useLegacyAddOpens);
+  }
+
   /**
    * Replaces the standard worker process's process launcher with this builder's launcher.
    */
