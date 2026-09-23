@@ -50,7 +50,8 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
 
   @Override
   public WorkerProcessBuilder applicationClasspath(Iterable<File> files) {
-    return delegate.applicationClasspath(files);
+    delegate.applicationClasspath(files);
+    return this;
   }
 
   @Override
@@ -60,7 +61,8 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
 
   @Override
   public WorkerProcessBuilder applicationModulePath(Iterable<File> files) {
-    return delegate.applicationModulePath(files);
+    delegate.applicationModulePath(files);
+    return this;
   }
 
   @Override
@@ -70,7 +72,8 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
 
   @Override
   public WorkerProcessBuilder setBaseName(String baseName) {
-    return delegate.setBaseName(baseName);
+    delegate.setBaseName(baseName);
+    return this;
   }
 
   @Override
@@ -80,12 +83,14 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
 
   @Override
   public WorkerProcessBuilder setLogLevel(LogLevel logLevel) {
-    return delegate.setLogLevel(logLevel);
+    delegate.setLogLevel(logLevel);
+    return this;
   }
 
   @Override
   public WorkerProcessBuilder sharedPackages(Iterable<String> packages) {
-    return delegate.sharedPackages(packages);
+    delegate.sharedPackages(packages);
+    return this;
   }
 
   @Override
@@ -105,7 +110,8 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
 
   @Override
   public WorkerProcessBuilder sharedPackages(String... packages) {
-    return delegate.sharedPackages(packages);
+    delegate.sharedPackages(packages);
+    return this;
   }
 
   @Override
@@ -128,10 +134,15 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
     delegate.enableJvmMemoryInfoPublishing(shouldPublish);
   }
 
+  /**
+   * Returns this builder rather than the delegate's return value, because callers chain from this
+   * method and must continue to hold the wrapper that installs the process launcher.
+   */
   @SuppressWarnings("deprecation")
   @Override
   public WorkerProcessBuilder setUseLegacyAddOpens(boolean useLegacyAddOpens) {
-    return delegate.setUseLegacyAddOpens(useLegacyAddOpens);
+    delegate.setUseLegacyAddOpens(useLegacyAddOpens);
+    return this;
   }
 
   /**
