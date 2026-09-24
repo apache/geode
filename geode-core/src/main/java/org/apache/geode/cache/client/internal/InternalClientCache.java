@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -48,6 +49,8 @@ public interface InternalClientCache extends ClientCache {
   CachePerfStats getCachePerfStats();
 
   MeterRegistry getMeterRegistry();
+
+  ObservationRegistry getObservationRegistry();
 
   ClientMetadataService getClientMetadataService();
 }
