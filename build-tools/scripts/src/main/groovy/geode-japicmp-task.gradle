@@ -33,18 +33,15 @@ tasks.register('japicmp', JapicmpTask) {
   inputs.files { ourUnpackTaskProvider }
 
   def d = java.nio.file.Paths.get(project(":geode-old-versions:${newest}").buildDir.path.toString(), "apache-geode-${newest}", 'lib')
-  // Dirty hack, to set the value as requied in configuration, 
-  // but then reset to the acutal unpacked jars on runtime.
-  oldClasspath = files()
-  oldArchives = files()
-  doFirst {
-    oldClasspath = files(file(d).listFiles())
-    oldArchives = files(file(d).listFiles(new FilenameFilter() {
+  // The unpacked jars are listed when the task runs, after the download has completed.
+  oldClasspath = files({ file(d).listFiles() })
+  oldArchives = files({
+    file(d).listFiles(new FilenameFilter() {
       boolean accept(File dir, String name) {
         return name.toLowerCase().startsWith("geode-") && name.toLowerCase().endsWith(".jar")
       };
-    }))
-  }
+    })
+  })
 
   newClasspath = configurations.runtimeClasspath
   newArchives = configurations.runtimeClasspath.filter { File f ->
