@@ -70,6 +70,30 @@ public class FileOutputStreamJUnitTest {
   }
 
   /**
+   * A test that writing a file larger than one chunk allocates no more than its length plus one
+   * chunk of buffer space.
+   */
+  @Test
+  public void testLargeFileAllocatesAtMostOneChunkBeyondItsLength() throws IOException {
+    ThreadMXBean threadBean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
+    assumeTrue(threadBean.isThreadAllocatedMemorySupported()
+        && threadBean.isThreadAllocatedMemoryEnabled());
+    int fileLength = CHUNK_SIZE + CHUNK_SIZE / 2;
+
+    // Load classes and warm up the mocks before measuring
+    writeFile(system.createFile("warmup"), fileLength);
+
+    File file = system.createFile("large");
+    long threadId = Thread.currentThread().getId();
+    long before = threadBean.getThreadAllocatedBytes(threadId);
+    writeFile(file, fileLength);
+    long allocated = threadBean.getThreadAllocatedBytes(threadId) - before;
+
+    assertTrue("Allocated " + allocated + " bytes to write a " + fileLength + " byte file",
+        allocated < fileLength + CHUNK_SIZE + CHUNK_SIZE / 16);
+  }
+
+  /**
    * A test that files written with a random mix of single bytes, arrays and appends read back
    * correctly, with every chunk except the last one full.
    */
@@ -102,6 +126,15 @@ public class FileOutputStreamJUnitTest {
   private void writeSmallFile(File file) throws IOException {
     OutputStream outputStream = file.getOutputStream();
     outputStream.write(new byte[100]);
+    outputStream.close();
+  }
+
+  private void writeFile(File file, int fileLength) throws IOException {
+    byte[] data = new byte[1000];
+    OutputStream outputStream = file.getOutputStream();
+    for (int written = 0; written < fileLength; written += data.length) {
+      outputStream.write(data, 0, Math.min(data.length, fileLength - written));
+    }
     outputStream.close();
   }
 

@@ -17,34 +17,39 @@ package org.apache.geode.cache.lucene.internal.filesystem;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
+/**
+ * Buffers the current chunk in fixed-size segments that are allocated as they are first needed and
+ * reused for every later chunk of the stream. A chunk is copied into an array of its exact size
+ * when it is written.
+ */
 class FileOutputStream extends OutputStream {
 
-  private static final int INITIAL_BUFFER_SIZE = 8 * 1024;
+  private static final int SEGMENT_SIZE = 8 * 1024;
 
   private final File file;
-  private ByteBuffer buffer;
+  private final int chunkSize;
+  private final int segmentSize;
+  private byte[][] segments;
+  private int position;
   private boolean open = true;
   private long length;
   private int chunks;
 
   public FileOutputStream(final File file) {
     this.file = file;
+    chunkSize = file.getChunkSize();
+    segmentSize = Math.min(SEGMENT_SIZE, chunkSize);
+    segments = new byte[(chunkSize + segmentSize - 1) / segmentSize][];
     length = file.length;
     chunks = file.chunks;
-    if (chunks > 0 && file.length % file.getChunkSize() != 0) {
+    if (chunks > 0 && file.length % chunkSize != 0) {
       // If the last chunk was incomplete, we're going to update it
       // rather than add a new chunk. This guarantees that all chunks
       // are full except for the last chunk.
       chunks--;
       byte[] previousChunkData = file.getFileSystem().getChunk(file, chunks);
-      buffer = ByteBuffer.allocate(
-          Math.min(Math.max(INITIAL_BUFFER_SIZE, previousChunkData.length), file.getChunkSize()));
-      buffer.put(previousChunkData);
-    } else {
-      buffer = ByteBuffer.allocate(Math.min(INITIAL_BUFFER_SIZE, file.getChunkSize()));
+      buffer(previousChunkData, 0, previousChunkData.length);
     }
   }
 
@@ -52,9 +57,12 @@ class FileOutputStream extends OutputStream {
   public void write(final int b) throws IOException {
     assertOpen();
 
-    ensureCapacity();
+    if (position == chunkSize) {
+      flushBuffer();
+    }
 
-    buffer.put((byte) b);
+    segment(position / segmentSize)[position % segmentSize] = (byte) b;
+    position++;
     length++;
   }
 
@@ -63,13 +71,14 @@ class FileOutputStream extends OutputStream {
     assertOpen();
 
     while (len > 0) {
-      ensureCapacity();
+      if (position == chunkSize) {
+        flushBuffer();
+      }
 
-      final int min = Math.min(buffer.remaining(), len);
-      buffer.put(b, off, min);
-      off += min;
-      len -= min;
-      length += min;
+      final int copied = buffer(b, off, len);
+      off += copied;
+      len -= copied;
+      length += copied;
     }
   }
 
@@ -82,38 +91,46 @@ class FileOutputStream extends OutputStream {
       file.chunks = chunks;
       file.getFileSystem().updateFile(file);
       open = false;
-      buffer = null;
+      segments = null;
     }
   }
 
   /**
-   * Makes room for at least one more byte. The buffer grows until it reaches the chunk size, and a
-   * chunk is written only once it is full.
+   * Copies bytes into the current chunk, up to the end of the chunk.
+   *
+   * @return the number of bytes copied
    */
-  private void ensureCapacity() {
-    if (buffer.remaining() > 0) {
-      return;
+  private int buffer(final byte[] b, int off, final int len) {
+    final int limit = Math.min(len, chunkSize - position);
+    int copied = 0;
+    while (copied < limit) {
+      final int offsetInSegment = position % segmentSize;
+      final int count = Math.min(limit - copied, segmentSize - offsetInSegment);
+      System.arraycopy(b, off, segment(position / segmentSize), offsetInSegment, count);
+      off += count;
+      copied += count;
+      position += count;
     }
-    if (buffer.capacity() < file.getChunkSize()) {
-      growBuffer();
-    } else {
-      flushBuffer();
-    }
+    return copied;
   }
 
-  private void growBuffer() {
-    int newCapacity =
-        Math.min(Math.max(buffer.capacity() * 2, INITIAL_BUFFER_SIZE), file.getChunkSize());
-    ByteBuffer larger = ByteBuffer.allocate(newCapacity);
-    buffer.flip();
-    larger.put(buffer);
-    buffer = larger;
+  private byte[] segment(final int index) {
+    byte[] segment = segments[index];
+    if (segment == null) {
+      segment = new byte[segmentSize];
+      segments[index] = segment;
+    }
+    return segment;
   }
 
   private void flushBuffer() {
-    byte[] chunk = Arrays.copyOfRange(buffer.array(), buffer.arrayOffset(), buffer.position());
+    final byte[] chunk = new byte[position];
+    for (int copied = 0; copied < position; copied += segmentSize) {
+      System.arraycopy(segments[copied / segmentSize], 0, chunk, copied,
+          Math.min(segmentSize, position - copied));
+    }
     file.getFileSystem().putChunk(file, chunks++, chunk);
-    buffer.rewind();
+    position = 0;
   }
 
   private void assertOpen() throws IOException {
