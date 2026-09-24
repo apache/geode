@@ -25,7 +25,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.internal.time.Clock
 import org.gradle.internal.work.WorkerLeaseService
 
-public class RepeatTest extends Test {
+public abstract class RepeatTest extends Test {
 
   @Input
   private int times = 5
