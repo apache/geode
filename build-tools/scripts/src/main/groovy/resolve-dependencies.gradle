@@ -15,21 +15,25 @@
  * limitations under the License.
  */
 
-task resolveDependencies {
-  doLast {
-    project.rootProject.allprojects.each { subProject ->
-      subProject.buildscript.configurations.each { configuration ->
+// Each project resolves its own configurations, so running resolveDependencies from the root
+// resolves the configurations of every project.
+allprojects {
+  tasks.register('resolveDependencies') {
+    doLast {
+      project.buildscript.configurations.each { configuration ->
         resolveConfiguration(configuration)
       }
-      subProject.configurations.each { configuration ->
+      project.configurations.each { configuration ->
         resolveConfiguration(configuration)
       }
     }
   }
 }
 
+// The default and archives configurations are not meant to be resolved; the classpath
+// configurations resolved alongside them cover the same dependencies.
 void resolveConfiguration(configuration) {
-  if (configuration.canBeResolved) {
+  if (configuration.canBeResolved && !(configuration.name in ['default', 'archives'])) {
     configuration.resolve()
   }
 }

@@ -338,9 +338,6 @@ acceptanceTest {
 }
 
 tasks.register('defaultDistributionConfig', JavaExec) {
-  inputs.files {
-    project(':geode-core').sourceSets.getByName('main').runtimeClasspath
-  }
   outputs.file file("$buildDir/gemfire.properties")
   mainClass = 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
   classpath configurations.defaultDistributionConfigClasspath
@@ -352,9 +349,6 @@ tasks.register('defaultDistributionConfig', JavaExec) {
 }
 
 tasks.register('defaultCacheConfig', JavaExec) {
-  inputs.files {
-    project(':geode-core').sourceSets.getByName('main').runtimeClasspath
-  }
   outputs.file file("$buildDir/cache.xml")
   mainClass = 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
   classpath configurations.defaultCacheConfigClasspath

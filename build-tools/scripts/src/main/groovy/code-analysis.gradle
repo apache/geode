@@ -55,6 +55,7 @@ if (project.hasProperty("codeCoverage")) {
   }
 
   tasks.register('jacocoIntegrationTestReport', JacocoReport) {
+    mustRunAfter tasks.withType(Test)
     reports {
       csv.required = false
       sourceSets project.sourceSets.main
@@ -64,6 +65,7 @@ if (project.hasProperty("codeCoverage")) {
   }
 
   tasks.register('jacocoDistributedTestReport', JacocoReport) {
+    mustRunAfter tasks.withType(Test)
     reports {
       csv.required = false
       sourceSets project.sourceSets.main
@@ -73,6 +75,7 @@ if (project.hasProperty("codeCoverage")) {
   }
 
   tasks.register('jacocoOverallTestReport', JacocoReport) {
+    mustRunAfter tasks.withType(Test)
     reports {
       csv.required = false
       sourceSets project.sourceSets.main
