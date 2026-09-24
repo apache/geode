@@ -192,7 +192,7 @@ tasks.register('jarTest', Jar) {
   dependsOn testClasses
   description 'Assembles a jar archive of test classes.'
   from sourceSets.test.output
-  classifier 'test'
+  archiveClassifier = 'test'
 }
 
 artifacts {

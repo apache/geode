@@ -54,19 +54,9 @@ if (project.hasProperty("codeCoverage")) {
     }
   }
 
-  tasks.register('mergeIntegrationTestCoverage', JacocoMerge) {
-    description 'Merges Distributed and Integration test coverage results'
-
-    destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
-    executionData = fileTree(dir: 'build/jacoco', include: [
-        '**/distributedTest.exec',
-        '**/integrationTest.exec'
-    ])
-  }
-
   tasks.register('jacocoIntegrationTestReport', JacocoReport) {
     reports {
-      csv.enabled false
+      csv.required = false
       sourceSets project.sourceSets.main
       html.outputLocation  = project.file("${buildDir}/reports/jacoco/integrationTest")
       executionData fileTree(dir: 'build/jacoco', include: '**/integrationTest.exec')
@@ -75,7 +65,7 @@ if (project.hasProperty("codeCoverage")) {
 
   tasks.register('jacocoDistributedTestReport', JacocoReport) {
     reports {
-      csv.enabled false
+      csv.required = false
       sourceSets project.sourceSets.main
       html.outputLocation = project.file("${buildDir}/reports/jacoco/distributedTest")
       executionData fileTree(dir: 'build/jacoco', include: '**/distributedTest.exec')
@@ -84,7 +74,7 @@ if (project.hasProperty("codeCoverage")) {
 
   tasks.register('jacocoOverallTestReport', JacocoReport) {
     reports {
-      csv.enabled false
+      csv.required = false
       sourceSets project.sourceSets.main
       html.outputLocation = project.file("${buildDir}/reports/jacoco/all")
       executionData fileTree(dir: 'build/jacoco', include: '**/*.exec')
