@@ -63,7 +63,7 @@ Maven
 Gradle
 ```groovy
 dependencies {
-  compile "org.apache.geode:geode-core:$VERSION"
+  implementation "org.apache.geode:geode-core:$VERSION"
 }
 ```
 
@@ -123,7 +123,7 @@ instructions on how to run tests.
 
 ## <a name="started"></a>Geode in 5 minutes
 
-Geode requires installation of JDK version 1.8.  After installing Apache Geode,
+Geode requires installation of JDK version 17 or later.  After installing Apache Geode,
 start a locator and server:
 ```console
 $ gfsh
@@ -141,15 +141,19 @@ build script):
 
 _build.gradle_
 ```groovy
-apply plugin: 'java'
-apply plugin: 'application'
+plugins {
+  id 'java'
+  id 'application'
+}
 
-mainClassName = 'HelloWorld'
+application {
+  mainClass = 'HelloWorld'
+}
 
 repositories { mavenCentral() }
 dependencies {
-  compile 'org.apache.geode:geode-core:1.4.0'
-  runtime 'org.slf4j:slf4j-log4j12:1.7.24'
+  implementation "org.apache.geode:geode-core:$VERSION"
+  runtimeOnly 'org.slf4j:slf4j-log4j12:1.7.36'
 }
 ```
 
