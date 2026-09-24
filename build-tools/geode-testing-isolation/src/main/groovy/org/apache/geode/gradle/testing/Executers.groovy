@@ -23,7 +23,7 @@ import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
 import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter
 import org.gradle.internal.time.Clock
-import org.gradle.internal.work.WorkerLeaseRegistry
+import org.gradle.internal.work.WorkerLeaseService
 
 class Executers {
     /**
@@ -48,7 +48,7 @@ class Executers {
                 workerProcessFactory,
                 testTask.actorFactory,
                 testTask.moduleRegistry,
-                services.get(WorkerLeaseRegistry),
+                services.get(WorkerLeaseService),
                 services.get(StartParameter).getMaxWorkerCount(),
                 services.get(Clock),
                 services.get(DocumentationRegistry),

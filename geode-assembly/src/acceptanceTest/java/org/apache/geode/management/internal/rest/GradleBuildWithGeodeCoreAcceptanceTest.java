@@ -66,7 +66,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     copyDirectoryResource(projectDir, buildDir);
 
     GradleConnector connector = GradleConnector.newConnector();
-    connector.useGradleVersion("7.3.3");
+    connector.useGradleVersion("7.6.6");
     connector.forProjectDirectory(buildDir);
 
     ProjectConnection connection = connector.connect();

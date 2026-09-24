@@ -40,7 +40,7 @@ class Workers {
                 workerImplementationFactory.gradleUserHomeDir,
                 workerImplementationFactory.temporaryFileProvider,
                 donor.execHandleFactory,
-                workerImplementationFactory.jvmVersionDetector,
+                donor.jvmVersionDetector,
                 donor.outputEventListener,
                 donor.memoryManager,
                 processLauncher)

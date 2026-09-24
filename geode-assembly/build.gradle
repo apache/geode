@@ -428,8 +428,10 @@ tasks.register('docs', Javadoc) {
 
   // Do NOT add the javadocStubs sources directly; we only want them on the classpath, not in output.
 
+  // Only aggregate projects that actually compile Java sources.  Platform (BOM) projects appear
+  // on the javadocOnly configuration but have no source sets or 'classes' task to depend on.
   def docProjects = getDependencyProjectsFor('javadocOnly').findAll { proj ->
-    proj.hasProperty('sourceSets')
+    proj.pluginManager.hasPlugin('java')
   }
 
   // Ensure compilation is done before aggregating docs
