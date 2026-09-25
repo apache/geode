@@ -166,7 +166,9 @@ gradle.taskGraph.whenReady({ graph ->
     }
     jar.metaInf {
       from("$rootDir/geode-assembly/src/main/dist/LICENSE")
-      if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
+      // The JMH jar bundles project jars that already carry a NOTICE, and its contents cannot be
+      // inspected before those jars are built.
+      if (jar.name != 'jmhJar' && jar.source.filter({ it.name.contains('NOTICE') }).empty) {
         from("$rootDir/NOTICE")
       }
     }

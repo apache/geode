@@ -366,7 +366,6 @@ dependencies {
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation(project(path: ':geode-core', configuration: 'raOutput'))
   testImplementation('org.springframework:spring-web')
-  testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
   testImplementation('org.junit-pioneer:junit-pioneer')
 
   testCompileOnly('org.jetbrains:annotations')

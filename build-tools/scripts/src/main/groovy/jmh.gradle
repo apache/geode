@@ -16,7 +16,7 @@
  */
 
 plugins {
-  id 'me.champeau.gradle.jmh'
+  id 'me.champeau.jmh'
   id 'org.apache.geode.gradle.geode-facets'
 }
 
@@ -33,22 +33,24 @@ dependencies {
 }
 
 jmh {
-  zip64 = true
-  duplicateClassesStrategy = 'exclude'
-  jvmArgs += ["-javaagent:${project.relativePath(configurations.javaagent.singleFile)}"]
+  // The JMH generator version this build has used; jmh-core is constrained separately.
+  jmhVersion = '1.25'
+  jvmArgs.add("-javaagent:${project.relativePath(configurations.javaagent.singleFile)}".toString())
 
-  include = project.hasProperty('jmh.include') ? project.property('jmh.include').tokenize() : ['.*']
+  includes = project.hasProperty('jmh.include') ? project.property('jmh.include').tokenize() : ['.*']
   profilers = project.hasProperty('jmh.profilers') ? project.property('jmh.profilers').tokenize() : []
   threads = project.hasProperty('jmh.threads') ? project.property('jmh.threads') as Integer : null
   warmupIterations = project.hasProperty('jmh.warmupIterations') ? project.property('jmh.warmupIterations') as Integer : null
   iterations = project.hasProperty('jmh.iterations') ? project.property('jmh.iterations') as Integer : null
-  timeOnIteration = project.hasProperty('jmh.timeOnIteration') ? project.property('jmh.timeOnIteration') as Integer : null
+  timeOnIteration = project.hasProperty('jmh.timeOnIteration') ? project.property('jmh.timeOnIteration') as String : null
   fork = project.hasProperty('jmh.fork') ? project.property('jmh.fork') as Integer : null
   jvm = project.hasProperty('jmh.jvm') ? project.property('jmh.jvm') as String : null
-  jvmArgs += project.hasProperty('jmh.jvmArgs') ? project.property('jmh.jvmArgs').tokenize() : []
+  jvmArgs.addAll(project.hasProperty('jmh.jvmArgs') ? project.property('jmh.jvmArgs').tokenize() : [])
 }
 
 jmhJar {
+  zip64 = true
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   exclude(['META-INF/*.SF'])
   exclude('META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat')
   exclude('*.jar')
