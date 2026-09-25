@@ -100,9 +100,11 @@ gradle.taskGraph.whenReady({ graph ->
             projectDependencies.add(dependency)
           }
         } else {
-          project.configurations.runtimeClasspath.files(dependency).each { depJar ->
-            runtimeSet.add(depJar.name)
-          }
+          // The artifacts of the dependency and of everything it brings in transitively
+          project.configurations.runtimeClasspath.resolvedConfiguration.firstLevelModuleDependencies
+              .findAll { it.moduleGroup == dependency.group && it.moduleName == dependency.name }
+              .collectMany { it.allModuleArtifacts }
+              .each { artifact -> runtimeSet.add(artifact.file.name) }
         }
       }
 
