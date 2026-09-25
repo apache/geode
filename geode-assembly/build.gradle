@@ -575,7 +575,7 @@ distributions {
 
       with copySpec {
         into('tools/Pulse')
-        from {project(':geode-pulse').configurations.archives.allArtifacts.files}
+        from(project(':geode-pulse').tasks.named('war'))
       }
 
       with copySpec {
