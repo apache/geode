@@ -18,7 +18,7 @@ plugins {
   id 'war'
   id 'geode-publish-war'
   id 'warnings'
-  id 'nebula.facet'
+  id 'org.apache.geode.gradle.geode-facets'
 }
 
 jar.enabled = false

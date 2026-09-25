@@ -17,7 +17,7 @@
 
 
 plugins {
-  id 'nebula.facet'
+  id 'org.apache.geode.gradle.geode-facets'
   id 'org.apache.geode.gradle.geode-build-tools'
 }
 

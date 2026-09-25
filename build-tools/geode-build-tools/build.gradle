@@ -47,4 +47,8 @@ gradlePlugin {
     id = 'org.apache.geode.gradle.geode-build-tools'
     implementationClass = 'org.apache.geode.gradle.plugins.BuildToolsPlugin'
   }
+  plugins.register('geode-facets') {
+    id = 'org.apache.geode.gradle.geode-facets'
+    implementationClass = 'org.apache.geode.gradle.plugins.FacetsPlugin'
+  }
 }
