@@ -88,7 +88,7 @@ class DependencyConstraints {
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
     // Jetty 12.0.x for Jakarta EE 10 (Servlet 6.0) compatibility
     // Jetty 12 reorganized modules under ee10, ee9, ee8 packages
-    deps.put("jetty.version", "12.0.37")
+    deps.put("jetty.version", "12.0.39")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
