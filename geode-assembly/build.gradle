@@ -514,6 +514,12 @@ distributions {
         exclude { FileTreeElement details ->
           details.directory && (details.name == "build" || details.name == "out")
         }
+
+        // The old version project directories are created when the build is configured
+        exclude { FileTreeElement details ->
+          details.directory && details.relativePath.parent?.pathString == 'geode-old-versions' &&
+              details.name ==~ /\d+\.\d+\.\d+.*/
+        }
       }
     }
   }
