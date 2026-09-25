@@ -137,6 +137,12 @@ configure([test, integrationTest, distributedTest, performanceTest, acceptanceTe
   useJUnitPlatform()
 }
 
+// Tests run on the JUnit Platform, whose launcher must be on each test runtime classpath
+sourceSets.matching { it.name.toLowerCase().contains('test') }.configureEach { sourceSet ->
+  dependencies.add(sourceSet.runtimeOnlyConfigurationName,
+      'org.junit.platform:junit-platform-launcher:' + DependencyConstraints.get('junit-platform.version'))
+}
+
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
