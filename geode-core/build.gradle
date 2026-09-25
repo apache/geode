@@ -264,6 +264,7 @@ dependencies {
 
   //micrometer is used for micrometer based metrics from geode geode
   api('io.micrometer:micrometer-core')
+  api('io.micrometer:micrometer-observation')
 
 
   //FastUtil contains optimized collections that are used in multiple places in core

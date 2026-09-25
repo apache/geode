@@ -152,6 +152,7 @@ class DependencyConstraints {
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
+        api(group: 'io.micrometer', name: 'micrometer-observation', version: get('micrometer.version'))
         // Pin Reactor Core (pulled in via spring-shell-core) to 3.8.7
         api(group: 'io.projectreactor', name: 'reactor-core', version: get('reactor-core.version'))
         api(group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.2.22')
