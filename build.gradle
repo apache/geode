@@ -107,6 +107,9 @@ task combineReports(type: TestReport) {
   // Explicitly depend on them so results exist before combining
   dependsOn allTests
 
+  // Run after whichever test tasks execute, since their results are combined
+  mustRunAfter(subprojects.collect { it.tasks.withType(Test) })
+
   doLast {
     println "All test reports at ${rootProject.buildDir}/reports/combined"
   }
