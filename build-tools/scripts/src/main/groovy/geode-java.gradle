@@ -113,7 +113,7 @@ gradle.taskGraph.whenReady({ graph ->
       // within it's parent's project dependencies.
       def upstreamDeps = []
       projectDependencies.clone().each { ProjectDependency projectDependency ->
-        Project geodeProject = projectDependency.getDependencyProject()
+        Project geodeProject = project.project(projectDependency.path)
 
         Map depMap = new HashMap<Object,Object>()
         def runtimeConfigList = getConfigurationsFor(geodeProject, 'runtimeClasspath')

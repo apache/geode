@@ -361,21 +361,21 @@ tasks.register('defaultCacheConfig', JavaExec) {
 
 def getDependencyProjectsFor(String configurationName) {
   List<Project> rval = configurations[configurationName].allDependencies.findAll {
-    it.hasProperty('dependencyProject') && it.dependencyProject != null
+    it instanceof ProjectDependency
   }.collect {
-    it.dependencyProject
+    project(it.path)
   }.collect {
     def projs = [it]
     if ((it as Project).pluginManager.hasPlugin('java-library')) {
       (it as Project).configurations.api.dependencies.findAll {
-        it.hasProperty('dependencyProject') && it.dependencyProject != null
+        it instanceof ProjectDependency
       }.collect {
-        projs += it.dependencyProject
+        projs += project(it.path)
       }
       (it as Project).configurations.runtimeOnly.dependencies.findAll {
-        it.hasProperty('dependencyProject') && it.dependencyProject != null
+        it instanceof ProjectDependency
       }.collect {
-        projs += it.dependencyProject
+        projs += project(it.path)
       }
     }
     projs

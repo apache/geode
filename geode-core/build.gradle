@@ -33,10 +33,10 @@ sourceSets {
 
 idea {
   module {
-    testSourceDirs += project.tasks.generateIntegrationTestGrammarSource.outputs.files
-    testSourceDirs += project.tasks.generateDistributedTestGrammarSource.outputs.files
-    testSourceDirs += project.tasks.generatePerformanceTestGrammarSource.outputs.files
-    testSourceDirs += project.tasks.generateUpgradeTestGrammarSource.outputs.files
+    testSources.from(project.tasks.generateIntegrationTestGrammarSource.outputs.files)
+    testSources.from(project.tasks.generateDistributedTestGrammarSource.outputs.files)
+    testSources.from(project.tasks.generatePerformanceTestGrammarSource.outputs.files)
+    testSources.from(project.tasks.generateUpgradeTestGrammarSource.outputs.files)
   }
 }
 
@@ -134,7 +134,7 @@ tasks.register('jcaJar', Jar) {
   archiveBaseName='geode-jca'
   archiveExtension='rar'
   metaInf { from 'src/jca/ra.xml' }
-  from raJar.archivePath
+  from raJar.archiveFile
 }
 
 configurations {
