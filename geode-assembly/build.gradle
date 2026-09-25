@@ -338,11 +338,8 @@ acceptanceTest {
 }
 
 tasks.register('defaultDistributionConfig', JavaExec) {
-  inputs.files {
-    project(':geode-core').sourceSets.getByName('main').runtimeClasspath
-  }
   outputs.file file("$buildDir/gemfire.properties")
-  main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
+  mainClass = 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
   classpath configurations.defaultDistributionConfigClasspath
   workingDir buildDir
 
@@ -352,11 +349,8 @@ tasks.register('defaultDistributionConfig', JavaExec) {
 }
 
 tasks.register('defaultCacheConfig', JavaExec) {
-  inputs.files {
-    project(':geode-core').sourceSets.getByName('main').runtimeClasspath
-  }
   outputs.file file("$buildDir/cache.xml")
-  main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
+  mainClass = 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
   classpath configurations.defaultCacheConfigClasspath
   workingDir buildDir
 
@@ -610,7 +604,7 @@ distributions {
 build.dependsOn(installDist)
 
 tasks.named('srcDistTar').configure {
-  classifier 'src'
+  archiveClassifier = 'src'
 }
 
 [

@@ -24,7 +24,7 @@ plugins {
   id "com.diffplug.spotless" version "6.4.1" apply false
   id "com.github.ben-manes.versions" version "0.42.0" apply false
   id "nebula.lint" version "17.7.0" apply false
-  id "com.palantir.docker" version "0.32.0" apply false
+  id "com.palantir.docker" version "0.40.0" apply false
   id "io.spring.dependency-management" version "1.0.11.RELEASE" apply false
   id "org.ajoberstar.grgit" version "4.1.1" apply false
   id "org.nosphere.apache.rat" version "0.7.1" apply false
@@ -95,7 +95,7 @@ allprojects {
 
 task combineReports(type: TestReport) {
   description 'Combines the test reports.'
-  destinationDir = file "${rootProject.buildDir}/reports/combined"
+  destinationDirectory = file "${rootProject.buildDir}/reports/combined"
   // Collect all Test tasks in subprojects
   def allTests = subprojects.collect { it.tasks.withType(Test) }.flatten()
 
@@ -103,7 +103,7 @@ task combineReports(type: TestReport) {
   allTests += tasks.getByPath(":geode-old-versions:test")
 
   // Tell TestReport to use their results
-  reportOn allTests
+  testResults.from(allTests.collect { it.binaryResultsDirectory })
 
   // Explicitly depend on them so results exist before combining
   dependsOn allTests
@@ -243,7 +243,7 @@ if (project.hasProperty('askpass')) {
 }
 
 gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
+  tasks.getByName('combineReports').testResults.from(rootProject.subprojects.collect {
     it.tasks.withType(Test)
-  }.flatten()
+  }.flatten().collect { it.binaryResultsDirectory })
 })

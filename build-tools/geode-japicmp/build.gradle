@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
   implementation(gradleApi())
-  implementation('me.champeau.gradle:japicmp-gradle-plugin:0.3.0')
+  implementation('me.champeau.gradle:japicmp-gradle-plugin:0.4.6')
 }
 
 sourceSets {

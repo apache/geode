@@ -14,11 +14,8 @@
  */
 package org.apache.geode.gradle.testing.repeat;
 
-import java.io.File;
-import java.util.List;
-import java.util.Set;
+import java.util.ArrayList;
 
-import com.google.common.collect.ImmutableSet;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.internal.DocumentationRegistry;
 import org.gradle.api.internal.classpath.ModuleRegistry;
@@ -30,6 +27,7 @@ import org.gradle.api.internal.tasks.testing.TestResultProcessor;
 import org.gradle.api.internal.tasks.testing.WorkerTestClassProcessorFactory;
 import org.gradle.api.internal.tasks.testing.detection.DefaultTestClassScanner;
 import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter;
+import org.gradle.api.internal.tasks.testing.detection.ForkedTestClasspathFactory;
 import org.gradle.api.internal.tasks.testing.detection.TestFrameworkDetector;
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter;
 import org.gradle.api.internal.tasks.testing.processors.MaxNParallelTestClassProcessor;
@@ -37,6 +35,7 @@ import org.gradle.api.internal.tasks.testing.processors.PatternMatchTestClassPro
 import org.gradle.api.internal.tasks.testing.processors.RestartEveryNTestClassProcessor;
 import org.gradle.api.internal.tasks.testing.processors.RunPreviousFailedFirstTestClassProcessor;
 import org.gradle.api.internal.tasks.testing.processors.TestMainAction;
+import org.gradle.api.internal.tasks.testing.worker.ForkedTestClasspath;
 import org.gradle.api.internal.tasks.testing.worker.ForkingTestClassProcessor;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -47,7 +46,7 @@ import org.gradle.internal.work.WorkerLeaseService;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 
 /**
- * A copy of {@link DefaultTestExecuter} from Gradle v7.6.6, modified to process each test class
+ * A copy of {@link DefaultTestExecuter} from Gradle v8.14.5, modified to process each test class
  * as many times as it was submitted. This is required by our {@link RepeatTest} task, because:
  * <ul>
  *   <li>Geode's {@code RepeatTest} task operates by submitting each test class for processing
@@ -70,7 +69,7 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
 
   private final WorkerProcessFactory workerFactory;
   private final ActorFactory actorFactory;
-  private final ModuleRegistry moduleRegistry;
+  private final ForkedTestClasspathFactory testClasspathFactory;
   private final WorkerLeaseService workerLeaseService;
   private final int maxWorkerCount;
   private final Clock clock;
@@ -85,7 +84,7 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
       int iterationCount) {
     this.workerFactory = workerFactory;
     this.actorFactory = actorFactory;
-    this.moduleRegistry = moduleRegistry;
+    this.testClasspathFactory = new ForkedTestClasspathFactory(moduleRegistry);
     this.workerLeaseService = workerLeaseService;
     this.maxWorkerCount = maxWorkerCount;
     this.clock = clock;
@@ -99,17 +98,14 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
       TestResultProcessor testResultProcessor) {
     final TestFramework testFramework = testExecutionSpec.getTestFramework();
     final WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
-    final Set<File> classpath = ImmutableSet.copyOf(testExecutionSpec.getClasspath());
-    final Set<File> modulePath = ImmutableSet.copyOf(testExecutionSpec.getModulePath());
-    final List<String>
-        testWorkerImplementationModules =
-        testFramework.getTestWorkerImplementationModules();
+    final ForkedTestClasspath classpath = testClasspathFactory.create(
+        testExecutionSpec.getClasspath(), testExecutionSpec.getModulePath(), testFramework,
+        testExecutionSpec.getTestIsModule());
     final Factory<TestClassProcessor> forkingProcessorFactory = () -> {
       TestClassProcessor forkingTestClassProcessor =
           new ForkingTestClassProcessor(workerLeaseService, workerFactory, testInstanceFactory,
-              testExecutionSpec.getJavaForkOptions(), classpath, modulePath,
-              testWorkerImplementationModules, testFramework.getWorkerConfigurationAction(),
-              moduleRegistry, documentationRegistry);
+              testExecutionSpec.getJavaForkOptions(), classpath,
+              testFramework.getWorkerConfigurationAction(), documentationRegistry);
       // Wrap the forking processor to make it distinguish different executions of a test class
       return new ExecutionTrackingTestClassProcessor(forkingTestClassProcessor, iterationCount);
     };
@@ -129,8 +125,9 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
     Runnable detector;
     if (testExecutionSpec.isScanForTestClasses() && testFramework.getDetector() != null) {
       TestFrameworkDetector testFrameworkDetector = testFramework.getDetector();
-      testFrameworkDetector.setTestClasses(testExecutionSpec.getTestClassesDirs().getFiles());
-      testFrameworkDetector.setTestClasspath(classpath);
+      testFrameworkDetector
+          .setTestClasses(new ArrayList<>(testExecutionSpec.getTestClassesDirs().getFiles()));
+      testFrameworkDetector.setTestClasspath(classpath.getApplicationClasspath());
       detector = new DefaultTestClassScanner(testClassFiles, testFrameworkDetector, processor);
     } else {
       detector = new DefaultTestClassScanner(testClassFiles, null, processor);

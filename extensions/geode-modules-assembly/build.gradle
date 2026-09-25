@@ -43,7 +43,7 @@ def moduleBaseName = "Apache_Geode_Modules"
 
 def configureTcServerAssembly = {
   archiveBaseName = moduleBaseName
-  classifier = "tcServer"
+  archiveClassifier = "tcServer"
 
   // All client-server files
   into('geode-cs/lib') {
@@ -121,7 +121,7 @@ def configureTcServerAssembly = {
 
 def configureTcServer30Assembly = {
   archiveBaseName = moduleBaseName
-  classifier = "tcServer30"
+  archiveClassifier = "tcServer30"
 
   into('geode-cs-tomcat-10/conf') {
     from('release/tcserver/geode-cs-tomcat-10') {
@@ -138,7 +138,7 @@ def configureTcServer30Assembly = {
 
 tasks.register('distTomcat', Zip) {
   archiveBaseName = moduleBaseName
-  classifier = "Tomcat"
+  archiveClassifier = "Tomcat"
 
   // All client-server files
   into('lib') {
@@ -163,7 +163,7 @@ tasks.register('distTomcat', Zip) {
 
 tasks.register('distAppServer', Zip) {
   archiveBaseName = moduleBaseName
-  classifier = "AppServer"
+  archiveClassifier = "AppServer"
 
   into('lib') {
     from project(':extensions:geode-modules').tasks.named('jar')

@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.gradle.api.Action;
 import org.gradle.api.logging.LogLevel;
+import org.gradle.internal.nativeintegration.services.NativeServices.NativeServicesMode;
 import org.gradle.process.internal.JavaExecHandleBuilder;
 import org.gradle.process.internal.worker.WorkerProcess;
 import org.gradle.process.internal.worker.WorkerProcessBuilder;
@@ -134,14 +135,23 @@ public class LauncherProxyWorkerProcessBuilder implements WorkerProcessBuilder {
     delegate.enableJvmMemoryInfoPublishing(shouldPublish);
   }
 
+  @Override
+  public void setNativeServicesMode(NativeServicesMode mode) {
+    delegate.setNativeServicesMode(mode);
+  }
+
+  @Override
+  public NativeServicesMode getNativeServicesMode() {
+    return delegate.getNativeServicesMode();
+  }
+
   /**
    * Returns this builder rather than the delegate's return value, because callers chain from this
    * method and must continue to hold the wrapper that installs the process launcher.
    */
-  @SuppressWarnings("deprecation")
   @Override
-  public WorkerProcessBuilder setUseLegacyAddOpens(boolean useLegacyAddOpens) {
-    delegate.setUseLegacyAddOpens(useLegacyAddOpens);
+  public WorkerProcessBuilder setAddJpmsCompatibilityFlags(boolean addJpmsCompatibilityFlags) {
+    delegate.setAddJpmsCompatibilityFlags(addJpmsCompatibilityFlags);
     return this;
   }
 

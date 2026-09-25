@@ -175,7 +175,7 @@ gradle.taskGraph.whenReady({ graph ->
       def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
       test.workingDir = resultsDir
 
-      reports.html.destination = file "$buildDir/reports/$name"
+      reports.html.outputLocation = file "$buildDir/reports/$name"
       testLogging {
         exceptionFormat = 'full'
       }

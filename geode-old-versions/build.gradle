@@ -140,7 +140,7 @@ sourceSets {
 }
 tasks.register('geodeOldVersionClasspathsJar', Jar) {
   from sourceSets.oldVersions.output
-  classifier 'oldVersions'
+  archiveClassifier = 'oldVersions'
 }
 
 artifacts {
