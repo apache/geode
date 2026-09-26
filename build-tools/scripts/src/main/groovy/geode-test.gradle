@@ -128,7 +128,8 @@ tasks.register('repeatUpgradeTest', RepeatTest) {
 
 tasks.register('repeatUnitTest', RepeatTest) {
   dependsOn { test.taskDependencies }
-  // default classpath works for this one.
+  classpath = project.sourceSets.test.runtimeClasspath
+  testClassesDirs = project.sourceSets.test.output.classesDirs
 }
 
 configure([test, integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest,
