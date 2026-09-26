@@ -14,31 +14,35 @@
  */
 package org.apache.geode.gradle.testing.repeat;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Set;
 
 import org.gradle.api.file.FileTree;
-import org.gradle.api.internal.DocumentationRegistry;
 import org.gradle.api.internal.classpath.ModuleRegistry;
 import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec;
-import org.gradle.api.internal.tasks.testing.TestClassProcessor;
+import org.gradle.api.internal.tasks.testing.TestDefinition;
+import org.gradle.api.internal.tasks.testing.TestDefinitionProcessor;
 import org.gradle.api.internal.tasks.testing.TestExecuter;
 import org.gradle.api.internal.tasks.testing.TestFramework;
 import org.gradle.api.internal.tasks.testing.TestResultProcessor;
-import org.gradle.api.internal.tasks.testing.WorkerTestClassProcessorFactory;
-import org.gradle.api.internal.tasks.testing.detection.DefaultTestClassScanner;
+import org.gradle.api.internal.tasks.testing.WorkerTestDefinitionProcessorFactory;
 import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter;
+import org.gradle.api.internal.tasks.testing.detection.DefaultTestScanner;
 import org.gradle.api.internal.tasks.testing.detection.ForkedTestClasspathFactory;
+import org.gradle.api.internal.tasks.testing.detection.TestDetector;
 import org.gradle.api.internal.tasks.testing.detection.TestFrameworkDetector;
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter;
-import org.gradle.api.internal.tasks.testing.processors.MaxNParallelTestClassProcessor;
-import org.gradle.api.internal.tasks.testing.processors.PatternMatchTestClassProcessor;
-import org.gradle.api.internal.tasks.testing.processors.RestartEveryNTestClassProcessor;
-import org.gradle.api.internal.tasks.testing.processors.RunPreviousFailedFirstTestClassProcessor;
+import org.gradle.api.internal.tasks.testing.processors.MaxNParallelTestDefinitionProcessor;
+import org.gradle.api.internal.tasks.testing.processors.PatternMatchTestDefinitionProcessor;
+import org.gradle.api.internal.tasks.testing.processors.RestartEveryNTestDefinitionProcessor;
+import org.gradle.api.internal.tasks.testing.processors.RunPreviousFailedFirstTestDefinitionProcessor;
 import org.gradle.api.internal.tasks.testing.processors.TestMainAction;
 import org.gradle.api.internal.tasks.testing.worker.ForkedTestClasspath;
-import org.gradle.api.internal.tasks.testing.worker.ForkingTestClassProcessor;
+import org.gradle.api.internal.tasks.testing.worker.ForkingTestDefinitionProcessor;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.internal.Cast;
 import org.gradle.internal.Factory;
 import org.gradle.internal.actor.ActorFactory;
 import org.gradle.internal.time.Clock;
@@ -46,17 +50,17 @@ import org.gradle.internal.work.WorkerLeaseService;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 
 /**
- * A copy of {@link DefaultTestExecuter} from Gradle v8.14.5, modified to process each test class
+ * A copy of {@link DefaultTestExecuter} from Gradle v9.7.1, modified to process each test class
  * as many times as it was submitted. This is required by our {@link RepeatTest} task, because:
  * <ul>
  *   <li>Geode's {@code RepeatTest} task operates by submitting each test class for processing
  *   multiple times.</li>
  *   <li>Gradle's {@code DefaultTestExecuter} includes a
- *   {@link RunPreviousFailedFirstTestClassProcessor}, which de-duplicates the submitted test
+ *   {@link RunPreviousFailedFirstTestDefinitionProcessor}, which de-duplicates the submitted test
  *   classes, preventing the {@code RepeatTest} from repeating the tests.</li>
  * </ul>
  * <p>
- * This executer omits the {@code RunPreviousFailedFirstTestClassProcessor}, and so each test class
+ * This executer omits the {@code RunPreviousFailedFirstTestDefinitionProcessor}, and so each test class
  * is processed as many times as {@code RepeatTest} submits it. See the comment in {@link #execute}.
  * <p>
  * This executer also assigns an ID to each execution of a test class, and appends that ID onto the
@@ -73,22 +77,19 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
   private final WorkerLeaseService workerLeaseService;
   private final int maxWorkerCount;
   private final Clock clock;
-  private final DocumentationRegistry documentationRegistry;
   private final DefaultTestFilter testFilter;
   private final int iterationCount;
-  private TestClassProcessor processor;
+  private TestDefinitionProcessor<TestDefinition> processor;
 
   public RepeatTestExecuter(WorkerProcessFactory workerFactory, ActorFactory actorFactory,
       ModuleRegistry moduleRegistry, WorkerLeaseService workerLeaseService, int maxWorkerCount,
-      Clock clock, DocumentationRegistry documentationRegistry, DefaultTestFilter testFilter,
-      int iterationCount) {
+      Clock clock, DefaultTestFilter testFilter, int iterationCount) {
     this.workerFactory = workerFactory;
     this.actorFactory = actorFactory;
     this.testClasspathFactory = new ForkedTestClasspathFactory(moduleRegistry);
     this.workerLeaseService = workerLeaseService;
     this.maxWorkerCount = maxWorkerCount;
     this.clock = clock;
-    this.documentationRegistry = documentationRegistry;
     this.testFilter = testFilter;
     this.iterationCount = iterationCount;
   }
@@ -97,41 +98,41 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
   public void execute(final JvmTestExecutionSpec testExecutionSpec,
       TestResultProcessor testResultProcessor) {
     final TestFramework testFramework = testExecutionSpec.getTestFramework();
-    final WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
+    final WorkerTestDefinitionProcessorFactory<TestDefinition> testInstanceFactory =
+        Cast.uncheckedNonnullCast(testFramework.getProcessorFactory());
     final ForkedTestClasspath classpath = testClasspathFactory.create(
-        testExecutionSpec.getClasspath(), testExecutionSpec.getModulePath(), testFramework,
-        testExecutionSpec.getTestIsModule());
-    final Factory<TestClassProcessor> forkingProcessorFactory = () -> {
-      TestClassProcessor forkingTestClassProcessor =
-          new ForkingTestClassProcessor(workerLeaseService, workerFactory, testInstanceFactory,
-              testExecutionSpec.getJavaForkOptions(), classpath,
-              testFramework.getWorkerConfigurationAction(), documentationRegistry);
+        testExecutionSpec.getClasspath(), testExecutionSpec.getModulePath());
+    final Factory<TestDefinitionProcessor<TestDefinition>> forkingProcessorFactory = () -> {
+      TestDefinitionProcessor<TestDefinition> forkingTestDefinitionProcessor =
+          new ForkingTestDefinitionProcessor<>(workerLeaseService, workerFactory,
+              testInstanceFactory, testExecutionSpec.getJavaForkOptions(), classpath,
+              testFramework.getWorkerConfigurationAction());
       // Wrap the forking processor to make it distinguish different executions of a test class
-      return new ExecutionTrackingTestClassProcessor(forkingTestClassProcessor, iterationCount);
+      return new ExecutionTrackingTestDefinitionProcessor<>(forkingTestDefinitionProcessor,
+          iterationCount);
     };
-    final Factory<TestClassProcessor>
-        reforkingProcessorFactory =
-        () -> new RestartEveryNTestClassProcessor(forkingProcessorFactory,
+    final Factory<TestDefinitionProcessor<TestDefinition>> reforkingProcessorFactory =
+        () -> new RestartEveryNTestDefinitionProcessor<>(forkingProcessorFactory,
             testExecutionSpec.getForkEvery());
-    // Create the chain of test class processors, omitting the
-    // RunPreviousFailedFirstTestClassProcessor that Gradle's DefaultTestExecuter creates.
+    // Create the chain of test definition processors, omitting the
+    // RunPreviousFailedFirstTestDefinitionProcessor that Gradle's DefaultTestExecuter creates.
     processor =
-        new PatternMatchTestClassProcessor(testFilter,
-            new MaxNParallelTestClassProcessor(getMaxParallelForks(testExecutionSpec),
+        new PatternMatchTestDefinitionProcessor<>(testFilter,
+            new MaxNParallelTestDefinitionProcessor<>(getMaxParallelForks(testExecutionSpec),
                 reforkingProcessorFactory, actorFactory));
 
     final FileTree testClassFiles = testExecutionSpec.getCandidateClassFiles();
+    final Set<File> testDefinitionDirs = testExecutionSpec.getCandidateTestDefinitionDirs();
 
-    Runnable detector;
-    if (testExecutionSpec.isScanForTestClasses() && testFramework.getDetector() != null) {
-      TestFrameworkDetector testFrameworkDetector = testFramework.getDetector();
-      testFrameworkDetector
+    TestFrameworkDetector frameworkDetector =
+        testExecutionSpec.isScanForTestClasses() ? testFramework.getDetector() : null;
+    if (frameworkDetector != null) {
+      frameworkDetector
           .setTestClasses(new ArrayList<>(testExecutionSpec.getTestClassesDirs().getFiles()));
-      testFrameworkDetector.setTestClasspath(classpath.getApplicationClasspath());
-      detector = new DefaultTestClassScanner(testClassFiles, testFrameworkDetector, processor);
-    } else {
-      detector = new DefaultTestClassScanner(testClassFiles, null, processor);
+      frameworkDetector.setTestClasspath(classpath.getApplicationClasspath());
     }
+    TestDetector detector =
+        new DefaultTestScanner(testClassFiles, testDefinitionDirs, frameworkDetector, processor);
 
     new TestMainAction(detector, processor, testResultProcessor, workerLeaseService, clock,
         testExecutionSpec.getPath(),

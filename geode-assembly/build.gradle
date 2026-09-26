@@ -479,6 +479,11 @@ tasks.register('docs', Javadoc) {
   }
 }
 
+// Archives keep the file system permissions, such as those of the executable scripts
+tasks.withType(AbstractArchiveTask).configureEach {
+  useFileSystemPermissions()
+}
+
 distributions {
   src {
     distributionBaseName = 'apache-geode'

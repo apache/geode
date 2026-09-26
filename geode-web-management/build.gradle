@@ -73,6 +73,8 @@ facets {
 
 commonTest {
   useJUnitPlatform()
+  // Holds shared test support classes rather than tests
+  failOnNoDiscoveredTests = false
 }
 
 sourceSets {
