@@ -17,7 +17,7 @@
 
 
 plugins {
-  id 'nebula.facet'
+  id 'org.apache.geode.gradle.geode-facets'
   id 'org.apache.geode.gradle.geode-build-tools'
 }
 
@@ -128,13 +128,20 @@ tasks.register('repeatUpgradeTest', RepeatTest) {
 
 tasks.register('repeatUnitTest', RepeatTest) {
   dependsOn { test.taskDependencies }
-  // default classpath works for this one.
+  classpath = project.sourceSets.test.runtimeClasspath
+  testClassesDirs = project.sourceSets.test.output.classesDirs
 }
 
 configure([test, integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest,
            repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest
 ]) {
   useJUnitPlatform()
+}
+
+// Tests run on the JUnit Platform, whose launcher must be on each test runtime classpath
+sourceSets.matching { it.name.toLowerCase().contains('test') }.configureEach { sourceSet ->
+  dependencies.add(sourceSet.runtimeOnlyConfigurationName,
+      'org.junit.platform:junit-platform-launcher:' + DependencyConstraints.get('junit-platform.version'))
 }
 
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {

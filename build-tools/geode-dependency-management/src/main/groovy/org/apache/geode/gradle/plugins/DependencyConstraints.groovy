@@ -94,6 +94,7 @@ class DependencyConstraints {
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
     deps.put("junit-jupiter.version", "5.8.2")
+    deps.put("junit-platform.version", "1.8.2")
     deps.put("cglib.version", "3.3.0")
 
     // This old version is for geode-assembly:acceptanceTest for gradle-in-gradle tests. As noted there, do not let

@@ -16,7 +16,6 @@ package org.apache.geode.gradle.testing.repeat
 
 import org.gradle.StartParameter
 import org.gradle.api.file.FileTree
-import org.gradle.api.internal.DocumentationRegistry
 import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
@@ -56,7 +55,6 @@ public abstract class RepeatTest extends Test {
             getServices().get(WorkerLeaseService.class),
             getServices().get(StartParameter.class).getMaxWorkerCount(),
             getServices().get(Clock.class),
-            getServices().get(DocumentationRegistry.class),
             (DefaultTestFilter) getFilter(),
             times)
   }

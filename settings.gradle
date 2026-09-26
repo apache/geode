@@ -132,6 +132,8 @@ include 'geode-server-all'
  '1.13.8',
  '1.14.0', // Include for SSL protocol configuration changes in 1.14.0
  '1.14.4'].each {
+  // These project directories are not tracked in git and are removed by clean, so create them here.
+  file('geode-old-versions/'.concat(it)).mkdirs()
   include 'geode-old-versions:'.concat(it)
 }
 

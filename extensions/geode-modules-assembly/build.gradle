@@ -136,6 +136,11 @@ def configureTcServer30Assembly = {
   }
 }
 
+// Archives keep the file system permissions, such as those of the executable scripts
+tasks.withType(AbstractArchiveTask).configureEach {
+  useFileSystemPermissions()
+}
+
 tasks.register('distTomcat', Zip) {
   archiveBaseName = moduleBaseName
   archiveClassifier = "Tomcat"

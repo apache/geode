@@ -82,7 +82,7 @@ gradle.taskGraph.whenReady( { graph ->
     it.name.toLowerCase().contains("dist")
   }.each { archive ->
     archive.doLast {
-      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
+      ant.checksum file:"${archive.archiveFile.get().asFile}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
     }
   }
 })
@@ -361,21 +361,21 @@ tasks.register('defaultCacheConfig', JavaExec) {
 
 def getDependencyProjectsFor(String configurationName) {
   List<Project> rval = configurations[configurationName].allDependencies.findAll {
-    it.hasProperty('dependencyProject') && it.dependencyProject != null
+    it instanceof ProjectDependency
   }.collect {
-    it.dependencyProject
+    project(it.path)
   }.collect {
     def projs = [it]
     if ((it as Project).pluginManager.hasPlugin('java-library')) {
       (it as Project).configurations.api.dependencies.findAll {
-        it.hasProperty('dependencyProject') && it.dependencyProject != null
+        it instanceof ProjectDependency
       }.collect {
-        projs += it.dependencyProject
+        projs += project(it.path)
       }
       (it as Project).configurations.runtimeOnly.dependencies.findAll {
-        it.hasProperty('dependencyProject') && it.dependencyProject != null
+        it instanceof ProjectDependency
       }.collect {
-        projs += it.dependencyProject
+        projs += project(it.path)
       }
     }
     projs
@@ -479,6 +479,11 @@ tasks.register('docs', Javadoc) {
   }
 }
 
+// Archives keep the file system permissions, such as those of the executable scripts
+tasks.withType(AbstractArchiveTask).configureEach {
+  useFileSystemPermissions()
+}
+
 distributions {
   src {
     distributionBaseName = 'apache-geode'
@@ -513,6 +518,12 @@ distributions {
         // These exclude the 'build' and 'out' artifact directories from Gradle and IntelliJ for each project
         exclude { FileTreeElement details ->
           details.directory && (details.name == "build" || details.name == "out")
+        }
+
+        // The old version project directories are created when the build is configured
+        exclude { FileTreeElement details ->
+          details.directory && details.relativePath.parent?.pathString == 'geode-old-versions' &&
+              details.name ==~ /\d+\.\d+\.\d+.*/
         }
       }
     }
@@ -575,7 +586,7 @@ distributions {
 
       with copySpec {
         into('tools/Pulse')
-        from {project(':geode-pulse').configurations.archives.allArtifacts.files}
+        from(project(':geode-pulse').tasks.named('war'))
       }
 
       with copySpec {
