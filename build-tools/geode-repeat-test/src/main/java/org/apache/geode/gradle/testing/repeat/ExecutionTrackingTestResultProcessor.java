@@ -24,8 +24,9 @@ import org.gradle.api.internal.tasks.testing.TestCompleteEvent;
 import org.gradle.api.internal.tasks.testing.TestDescriptorInternal;
 import org.gradle.api.internal.tasks.testing.TestResultProcessor;
 import org.gradle.api.internal.tasks.testing.TestStartEvent;
-import org.gradle.api.internal.tasks.testing.worker.WorkerTestClassProcessor;
+import org.gradle.api.internal.tasks.testing.worker.WorkerTestDefinitionProcessor;
 import org.gradle.api.tasks.testing.TestFailure;
+import org.gradle.api.tasks.testing.TestMetadataEvent;
 import org.gradle.api.tasks.testing.TestOutputEvent;
 
 /**
@@ -73,6 +74,11 @@ public class ExecutionTrackingTestResultProcessor implements TestResultProcessor
     processor.failure(testId, result);
   }
 
+  @Override
+  public void published(Object testId, TestMetadataEvent event) {
+    processor.published(testId, event);
+  }
+
   private TestDescriptorInternal executionTrackingDescriptor(TestDescriptorInternal original) {
     if (original instanceof DefaultTestDescriptor) {
       return executionTrackingTestDescriptor(original);
@@ -83,7 +89,7 @@ public class ExecutionTrackingTestResultProcessor implements TestResultProcessor
       }
       return executionTrackingClassDescriptor(original);
     }
-    if (!(original instanceof WorkerTestClassProcessor.WorkerTestSuiteDescriptor)) {
+    if (!(original instanceof WorkerTestDefinitionProcessor.WorkerTestSuiteDescriptor)) {
       warnUnrecognized(original);
     } else {
       workerName = original.getName();

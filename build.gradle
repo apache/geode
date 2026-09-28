@@ -17,7 +17,6 @@
 
 plugins {
   id "wrapper"
-  id "nebula.facet" version "8.0.0" apply false
   id "base"
   id "idea"
   id "eclipse"
@@ -25,11 +24,11 @@ plugins {
   id "com.github.ben-manes.versions" version "0.42.0" apply false
   id "nebula.lint" version "17.7.0" apply false
   id "com.palantir.docker" version "0.40.0" apply false
-  id "io.spring.dependency-management" version "1.0.11.RELEASE" apply false
+  id "io.spring.dependency-management" version "1.1.7" apply false
   id "org.ajoberstar.grgit" version "4.1.1" apply false
-  id "org.nosphere.apache.rat" version "0.7.1" apply false
+  id "org.nosphere.apache.rat" version "0.11.0" apply false
   id "org.sonarqube" version "3.3" apply false
-  id 'me.champeau.gradle.jmh' version '0.5.3' apply false
+  id 'me.champeau.jmh' version '0.7.3' apply false
   id "de.undercouch.download" version "5.0.1" apply false
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
   id 'geode-publish-artifacts' apply false
@@ -107,6 +106,9 @@ task combineReports(type: TestReport) {
 
   // Explicitly depend on them so results exist before combining
   dependsOn allTests
+
+  // Run after whichever test tasks execute, since their results are combined
+  mustRunAfter(subprojects.collect { it.tasks.withType(Test) })
 
   doLast {
     println "All test reports at ${rootProject.buildDir}/reports/combined"

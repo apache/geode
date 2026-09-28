@@ -21,7 +21,6 @@ plugins {
   id 'java-gradle-plugin'
   id 'groovy-gradle-plugin'
   id 'maven-publish'
-  id 'com.gradle.plugin-publish' version '0.18.0'
 }
 
 group = 'org.apache.geode.gradle'

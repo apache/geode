@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import groovy.xml.XmlParser
 import java.nio.file.Paths
 
 def expectedPomFile = Paths.get(projectDir.toString(), 'src', 'test', 'resources', 'expected-pom.xml')

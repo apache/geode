@@ -18,7 +18,6 @@ package org.apache.geode.gradle.testing
 
 import org.apache.geode.gradle.testing.process.AdjustableProcessLauncher
 import org.gradle.StartParameter
-import org.gradle.api.internal.DocumentationRegistry
 import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
 import org.gradle.api.internal.tasks.testing.detection.DefaultTestExecuter
@@ -51,7 +50,6 @@ class Executers {
                 services.get(WorkerLeaseService),
                 services.get(StartParameter).getMaxWorkerCount(),
                 services.get(Clock),
-                services.get(DocumentationRegistry),
                 testTask.filter
         )
     }

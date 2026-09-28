@@ -30,10 +30,10 @@ allprojects {
   }
 }
 
-// The default and archives configurations are not meant to be resolved; the classpath
+// The default, archives and signatures configurations are not meant to be resolved; the classpath
 // configurations resolved alongside them cover the same dependencies.
 void resolveConfiguration(configuration) {
-  if (configuration.canBeResolved && !(configuration.name in ['default', 'archives'])) {
+  if (configuration.canBeResolved && !(configuration.name in ['default', 'archives', 'signatures'])) {
     configuration.resolve()
   }
 }

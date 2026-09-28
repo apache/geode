@@ -100,9 +100,11 @@ gradle.taskGraph.whenReady({ graph ->
             projectDependencies.add(dependency)
           }
         } else {
-          project.configurations.runtimeClasspath.files(dependency).each { depJar ->
-            runtimeSet.add(depJar.name)
-          }
+          // The artifacts of the dependency and of everything it brings in transitively
+          project.configurations.runtimeClasspath.resolvedConfiguration.firstLevelModuleDependencies
+              .findAll { it.moduleGroup == dependency.group && it.moduleName == dependency.name }
+              .collectMany { it.allModuleArtifacts }
+              .each { artifact -> runtimeSet.add(artifact.file.name) }
         }
       }
 
@@ -113,7 +115,7 @@ gradle.taskGraph.whenReady({ graph ->
       // within it's parent's project dependencies.
       def upstreamDeps = []
       projectDependencies.clone().each { ProjectDependency projectDependency ->
-        Project geodeProject = projectDependency.getDependencyProject()
+        Project geodeProject = project.project(projectDependency.path)
 
         Map depMap = new HashMap<Object,Object>()
         def runtimeConfigList = getConfigurationsFor(geodeProject, 'runtimeClasspath')
@@ -166,7 +168,9 @@ gradle.taskGraph.whenReady({ graph ->
     }
     jar.metaInf {
       from("$rootDir/geode-assembly/src/main/dist/LICENSE")
-      if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
+      // The JMH jar bundles project jars that already carry a NOTICE, and its contents cannot be
+      // inspected before those jars are built.
+      if (jar.name != 'jmhJar' && jar.source.filter({ it.name.contains('NOTICE') }).empty) {
         from("$rootDir/NOTICE")
       }
     }

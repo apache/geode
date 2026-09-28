@@ -17,28 +17,36 @@
 
 package org.apache.geode.gradle.plugins
 
-import groovy.swing.SwingBuilder
+import java.awt.Frame
+import javax.swing.Box
+import javax.swing.JButton
+import javax.swing.JDialog
+import javax.swing.JLabel
+import javax.swing.JPasswordField
+import javax.swing.SwingUtilities
 
 class PasswordDialog {
   static String askPassword(String prompt) {
     def password = ''
-    new SwingBuilder().edt {
-    dialog(modal: true, 
-        title: 'Password',
-        alwaysOnTop: true, 
-        locationRelativeTo: null,
-        pack: true, 
-        show: true
-    ) {
-      vbox { 
-        label(text: prompt)
-        input = passwordField()
-        button(defaultButton: true, text: 'OK', actionPerformed: {
-          password = input.password.toString() // Set pass variable to value of input field
-          dispose() // Close dialog
-        })
+    SwingUtilities.invokeAndWait {
+      JDialog dialog = new JDialog((Frame) null, 'Password', true)
+      JPasswordField input = new JPasswordField()
+      JButton ok = new JButton('OK')
+      ok.addActionListener {
+        password = new String(input.password) // Set pass variable to value of input field
+        dialog.dispose() // Close dialog
       }
-      }
+
+      Box box = Box.createVerticalBox()
+      box.add(new JLabel(prompt))
+      box.add(input)
+      box.add(ok)
+      dialog.contentPane.add(box)
+      dialog.rootPane.defaultButton = ok
+      dialog.alwaysOnTop = true
+      dialog.pack()
+      dialog.locationRelativeTo = null
+      dialog.visible = true
     }
     return password
   }

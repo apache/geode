@@ -14,19 +14,20 @@
  */
 package org.apache.geode.gradle.testing.repeat;
 
-import org.gradle.api.internal.tasks.testing.TestClassProcessor;
-import org.gradle.api.internal.tasks.testing.TestClassRunInfo;
+import org.gradle.api.internal.tasks.testing.TestDefinition;
+import org.gradle.api.internal.tasks.testing.TestDefinitionProcessor;
 import org.gradle.api.internal.tasks.testing.TestResultProcessor;
 
 /**
- * A test class processor that decorates its result processor to associate each test event with
- * the test class execution that reported it.
+ * A test definition processor that decorates its result processor to associate each test event
+ * with the test class execution that reported it.
  */
-public class ExecutionTrackingTestClassProcessor implements TestClassProcessor {
-  private final TestClassProcessor processor;
+public class ExecutionTrackingTestDefinitionProcessor<D extends TestDefinition>
+    implements TestDefinitionProcessor<D> {
+  private final TestDefinitionProcessor<D> processor;
   private final int iterationCount;
 
-  public ExecutionTrackingTestClassProcessor(TestClassProcessor processor,
+  public ExecutionTrackingTestDefinitionProcessor(TestDefinitionProcessor<D> processor,
       int iterationCount) {
     this.processor = processor;
     this.iterationCount = iterationCount;
@@ -39,8 +40,8 @@ public class ExecutionTrackingTestClassProcessor implements TestClassProcessor {
   }
 
   @Override
-  public void processTestClass(TestClassRunInfo testClass) {
-    processor.processTestClass(testClass);
+  public void processTestDefinition(D testDefinition) {
+    processor.processTestDefinition(testDefinition);
   }
 
   @Override
