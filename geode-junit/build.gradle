@@ -20,6 +20,11 @@ plugins {
   id 'geode-publish-java'
 }
 
+javadoc {
+  options.addBooleanOption('Xdoclint:none', true)
+  exclude '**/HybridCATestFixture.java'
+}
+
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
@@ -52,6 +57,9 @@ dependencies {
 
   api('org.apache.commons:commons-lang3')
   api('org.apache.logging.log4j:log4j-api')
+
+  // GEODE-10509: X.509 certificate building for the CertificateBuilder test utility
+  implementation('org.bouncycastle:bcpkix-jdk18on')
 
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')
