@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
@@ -29,6 +31,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -74,14 +77,14 @@ public class OnlineCommandProcessorTest {
 
   @Test
   public void executeReturnsExecutorResult() {
-    ResultModel commandResult = onlineCommandProcessor.executeCommand("start locator");
+    ResultModel commandResult = onlineCommandProcessor.executeCommand("list members");
     assertThat(commandResult).isSameAs(result);
   }
 
   @Test
   public void handlesNotAuthorizedException() {
     when(executor.execute(any())).thenThrow(new NotAuthorizedException("not authorized"));
-    assertThatThrownBy(() -> onlineCommandProcessor.executeCommand("start locator"))
+    assertThatThrownBy(() -> onlineCommandProcessor.executeCommand("list members"))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
@@ -93,5 +96,17 @@ public class OnlineCommandProcessorTest {
         .contains("Could not parse command string. foo --bar")
         .contains(
             "The command or some options in this command may not be supported by this locator");
+  }
+
+  @Test
+  public void shellOnlyCommandReturnsError() {
+    ResultModel commandResult = onlineCommandProcessor.executeCommand("echo --string=hello");
+    assertThat(commandResult.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void shellOnlyCommandIsNotPassedToExecutor() {
+    onlineCommandProcessor.executeCommand("start locator");
+    verify(executor, never()).execute(any());
   }
 }

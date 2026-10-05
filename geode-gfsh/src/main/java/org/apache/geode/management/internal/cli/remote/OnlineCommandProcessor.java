@@ -112,6 +112,13 @@ public class OnlineCommandProcessor implements CommandProcessor {
     }
 
     Method method = parseResult.getMethod();
+    CliMetaData metaData = method.getAnnotation(CliMetaData.class);
+
+    // shell-only commands run in the gfsh client, not on a member
+    if (metaData != null && metaData.shellOnly()) {
+      return ResultModel.createError(parseResult.getCommandName()
+          + " can only be run from gfsh and is not available on a member.");
+    }
 
     // do general authorization check here
     ResourceOperation resourceOperation = method.getAnnotation(ResourceOperation.class);
@@ -121,7 +128,6 @@ public class OnlineCommandProcessor implements CommandProcessor {
     }
 
     // this command processor does not execute commands that need fileData passed from client
-    CliMetaData metaData = method.getAnnotation(CliMetaData.class);
     if (metaData != null && metaData.isFileUploaded() && stagedFilePaths == null) {
       return ResultModel
           .createError(command + " can not be executed only from server side");
