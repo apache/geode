@@ -164,6 +164,7 @@ public class WanCopyRegionFunctionServiceTest {
       };
 
       final String regionName = String.valueOf(i);
+      final int expectedExecutions = i + 1;
       CompletableFuture
           .supplyAsync(() -> {
             try {
@@ -177,7 +178,8 @@ public class WanCopyRegionFunctionServiceTest {
       // This ensures we don't have a race where multiple tasks try to start simultaneously
       // and only some get registered before we check the count
       await().untilAsserted(
-          () -> assertThat(service.getNumberOfCurrentExecutions()).isGreaterThanOrEqualTo(i + 1));
+          () -> assertThat(service.getNumberOfCurrentExecutions())
+              .isGreaterThanOrEqualTo(expectedExecutions));
     }
 
     // Verify all executions are registered
