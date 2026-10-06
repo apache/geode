@@ -30,6 +30,8 @@ import com.healthmarketscience.rmiio.RemoteOutputStreamServer;
 import com.healthmarketscience.rmiio.SimpleRemoteOutputStream;
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -66,7 +68,13 @@ public class FileUploader implements FileUploaderMBean {
   public RemoteFile uploadFile(String filename) throws IOException {
     Path tempDir = createSecuredTempDirectory(STAGED_DIR_PREFIX);
 
-    File stagedFile = new File(tempDir.toString(), filename);
+    File stagedFile;
+    try {
+      stagedFile = getStagedFile(tempDir, filename);
+    } catch (RuntimeException e) {
+      FileUtils.deleteQuietly(tempDir.toFile());
+      throw e;
+    }
     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(stagedFile));
 
     RemoteOutputStreamMonitor monitor = new RemoteOutputStreamMonitor() {
@@ -115,5 +123,27 @@ public class FileUploader implements FileUploaderMBean {
     tempDir.toFile().setReadable(true, true);
 
     return tempDir;
+  }
+
+  /**
+   * Returns the file within {@code stagingDir} that an uploaded file named {@code fileName} is
+   * staged as. Only the last name segment of {@code fileName} is used, so the returned file is
+   * always a direct child of {@code stagingDir}.
+   *
+   * @throws IllegalArgumentException if {@code fileName} has no usable name segment
+   */
+  public static File getStagedFile(Path stagingDir, String fileName) throws IOException {
+    String name = FilenameUtils.getName(fileName);
+    if (StringUtils.isBlank(name) || ".".equals(name) || "..".equals(name)) {
+      throw new IllegalArgumentException("Uploaded file name is not valid.");
+    }
+
+    Path dir = stagingDir.toRealPath();
+    Path stagedFile = dir.resolve(name).normalize();
+    if (!dir.equals(stagedFile.getParent())) {
+      throw new IllegalArgumentException("Uploaded file name is not valid.");
+    }
+
+    return stagedFile.toFile();
   }
 }

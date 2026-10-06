@@ -106,7 +106,7 @@ public class DeploymentManagementController extends AbstractManagementController
       throw new IllegalArgumentException("No file uploaded");
     }
     Path tempDir = FileUploader.createSecuredTempDirectory("uploaded-");
-    File targetFile = new File(tempDir.toFile(), file.getOriginalFilename());
+    File targetFile = FileUploader.getStagedFile(tempDir, file.getOriginalFilename());
     file.transferTo(targetFile);
     Deployment deployment = new Deployment();
     if (StringUtils.isNotBlank(json)) {
