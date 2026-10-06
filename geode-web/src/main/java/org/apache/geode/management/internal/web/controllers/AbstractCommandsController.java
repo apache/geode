@@ -50,6 +50,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.FileUploader;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
@@ -243,20 +244,22 @@ public abstract class AbstractCommandsController {
       final MultipartFile[] multipartFiles) throws IOException {
     List<String> filePaths = null;
     Path tempDir = null;
-    if (multipartFiles != null) {
-      tempDir = FileUploader.createSecuredTempDirectory("uploaded-");
-      // staging the files to local
-      filePaths = new ArrayList<>();
-      for (MultipartFile multipartFile : multipartFiles) {
-        File dest = new File(tempDir.toFile(), multipartFile.getOriginalFilename());
-        multipartFile.transferTo(dest);
-        filePaths.add(dest.getAbsolutePath());
-      }
-    }
-
-    MemberMXBean manager = getManagingMemberMXBean();
     try {
+      if (multipartFiles != null) {
+        tempDir = FileUploader.createSecuredTempDirectory("uploaded-");
+        // staging the files to local
+        filePaths = new ArrayList<>();
+        for (MultipartFile multipartFile : multipartFiles) {
+          File dest = FileUploader.getStagedFile(tempDir, multipartFile.getOriginalFilename());
+          multipartFile.transferTo(dest);
+          filePaths.add(dest.getAbsolutePath());
+        }
+      }
+
+      MemberMXBean manager = getManagingMemberMXBean();
       return manager.processCommand(command, environment, filePaths);
+    } catch (IllegalArgumentException e) {
+      return ResultModel.createError(e.getMessage()).toJson();
     } finally {
       if (tempDir != null) {
         FileUtils.deleteDirectory(tempDir.toFile());
