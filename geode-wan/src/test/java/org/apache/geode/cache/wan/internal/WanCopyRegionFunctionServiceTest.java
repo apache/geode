@@ -22,8 +22,11 @@ import static org.mockito.Mockito.mock;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,11 +38,20 @@ public class WanCopyRegionFunctionServiceTest {
 
   private WanCopyRegionFunctionService service;
   private final InternalCache cache = mock(InternalCache.class);
+  private ExecutorService executor;
 
   @Before
   public void setUp() throws Exception {
     service = new WanCopyRegionFunctionService();
     service.init(cache);
+    executor = Executors.newCachedThreadPool();
+  }
+
+  @After
+  public void tearDown() {
+    if (executor != null) {
+      executor.shutdownNow();
+    }
   }
 
   @Test
@@ -59,7 +71,7 @@ public class WanCopyRegionFunctionServiceTest {
           } catch (Exception e) {
             return null;
           }
-        });
+        }, executor);
 
     // Wait for the execute function to start
     await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(1));
@@ -90,7 +102,7 @@ public class WanCopyRegionFunctionServiceTest {
           } catch (Exception e) {
             return null;
           }
-        });
+        }, executor);
 
     // Wait for the function to start execution
     await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(1));
@@ -127,7 +139,7 @@ public class WanCopyRegionFunctionServiceTest {
           } catch (Exception e) {
             return null;
           }
-        });
+        }, executor);
 
     Callable<CliFunctionResult> secondExecution = () -> {
       latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
@@ -141,7 +153,7 @@ public class WanCopyRegionFunctionServiceTest {
           } catch (Exception e) {
             return null;
           }
-        });
+        }, executor);
 
     // Wait for the functions to start execution
     await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(2));
@@ -172,7 +184,7 @@ public class WanCopyRegionFunctionServiceTest {
             } catch (Exception e) {
               return null;
             }
-          });
+          }, executor);
 
       // Wait for this specific execution to be registered before starting the next one
       // This ensures we don't have a race where multiple tasks try to start simultaneously
