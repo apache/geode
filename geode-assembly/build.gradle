@@ -130,6 +130,16 @@ task downloadWebServers(type:Copy) {
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
+  // Stage the full micrometer jar set so embedded clients can start
+  constraints {
+    geodeLibdirJars('io.micrometer:micrometer-commons:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJars('io.micrometer:micrometer-observation:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJars('io.micrometer:micrometer-core:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJarsDeprecated('io.micrometer:micrometer-commons:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJarsDeprecated('io.micrometer:micrometer-observation:' + DependencyConstraints.get('micrometer.version'))
+    geodeLibdirJarsDeprecated('io.micrometer:micrometer-core:' + DependencyConstraints.get('micrometer.version'))
+  }
+
   geodeLibdirJars(project(':geode-server-all'))
 
 
