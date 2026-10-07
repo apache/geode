@@ -81,6 +81,8 @@ public class PulseSecurityWithSSLTest {
     securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     securityProps.setProperty(SSL_CIPHERS, "any");
 
+    securityProps.setProperty("jmx-manager-bind-address", "127.0.0.1");
+
     locator.withSecurityManager(SimpleSecurityManager.class).withProperties(securityProps)
         .startLocator();
 
@@ -120,6 +122,8 @@ public class PulseSecurityWithSSLTest {
     securityProps.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     securityProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE, jks.getCanonicalPath());
     securityProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, "password");
+
+    securityProps.setProperty("jmx-manager-bind-address", "127.0.0.1");
 
     locator.withSecurityManager(SimpleSecurityManager.class).withProperties(securityProps)
         .startLocator();
