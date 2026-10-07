@@ -220,6 +220,7 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.metrics.internal.GeodeObservationSupport;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -1304,12 +1305,17 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public Object get(Object key, Object aCallbackArgument, boolean generateCallbacks,
       EntryEventImpl clientEvent) throws TimeoutException, CacheLoaderException {
-    Object result =
-        get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent, false);
-    if (Token.isInvalid(result)) {
-      result = null;
-    }
-    return result;
+    return GeodeObservationSupport.observe(cache.getObservationRegistry(), "geode.cache.region.get",
+        observation -> observation.lowCardinalityKeyValue("operation", "get"),
+        () -> {
+          Object result =
+              get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent,
+                  false);
+          if (Token.isInvalid(result)) {
+            result = null;
+          }
+          return result;
+        });
   }
 
   /**
@@ -1630,14 +1636,18 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
-    long startPut = getStatisticsClock().getTime();
-    @Released
-    EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
-    try {
-      return validatedPut(event, startPut);
-    } finally {
-      event.release();
-    }
+    return GeodeObservationSupport.observe(cache.getObservationRegistry(), "geode.cache.region.put",
+        observation -> observation.lowCardinalityKeyValue("operation", "put"),
+        () -> {
+          long startPut = getStatisticsClock().getTime();
+          @Released
+          EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
+          try {
+            return validatedPut(event, startPut);
+          } finally {
+            event.release();
+          }
+        });
   }
 
   Object validatedPut(EntryEventImpl event, long startPut)

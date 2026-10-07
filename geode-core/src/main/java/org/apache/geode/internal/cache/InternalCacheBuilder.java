@@ -41,7 +41,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
+import org.apache.geode.metrics.internal.InternalDistributedSystemObservationService;
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.metrics.internal.ObservationService;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -66,6 +68,7 @@ public class InternalCacheBuilder {
   private final InternalDistributedSystemConstructor internalDistributedSystemConstructor;
   private final InternalCacheConstructor internalCacheConstructor;
   private final MetricsService.Builder metricsSessionBuilder;
+  private final ObservationService.Builder observationSessionBuilder;
 
   private boolean isExistingOk = IS_EXISTING_OK_DEFAULT;
   private boolean isClient = IS_CLIENT_DEFAULT;
@@ -109,6 +112,7 @@ public class InternalCacheBuilder {
     this(configProperties,
         cacheConfig,
         new InternalDistributedSystemMetricsService.Builder(),
+        new InternalDistributedSystemObservationService.Builder(),
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
@@ -119,6 +123,7 @@ public class InternalCacheBuilder {
   InternalCacheBuilder(Properties configProperties,
       CacheConfig cacheConfig,
       MetricsService.Builder metricsSessionBuilder,
+      ObservationService.Builder observationSessionBuilder,
       Supplier<InternalDistributedSystem> singletonSystemSupplier,
       InternalDistributedSystemConstructor internalDistributedSystemConstructor,
       Supplier<InternalCache> singletonCacheSupplier,
@@ -130,7 +135,22 @@ public class InternalCacheBuilder {
     this.internalCacheConstructor = internalCacheConstructor;
     this.singletonCacheSupplier = singletonCacheSupplier;
     this.metricsSessionBuilder = metricsSessionBuilder;
+    this.observationSessionBuilder = observationSessionBuilder;
     this.metricsSessionBuilder.setIsClient(isClient);
+    this.observationSessionBuilder.setIsClient(isClient);
+  }
+
+  @VisibleForTesting
+  InternalCacheBuilder(Properties configProperties,
+      CacheConfig cacheConfig,
+      MetricsService.Builder metricsSessionBuilder,
+      Supplier<InternalDistributedSystem> singletonSystemSupplier,
+      InternalDistributedSystemConstructor internalDistributedSystemConstructor,
+      Supplier<InternalCache> singletonCacheSupplier,
+      InternalCacheConstructor internalCacheConstructor) {
+    this(configProperties, cacheConfig, metricsSessionBuilder,
+        new InternalDistributedSystemObservationService.Builder(), singletonSystemSupplier,
+        internalDistributedSystemConstructor, singletonCacheSupplier, internalCacheConstructor);
   }
 
   /**
@@ -290,6 +310,7 @@ public class InternalCacheBuilder {
   public InternalCacheBuilder setIsClient(boolean isClient) {
     this.isClient = isClient;
     metricsSessionBuilder.setIsClient(isClient);
+    observationSessionBuilder.setIsClient(isClient);
     return this;
   }
 
@@ -343,7 +364,8 @@ public class InternalCacheBuilder {
         cacheConfig.getPostProcessor());
 
     return internalDistributedSystemConstructor
-        .construct(configProperties, securityConfig, metricsSessionBuilder);
+        .construct(configProperties, securityConfig, metricsSessionBuilder,
+            observationSessionBuilder);
   }
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
@@ -415,6 +437,7 @@ public class InternalCacheBuilder {
   @VisibleForTesting
   public interface InternalDistributedSystemConstructor {
     InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig,
-        MetricsService.Builder metricsSessionBuilder);
+        MetricsService.Builder metricsSessionBuilder,
+        ObservationService.Builder observationSessionBuilder);
   }
 }

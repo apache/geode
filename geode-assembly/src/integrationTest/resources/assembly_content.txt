@@ -766,6 +766,8 @@ javadoc/org/apache/geode/memcached/package-summary.html
 javadoc/org/apache/geode/memcached/package-tree.html
 javadoc/org/apache/geode/metrics/MetricsPublishingService.html
 javadoc/org/apache/geode/metrics/MetricsSession.html
+javadoc/org/apache/geode/metrics/ObservationPublishingService.html
+javadoc/org/apache/geode/metrics/ObservationSession.html
 javadoc/org/apache/geode/metrics/package-summary.html
 javadoc/org/apache/geode/metrics/package-tree.html
 javadoc/org/apache/geode/modules/gatewaydelta/AbstractGatewayDeltaEvent.html

@@ -111,6 +111,7 @@ import javax.naming.Context;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import jakarta.transaction.TransactionManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -1172,6 +1173,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public MeterRegistry getMeterRegistry() {
     return system.getMeterRegistry();
+  }
+
+  @Override
+  public ObservationRegistry getObservationRegistry() {
+    return system.getObservationRegistry();
   }
 
   @Override

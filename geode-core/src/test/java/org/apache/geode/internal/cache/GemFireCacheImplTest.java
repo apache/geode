@@ -43,6 +43,7 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -451,6 +452,15 @@ public class GemFireCacheImplTest {
 
     assertThat(gemFireCacheImpl.getMeterRegistry())
         .isSameAs(systemMeterRegistry);
+  }
+
+  @Test
+  public void getObservationRegistry_returnsTheSystemObservationRegistry() {
+    ObservationRegistry systemObservationRegistry = mock(ObservationRegistry.class);
+    when(internalDistributedSystem.getObservationRegistry()).thenReturn(systemObservationRegistry);
+
+    assertThat(gemFireCacheImpl.getObservationRegistry())
+        .isSameAs(systemObservationRegistry);
   }
 
   @Test

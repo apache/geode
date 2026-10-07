@@ -56,6 +56,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalCacheConstructor;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalDistributedSystemConstructor;
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.metrics.internal.ObservationService;
 
 /**
  * Unit tests for {@link InternalCacheBuilder}.
@@ -70,6 +71,9 @@ public class InternalCacheBuilderTest {
 
   @Mock
   private MetricsService.Builder metricsServiceBuilder;
+
+  @Mock
+  private ObservationService.Builder observationServiceBuilder;
 
   @Before
   public void setUp() {
@@ -88,6 +92,19 @@ public class InternalCacheBuilderTest {
         constructorOf(constructedCache()));
 
     verify(theMetricsServiceBuilder).setIsClient(false);
+  }
+
+  @Test
+  public void setsObservationServiceBuilderIsClientFalseByDefault() {
+    ObservationService.Builder theObservationServiceBuilder =
+        mock(ObservationService.Builder.class);
+
+    new InternalCacheBuilder(new Properties(), new CacheConfig(), metricsServiceBuilder,
+        theObservationServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()),
+        nullSingletonCacheSupplier, constructorOf(constructedCache()));
+
+    verify(theObservationServiceBuilder).setIsClient(false);
   }
 
   @Test
@@ -130,6 +147,21 @@ public class InternalCacheBuilderTest {
   }
 
   @Test
+  public void setIsClient_setsIsClientInObservationServiceBuilder() {
+    ObservationService.Builder theObservationServiceBuilder =
+        mock(ObservationService.Builder.class);
+
+    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
+        new Properties(), new CacheConfig(), metricsServiceBuilder, theObservationServiceBuilder,
+        nullSingletonSystemSupplier, constructorOf(constructedSystem()), nullSingletonCacheSupplier,
+        constructorOf(constructedCache()));
+
+    internalCacheBuilder.setIsClient(true);
+
+    verify(theObservationServiceBuilder).setIsClient(true);
+  }
+
+  @Test
   public void create_throwsNullPointerException_ifConfigPropertiesIsNull() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         null, new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
@@ -163,7 +195,7 @@ public class InternalCacheBuilderTest {
     internalCacheBuilder
         .create();
 
-    verify(systemConstructor).construct(same(configProperties), any(), any());
+    verify(systemConstructor).construct(same(configProperties), any(), any(), any());
   }
 
   @Test
@@ -192,7 +224,21 @@ public class InternalCacheBuilderTest {
 
     internalCacheBuilder.create();
 
-    verify(systemConstructor).construct(any(), any(), same(theMetricsServiceBuilder));
+    verify(systemConstructor).construct(any(), any(), same(theMetricsServiceBuilder), any());
+  }
+
+  @Test
+  public void create_passesObservationServiceBuilderToSystemConstructor_ifNoSystemExists() {
+    InternalDistributedSystemConstructor systemConstructor = constructorOf(constructedSystem());
+
+    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
+        new Properties(), new CacheConfig(), metricsServiceBuilder, observationServiceBuilder,
+        nullSingletonSystemSupplier, systemConstructor, nullSingletonCacheSupplier,
+        constructorOf(constructedCache()));
+
+    internalCacheBuilder.create();
+
+    verify(systemConstructor).construct(any(), any(), any(), same(observationServiceBuilder));
   }
 
   @Test

@@ -56,6 +56,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,7 @@ import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.metrics.internal.ObservationService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -90,6 +92,15 @@ public class InternalDistributedSystemIntegrationTest {
       MetricsService.Builder metricsSessionBuilder) {
     system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder)
         .build();
+    return system;
+  }
+
+  private InternalDistributedSystem createSystem(Properties props,
+      MetricsService.Builder metricsSessionBuilder,
+      ObservationService.Builder observationSessionBuilder) {
+    system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder,
+        observationSessionBuilder)
+            .build();
     return system;
   }
 
@@ -738,6 +749,47 @@ public class InternalDistributedSystemIntegrationTest {
     createSystem(getCommonProperties(), metricsSessionBuilder);
 
     assertThat(system.getMeterRegistry()).isSameAs(sessionMeterRegistry);
+  }
+
+  @Test
+  public void usesSessionBuilderToCreateObservationSession() {
+    MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
+    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    ObservationService observationSession = mock(ObservationService.class);
+    ObservationService.Builder observationSessionBuilder = mock(ObservationService.Builder.class);
+    when(observationSessionBuilder.build(any())).thenReturn(observationSession);
+
+    createSystem(getCommonProperties(), metricsSessionBuilder, observationSessionBuilder);
+
+    verify(observationSessionBuilder).build(system);
+  }
+
+  @Test
+  public void startsObservationSession() {
+    MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
+    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    ObservationService observationSession = mock(ObservationService.class);
+    ObservationService.Builder observationSessionBuilder = mock(ObservationService.Builder.class);
+    when(observationSessionBuilder.build(any())).thenReturn(observationSession);
+
+    createSystem(getCommonProperties(), metricsSessionBuilder, observationSessionBuilder);
+
+    verify(observationSession).start();
+  }
+
+  @Test
+  public void getObservationRegistry_returnsObservationSessionObservationRegistry() {
+    ObservationRegistry observationRegistry = mock(ObservationRegistry.class);
+    MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
+    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+    ObservationService observationSession = mock(ObservationService.class);
+    when(observationSession.getObservationRegistry()).thenReturn(observationRegistry);
+    ObservationService.Builder observationSessionBuilder = mock(ObservationService.Builder.class);
+    when(observationSessionBuilder.build(any())).thenReturn(observationSession);
+
+    createSystem(getCommonProperties(), metricsSessionBuilder, observationSessionBuilder);
+
+    assertThat(system.getObservationRegistry()).isSameAs(observationRegistry);
   }
 
   @Test

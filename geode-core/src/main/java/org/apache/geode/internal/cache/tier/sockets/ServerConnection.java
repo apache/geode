@@ -80,6 +80,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.metrics.internal.GeodeObservationSupport;
 import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
@@ -877,7 +878,11 @@ public class ServerConnection implements Runnable {
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do
         // authorization later
         threadState = bindSubject(command);
-        command.execute(message, this, securityService);
+        Command commandToExecute = command;
+        GeodeObservationSupport.observe(getCache().getObservationRegistry(), "geode.server.command",
+            observation -> observation.lowCardinalityKeyValue("message.type",
+                message.getMessageType().name()),
+            () -> commandToExecute.execute(message, this, securityService));
       }
     } finally {
       suspendThreadMonitoring();

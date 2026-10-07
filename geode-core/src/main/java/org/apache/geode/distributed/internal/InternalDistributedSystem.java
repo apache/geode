@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -117,8 +118,10 @@ import org.apache.geode.logging.internal.spi.LogConfigListener;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.metrics.internal.InternalDistributedSystemObservationService;
 import org.apache.geode.metrics.internal.MeterRegistrySupplier;
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.metrics.internal.ObservationService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
@@ -170,6 +173,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private final StatisticsManager statisticsManager;
   private MetricsService metricsService;
+  private ObservationService observationService;
   private final FunctionStatsManager functionStatsManager;
   /**
    * True if the user is allowed lock when memory resources appear to be overcommitted.
@@ -206,7 +210,17 @@ public class InternalDistributedSystem extends DistributedSystem
       Properties config,
       SecurityConfig securityConfig,
       MetricsService.Builder metricsSessionBuilder) {
-    return connectInternal(config, securityConfig, metricsSessionBuilder, null);
+    return connectInternal(config, securityConfig, metricsSessionBuilder,
+        new InternalDistributedSystemObservationService.Builder(), null);
+  }
+
+  public static InternalDistributedSystem connectInternal(
+      Properties config,
+      SecurityConfig securityConfig,
+      MetricsService.Builder metricsSessionBuilder,
+      ObservationService.Builder observationSessionBuilder) {
+    return connectInternal(config, securityConfig, metricsSessionBuilder, observationSessionBuilder,
+        null);
   }
 
   /**
@@ -221,12 +235,22 @@ public class InternalDistributedSystem extends DistributedSystem
       SecurityConfig securityConfig,
       MetricsService.Builder metricsSessionBuilder,
       final MembershipLocator<InternalDistributedMember> locator) {
+    return connectInternal(config, securityConfig, metricsSessionBuilder,
+        new InternalDistributedSystemObservationService.Builder(), locator);
+  }
+
+  public static InternalDistributedSystem connectInternal(
+      Properties config,
+      SecurityConfig securityConfig,
+      MetricsService.Builder metricsSessionBuilder,
+      ObservationService.Builder observationSessionBuilder,
+      final MembershipLocator<InternalDistributedMember> locator) {
     if (config == null) {
       config = new Properties();
     }
 
     if (Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY)) {
-      return new Builder(config, metricsSessionBuilder)
+      return new Builder(config, metricsSessionBuilder, observationSessionBuilder)
           .setSecurityConfig(securityConfig)
           .setLocator(locator)
           .build();
@@ -277,10 +301,11 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       // Make a new connection to the distributed system
-      InternalDistributedSystem newSystem = new Builder(config, metricsSessionBuilder)
-          .setSecurityConfig(securityConfig)
-          .setLocator(locator)
-          .build();
+      InternalDistributedSystem newSystem =
+          new Builder(config, metricsSessionBuilder, observationSessionBuilder)
+              .setSecurityConfig(securityConfig)
+              .setLocator(locator)
+              .build();
       addSystem(newSystem);
       return newSystem;
     }
@@ -654,6 +679,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @VisibleForTesting
   void initialize(SecurityManager securityManager, PostProcessor postProcessor,
       MetricsService.Builder metricsServiceBuilder,
+      ObservationService.Builder observationServiceBuilder,
       final MembershipLocator<InternalDistributedMember> membershipLocatorArg,
       ClusterDistributionManagerConstructor clusterDistributionManagerConstructor) {
 
@@ -805,6 +831,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
       metricsService = metricsServiceBuilder.build(this);
       metricsService.start();
+      observationService = observationServiceBuilder.build(this);
+      observationService.start();
 
       // Log any instantiators that were registered before the log writer
       // was created
@@ -1159,6 +1187,10 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public MeterRegistry getMeterRegistry() {
     return metricsService.getMeterRegistry();
+  }
+
+  public ObservationRegistry getObservationRegistry() {
+    return observationService.getObservationRegistry();
   }
 
   /**
@@ -1618,6 +1650,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
       functionStatsManager.close();
       metricsService.stop();
+      observationService.stop();
 
       InternalFunctionService.unregisterAllFunctions();
 
@@ -2593,7 +2626,7 @@ public class InternalDistributedSystem extends DistributedSystem
           try {
 
             newDS = connectInternal(configProps, null, metricsService.getRebuilder(),
-                membershipLocator);
+                observationService.getRebuilder(), membershipLocator);
 
           } catch (CancelException e) {
             if (isReconnectCancelled()) {
@@ -3001,6 +3034,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
     private SecurityConfig securityConfig;
     private final MetricsService.Builder metricsServiceBuilder;
+    private final ObservationService.Builder observationServiceBuilder;
 
     private MembershipLocator<InternalDistributedMember> locator;
 
@@ -3008,8 +3042,15 @@ public class InternalDistributedSystem extends DistributedSystem
         new DefaultClusterDistributionManagerConstructor();
 
     public Builder(Properties configProperties, MetricsService.Builder metricsServiceBuilder) {
+      this(configProperties, metricsServiceBuilder,
+          new InternalDistributedSystemObservationService.Builder());
+    }
+
+    public Builder(Properties configProperties, MetricsService.Builder metricsServiceBuilder,
+        ObservationService.Builder observationServiceBuilder) {
       this.configProperties = configProperties;
       this.metricsServiceBuilder = metricsServiceBuilder;
+      this.observationServiceBuilder = observationServiceBuilder;
     }
 
     public Builder setSecurityConfig(SecurityConfig securityConfig) {
@@ -3047,7 +3088,8 @@ public class InternalDistributedSystem extends DistributedSystem
                 FunctionStatsManager::new);
         newSystem
             .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor(),
-                metricsServiceBuilder, locator, clusterDistributionManagerConstructor);
+                metricsServiceBuilder, observationServiceBuilder, locator,
+                clusterDistributionManagerConstructor);
         notifyConnectListeners(newSystem);
         stopThreads = false;
         return newSystem;

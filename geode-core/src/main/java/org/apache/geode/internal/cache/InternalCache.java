@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import jakarta.transaction.TransactionManager;
 
 import org.apache.geode.cache.Cache;
@@ -564,6 +565,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
   void throwCacheExistsException();
 
   MeterRegistry getMeterRegistry();
+
+  ObservationRegistry getObservationRegistry();
 
   /**
    * Generate XML for the cache before shutting down due to forced disconnect.

@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 import javax.naming.Context;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import jakarta.transaction.TransactionManager;
 import org.apache.logging.log4j.Logger;
 
@@ -2483,6 +2484,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public MeterRegistry getMeterRegistry() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public ObservationRegistry getObservationRegistry() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
