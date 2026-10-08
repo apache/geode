@@ -286,6 +286,8 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/shiro-core-@SHIRO_VERSION@.jar \
     ${GEODE}/lib/commons-validator-@COMMONS_VALIDATOR_VERSION@.jar \
     ${GEODE}/lib/micrometer-core-@MICROMETER_VERSION@.jar \
+    ${GEODE}/lib/micrometer-commons-@MICROMETER_VERSION@.jar \
+    ${GEODE}/lib/micrometer-observation-@MICROMETER_VERSION@.jar \
     ${LIB_DIR}/geode-modules-${VERSION}.jar \
     ${LIB_DIR}/geode-modules-session-internal-${VERSION}.jar \
     ${LIB_DIR}/slf4j-api-@SLF4J_VERSION@.jar \
