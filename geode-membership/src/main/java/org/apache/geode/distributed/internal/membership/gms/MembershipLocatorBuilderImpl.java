@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
 
 public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> implements
     MembershipLocatorBuilder<ID> {
@@ -46,6 +47,7 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   private final Path workingDirectory;
   private MembershipConfig config = new MembershipConfig() {};
   private final Supplier<ExecutorService> executorServiceSupplier;
+  private ObjectDeserializer requestObjectDeserializer;
 
   public MembershipLocatorBuilderImpl(
       final TcpSocketCreator socketCreator,
@@ -101,12 +103,22 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   }
 
   @Override
+  public MembershipLocatorBuilder<ID> setRequestObjectDeserializer(
+      ObjectDeserializer requestObjectDeserializer) {
+    this.requestObjectDeserializer = requestObjectDeserializer;
+    return this;
+  }
+
+  @Override
   public MembershipLocator<ID> create()
       throws UnknownHostException, MembershipConfigurationException {
+    ObjectDeserializer serverRequestDeserializer = requestObjectDeserializer == null
+        ? serializer.getObjectDeserializer()
+        : requestObjectDeserializer;
     return new MembershipLocatorImpl<>(port, bindAddress, protocolChecker,
         executorServiceSupplier,
         socketCreator, serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
-        fallbackHandler,
+        serverRequestDeserializer, fallbackHandler,
         locatorsAreCoordinators, locatorStats, workingDirectory, config);
   }
 

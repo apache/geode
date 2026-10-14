@@ -68,6 +68,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       TcpSocketCreator socketCreator,
       ObjectSerializer objectSerializer,
       ObjectDeserializer objectDeserializer,
+      ObjectDeserializer serverRequestDeserializer,
       TcpHandler fallbackHandler,
       boolean locatorsAreCoordinators,
       MembershipLocatorStatistics locatorStats, Path workingDirectory,
@@ -87,7 +88,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
         executorServiceSupplier,
         socketCreator,
         objectSerializer,
-        objectDeserializer,
+        serverRequestDeserializer,
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
 
