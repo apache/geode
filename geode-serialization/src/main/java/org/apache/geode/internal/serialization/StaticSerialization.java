@@ -21,8 +21,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * StaticSerialization provides a collection of serialization/deserialization methods that
@@ -215,6 +217,77 @@ public class StaticSerialization {
       buf[i] = in.readChar();
     }
     return new String(buf);
+  }
+
+  @MakeNotStatic
+  private static final boolean READ_ALL_PROPERTY_VALUE_TYPES =
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "readAllPropertyValueTypes");
+
+  /**
+   * Whether property values should be read with the general object reader rather than the simple
+   * reader used by {@link #readStringProperties}. Set the {@code gemfire.readAllPropertyValueTypes}
+   * system property for deployments that place value types other than strings and byte arrays in
+   * their connection properties.
+   */
+  public static boolean readAllPropertyValueTypes() {
+    return READ_ALL_PROPERTY_VALUE_TYPES;
+  }
+
+  /**
+   * Reads the body of a {@link Properties} written with the standard properties encoding, accepting
+   * only the string, byte-array and null forms expected for connection properties. An entry encoded
+   * in any other form is rejected with an {@link IOException}.
+   */
+  public static Properties readStringProperties(DataInput in) throws IOException {
+    int size = readArrayLength(in);
+    if (size == -1) {
+      return null;
+    }
+    Properties props = new Properties();
+    for (int index = 0; index < size; index++) {
+      Object key = readSimplePropertyValue(in);
+      Object value = readSimplePropertyValue(in);
+      props.put(key, value);
+    }
+    return props;
+  }
+
+  /**
+   * Reads an object-encoded {@link Properties} (a leading type code followed by the body),
+   * accepting
+   * only the null and properties forms and restricting values as {@link #readStringProperties}
+   * does. Any other leading type code is rejected with an {@link IOException}.
+   */
+  public static Object readStringPropertiesObject(DataInput in) throws IOException {
+    DSCODE dscode = DscodeHelper.toDSCODE(in.readByte());
+    if (dscode == DSCODE.NULL) {
+      return null;
+    }
+    if (dscode == DSCODE.PROPERTIES) {
+      return readStringProperties(in);
+    }
+    throw new IOException("Unexpected wire format while reading properties");
+  }
+
+  private static Object readSimplePropertyValue(DataInput in) throws IOException {
+    DSCODE dscode = DscodeHelper.toDSCODE(in.readByte());
+    if (dscode == null) {
+      throw new IOException("Unexpected wire format while reading properties");
+    }
+    switch (dscode) {
+      case NULL:
+      case NULL_STRING:
+        return null;
+      case STRING:
+      case HUGE_STRING:
+      case STRING_BYTES:
+      case HUGE_STRING_BYTES:
+        return readString(in, dscode);
+      case BYTE_ARRAY:
+        return readByteArray(in);
+      default:
+        throw new IOException("Unexpected wire format while reading properties");
+    }
   }
 
   public static String[] readStringArray(DataInput in) throws IOException {

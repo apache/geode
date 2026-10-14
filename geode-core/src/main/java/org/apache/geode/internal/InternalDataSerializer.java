@@ -2547,6 +2547,22 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
+   * Reads a {@link Properties} written by {@link DataSerializer#writeProperties} whose keys and
+   * values use only the simple encodings expected for connection credentials: strings, byte
+   * arrays and nulls. An entry encoded in any other form is rejected with an {@link IOException}.
+   * Set {@code gemfire.readAllPropertyValueTypes} to read value types other than strings and byte
+   * arrays, for deployments whose {@code AuthInitialize} stores such values.
+   */
+  public static Properties readStringProperties(DataInput in)
+      throws IOException, ClassNotFoundException {
+    if (StaticSerialization.readAllPropertyValueTypes()) {
+      return DataSerializer.readProperties(in);
+    }
+    checkIn(in);
+    return StaticSerialization.readStringProperties(in);
+  }
+
+  /**
    * Just like readObject but make sure and pdx deserialized is not a PdxInstance.
    *
    * @since GemFire 6.6.2
