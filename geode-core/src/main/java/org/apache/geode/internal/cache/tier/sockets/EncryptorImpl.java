@@ -66,6 +66,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
@@ -687,7 +688,7 @@ public class EncryptorImpl implements Encryptor {
 
       byte[] credentialBytes = decrypt.doFinal(encBytes);
       ByteArrayDataInput dinp = new ByteArrayDataInput(credentialBytes);
-      credentials = DataSerializer.readProperties(dinp);
+      credentials = InternalDataSerializer.readStringProperties(dinp);
       byte[] challengeRes = DataSerializer.readByteArray(dinp);
       // Check the challenge string
       if (!Arrays.equals(challenge, challengeRes)) {
