@@ -83,6 +83,7 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
@@ -518,7 +519,7 @@ public class JGroupsMessengerJUnitTest {
       throws Exception {
     initMocks(mcastEnabled);
     MessageHandler mh = mock(MessageHandler.class);
-    messenger.addHandler(JoinRequestMessage.class, mh);
+    messenger.addHandler(ByteHolder.class, mh);
 
     MemberIdentifier sender = messenger.getMemberID();
     GMSMembershipView v = new GMSMembershipView(sender);
@@ -528,18 +529,17 @@ public class JGroupsMessengerJUnitTest {
     // send a big message and expect fragmentation
     MemberIdentifier recipient = broadcastMessage ? null : messenger.localAddress;
     services.getSerializer().register(ByteHolder.DSFID, ByteHolder.class);
-    JoinRequestMessage msg = new JoinRequestMessage(recipient, sender,
-        new ByteHolder(
-            new byte[(int) (services.getConfig().getUdpFragmentSize()
-                * 1.5)]),
-        -1, 0);
-
+    ByteHolder msg =
+        new ByteHolder(new byte[(int) (services.getConfig().getUdpFragmentSize() * 1.5)]);
+    if (recipient != null) {
+      msg.setRecipient(recipient);
+    }
     msg.setMulticast(broadcastMessage);
 
-    // configure an incoming message handler for JoinRequestMessage
-    final JoinRequestMessage[] messageReceived = new JoinRequestMessage[1];
-    messenger.addHandler(JoinRequestMessage.class,
-        (MessageHandler<JoinRequestMessage>) message -> messageReceived[0] = message);
+    // configure an incoming message handler for the big message
+    final ByteHolder[] messageReceived = new ByteHolder[1];
+    messenger.addHandler(ByteHolder.class,
+        (MessageHandler<ByteHolder>) message -> messageReceived[0] = message);
 
     // configure the outgoing message interceptor
     interceptor.mcastSentDataMessages = 0;
@@ -1165,7 +1165,7 @@ public class JGroupsMessengerJUnitTest {
   }
 
 
-  public static class ByteHolder implements DataSerializableFixedID {
+  public static class ByteHolder extends AbstractGMSMessage<MemberIdentifier> {
     static final int DSFID = 123456;
     private byte[] payload;
 
