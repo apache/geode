@@ -37,8 +37,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -547,10 +549,22 @@ public class ClientProxyMembershipID
   public static ClientProxyMembershipID readCanonicalized(DataInput in)
       throws IOException, ClassNotFoundException {
 
-    ClientProxyMembershipID result = DataSerializer.readObject(in);
+    // The field is always written with DataSerializer.writeObject of a
+    // ClientProxyMembershipID (a fixed-id type) or a null, so the only shapes that appear
+    // on the wire are a NULL marker or a byte fixed-id header for this type. Read those two
+    // shapes directly instead of going through the general object reader.
+    final byte header = in.readByte();
+    if (header == DSCODE.NULL.toByte()) {
+      return null;
+    }
+    if (header != DSCODE.DS_FIXED_ID_BYTE.toByte() || in.readByte() != CLIENT_PROXY_MEMBERSHIPID) {
+      throw new IOException("Unexpected wire format for ClientProxyMembershipID");
+    }
+    final ClientProxyMembershipID result = new ClientProxyMembershipID();
+    InternalDataSerializer.invokeFromData(result, in);
     // We can't canonicalize if we have no identity.
     // I only saw this happen in unit tests that serialize "new ClientProxyMembershipID()".
-    if (result == null || result.identity == null) {
+    if (result.identity == null) {
       return result;
     }
     return result.canonicalReference();

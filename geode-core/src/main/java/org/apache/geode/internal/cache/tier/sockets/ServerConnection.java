@@ -48,7 +48,6 @@ import org.apache.shiro.util.ThreadState;
 import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -59,6 +58,7 @@ import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
@@ -1197,7 +1197,7 @@ public class ServerConnection implements Runnable {
 
     Properties credentials;
     try (ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes)) {
-      credentials = DataSerializer.readProperties(dinp);
+      credentials = InternalDataSerializer.readStringProperties(dinp);
     }
 
     // When here, security is enforced on server, if login returns a subject, then it's the newly
