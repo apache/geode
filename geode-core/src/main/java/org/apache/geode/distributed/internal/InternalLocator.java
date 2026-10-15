@@ -582,6 +582,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               .setFallbackHandler(handler)
               .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
               .setLocatorStats(locatorStats)
+              .setRequestObjectDeserializer(new LocatorRequestDeserializer())
               .create();
     } catch (MembershipConfigurationException | UnknownHostException e) {
       throw new GemFireConfigException(e.getMessage());

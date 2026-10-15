@@ -23,6 +23,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -67,6 +68,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -2368,6 +2370,141 @@ public abstract class InternalDataSerializer extends DataSerializer {
           String.format("Could not create an instance of %s .",
               c.getName()),
           ex);
+    }
+  }
+
+  /**
+   * Reads an object from a stream that an unauthenticated peer may control, reconstructing only the
+   * types the caller expects. A {@link DataSerializableFixedID} (whose wire form names a registered
+   * fixed id rather than a class) is read normally. An object written with an explicit class name
+   * is
+   * reconstructed only when {@code classIsExpected} accepts that name; for data-serialized objects
+   * the name is checked before the class is loaded. Any other wire form, including a
+   * Java-serialized
+   * object of an unexpected type, is rejected with an {@link IOException}.
+   */
+  public static Object readRequestObject(final DataInput in,
+      final Predicate<String> classIsExpected) throws IOException, ClassNotFoundException {
+    checkIn(in);
+    byte header = in.readByte();
+    DSCODE headerDSCode = DscodeHelper.toDSCODE(header);
+    if (headerDSCode == null) {
+      throw new IOException("Unknown header byte: " + header);
+    }
+    switch (headerDSCode) {
+      case DS_FIXED_ID_BYTE:
+        return dsfidFactory.create(in.readByte(), in);
+      case DS_FIXED_ID_SHORT:
+        return dsfidFactory.create(in.readShort(), in);
+      case DS_FIXED_ID_INT:
+        return dsfidFactory.create(in.readInt(), in);
+      case DS_NO_FIXED_ID:
+      case DATA_SERIALIZABLE:
+        return readDataSerializable(in, classIsExpected);
+      case SERIALIZABLE:
+        return readSerializable(in, classIsExpected);
+      case NULL:
+      case NULL_STRING:
+        return null;
+      default:
+        throw new IOException("Unexpected request format: " + headerDSCode);
+    }
+  }
+
+  private static Object readDataSerializable(final DataInput in,
+      final Predicate<String> classIsExpected) throws IOException, ClassNotFoundException {
+    final Class<?> c = readExpectedClass(in, classIsExpected);
+    try {
+      Constructor<?> init = c.getConstructor();
+      init.setAccessible(true);
+      Object o = init.newInstance();
+
+      invokeFromData(o, in);
+
+      return o;
+    } catch (EOFException | SocketException ex) {
+      // client went away - ignore
+      throw ex;
+    } catch (Exception ex) {
+      throw new SerializationException(
+          String.format("Could not create an instance of %s .",
+              c.getName()),
+          ex);
+    }
+  }
+
+  /**
+   * Reads a class written by {@link DataSerializer#writeClass}, resolving it only when
+   * {@code classIsExpected} accepts its name. The name is checked before the class is loaded, so an
+   * unexpected name is rejected without running that class's static initializer. Primitive type
+   * codes carry no class name and are resolved directly.
+   */
+  private static Class<?> readExpectedClass(final DataInput in,
+      final Predicate<String> classIsExpected) throws IOException, ClassNotFoundException {
+    byte typeCode = in.readByte();
+    if (typeCode == DSCODE.CLASS.toByte()) {
+      String className = processIncomingClassName(readString(in));
+      if (!classIsExpected.test(className)) {
+        throw new IOException("Unexpected class name: " + className);
+      }
+      return getCachedClass(className);
+    }
+    return StaticSerialization.decodePrimitiveClass(typeCode);
+  }
+
+  private static Serializable readSerializable(final DataInput in,
+      final Predicate<String> classIsExpected) throws IOException, ClassNotFoundException {
+    InputStream stream;
+    if (in instanceof InputStream) {
+      stream = (InputStream) in;
+    } else {
+      stream = new InputStream() {
+        @Override
+        public int read() throws IOException {
+          try {
+            return in.readUnsignedByte();
+          } catch (EOFException ignored) {
+            return -1;
+          }
+        }
+      };
+    }
+
+    ObjectInput ois = new ExpectedClassObjectInputStream(stream, classIsExpected);
+
+    if (stream instanceof VersionedDataStream) {
+      KnownVersion v = ((VersionedDataStream) stream).getVersion();
+      if (KnownVersion.CURRENT != v && v != null) {
+        ois = new VersionedObjectInput(ois, v);
+      }
+    }
+
+    return (Serializable) ois.readObject();
+  }
+
+  /**
+   * A {@link DSObjectInputStream} that resolves only classes whose name is accepted by the supplied
+   * predicate. A class outside the accepted set is rejected in {@link #resolveClass}, before it is
+   * loaded, so neither its static initializer nor any instance of it runs.
+   */
+  private static class ExpectedClassObjectInputStream extends DSObjectInputStream {
+
+    private final Predicate<String> classIsExpected;
+
+    ExpectedClassObjectInputStream(InputStream stream, Predicate<String> classIsExpected)
+        throws IOException {
+      super(stream);
+      this.classIsExpected = classIsExpected;
+    }
+
+    @Override
+    protected Class<?> resolveClass(ObjectStreamClass desc)
+        throws IOException, ClassNotFoundException {
+      String className = processIncomingClassName(desc.getName());
+      if (!classIsExpected.test(className)) {
+        throw new InvalidClassException(className, "Unexpected class");
+      }
+      return super.resolveClass(desc);
     }
   }
 
