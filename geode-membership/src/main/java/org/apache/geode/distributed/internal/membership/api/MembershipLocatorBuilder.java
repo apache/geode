@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
 
 public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
   MembershipLocatorBuilder<ID> setPort(int port);
@@ -40,6 +41,14 @@ public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
   MembershipLocatorBuilder<ID> setLocatorsAreCoordinators(boolean locatorsAreCoordinators);
 
   MembershipLocatorBuilder<ID> setLocatorStats(MembershipLocatorStatistics locatorStats);
+
+  /**
+   * Sets the deserializer used to read requests received on the locator's server port. When unset,
+   * the serializer's default object deserializer is used. This does not affect the deserializer the
+   * locator uses for its own outgoing requests to other locators.
+   */
+  MembershipLocatorBuilder<ID> setRequestObjectDeserializer(
+      ObjectDeserializer requestObjectDeserializer);
 
   MembershipLocator<ID> create()
       throws UnknownHostException, MembershipConfigurationException;
