@@ -2492,6 +2492,60 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return StaticSerialization.readString(in, header);
   }
 
+  private static final boolean READ_ALL_PROPERTY_VALUE_TYPES =
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "readAllPropertyValueTypes");
+
+  /**
+   * Reads a {@link Properties} written by {@link DataSerializer#writeProperties} whose keys and
+   * values use only the simple encodings expected for connection credentials: strings, byte
+   * arrays and nulls. An entry encoded in any other form is rejected with an {@link IOException}.
+   * Set {@code gemfire.readAllPropertyValueTypes} to read value types other than strings and byte
+   * arrays, for deployments whose {@code AuthInitialize} stores such values.
+   */
+  public static Properties readStringProperties(DataInput in)
+      throws IOException, ClassNotFoundException {
+    if (READ_ALL_PROPERTY_VALUE_TYPES) {
+      return DataSerializer.readProperties(in);
+    }
+    checkIn(in);
+    int size = readArrayLength(in);
+    if (size == -1) {
+      return null;
+    }
+    Properties props = new Properties();
+    for (int index = 0; index < size; index++) {
+      Object key = readSimplePropertyValue(in);
+      Object value = readSimplePropertyValue(in);
+      props.put(key, value);
+    }
+    return props;
+  }
+
+  private static Object readSimplePropertyValue(DataInput in) throws IOException {
+    checkIn(in);
+    DSCODE dscode = DscodeHelper.toDSCODE(in.readByte());
+    if (dscode == null) {
+      throw new IOException("Unexpected wire format while reading properties");
+    }
+    switch (dscode) {
+      case NULL:
+      case NULL_STRING:
+        return null;
+      case STRING:
+        return readStringUTFFromDataInput(in);
+      case HUGE_STRING:
+        return readHugeStringFromDataInput(in);
+      case STRING_BYTES:
+        return readStringBytesFromDataInput(in, in.readUnsignedShort());
+      case HUGE_STRING_BYTES:
+        return readStringBytesFromDataInput(in, in.readInt());
+      case BYTE_ARRAY:
+        return readByteArray(in);
+      default:
+        throw new IOException("Unexpected wire format while reading properties");
+    }
+  }
+
   /**
    * Just like readObject but make sure and pdx deserialized is not a PdxInstance.
    *
