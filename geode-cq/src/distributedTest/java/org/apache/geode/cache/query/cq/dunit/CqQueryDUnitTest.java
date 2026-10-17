@@ -473,7 +473,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
         Region region1 = getRootRegion().getSubregion(regionName);
         for (int i = 1; i <= size; i++) {
           Portfolio portfolio = new Portfolio(i);
-          portfolio.shortID = new Short("" + i);
+          portfolio.shortID = Short.valueOf("" + i);
           region1.put(KEY + i, portfolio);
         }
         logger.info("### Number of Entries in Region :" + region1.keySet().size());
