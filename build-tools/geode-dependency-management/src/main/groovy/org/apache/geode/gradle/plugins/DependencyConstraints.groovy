@@ -53,6 +53,8 @@ class DependencyConstraints {
     deps.put("shiro.version", "3.0.0")
     // GEODE-10583: Pin Bouncy Castle (transitive via shiro-crypto-hash) to a fixed version
     deps.put("bouncycastle.version", "1.85")
+    // GEODE-10681: Pin hibernate-validator to a fixed version
+    deps.put("hibernate-validator.version", "8.0.6.Final")
     deps.put("slf4j-api.version", "2.0.18")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
@@ -200,6 +202,8 @@ class DependencyConstraints {
         // GEODE-10583: Pin Bouncy Castle provider (pulled in via shiro-crypto-hash) to 1.84
         api(group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: get('bouncycastle.version'))
         api(group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: get('bouncycastle.version'))
+        // GEODE-10681: Pin hibernate-validator to a fixed version
+        api(group: 'org.hibernate.validator', name: 'hibernate-validator', version: get('hibernate-validator.version'))
         api(group: 'org.assertj', name: 'assertj-core', version: '3.22.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.2.0')
         api(group: 'org.buildobjects', name: 'jproc', version: '2.8.0')
