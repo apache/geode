@@ -78,10 +78,15 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     }
   }
 
+  private void checkClusterManageResource() {
+    securityService.authorize(new ResourcePermission(Resource.CLUSTER, Operation.MANAGE));
+  }
+
   @Override
   public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException,
       InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
     checkDomain(name);
+    checkClusterManageResource();
     return mbs.createMBean(className, name);
   }
 
@@ -90,6 +95,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException, InstanceNotFoundException {
     checkDomain(name);
+    checkClusterManageResource();
     return mbs.createMBean(className, name, loaderName);
   }
 
@@ -98,6 +104,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
       MBeanException, NotCompliantMBeanException {
     checkDomain(name);
+    checkClusterManageResource();
     return mbs.createMBean(className, name, params, signature);
   }
 
@@ -107,6 +114,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
       NotCompliantMBeanException, InstanceNotFoundException {
     checkDomain(name);
+    checkClusterManageResource();
     return mbs.createMBean(className, name, loaderName, params, signature);
   }
 
@@ -115,6 +123,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws InstanceAlreadyExistsException, MBeanRegistrationException,
       NotCompliantMBeanException {
     checkDomain(name);
+    checkClusterManageResource();
     return mbs.registerMBean(object, name);
   }
 
@@ -122,6 +131,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public void unregisterMBean(ObjectName name)
       throws InstanceNotFoundException, MBeanRegistrationException {
     checkDomain(name);
+    checkClusterManageResource();
     mbs.unregisterMBean(name);
   }
 
@@ -235,6 +245,10 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws InstanceNotFoundException, MBeanException, ReflectionException {
 
     ResourcePermission ctx = getOperationContext(name, operationName, true);
+    if (ctx == null
+        && !ManagementConstants.OBJECTNAME__DEFAULTDOMAIN.equals(name.getDomain())) {
+      ctx = new ResourcePermission(Resource.CLUSTER, Operation.MANAGE);
+    }
     securityService.authorize(ctx);
 
     return mbs.invoke(name, operationName, params, signature);
