@@ -92,6 +92,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -1184,11 +1185,26 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     GMSMemberData info = new GMSMemberData();
     info.readEssentialData(in, services.getSerializer().createDeserializationContext(in));
     ID m = services.getMemberFactory().create(info);
-    Message<ID> result = services.getSerializer().getObjectDeserializer().readObject(in);
+    @SuppressWarnings("unchecked")
+    Message<ID> result = (Message<ID>) readFixedIdObject(in);
 
     setSender(result, m, ordinal);
 
     return result;
+  }
+
+  /**
+   * Reads the message body, which is always written as a {@link DataSerializableFixedID}. A payload
+   * whose leading type code is anything else is rejected with an {@link IOException}.
+   */
+  private Object readFixedIdObject(DataInputStream in) throws IOException, ClassNotFoundException {
+    int dsfid;
+    try {
+      dsfid = services.getSerializer().readDSFIDHeader(in);
+    } catch (IllegalStateException e) {
+      throw new IOException("Unexpected message format", e);
+    }
+    return services.getSerializer().create(dsfid, in);
   }
 
   /** look for certain messages that may need to be altered before being sent */
