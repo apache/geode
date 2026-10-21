@@ -16,19 +16,24 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import org.junit.Test;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.NullDataOutputStream;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DSCODE;
 
 public class ClientProxyMembershipIDTest {
 
@@ -61,4 +66,49 @@ public class ClientProxyMembershipIDTest {
         .hasMessageContaining("identity length is too small");
   }
 
+
+  @Test
+  public void readCanonicalizedRejectsUnexpectedHeader() throws Exception {
+    ProbeObject.deserialized = false;
+
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    bytes.write(DSCODE.SERIALIZABLE.toByte());
+    final ObjectOutputStream objectOut = new ObjectOutputStream(bytes);
+    objectOut.writeObject(new ProbeObject());
+    objectOut.close();
+    final ByteArrayDataInput in = new ByteArrayDataInput(bytes.toByteArray());
+
+    assertThatThrownBy(() -> ClientProxyMembershipID.readCanonicalized(in))
+        .isInstanceOf(IOException.class);
+    assertThat(ProbeObject.deserialized).isFalse();
+  }
+
+  @Test
+  public void readCanonicalizedReadsNull() throws Exception {
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    DataSerializer.writeObject(null, new DataOutputStream(bytes));
+    final ByteArrayDataInput in = new ByteArrayDataInput(bytes.toByteArray());
+
+    assertThat(ClientProxyMembershipID.readCanonicalized(in)).isNull();
+  }
+
+  @Test
+  public void readCanonicalizedReadsFixedIdForm() throws Exception {
+    final ClientProxyMembershipID written = new ClientProxyMembershipID();
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    DataSerializer.writeObject(written, new DataOutputStream(bytes));
+    final ByteArrayDataInput in = new ByteArrayDataInput(bytes.toByteArray());
+
+    assertThat(ClientProxyMembershipID.readCanonicalized(in)).isNotNull();
+  }
+
+  public static class ProbeObject implements Serializable {
+    static boolean deserialized;
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      deserialized = true;
+    }
+  }
 }

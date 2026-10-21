@@ -38,6 +38,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassLoadUtils;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.CallbackInstantiator;
@@ -445,9 +446,9 @@ public abstract class Handshake {
       throwIfMissingRequiredCredentials(requireAuthentication, secureMode != CREDENTIALS_NONE);
       if (secureMode == CREDENTIALS_NORMAL) {
         if (requireAuthentication) {
-          credentials = DataSerializer.readProperties(dis);
+          credentials = InternalDataSerializer.readStringProperties(dis);
         } else {
-          DataSerializer.readProperties(dis); // ignore the credentials
+          InternalDataSerializer.readStringProperties(dis); // ignore the credentials
         }
       } else if (secureMode == CREDENTIALS_DHENCRYPT) {
         credentials = EncryptorImpl.getDecryptedCredentials(dis, dos, system, requireAuthentication,
