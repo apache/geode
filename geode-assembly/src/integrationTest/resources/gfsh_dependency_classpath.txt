@@ -139,7 +139,7 @@ asm-9.10.1.jar
 reactive-streams-1.0.4.jar
 antlr-runtime-3.5.2.jar
 tomcat-embed-el-10.1.42.jar
-hibernate-validator-8.0.2.Final.jar
+hibernate-validator-8.0.6.Final.jar
 jakarta.enterprise.lang-model-4.0.1.jar
 jakarta.validation-api-3.0.2.jar
 jboss-logging-3.4.3.Final.jar
