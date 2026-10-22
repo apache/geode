@@ -237,6 +237,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
@@ -283,6 +288,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
@@ -327,6 +337,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
@@ -373,6 +388,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
@@ -421,6 +441,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v3
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
