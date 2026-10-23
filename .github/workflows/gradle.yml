@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
@@ -50,7 +50,7 @@ jobs:
      strategy:
        fail-fast: false
        matrix:
-         os: [ubuntu-latest]
+         os: [ubuntu-24.04]
          distribution: [ 'liberica' ]
          java: ['17']
      runs-on: ${{ matrix.os }}
@@ -89,7 +89,7 @@ jobs:
    strategy:
      fail-fast: false
      matrix:
-       os: [ubuntu-latest]
+       os: [ubuntu-24.04]
        distribution: ['liberica']
        java: ['17']
    runs-on: ${{ matrix.os }}
@@ -138,7 +138,7 @@ jobs:
      needs: [apiCheck, unitTest]
      strategy:
        matrix:
-         os: [ubuntu-latest]
+         os: [ubuntu-24.04]
          distribution: ['liberica']
          java: ['17']
      runs-on: ${{ matrix.os }}
@@ -185,7 +185,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -229,7 +229,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -275,7 +275,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -319,7 +319,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -365,7 +365,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -413,7 +413,7 @@ jobs:
     needs: [ apiCheck, unitTest ]
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-24.04 ]
         distribution: [ 'liberica' ]
         java: [ '17' ]
     runs-on: ${{ matrix.os }}
