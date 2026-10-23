@@ -227,7 +227,7 @@ class DependencyConstraints {
         api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: get('springhateoas.version'))
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: get('springldap.version'))
         api(group: 'org.springframework.shell', name: 'spring-shell-starter', version: get('springshell.version'))
-        api(group: 'org.testcontainers', name: 'testcontainers', version: '1.21.3')
+        api(group: 'org.testcontainers', name: 'testcontainers', version: '1.21.4')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
         api(group: 'xml-apis', name: 'xml-apis', version: '1.4.01')
