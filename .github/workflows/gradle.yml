@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
@@ -50,7 +50,7 @@ jobs:
      strategy:
        fail-fast: false
        matrix:
-         os: [ubuntu-latest]
+         os: [ubuntu-24.04]
          distribution: [ 'liberica' ]
          java: ['17']
      runs-on: ${{ matrix.os }}
@@ -89,7 +89,7 @@ jobs:
    strategy:
      fail-fast: false
      matrix:
-       os: [ubuntu-latest]
+       os: [ubuntu-24.04]
        distribution: ['liberica']
        java: ['17']
    runs-on: ${{ matrix.os }}
@@ -138,7 +138,7 @@ jobs:
      needs: [apiCheck, unitTest]
      strategy:
        matrix:
-         os: [ubuntu-latest]
+         os: [ubuntu-24.04]
          distribution: ['liberica']
          java: ['17']
      runs-on: ${{ matrix.os }}
@@ -185,7 +185,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -229,7 +229,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -237,6 +237,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
@@ -275,7 +280,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -283,6 +288,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
@@ -319,7 +329,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -327,6 +337,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
@@ -365,7 +380,7 @@ jobs:
     needs: [apiCheck, unitTest]
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         distribution: ['liberica']
         java: ['17']
     runs-on: ${{ matrix.os }}
@@ -373,6 +388,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
@@ -413,7 +433,7 @@ jobs:
     needs: [ apiCheck, unitTest ]
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-24.04 ]
         distribution: [ 'liberica' ]
         java: [ '17' ]
     runs-on: ${{ matrix.os }}
@@ -421,6 +441,11 @@ jobs:
       DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android "$AGENT_TOOLSDIRECTORY" /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          df -h /
       - name: Set up JDK
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
