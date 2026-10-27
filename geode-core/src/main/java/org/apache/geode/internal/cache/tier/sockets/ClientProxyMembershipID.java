@@ -45,6 +45,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -304,7 +305,16 @@ public class ClientProxyMembershipID
   @Override
   public void fromData(final DataInput in, final DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    identity = DataSerializer.readByteArray(in);
+    final int identityLength = StaticSerialization.readArrayLength(in);
+    if (identityLength > Short.MAX_VALUE) {
+      throw new IOException("HandShake identity length is too big");
+    }
+    if (identityLength == -1) {
+      identity = null;
+    } else {
+      identity = new byte[identityLength];
+      in.readFully(identity);
+    }
     uniqueId = in.readInt();
   }
 
