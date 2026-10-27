@@ -34,6 +34,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.NullDataOutputStream;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 public class ClientProxyMembershipIDTest {
 
@@ -100,6 +101,24 @@ public class ClientProxyMembershipIDTest {
     final ByteArrayDataInput in = new ByteArrayDataInput(bytes.toByteArray());
 
     assertThat(ClientProxyMembershipID.readCanonicalized(in)).isNotNull();
+  }
+
+  @Test
+  public void fromDataRejectsIdentityLengthThatExceedsMaximum() throws IOException {
+    // A well-formed identity is always small: writeExternal caps it at Short.MAX_VALUE.
+    // fromData applies the same upper bound when reading, so the fixed-id and Externalizable
+    // paths agree on the maximum identity length a client may send.
+    final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    final DataOutputStream out = new DataOutputStream(bytes);
+    out.writeByte(StaticSerialization.INT_ARRAY_LEN);
+    out.writeInt(Short.MAX_VALUE + 1);
+    out.close();
+    final ByteArrayDataInput in = new ByteArrayDataInput(bytes.toByteArray());
+    final ClientProxyMembershipID clientProxyMembershipID = new ClientProxyMembershipID();
+
+    assertThatThrownBy(() -> clientProxyMembershipID.fromData(in, null))
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining("identity length is too big");
   }
 
   public static class ProbeObject implements Serializable {
