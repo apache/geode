@@ -55,6 +55,8 @@ class DependencyConstraints {
     deps.put("bouncycastle.version", "1.86")
     // GEODE-10681: Pin hibernate-validator to a fixed version
     deps.put("hibernate-validator.version", "8.0.6.Final")
+    // GEODE-10687: Pin ASM (transitive via Jetty) to a fixed version
+    deps.put("asm.version", "9.11")
     deps.put("slf4j-api.version", "2.0.18")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
@@ -204,6 +206,10 @@ class DependencyConstraints {
         api(group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: get('bouncycastle.version'))
         // GEODE-10681: Pin hibernate-validator to a fixed version
         api(group: 'org.hibernate.validator', name: 'hibernate-validator', version: get('hibernate-validator.version'))
+        // GEODE-10687: Pin ASM (transitive via Jetty) to a fixed version
+        api(group: 'org.ow2.asm', name: 'asm', version: get('asm.version'))
+        api(group: 'org.ow2.asm', name: 'asm-commons', version: get('asm.version'))
+        api(group: 'org.ow2.asm', name: 'asm-tree', version: get('asm.version'))
         api(group: 'org.assertj', name: 'assertj-core', version: '3.22.0')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.2.0')
         api(group: 'org.buildobjects', name: 'jproc', version: '2.8.0')
