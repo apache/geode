@@ -133,9 +133,9 @@ jline-terminal-jni-3.30.17.jar
 jline-terminal-ffm-3.30.17.jar
 ST4-4.3.3.jar
 txw2-4.0.2.jar
-asm-commons-9.10.1.jar
-asm-tree-9.10.1.jar
-asm-9.10.1.jar
+asm-commons-9.11.jar
+asm-tree-9.11.jar
+asm-9.11.jar
 reactive-streams-1.0.4.jar
 jline-native-3.30.17.jar
 antlr-runtime-3.5.2.jar
