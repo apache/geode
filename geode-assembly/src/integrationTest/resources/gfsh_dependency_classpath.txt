@@ -21,10 +21,10 @@ spring-shell-1.2.0.RELEASE.jar
 spring-web-5.3.20.jar
 commons-lang3-3.18.0.jar
 rmiio-2.1.2.jar
-jackson-datatype-joda-2.21.6.jar
-jackson-core-2.21.6.jar
-jackson-datatype-jsr310-2.21.6.jar
-jackson-databind-2.21.6.jar
+jackson-datatype-joda-2.21.8.jar
+jackson-core-2.21.8.jar
+jackson-datatype-jsr310-2.21.8.jar
+jackson-databind-2.21.8.jar
 swagger-annotations-2.2.0.jar
 jopt-simple-5.0.4.jar
 log4j-slf4j-impl-2.25.5.jar
