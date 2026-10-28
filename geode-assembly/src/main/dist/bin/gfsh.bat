@@ -27,7 +27,8 @@ REM
 
 setlocal enableextensions
 set scriptdir=%~dp0
-set gf=%scriptdir:\bin\=%
+REM Remove last 4 chars which are presumably "bin\"
+set gf=%scriptdir:~0,-4%
 REM echo %gf%
 REM echo %scriptdir%
 if exist "%gf%\lib\geode-dependencies.jar" goto gfok
