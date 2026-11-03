@@ -67,7 +67,9 @@ abstract class LocatorLauncherWithJmxManager {
 
   @Before
   public void setUpFilterPattern() {
-    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
+    openMBeanFilterPattern = new SanctionedSerializablesFilterPattern()
+        .append("javax.security.auth.Subject")
+        .pattern();
   }
 
   SystemManagementService getSystemManagementService() {

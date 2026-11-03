@@ -36,7 +36,11 @@ public class SystemPropertyJmxSerialFilterConfigurationFactory
   public SystemPropertyJmxSerialFilterConfigurationFactory() {
     // JmxSerialFilter requires Java 9 or greater
     this(isJavaVersionAtLeast(JAVA_9) && isBlank(System.getProperty(PROPERTY_NAME)),
-        new OpenMBeanFilterPattern().pattern());
+        // The RMI connector protocol conveys a delegation subject with every operation, so the
+        // connector's pattern must accept it in addition to the shared dependencies.
+        new SanctionedSerializablesFilterPattern()
+            .append("javax.security.auth.Subject")
+            .pattern());
   }
 
   @VisibleForTesting
