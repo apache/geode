@@ -382,6 +382,15 @@ public class ManagementAgent {
         String[].class.getName(),
         String.class.getName()});
 
+    // Carry the connector options that are configured as system properties into the
+    // environment of this manually constructed connector server, so that they take
+    // effect here as they would for a connector server created by the platform.
+    String configuredPattern =
+        System.getProperty("jmx.remote.rmi.server.serial.filter.pattern");
+    if (configuredPattern != null) {
+      env.put("jmx.remote.rmi.server.serial.filter.pattern", configuredPattern);
+    }
+
     // Manually creates and binds a JMX RMI Connector Server stub with the
     // registry created above: the port we pass here is the port that can
     // be specified in "service:jmx:rmi://"+hostname+":"+port - where the
