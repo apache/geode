@@ -910,7 +910,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             // Check if the events from CqListener are in order.
             int oldId = 0;
             for (Object cqEvent : cqListener.events.toArray()) {
-              int newId = new Integer(cqEvent.toString());
+              int newId = Integer.valueOf(cqEvent.toString());
               if (oldId > newId) {
                 fail("Queued events for CQ Listener during execution with "
                     + "Initial results is not in the order in which they are created.");
@@ -1067,7 +1067,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             // Check if the events from CqListener are in order.
             int oldId = 0;
             for (Object cqEvent : cqListener.events.toArray()) {
-              int newId = new Integer(cqEvent.toString());
+              int newId = Integer.valueOf(cqEvent.toString());
               if (oldId > newId) {
                 fail("Queued events for CQ Listener during execution with "
                     + "Initial results is not in the order in which they are created.");
