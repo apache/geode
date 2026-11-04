@@ -63,7 +63,9 @@ abstract class ServerLauncherWithJmxManager {
 
   @Before
   public void setUpFilterPattern() {
-    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
+    openMBeanFilterPattern = new SanctionedSerializablesFilterPattern()
+        .append("javax.security.auth.Subject")
+        .pattern();
   }
 
   SystemManagementService getSystemManagementService() {
