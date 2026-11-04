@@ -8,7 +8,7 @@ You must be logged into the appropriate Google Cloud Platform project for this t
  
 ### Deployment Configuration
 In this directory is a file called `meta.properties`. This file contains variables that change
-how Geode is deployed. These values should be overriden by creating a file called 
+how Geode is deployed. These values should be overridden by creating a file called 
 `meta.properties.local` and changing value definitions in that file. Note that 
 `meta.properties.local` is ignored by git because those types of changes are solely related to
 a specific deployment scenario.
