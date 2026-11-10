@@ -253,7 +253,7 @@ else
   set -x
   git add apache-geode.rb
   git diff --staged --color | cat
-  git commit -m "$JIRA: Brew apache-geode ${VERSION}
+  git commit -m "apache-geode ${VERSION}
 
 This is the latest and greatest release of Apache Geode."
   git push -u myfork
