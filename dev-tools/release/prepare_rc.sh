@@ -89,13 +89,21 @@ echo ""
 echo "============================================================"
 echo "Checking java..."
 echo "============================================================"
+# Geode 1.x releases are built with JDK 8; 2.x and later are built with JDK 17.
+if [[ ${VERSION%%.*} -lt 2 ]]; then
+  JAVA_SPEC_VERSION=1.8
+  JDK_NAME="JDK 8"
+else
+  JAVA_SPEC_VERSION=17
+  JDK_NAME="JDK 17"
+fi
 [ -z "$JAVA_HOME" ] && JAVA=java || JAVA=$JAVA_HOME/bin/java
-if ! $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 17' ; then
-  echo "Please set JAVA_HOME to use JDK 17 to compile Geode for release"
+if ! $JAVA -XshowSettings:properties -version 2>&1 | grep "java.specification.version = ${JAVA_SPEC_VERSION}" ; then
+  echo "Please set JAVA_HOME to use ${JDK_NAME} to compile Geode ${VERSION} for release"
   exit 1
 fi
 if $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = Oracle' ; then
-  echo "Please set JAVA_HOME to use an Open JDK 17 such as from https://adoptium.net to compile Geode for release"
+  echo "Please set JAVA_HOME to use an Open ${JDK_NAME} such as from https://adoptium.net to compile Geode ${VERSION} for release"
   exit 1
 else
   $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = '
