@@ -14,9 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal.configuration;
 
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import javax.management.ObjectName;
 
 import org.apache.lucene.index.VectorSimilarityFunction;
 import org.junit.Before;
@@ -30,9 +34,15 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.VectorIndexMetadata;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
+import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
+import org.apache.geode.cache.lucene.management.LuceneServiceMXBean;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -156,6 +166,51 @@ public class LuceneVectorClusterConfigurationDUnitTest {
       assertThat(idx).isNotNull();
       assertThat(idx.getVectorFields().get("embedding")).isEqualTo(
           new VectorIndexMetadata("embedding", 4, VectorSimilarityFunction.COSINE, true));
+    });
+  }
+
+  @Test
+  public void segmentMemoryBytesReportsLiveBytesEvenWhenStatisticSamplingDisabled()
+      throws Exception {
+    int locatorPort = locator.getPort();
+    Properties serverProps = new Properties();
+    serverProps.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    MemberVM server1 = cluster.startServerVM(1, serverProps, locatorPort);
+    gfsh.connectAndVerify(locator);
+
+    gfsh.executeAndAssertThat(
+        "create lucene index --name=liveBytesIdx --region=liveBytesRegion "
+            + "--vector-field=embedding --vector-dim=8 --vector-similarity=COSINE --vector-sq8=true")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --name=liveBytesRegion --type=PARTITION")
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region<String, PdxInstance> region = cache.getRegion("liveBytesRegion");
+      for (int i = 0; i < 20; i++) {
+        region.put("k-" + i, createVectorDoc(cache, "c",
+            new float[] {1.0f, i * 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f}));
+      }
+      LuceneService service = LuceneServiceProvider.get(cache);
+      assertThat(service.waitUntilFlushed("liveBytesIdx", "liveBytesRegion", 60, TimeUnit.SECONDS))
+          .isTrue();
+
+      LuceneIndexImpl index =
+          (LuceneIndexImpl) service.getIndex("liveBytesIdx", "liveBytesRegion");
+      LuceneIndexDetails details = new LuceneIndexDetails(index, "server1");
+      assertThat(details.getSegmentMemoryBytes()).isGreaterThan(0L);
+
+      ManagementService mgmt = ManagementService.getManagementService(cache);
+      ObjectName objectName = MBeanJMXAdapter.getCacheServiceMBeanName(
+          cache.getDistributedSystem().getDistributedMember(), "LuceneService");
+      LuceneServiceMXBean mxBean =
+          mgmt.getMBeanInstance(objectName, LuceneServiceMXBean.class);
+      assertThat(mxBean).isNotNull();
+      LuceneIndexMetrics metrics = mxBean.listIndexMetrics("/liveBytesRegion", "liveBytesIdx");
+      assertThat(metrics).isNotNull();
+      assertThat(metrics.getSegmentMemoryBytes()).isGreaterThan(0L);
+      assertThat(metrics.getVectorFields()).hasSize(1);
     });
   }
 }

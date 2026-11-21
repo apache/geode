@@ -155,6 +155,19 @@ public class LuceneVectorCommandsJUnitTest {
             + "--vector-sq8=maybe")
         .statusIsError()
         .containsOutput("--vector-sq8");
+
+    // Duplicate --vector-field names
+    gfsh.executeAndAssertThat(command,
+        "create lucene index --name=bad --region=/docs --vector-field=emb,emb --vector-dim=4,8")
+        .statusIsError()
+        .containsOutput("Duplicate --vector-field");
+
+    // Overlapping --field and --vector-field names
+    gfsh.executeAndAssertThat(command,
+        "create lucene index --name=bad --region=/docs --field=emb "
+            + "--vector-field=emb --vector-dim=4")
+        .statusIsError()
+        .containsOutput("both --field and --vector-field");
   }
 
   @Test
@@ -239,5 +252,52 @@ public class LuceneVectorCommandsJUnitTest {
         "search lucene --name=vecIdx --region=/docs")
         .statusIsError()
         .containsOutput("--queryString or --query-vector");
+
+    // --limit <= 0 rejected
+    gfsh.executeAndAssertThat(command,
+        "search lucene --name=vecIdx --region=/docs --query-vector=0.1,0.2 --limit=0")
+        .statusIsError()
+        .containsOutput("--limit must be a positive integer");
+
+    // Trailing comma rejected
+    gfsh.executeAndAssertThat(command,
+        "search lucene --name=vecIdx --region=/docs --query-vector=1.0,2.0,")
+        .statusIsError()
+        .containsOutput("Empty element");
+
+    // Unmatched bracket rejected
+    gfsh.executeAndAssertThat(command,
+        "search lucene --name=vecIdx --region=/docs --query-vector=[1.0,2.0")
+        .statusIsError()
+        .containsOutput("Unmatched brackets");
+
+    // Orphan --k without --query-vector rejected
+    gfsh.executeAndAssertThat(command,
+        "search lucene --name=vecIdx --region=/docs --queryString=hello --defaultField=cat --k=5")
+        .statusIsError()
+        .containsOutput("require --query-vector");
+  }
+
+  @Test
+  public void searchIndexPreservesExplicitLimitAlongsideK() throws Exception {
+    LuceneSearchIndexCommand command = spy(new LuceneSearchIndexCommand());
+    command.setCache(mockCache);
+
+    ResultCollector<?, ?> rc = mock(ResultCollector.class);
+    Set<LuceneSearchResults> hitSet =
+        Collections.singleton(new LuceneSearchResults("k1", "v1", 0.95f));
+    doReturn(rc).when(command).executeSearch(any(LuceneQueryInfo.class));
+    doReturn(Collections.singletonList(hitSet)).when(rc).getResult();
+
+    gfsh.executeAndAssertThat(command,
+        "search lucene --name=vecIdx --region=/docs --query-vector=[1.0,0.0] --k=5 --limit=2")
+        .statusIsSuccess();
+
+    ArgumentCaptor<LuceneQueryInfo> captor = ArgumentCaptor.forClass(LuceneQueryInfo.class);
+    verify(command).executeSearch(captor.capture());
+    LuceneQueryInfo info = captor.getValue();
+    assertThat(info.getK()).isEqualTo(5);
+    assertThat(info.getEffectiveK()).isEqualTo(5);
+    assertThat(info.getLimit()).isEqualTo(2);
   }
 }

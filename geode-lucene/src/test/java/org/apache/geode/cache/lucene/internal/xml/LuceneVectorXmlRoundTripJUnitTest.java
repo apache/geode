@@ -163,6 +163,29 @@ public class LuceneVectorXmlRoundTripJUnitTest {
         LuceneXmlConstants.VECTOR_FIELD, null, badDim))
             .isInstanceOf(CacheXmlException.class)
             .hasMessageContaining("dimension");
+
+    // Invalid quantize-sq8 boolean strings must be rejected strictly
+    AttributesImpl badSq8 = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(badSq8, LuceneXmlConstants.NAME, "emb");
+    XmlGeneratorUtils.addAttribute(badSq8, LuceneXmlConstants.DIMENSION, "16");
+    XmlGeneratorUtils.addAttribute(badSq8, LuceneXmlConstants.QUANTIZE_SQ8, "yes");
+    assertThatThrownBy(() -> parser.startElement(LuceneXmlConstants.NAMESPACE,
+        LuceneXmlConstants.VECTOR_FIELD, null, badSq8))
+            .isInstanceOf(CacheXmlException.class)
+            .hasMessageContaining("quantize-sq8");
+
+    // Duplicate <vector-field> must throw CacheXmlException
+    AttributesImpl validField = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(validField, LuceneXmlConstants.NAME, "emb");
+    XmlGeneratorUtils.addAttribute(validField, LuceneXmlConstants.DIMENSION, "16");
+    XmlGeneratorUtils.addAttribute(validField, LuceneXmlConstants.QUANTIZE_SQ8, "true");
+    parser.startElement(LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.VECTOR_FIELD, null,
+        validField);
+
+    assertThatThrownBy(() -> parser.startElement(LuceneXmlConstants.NAMESPACE,
+        LuceneXmlConstants.VECTOR_FIELD, null, validField))
+            .isInstanceOf(CacheXmlException.class)
+            .hasMessageContaining("Duplicate");
   }
 
   @Test

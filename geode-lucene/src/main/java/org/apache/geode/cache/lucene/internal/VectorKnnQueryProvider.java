@@ -19,10 +19,12 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.KnnFloatVectorQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQueryException;
@@ -122,23 +124,57 @@ public class VectorKnnQueryProvider implements LuceneQueryProvider {
   }
 
   private Query parseFilterQuery(LuceneIndex index, String rawFilter) throws LuceneQueryException {
-    Analyzer analyzer =
-        index instanceof LuceneIndexImpl && ((LuceneIndexImpl) index).getAnalyzer() != null
-            ? ((LuceneIndexImpl) index).getAnalyzer()
-            : new StandardAnalyzer();
+    Analyzer indexAnalyzer = index instanceof LuceneIndexImpl
+        ? ((LuceneIndexImpl) index).getAnalyzer()
+        : null;
     String effectiveDefaultField = defaultField;
     if (effectiveDefaultField == null || effectiveDefaultField.trim().isEmpty()) {
       String[] fieldNames = index.getFieldNames();
-      effectiveDefaultField = (fieldNames != null && fieldNames.length > 0) ? fieldNames[0] : "";
+      effectiveDefaultField =
+          (fieldNames != null && fieldNames.length > 0) ? fieldNames[0] : null;
     }
-    StandardQueryParser parser = new StandardQueryParser(analyzer);
-    parser.setAllowLeadingWildcard(true);
-    try {
-      return parser.parse(rawFilter, effectiveDefaultField);
+
+    try (
+        StandardAnalyzer fallbackAnalyzer = indexAnalyzer == null ? new StandardAnalyzer() : null) {
+      Analyzer analyzer = indexAnalyzer != null ? indexAnalyzer : fallbackAnalyzer;
+      StandardQueryParser parser = new StandardQueryParser(analyzer);
+      parser.setAllowLeadingWildcard(true);
+      Query parsed =
+          parser.parse(rawFilter, effectiveDefaultField == null ? "" : effectiveDefaultField);
+      if (effectiveDefaultField == null && referencesEmptyField(parsed)) {
+        throw new LuceneQueryException(
+            "Filter query '" + rawFilter + "' contains unqualified terms on pure-vector index '"
+                + index.getName()
+                + "'; qualify fields explicitly (e.g. field:value) or specify --defaultField.");
+      }
+      return parsed;
     } catch (QueryNodeException e) {
       throw new LuceneQueryException(
           String.format("Parsing filter query '%s' failed due to: %s", rawFilter, e.getMessage()),
           e);
     }
+  }
+
+  private static boolean referencesEmptyField(Query query) {
+    final boolean[] foundEmpty = new boolean[1];
+    query.visit(new QueryVisitor() {
+      @Override
+      public boolean acceptField(String field) {
+        if (field == null || field.isEmpty()) {
+          foundEmpty[0] = true;
+        }
+        return true;
+      }
+
+      @Override
+      public void consumeTerms(Query q, Term... terms) {
+        for (Term term : terms) {
+          if (term.field() == null || term.field().isEmpty()) {
+            foundEmpty[0] = true;
+          }
+        }
+      }
+    });
+    return foundEmpty[0];
   }
 }

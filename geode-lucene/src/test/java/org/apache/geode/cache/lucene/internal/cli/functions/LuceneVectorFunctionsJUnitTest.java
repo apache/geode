@@ -196,4 +196,62 @@ public class LuceneVectorFunctionsJUnitTest {
             .isInstanceOf(LuceneQueryException.class)
             .hasMessageContaining("dimension mismatch");
   }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void searchIndexFunctionRespectsExplicitLimitDifferentFromK() throws Exception {
+    GemFireCacheImpl cache = Fakes.cache();
+    InternalLuceneService service = mock(InternalLuceneService.class);
+    LuceneQueryFactory queryFactory = mock(LuceneQueryFactory.class);
+    LuceneQuery<String, String> luceneQuery = mock(LuceneQuery.class);
+    PageableLuceneQueryResults<String, String> pages = mock(PageableLuceneQueryResults.class);
+
+    when(cache.getService(InternalLuceneService.class)).thenReturn(service);
+    when(service.getIndex("vecIdx", "/docs")).thenReturn(mock(LuceneIndex.class));
+    when(service.createLuceneQueryFactory()).thenReturn(queryFactory);
+    when(queryFactory.setLimit(anyInt())).thenReturn(queryFactory);
+    when(queryFactory.create(eq("vecIdx"), eq("/docs"), any(LuceneQueryProvider.class)))
+        .thenReturn((LuceneQuery) luceneQuery);
+    when(luceneQuery.findPages()).thenReturn(pages);
+    when(pages.hasNext()).thenReturn(false);
+
+    LuceneQueryInfo queryInfo = new LuceneQueryInfo("vecIdx", "/docs", null, null, 2, false,
+        "embedding", new float[] {1.0f, 0.0f}, 5, null);
+
+    FunctionContext context = mock(FunctionContext.class);
+    ResultSender resultSender = mock(ResultSender.class);
+    when(context.getCache()).thenReturn(cache);
+    when(context.getArguments()).thenReturn(queryInfo);
+    when(context.getResultSender()).thenReturn(resultSender);
+
+    new LuceneSearchIndexFunction<>().execute(context);
+
+    ArgumentCaptor<LuceneQueryProvider> providerCaptor =
+        ArgumentCaptor.forClass(LuceneQueryProvider.class);
+    verify(queryFactory).setLimit(2);
+    verify(queryFactory).create(eq("vecIdx"), eq("/docs"), providerCaptor.capture());
+    assertThat(((VectorKnnQueryProvider) providerCaptor.getValue()).getK()).isEqualTo(5);
+  }
+
+  @Test
+  public void vectorKnnQueryProviderFailsFastOnUnqualifiedFilterForPureVectorIndex()
+      throws Exception {
+    LuceneIndex pureVecIndex = mock(LuceneIndex.class);
+    when(pureVecIndex.getName()).thenReturn("pureVec");
+    when(pureVecIndex.getFieldNames()).thenReturn(new String[0]);
+    when(pureVecIndex.getVectorFields()).thenReturn(Collections.singletonMap("embedding",
+        new VectorIndexMetadata("embedding", 2, VectorSimilarityFunction.COSINE, false)));
+
+    // Unqualified filter on pure-vector index must fail fast
+    assertThatThrownBy(() -> new VectorKnnQueryProvider("embedding", new float[] {1.0f, 0.0f}, 5,
+        "books", null).getQuery(pureVecIndex))
+            .isInstanceOf(LuceneQueryException.class)
+            .hasMessageContaining("unqualified");
+
+    // Field-qualified filter on pure-vector index succeeds (and closes fallback analyzer)
+    Query qualified = new VectorKnnQueryProvider("embedding", new float[] {1.0f, 0.0f}, 5,
+        "category:books", null).getQuery(pureVecIndex);
+    assertThat(qualified).isInstanceOf(KnnFloatVectorQuery.class);
+    assertThat(((KnnFloatVectorQuery) qualified).getFilter().toString()).contains("category:books");
+  }
 }

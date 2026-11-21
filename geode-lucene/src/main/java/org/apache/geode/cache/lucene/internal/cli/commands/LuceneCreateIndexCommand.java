@@ -126,6 +126,12 @@ public class LuceneCreateIndexCommand extends LuceneCommandBase {
       throw new UserErrorException(
           "At least one --field or --vector-field must be specified when creating a Lucene index.");
     }
+    for (String textField : trimmedFields) {
+      if (parsedVectorFields.containsKey(textField)) {
+        throw new UserErrorException(
+            "Field '" + textField + "' cannot be specified in both --field and --vector-field.");
+      }
+    }
 
     LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers,
         serializer, parsedVectorFields);
@@ -222,6 +228,10 @@ public class LuceneCreateIndexCommand extends LuceneCommandBase {
 
       try {
         VectorIndexMetadata metadata = new VectorIndexMetadata(fieldName, dim, similarity, sq8);
+        if (result.containsKey(metadata.getFieldName())) {
+          throw new UserErrorException(
+              "Duplicate --vector-field name: '" + metadata.getFieldName() + "'.");
+        }
         result.put(metadata.getFieldName(), metadata);
       } catch (IllegalArgumentException e) {
         throw new UserErrorException(e.getMessage(), e);

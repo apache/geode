@@ -60,6 +60,9 @@ public class LuceneVectorMetricsJUnitTest {
     ArgumentCaptor<LongSupplier> supplierCaptor = ArgumentCaptor.forClass(LongSupplier.class);
     verify(statistics).setLongSupplier(eq(segBytesId), supplierCaptor.capture());
     assertThat(supplierCaptor.getValue().getAsLong()).isEqualTo(131072L);
+    // Live supplier must work immediately even when Statistics gauge returns 0 (sampling disabled)
+    when(statistics.getLong(segBytesId)).thenReturn(0L);
+    assertThat(stats.getSegmentMemoryBytes()).isEqualTo(131072L);
 
     stats.setVectorFieldCount(2);
     int vecCountId = type.nameToId(StatsKey.VECTOR_FIELD_COUNT);

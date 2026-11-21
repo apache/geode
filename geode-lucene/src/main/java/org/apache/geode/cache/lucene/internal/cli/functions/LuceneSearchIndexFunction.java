@@ -74,11 +74,12 @@ public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
       final LuceneQuery<K, V> query;
       if (queryInfo.isVectorQuery()) {
         int effectiveK = queryInfo.getEffectiveK();
+        int effectiveLimit = queryInfo.getLimit();
         VectorKnnQueryProvider provider = new VectorKnnQueryProvider(queryInfo.getVectorField(),
             queryInfo.getQueryVector(), effectiveK, queryInfo.getFilterQuery(),
             queryInfo.getDefaultField());
         query = luceneService.createLuceneQueryFactory()
-            .setLimit(effectiveK)
+            .setLimit(effectiveLimit)
             .create(queryInfo.getIndexName(), queryInfo.getRegionPath(), provider);
       } else {
         query = luceneService.createLuceneQueryFactory()

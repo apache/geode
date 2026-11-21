@@ -54,6 +54,7 @@ public class LuceneIndexStats {
 
   private final Statistics stats;
   private final CopyOnWriteHashSet<IntSupplier> documentsSuppliers = new CopyOnWriteHashSet<>();
+  private volatile LongSupplier segmentMemoryBytesSupplier;
 
   static {
     final StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -260,10 +261,15 @@ public class LuceneIndexStats {
   }
 
   public void setSegmentMemoryBytesSupplier(LongSupplier supplier) {
+    segmentMemoryBytesSupplier = supplier;
     stats.setLongSupplier(segmentMemoryBytesId, supplier);
   }
 
   public long getSegmentMemoryBytes() {
+    LongSupplier supplier = segmentMemoryBytesSupplier;
+    if (supplier != null) {
+      return supplier.getAsLong();
+    }
     return stats.getLong(segmentMemoryBytesId);
   }
 

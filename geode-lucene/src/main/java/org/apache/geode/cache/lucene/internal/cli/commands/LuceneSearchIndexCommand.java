@@ -105,6 +105,10 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
       throws Exception {
     authorize(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ, regionPath);
 
+    if (limit != -1 && limit <= 0) {
+      throw new UserErrorException("--limit must be a positive integer, got: " + limit);
+    }
+
     final LuceneQueryInfo queryInfo;
     if (queryVector != null && !queryVector.trim().isEmpty()) {
       float[] parsedVector = parseQueryVector(queryVector);
@@ -115,6 +119,12 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
       queryInfo = new LuceneQueryInfo(indexName, regionPath, queryString, defaultField,
           effectiveLimit, keysOnly, vectorField, parsedVector, k, filterQuery);
     } else {
+      if ((vectorField != null && !vectorField.trim().isEmpty())
+          || k != -1
+          || (filterQuery != null && !filterQuery.trim().isEmpty())) {
+        throw new UserErrorException(
+            "--vector-field, --k, and --filter-query require --query-vector.");
+      }
       if (queryString == null || queryString.trim().isEmpty()) {
         throw new UserErrorException(
             "Either --queryString or --query-vector must be specified for search lucene.");
@@ -134,17 +144,27 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
 
   private float[] parseQueryVector(String rawVector) {
     String cleaned = rawVector.trim();
-    if (cleaned.startsWith("[") && cleaned.endsWith("]")) {
+    boolean startsWithBracket = cleaned.startsWith("[");
+    boolean endsWithBracket = cleaned.endsWith("]");
+    if (startsWithBracket != endsWithBracket) {
+      throw new UserErrorException("Unmatched brackets in --query-vector: '" + rawVector + "'");
+    }
+    if (startsWithBracket) {
       cleaned = cleaned.substring(1, cleaned.length() - 1).trim();
     }
     if (cleaned.isEmpty()) {
       throw new UserErrorException("--query-vector must contain at least one float value.");
     }
-    String[] parts = cleaned.split(",");
+    String[] parts = cleaned.split(",", -1);
     float[] vector = new float[parts.length];
     for (int i = 0; i < parts.length; i++) {
+      String token = parts[i].trim();
+      if (token.isEmpty()) {
+        throw new UserErrorException(
+            "Empty element in --query-vector at index " + i + ": '" + rawVector + "'");
+      }
       try {
-        float val = Float.parseFloat(parts[i].trim());
+        float val = Float.parseFloat(token);
         if (!Float.isFinite(val)) {
           throw new UserErrorException(
               "--query-vector element at index " + i + " must be finite, got: " + val);
@@ -152,7 +172,7 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
         vector[i] = val;
       } catch (NumberFormatException e) {
         throw new UserErrorException(
-            "Invalid float in --query-vector at index " + i + ": '" + parts[i].trim() + "'", e);
+            "Invalid float in --query-vector at index " + i + ": '" + token + "'", e);
       }
     }
     return vector;

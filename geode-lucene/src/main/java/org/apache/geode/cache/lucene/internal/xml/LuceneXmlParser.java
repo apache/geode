@@ -142,7 +142,12 @@ public class LuceneXmlParser extends AbstractXmlParser {
       int beamWidth = (beamWidthStr == null || beamWidthStr.trim().isEmpty())
           ? VectorIndexMetadata.DEFAULT_BEAM_WIDTH
           : Integer.parseInt(beamWidthStr.trim());
-      boolean quantizeSQ8 = sq8Str != null && Boolean.parseBoolean(sq8Str.trim());
+      boolean quantizeSQ8 = parseStrictBoolean(sq8Str);
+
+      if (creation.getVectorFields().containsKey(name)) {
+        throw new IllegalArgumentException(
+            "Duplicate lucene <vector-field> name: '" + name + "'");
+      }
 
       creation.addVectorField(new VectorIndexMetadata(name, dimension, similarity, maxConnections,
           beamWidth, quantizeSQ8));
@@ -150,6 +155,21 @@ public class LuceneXmlParser extends AbstractXmlParser {
       throw new CacheXmlException("Invalid lucene <vector-field> configuration: " + e.getMessage(),
           e);
     }
+  }
+
+  private boolean parseStrictBoolean(String raw) {
+    if (raw == null || raw.trim().isEmpty()) {
+      return false;
+    }
+    String normalized = raw.trim().toLowerCase(Locale.ROOT);
+    if ("true".equals(normalized)) {
+      return true;
+    }
+    if ("false".equals(normalized)) {
+      return false;
+    }
+    throw new IllegalArgumentException(
+        "Invalid quantize-sq8 boolean value '" + raw + "' (expected true or false)");
   }
 
   private void startIndex(Attributes atts) {
