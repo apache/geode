@@ -150,6 +150,9 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     this.vectorFields = vectorFields == null || vectorFields.isEmpty()
         ? Collections.emptyMap()
         : Collections.unmodifiableMap(new LinkedHashMap<>(vectorFields));
+    if (indexStats != null) {
+      indexStats.setVectorFieldCount(this.vectorFields.size());
+    }
   }
 
   @Override

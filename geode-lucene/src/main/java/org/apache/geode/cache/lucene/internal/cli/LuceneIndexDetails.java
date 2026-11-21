@@ -17,12 +17,14 @@ package org.apache.geode.cache.lucene.internal.cli;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.Analyzer;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
@@ -34,7 +36,9 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   private final String serverName;
   private final String[] searchableFieldNames;
   private Map<String, String> fieldAnalyzers = null;
+  private Map<String, VectorIndexMetadata> vectorFields = Collections.emptyMap();
   private final Map<String, Integer> indexStats;
+  private final long segmentMemoryBytes;
   private final LuceneIndexStatus status;
   private String serializer;
 
@@ -42,11 +46,24 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
       final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers,
       LuceneIndexStats indexStats, LuceneIndexStatus status, final String serverName,
       LuceneSerializer serializer) {
+    this(indexName, regionPath, searchableFieldNames, fieldAnalyzers, Collections.emptyMap(),
+        indexStats, status, serverName, serializer);
+  }
+
+  public LuceneIndexDetails(final String indexName, final String regionPath,
+      final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers,
+      final Map<String, VectorIndexMetadata> vectorFields, LuceneIndexStats indexStats,
+      LuceneIndexStatus status, final String serverName, LuceneSerializer serializer) {
     super(indexName, regionPath);
     this.serverName = serverName;
-    this.searchableFieldNames = searchableFieldNames;
+    this.searchableFieldNames =
+        searchableFieldNames == null ? new String[0] : searchableFieldNames;
     this.fieldAnalyzers = getFieldAnalyzerStrings(fieldAnalyzers);
+    this.vectorFields = vectorFields == null || vectorFields.isEmpty()
+        ? Collections.emptyMap()
+        : new LinkedHashMap<>(vectorFields);
     this.indexStats = getIndexStatsMap(indexStats);
+    this.segmentMemoryBytes = indexStats == null ? 0L : indexStats.getSegmentMemoryBytes();
     this.status = status;
     this.serializer = serializer != null ? serializer.getClass().getSimpleName()
         : HeterogeneousLuceneSerializer.class.getSimpleName();
@@ -54,19 +71,21 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
 
   public LuceneIndexDetails(LuceneIndexImpl index, final String serverName) {
     this(index.getName(), index.getRegionPath(), index.getFieldNames(), index.getFieldAnalyzers(),
-        index.getIndexStats(), LuceneIndexStatus.INITIALIZED, serverName,
+        index.getVectorFields(), index.getIndexStats(), LuceneIndexStatus.INITIALIZED, serverName,
         index.getLuceneSerializer());
   }
 
   public LuceneIndexDetails(LuceneIndexImpl index, final String serverName,
       final LuceneIndexStatus status) {
     this(index.getName(), index.getRegionPath(), index.getFieldNames(), index.getFieldAnalyzers(),
-        index.getIndexStats(), status, serverName, index.getLuceneSerializer());
+        index.getVectorFields(), index.getIndexStats(), status, serverName,
+        index.getLuceneSerializer());
   }
 
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
-        null, null, LuceneIndexStatus.NOT_INITIALIZED, serverName, null);
+        null, indexProfile.getVectorFields(), null, LuceneIndexStatus.NOT_INITIALIZED, serverName,
+        null);
     fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
     serializer = indexProfile.getSerializerClass();
   }
@@ -74,7 +93,7 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName,
       final LuceneIndexStatus status) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
-        null, null, status, serverName, null);
+        null, indexProfile.getVectorFields(), null, status, serverName, null);
     fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
     serializer = indexProfile.getSerializerClass();
   }
@@ -145,15 +164,43 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
     return serializer;
   }
 
+  public Map<String, VectorIndexMetadata> getVectorFields() {
+    return vectorFields == null
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(vectorFields);
+  }
+
+  public String getVectorFieldsString() {
+    if (vectorFields == null || vectorFields.isEmpty()) {
+      return "{}";
+    }
+    Map<String, String> formatted = new LinkedHashMap<>();
+    for (Entry<String, VectorIndexMetadata> entry : vectorFields.entrySet()) {
+      VectorIndexMetadata meta = entry.getValue();
+      formatted.put(entry.getKey(), String.format("(dim=%d, similarity=%s, M=%d, efC=%d, sq8=%s)",
+          meta.getDimension(), meta.getSimilarityFunction(), meta.getMaxConnections(),
+          meta.getBeamWidth(), meta.isQuantizeSQ8()));
+    }
+    return formatted.toString();
+  }
+
+  public long getSegmentMemoryBytes() {
+    return segmentMemoryBytes;
+  }
+
   @Override
   public String toString() {
     return "{\n\tIndex Name = " + indexName
         + ",\tRegion Path = " + regionPath
         + ",\tIndexed Fields = " + getSearchableFieldNamesString()
         + ",\tField Analyzer = " + getFieldAnalyzersString()
+        + (vectorFields == null || vectorFields.isEmpty() ? ""
+            : ",\tVector Fields = " + getVectorFieldsString())
         + ",\tSerializer = " + getSerializerString()
         + ",\tStatus =\n\t" + getStatus()
         + ",\tIndex Statistics =\n\t" + getIndexStatsString()
+        + (vectorFields == null || vectorFields.isEmpty() ? ""
+            : ",\tSegment Memory Bytes = " + segmentMemoryBytes)
         + "\n}\n";
   }
 

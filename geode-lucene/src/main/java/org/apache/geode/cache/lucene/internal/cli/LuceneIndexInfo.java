@@ -14,23 +14,40 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
+
 public class LuceneIndexInfo extends LuceneFunctionSerializable {
   private static final long serialVersionUID = 1L;
 
   private final String[] searchableFieldNames;
   private final String[] fieldAnalyzers;
   private final String serializer;
+  private final Map<String, VectorIndexMetadata> vectorFields;
 
   public LuceneIndexInfo(final String indexName, final String regionPath,
       final String[] searchableFieldNames, String[] fieldAnalyzers, String serializer) {
+    this(indexName, regionPath, searchableFieldNames, fieldAnalyzers, serializer,
+        Collections.emptyMap());
+  }
+
+  public LuceneIndexInfo(final String indexName, final String regionPath,
+      final String[] searchableFieldNames, String[] fieldAnalyzers, String serializer,
+      Map<String, VectorIndexMetadata> vectorFields) {
     super(indexName, regionPath);
     this.searchableFieldNames = searchableFieldNames;
     this.fieldAnalyzers = fieldAnalyzers;
     this.serializer = serializer;
+    this.vectorFields = vectorFields == null || vectorFields.isEmpty()
+        ? Collections.emptyMap()
+        : new LinkedHashMap<>(vectorFields);
   }
 
   public LuceneIndexInfo(final String indexName, final String regionPath) {
-    this(indexName, regionPath, null, null, null);
+    this(indexName, regionPath, null, null, null, Collections.emptyMap());
   }
 
   public String[] getSearchableFieldNames() {
@@ -43,5 +60,11 @@ public class LuceneIndexInfo extends LuceneFunctionSerializable {
 
   public String getSerializer() {
     return serializer;
+  }
+
+  public Map<String, VectorIndexMetadata> getVectorFields() {
+    return vectorFields == null
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(vectorFields);
   }
 }

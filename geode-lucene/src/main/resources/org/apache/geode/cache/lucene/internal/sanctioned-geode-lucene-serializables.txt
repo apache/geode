@@ -4,12 +4,13 @@ org/apache/geode/cache/lucene/LuceneIndexNotFoundException,false,indexName:java/
 org/apache/geode/cache/lucene/LuceneQueryException,false
 org/apache/geode/cache/lucene/VectorIndexMetadata,true,1,beamWidth:int,dimension:int,fieldName:java/lang/String,maxConnections:int,quantizeSQ8:boolean,similarityFunctionName:java/lang/String
 org/apache/geode/cache/lucene/internal/LuceneIndexCreationInProgressException,false
+org/apache/geode/cache/lucene/internal/VectorKnnQueryProvider,true,1,defaultField:java/lang/String,filterQuery:java/lang/String,k:int,queryVector:float[],vectorField:java/lang/String
 org/apache/geode/cache/lucene/internal/cli/LuceneDestroyIndexInfo,false,definedDestroyOnly:boolean
 org/apache/geode/cache/lucene/internal/cli/LuceneFunctionSerializable,false,indexName:java/lang/String,regionPath:java/lang/String
-org/apache/geode/cache/lucene/internal/cli/LuceneIndexDetails,true,1,fieldAnalyzers:java/util/Map,indexStats:java/util/Map,searchableFieldNames:java/lang/String[],serializer:java/lang/String,serverName:java/lang/String,status:org/apache/geode/cache/lucene/internal/cli/LuceneIndexStatus
-org/apache/geode/cache/lucene/internal/cli/LuceneIndexInfo,true,1,fieldAnalyzers:java/lang/String[],searchableFieldNames:java/lang/String[],serializer:java/lang/String
+org/apache/geode/cache/lucene/internal/cli/LuceneIndexDetails,true,1,fieldAnalyzers:java/util/Map,indexStats:java/util/Map,searchableFieldNames:java/lang/String[],segmentMemoryBytes:long,serializer:java/lang/String,serverName:java/lang/String,status:org/apache/geode/cache/lucene/internal/cli/LuceneIndexStatus,vectorFields:java/util/Map
+org/apache/geode/cache/lucene/internal/cli/LuceneIndexInfo,true,1,fieldAnalyzers:java/lang/String[],searchableFieldNames:java/lang/String[],serializer:java/lang/String,vectorFields:java/util/Map
 org/apache/geode/cache/lucene/internal/cli/LuceneIndexStatus,false
-org/apache/geode/cache/lucene/internal/cli/LuceneQueryInfo,true,1,defaultField:java/lang/String,keysOnly:boolean,limit:int,queryString:java/lang/String
+org/apache/geode/cache/lucene/internal/cli/LuceneQueryInfo,true,1,defaultField:java/lang/String,filterQuery:java/lang/String,k:int,keysOnly:boolean,limit:int,queryString:java/lang/String,queryVector:float[],vectorField:java/lang/String
 org/apache/geode/cache/lucene/internal/cli/LuceneSearchResults,false,exceptionFlag:boolean,exceptionMessage:java/lang/String,key:java/lang/String,score:float,value:java/lang/String
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneCreateIndexFunction,true,3061443846664615818
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneDescribeIndexFunction,true,1776072528558670172
@@ -21,4 +22,5 @@ org/apache/geode/cache/lucene/internal/distributed/IndexingInProgressFunction,tr
 org/apache/geode/cache/lucene/internal/distributed/LuceneQueryFunction,true,1
 org/apache/geode/cache/lucene/internal/distributed/WaitUntilFlushedFunction,true,1
 org/apache/geode/cache/lucene/internal/results/LuceneGetPageFunction,true,1
-org/apache/geode/cache/lucene/management/configuration/Index,false,field:java/util/List,name:java/lang/String,serializer:org/apache/geode/cache/configuration/DeclarableType
+org/apache/geode/cache/lucene/management/configuration/Index,false,field:java/util/List,name:java/lang/String,serializer:org/apache/geode/cache/configuration/DeclarableType,vectorField:java/util/List
+org/apache/geode/cache/lucene/management/configuration/Index$VectorField,true,1,beamWidth:java/lang/Integer,dimension:int,maxConnections:java/lang/Integer,name:java/lang/String,quantizeSQ8:boolean,similarity:java/lang/String

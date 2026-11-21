@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal;
 import static org.apache.geode.distributed.internal.DistributionStats.getStatTime;
 
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -48,6 +49,8 @@ public class LuceneIndexStats {
   private static final int commitsInProgressId;
   private static final int documentsId;
   private static final int failedEntriesId;
+  private static final int segmentMemoryBytesId;
+  private static final int vectorFieldCountId;
 
   private final Statistics stats;
   private final CopyOnWriteHashSet<IntSupplier> documentsSuppliers = new CopyOnWriteHashSet<>();
@@ -83,7 +86,11 @@ public class LuceneIndexStats {
             "nanoseconds"),
         f.createIntGauge("commitsInProgress", "Number of lucene index commits in progress",
             "operations"),
-        f.createIntGauge("documents", "Number of documents in the index", "documents"),});
+        f.createIntGauge("documents", "Number of documents in the index", "documents"),
+        f.createLongGauge("segmentMemoryBytes",
+            "Total bytes occupied by Lucene index segments including HNSW vector graphs", "bytes"),
+        f.createIntGauge("vectorFieldCount",
+            "Number of vector fields configured on this Lucene index", "fields"),});
 
     queryExecutionsId = statsType.nameToId("queryExecutions");
     queryExecutionTimeId = statsType.nameToId("queryExecutionTime");
@@ -102,6 +109,8 @@ public class LuceneIndexStats {
     commitsInProgressId = statsType.nameToId("commitsInProgress");
     documentsId = statsType.nameToId("documents");
     failedEntriesId = statsType.nameToId("failedEntries");
+    segmentMemoryBytesId = statsType.nameToId("segmentMemoryBytes");
+    vectorFieldCountId = statsType.nameToId("vectorFieldCount");
   }
 
   public LuceneIndexStats(StatisticsFactory f, String name) {
@@ -248,5 +257,21 @@ public class LuceneIndexStats {
 
   public void incNumberOfQueryExecuted() {
     stats.incInt(queryExecutionsId, 1);
+  }
+
+  public void setSegmentMemoryBytesSupplier(LongSupplier supplier) {
+    stats.setLongSupplier(segmentMemoryBytesId, supplier);
+  }
+
+  public long getSegmentMemoryBytes() {
+    return stats.getLong(segmentMemoryBytesId);
+  }
+
+  public void setVectorFieldCount(int count) {
+    stats.setInt(vectorFieldCountId, count);
+  }
+
+  public int getVectorFieldCount() {
+    return stats.getInt(vectorFieldCountId);
   }
 }

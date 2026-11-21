@@ -16,6 +16,7 @@
 
 package org.apache.geode.cache.lucene.management.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,14 +67,17 @@ import org.apache.geode.cache.configuration.XSDRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "field",
+    "vectorField",
     "serializer"
 })
 @XmlRootElement(name = "index", namespace = "http://geode.apache.org/schema/lucene")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/lucene",
     schemaLocation = "http://geode.apache.org/schema/lucene/lucene-1.0.xsd")
 public class Index extends CacheElement {
-  @XmlElement(namespace = "http://geode.apache.org/schema/lucene", required = true)
+  @XmlElement(namespace = "http://geode.apache.org/schema/lucene")
   protected List<Index.Field> field;
+  @XmlElement(name = "vector-field", namespace = "http://geode.apache.org/schema/lucene")
+  protected List<Index.VectorField> vectorField;
   @XmlElement(namespace = "http://geode.apache.org/schema/lucene")
   protected DeclarableType serializer;
   @XmlAttribute(name = "name")
@@ -107,6 +111,19 @@ public class Index extends CacheElement {
       field = new ArrayList<>();
     }
     return field;
+  }
+
+  /**
+   * Gets the value of the vectorField property for cluster configuration / REST management.
+   *
+   * @return live list of configured {@link Index.VectorField} descriptors
+   * @since Geode 2.1
+   */
+  public List<Index.VectorField> getVectorField() {
+    if (vectorField == null) {
+      vectorField = new ArrayList<>();
+    }
+    return vectorField;
   }
 
   /**
@@ -240,6 +257,78 @@ public class Index extends CacheElement {
       analyzer = value;
     }
 
+  }
+
+  /**
+   * JAXB configuration element for a {@code <lucene:vector-field>} descriptor.
+   *
+   * @since Geode 2.1
+   */
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @XmlType(name = "")
+  public static class VectorField implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @XmlAttribute(name = "name", required = true)
+    protected String name;
+    @XmlAttribute(name = "dimension", required = true)
+    protected int dimension;
+    @XmlAttribute(name = "similarity")
+    protected String similarity;
+    @XmlAttribute(name = "max-connections")
+    protected Integer maxConnections;
+    @XmlAttribute(name = "beam-width")
+    protected Integer beamWidth;
+    @XmlAttribute(name = "quantize-sq8")
+    protected boolean quantizeSQ8;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public int getDimension() {
+      return dimension;
+    }
+
+    public void setDimension(int dimension) {
+      this.dimension = dimension;
+    }
+
+    public String getSimilarity() {
+      return similarity;
+    }
+
+    public void setSimilarity(String similarity) {
+      this.similarity = similarity;
+    }
+
+    public Integer getMaxConnections() {
+      return maxConnections;
+    }
+
+    public void setMaxConnections(Integer maxConnections) {
+      this.maxConnections = maxConnections;
+    }
+
+    public Integer getBeamWidth() {
+      return beamWidth;
+    }
+
+    public void setBeamWidth(Integer beamWidth) {
+      this.beamWidth = beamWidth;
+    }
+
+    public boolean isQuantizeSQ8() {
+      return quantizeSQ8;
+    }
+
+    public void setQuantizeSQ8(boolean quantizeSQ8) {
+      this.quantizeSQ8 = quantizeSQ8;
+    }
   }
 
 }

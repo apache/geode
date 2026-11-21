@@ -28,6 +28,7 @@ import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+import org.apache.geode.cache.lucene.internal.VectorKnnQueryProvider;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
@@ -70,9 +71,20 @@ public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
         throw new Exception("Index " + queryInfo.getIndexName() + " not found on region "
             + queryInfo.getRegionPath());
       }
-      final LuceneQuery<K, V> query = luceneService.createLuceneQueryFactory()
-          .setLimit(queryInfo.getLimit()).create(queryInfo.getIndexName(),
-              queryInfo.getRegionPath(), queryInfo.getQueryString(), queryInfo.getDefaultField());
+      final LuceneQuery<K, V> query;
+      if (queryInfo.isVectorQuery()) {
+        int effectiveK = queryInfo.getEffectiveK();
+        VectorKnnQueryProvider provider = new VectorKnnQueryProvider(queryInfo.getVectorField(),
+            queryInfo.getQueryVector(), effectiveK, queryInfo.getFilterQuery(),
+            queryInfo.getDefaultField());
+        query = luceneService.createLuceneQueryFactory()
+            .setLimit(effectiveK)
+            .create(queryInfo.getIndexName(), queryInfo.getRegionPath(), provider);
+      } else {
+        query = luceneService.createLuceneQueryFactory()
+            .setLimit(queryInfo.getLimit()).create(queryInfo.getIndexName(),
+                queryInfo.getRegionPath(), queryInfo.getQueryString(), queryInfo.getDefaultField());
+      }
       if (queryInfo.getKeysOnly()) {
         query.findKeys().forEach(key -> result.add(new LuceneSearchResults(key.toString())));
       } else {

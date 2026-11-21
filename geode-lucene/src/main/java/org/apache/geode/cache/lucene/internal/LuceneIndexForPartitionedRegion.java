@@ -127,6 +127,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
     fileSystemStats
         .setBytesSupplier(() -> getFileAndChunkRegion().getPrStats().getDataStoreBytesInUse());
+    indexStats.setSegmentMemoryBytesSupplier(fileSystemStats::getBytes);
 
   }
 

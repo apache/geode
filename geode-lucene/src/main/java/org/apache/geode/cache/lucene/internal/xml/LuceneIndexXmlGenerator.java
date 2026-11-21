@@ -16,12 +16,20 @@
 package org.apache.geode.cache.lucene.internal.xml;
 
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.ANALYZER;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.BEAM_WIDTH;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.DIMENSION;
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.FIELD;
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.INDEX;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.MAX_CONNECTIONS;
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAME;
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAMESPACE;
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.PREFIX;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.QUANTIZE_SQ8;
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.SERIALIZER;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.SIMILARITY;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.VECTOR_FIELD;
+
+import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.ContentHandler;
@@ -30,6 +38,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
@@ -58,14 +67,36 @@ public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
     // TODO - should the type be xs:string ?
     XmlGeneratorUtils.addAttribute(attr, NAME, index.getName());
     XmlGeneratorUtils.startElement(handler, PREFIX, INDEX, attr);
-    for (String field : index.getFieldNames()) {
-      AttributesImpl fieldAttr = new AttributesImpl();
-      XmlGeneratorUtils.addAttribute(fieldAttr, NAME, field);
-      Analyzer analyzer = index.getFieldAnalyzers().get(field);
-      if (analyzer != null) {
-        XmlGeneratorUtils.addAttribute(fieldAttr, ANALYZER, analyzer.getClass().getName());
+    String[] fieldNames = index.getFieldNames();
+    if (fieldNames != null) {
+      for (String field : fieldNames) {
+        AttributesImpl fieldAttr = new AttributesImpl();
+        XmlGeneratorUtils.addAttribute(fieldAttr, NAME, field);
+        Analyzer analyzer = index.getFieldAnalyzers().get(field);
+        if (analyzer != null) {
+          XmlGeneratorUtils.addAttribute(fieldAttr, ANALYZER, analyzer.getClass().getName());
+        }
+        XmlGeneratorUtils.emptyElement(handler, PREFIX, FIELD, fieldAttr);
       }
-      XmlGeneratorUtils.emptyElement(handler, PREFIX, FIELD, fieldAttr);
+    }
+
+    Map<String, VectorIndexMetadata> vectorFields = index.getVectorFields();
+    if (vectorFields != null && !vectorFields.isEmpty()) {
+      for (VectorIndexMetadata vectorMetadata : vectorFields.values()) {
+        AttributesImpl vectorAttr = new AttributesImpl();
+        XmlGeneratorUtils.addAttribute(vectorAttr, NAME, vectorMetadata.getFieldName());
+        XmlGeneratorUtils.addAttribute(vectorAttr, DIMENSION,
+            Integer.toString(vectorMetadata.getDimension()));
+        XmlGeneratorUtils.addAttribute(vectorAttr, SIMILARITY,
+            vectorMetadata.getSimilarityFunction().name());
+        XmlGeneratorUtils.addAttribute(vectorAttr, MAX_CONNECTIONS,
+            Integer.toString(vectorMetadata.getMaxConnections()));
+        XmlGeneratorUtils.addAttribute(vectorAttr, BEAM_WIDTH,
+            Integer.toString(vectorMetadata.getBeamWidth()));
+        XmlGeneratorUtils.addAttribute(vectorAttr, QUANTIZE_SQ8,
+            Boolean.toString(vectorMetadata.isQuantizeSQ8()));
+        XmlGeneratorUtils.emptyElement(handler, PREFIX, VECTOR_FIELD, vectorAttr);
+      }
     }
 
     LuceneSerializer serializer = index.getLuceneSerializer();

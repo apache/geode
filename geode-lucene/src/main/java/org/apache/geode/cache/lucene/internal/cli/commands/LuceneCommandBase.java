@@ -48,6 +48,8 @@ public abstract class LuceneCommandBase extends GfshCommand {
     if (!indexDetailsList.isEmpty()) {
       ResultModel result = new ResultModel();
       TabularResultModel indexData = result.addTable("lucene-indexes");
+      boolean includeVectorColumns =
+          indexDetailsList.stream().anyMatch(details -> !details.getVectorFields().isEmpty());
 
       for (final LuceneIndexDetails indexDetails : indexDetailsList) {
         indexData.accumulate("Index Name", indexDetails.getIndexName());
@@ -55,6 +57,9 @@ public abstract class LuceneCommandBase extends GfshCommand {
         indexData.accumulate("Server Name", indexDetails.getServerName());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
+        if (includeVectorColumns) {
+          indexData.accumulate("Vector Fields", indexDetails.getVectorFieldsString());
+        }
         indexData.accumulate("Serializer", indexDetails.getSerializerString());
         indexData.accumulate("Status", indexDetails.getStatus().toString());
 
@@ -66,6 +71,9 @@ public abstract class LuceneCommandBase extends GfshCommand {
             indexData.accumulate("Updates", "NA");
             indexData.accumulate("Commits", "NA");
             indexData.accumulate("Documents", "NA");
+            if (includeVectorColumns) {
+              indexData.accumulate("Segment Bytes", "NA");
+            }
           } else {
             indexData.accumulate("Query Executions",
                 indexDetails.getIndexStats().get("queryExecutions").toString());
@@ -75,6 +83,10 @@ public abstract class LuceneCommandBase extends GfshCommand {
                 indexDetails.getIndexStats().get("commits").toString());
             indexData.accumulate("Documents",
                 indexDetails.getIndexStats().get("documents").toString());
+            if (includeVectorColumns) {
+              indexData.accumulate("Segment Bytes",
+                  Long.toString(indexDetails.getSegmentMemoryBytes()));
+            }
           }
         }
       }

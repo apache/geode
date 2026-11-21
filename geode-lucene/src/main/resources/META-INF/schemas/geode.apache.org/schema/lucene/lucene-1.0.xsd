@@ -46,10 +46,20 @@ XML schema for Lucene indexes in Geode.
   <xsd:element name="index">
     <xsd:complexType>
     	<xsd:sequence>
-    	  <xsd:element name="field" maxOccurs="unbounded">
+    	  <xsd:element name="field" minOccurs="0" maxOccurs="unbounded">
 			<xsd:complexType>
 				<xsd:attribute name="name" type="xsd:string" />
 				<xsd:attribute name="analyzer" type="xsd:string" />
+			</xsd:complexType>
+    	  </xsd:element>
+    	  <xsd:element name="vector-field" minOccurs="0" maxOccurs="unbounded">
+			<xsd:complexType>
+				<xsd:attribute name="name" type="xsd:string" use="required" />
+				<xsd:attribute name="dimension" type="xsd:int" use="required" />
+				<xsd:attribute name="similarity" type="xsd:string" default="COSINE" />
+				<xsd:attribute name="max-connections" type="xsd:int" />
+				<xsd:attribute name="beam-width" type="xsd:int" />
+				<xsd:attribute name="quantize-sq8" type="xsd:boolean" default="false" />
 			</xsd:complexType>
     	  </xsd:element>
 			<xsd:element name="serializer" minOccurs="0" maxOccurs="1" type="gf:declarable-type">

@@ -23,5 +23,11 @@ public class LuceneXmlConstants {
   public static final String FIELD = "field";
   public static final String ANALYZER = "analyzer";
   public static final String SERIALIZER = "serializer";
+  public static final String VECTOR_FIELD = "vector-field";
+  public static final String DIMENSION = "dimension";
+  public static final String SIMILARITY = "similarity";
+  public static final String MAX_CONNECTIONS = "max-connections";
+  public static final String BEAM_WIDTH = "beam-width";
+  public static final String QUANTIZE_SQ8 = "quantize-sq8";
 
 }
