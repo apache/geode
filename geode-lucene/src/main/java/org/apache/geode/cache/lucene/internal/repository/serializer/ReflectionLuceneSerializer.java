@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -28,6 +29,7 @@ import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -41,13 +43,15 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
   private static final Logger logger = LogService.getLogger();
 
   public ReflectionLuceneSerializer(Class<? extends Object> clazz, String[] indexedFields) {
-    Set<String> fieldSet = new HashSet<>(Arrays.asList(indexedFields));
+    Set<String> fieldSet = indexedFields == null
+        ? Collections.emptySet()
+        : new HashSet<>(Arrays.asList(indexedFields));
 
     // Iterate through all declared fields and save them
     // in a list if they are an indexed field and have the correct
     // type.
     ArrayList<Field> foundFields = new ArrayList<>();
-    while (clazz != Object.class) {
+    while (clazz != null && clazz != Object.class) {
       for (Field field : clazz.getDeclaredFields()) {
         Class<?> type = field.getType();
         if (fieldSet.contains(field.getName()) && SerializerUtil.isSupported(type)) {
@@ -65,7 +69,14 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
   @Override
   public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     Document doc = new Document();
+    Map<String, VectorIndexMetadata> vectorFields =
+        index == null || index.getVectorFields() == null
+            ? Collections.emptyMap()
+            : index.getVectorFields();
     for (Field field : fields) {
+      if (vectorFields.containsKey(field.getName())) {
+        continue;
+      }
       try {
         Object fieldValue = field.get(value);
         if (fieldValue == null) {
@@ -75,6 +86,9 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
       } catch (IllegalArgumentException | IllegalAccessException e) {
         // TODO - what to do if we can't read a field?
       }
+    }
+    if (!vectorFields.isEmpty()) {
+      VectorFieldMapper.addVectorFields(doc, vectorFields.values(), value);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("ReflectionLuceneSerializer.toDocument:" + doc);

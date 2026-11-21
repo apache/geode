@@ -18,7 +18,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -26,6 +28,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CacheServiceProfile;
@@ -45,18 +48,30 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   private String regionPath;
 
+  private Map<String, VectorIndexMetadata> vectorFields = new LinkedHashMap<>();
+
   /* Used by DataSerializer */
   public LuceneIndexCreationProfile() {}
 
   public LuceneIndexCreationProfile(String indexName, String regionPath, String[] fieldNames,
       Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer) {
+    this(indexName, regionPath, fieldNames, analyzer, fieldAnalyzers, serializer,
+        Collections.emptyMap());
+  }
+
+  public LuceneIndexCreationProfile(String indexName, String regionPath, String[] fieldNames,
+      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer,
+      Map<String, VectorIndexMetadata> vectorFields) {
     this.indexName = indexName;
     this.regionPath = regionPath;
-    this.fieldNames = fieldNames;
+    this.fieldNames = fieldNames == null ? new String[0] : fieldNames;
     analyzerClass = analyzer.getClass().getSimpleName();
     initializeFieldAnalyzers(fieldAnalyzers);
     if (serializer != null) {
       serializerClass = serializer.getClass().getSimpleName();
+    }
+    if (vectorFields != null && !vectorFields.isEmpty()) {
+      this.vectorFields = new LinkedHashMap<>(vectorFields);
     }
   }
 
@@ -78,6 +93,12 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   public String getSerializerClass() {
     return serializerClass;
+  }
+
+  public Map<String, VectorIndexMetadata> getVectorFields() {
+    return vectorFields == null
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(vectorFields);
   }
 
   protected void initializeFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
@@ -161,7 +182,56 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
           remoteProfile.getSerializerClass());
     }
 
+    String vectorCompatibilityError =
+        checkVectorFieldsCompatibility(regionPath, getVectorFields(),
+            remoteProfile.getVectorFields());
+    if (vectorCompatibilityError != null) {
+      return vectorCompatibilityError;
+    }
+
     return result;
+  }
+
+  private String checkVectorFieldsCompatibility(String regionPath,
+      Map<String, VectorIndexMetadata> localVectors,
+      Map<String, VectorIndexMetadata> remoteVectors) {
+    if (!localVectors.keySet().equals(remoteVectors.keySet())) {
+      return String.format(
+          "Cannot create Lucene index %s on region %s with vector fields %s because another member defines the same index with vector fields %s.",
+          getIndexName(), regionPath, localVectors.keySet(), remoteVectors.keySet());
+    }
+    for (Map.Entry<String, VectorIndexMetadata> entry : localVectors.entrySet()) {
+      String fieldName = entry.getKey();
+      VectorIndexMetadata localMeta = entry.getValue();
+      VectorIndexMetadata remoteMeta = remoteVectors.get(fieldName);
+      if (localMeta.getDimension() != remoteMeta.getDimension()) {
+        return String.format(
+            "Cannot create Lucene index %s on region %s with vector field %s dimension %d because another member defines the same vector field with dimension %d.",
+            getIndexName(), regionPath, fieldName, localMeta.getDimension(),
+            remoteMeta.getDimension());
+      }
+      if (localMeta.getSimilarityFunction() != remoteMeta.getSimilarityFunction()) {
+        return String.format(
+            "Cannot create Lucene index %s on region %s with vector field %s similarity %s because another member defines the same vector field with similarity %s.",
+            getIndexName(), regionPath, fieldName, localMeta.getSimilarityFunction(),
+            remoteMeta.getSimilarityFunction());
+      }
+      if (localMeta.isQuantizeSQ8() != remoteMeta.isQuantizeSQ8()) {
+        return String.format(
+            "Cannot create Lucene index %s on region %s with vector field %s quantizeSQ8=%s because another member defines the same vector field with quantizeSQ8=%s.",
+            getIndexName(), regionPath, fieldName, localMeta.isQuantizeSQ8(),
+            remoteMeta.isQuantizeSQ8());
+      }
+      if (localMeta.getMaxConnections() != remoteMeta.getMaxConnections()
+          || localMeta.getBeamWidth() != remoteMeta.getBeamWidth()) {
+        return String.format(
+            "Cannot create Lucene index %s on region %s with vector field %s HNSW parameters (M=%d, efConstruction=%d) because another member defines the same vector field with (M=%d, efConstruction=%d).",
+            getIndexName(), regionPath, fieldName, localMeta.getMaxConnections(),
+            localMeta.getBeamWidth(), remoteMeta.getMaxConnections(),
+            remoteMeta.getBeamWidth());
+      }
+    }
+    return null;
   }
 
   @Override
@@ -177,6 +247,17 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_2_1_0_0(out);
+    int size = vectorFields == null ? 0 : vectorFields.size();
+    out.writeInt(size);
+    if (size > 0) {
+      for (VectorIndexMetadata metadata : vectorFields.values()) {
+        metadata.writeTo(out);
+      }
+    }
+  }
+
+  public void toDataPre_GEODE_2_1_0_0(DataOutput out) throws IOException {
     toDataPre_GEODE_1_4_0_0(out);
     DataSerializer.writeString(serializerClass, out);
   }
@@ -191,8 +272,19 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_2_1_0_0(in);
+    int size = in.readInt();
+    vectorFields = new LinkedHashMap<>();
+    for (int i = 0; i < size; i++) {
+      VectorIndexMetadata metadata = VectorIndexMetadata.readFrom(in);
+      vectorFields.put(metadata.getFieldName(), metadata);
+    }
+  }
+
+  public void fromDataPre_GEODE_2_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_4_0_0(in);
     serializerClass = DataSerializer.readString(in);
+    vectorFields = new LinkedHashMap<>();
   }
 
   public void fromDataPre_GEODE_1_4_0_0(DataInput in) throws IOException, ClassNotFoundException {
@@ -208,7 +300,10 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
         + indexName + "; regionPath=" + regionPath
         + "; fieldNames=" + Arrays.toString(fieldNames) + "; analyzerClass="
         + analyzerClass + "; fieldAnalyzers=" + fieldAnalyzers
-        + "; serializer=" + serializerClass + "]";
+        + "; serializer=" + serializerClass
+        + (vectorFields == null || vectorFields.isEmpty() ? ""
+            : "; vectorFields=" + vectorFields)
+        + "]";
   }
 
   public String getRegionPath() {
@@ -217,6 +312,6 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   @Override
   public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GEODE_1_4_0};
+    return new KnownVersion[] {KnownVersion.GEODE_1_4_0, KnownVersion.GEODE_2_1_0};
   }
 }

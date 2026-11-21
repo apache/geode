@@ -27,10 +27,12 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
+import org.apache.geode.cache.lucene.internal.repository.serializer.VectorFieldMapper;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
@@ -155,6 +157,10 @@ public class IndexRepositoryFactory {
       RegionDirectory dir =
           new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
       IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+      Map<String, VectorIndexMetadata> vectorFields = indexForPR.getVectorFields();
+      if (vectorFields != null && !vectorFields.isEmpty()) {
+        config.setCodec(VectorFieldMapper.createCodec(vectorFields));
+      }
       try {
         attempts++;
         return getIndexWriter(dir, config);

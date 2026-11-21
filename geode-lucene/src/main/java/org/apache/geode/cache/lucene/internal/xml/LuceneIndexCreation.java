@@ -16,7 +16,9 @@
 package org.apache.geode.cache.lucene.internal.xml;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +33,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
@@ -42,6 +45,7 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   private String name;
   private final Set<String> fieldNames = new LinkedHashSet<>();
   private Map<String, Analyzer> fieldAnalyzers;
+  private Map<String, VectorIndexMetadata> vectorFields = new LinkedHashMap<>();
 
   private static final Logger logger = LogService.getLogger();
   private LuceneSerializer luceneSerializer;
@@ -86,6 +90,23 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
     this.luceneSerializer = luceneSerializer;
   }
 
+  public Map<String, VectorIndexMetadata> getVectorFields() {
+    return Collections.unmodifiableMap(vectorFields);
+  }
+
+  public void setVectorFields(Map<String, VectorIndexMetadata> vectorFields) {
+    this.vectorFields = vectorFields == null
+        ? new LinkedHashMap<>()
+        : new LinkedHashMap<>(vectorFields);
+  }
+
+  public void addVectorField(VectorIndexMetadata metadata) {
+    if (metadata == null) {
+      throw new IllegalArgumentException("VectorIndexMetadata must not be null");
+    }
+    this.vectorFields.put(metadata.getFieldName(), metadata);
+  }
+
   @Override
   public XmlGenerator<Region<?, ?>> getXmlGenerator() {
     return new LuceneIndexXmlGenerator(this);
@@ -97,8 +118,13 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
     Analyzer analyzer = fieldAnalyzers == null ? new StandardAnalyzer()
         : new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzers);
     try {
-      service.createIndex(getName(), getRegionPath(), analyzer, fieldAnalyzers,
-          getLuceneSerializer(), false, getFieldNames());
+      if (vectorFields.isEmpty()) {
+        service.createIndex(getName(), getRegionPath(), analyzer, fieldAnalyzers,
+            getLuceneSerializer(), false, getFieldNames());
+      } else {
+        service.createIndex(getName(), getRegionPath(), analyzer, fieldAnalyzers, vectorFields,
+            getLuceneSerializer(), false, getFieldNames());
+      }
     } catch (LuceneIndexExistsException e) {
       logger
           .info(String.format("Ignoring duplicate index creation for Lucene index %s on region %s",
