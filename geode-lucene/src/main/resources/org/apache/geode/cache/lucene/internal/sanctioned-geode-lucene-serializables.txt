@@ -20,4 +20,8 @@ org/apache/geode/cache/lucene/internal/distributed/IndexingInProgressFunction,tr
 org/apache/geode/cache/lucene/internal/distributed/LuceneQueryFunction,true,1
 org/apache/geode/cache/lucene/internal/distributed/WaitUntilFlushedFunction,true,1
 org/apache/geode/cache/lucene/internal/results/LuceneGetPageFunction,true,1
+org/apache/geode/cache/lucene/internal/vector/continuous/ChordalVoronoiRouter$RoutingMode,false
+org/apache/geode/cache/lucene/internal/vector/continuous/ContinuousVectorEvent,true,1,bucketId:int,entryVersion:int,key:java/lang/Object,memberId:java/lang/String,regionVersion:long,replayed:boolean,similarityScore:float,subscriptionId:java/lang/String,timestamp:long
+org/apache/geode/cache/lucene/internal/vector/continuous/RvvStreamKey,true,1,bucketId:int,memberId:java/lang/String
+org/apache/geode/cache/lucene/internal/vector/continuous/VectorSubscription,true,1,chordalTolerance:double,normalizedQueryVector:float[],similarityThreshold:float,subscriptionId:java/lang/String
 org/apache/geode/cache/lucene/management/configuration/Index,false,field:java/util/List,name:java/lang/String,serializer:org/apache/geode/cache/configuration/DeclarableType

@@ -1,0 +1,360 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package org.apache.geode.cache.lucene.internal.vector.continuous;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.lucene.internal.vector.continuous.ChordalVoronoiRouter.FnrVerificationResult;
+import org.apache.geode.cache.lucene.internal.vector.continuous.ChordalVoronoiRouter.RouterConfig;
+import org.apache.geode.cache.lucene.internal.vector.continuous.ChordalVoronoiRouter.RouterTelemetry;
+import org.apache.geode.cache.lucene.internal.vector.continuous.ChordalVoronoiRouter.RoutingMode;
+import org.apache.geode.test.junit.categories.LuceneTest;
+
+@Category({LuceneTest.class})
+public class ChordalVoronoiRouterTest {
+
+  @Test
+  public void theorem1ZeroFalseNegativesAcrossThousandsOfRandomAndBoundaryVectors() {
+    int[] dimensions = new int[] {16, 64, 128};
+    Random rng = new Random(42L);
+
+    for (int dim : dimensions) {
+      RouterConfig config = RouterConfig.builder(dim)
+          .numClusters(16)
+          .expectedSurvivalFraction(0.15d)
+          .hysteresisDelta(0.15d)
+          .randomSeed(100L + dim)
+          .build();
+      ChordalVoronoiRouter router = new ChordalVoronoiRouter(config);
+
+      // Build 256 subscriptions drawn from 16 spherical topics + varied thresholds
+      int numTopics = 16;
+      float[][] topics = new float[numTopics][dim];
+      for (int t = 0; t < numTopics; t++) {
+        topics[t] = randomUnitVector(rng, dim);
+      }
+
+      float subNoise = 0.45f / (float) Math.sqrt(dim);
+      float queryNoise = 0.55f / (float) Math.sqrt(dim);
+
+      List<VectorSubscription> subs = new ArrayList<>(256);
+      for (int m = 0; m < 256; m++) {
+        float[] base = topics[m % numTopics];
+        float[] perturbed = perturbVector(rng, base, subNoise);
+        float threshold = (m % 20 == 0)
+            ? 0.9999f // extreme boundary threshold near 1.0
+            : 0.60f + rng.nextFloat() * 0.35f;
+        subs.add(new VectorSubscription("sub-" + dim + "-" + m, perturbed, threshold));
+      }
+      router.addSubscriptions(subs);
+
+      assertThat(router.getCurrentMode())
+          .as("256 subscriptions should activate CHORDAL_VORONOI mode for dim=%d", dim)
+          .isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+      // 1. Test 2,000 random unit embeddings (mix of topic-aligned and uniform random)
+      int totalBruteMatches = 0;
+      for (int i = 0; i < 2000; i++) {
+        float[] query = (i % 3 == 0)
+            ? perturbVector(rng, topics[i % numTopics], queryNoise)
+            : randomUnitVector(rng, dim);
+        FnrVerificationResult res = router.verifyAgainstBruteForce(query);
+        assertThat(res.getFalseNegatives())
+            .as("Theorem 1 violation (FNR > 0) at dim=%d, iter=%d", dim, i)
+            .isZero();
+        assertThat(res.getFalsePositives())
+            .as("False positive detected at dim=%d, iter=%d", dim, i)
+            .isZero();
+        totalBruteMatches += res.getBruteForceMatchCount();
+      }
+
+      // 2. Test 200 adversarial boundary vectors placed directly at cos(x, q_m) == tau_m or 1.0
+      for (int i = 0; i < 200; i++) {
+        VectorSubscription target = subs.get(i % subs.size());
+        float[] q = target.getNormalizedQueryVector();
+        float[] query;
+        if (i % 2 == 0) {
+          // Exact copy of subscription query vector (tests tau near 1.0)
+          query = q.clone();
+        } else {
+          // Construct unit vector with cosine similarity right at threshold tau_m
+          query = vectorAtExactCosine(rng, q, target.getSimilarityThreshold());
+        }
+        FnrVerificationResult res = router.verifyAgainstBruteForce(query);
+        assertThat(res.getFalseNegatives())
+            .as("Theorem 1 boundary violation at dim=%d, boundaryIter=%d", dim, i)
+            .isZero();
+        assertThat(res.getFalsePositives()).isZero();
+      }
+
+      RouterTelemetry telemetry = router.getTelemetry();
+      assertThat(totalBruteMatches).isGreaterThan(0);
+      assertThat(telemetry.getFnrVerificationRuns()).isEqualTo(2200L);
+      assertThat(telemetry.getFnrVerificationFalseNegatives()).isZero();
+      assertThat(telemetry.getPruneRatio())
+          .as("Chordal Voronoi router should prune cells for dim=%d", dim)
+          .isGreaterThan(0.15d);
+    }
+  }
+
+  @Test
+  public void highSelectivitySubscriptionsAchieveStrongPruningWithZeroFnr() {
+    int dim = 64;
+    Random rng = new Random(1337L);
+    RouterConfig config = RouterConfig.builder(dim)
+        .numClusters(16)
+        .expectedSurvivalFraction(0.10d)
+        .hysteresisDelta(0.15d)
+        .randomSeed(2026L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(config);
+
+    float[][] topics = new float[16][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVector(rng, dim);
+    }
+    List<VectorSubscription> subs = new ArrayList<>(256);
+    for (int m = 0; m < 256; m++) {
+      float[] q = perturbVector(rng, topics[m % topics.length], 0.05f);
+      float threshold = 0.85f + rng.nextFloat() * 0.10f;
+      subs.add(new VectorSubscription("sel-sub-" + m, q, threshold));
+    }
+    router.addSubscriptions(subs);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+    for (int i = 0; i < 1000; i++) {
+      float[] query = (i % 4 == 0)
+          ? perturbVector(rng, topics[i % topics.length], 0.06f)
+          : randomUnitVector(rng, dim);
+      FnrVerificationResult res = router.verifyAgainstBruteForce(query);
+      assertThat(res.isExactMatch()).isTrue();
+    }
+    assertThat(router.getTelemetry().getPruneRatio())
+        .as("High-selectivity spherical clusters should prune >70% of cells")
+        .isGreaterThan(0.70d);
+  }
+
+  @Test
+  public void proposition1ClosedFormMCritAndHysteresisBandPreventOscillation() {
+    // Verify Proposition 1 formula: M_crit = ceil(K * (1 + (c_bound * W)/(c_simd * d)) / (1 - p))
+    // d = 64, K = 16, W = 8, c_simd = 1.0, c_bound = 4.0 => eta = 32/64 = 0.5
+    // p_bar = 0.20 => M_crit = ceil(16 * 1.5 / 0.80) = ceil(30.0) = 30
+    int mCrit = ChordalVoronoiRouter.computeMCrit(64, 16, 0.20d, 8, 1.0d, 4.0d);
+    assertThat(mCrit).isEqualTo(30);
+
+    // Hysteresis delta = 0.15 => [0.85 * 30, 1.15 * 30] = [25.5, 34.5] => M_down = 25, M_up = 35
+    int mUp = ChordalVoronoiRouter.computeUpperSwitchThreshold(mCrit, 0.15d);
+    int mDown = ChordalVoronoiRouter.computeLowerSwitchThreshold(mCrit, 0.15d);
+    assertThat(mUp).isEqualTo(35);
+    assertThat(mDown).isEqualTo(25);
+
+    RouterConfig config = RouterConfig.builder(64)
+        .numClusters(16)
+        .simdLaneWidth(8)
+        .simdFmaCost(1.0d)
+        .boundCheckCost(4.0d)
+        .expectedSurvivalFraction(0.20d)
+        .hysteresisDelta(0.15d)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(config);
+
+    assertThat(router.getMCrit()).isEqualTo(30);
+    assertThat(router.getUpperSwitchThreshold()).isEqualTo(35);
+    assertThat(router.getLowerSwitchThreshold()).isEqualTo(25);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+
+    Random rng = new Random(7L);
+    // Register up to M_up - 1 = 34 -> must remain in FLAT_SIMD (0 transitions)
+    for (int i = 0; i < mUp - 1; i++) {
+      router.addSubscription(new VectorSubscription("sub-" + i, randomUnitVector(rng, 64), 0.80f));
+      assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    }
+    assertThat(router.getTelemetry().getModeTransitionCount()).isZero();
+
+    // Register 35th subscription (M == M_up) -> switches to CHORDAL_VORONOI (1 transition)
+    router.addSubscription(
+        new VectorSubscription("sub-" + (mUp - 1), randomUnitVector(rng, 64), 0.80f));
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(router.getTelemetry().getModeTransitionCount()).isEqualTo(1L);
+
+    // Oscillate 50 times inside deadband [M_down + 1, M_up - 1] = [26, 34]
+    // Must NEVER switch back to FLAT_SIMD!
+    int nextId = 1000;
+    for (int cycle = 0; cycle < 50; cycle++) {
+      while (router.getSubscriptionCount() > mDown + 1) {
+        String idToRemove = "osc-" + (nextId - 1);
+        if (!router.removeSubscription(idToRemove)) {
+          router.removeSubscription("sub-" + (router.getSubscriptionCount() - 1));
+        } else {
+          nextId--;
+        }
+        assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+      }
+      while (router.getSubscriptionCount() < mUp - 1) {
+        router.addSubscription(
+            new VectorSubscription("osc-" + (nextId++), randomUnitVector(rng, 64), 0.80f));
+        assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+      }
+    }
+    assertThat(router.getTelemetry().getModeTransitionCount())
+        .as("Hysteresis band [0.85 M_crit, 1.15 M_crit] must prevent thrashing")
+        .isEqualTo(1L);
+
+    // Drop to M_down = 25 -> switches back to FLAT_SIMD (2nd transition)
+    List<String> allIds = new ArrayList<>();
+    for (int i = 0; i < mUp; i++) {
+      allIds.add("sub-" + i);
+    }
+    for (int i = 1000; i < nextId; i++) {
+      allIds.add("osc-" + i);
+    }
+    for (String id : allIds) {
+      if (router.getSubscriptionCount() <= mDown) {
+        break;
+      }
+      router.removeSubscription(id);
+    }
+    assertThat(router.getSubscriptionCount()).isEqualTo(mDown);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    assertThat(router.getTelemetry().getModeTransitionCount()).isEqualTo(2L);
+
+    // Oscillate inside [M_down + 1, M_up - 1] starting from FLAT_SIMD -> remains FLAT_SIMD
+    int flatId = 5000;
+    for (int cycle = 0; cycle < 20; cycle++) {
+      while (router.getSubscriptionCount() < mUp - 1) {
+        router.addSubscription(
+            new VectorSubscription("flat-" + (flatId++), randomUnitVector(rng, 64), 0.80f));
+        assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+      }
+      while (router.getSubscriptionCount() > mDown + 1) {
+        router.removeSubscription("flat-" + (--flatId));
+        assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+      }
+    }
+    assertThat(router.getTelemetry().getModeTransitionCount()).isEqualTo(2L);
+  }
+
+  @Test
+  public void liveAddRemoveAndReclusterInVoronoiModePreservesZeroFnr() {
+    Random rng = new Random(99L);
+    RouterConfig config = RouterConfig.builder(32)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(config);
+
+    // Seed 60 subscriptions to enter CHORDAL_VORONOI mode
+    List<VectorSubscription> initial = new ArrayList<>();
+    for (int i = 0; i < 60; i++) {
+      initial.add(new VectorSubscription("init-" + i, randomUnitVector(rng, 32), 0.65f));
+    }
+    router.addSubscriptions(initial);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+    // Live incremental adds (triggers cell radius expansion & periodic recluster)
+    for (int i = 0; i < 40; i++) {
+      router.addSubscription(new VectorSubscription("live-" + i, randomUnitVector(rng, 32), 0.60f));
+    }
+    assertThat(router.getSubscriptionCount()).isEqualTo(100);
+
+    // Live removals
+    for (int i = 0; i < 20; i++) {
+      assertThat(router.removeSubscription("init-" + i)).isTrue();
+    }
+    assertThat(router.getSubscriptionCount()).isEqualTo(80);
+    assertThat(router.removeSubscription("non-existent")).isFalse();
+
+    // Verify FNR == 0 and exact parity with brute force across 500 queries
+    for (int i = 0; i < 500; i++) {
+      FnrVerificationResult res = router.verifyAgainstBruteForce(randomUnitVector(rng, 32));
+      assertThat(res.isExactMatch()).isTrue();
+    }
+
+    // Explicit recluster and re-verify
+    router.recluster();
+    for (int i = 0; i < 200; i++) {
+      FnrVerificationResult res = router.verifyAgainstBruteForce(randomUnitVector(rng, 32));
+      assertThat(res.isExactMatch()).isTrue();
+    }
+  }
+
+  @Test
+  public void invalidInputsAreRejectedCleanly() {
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(4);
+
+    assertThatThrownBy(() -> new VectorSubscription("", new float[] {1, 0, 0, 0}, 0.5f))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> new VectorSubscription("s1", new float[] {0, 0, 0, 0}, 0.5f))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+        () -> new VectorSubscription("s1", new float[] {Float.NaN, 1, 0, 0}, 0.5f))
+            .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> new VectorSubscription("s1", new float[] {1, 0, 0, 0}, -1.0f))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> new VectorSubscription("s1", new float[] {1, 0, 0, 0}, 1.01f))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> router.addSubscription(
+        new VectorSubscription("wrong-dim", new float[] {1, 0, 0}, 0.5f)))
+            .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> router.route(new float[] {1, 0}))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  private static float[] randomUnitVector(Random rng, int dim) {
+    float[] v = new float[dim];
+    for (int i = 0; i < dim; i++) {
+      v[i] = (float) rng.nextGaussian();
+    }
+    return VectorSubscription.normalize(v);
+  }
+
+  private static float[] perturbVector(Random rng, float[] base, float noiseStd) {
+    float[] v = new float[base.length];
+    for (int i = 0; i < base.length; i++) {
+      v[i] = base[i] + (float) (rng.nextGaussian() * noiseStd);
+    }
+    return VectorSubscription.normalize(v);
+  }
+
+  private static float[] vectorAtExactCosine(Random rng, float[] unitQ, float targetCos) {
+    int dim = unitQ.length;
+    float[] rand = randomUnitVector(rng, dim);
+    // Project out component along unitQ to obtain orthogonal unit vector u
+    double dot = 0.0d;
+    for (int i = 0; i < dim; i++) {
+      dot += (double) rand[i] * (double) unitQ[i];
+    }
+    float[] orth = new float[dim];
+    for (int i = 0; i < dim; i++) {
+      orth[i] = (float) (rand[i] - dot * unitQ[i]);
+    }
+    orth = VectorSubscription.normalize(orth);
+    double sin = Math.sqrt(Math.max(0.0d, 1.0d - (double) targetCos * (double) targetCos));
+    float[] result = new float[dim];
+    for (int i = 0; i < dim; i++) {
+      result[i] = (float) (targetCos * unitQ[i] + sin * orth[i]);
+    }
+    return VectorSubscription.normalize(result);
+  }
+}
