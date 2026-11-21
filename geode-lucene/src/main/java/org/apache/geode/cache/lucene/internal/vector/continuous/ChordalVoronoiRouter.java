@@ -31,12 +31,16 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Adaptive continuous vector router implementing:
  * <ul>
- * <li><b>Theorem 1 (Zero-False-Negative Chordal Voronoi Metric Pruning)</b> on the unit hypersphere
- * {@code S^{d-1}}: partitions {@code M} active subscriptions {@code {(q_m, tau_m)}} into {@code K}
- * Voronoi cells {@code {V_k}} with unit centroids {@code c_k}, covering radii
- * {@code R_k = max d_ch(q_m, c_k)}, and threshold tolerances
- * {@code rho_k_max = max sqrt(2 * (1 - tau_m))}, pruning cell {@code V_k} only when
- * {@code d_ch(x, c_k) > R_k + rho_k_max}, guaranteeing {@code FNR = 0}.</li>
+ * <li><b>Theorem 1 (Zero-False-Negative Sqrt-Free Inner-Product Voronoi Pruning)</b> on the unit
+ * hypersphere {@code S^{d-1}}: partitions {@code M} active subscriptions {@code {(q_i, tau_i)}}
+ * into {@code K} Voronoi cells {@code {V_k}} with unit centroids {@code c_k}, precomputed coupled
+ * upper bound {@code B_k^up = max_{i in V_k}(||q_i - c_k||_2 + rho_i^up) + delta_norm(d)} in
+ * float64, and cell cosine pruning threshold
+ * {@code s_k^min = 1 - (B_k^up)^2 / 2 - epsilon_dot(d)} derived directly from Higham's IEEE-754
+ * Theorem 3.1 ({@code gamma_d = d * u_f32 / (1 - d * u_f32)}). Pruning cell {@code V_k} iff
+ * {@code s_hat_k < s_k^min} (and {@code B_k^up < 2}) eliminates {@code Math.sqrt} from the hot
+ * routing path and avoids the {@code 1 / sqrt(1 - s)} singularity near {@code s -> 1}, guaranteeing
+ * {@code FNR = 0} unconditionally.</li>
  * <li><b>Proposition 1 (SIMD-to-Voronoi Analytical Crossover {@code M_crit} and Dual-Threshold
  * Hysteresis)</b>: dynamically switches between flat contiguous unrolled SIMD-friendly batch
  * dot-product evaluation ({@link RoutingMode#FLAT_SIMD}) and two-stage Chordal Voronoi routing
@@ -46,11 +50,13 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class ChordalVoronoiRouter {
 
-  /**
-   * Minimum conservative dot-product margin covering IEEE-754 float32 FMA accumulation error so
-   * that {@code d_ch_lower(x, c_k) <= d_ch_exact(x, c_k)} holds unconditionally on {@code S^{d-1}}.
-   * For high dimensions, scaled linearly via {@link #computeFloatDotSafetyEpsilon(int)}.
-   */
+  /** IEEE-754 binary32 (float32) unit roundoff {@code u_f32 = 2^-24}. */
+  public static final double FLOAT32_UNIT_ROUNDOFF = Math.scalb(1.0d, -24);
+
+  /** Conservative additive floor for Higham's float32 dot + unit-norm rounding margin. */
+  static final double HIGHAM_DOT_SAFETY_FLOOR = 1.0e-5d;
+
+  /** Legacy linear margin constants retained for backward compatibility. */
   static final double FLOAT_DOT_SAFETY_EPSILON = 1.0e-4d;
   static final double FLOAT_DOT_SAFETY_EPSILON_PER_DIM = 1.0e-6d;
 
@@ -89,6 +95,7 @@ public class ChordalVoronoiRouter {
     private final double hysteresisDelta;
     private final int maxKMeansIterations;
     private final long randomSeed;
+    private final boolean useCoupledBound;
 
     private RouterConfig(Builder builder) {
       this.dimension = builder.dimension;
@@ -100,6 +107,7 @@ public class ChordalVoronoiRouter {
       this.hysteresisDelta = builder.hysteresisDelta;
       this.maxKMeansIterations = builder.maxKMeansIterations;
       this.randomSeed = builder.randomSeed;
+      this.useCoupledBound = builder.useCoupledBound;
     }
 
     public static Builder builder(int dimension) {
@@ -142,6 +150,15 @@ public class ChordalVoronoiRouter {
       return randomSeed;
     }
 
+    /**
+     * Returns whether cells prune with the tighter coupled bound
+     * {@code B_k^up = max_i(||q_i - c_k||_2 + rho_i^up)} (default {@code true}) or the looser
+     * decoupled bound {@code R_k + rho_k^max} ({@code false}, useful for ablation).
+     */
+    public boolean isUseCoupledBound() {
+      return useCoupledBound;
+    }
+
     public static final class Builder {
       private final int dimension;
       private int numClusters = DEFAULT_NUM_CLUSTERS;
@@ -152,6 +169,7 @@ public class ChordalVoronoiRouter {
       private double hysteresisDelta = DEFAULT_HYSTERESIS_DELTA;
       private int maxKMeansIterations = DEFAULT_MAX_KMEANS_ITERATIONS;
       private long randomSeed = 0x5EED1234L;
+      private boolean useCoupledBound = true;
 
       private Builder(int dimension) {
         if (dimension <= 0) {
@@ -223,6 +241,15 @@ public class ChordalVoronoiRouter {
 
       public Builder randomSeed(long randomSeed) {
         this.randomSeed = randomSeed;
+        return this;
+      }
+
+      /**
+       * Selects the tighter coupled cell bound {@code B_k^up = max_i(||q_i - c_k||_2 + rho_i^up)}
+       * ({@code true}, default) versus the decoupled bound {@code R_k + rho_k^max} ({@code false}).
+       */
+      public Builder useCoupledBound(boolean useCoupledBound) {
+        this.useCoupledBound = useCoupledBound;
         return this;
       }
 
@@ -415,19 +442,28 @@ public class ChordalVoronoiRouter {
   /** Immutable Voronoi cell {@code V_k} with contiguous flat member layout. */
   static final class VoronoiCell {
     final float[] centroid;
-    final double coveringRadius; // R_k
-    final double maxChordalTolerance; // rho_k^max
-    final double pruneRadiusSum; // R_k + rho_k^max
+    final double coveringRadius; // R_k = max_i ||q_i - c_k||_2
+    final double maxChordalTolerance; // rho_k^max = max_i rho_i^up
+    final double coupledBound; // max_i (||q_i - c_k||_2 + rho_i^up)
+    final double effectiveUpperBound; // B_k^up (clamped to [0, 2])
+    final double minCosineThreshold; // s_k^min = 1 - (B_k^up)^2 / 2 - epsilon_dot(d), or -Infinity
     final String[] memberIds;
     final float[] memberVectors; // contiguous: memberCount * dim
     final float[] memberThresholds;
 
     VoronoiCell(float[] centroid, double coveringRadius, double maxChordalTolerance,
+        double coupledBound, boolean useCoupledBound, double epsilonDot, double normMargin,
         String[] memberIds, float[] memberVectors, float[] memberThresholds) {
       this.centroid = centroid;
       this.coveringRadius = coveringRadius;
       this.maxChordalTolerance = maxChordalTolerance;
-      this.pruneRadiusSum = coveringRadius + maxChordalTolerance;
+      this.coupledBound = coupledBound;
+      double rawBound =
+          (useCoupledBound ? coupledBound : (coveringRadius + maxChordalTolerance)) + normMargin;
+      this.effectiveUpperBound = Math.min(2.0d, Math.max(0.0d, rawBound));
+      this.minCosineThreshold = (this.effectiveUpperBound >= 2.0d)
+          ? Double.NEGATIVE_INFINITY
+          : (1.0d - 0.5d * this.effectiveUpperBound * this.effectiveUpperBound - epsilonDot);
       this.memberIds = memberIds;
       this.memberVectors = memberVectors;
       this.memberThresholds = memberThresholds;
@@ -472,6 +508,8 @@ public class ChordalVoronoiRouter {
   private final int upperSwitchThreshold;
   private final int lowerSwitchThreshold;
   private final double floatDotSafetyEpsilon;
+  private final double highamDotEpsilon;
+  private final double normMargin;
 
   private final ReentrantLock writeLock = new ReentrantLock();
   private final Map<String, VectorSubscription> subscriptions = new LinkedHashMap<>();
@@ -502,7 +540,55 @@ public class ChordalVoronoiRouter {
     this.lowerSwitchThreshold =
         computeLowerSwitchThreshold(this.mCrit, config.getHysteresisDelta());
     this.floatDotSafetyEpsilon = computeFloatDotSafetyEpsilon(config.getDimension());
+    this.highamDotEpsilon = computeHighamDotEpsilon(config.getDimension());
+    this.normMargin = computeNormMargin(config.getDimension());
     this.snapshot = RouterSnapshot.empty(config.getDimension());
+  }
+
+  /**
+   * Computes Higham's IEEE-754 Theorem 3.1 inner-product relative rounding factor
+   * {@code gamma_d = (d * u_f32) / (1 - d * u_f32)} for float32 unit roundoff
+   * {@code u_f32 = 2^-24}.
+   */
+  public static double computeHighamGamma(int dimension) {
+    if (dimension <= 0) {
+      throw new IllegalArgumentException("dimension must be > 0, got: " + dimension);
+    }
+    double du = dimension * FLOAT32_UNIT_ROUNDOFF;
+    if (du >= 0.5d) {
+      throw new IllegalArgumentException(
+          "dimension exceeds float32 Higham stability domain (d * u_f32 >= 0.5): " + dimension);
+    }
+    return du / (1.0d - du);
+  }
+
+  /**
+   * Computes the sqrt-free cosine pruning error margin {@code epsilon_dot(d)} strictly dominating
+   * worst-case Higham float32 dot-product rounding and unit-normalization error on {@code S^{d-1}}.
+   */
+  public static double computeHighamDotEpsilon(int dimension) {
+    double gamma = computeHighamGamma(dimension);
+    return 2.0d * gamma + HIGHAM_DOT_SAFETY_FLOOR;
+  }
+
+  /**
+   * Computes the conservative float64 Euclidean norm margin {@code delta_norm(d)} added to the
+   * precomputed cell chordal upper bound {@code B_k^up}.
+   */
+  public static double computeNormMargin(int dimension) {
+    if (dimension <= 0) {
+      throw new IllegalArgumentException("dimension must be > 0, got: " + dimension);
+    }
+    return 4.0d * FLOAT32_UNIT_ROUNDOFF + 1.0e-9d;
+  }
+
+  /**
+   * Computes a conservative upper bound on {@code ||x - q_i||_2} whenever float32 matching reports
+   * {@code dot_hat(x, q_i) >= tau_i}, preventing square-root singularity even at {@code tau_i = 1}.
+   */
+  static double computeSafeChordalTolerance(float similarityThreshold, double epsilonDot) {
+    double radicand = 2.0d * (1.0d - (double) similarityThreshold) + 2.0d * epsilonDot;
+    return Math.sqrt(Math.max(0.0d, radicand));
   }
 
   /**
@@ -518,6 +604,10 @@ public class ChordalVoronoiRouter {
 
   public double getFloatDotSafetyEpsilon() {
     return floatDotSafetyEpsilon;
+  }
+
+  public double getHighamDotEpsilon() {
+    return highamDotEpsilon;
   }
 
   /**
@@ -790,15 +880,13 @@ public class ChordalVoronoiRouter {
     long pruned = 0L;
     long subsEvaluated = 0L;
 
-    // Stage 1: Evaluate K Voronoi centroids and apply Theorem 1 pruning bound
+    // Stage 1: Evaluate K Voronoi centroids and apply sqrt-free Theorem 1 inner-product pruning
     for (int k = 0; k < numCells; k++) {
       VoronoiCell cell = cells[k];
       float rawDot =
           VectorSubscription.dotProductContiguous(unitEmbedding, centroids, k * dim, dim);
-      // Conservative dimension-scaled lower bound on true d_ch(x, c_k) under float32 rounding
-      double optimisticCos = Math.min(1.0d, (double) rawDot + floatDotSafetyEpsilon);
-      double lowerBoundChordal = Math.sqrt(Math.max(0.0d, 2.0d * (1.0d - optimisticCos)));
-      if (lowerBoundChordal > cell.pruneRadiusSum) {
+      // Exact sqrt-free Higham cosine bound: prune iff s_hat_k < s_k^min (no Math.sqrt on hot path)
+      if ((double) rawDot < cell.minCosineThreshold) {
         pruned++;
         continue;
       }
@@ -894,9 +982,11 @@ public class ChordalVoronoiRouter {
     }
 
     VoronoiCell target = prevCells[bestCellIdx];
-    double dist = computeSafeCoveringDistance(q, target.centroid);
+    double dist = VectorSubscription.euclideanChordalDistance(q, target.centroid);
+    double rhoUp = computeSafeChordalTolerance(sub.getSimilarityThreshold(), highamDotEpsilon);
     double newRadius = Math.max(target.coveringRadius, dist);
-    double newMaxTol = Math.max(target.maxChordalTolerance, sub.getChordalTolerance());
+    double newMaxTol = Math.max(target.maxChordalTolerance, rhoUp);
+    double newCoupledBound = Math.max(target.coupledBound, dist + rhoUp);
 
     int newCellSize = target.size() + 1;
     String[] cellIds = Arrays.copyOf(target.memberIds, newCellSize);
@@ -907,8 +997,9 @@ public class ChordalVoronoiRouter {
     cellThresholds[newCellSize - 1] = sub.getSimilarityThreshold();
 
     VoronoiCell[] newCells = Arrays.copyOf(prevCells, prevCells.length);
-    newCells[bestCellIdx] =
-        new VoronoiCell(target.centroid, newRadius, newMaxTol, cellIds, cellVecs, cellThresholds);
+    newCells[bestCellIdx] = new VoronoiCell(target.centroid, newRadius, newMaxTol, newCoupledBound,
+        config.isUseCoupledBound(), highamDotEpsilon, normMargin, cellIds, cellVecs,
+        cellThresholds);
 
     this.snapshot = new RouterSnapshot(RoutingMode.CHORDAL_VORONOI, dim, newFlatIds, newFlatVecs,
         newFlatThresholds, newCells, prev.centroidMatrix);
@@ -1095,6 +1186,7 @@ public class ChordalVoronoiRouter {
       float[] memberThresholds = new float[size];
       double maxRadius = 0.0d;
       double maxTolerance = 0.0d;
+      double maxCoupled = 0.0d;
 
       for (int j = 0; j < size; j++) {
         VectorSubscription sub = members.get(j);
@@ -1103,16 +1195,22 @@ public class ChordalVoronoiRouter {
         System.arraycopy(q, 0, memberVectors, j * dim, dim);
         memberThresholds[j] = sub.getSimilarityThreshold();
 
-        double dist = computeSafeCoveringDistance(q, centroids[k]);
+        double dist = VectorSubscription.euclideanChordalDistance(q, centroids[k]);
+        double rhoUp = computeSafeChordalTolerance(sub.getSimilarityThreshold(), highamDotEpsilon);
         if (dist > maxRadius) {
           maxRadius = dist;
         }
-        if (sub.getChordalTolerance() > maxTolerance) {
-          maxTolerance = sub.getChordalTolerance();
+        if (rhoUp > maxTolerance) {
+          maxTolerance = rhoUp;
+        }
+        double coupled = dist + rhoUp;
+        if (coupled > maxCoupled) {
+          maxCoupled = coupled;
         }
       }
-      nonEmptyCells.add(new VoronoiCell(centroids[k], maxRadius, maxTolerance, memberIds,
-          memberVectors, memberThresholds));
+      nonEmptyCells.add(new VoronoiCell(centroids[k], maxRadius, maxTolerance, maxCoupled,
+          config.isUseCoupledBound(), highamDotEpsilon, normMargin, memberIds, memberVectors,
+          memberThresholds));
     }
     return nonEmptyCells.toArray(new VoronoiCell[0]);
   }
@@ -1131,17 +1229,6 @@ public class ChordalVoronoiRouter {
       }
     }
     return farthest;
-  }
-
-  /**
-   * Computes a safe upper bound on {@code d_ch(q, c)} covering both direct Euclidean distance and
-   * cosine-derived chordal distance.
-   */
-  private static double computeSafeCoveringDistance(float[] q, float[] centroid) {
-    double euclid = VectorSubscription.euclideanChordalDistance(q, centroid);
-    float rawDot = VectorSubscription.dotProductContiguous(q, centroid, 0, q.length);
-    double fromCos = VectorSubscription.chordalDistanceFromCosine((double) rawDot);
-    return Math.max(euclid, fromCos);
   }
 
   private void validateDimension(int dim) {

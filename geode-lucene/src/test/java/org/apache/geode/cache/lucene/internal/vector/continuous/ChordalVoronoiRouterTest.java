@@ -381,6 +381,138 @@ public class ChordalVoronoiRouterTest {
     assertThat(router.getTelemetry().getPruneRatio()).isGreaterThan(0.20d);
   }
 
+  @Test
+  public void sqrtFreeHighamBoundEliminatesSingularityAtTauOneAcrossHighDimensions() {
+    int[] dims = new int[] {128, 1536, 4096};
+    float[] extremeTaus = new float[] {1.0f, 1.0f - 1.0e-7f, 0.9999f};
+    Random rng = new Random(20261121L);
+
+    for (int dim : dims) {
+      double gamma = ChordalVoronoiRouter.computeHighamGamma(dim);
+      double epsDot = ChordalVoronoiRouter.computeHighamDotEpsilon(dim);
+      assertThat(gamma).isGreaterThan(0.0d);
+      assertThat(epsDot).isGreaterThan(2.0d * gamma);
+
+      // Force CHORDAL_VORONOI with K == M singleton cells so x == c_k == q_i holds identically,
+      // PLUS multi-member cells containing tau_i == 1.0 and 1 - 1e-7.
+      RouterConfig singletonCfg = RouterConfig.builder(dim)
+          .numClusters(6)
+          .boundCheckCost(0.0d)
+          .expectedSurvivalFraction(0.0d)
+          .hysteresisDelta(0.01d)
+          .useCoupledBound(true)
+          .randomSeed(dim * 17L)
+          .build();
+      ChordalVoronoiRouter singletonRouter = new ChordalVoronoiRouter(singletonCfg);
+      List<VectorSubscription> extremeSubs = new ArrayList<>();
+      for (int i = 0; i < 12; i++) {
+        float[] q = randomUnitVector(rng, dim);
+        float tau = extremeTaus[i % extremeTaus.length];
+        extremeSubs.add(new VectorSubscription("sing-" + dim + "-" + i, q, tau));
+      }
+      singletonRouter.addSubscriptions(extremeSubs);
+      assertThat(singletonRouter.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+      assertThat(singletonRouter.getHighamDotEpsilon()).isEqualTo(epsDot);
+
+      // Adversarial check: query x == q_i (and x == c_k == q_i for singleton cells) at tau == 1.0
+      for (VectorSubscription sub : extremeSubs) {
+        float[] exactCopy = sub.getNormalizedQueryVector();
+        FnrVerificationResult res = singletonRouter.verifyAgainstBruteForce(exactCopy);
+        assertThat(res.getFalseNegatives())
+            .as("Sqrt-free Higham bound must yield FNR=0 at dim=%d, tau=%f",
+                dim, sub.getSimilarityThreshold())
+            .isZero();
+        assertThat(res.getFalsePositives()).isZero();
+      }
+
+      // Multi-member cluster check with x == q_i != c_k and tau in {1.0, 1 - 1e-7, 0.9999}
+      RouterConfig multiCfg = RouterConfig.builder(dim)
+          .numClusters(4)
+          .boundCheckCost(0.0d)
+          .expectedSurvivalFraction(0.0d)
+          .hysteresisDelta(0.01d)
+          .useCoupledBound(true)
+          .randomSeed(dim * 31L)
+          .build();
+      ChordalVoronoiRouter multiRouter = new ChordalVoronoiRouter(multiCfg);
+      float[][] anchors = new float[4][dim];
+      for (int a = 0; a < anchors.length; a++) {
+        anchors[a] = randomUnitVector(rng, dim);
+      }
+      List<VectorSubscription> multiSubs = new ArrayList<>();
+      float noise = 0.08f / (float) Math.sqrt(dim);
+      for (int i = 0; i < 36; i++) {
+        float[] q = (i < 4) ? anchors[i].clone() : perturbVector(rng, anchors[i % 4], noise);
+        float tau = extremeTaus[i % extremeTaus.length];
+        multiSubs.add(new VectorSubscription("multi-" + dim + "-" + i, q, tau));
+      }
+      multiRouter.addSubscriptions(multiSubs);
+      assertThat(multiRouter.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+      for (VectorSubscription sub : multiSubs) {
+        FnrVerificationResult res = multiRouter.verifyAgainstBruteForce(
+            sub.getNormalizedQueryVector());
+        assertThat(res.getFalseNegatives())
+            .as("Multi-member sqrt-free bound must yield FNR=0 at dim=%d, tau=%f",
+                dim, sub.getSimilarityThreshold())
+            .isZero();
+        assertThat(res.getFalsePositives()).isZero();
+      }
+      assertThat(multiRouter.getTelemetry().getPruneRatio()).isGreaterThan(0.50d);
+    }
+  }
+
+  @Test
+  public void coupledCellBoundIsStrictlyAtLeastAsTightAsDecoupledBoundWithZeroFnr() {
+    int dim = 128;
+    Random rng = new Random(777L);
+    float[][] topics = new float[8][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVector(rng, dim);
+    }
+    // Heterogeneous cells: tight queries near centroid have looser tau (0.65),
+    // outer queries far from centroid have strict tau (0.95) -> coupled B_k << R_k + rho_k_max
+    List<VectorSubscription> subs = new ArrayList<>(128);
+    for (int i = 0; i < 128; i++) {
+      boolean isCore = (i % 2 == 0);
+      float noise = (isCore ? 0.05f : 0.65f) / (float) Math.sqrt(dim);
+      float tau = isCore ? 0.65f : 0.95f;
+      subs.add(new VectorSubscription("het-" + i, perturbVector(rng, topics[i % 8], noise), tau));
+    }
+
+    RouterConfig coupledCfg = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .useCoupledBound(true)
+        .randomSeed(777L)
+        .build();
+    RouterConfig decoupledCfg = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .useCoupledBound(false)
+        .randomSeed(777L)
+        .build();
+
+    ChordalVoronoiRouter coupled = new ChordalVoronoiRouter(coupledCfg);
+    ChordalVoronoiRouter decoupled = new ChordalVoronoiRouter(decoupledCfg);
+    coupled.addSubscriptions(subs);
+    decoupled.addSubscriptions(subs);
+
+    assertThat(coupled.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(decoupled.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+    for (int i = 0; i < 500; i++) {
+      float[] q = (i % 4 == 0)
+          ? perturbVector(rng, topics[i % 8], 0.30f / (float) Math.sqrt(dim))
+          : randomUnitVector(rng, dim);
+      assertThat(coupled.verifyAgainstBruteForce(q).isExactMatch()).isTrue();
+      assertThat(decoupled.verifyAgainstBruteForce(q).isExactMatch()).isTrue();
+    }
+    assertThat(coupled.getTelemetry().getPruneRatio())
+        .as("Coupled bound B_k^up must prune at least as many cells as decoupled R_k + rho_k^max")
+        .isGreaterThanOrEqualTo(decoupled.getTelemetry().getPruneRatio());
+  }
+
   private static float[] randomUnitVector(Random rng, int dim) {
     float[] v = new float[dim];
     for (int i = 0; i < dim; i++) {
