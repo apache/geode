@@ -175,6 +175,17 @@ public class IndexRepositoryImpl implements IndexRepository {
   }
 
   @Override
+  public synchronized void commitAndRefreshBlocking() throws IOException {
+    long start = stats.startCommit();
+    try {
+      writer.commit();
+      searcherManager.maybeRefreshBlocking();
+    } finally {
+      stats.endCommit(start);
+    }
+  }
+
+  @Override
   public IndexWriter getWriter() {
     return writer;
   }

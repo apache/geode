@@ -1,0 +1,503 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package org.apache.geode.cache.lucene.internal.vector;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.KnnFloatVectorField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.VectorSimilarityFunction;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.KnnFloatVectorQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.ByteBuffersDirectory;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
+import org.apache.geode.test.junit.categories.LuceneTest;
+
+@Category({LuceneTest.class})
+public class Tier0VectorDeltaBufferJUnitTest {
+
+  private static final String VECTOR_FIELD = "embedding";
+
+  @Test
+  public void putDestroyAndCardinalityMetricsTrackDualEpochs() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(7);
+    assertThat(buffer.getBucketId()).isEqualTo(7);
+    assertThat(buffer.getCurrentEpoch()).isEqualTo(0L);
+    assertThat(buffer.getActiveSize()).isEqualTo(0);
+    assertThat(buffer.getFlushingSize()).isEqualTo(0);
+    assertThat(buffer.isFlushing()).isFalse();
+
+    long s1 = buffer.put("k1", new float[] {1f, 0f, 0f}, Map.of("cat", "a"));
+    long s2 = buffer.put("k2", new float[] {0f, 1f, 0f}, Map.of("cat", "b"));
+    long s3 = buffer.destroy("k3");
+    assertThat(s1).isLessThan(s2);
+    assertThat(s2).isLessThan(s3);
+    assertThat(buffer.getActiveSize()).isEqualTo(3);
+    assertThat(buffer.getFlushingSize()).isEqualTo(0);
+
+    // Swap E_active -> E_flushing
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+    assertThat(batch).isNotNull();
+    assertThat(batch.getEpoch()).isEqualTo(0L);
+    assertThat(batch.size()).isEqualTo(3);
+    assertThat(buffer.getCurrentEpoch()).isEqualTo(1L);
+    assertThat(buffer.getActiveSize()).isEqualTo(0);
+    assertThat(buffer.getFlushingSize()).isEqualTo(3);
+    assertThat(buffer.isFlushing()).isTrue();
+
+    // Concurrent flush rejected while flushing epoch is open
+    assertThatThrownBy(buffer::beginFlush).isInstanceOf(IllegalStateException.class);
+
+    // New writes land in E_active (epoch 1) without disturbing E_flushing (epoch 0)
+    buffer.put("k4", new float[] {0f, 0f, 1f});
+    assertThat(buffer.getActiveSize()).isEqualTo(1);
+    assertThat(buffer.getFlushingSize()).isEqualTo(3);
+    assertThat(buffer.getTotalSize()).isEqualTo(4);
+
+    // Complete flush strictly clears E_flushing while retaining E_active
+    buffer.completeFlush(batch.getEpoch());
+    assertThat(buffer.isFlushing()).isFalse();
+    assertThat(buffer.getFlushingSize()).isEqualTo(0);
+    assertThat(buffer.getActiveSize()).isEqualTo(1);
+
+    // Empty beginFlush returns null cleanly
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch2 = buffer.beginFlush();
+    assertThat(batch2).isNotNull();
+    buffer.completeFlush(batch2.getEpoch());
+    assertThat(buffer.beginFlush()).isNull();
+    assertThat(buffer.isFlushing()).isFalse();
+  }
+
+  @Test
+  public void reverseEpochPrecedenceAndTombstoneMasking() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(0);
+    buffer.put("k1", new float[] {1f, 0f, 0f});
+    buffer.put("k2", new float[] {1f, 0f, 0f});
+    buffer.put("k3", new float[] {0f, 1f, 0f});
+
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+    assertThat(batch).isNotNull();
+
+    // Override k1 with orthogonal vector in E_active, tombstone k2 in E_active
+    buffer.put("k1", new float[] {0f, 0f, 1f});
+    buffer.destroy("k2");
+
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+    assertThat(snap.getMaskedKeys()).containsExactlyInAnyOrder("k1", "k2", "k3");
+    assertThat(snap.getTombstonedKeys()).containsExactly("k2");
+    assertThat(snap.getLiveEntries()).containsOnlyKeys("k1", "k3");
+    assertThat(snap.getLiveEntries().get("k1").getVector()).containsExactly(0f, 0f, 1f);
+
+    // Re-put k2 in E_active resurrects it
+    buffer.put("k2", new float[] {1f, 0f, 0f});
+    Tier0VectorDeltaBuffer.Snapshot<String> snap2 = buffer.snapshot();
+    assertThat(snap2.getTombstonedKeys()).isEmpty();
+    assertThat(snap2.getLiveEntries()).containsOnlyKeys("k1", "k2", "k3");
+
+    buffer.completeFlush(batch.getEpoch());
+  }
+
+  @Test
+  public void abortFlushRestoresUnsupersededEntriesWithoutOverwritingNewerWrites() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(1);
+    buffer.put("k1", new float[] {1f, 0f});
+    buffer.put("k2", new float[] {0f, 1f});
+
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+    assertThat(batch).isNotNull();
+
+    // Update k1 in new E_active before flush aborts
+    buffer.put("k1", new float[] {0.5f, 0.5f});
+
+    buffer.abortFlush(batch.getEpoch());
+    assertThat(buffer.isFlushing()).isFalse();
+    assertThat(buffer.getActiveSize()).isEqualTo(2);
+
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+    assertThat(snap.getLiveEntries().get("k1").getVector()).containsExactly(0.5f, 0.5f);
+    assertThat(snap.getLiveEntries().get("k2").getVector()).containsExactly(0f, 1f);
+  }
+
+  @Test
+  public void evictCommittedOnlyRemovesStaleSequences() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(2);
+    long seq1 = buffer.put("k1", new float[] {1f, 0f});
+    long seq2 = buffer.put("k2", new float[] {0f, 1f});
+
+    // k2 receives a newer update after seq2 was captured
+    long seq2New = buffer.put("k2", new float[] {0.7f, 0.7f});
+    assertThat(seq2New).isGreaterThan(seq2);
+
+    buffer.evictCommitted(Map.of("k1", seq1, "k2", seq2));
+    assertThat(buffer.getActiveSize()).isEqualTo(1);
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+    assertThat(snap.getLiveEntries()).containsOnlyKeys("k2");
+    assertThat(snap.getLiveEntries().get("k2").getVector()).containsExactly(0.7f, 0.7f);
+  }
+
+  @Test
+  public void scoreEquivalenceWithLuceneKnnFloatVectorQueryAcrossAllSimilarities()
+      throws IOException {
+    Random random = new Random(42L);
+    int dim = 32;
+    int numDocs = 40;
+    float[] query = randomUnitVector(random, dim);
+
+    VectorSimilarityFunction[] similarities = new VectorSimilarityFunction[] {
+        VectorSimilarityFunction.COSINE,
+        VectorSimilarityFunction.DOT_PRODUCT,
+        VectorSimilarityFunction.EUCLIDEAN,
+        VectorSimilarityFunction.MAXIMUM_INNER_PRODUCT
+    };
+
+    for (VectorSimilarityFunction similarity : similarities) {
+      Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(0);
+      try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+          IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()));
+          SearcherManager searcherManager = new SearcherManager(writer, true, true, null)) {
+
+        for (int i = 0; i < numDocs; i++) {
+          String key = "doc-" + i;
+          float[] vec = randomUnitVector(random, dim);
+          buffer.put(key, vec);
+
+          float scorerVal = VectorSimilarityScorer.score(query, vec, similarity);
+          float luceneDirectVal = similarity.compare(query, vec);
+          assertThat(scorerVal)
+              .as("Direct score mismatch for %s key=%s", similarity, key)
+              .isCloseTo(luceneDirectVal, within(1e-5f));
+
+          Document doc = new Document();
+          SerializerUtil.addKey(key, doc);
+          doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, similarity));
+          writer.addDocument(doc);
+        }
+        writer.commit();
+        searcherManager.maybeRefreshBlocking();
+
+        List<EntryScore<String>> allTier0Hits = buffer.search(query, numDocs, similarity, null);
+        assertThat(allTier0Hits).hasSize(numDocs);
+        Map<String, Float> tier0ScoreByKey = new HashMap<>();
+        for (EntryScore<String> hit : allTier0Hits) {
+          tier0ScoreByKey.put(hit.getKey(), hit.getScore());
+        }
+
+        IndexSearcher searcher = searcherManager.acquire();
+        try {
+          TopDocs luceneTopDocs =
+              searcher.search(new KnnFloatVectorQuery(VECTOR_FIELD, query, numDocs), numDocs);
+          assertThat(luceneTopDocs.scoreDocs).hasSize(numDocs);
+
+          for (int rank = 0; rank < 10; rank++) {
+            ScoreDoc sd = luceneTopDocs.scoreDocs[rank];
+            String luceneKey =
+                (String) SerializerUtil.getKey(searcher.storedFields().document(sd.doc));
+            EntryScore<String> t0 = allTier0Hits.get(rank);
+            assertThat(tier0ScoreByKey.get(luceneKey))
+                .as("Tier-0 vs Lucene KnnFloatVectorQuery score mismatch for %s key=%s", similarity,
+                    luceneKey)
+                .isCloseTo(sd.score, within(1e-5f));
+            assertThat(t0.getScore())
+                .as("Rank %d score mismatch for %s", rank, similarity)
+                .isCloseTo(sd.score, within(1e-5f));
+          }
+        } finally {
+          searcherManager.release(searcher);
+        }
+      }
+    }
+  }
+
+  @Test
+  public void tombstoneMasksCommittedLuceneDocuments() throws IOException {
+    float[] query = new float[] {1f, 0f, 0f, 0f};
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(0);
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()));
+        SearcherManager searcherManager = new SearcherManager(writer, true, true, null)) {
+
+      // Commit 3 documents into Lucene; k0 is exact match to query
+      addVectorDoc(writer, "k0", new float[] {1f, 0f, 0f, 0f}, VectorSimilarityFunction.COSINE);
+      addVectorDoc(writer, "k1", new float[] {0.8f, 0.6f, 0f, 0f}, VectorSimilarityFunction.COSINE);
+      addVectorDoc(writer, "k2", new float[] {0.6f, 0.8f, 0f, 0f}, VectorSimilarityFunction.COSINE);
+      writer.commit();
+      searcherManager.maybeRefreshBlocking();
+
+      // Tombstone k0 and add new k3 in Tier-0 (before flush to Lucene)
+      buffer.destroy("k0");
+      buffer.put("k3", new float[] {0.9f, 0.4358899f, 0f, 0f});
+
+      Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+      Set<String> masked = snap.getMaskedKeys();
+
+      // Pre-filter Lucene excluding masked keys
+      BooleanQuery.Builder filterBuilder = new BooleanQuery.Builder();
+      filterBuilder.add(new org.apache.lucene.search.MatchAllDocsQuery(),
+          BooleanClause.Occur.FILTER);
+      for (String mk : masked) {
+        filterBuilder.add(new TermQuery(SerializerUtil.toKeyTerm(mk)),
+            BooleanClause.Occur.MUST_NOT);
+      }
+
+      List<EntryScore<String>> combined = new ArrayList<>();
+      IndexSearcher searcher = searcherManager.acquire();
+      try {
+        TopDocs topDocs = searcher.search(
+            new KnnFloatVectorQuery(VECTOR_FIELD, query, 3, filterBuilder.build()), 3);
+        for (ScoreDoc sd : topDocs.scoreDocs) {
+          String k = (String) SerializerUtil.getKey(searcher.storedFields().document(sd.doc));
+          if (!masked.contains(k)) {
+            combined.add(new EntryScore<>(k, sd.score));
+          }
+        }
+      } finally {
+        searcherManager.release(searcher);
+      }
+      combined.addAll(snap.search(query, 3, VectorSimilarityFunction.COSINE, null));
+      combined.sort((a, b) -> Float.compare(b.getScore(), a.getScore()));
+
+      assertThat(combined).extracting(EntryScore::getKey).containsExactly("k3", "k1", "k2");
+      assertThat(combined).extracting(EntryScore::getKey).doesNotContain("k0");
+    }
+  }
+
+  @Test
+  public void zeroVisibilityGapUnderConcurrentWritesSwapCommitAndRefresh() throws Exception {
+    final int dim = 8;
+    final int numWriters = 4;
+    final int writesPerWriter = 80;
+    final float[] query = new float[] {1f, 0f, 0f, 0f, 0f, 0f, 0f, 0f};
+
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(0);
+    // Keys whose put() has returned and therefore MUST be visible in Tier0 U Lucene at all times
+    Set<String> acknowledgedKeys = ConcurrentHashMap.newKeySet();
+    AtomicBoolean writersDone = new AtomicBoolean(false);
+    AtomicInteger flushCycles = new AtomicInteger(0);
+    AtomicInteger visibilityGaps = new AtomicInteger(0);
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()));
+        SearcherManager searcherManager = new SearcherManager(writer, true, true, null)) {
+
+      ExecutorService pool = Executors.newFixedThreadPool(numWriters + 3);
+      try {
+        // Continuous flusher implementing Theorem 2 protocol
+        Future<?> flusherFuture = pool.submit(() -> {
+          while (!writersDone.get() || buffer.getActiveSize() > 0) {
+            Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+            if (batch == null) {
+              Thread.yield();
+              continue;
+            }
+            try {
+              for (Tier0VectorDeltaBuffer.DeltaEntry<String> entry : batch.getEntries().values()) {
+                if (entry.isTombstone()) {
+                  writer.deleteDocuments(SerializerUtil.toKeyTerm(entry.getKey()));
+                } else {
+                  Document doc = new Document();
+                  SerializerUtil.addKey(entry.getKey(), doc);
+                  doc.add(new KnnFloatVectorField(VECTOR_FIELD, entry.getVector(),
+                      VectorSimilarityFunction.COSINE));
+                  writer.updateDocument(SerializerUtil.toKeyTerm(entry.getKey()), doc);
+                }
+              }
+              writer.commit();
+              searcherManager.maybeRefreshBlocking();
+              buffer.completeFlush(batch.getEpoch());
+              flushCycles.incrementAndGet();
+            } catch (IOException e) {
+              buffer.abortFlush(batch.getEpoch());
+              throw new RuntimeException(e);
+            }
+          }
+        });
+
+        // Concurrent readers verifying Theorem 2 zero-gap visibility on every snapshot
+        List<Future<?>> readerFutures = new ArrayList<>();
+        for (int r = 0; r < 2; r++) {
+          readerFutures.add(pool.submit(() -> {
+            while (!writersDone.get() || buffer.getTotalSize() > 0) {
+              // Capture acknowledged set BEFORE snapshot+search to test read-after-write
+              List<String> mustBeVisible = new ArrayList<>(acknowledgedKeys);
+              if (mustBeVisible.isEmpty()) {
+                Thread.yield();
+                continue;
+              }
+
+              // Theorem 2 ordering: snapshot Tier-0 FIRST, THEN acquire Lucene searcher
+              Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+              Set<String> observed = new HashSet<>(snap.getLiveEntries().keySet());
+
+              try {
+                IndexSearcher searcher = searcherManager.acquire();
+                try {
+                  int maxDocs = Math.max(1, searcher.getIndexReader().numDocs());
+                  TopDocs topDocs = searcher.search(
+                      new KnnFloatVectorQuery(VECTOR_FIELD, query, maxDocs), maxDocs);
+                  for (ScoreDoc sd : topDocs.scoreDocs) {
+                    String k = (String) SerializerUtil
+                        .getKey(searcher.storedFields().document(sd.doc));
+                    if (!snap.isTombstoned(k)) {
+                      observed.add(k);
+                    }
+                  }
+                } finally {
+                  searcherManager.release(searcher);
+                }
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+
+              for (String ackKey : mustBeVisible) {
+                if (!observed.contains(ackKey)) {
+                  visibilityGaps.incrementAndGet();
+                }
+              }
+            }
+          }));
+        }
+
+        // Concurrent writers putting distinct keys
+        List<Future<?>> writerFutures = new ArrayList<>();
+        for (int w = 0; w < numWriters; w++) {
+          final int writerId = w;
+          writerFutures.add(pool.submit(() -> {
+            Random rng = new Random(1000L + writerId);
+            for (int i = 0; i < writesPerWriter; i++) {
+              String key = "w" + writerId + "-k" + i;
+              float[] vec = randomUnitVector(rng, dim);
+              buffer.put(key, vec);
+              acknowledgedKeys.add(key);
+              if (i % 8 == 0) {
+                Thread.yield();
+              }
+            }
+          }));
+        }
+
+        for (Future<?> wf : writerFutures) {
+          wf.get();
+        }
+        writersDone.set(true);
+        flusherFuture.get();
+        for (Future<?> rf : readerFutures) {
+          rf.get();
+        }
+      } finally {
+        pool.shutdownNow();
+      }
+
+      assertThat(visibilityGaps.get())
+          .as("Expected strictly ZERO read-after-write visibility gaps across concurrent flushes")
+          .isEqualTo(0);
+      assertThat(flushCycles.get()).isGreaterThan(0);
+      assertThat(buffer.getTotalSize()).isEqualTo(0);
+
+      // Final verification: all acknowledged keys exist in committed Lucene segments
+      IndexSearcher searcher = searcherManager.acquire();
+      try {
+        assertThat(searcher.getIndexReader().numDocs()).isEqualTo(numWriters * writesPerWriter);
+      } finally {
+        searcherManager.release(searcher);
+      }
+    }
+  }
+
+  @Test
+  public void metadataFilterPredicateMatchesEqualityBooleanAndPointRange() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(0);
+    buffer.put("k1", new float[] {1f, 0f},
+        Map.of("category", "books", "price", 20, "tag", "scifi"));
+    buffer.put("k2", new float[] {0.99f, 0.1f},
+        Map.of("category", "books", "price", 150, "tag", "classic"));
+    buffer.put("k3", new float[] {0.98f, 0.2f},
+        Map.of("category", "music", "price", 25, "tag", "jazz"));
+
+    Query rangeAndNot = new BooleanQuery.Builder()
+        .add(IntPoint.newRangeQuery("price_point", 10, 50), BooleanClause.Occur.FILTER)
+        .add(new TermQuery(new Term("tag", "jazz")), BooleanClause.Occur.MUST_NOT)
+        .build();
+
+    Predicate<Map<String, Object>> pred =
+        Tier0MetadataMatcher.buildPredicate(Collections.singletonMap("category", "books"),
+            rangeAndNot);
+
+    List<EntryScore<String>> hits =
+        buffer.search(new float[] {1f, 0f}, 5, VectorSimilarityFunction.COSINE, pred);
+    assertThat(hits).extracting(EntryScore::getKey).containsExactly("k1");
+  }
+
+  private static void addVectorDoc(IndexWriter writer, String key, float[] vec,
+      VectorSimilarityFunction similarity) throws IOException {
+    Document doc = new Document();
+    SerializerUtil.addKey(key, doc);
+    doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, similarity));
+    doc.add(new StringField("status", "active", Field.Store.NO));
+    writer.addDocument(doc);
+  }
+
+  private static float[] randomUnitVector(Random random, int dim) {
+    float[] vec = new float[dim];
+    float normSq = 0f;
+    for (int i = 0; i < dim; i++) {
+      vec[i] = (float) random.nextGaussian();
+      normSq += vec[i] * vec[i];
+    }
+    float invNorm = (float) (1.0 / Math.sqrt(Math.max(normSq, 1e-12f)));
+    for (int i = 0; i < dim; i++) {
+      vec[i] *= invNorm;
+    }
+    return vec;
+  }
+}

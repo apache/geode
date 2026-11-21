@@ -17,6 +17,9 @@ package org.apache.geode.cache.lucene.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -71,6 +74,48 @@ public class PartitionedRepositoryManager implements RepositoryManager {
 
   public void setUserRegionForRepositoryManager(PartitionedRegion userRegion) {
     this.userRegion = userRegion;
+  }
+
+  public InternalLuceneIndex getIndex() {
+    return index;
+  }
+
+  /**
+   * Returns a map from local primary bucket ID to its {@link IndexRepository} for the buckets
+   * targeted by {@code ctx}.
+   */
+  public Map<Integer, IndexRepository> getRepositoriesByBucket(RegionFunctionContext ctx,
+      boolean waitForRepository) throws BucketNotFoundException {
+    Region<Object, Object> region = ctx.getDataSet();
+    int[] buckets = ((InternalRegionFunctionContext) ctx).getLocalBucketArray(region);
+    if (buckets == null || buckets[0] == 0) {
+      return Collections.emptyMap();
+    }
+    Map<Integer, IndexRepository> reposByBucket = new LinkedHashMap<>(buckets[0]);
+    for (int i = 1; i <= buckets[0]; i++) {
+      int bucketId = buckets[i];
+      BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);
+      if (userBucket == null) {
+        throw new BucketNotFoundException(
+            "User bucket was not found for region " + region + "bucket id " + bucketId);
+      } else {
+        if (index.isIndexAvailable(userBucket.getId()) || userBucket.isEmpty()
+            || waitForRepository) {
+          reposByBucket.put(userBucket.getId(), getRepository(userBucket.getId()));
+        } else {
+          waitingThreadPoolFromDM.execute(() -> {
+            try {
+              getRepository(userBucket.getId());
+            } catch (Exception e) {
+              logger.debug("Lucene Index creation in progress.", e);
+            }
+          });
+          throw new LuceneIndexCreationInProgressException(
+              "Lucene Index creation in progress for bucket: " + userBucket.getId());
+        }
+      }
+    }
+    return reposByBucket;
   }
 
   @Override

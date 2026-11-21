@@ -16,6 +16,8 @@ org/apache/geode/cache/lucene/internal/cli/functions/LuceneDestroyIndexFunction,
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneListIndexFunction,true,-2320432506763893879
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneSearchIndexFunction,true,163818919780803222
 org/apache/geode/cache/lucene/internal/directory/DumpDirectoryFiles,true,1
+org/apache/geode/cache/lucene/internal/distributed/DistributedHybridKnnFunction,true,1
+org/apache/geode/cache/lucene/internal/distributed/HybridKnnQueryContext,true,1,defaultFilterField:java/lang/String,filterQueryString:java/lang/String,includeTier0:boolean,indexName:java/lang/String,k:int,metadataEqualityFilters:java/util/HashMap,queryVector:float[],similarityFunctionName:java/lang/String,vectorFieldName:java/lang/String
 org/apache/geode/cache/lucene/internal/distributed/IndexingInProgressFunction,true,1
 org/apache/geode/cache/lucene/internal/distributed/LuceneQueryFunction,true,1
 org/apache/geode/cache/lucene/internal/distributed/WaitUntilFlushedFunction,true,1

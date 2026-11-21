@@ -52,6 +52,7 @@ import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
+import org.apache.geode.cache.lucene.internal.distributed.DistributedHybridKnnFunction;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.cache.lucene.internal.distributed.IndexingInProgressFunction;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
@@ -129,6 +130,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     this.cache = (InternalCache) cache;
 
     FunctionService.registerFunction(new LuceneQueryFunction());
+    FunctionService.registerFunction(new DistributedHybridKnnFunction());
     FunctionService.registerFunction(new LuceneGetPageFunction());
     FunctionService.registerFunction(new WaitUntilFlushedFunction());
     FunctionService.registerFunction(new IndexingInProgressFunction());

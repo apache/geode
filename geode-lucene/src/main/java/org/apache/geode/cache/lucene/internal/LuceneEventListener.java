@@ -16,8 +16,10 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -32,7 +34,10 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PrimaryBucketException;
@@ -82,6 +87,14 @@ public class LuceneEventListener implements AsyncEventListener {
     cache.setPdxReadSerializedOverride(true);
 
     Set<IndexRepository> affectedRepos = new HashSet<>();
+    Map<IndexRepository, Tier0VectorDeltaBuffer<Object>> tier0BuffersByRepo = null;
+    Map<IndexRepository, Map<Object, Long>> committedKeySeqsByRepo = null;
+    InternalLuceneIndex partitionedIndex =
+        (repositoryManager instanceof PartitionedRepositoryManager)
+            ? ((PartitionedRepositoryManager) repositoryManager).getIndex()
+            : null;
+    Tier0VectorRegistry tier0Registry =
+        (partitionedIndex != null && cache != null) ? Tier0VectorRegistry.forCache(cache) : null;
 
     try {
       for (AsyncEvent event : events) {
@@ -91,6 +104,24 @@ public class LuceneEventListener implements AsyncEventListener {
         Object callbackArgument = event.getCallbackArgument();
 
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
+
+        if (tier0Registry != null && repository.getRegion() instanceof BucketRegion) {
+          int bucketId = ((BucketRegion) repository.getRegion()).getId();
+          Tier0VectorDeltaBuffer<Object> buffer = tier0Registry.getBuffer(
+              partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+          if (buffer != null) {
+            long seqBeforeRead = buffer.getKeySequence(key);
+            if (seqBeforeRead >= 0L) {
+              if (tier0BuffersByRepo == null) {
+                tier0BuffersByRepo = new HashMap<>();
+                committedKeySeqsByRepo = new HashMap<>();
+              }
+              tier0BuffersByRepo.put(repository, buffer);
+              committedKeySeqsByRepo.computeIfAbsent(repository, r -> new HashMap<>())
+                  .merge(key, seqBeforeRead, Math::max);
+            }
+          }
+        }
 
         Object value = getValue(region.getEntry(key));
         if (value != null) {
@@ -103,7 +134,14 @@ public class LuceneEventListener implements AsyncEventListener {
       }
 
       for (IndexRepository repo : affectedRepos) {
-        repo.commit();
+        Tier0VectorDeltaBuffer<Object> buffer =
+            tier0BuffersByRepo == null ? null : tier0BuffersByRepo.get(repo);
+        if (buffer != null) {
+          repo.commitAndRefreshBlocking();
+          buffer.evictCommitted(committedKeySeqsByRepo.get(repo));
+        } else {
+          repo.commit();
+        }
       }
       return true;
     } catch (BucketNotFoundException | RegionDestroyedException | PrimaryBucketException e) {

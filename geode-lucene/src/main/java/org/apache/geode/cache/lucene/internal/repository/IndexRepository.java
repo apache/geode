@@ -61,6 +61,15 @@ public interface IndexRepository {
    */
   void commit() throws IOException;
 
+  /**
+   * Commit the changes to the Lucene index and perform a blocking searcher refresh so all
+   * committed mutations are guaranteed visible to subsequent {@code IndexSearcher} acquisitions
+   * before returning.
+   */
+  default void commitAndRefreshBlocking() throws IOException {
+    commit();
+  }
+
   Region<?, ?> getRegion();
 
   /**
