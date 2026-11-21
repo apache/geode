@@ -404,48 +404,86 @@ public class Tier0VectorDeltaBuffer<K> {
    * per key).
    *
    * <p>
+   * Reads {@code E_flushing} strictly BEFORE {@code E_active} and validates {@code stateRef}
+   * afterward so that concurrent {@link #beginFlush()} rotations or {@link #abortFlush(long)}
+   * restorations ({@code E_flushing -> E_active}) can never drop a live entry, and concurrent
+   * {@link #clear()} calls trigger a clean retry.
+   *
+   * <p>
    * Callers performing hybrid search MUST invoke {@link #snapshot()} BEFORE acquiring/querying the
    * Lucene {@code IndexSearcher} to guarantee zero visibility gap across concurrent flush commits.
    */
   public Snapshot<K> snapshot() {
-    EpochState<K> state = stateRef.get();
-    Map<K, DeltaEntry<K>> merged = new HashMap<>();
+    while (true) {
+      EpochState<K> state = stateRef.get();
+      EpochBucket<K> flushing = state.flushing;
+      EpochBucket<K> active = state.active;
+      long expectedGeneration = active.generation;
 
-    // First populate from E_flushing (older epoch)
-    if (state.flushing != null) {
-      for (Map.Entry<K, DeltaEntry<K>> e : state.flushing.entries.entrySet()) {
-        merged.put(e.getKey(), e.getValue());
+      Map<K, DeltaEntry<K>> merged = new HashMap<>();
+
+      // 1. Read E_flushing BEFORE E_active: abortFlush() restores E_flushing -> E_active strictly
+      // before clearing E_flushing (and never deletes from E_flushing), so scanning E_flushing
+      // first then E_active guarantees no migrating entry is missed.
+      if (flushing != null) {
+        for (Map.Entry<K, DeltaEntry<K>> e : flushing.entries.entrySet()) {
+          merged.put(e.getKey(), e.getValue());
+        }
       }
-    }
 
-    // Overlay E_active (newer epoch); highest sequence wins per key
-    for (Map.Entry<K, DeltaEntry<K>> e : state.active.entries.entrySet()) {
-      DeltaEntry<K> activeEntry = e.getValue();
-      merged.merge(e.getKey(), activeEntry,
+      // 2. Overlay E_active (newer epoch); highest sequence wins per key.
+      overlayBucket(merged, active);
+
+      // 3. Re-check volatile stateRef to defend against concurrent clear(), beginFlush(), or
+      // abortFlush() completing mid-snapshot.
+      EpochState<K> after = stateRef.get();
+      if (after.active.generation != expectedGeneration) {
+        continue;
+      }
+
+      long effectiveActiveEpoch = active.epoch;
+      if (after.active != active) {
+        if (after.flushing != null && after.flushing != flushing && after.flushing != active) {
+          overlayBucket(merged, after.flushing);
+        }
+        overlayBucket(merged, after.active);
+        effectiveActiveEpoch = after.active.epoch;
+      } else if (flushing != null && after.flushing == null) {
+        // abortFlush() (or completeFlush()) cleared E_flushing mid-snapshot; re-overlay active
+        // once more so any entries restored or written concurrently are merged by highest sequence.
+        overlayBucket(merged, after.active);
+      }
+
+      Map<K, DeltaEntry<K>> liveEntries = new HashMap<>();
+      Set<K> tombstonedKeys = new HashSet<>();
+      Set<K> maskedKeys = new HashSet<>(merged.size());
+
+      for (Map.Entry<K, DeltaEntry<K>> e : merged.entrySet()) {
+        K key = e.getKey();
+        DeltaEntry<K> entry = e.getValue();
+        maskedKeys.add(key);
+        if (entry.tombstone) {
+          tombstonedKeys.add(key);
+        } else {
+          liveEntries.put(key, entry);
+        }
+      }
+
+      return new Snapshot<>(
+          effectiveActiveEpoch,
+          flushing == null ? -1L : flushing.epoch,
+          Collections.unmodifiableMap(liveEntries),
+          Collections.unmodifiableSet(tombstonedKeys),
+          Collections.unmodifiableSet(maskedKeys));
+    }
+  }
+
+  private void overlayBucket(Map<K, DeltaEntry<K>> merged, EpochBucket<K> bucket) {
+    for (Map.Entry<K, DeltaEntry<K>> e : bucket.entries.entrySet()) {
+      DeltaEntry<K> entry = e.getValue();
+      merged.merge(e.getKey(), entry,
           (existing, incoming) -> incoming.sequence >= existing.sequence ? incoming : existing);
     }
-
-    Map<K, DeltaEntry<K>> liveEntries = new HashMap<>();
-    Set<K> tombstonedKeys = new HashSet<>();
-    Set<K> maskedKeys = new HashSet<>(merged.size());
-
-    for (Map.Entry<K, DeltaEntry<K>> e : merged.entrySet()) {
-      K key = e.getKey();
-      DeltaEntry<K> entry = e.getValue();
-      maskedKeys.add(key);
-      if (entry.tombstone) {
-        tombstonedKeys.add(key);
-      } else {
-        liveEntries.put(key, entry);
-      }
-    }
-
-    return new Snapshot<>(
-        state.active.epoch,
-        state.flushing == null ? -1L : state.flushing.epoch,
-        Collections.unmodifiableMap(liveEntries),
-        Collections.unmodifiableSet(tombstonedKeys),
-        Collections.unmodifiableSet(maskedKeys));
   }
 
   /**

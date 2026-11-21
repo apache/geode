@@ -600,6 +600,88 @@ public class Tier0VectorDeltaBufferJUnitTest {
     assertThat(buffer.getTotalSize()).isEqualTo(0);
   }
 
+  @Test
+  public void snapshotNeverMissesLiveEntriesAcrossTenThousandBeginAndAbortFlushIterations()
+      throws Exception {
+    final int numPinnedKeys = 32;
+    final int iterations = 10_000;
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(9);
+
+    Set<String> pinnedKeys = new HashSet<>(numPinnedKeys);
+    for (int i = 0; i < numPinnedKeys; i++) {
+      String key = "pinned-" + i;
+      pinnedKeys.add(key);
+      buffer.put(key, new float[] {1f, (float) i}, Map.of("slot", i));
+    }
+
+    AtomicBoolean flusherDone = new AtomicBoolean(false);
+    AtomicInteger missedEntries = new AtomicInteger(0);
+    AtomicInteger snapshotsChecked = new AtomicInteger(0);
+    AtomicInteger abortedFlushes = new AtomicInteger(0);
+
+    ExecutorService pool = Executors.newFixedThreadPool(4);
+    try {
+      // Flusher repeatedly executes beginFlush() -> abortFlush() 10,000 times, migrating all
+      // pinned entries between E_active and E_flushing continuously.
+      Future<?> flusher = pool.submit(() -> {
+        for (int i = 0; i < iterations; i++) {
+          Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+          if (batch != null) {
+            buffer.abortFlush(batch.getEpoch());
+            abortedFlushes.incrementAndGet();
+          }
+        }
+      });
+
+      // Concurrent writer continuously updates pinned keys so E_active and E_flushing both hold
+      // overlapping versions during abortFlush() restoration.
+      Future<?> updater = pool.submit(() -> {
+        int step = 0;
+        while (!flusherDone.get()) {
+          String key = "pinned-" + (step % numPinnedKeys);
+          buffer.put(key, new float[] {1f, (float) step}, Map.of("slot", step % numPinnedKeys));
+          step++;
+        }
+      });
+
+      // Two concurrent readers verify that EVERY snapshot sees 100% of pinnedKeys with zero gaps.
+      List<Future<?>> readers = new ArrayList<>();
+      for (int r = 0; r < 2; r++) {
+        readers.add(pool.submit(() -> {
+          while (!flusherDone.get() || snapshotsChecked.get() < iterations) {
+            Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+            Map<String, Tier0VectorDeltaBuffer.DeltaEntry<String>> live = snap.getLiveEntries();
+            for (String expectedKey : pinnedKeys) {
+              if (!live.containsKey(expectedKey)) {
+                missedEntries.incrementAndGet();
+              }
+            }
+            if (snapshotsChecked.incrementAndGet() >= iterations && flusherDone.get()) {
+              break;
+            }
+          }
+        }));
+      }
+
+      flusher.get();
+      flusherDone.set(true);
+      updater.get();
+      for (Future<?> reader : readers) {
+        reader.get();
+      }
+    } finally {
+      pool.shutdownNow();
+    }
+
+    assertThat(abortedFlushes.get()).isEqualTo(iterations);
+    assertThat(snapshotsChecked.get()).isGreaterThanOrEqualTo(iterations);
+    assertThat(missedEntries.get())
+        .as("snapshot() must NEVER miss a live entry during concurrent beginFlush()/abortFlush()")
+        .isEqualTo(0);
+    assertThat(buffer.snapshot().getLiveEntries().keySet())
+        .containsExactlyInAnyOrderElementsOf(pinnedKeys);
+  }
+
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,
       VectorSimilarityFunction similarity) throws IOException {
     Document doc = new Document();

@@ -36,6 +36,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.KnnFloatVectorQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -232,13 +233,15 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
       }
     }
 
-    // Build pre-filtered Lucene 9.x KnnFloatVectorQuery
+    // Build pre-filtered Lucene 9.x KnnFloatVectorQuery with safe |T_mask| capping
+    int maxInlineTerms =
+        Math.min(MAX_INLINE_MASK_TERMS, Math.max(0, IndexSearcher.getMaxClauseCount() - 2));
     int luceneK;
     Query effectiveFilterQuery;
     if (maskedKeys.isEmpty()) {
       effectiveFilterQuery = userFilterQuery;
       luceneK = k;
-    } else if (maskedKeys.size() <= MAX_INLINE_MASK_TERMS) {
+    } else if (maskedKeys.size() <= maxInlineTerms) {
       effectiveFilterQuery = buildMaskedFilterQuery(userFilterQuery, maskedKeys);
       luceneK = k;
     } else {
