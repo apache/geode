@@ -124,6 +124,37 @@ public class Tier0VectorRegistry {
     }
   }
 
+  /**
+   * Removes and clears all Tier-0 delta buffers registered for any index on {@code regionPath}.
+   */
+  public void removeRegion(String regionPath) {
+    String normalized = normalizeRegionPath(regionPath);
+    buffers.keySet().removeIf(indexKey -> {
+      if (indexKey.regionPath.equals(normalized)) {
+        ConcurrentHashMap<Integer, Tier0VectorDeltaBuffer<Object>> removed =
+            buffers.remove(indexKey);
+        if (removed != null) {
+          removed.values().forEach(Tier0VectorDeltaBuffer::clear);
+          removed.clear();
+        }
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
+   * Returns {@code true} if a registry instance is currently tracked for {@code cache}.
+   */
+  public static boolean hasCache(Cache cache) {
+    if (cache == null) {
+      return false;
+    }
+    synchronized (CACHE_REGISTRIES) {
+      return CACHE_REGISTRIES.containsKey(cache);
+    }
+  }
+
   public void clearAll() {
     buffers.values().forEach(map -> {
       map.values().forEach(Tier0VectorDeltaBuffer::clear);

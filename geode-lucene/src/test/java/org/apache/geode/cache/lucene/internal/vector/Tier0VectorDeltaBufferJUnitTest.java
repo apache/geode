@@ -478,6 +478,128 @@ public class Tier0VectorDeltaBufferJUnitTest {
     assertThat(hits).extracting(EntryScore::getKey).containsExactly("k1");
   }
 
+  @Test
+  public void evictCommittedRemovesEntriesInFlushingEpochAfterConcurrentSwap() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(4);
+    long seq1 = buffer.put("k1", new float[] {1f, 0f});
+    long seq2 = buffer.put("k2", new float[] {0f, 1f});
+
+    // beginFlush moves k1 and k2 from E_active to E_flushing
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+    assertThat(batch).isNotNull();
+    assertThat(buffer.getActiveSize()).isEqualTo(0);
+    assertThat(buffer.getFlushingSize()).isEqualTo(2);
+
+    // k2 also gets a newer write in E_active after swap
+    long seq2New = buffer.put("k2", new float[] {0.7f, 0.7f});
+    assertThat(seq2New).isGreaterThan(seq2);
+
+    // evictCommitted must remove k1 and stale k2 from E_flushing while keeping newer k2 in E_active
+    buffer.evictCommitted(Map.of("k1", seq1, "k2", seq2));
+    assertThat(buffer.getFlushingSize()).isEqualTo(0);
+    assertThat(buffer.getActiveSize()).isEqualTo(1);
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+    assertThat(snap.getLiveEntries()).containsOnlyKeys("k2");
+    assertThat(snap.getLiveEntries().get("k2").getVector()).containsExactly(0.7f, 0.7f);
+
+    buffer.completeFlush(batch.getEpoch());
+  }
+
+  @Test
+  public void abortFlushDoesNotResurrectEntriesAfterConcurrentClear() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(5);
+    buffer.put("k1", new float[] {1f, 0f});
+    buffer.put("k2", new float[] {0f, 1f});
+
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+    assertThat(batch).isNotNull();
+
+    // Concurrent clear() wipes the buffer before abortFlush runs
+    buffer.clear();
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+    assertThat(buffer.isFlushing()).isFalse();
+
+    // Calling abortFlush after clear() must be a safe no-op and resurrect ZERO entries
+    buffer.abortFlush(batch.getEpoch());
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+    assertThat(buffer.snapshot().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void concurrentStressInterleavingPutEvictFlushAbortAndClearLeavesZeroStrandedEntries()
+      throws Exception {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(6);
+    AtomicBoolean running = new AtomicBoolean(true);
+    ExecutorService pool = Executors.newFixedThreadPool(4);
+    try {
+      // Writer + evictor thread
+      Future<?> writerEvictor = pool.submit(() -> {
+        for (int i = 0; i < 400; i++) {
+          String key = "stress-" + (i % 40);
+          long seq = buffer.put(key, new float[] {1f, (float) i});
+          if (i % 3 == 0) {
+            buffer.evictCommitted(Collections.singletonMap(key, seq));
+          }
+        }
+      });
+
+      // Flusher alternating completeFlush and abortFlush
+      Future<?> flusher = pool.submit(() -> {
+        int cycle = 0;
+        while (running.get()) {
+          Tier0VectorDeltaBuffer.FlushBatch<String> batch;
+          try {
+            batch = buffer.beginFlush();
+          } catch (IllegalStateException ignored) {
+            Thread.yield();
+            continue;
+          }
+          if (batch == null) {
+            Thread.yield();
+            continue;
+          }
+          if ((cycle++ % 2) == 0) {
+            buffer.abortFlush(batch.getEpoch());
+          } else {
+            buffer.completeFlush(batch.getEpoch());
+          }
+        }
+      });
+
+      // Periodic clear() thread racing with abortFlush/put/evictCommitted
+      Future<?> clearer = pool.submit(() -> {
+        for (int c = 0; c < 30; c++) {
+          buffer.clear();
+          Thread.yield();
+        }
+      });
+
+      writerEvictor.get();
+      clearer.get();
+      running.set(false);
+      flusher.get();
+    } finally {
+      pool.shutdownNow();
+    }
+
+    // After quiescence: a final clear() followed by draining any active entries leaves 0 stranded
+    buffer.clear();
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+
+    // Put a deterministic batch, beginFlush, then evictCommitted across E_flushing -> 0 stranded
+    Map<String, Long> seqs = new HashMap<>();
+    for (int i = 0; i < 20; i++) {
+      String k = "final-" + i;
+      seqs.put(k, buffer.put(k, new float[] {1f, 0f}));
+    }
+    Tier0VectorDeltaBuffer.FlushBatch<String> finalBatch = buffer.beginFlush();
+    assertThat(finalBatch).isNotNull();
+    buffer.evictCommitted(seqs);
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+    buffer.completeFlush(finalBatch.getEpoch());
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+  }
+
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,
       VectorSimilarityFunction similarity) throws IOException {
     Document doc = new Document();

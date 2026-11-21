@@ -64,11 +64,12 @@ public class Tier0VectorDeltaBuffer<K> {
 
   private final int bucketId;
   private final AtomicLong sequenceGenerator = new AtomicLong(0L);
+  private final AtomicLong lastClearedEpoch = new AtomicLong(-1L);
   private final AtomicReference<EpochState<K>> stateRef;
 
   public Tier0VectorDeltaBuffer(int bucketId) {
     this.bucketId = bucketId;
-    EpochBucket<K> initialActive = new EpochBucket<>(0L);
+    EpochBucket<K> initialActive = new EpochBucket<>(0L, 0L);
     this.stateRef = new AtomicReference<>(new EpochState<>(initialActive, null));
   }
 
@@ -101,6 +102,54 @@ public class Tier0VectorDeltaBuffer<K> {
         : Collections.unmodifiableMap(new HashMap<>(metadata));
 
     return recordMutation(key, vectorCopy, metadataCopy, false);
+  }
+
+  /**
+   * Inserts a live vector entry into {@code E_active} ONLY if {@code key} is currently absent from
+   * both {@code E_active} and {@code E_flushing} (including tombstones). Used during primary
+   * bucket hydration so hydration never overwrites a concurrent live {@code destroy} tombstone or
+   * newer {@code put}.
+   *
+   * @return monotonically increasing sequence number if inserted, or {@code -1L} if {@code key}
+   *         was already present
+   */
+  public long putIfAbsent(K key, float[] vector, Map<String, Object> metadata) {
+    Objects.requireNonNull(key, "key must not be null");
+    Objects.requireNonNull(vector, "vector must not be null");
+    if (vector.length == 0) {
+      throw new IllegalArgumentException("vector must not be empty");
+    }
+    float[] vectorCopy = Arrays.copyOf(vector, vector.length);
+    Map<String, Object> metadataCopy = (metadata == null || metadata.isEmpty())
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(new HashMap<>(metadata));
+
+    while (true) {
+      EpochState<K> state = stateRef.get();
+      EpochBucket<K> active = state.active;
+      int writerCount = active.writerState.get();
+      if ((writerCount & SEALED_BIT) != 0) {
+        Thread.onSpinWait();
+        continue;
+      }
+      if (!active.writerState.compareAndSet(writerCount, writerCount + 1)) {
+        continue;
+      }
+      try {
+        if (state.flushing != null && state.flushing.entries.containsKey(key)) {
+          return -1L;
+        }
+        long[] insertedSeq = new long[] {-1L};
+        active.entries.computeIfAbsent(key, k -> {
+          long seq = sequenceGenerator.incrementAndGet();
+          insertedSeq[0] = seq;
+          return new DeltaEntry<>(k, vectorCopy, metadataCopy, false, active.epoch, seq);
+        });
+        return insertedSeq[0];
+      } finally {
+        active.writerState.decrementAndGet();
+      }
+    }
   }
 
   /**
@@ -158,7 +207,7 @@ public class Tier0VectorDeltaBuffer<K> {
                 + current.flushing.epoch + ")");
       }
       EpochBucket<K> oldActive = current.active;
-      EpochBucket<K> newActive = new EpochBucket<>(oldActive.epoch + 1L);
+      EpochBucket<K> newActive = new EpochBucket<>(oldActive.epoch + 1L, oldActive.generation);
       EpochState<K> next = new EpochState<>(newActive, oldActive);
       if (stateRef.compareAndSet(current, next)) {
         // Seal oldActive so no new writers can pin it, then wait for pinned writers to finish.
@@ -187,6 +236,9 @@ public class Tier0VectorDeltaBuffer<K> {
     while (true) {
       EpochState<K> current = stateRef.get();
       if (current.flushing == null || current.flushing.epoch != flushEpoch) {
+        if (flushEpoch <= lastClearedEpoch.get()) {
+          return;
+        }
         throw new IllegalStateException(
             "Cannot complete flush for epoch " + flushEpoch + " on bucket " + bucketId
                 + " (current flushingEpoch="
@@ -203,24 +255,40 @@ public class Tier0VectorDeltaBuffer<K> {
    * Restores un-superseded entries from {@code E_flushing} back into {@code E_active} and clears
    * {@code E_flushing} when a Lucene commit/refresh fails, ensuring zero lost visibility.
    *
+   * <p>
+   * Guarded by the buffer's monotonic {@code clear} generation so a concurrent {@link #clear()}
+   * immediately cancels restoration and cleared entries can never be resurrected.
+   *
    * @param flushEpoch the epoch returned by {@link #beginFlush()}
    */
   public void abortFlush(long flushEpoch) {
     EpochState<K> current = stateRef.get();
     if (current.flushing == null || current.flushing.epoch != flushEpoch) {
+      if (flushEpoch <= lastClearedEpoch.get()) {
+        return;
+      }
       throw new IllegalStateException(
           "Cannot abort flush for epoch " + flushEpoch + " on bucket " + bucketId);
     }
     EpochBucket<K> flushing = current.flushing;
+    long expectedGeneration = flushing.generation;
     for (Map.Entry<K, DeltaEntry<K>> entry : flushing.entries.entrySet()) {
-      restoreEntryToActive(entry.getKey(), entry.getValue());
+      if (!restoreEntryToActive(entry.getKey(), entry.getValue(), flushing, expectedGeneration)) {
+        return;
+      }
     }
     clearFlushingEpoch(flushEpoch);
   }
 
-  private void restoreEntryToActive(K key, DeltaEntry<K> oldEntry) {
+  private boolean restoreEntryToActive(K key, DeltaEntry<K> oldEntry, EpochBucket<K> expectedFlush,
+      long expectedGeneration) {
     while (true) {
-      EpochBucket<K> active = stateRef.get().active;
+      EpochState<K> state = stateRef.get();
+      if (state.active.generation != expectedGeneration || state.flushing != expectedFlush) {
+        // Concurrent clear() (or flush resolution) invalidated this flush epoch — never resurrect.
+        return false;
+      }
+      EpochBucket<K> active = state.active;
       int writerCount = active.writerState.get();
       if ((writerCount & SEALED_BIT) != 0) {
         Thread.onSpinWait();
@@ -230,10 +298,13 @@ public class Tier0VectorDeltaBuffer<K> {
         continue;
       }
       try {
+        if (stateRef.get().active.generation != expectedGeneration) {
+          return false;
+        }
         active.entries.compute(key,
             (k, existing) -> (existing == null || oldEntry.sequence > existing.sequence)
                 ? oldEntry : existing);
-        return;
+        return true;
       } finally {
         active.writerState.decrementAndGet();
       }
@@ -254,9 +325,11 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
-   * Evicts specific keys from {@code E_active} whose stamped sequence number is less than or equal
-   * to the sequence committed to Lucene (after {@code commitAndRefreshBlocking()}). Used for
-   * incremental AEQ batch commits without disturbing newer concurrent mutations.
+   * Evicts specific keys from both {@code E_active} and {@code E_flushing} whose stamped sequence
+   * number is less than or equal to the sequence committed to Lucene (strictly after
+   * {@code commitAndRefreshBlocking()}). Pins {@code E_active} against concurrent
+   * {@link #beginFlush()} epoch swaps so committed entries are never stranded in
+   * {@code E_flushing}.
    *
    * @param committedKeySequences map from key to the highest sequence committed to Lucene
    */
@@ -264,20 +337,51 @@ public class Tier0VectorDeltaBuffer<K> {
     if (committedKeySequences == null || committedKeySequences.isEmpty()) {
       return;
     }
-    EpochState<K> state = stateRef.get();
-    EpochBucket<K> active = state.active;
-    for (Map.Entry<K, Long> item : committedKeySequences.entrySet()) {
-      K key = item.getKey();
-      long committedSeq = item.getValue();
-      active.entries.computeIfPresent(key,
-          (k, existing) -> existing.sequence <= committedSeq ? null : existing);
+    while (true) {
+      EpochState<K> state = stateRef.get();
+      EpochBucket<K> active = state.active;
+      int writerCount = active.writerState.get();
+      if ((writerCount & SEALED_BIT) != 0) {
+        Thread.onSpinWait();
+        continue;
+      }
+      if (!active.writerState.compareAndSet(writerCount, writerCount + 1)) {
+        continue;
+      }
+      try {
+        EpochBucket<K> flushing = state.flushing;
+        for (Map.Entry<K, Long> item : committedKeySequences.entrySet()) {
+          K key = item.getKey();
+          long committedSeq = item.getValue();
+          active.entries.computeIfPresent(key,
+              (k, existing) -> existing.sequence <= committedSeq ? null : existing);
+          if (flushing != null) {
+            flushing.entries.computeIfPresent(key,
+                (k, existing) -> existing.sequence <= committedSeq ? null : existing);
+          }
+        }
+        return;
+      } finally {
+        active.writerState.decrementAndGet();
+      }
     }
   }
 
   /**
+   * Returns {@code true} if {@code key} is currently present (live or tombstoned) in either
+   * {@code E_active} or {@code E_flushing}.
+   */
+  public boolean containsKey(K key) {
+    EpochState<K> state = stateRef.get();
+    if (state.active.entries.containsKey(key)) {
+      return true;
+    }
+    return state.flushing != null && state.flushing.entries.containsKey(key);
+  }
+
+  /**
    * Returns the current stamped sequence number for {@code key} across
-   * {@code (E_active, E_flushing)},
-   * or {@code -1L} if absent.
+   * {@code (E_active, E_flushing)}, or {@code -1L} if absent.
    */
   public long getKeySequence(K key) {
     EpochState<K> state = stateRef.get();
@@ -353,13 +457,16 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
-   * Clears both epochs (used when a bucket is removed or destroyed).
+   * Clears both epochs and advances the clear generation so any in-flight {@link #abortFlush(long)}
+   * cannot resurrect cleared entries (used when a bucket is removed or destroyed).
    */
   public void clear() {
     while (true) {
       EpochState<K> current = stateRef.get();
-      EpochBucket<K> fresh = new EpochBucket<>(current.active.epoch + 1L);
+      EpochBucket<K> fresh =
+          new EpochBucket<>(current.active.epoch + 1L, current.active.generation + 1L);
       if (stateRef.compareAndSet(current, new EpochState<>(fresh, null))) {
+        lastClearedEpoch.accumulateAndGet(current.active.epoch, Math::max);
         current.active.writerState.getAndUpdate(v -> v | SEALED_BIT);
         return;
       }
@@ -594,11 +701,13 @@ public class Tier0VectorDeltaBuffer<K> {
 
   private static final class EpochBucket<K> {
     final long epoch;
+    final long generation;
     final ConcurrentHashMap<K, DeltaEntry<K>> entries = new ConcurrentHashMap<>();
     final AtomicInteger writerState = new AtomicInteger(0);
 
-    EpochBucket(long epoch) {
+    EpochBucket(long epoch, long generation) {
       this.epoch = epoch;
+      this.generation = generation;
     }
   }
 

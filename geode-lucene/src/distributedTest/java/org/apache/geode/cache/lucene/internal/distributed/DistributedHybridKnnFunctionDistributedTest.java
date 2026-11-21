@@ -522,6 +522,61 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
         .isGreaterThanOrEqualTo(0.9);
   }
 
+  @Test
+  public void destroyAndRecreateIndexClearsTier0AndLeaksZeroStaleEntries() {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    // Pause AEQ so entries live strictly in Tier-0 buffers across both servers
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < 32; i++) {
+        region.put("stale-" + i, new VectorRecord(query, "old", "all", "all"));
+      }
+    });
+
+    int tier0BeforeDestroy = dataStore1.invoke(this::countTier0Entries)
+        + dataStore2.invoke(this::countTier0Entries);
+    assertThat(tier0BeforeDestroy).isGreaterThan(0);
+
+    // Destroy the Lucene index from dataStore1 (propagates to dataStore2 and accessor)
+    dataStore1.invoke(() -> {
+      LuceneServiceProvider.get(getCache()).destroyIndex(INDEX_NAME, REGION_NAME);
+    });
+
+    // Tier-0 registry on BOTH servers must be completely empty (zero leaked entries/tombstones)
+    assertThat(dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+        .getBuckets("/" + REGION_NAME, INDEX_NAME).isEmpty())).isTrue();
+    assertThat(dataStore2.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+        .getBuckets("/" + REGION_NAME, INDEX_NAME).isEmpty())).isTrue();
+
+    // Clear the region and recreate region + index with the SAME (regionPath, indexName)
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.destroyRegion();
+    });
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    // Querying the newly recreated empty index must return ZERO leaked stale Tier-0 hits
+    List<String> recreatedHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(recreatedHits).isEmpty();
+  }
+
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,
       String filterField, int k, double minRecall) {
     List<String> expected = computeBruteForceTopK(

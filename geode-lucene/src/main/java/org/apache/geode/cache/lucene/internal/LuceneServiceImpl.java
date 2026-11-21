@@ -68,6 +68,7 @@ import org.apache.geode.cache.lucene.internal.management.LuceneServiceMBean;
 import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener;
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.PageResults;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketNotFoundException;
@@ -151,6 +152,11 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     return InternalLuceneService.class;
   }
 
+  @Override
+  public void close() {
+    Tier0VectorRegistry.removeCache(cache);
+  }
+
   public void beforeRegionDestroyed(Region region) {
     List<LuceneIndex> indexes = getIndexes(region.getFullPath());
     if (!indexes.isEmpty()) {
@@ -160,6 +166,9 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
           String.format(
               "Region %s cannot be destroyed because it defines Lucene index(es) [%s]. Destroy all Lucene indexes before destroying the region.",
               region.getFullPath(), indexNames));
+    }
+    if (cache != null) {
+      Tier0VectorRegistry.forCache(cache).removeRegion(region.getFullPath());
     }
   }
 
@@ -175,6 +184,9 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
         aeq.stop();
         cache.removeAsyncEventQueue(aeq);
       }
+    }
+    if (cache != null) {
+      Tier0VectorRegistry.forCache(cache).removeRegion(region.getFullPath());
     }
   }
 
@@ -467,6 +479,9 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     } else {
       indexImpl.destroy(initiator);
       removeFromIndexMap(indexImpl);
+      if (cache != null) {
+        Tier0VectorRegistry.forCache(cache).removeIndex(regionPath, indexName);
+      }
       logger.info(String.format("Destroyed Lucene index %s from %s region %s",
           indexName, "initialized", regionPath));
     }
@@ -482,6 +497,9 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       RegionListener listenerToRemove = getRegionListener(indexName, regionPath);
       if (listenerToRemove != null) {
         cache.removeRegionListener(listenerToRemove);
+      }
+      if (cache != null) {
+        Tier0VectorRegistry.forCache(cache).removeIndex(regionPath, indexName);
       }
       logger.info(String.format("Destroyed Lucene index %s from %s region %s",
           indexName, "defined", regionPath));
@@ -541,8 +559,14 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     } else {
       for (LuceneIndex index : indexesToDestroy) {
         removeFromIndexMap(index);
+        if (cache != null) {
+          Tier0VectorRegistry.forCache(cache).removeIndex(regionPath, index.getName());
+        }
         logger.info(String.format("Destroyed Lucene index %s from %s region %s",
             index.getName(), "initialized", regionPath));
+      }
+      if (cache != null) {
+        Tier0VectorRegistry.forCache(cache).removeRegion(regionPath);
       }
     }
   }

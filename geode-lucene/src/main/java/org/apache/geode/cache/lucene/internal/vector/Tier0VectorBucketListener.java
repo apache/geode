@@ -21,18 +21,22 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Synchronous region and bucket listener hooks that capture live vector mutations into per-bucket
  * {@link Tier0VectorDeltaBuffer}s via {@link Tier0VectorRegistry} and maintain Tier-0 consistency
- * across bucket rebalancing.
+ * across bucket rebalancing without forcing PDX domain-class deserialization.
  *
  * @param <K> region key type
  * @param <V> region value type
@@ -72,6 +76,18 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     recordDestroyEvent(event);
   }
 
+  @Override
+  public void afterRegionDestroy(RegionEvent<K, V> event) {
+    Region<K, V> region = event.getRegion();
+    if (region == null) {
+      return;
+    }
+    Cache cache = (Cache) region.getRegionService();
+    if (cache != null) {
+      Tier0VectorRegistry.forCache(cache).removeIndex(region.getFullPath(), indexName);
+    }
+  }
+
   private void recordPutEvent(EntryEvent<K, V> event) {
     Region<K, V> region = event.getRegion();
     if (!(region instanceof PartitionedRegion)) {
@@ -79,18 +95,30 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     }
     PartitionedRegion pr = (PartitionedRegion) region;
     int bucketId = pr.getKeyInfo(event.getKey(), event.getCallbackArgument()).getBucketId();
-    V value = event.getNewValue();
-    if (value == null) {
-      return;
-    }
-    float[] vector = vectorExtractor.apply(value);
-    if (vector == null || vector.length == 0) {
-      return;
-    }
-    Map<String, Object> metadata = metadataExtractor.apply(value);
     Cache cache = (Cache) region.getRegionService();
-    Tier0VectorRegistry.forCache(cache).recordPut(
-        region.getFullPath(), indexName, bucketId, event.getKey(), vector, metadata);
+    InternalCache internalCache = (cache instanceof InternalCache) ? (InternalCache) cache : null;
+    boolean initialPdxReadSerialized = false;
+    if (internalCache != null) {
+      initialPdxReadSerialized = internalCache.getPdxReadSerializedOverride();
+      internalCache.setPdxReadSerializedOverride(true);
+    }
+    try {
+      V value = event.getNewValue();
+      if (value == null) {
+        return;
+      }
+      float[] vector = vectorExtractor.apply(value);
+      if (vector == null || vector.length == 0) {
+        return;
+      }
+      Map<String, Object> metadata = metadataExtractor.apply(value);
+      Tier0VectorRegistry.forCache(cache).recordPut(
+          region.getFullPath(), indexName, bucketId, event.getKey(), vector, metadata);
+    } finally {
+      if (internalCache != null) {
+        internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
+      }
+    }
   }
 
   private void recordDestroyEvent(EntryEvent<K, V> event) {
@@ -108,8 +136,8 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
   /**
    * Creates a {@link PartitionListener} paired with this listener's extractors that cleans up
    * stale Tier-0 buffers when buckets leave or demote and hydrates promoted primary buckets from
-   * local bucket state so in-flight entries remain visible across bucket rebalancing even before
-   * AEQ flush.
+   * local bucket state with PDX read-serialized enabled and without overwriting concurrent live
+   * tombstones or newer puts.
    */
   public PartitionListener createPartitionListener() {
     return new Tier0PartitionListener<>(indexName, vectorExtractor, metadataExtractor);
@@ -152,16 +180,55 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
       Tier0VectorDeltaBuffer<Object> buffer =
           registry.getOrCreateBuffer(pr.getFullPath(), indexName, bucketId);
-      for (Object key : bucket.keySet()) {
-        @SuppressWarnings("unchecked")
-        V val = (V) bucket.get(key);
-        if (val == null) {
-          continue;
+
+      InternalCache internalCache =
+          (cache instanceof InternalCache) ? (InternalCache) cache : null;
+      boolean initialPdxReadSerialized = false;
+      if (internalCache != null) {
+        initialPdxReadSerialized = internalCache.getPdxReadSerializedOverride();
+        internalCache.setPdxReadSerializedOverride(true);
+      }
+      try {
+        for (Object key : bucket.keySet()) {
+          // Fast skip if a concurrent live put/destroy already recorded this key in Tier-0
+          if (buffer.containsKey(key)) {
+            continue;
+          }
+          V val = readEntryValueWithoutDeserializingPdx(bucket, key);
+          if (val == null) {
+            continue;
+          }
+          float[] vec = vectorExtractor.apply(val);
+          if (vec == null || vec.length == 0) {
+            continue;
+          }
+          Map<String, Object> metadata = metadataExtractor.apply(val);
+          // Re-verify the entry still exists in the bucket and use putIfAbsent so hydration can
+          // NEVER overwrite a concurrent live afterDestroy tombstone or newer afterUpdate put.
+          if (bucket.getEntry(key) != null) {
+            buffer.putIfAbsent(key, vec, metadata);
+          }
         }
-        float[] vec = vectorExtractor.apply(val);
-        if (vec != null && vec.length > 0) {
-          buffer.put(key, vec, metadataExtractor.apply(val));
+      } finally {
+        if (internalCache != null) {
+          internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
         }
+      }
+    }
+
+    @SuppressWarnings("unchecked")
+    private V readEntryValueWithoutDeserializingPdx(BucketRegion bucket, Object key) {
+      Region.Entry<?, ?> entry = bucket.getEntry(key);
+      if (entry == null) {
+        return null;
+      }
+      try {
+        if (entry instanceof EntrySnapshot) {
+          return (V) ((EntrySnapshot) entry).getRawValue(true);
+        }
+        return (V) entry.getValue();
+      } catch (EntryDestroyedException e) {
+        return null;
       }
     }
 
