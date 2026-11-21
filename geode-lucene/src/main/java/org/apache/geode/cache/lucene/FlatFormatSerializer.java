@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
+import org.apache.geode.cache.lucene.internal.repository.serializer.VectorFieldMapper;
 import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
@@ -70,18 +72,51 @@ public class FlatFormatSerializer implements LuceneSerializer {
    */
   @Override
   public Collection<Document> toDocuments(LuceneIndex index, Object value) {
+    if (value == null) {
+      return Collections.emptyList();
+    }
     String[] fields = index.getFieldNames();
+    Map<String, VectorIndexMetadata> vectorFields =
+        index.getVectorFields() == null ? Collections.emptyMap() : index.getVectorFields();
 
     Document doc = new Document();
-    for (String indexedFieldName : fields) {
-      List<String> tokenizedFields = tokenizeField(indexedFieldName);
-      addFieldValue(doc, indexedFieldName, value, tokenizedFields);
+    if (fields != null) {
+      for (String indexedFieldName : fields) {
+        if (vectorFields.containsKey(indexedFieldName)) {
+          continue;
+        }
+        List<String> tokenizedFields = tokenizeField(indexedFieldName);
+        addFieldValue(doc, indexedFieldName, value, tokenizedFields);
+      }
+    }
+
+    if (!vectorFields.isEmpty()) {
+      for (VectorIndexMetadata vectorMetadata : vectorFields.values()) {
+        String fieldName = vectorMetadata.getFieldName();
+        if (fieldName.indexOf('.') >= 0) {
+          Object nestedValue = resolveNestedValue(value, tokenizeField(fieldName));
+          VectorFieldMapper.addVectorFieldFromRawValue(doc, vectorMetadata, nestedValue);
+        } else {
+          VectorFieldMapper.addVectorField(doc, vectorMetadata, value);
+        }
+      }
     }
 
     if (logger.isDebugEnabled()) {
       logger.debug("FlatFormatSerializer.toDocuments: " + doc);
     }
     return Collections.singleton(doc);
+  }
+
+  private Object resolveNestedValue(Object root, List<String> tokens) {
+    Object current = root;
+    for (String token : tokens) {
+      if (current == null) {
+        return null;
+      }
+      current = getFieldValue(current, token);
+    }
+    return current;
   }
 
   private List<String> tokenizeField(String indexedFieldName) {

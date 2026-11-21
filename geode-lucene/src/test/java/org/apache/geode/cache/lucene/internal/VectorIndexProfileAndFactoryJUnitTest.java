@@ -255,6 +255,55 @@ public class VectorIndexProfileAndFactoryJUnitTest {
         .isInstanceOf(Lucene99HnswVectorsFormat.class);
   }
 
+  @Test
+  public void factoryRejectsDuplicateVectorFieldAndTextVectorCollisions() {
+    LuceneServiceImpl service = mock(LuceneServiceImpl.class);
+
+    // Duplicate vector field name
+    LuceneIndexFactory factory1 = new LuceneIndexFactoryImpl(service);
+    factory1.addVectorField("emb", 64, VectorSimilarityFunction.COSINE, false);
+    assertThatThrownBy(
+        () -> factory1.addVectorField("emb", 128, VectorSimilarityFunction.EUCLIDEAN, true))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Duplicate vector field");
+
+    // Text field followed by vector field with same name
+    LuceneIndexFactory factory2 = new LuceneIndexFactoryImpl(service);
+    factory2.addField("emb");
+    assertThatThrownBy(
+        () -> factory2.addVectorField("emb", 64, VectorSimilarityFunction.COSINE, false))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("both a text field and a vector field");
+
+    // Vector field followed by text field with same name
+    LuceneIndexFactory factory3 = new LuceneIndexFactoryImpl(service);
+    factory3.addVectorField("emb", 64, VectorSimilarityFunction.COSINE, false);
+    assertThatThrownBy(() -> factory3.addField("emb"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("both a text field and a vector field");
+  }
+
+  @Test
+  public void pre14ProfileWithNullFieldNamesDoesNotThrowNpeInCheckCompatibility() throws Exception {
+    HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.GEODE_1_3_0);
+    DataSerializer.writeString("idx", hdos);
+    DataSerializer.writeString("/region", hdos);
+    DataSerializer.writeStringArray(null, hdos);
+    DataSerializer.writeString("StandardAnalyzer", hdos);
+    DataSerializer.writeHashMap(null, hdos);
+
+    LuceneIndexCreationProfile legacyProfile = new LuceneIndexCreationProfile();
+    legacyProfile.fromDataPre_GEODE_1_4_0_0(
+        new DataInputStream(new ByteArrayInputStream(hdos.toByteArray())));
+
+    assertThat(legacyProfile.getFieldNames()).isEmpty();
+    assertThat(legacyProfile.getFieldAnalyzers()).isEmpty();
+
+    LuceneIndexCreationProfile modernEmptyText = new LuceneIndexCreationProfile("idx", "/region",
+        new String[0], new StandardAnalyzer(), null, null);
+    assertThat(legacyProfile.checkCompatibility(SEPARATOR + "region", modernEmptyText)).isNull();
+  }
+
   private LuceneIndexCreationProfile profileWithVector(String indexName,
       VectorIndexMetadata metadata) {
     return new LuceneIndexCreationProfile(indexName, "/region", new String[] {"title"},

@@ -21,12 +21,18 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.KnnFloatVectorField;
@@ -35,6 +41,7 @@ import org.apache.lucene.index.VectorSimilarityFunction;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.lucene.FlatFormatSerializer;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.VectorIndexMetadata;
@@ -91,7 +98,8 @@ public class VectorFieldMapperJUnitTest {
     IndexableField field = doc.getField("embedding");
     assertThat(field).isInstanceOf(KnnFloatVectorField.class);
     KnnFloatVectorField knnField = (KnnFloatVectorField) field;
-    assertThat(knnField.vectorValue()).isSameAs(vec);
+    assertThat(knnField.vectorValue()).isNotSameAs(vec);
+    assertThat(knnField.vectorValue()).containsExactly(0.5f, 0.5f, 0.5f, 0.5f);
     assertThat(knnField.fieldType().vectorDimension()).isEqualTo(4);
     assertThat(knnField.fieldType().vectorSimilarityFunction())
         .isEqualTo(VectorSimilarityFunction.COSINE);
@@ -306,5 +314,146 @@ public class VectorFieldMapperJUnitTest {
     assertThat(doc.getField("title")).isNull();
     assertThat(((KnnFloatVectorField) doc.getField("embedding")).vectorValue())
         .containsExactly(3.0f, 4.0f);
+  }
+
+  @Test
+  public void defensiveCopyPreventsPostMutationCorruptionAndRejectsSubnormalCosineVectors() {
+    VectorIndexMetadata meta =
+        new VectorIndexMetadata("embedding", 2, VectorSimilarityFunction.COSINE, false);
+
+    float[] source = new float[] {0.6f, 0.8f};
+    KnnFloatVectorField directField = VectorFieldMapper.createKnnFloatVectorField(source, meta);
+    Document doc = new Document();
+    BaseDocumentPojo pojo = new BaseDocumentPojo("doc", source);
+    VectorFieldMapper.addVectorField(doc, meta, pojo);
+
+    // Mutate source array after creation
+    source[0] = -999.0f;
+    source[1] = -999.0f;
+
+    assertThat(directField.vectorValue()).containsExactly(0.6f, 0.8f);
+    assertThat(((KnnFloatVectorField) doc.getField("embedding")).vectorValue())
+        .containsExactly(0.6f, 0.8f);
+
+    // Float32 underflowing subnormal vector under COSINE must be rejected
+    float[] subnormal = new float[] {1e-25f, 1e-25f};
+    assertThatThrownBy(() -> VectorFieldMapper.createKnnFloatVectorField(subnormal, meta))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("COSINE");
+
+    // Float32 overflowing vector under COSINE must also be rejected
+    float[] huge = new float[] {1e25f, 1e25f};
+    assertThatThrownBy(() -> VectorFieldMapper.createKnnFloatVectorField(huge, meta))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("COSINE");
+  }
+
+  private static class ConcurrentFreshPojo {
+    @SuppressWarnings("unused")
+    private final float[] vecA;
+    @SuppressWarnings("unused")
+    private final float[] vecB;
+    @SuppressWarnings("unused")
+    private final float[] vecC;
+
+    ConcurrentFreshPojo(float[] vecA, float[] vecB, float[] vecC) {
+      this.vecA = vecA;
+      this.vecB = vecB;
+      this.vecC = vecC;
+    }
+  }
+
+  @Test
+  public void concurrentFieldCacheInitializationAcrossThreadsIsRaceFree() throws Exception {
+    int threads = 16;
+    CyclicBarrier barrier = new CyclicBarrier(threads);
+    ExecutorService pool = Executors.newFixedThreadPool(threads);
+    VectorIndexMetadata metaA =
+        new VectorIndexMetadata("vecA", 2, VectorSimilarityFunction.EUCLIDEAN, false);
+    VectorIndexMetadata metaB =
+        new VectorIndexMetadata("vecB", 2, VectorSimilarityFunction.EUCLIDEAN, false);
+    VectorIndexMetadata metaC =
+        new VectorIndexMetadata("vecC", 2, VectorSimilarityFunction.EUCLIDEAN, false);
+
+    try {
+      List<Future<float[]>> futures = new ArrayList<>();
+      for (int t = 0; t < threads; t++) {
+        final int idx = t;
+        futures.add(pool.submit(() -> {
+          ConcurrentFreshPojo pojo = new ConcurrentFreshPojo(
+              new float[] {idx, 1.0f}, new float[] {idx, 2.0f}, new float[] {idx, 3.0f});
+          barrier.await(5, TimeUnit.SECONDS);
+          float[] a = VectorFieldMapper.extractVector(pojo, metaA);
+          float[] b = VectorFieldMapper.extractVector(pojo, metaB);
+          float[] c = VectorFieldMapper.extractVector(pojo, metaC);
+          return new float[] {a[0], b[1], c[1]};
+        }));
+      }
+      for (int t = 0; t < threads; t++) {
+        assertThat(futures.get(t).get(10, TimeUnit.SECONDS)).containsExactly((float) t, 2.0f, 3.0f);
+      }
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  private static class NestedWrapperPojo {
+    @SuppressWarnings("unused")
+    private final String label;
+    @SuppressWarnings("unused")
+    private final BaseDocumentPojo nested;
+
+    NestedWrapperPojo(String label, BaseDocumentPojo nested) {
+      this.label = label;
+      this.nested = nested;
+    }
+  }
+
+  @Test
+  public void flatFormatSerializerEmitsKnnVectorsForPureAndHybridPojoAndPdx() {
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    // 1. Pure-vector index with null fieldNames (POJO)
+    LuceneIndex pureVecIndex = mock(LuceneIndex.class);
+    when(pureVecIndex.getFieldNames()).thenReturn(null);
+    when(pureVecIndex.getVectorFields()).thenReturn(Collections.singletonMap("embedding",
+        new VectorIndexMetadata("embedding", 3, VectorSimilarityFunction.COSINE, true)));
+
+    BaseDocumentPojo pojo = new BaseDocumentPojo("title", new float[] {1.0f, 0.0f, 0.0f});
+    Document pureDoc = serializer.toDocuments(pureVecIndex, pojo).iterator().next();
+    assertThat(pureDoc.getFields()).hasSize(1);
+    assertThat(pureDoc.getField("embedding")).isInstanceOf(KnnFloatVectorField.class);
+    assertThat(((KnnFloatVectorField) pureDoc.getField("embedding")).vectorValue())
+        .containsExactly(1.0f, 0.0f, 0.0f);
+
+    // 2. Hybrid text + nested vector index (POJO)
+    LuceneIndex hybridPojoIndex = mock(LuceneIndex.class);
+    when(hybridPojoIndex.getFieldNames()).thenReturn(new String[] {"label", "nested.embedding"});
+    when(hybridPojoIndex.getVectorFields()).thenReturn(Collections.singletonMap("nested.embedding",
+        new VectorIndexMetadata("nested.embedding", 3, VectorSimilarityFunction.EUCLIDEAN, false)));
+
+    NestedWrapperPojo wrapper = new NestedWrapperPojo("news", pojo);
+    Document hybridPojoDoc = serializer.toDocuments(hybridPojoIndex, wrapper).iterator().next();
+    assertThat(hybridPojoDoc.getField("label").stringValue()).isEqualTo("news");
+    assertThat(hybridPojoDoc.getField("nested.embedding")).isInstanceOf(KnnFloatVectorField.class);
+    assertThat(hybridPojoDoc.getField("nested.embedding_point")).isNull();
+
+    // 3. Hybrid text + vector index (zero-copy PdxInstance)
+    LuceneIndex hybridPdxIndex = mock(LuceneIndex.class);
+    when(hybridPdxIndex.getFieldNames()).thenReturn(new String[] {"title", "embedding"});
+    when(hybridPdxIndex.getVectorFields()).thenReturn(Collections.singletonMap("embedding",
+        new VectorIndexMetadata("embedding", 3, VectorSimilarityFunction.COSINE, false)));
+
+    PdxInstance pdx = mock(PdxInstance.class);
+    when(pdx.hasField("title")).thenReturn(true);
+    when(pdx.getField("title")).thenReturn("pdx-flat");
+    when(pdx.hasField("embedding")).thenReturn(true);
+    when(pdx.getField("embedding")).thenReturn(new float[] {0.0f, 1.0f, 0.0f});
+
+    Document hybridPdxDoc = serializer.toDocuments(hybridPdxIndex, pdx).iterator().next();
+    assertThat(hybridPdxDoc.getField("title").stringValue()).isEqualTo("pdx-flat");
+    assertThat(hybridPdxDoc.getField("embedding")).isInstanceOf(KnnFloatVectorField.class);
+    assertThat(hybridPdxDoc.getField("embedding_point")).isNull();
+    verify(pdx, never()).getObject();
   }
 }

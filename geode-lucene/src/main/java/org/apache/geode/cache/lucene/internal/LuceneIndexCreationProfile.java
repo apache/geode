@@ -80,7 +80,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   }
 
   public String[] getFieldNames() {
-    return fieldNames;
+    return fieldNames == null ? new String[0] : fieldNames;
   }
 
   public String getAnalyzerClass() {
@@ -88,7 +88,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   }
 
   public Map<String, String> getFieldAnalyzers() {
-    return fieldAnalyzers;
+    return fieldAnalyzers == null ? Collections.emptyMap() : fieldAnalyzers;
   }
 
   public String getSerializerClass() {

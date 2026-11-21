@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -39,7 +40,6 @@ import org.apache.lucene.index.VectorSimilarityFunction;
 
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.VectorIndexMetadata;
-import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
@@ -64,10 +64,16 @@ public final class VectorFieldMapper {
   }
 
   /**
-   * Weakly-keyed cache mapping POJO classes to their resolved declared fields by field name.
+   * Thread-safe, GC-safe cache mapping POJO classes to their resolved declared fields by field
+   * name.
    */
-  private static final Map<Class<?>, ConcurrentHashMap<String, Field>> FIELD_CACHE =
-      new CopyOnWriteWeakHashMap<>();
+  private static final ClassValue<ConcurrentHashMap<String, Field>> FIELD_CACHE =
+      new ClassValue<ConcurrentHashMap<String, Field>>() {
+        @Override
+        protected ConcurrentHashMap<String, Field> computeValue(Class<?> type) {
+          return new ConcurrentHashMap<>();
+        }
+      };
 
   private VectorFieldMapper() {}
 
@@ -151,7 +157,34 @@ public final class VectorFieldMapper {
   }
 
   /**
-   * Creates a Lucene 9.12 {@link KnnFloatVectorField} for a validated float vector.
+   * Converts and validates a pre-extracted raw vector value ({@code float[]}, {@code List<Float>},
+   * {@code double[]}, or {@code Number[]}) and adds a {@link KnnFloatVectorField} to {@code doc}.
+   *
+   * @return {@code true} if a {@link KnnFloatVectorField} was added, {@code false} if
+   *         {@code rawValue} is {@code null}
+   */
+  public static boolean addVectorFieldFromRawValue(Document doc, VectorIndexMetadata metadata,
+      Object rawValue) {
+    if (doc == null) {
+      throw new IllegalArgumentException("Lucene Document must not be null");
+    }
+    if (metadata == null) {
+      throw new IllegalArgumentException("VectorIndexMetadata must not be null");
+    }
+    if (rawValue == null) {
+      return false;
+    }
+    float[] vector = toFloatArray(rawValue, metadata);
+    validateVector(vector, metadata);
+    FieldType fieldType = KnnFloatVectorField.createFieldType(metadata.getDimension(),
+        metadata.getSimilarityFunction());
+    doc.add(new KnnFloatVectorField(metadata.getFieldName(), vector, fieldType));
+    return true;
+  }
+
+  /**
+   * Creates a Lucene 9.12 {@link KnnFloatVectorField} for a validated float vector using a
+   * defensive copy so subsequent caller mutations cannot corrupt the document.
    */
   public static KnnFloatVectorField createKnnFloatVectorField(float[] vector,
       VectorIndexMetadata metadata) {
@@ -161,7 +194,8 @@ public final class VectorFieldMapper {
     validateVector(vector, metadata);
     FieldType fieldType = KnnFloatVectorField.createFieldType(metadata.getDimension(),
         metadata.getSimilarityFunction());
-    return new KnnFloatVectorField(metadata.getFieldName(), vector, fieldType);
+    return new KnnFloatVectorField(metadata.getFieldName(), Arrays.copyOf(vector, vector.length),
+        fieldType);
   }
 
   /**
@@ -237,17 +271,11 @@ public final class VectorFieldMapper {
 
   private static Field resolveDeclaredField(Class<?> clazz, String fieldName) {
     ConcurrentHashMap<String, Field> classFields = FIELD_CACHE.get(clazz);
-    if (classFields == null) {
-      classFields = new ConcurrentHashMap<>();
-      FIELD_CACHE.put(clazz, classFields);
-    }
-    Field cached = classFields.get(fieldName);
-    if (cached != null) {
-      return cached == MISSING_FIELD_SENTINEL ? null : cached;
-    }
-    Field found = findDeclaredFieldInHierarchy(clazz, fieldName);
-    classFields.put(fieldName, found == null ? MISSING_FIELD_SENTINEL : found);
-    return found;
+    Field resolved = classFields.computeIfAbsent(fieldName, name -> {
+      Field found = findDeclaredFieldInHierarchy(clazz, name);
+      return found == null ? MISSING_FIELD_SENTINEL : found;
+    });
+    return resolved == MISSING_FIELD_SENTINEL ? null : resolved;
   }
 
   private static Field findDeclaredFieldInHierarchy(Class<?> clazz, String fieldName) {
@@ -271,7 +299,7 @@ public final class VectorFieldMapper {
     if (rawValue instanceof float[]) {
       float[] arr = (float[]) rawValue;
       checkDimension(fieldName, expectedDim, arr.length);
-      return arr;
+      return Arrays.copyOf(arr, arr.length);
     }
 
     if (rawValue instanceof List<?>) {
@@ -341,7 +369,7 @@ public final class VectorFieldMapper {
     }
     checkDimension(metadata.getFieldName(), metadata.getDimension(), vector.length);
 
-    double normSq = 0.0;
+    float normSqFloat32 = 0.0f;
     for (int i = 0; i < vector.length; i++) {
       float v = vector[i];
       if (!Float.isFinite(v)) {
@@ -349,12 +377,14 @@ public final class VectorFieldMapper {
             "Vector for field '" + metadata.getFieldName() + "' contains non-finite value at index "
                 + i + ": " + v);
       }
-      normSq += (double) v * (double) v;
+      normSqFloat32 += v * v;
     }
-    if (metadata.getSimilarityFunction() == VectorSimilarityFunction.COSINE && normSq == 0.0) {
-      throw new IllegalArgumentException(
-          "Zero-magnitude vector is not allowed for COSINE similarity on field '"
-              + metadata.getFieldName() + "'");
+    if (metadata.getSimilarityFunction() == VectorSimilarityFunction.COSINE) {
+      if (!Float.isFinite(normSqFloat32) || normSqFloat32 <= 0.0f) {
+        throw new IllegalArgumentException(
+            "Zero-magnitude or float32-underflowing/overflowing vector is not allowed for COSINE similarity on field '"
+                + metadata.getFieldName() + "'");
+      }
     }
   }
 

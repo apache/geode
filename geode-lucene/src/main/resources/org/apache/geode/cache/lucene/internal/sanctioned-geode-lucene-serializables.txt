@@ -2,7 +2,7 @@ org/apache/geode/cache/lucene/LuceneIndexDestroyedException,false,indexName:java
 org/apache/geode/cache/lucene/LuceneIndexExistsException,false,indexName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/cache/lucene/LuceneIndexNotFoundException,false,indexName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/cache/lucene/LuceneQueryException,false
-org/apache/geode/cache/lucene/VectorIndexMetadata,true,1,beamWidth:int,dimension:int,fieldName:java/lang/String,maxConnections:int,quantizeSQ8:boolean,similarityFunction:org/apache/lucene/index/VectorSimilarityFunction
+org/apache/geode/cache/lucene/VectorIndexMetadata,true,1,beamWidth:int,dimension:int,fieldName:java/lang/String,maxConnections:int,quantizeSQ8:boolean,similarityFunctionName:java/lang/String
 org/apache/geode/cache/lucene/internal/LuceneIndexCreationInProgressException,false
 org/apache/geode/cache/lucene/internal/cli/LuceneDestroyIndexInfo,false,definedDestroyOnly:boolean
 org/apache/geode/cache/lucene/internal/cli/LuceneFunctionSerializable,false,indexName:java/lang/String,regionPath:java/lang/String

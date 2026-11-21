@@ -17,6 +17,8 @@ package org.apache.geode.cache.lucene;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -52,7 +54,8 @@ public final class VectorIndexMetadata implements Serializable {
 
   private final String fieldName;
   private final int dimension;
-  private final VectorSimilarityFunction similarityFunction;
+  private final String similarityFunctionName;
+  private transient volatile VectorSimilarityFunction similarityFunction;
   private final int maxConnections;
   private final int beamWidth;
   private final boolean quantizeSQ8;
@@ -92,6 +95,7 @@ public final class VectorIndexMetadata implements Serializable {
     this.fieldName = fieldName;
     this.dimension = dimension;
     this.similarityFunction = similarityFunction;
+    this.similarityFunctionName = similarityFunction.name();
     this.maxConnections = maxConnections;
     this.beamWidth = beamWidth;
     this.quantizeSQ8 = quantizeSQ8;
@@ -130,7 +134,12 @@ public final class VectorIndexMetadata implements Serializable {
   }
 
   public VectorSimilarityFunction getSimilarityFunction() {
-    return similarityFunction;
+    VectorSimilarityFunction cached = similarityFunction;
+    if (cached == null && similarityFunctionName != null) {
+      cached = VectorSimilarityFunction.valueOf(similarityFunctionName);
+      similarityFunction = cached;
+    }
+    return cached;
   }
 
   public int getMaxConnections() {
@@ -151,7 +160,7 @@ public final class VectorIndexMetadata implements Serializable {
   public void writeTo(DataOutput out) throws IOException {
     DataSerializer.writeString(fieldName, out);
     out.writeInt(dimension);
-    DataSerializer.writeString(similarityFunction.name(), out);
+    DataSerializer.writeString(getSimilarityFunction().name(), out);
     out.writeInt(maxConnections);
     out.writeInt(beamWidth);
     out.writeBoolean(quantizeSQ8);
@@ -177,6 +186,26 @@ public final class VectorIndexMetadata implements Serializable {
         beamWidth, quantizeSQ8);
   }
 
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    if (similarityFunctionName == null) {
+      throw new InvalidObjectException("Vector similarity function must not be null");
+    }
+    VectorSimilarityFunction parsed;
+    try {
+      parsed = VectorSimilarityFunction.valueOf(similarityFunctionName);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidObjectException(
+          "Unknown VectorSimilarityFunction: " + similarityFunctionName);
+    }
+    try {
+      validate(fieldName, dimension, parsed, maxConnections, beamWidth);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidObjectException(e.getMessage());
+    }
+    this.similarityFunction = parsed;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -190,13 +219,13 @@ public final class VectorIndexMetadata implements Serializable {
         && maxConnections == that.maxConnections
         && beamWidth == that.beamWidth
         && quantizeSQ8 == that.quantizeSQ8
-        && fieldName.equals(that.fieldName)
-        && similarityFunction == that.similarityFunction;
+        && Objects.equals(fieldName, that.fieldName)
+        && getSimilarityFunction() == that.getSimilarityFunction();
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(fieldName, dimension, similarityFunction, maxConnections, beamWidth,
+    return Objects.hash(fieldName, dimension, getSimilarityFunction(), maxConnections, beamWidth,
         quantizeSQ8);
   }
 
@@ -205,7 +234,7 @@ public final class VectorIndexMetadata implements Serializable {
     return "VectorIndexMetadata{"
         + "fieldName='" + fieldName + '\''
         + ", dimension=" + dimension
-        + ", similarityFunction=" + similarityFunction
+        + ", similarityFunction=" + getSimilarityFunction()
         + ", maxConnections=" + maxConnections
         + ", beamWidth=" + beamWidth
         + ", quantizeSQ8=" + quantizeSQ8

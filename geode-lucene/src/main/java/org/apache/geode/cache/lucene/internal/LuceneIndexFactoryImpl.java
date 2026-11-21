@@ -53,14 +53,28 @@ public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
 
   @Override
   public LuceneIndexFactoryImpl addField(final String name, final Analyzer analyzer) {
+    if (vectorFields.containsKey(name)) {
+      throw new IllegalArgumentException(
+          "Field '" + name + "' cannot be configured as both a text field and a vector field");
+    }
     fields.put(name, analyzer);
     return this;
   }
 
   @Override
   public LuceneIndexFactoryImpl setFields(final Map<String, Analyzer> fieldMap) {
+    if (fieldMap != null) {
+      for (String name : fieldMap.keySet()) {
+        if (vectorFields.containsKey(name)) {
+          throw new IllegalArgumentException(
+              "Field '" + name + "' cannot be configured as both a text field and a vector field");
+        }
+      }
+    }
     fields.clear();
-    fields.putAll(fieldMap);
+    if (fieldMap != null) {
+      fields.putAll(fieldMap);
+    }
     return this;
   }
 
@@ -104,7 +118,15 @@ public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
     if (metadata == null) {
       throw new IllegalArgumentException("VectorIndexMetadata must not be null");
     }
-    vectorFields.put(metadata.getFieldName(), metadata);
+    String fieldName = metadata.getFieldName();
+    if (vectorFields.containsKey(fieldName)) {
+      throw new IllegalArgumentException("Duplicate vector field name: '" + fieldName + "'");
+    }
+    if (fields.containsKey(fieldName)) {
+      throw new IllegalArgumentException(
+          "Field '" + fieldName + "' cannot be configured as both a text field and a vector field");
+    }
+    vectorFields.put(fieldName, metadata);
     return this;
   }
 

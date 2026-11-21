@@ -21,8 +21,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.lucene.index.VectorSimilarityFunction;
 import org.junit.Test;
@@ -162,5 +166,108 @@ public class VectorIndexMetadataJUnitTest {
     }
 
     assertThat(restored).isEqualTo(original);
+  }
+
+  @Test
+  public void javaSerializationPassesStrictGeodeStyleObjectInputFilterBlockingLuceneClasses()
+      throws Exception {
+    VectorIndexMetadata original = new VectorIndexMetadata("embedding", 128,
+        VectorSimilarityFunction.DOT_PRODUCT, 24, 150, true);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(original);
+    }
+
+    ObjectInputFilter strictFilter = filterInfo -> {
+      Class<?> clazz = filterInfo.serialClass();
+      if (clazz == null) {
+        return ObjectInputFilter.Status.UNDECIDED;
+      }
+      if (clazz.getName().startsWith("org.apache.lucene.")) {
+        return ObjectInputFilter.Status.REJECTED;
+      }
+      if (clazz == VectorIndexMetadata.class || clazz == String.class) {
+        return ObjectInputFilter.Status.ALLOWED;
+      }
+      return ObjectInputFilter.Status.REJECTED;
+    };
+
+    VectorIndexMetadata restored;
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+      ois.setObjectInputFilter(strictFilter);
+      restored = (VectorIndexMetadata) ois.readObject();
+    }
+
+    assertThat(restored).isEqualTo(original);
+    assertThat(restored.getSimilarityFunction()).isEqualTo(VectorSimilarityFunction.DOT_PRODUCT);
+  }
+
+  @Test
+  public void readObjectRejectsMalformedSerializedStreams() throws Exception {
+    VectorIndexMetadata valid = new VectorIndexMetadata("embed", 123456,
+        VectorSimilarityFunction.COSINE, 32, 200, true);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(valid);
+    }
+    byte[] validBytes = baos.toByteArray();
+
+    // 1. Corrupt dimension (123456 -> -1)
+    byte[] badDimBytes = replaceFirstInt(validBytes, 123456, -1);
+    assertThatThrownBy(() -> deserialize(badDimBytes))
+        .isInstanceOf(InvalidObjectException.class)
+        .hasMessageContaining("dimension");
+
+    // 2. Corrupt similarityFunctionName ("COSINE" -> "BOGUS!")
+    byte[] badSimBytes = replaceAscii(validBytes, "COSINE", "BOGUS!");
+    assertThatThrownBy(() -> deserialize(badSimBytes))
+        .isInstanceOf(InvalidObjectException.class)
+        .hasMessageContaining("Unknown VectorSimilarityFunction");
+
+    // 3. Corrupt fieldName ("embed" -> " ")
+    byte[] badFieldBytes = replaceAscii(validBytes, "embed", "     ");
+    assertThatThrownBy(() -> deserialize(badFieldBytes))
+        .isInstanceOf(InvalidObjectException.class)
+        .hasMessageContaining("field name");
+  }
+
+  private static VectorIndexMetadata deserialize(byte[] bytes) throws Exception {
+    try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+      return (VectorIndexMetadata) ois.readObject();
+    }
+  }
+
+  private static byte[] replaceFirstInt(byte[] src, int target, int replacement) {
+    byte[] needle = ByteBuffer.allocate(4).putInt(target).array();
+    byte[] repl = ByteBuffer.allocate(4).putInt(replacement).array();
+    byte[] copy = src.clone();
+    for (int i = 0; i <= copy.length - 4; i++) {
+      if (copy[i] == needle[0] && copy[i + 1] == needle[1] && copy[i + 2] == needle[2]
+          && copy[i + 3] == needle[3]) {
+        System.arraycopy(repl, 0, copy, i, 4);
+        return copy;
+      }
+    }
+    throw new AssertionError("Int pattern not found in serialized bytes: " + target);
+  }
+
+  private static byte[] replaceAscii(byte[] src, String target, String replacement) {
+    byte[] needle = target.getBytes(StandardCharsets.UTF_8);
+    byte[] repl = replacement.getBytes(StandardCharsets.UTF_8);
+    assertThat(repl.length).isEqualTo(needle.length);
+    byte[] copy = src.clone();
+    outer: for (int i = 0; i <= copy.length - needle.length; i++) {
+      for (int j = 0; j < needle.length; j++) {
+        if (copy[i + j] != needle[j]) {
+          continue outer;
+        }
+      }
+      System.arraycopy(repl, 0, copy, i, repl.length);
+      return copy;
+    }
+    throw new AssertionError("ASCII pattern not found in serialized bytes: " + target);
   }
 }
