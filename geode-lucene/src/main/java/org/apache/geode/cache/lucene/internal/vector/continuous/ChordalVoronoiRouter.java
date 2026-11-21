@@ -47,10 +47,12 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ChordalVoronoiRouter {
 
   /**
-   * Conservative dot-product margin covering IEEE-754 float32 FMA accumulation error so that
-   * {@code d_ch_lower(x, c_k) <= d_ch_exact(x, c_k)} holds unconditionally on {@code S^{d-1}}.
+   * Minimum conservative dot-product margin covering IEEE-754 float32 FMA accumulation error so
+   * that {@code d_ch_lower(x, c_k) <= d_ch_exact(x, c_k)} holds unconditionally on {@code S^{d-1}}.
+   * For high dimensions, scaled linearly via {@link #computeFloatDotSafetyEpsilon(int)}.
    */
   static final double FLOAT_DOT_SAFETY_EPSILON = 1.0e-4d;
+  static final double FLOAT_DOT_SAFETY_EPSILON_PER_DIM = 1.0e-6d;
 
   /** Default hardware SIMD lane width (8 floats = 256-bit AVX2). */
   public static final int DEFAULT_SIMD_LANE_WIDTH = 8;
@@ -469,6 +471,7 @@ public class ChordalVoronoiRouter {
   private final int mCrit;
   private final int upperSwitchThreshold;
   private final int lowerSwitchThreshold;
+  private final double floatDotSafetyEpsilon;
 
   private final ReentrantLock writeLock = new ReentrantLock();
   private final Map<String, VectorSubscription> subscriptions = new LinkedHashMap<>();
@@ -498,7 +501,23 @@ public class ChordalVoronoiRouter {
         computeUpperSwitchThreshold(this.mCrit, config.getHysteresisDelta());
     this.lowerSwitchThreshold =
         computeLowerSwitchThreshold(this.mCrit, config.getHysteresisDelta());
+    this.floatDotSafetyEpsilon = computeFloatDotSafetyEpsilon(config.getDimension());
     this.snapshot = RouterSnapshot.empty(config.getDimension());
+  }
+
+  /**
+   * Computes a dimension-scaled IEEE-754 float32 dot-product safety margin covering worst-case
+   * {@code O(d * u_f32)} rounding error even at high dimensionality ({@code d >= 4096}).
+   */
+  public static double computeFloatDotSafetyEpsilon(int dimension) {
+    if (dimension <= 0) {
+      throw new IllegalArgumentException("dimension must be > 0, got: " + dimension);
+    }
+    return Math.max(FLOAT_DOT_SAFETY_EPSILON, dimension * FLOAT_DOT_SAFETY_EPSILON_PER_DIM);
+  }
+
+  public double getFloatDotSafetyEpsilon() {
+    return floatDotSafetyEpsilon;
   }
 
   /**
@@ -677,7 +696,7 @@ public class ChordalVoronoiRouter {
    * Lock-free hot-path routing for an already L2-normalized embedding on {@code S^{d-1}}.
    */
   public List<MatchResult> routeNormalized(float[] unitEmbedding) {
-    validateVector(unitEmbedding);
+    validateFiniteVector(unitEmbedding);
     RouterSnapshot snap = this.snapshot;
     totalRoutedVectors.incrementAndGet();
     if (snap.subscriptionCount == 0) {
@@ -776,8 +795,8 @@ public class ChordalVoronoiRouter {
       VoronoiCell cell = cells[k];
       float rawDot =
           VectorSubscription.dotProductContiguous(unitEmbedding, centroids, k * dim, dim);
-      // Conservative lower bound on true d_ch(x, c_k) under IEEE-754 float32 rounding
-      double optimisticCos = Math.min(1.0d, (double) rawDot + FLOAT_DOT_SAFETY_EPSILON);
+      // Conservative dimension-scaled lower bound on true d_ch(x, c_k) under float32 rounding
+      double optimisticCos = Math.min(1.0d, (double) rawDot + floatDotSafetyEpsilon);
       double lowerBoundChordal = Math.sqrt(Math.max(0.0d, 2.0d * (1.0d - optimisticCos)));
       if (lowerBoundChordal > cell.pruneRadiusSum) {
         pruned++;
@@ -1137,5 +1156,15 @@ public class ChordalVoronoiRouter {
       throw new IllegalArgumentException("Embedding vector must not be null");
     }
     validateDimension(vector.length);
+  }
+
+  private void validateFiniteVector(float[] vector) {
+    validateVector(vector);
+    for (int i = 0; i < vector.length; i++) {
+      if (!Float.isFinite(vector[i])) {
+        throw new IllegalArgumentException(
+            "Embedding vector contains non-finite value at index " + i + ": " + vector[i]);
+      }
+    }
   }
 }

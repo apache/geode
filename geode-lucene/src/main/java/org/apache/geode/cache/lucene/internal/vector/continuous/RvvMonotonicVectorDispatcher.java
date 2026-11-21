@@ -25,11 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
@@ -43,6 +46,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Server-side Region Version Vector (RVV) monotonic continuous vector dispatcher implementing
@@ -64,7 +68,19 @@ import org.apache.geode.internal.cache.versions.VersionTag;
  */
 public class RvvMonotonicVectorDispatcher {
 
+  private static final Logger logger = LogService.getLogger();
   public static final int DEFAULT_MAX_TAIL_PER_STREAM = 100_000;
+
+  /**
+   * Callback invoked whenever a per-{@code (bucketId, memberId)} tail buffer exceeds
+   * {@code maxTailPerStream} and must evict an un-checkpointed mutation, signaling that a client
+   * behind the evicted version requires a full bucket resync.
+   */
+  @FunctionalInterface
+  public interface TailOverflowListener {
+    void onTailOverflow(int bucketId, String memberId, long evictedRegionVersion,
+        long checkpointVersion, int maxTailPerStream);
+  }
 
   /**
    * Immutable mutation record stored in a bucket's replayable delta tail buffer.
@@ -173,18 +189,28 @@ public class RvvMonotonicVectorDispatcher {
     final Map<String, TreeMap<Long, TailMutation>> tailByMember = new HashMap<>();
     final Map<String, Long> checkpointByMember = new HashMap<>();
     final Map<String, AtomicLong> fallbackVersionByMember = new HashMap<>();
+    final List<TailMutation> pendingLiveMutations = new ArrayList<>();
+    int pendingAsyncPromotions = 0;
 
-    synchronized void append(TailMutation mutation, int maxTailPerStream) {
+    synchronized List<Long> append(TailMutation mutation, int maxTailPerStream) {
       long ckpt = checkpointByMember.getOrDefault(mutation.memberId, 0L);
       if (mutation.regionVersion <= ckpt) {
-        return;
+        return Collections.emptyList();
       }
       TreeMap<Long, TailMutation> stream =
           tailByMember.computeIfAbsent(mutation.memberId, ignored -> new TreeMap<>());
       stream.putIfAbsent(mutation.regionVersion, mutation);
+      List<Long> evictedVersions = null;
       while (stream.size() > maxTailPerStream) {
-        stream.pollFirstEntry();
+        Map.Entry<Long, TailMutation> evicted = stream.pollFirstEntry();
+        if (evicted != null) {
+          if (evictedVersions == null) {
+            evictedVersions = new ArrayList<>(2);
+          }
+          evictedVersions.add(evicted.getKey());
+        }
       }
+      return evictedVersions == null ? Collections.emptyList() : evictedVersions;
     }
 
     synchronized long nextFallbackVersion(String memberId) {
@@ -200,10 +226,17 @@ public class RvvMonotonicVectorDispatcher {
     }
 
     synchronized List<TailMutation> collectReplayableTail(Collection<TailMutation> recoveredEntries,
-        int maxTailPerStream) {
+        int maxTailPerStream, List<TailOverflowRecord> overflowCollector) {
       if (recoveredEntries != null) {
         for (TailMutation entry : recoveredEntries) {
-          append(entry, maxTailPerStream);
+          List<Long> evicted = append(entry, maxTailPerStream);
+          if (!evicted.isEmpty() && overflowCollector != null) {
+            long ckpt = checkpointByMember.getOrDefault(entry.memberId, 0L);
+            for (long evictedVersion : evicted) {
+              overflowCollector.add(
+                  new TailOverflowRecord(entry.bucketId, entry.memberId, evictedVersion, ckpt));
+            }
+          }
         }
       }
       List<TailMutation> replay = new ArrayList<>();
@@ -246,15 +279,33 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
+  private static final class TailOverflowRecord {
+    final int bucketId;
+    final String memberId;
+    final long evictedVersion;
+    final long checkpointVersion;
+
+    TailOverflowRecord(int bucketId, String memberId, long evictedVersion, long checkpointVersion) {
+      this.bucketId = bucketId;
+      this.memberId = memberId;
+      this.evictedVersion = evictedVersion;
+      this.checkpointVersion = checkpointVersion;
+    }
+  }
+
   private final ChordalVoronoiRouter router;
   private final int maxTailPerStream;
   private final ConcurrentHashMap<Integer, BucketState> bucketStates = new ConcurrentHashMap<>();
   private final CopyOnWriteArrayList<ContinuousVectorEventSink> sinks =
       new CopyOnWriteArrayList<>();
+  private final CopyOnWriteArrayList<TailOverflowListener> overflowListeners =
+      new CopyOnWriteArrayList<>();
+  private final Set<RvvStreamKey> resyncRequiredStreams = ConcurrentHashMap.newKeySet();
 
   private final AtomicLong totalEventsDispatched = new AtomicLong();
   private final AtomicLong totalReplayedEventsDispatched = new AtomicLong();
   private final AtomicLong totalPromotionsHandled = new AtomicLong();
+  private final AtomicLong tailOverflowCount = new AtomicLong();
 
   public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router) {
     this(router, DEFAULT_MAX_TAIL_PER_STREAM);
@@ -276,13 +327,23 @@ public class RvvMonotonicVectorDispatcher {
     return sinks.remove(sink);
   }
 
+  public void addTailOverflowListener(TailOverflowListener listener) {
+    overflowListeners.add(Objects.requireNonNull(listener, "listener must not be null"));
+  }
+
+  public boolean removeTailOverflowListener(TailOverflowListener listener) {
+    return overflowListeners.remove(listener);
+  }
+
   /**
    * Handles a bucket mutation on either a primary or secondary replica.
    *
    * <p>
    * Both primaries and secondaries record the normalized mutation into the bucket's replayable
    * delta tail buffer. Only primaries evaluate subscriptions and emit {@link ContinuousVectorEvent}
-   * notifications immediately.
+   * notifications immediately. When an asynchronous primary-promotion replay is pending for
+   * {@code bucketId}, live primary mutations are buffered until replay completes so they cannot
+   * overtake earlier tail versions in {@link RvvClientGate}.
    */
   public List<ContinuousVectorEvent> onBucketMutation(int bucketId, String memberId,
       long regionVersion, int entryVersion, Object key, float[] embedding, boolean isPrimary) {
@@ -303,13 +364,98 @@ public class RvvMonotonicVectorDispatcher {
     TailMutation mutation = new TailMutation(key, normalized, bucketId, memberId, effectiveVersion,
         entryVersion, System.currentTimeMillis());
 
+    List<TailOverflowRecord> overflows = null;
+    List<ContinuousVectorEvent> emitted;
     // Serialize append + dispatch per bucket to preserve per-(b, m) version ordering
     synchronized (state) {
-      state.append(mutation, maxTailPerStream);
-      if (!isPrimary) {
+      if (isPrimary && state.pendingAsyncPromotions > 0) {
+        // Gate live primary writes behind the pending async promotion replay barrier
+        state.pendingLiveMutations.add(mutation);
         return Collections.emptyList();
       }
-      return evaluateAndDispatch(mutation, false);
+      List<Long> evicted = state.append(mutation, maxTailPerStream);
+      if (!evicted.isEmpty()) {
+        long ckpt = state.getCheckpoint(memberId);
+        overflows = new ArrayList<>(evicted.size());
+        for (long evictedVersion : evicted) {
+          overflows.add(new TailOverflowRecord(bucketId, memberId, evictedVersion, ckpt));
+        }
+      }
+      if (!isPrimary) {
+        emitted = Collections.emptyList();
+      } else {
+        emitted = evaluateAndDispatch(mutation, false);
+      }
+    }
+    if (overflows != null) {
+      notifyOverflows(overflows);
+    }
+    return emitted;
+  }
+
+  /**
+   * Marks the start of an asynchronous primary-promotion replay on {@code bucketId}. Live primary
+   * mutations arriving before {@link #completeAsyncPromotion(int, Collection)} are buffered and
+   * drained strictly after tail replay finishes.
+   */
+  public void beginAsyncPromotion(int bucketId) {
+    BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+    synchronized (state) {
+      state.pendingAsyncPromotions++;
+    }
+  }
+
+  /**
+   * Completes an asynchronous primary-promotion replay previously opened with
+   * {@link #beginAsyncPromotion(int)}, replaying uncheckpointed tail entries first and then
+   * draining any buffered live primary mutations in ascending version order.
+   */
+  public List<ContinuousVectorEvent> completeAsyncPromotion(int bucketId,
+      Collection<TailMutation> recoveredBucketEntries) {
+    totalPromotionsHandled.incrementAndGet();
+    BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+    List<TailOverflowRecord> overflows = new ArrayList<>();
+    List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    synchronized (state) {
+      List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
+          maxTailPerStream, overflows);
+      for (TailMutation mutation : toReplay) {
+        emitted.addAll(evaluateAndDispatch(mutation, true));
+      }
+      if (state.pendingAsyncPromotions > 0) {
+        state.pendingAsyncPromotions--;
+      }
+      if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
+        drainPendingLiveMutationsLocked(state, emitted, overflows);
+      }
+    }
+    if (!overflows.isEmpty()) {
+      notifyOverflows(overflows);
+    }
+    return emitted;
+  }
+
+  /**
+   * Cancels a pending asynchronous promotion barrier (e.g., if the replay executor rejects the
+   * task during teardown) and drains any buffered live mutations if no other promotions remain.
+   */
+  public void cancelAsyncPromotion(int bucketId) {
+    BucketState state = bucketStates.get(bucketId);
+    if (state == null) {
+      return;
+    }
+    List<TailOverflowRecord> overflows = new ArrayList<>();
+    List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    synchronized (state) {
+      if (state.pendingAsyncPromotions > 0) {
+        state.pendingAsyncPromotions--;
+      }
+      if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
+        drainPendingLiveMutationsLocked(state, emitted, overflows);
+      }
+    }
+    if (!overflows.isEmpty()) {
+      notifyOverflows(overflows);
     }
   }
 
@@ -330,18 +476,19 @@ public class RvvMonotonicVectorDispatcher {
       Collection<TailMutation> recoveredBucketEntries) {
     totalPromotionsHandled.incrementAndGet();
     BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+    List<TailOverflowRecord> overflows = new ArrayList<>();
+    List<ContinuousVectorEvent> emitted = new ArrayList<>();
     synchronized (state) {
       List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
-          maxTailPerStream);
-      if (toReplay.isEmpty()) {
-        return Collections.emptyList();
-      }
-      List<ContinuousVectorEvent> emitted = new ArrayList<>();
+          maxTailPerStream, overflows);
       for (TailMutation mutation : toReplay) {
         emitted.addAll(evaluateAndDispatch(mutation, true));
       }
-      return emitted;
     }
+    if (!overflows.isEmpty()) {
+      notifyOverflows(overflows);
+    }
+    return emitted;
   }
 
   /**
@@ -357,6 +504,14 @@ public class RvvMonotonicVectorDispatcher {
     state.advanceCheckpoint(memberId, ackedVersion);
   }
 
+  /**
+   * Alias for {@link #acknowledgeCheckpoint(int, String, long)} that advances {@code V_ckpt} and
+   * compacts acknowledged tail entries up to {@code ackedVersion}.
+   */
+  public void compactUpTo(int bucketId, String memberId, long ackedVersion) {
+    acknowledgeCheckpoint(bucketId, memberId, ackedVersion);
+  }
+
   public long getCheckpointVersion(int bucketId, String memberId) {
     BucketState state = bucketStates.get(bucketId);
     return state == null ? 0L : state.getCheckpoint(memberId);
@@ -367,8 +522,64 @@ public class RvvMonotonicVectorDispatcher {
     return state == null ? 0 : state.getTailSize();
   }
 
+  public long getTailOverflowCount() {
+    return tailOverflowCount.get();
+  }
+
+  public boolean isResyncRequired(int bucketId, String memberId) {
+    if (memberId == null || memberId.isEmpty()) {
+      return false;
+    }
+    return resyncRequiredStreams.contains(new RvvStreamKey(bucketId, memberId));
+  }
+
+  public Set<RvvStreamKey> getResyncRequiredStreams() {
+    return Collections.unmodifiableSet(resyncRequiredStreams);
+  }
+
+  public void clearResyncRequired(int bucketId, String memberId) {
+    if (memberId == null || memberId.isEmpty()) {
+      return;
+    }
+    resyncRequiredStreams.remove(new RvvStreamKey(bucketId, memberId));
+  }
+
   public void onBucketRemoved(int bucketId) {
     bucketStates.remove(bucketId);
+    resyncRequiredStreams.removeIf(key -> key.getBucketId() == bucketId);
+  }
+
+  private void drainPendingLiveMutationsLocked(BucketState state,
+      List<ContinuousVectorEvent> emitted, List<TailOverflowRecord> overflows) {
+    List<TailMutation> buffered = new ArrayList<>(state.pendingLiveMutations);
+    state.pendingLiveMutations.clear();
+    buffered.sort(Comparator.comparing(TailMutation::getMemberId)
+        .thenComparingLong(TailMutation::getRegionVersion));
+    for (TailMutation live : buffered) {
+      List<Long> evicted = state.append(live, maxTailPerStream);
+      if (!evicted.isEmpty()) {
+        long ckpt = state.getCheckpoint(live.memberId);
+        for (long evictedVersion : evicted) {
+          overflows.add(new TailOverflowRecord(live.bucketId, live.memberId, evictedVersion, ckpt));
+        }
+      }
+      emitted.addAll(evaluateAndDispatch(live, false));
+    }
+  }
+
+  private void notifyOverflows(List<TailOverflowRecord> overflows) {
+    for (TailOverflowRecord rec : overflows) {
+      tailOverflowCount.incrementAndGet();
+      resyncRequiredStreams.add(new RvvStreamKey(rec.bucketId, rec.memberId));
+      logger.warn(
+          "RVV delta tail overflow on bucket={}, member={}: evicted un-checkpointed regionVersion={} "
+              + "(V_ckpt={}, maxTailPerStream={}); stream marked for full resync",
+          rec.bucketId, rec.memberId, rec.evictedVersion, rec.checkpointVersion, maxTailPerStream);
+      for (TailOverflowListener listener : overflowListeners) {
+        listener.onTailOverflow(rec.bucketId, rec.memberId, rec.evictedVersion,
+            rec.checkpointVersion, maxTailPerStream);
+      }
+    }
   }
 
   public long getTotalEventsDispatched() {

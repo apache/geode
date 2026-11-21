@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
@@ -39,6 +40,7 @@ public class ContinuousVectorQueryService {
 
   private final ChordalVoronoiRouter router;
   private final RvvMonotonicVectorDispatcher dispatcher;
+  private final CopyOnWriteArrayList<RvvClientGate> clientGates = new CopyOnWriteArrayList<>();
 
   public ContinuousVectorQueryService(int dimension) {
     this(ChordalVoronoiRouter.RouterConfig.builder(dimension).build());
@@ -53,6 +55,18 @@ public class ContinuousVectorQueryService {
       RvvMonotonicVectorDispatcher dispatcher) {
     this.router = Objects.requireNonNull(router, "router must not be null");
     this.dispatcher = Objects.requireNonNull(dispatcher, "dispatcher must not be null");
+  }
+
+  /**
+   * Attaches a client-side {@link RvvClientGate} so {@link #unregisterSubscription(String)}
+   * automatically purges stale high-water entries and avoids pinning {@code V_ckpt}.
+   */
+  public void attachClientGate(RvvClientGate gate) {
+    clientGates.add(Objects.requireNonNull(gate, "gate must not be null"));
+  }
+
+  public boolean detachClientGate(RvvClientGate gate) {
+    return clientGates.remove(gate);
   }
 
   public void registerSubscription(VectorSubscription subscription) {
@@ -70,7 +84,13 @@ public class ContinuousVectorQueryService {
   }
 
   public boolean unregisterSubscription(String subscriptionId) {
-    return router.removeSubscription(subscriptionId);
+    boolean removed = router.removeSubscription(subscriptionId);
+    if (subscriptionId != null) {
+      for (RvvClientGate gate : clientGates) {
+        gate.removeSubscription(subscriptionId);
+      }
+    }
+    return removed;
   }
 
   public void addEventSink(ContinuousVectorEventSink sink) {
@@ -141,6 +161,13 @@ public class ContinuousVectorQueryService {
   }
 
   /**
+   * Compacts acknowledged tail entries up to {@code ackedVersion}.
+   */
+  public void compactUpTo(int bucketId, String memberId, long ackedVersion) {
+    dispatcher.compactUpTo(bucketId, memberId, ackedVersion);
+  }
+
+  /**
    * Creates a Geode {@link CacheListener} that extracts vector embeddings from entry values and
    * dispatches RVV-stamped notifications through this service.
    */
@@ -204,10 +231,12 @@ public class ContinuousVectorQueryService {
             ? RvvMonotonicVectorDispatcher.extractBucketSnapshot(pr, bucketId, vectorExtractor)
             : Collections.emptyList();
         if (replayExecutor != null) {
+          dispatcher.beginAsyncPromotion(bucketId);
           try {
-            replayExecutor.execute(() -> dispatcher.onPrimaryPromotion(bucketId, recovered));
+            replayExecutor.execute(() -> dispatcher.completeAsyncPromotion(bucketId, recovered));
           } catch (RejectedExecutionException ignored) {
             // Replay executor already shut down during cache/node teardown
+            dispatcher.cancelAsyncPromotion(bucketId);
           }
         } else {
           dispatcher.onPrimaryPromotion(bucketId, recovered);

@@ -17,16 +17,27 @@ package org.apache.geode.cache.lucene.internal.vector.continuous;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -206,5 +217,193 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(service.unregisterSubscription("sub-facade")).isTrue();
     assertThat(service.getActiveSubscriptionCount()).isZero();
     assertThat(service.onBucketMutation(0, "srv1", 2L, "k2", q, true)).isEmpty();
+  }
+
+  @Test
+  public void asyncReplayExecutorPromotionGatesLiveWritesUntilTailReplayCompletes() {
+    float[] vec = new float[] {1, 0, 0, 0};
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    service.registerSubscription("sub-async", vec, 0.9f);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new ArrayList<>();
+    clientGate.addListener(accepted::add);
+    service.addEventSink(clientGate::tryAccept);
+
+    int bucketId = 7;
+    String memberId = "member-promote";
+
+    // Pre-failover: v=1,2 delivered to client; v=3,4,5 replicated to secondary tail only
+    for (long v = 1L; v <= 5L; v++) {
+      boolean alreadyDelivered = (v <= 2L);
+      service.onBucketMutation(bucketId, memberId, v, "doc-" + v, vec, false);
+      if (alreadyDelivered) {
+        clientGate.tryAccept(new ContinuousVectorEvent("sub-async", "doc-" + v, 1.0f, bucketId,
+            memberId, v, 1, 100L + v, false));
+      }
+    }
+    service.acknowledgeCheckpoint(bucketId, memberId, 2L);
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(1L, 2L);
+
+    // Deterministic manual queued Executor simulating delayed async promotion replay
+    Queue<Runnable> queuedReplayTasks = new ArrayDeque<>();
+    Executor manualExecutor = queuedReplayTasks::add;
+    PartitionListener partitionListener =
+        service.createPartitionListener(val -> (float[]) val, manualExecutor);
+
+    // Trigger afterPrimary(bucketId) -> opens promotion barrier and queues async replay
+    partitionListener.afterPrimary(bucketId);
+    assertThat(queuedReplayTasks).hasSize(1);
+
+    // Live writes v=6, v=7 arrive on the newly promoted primary BEFORE async replay runs!
+    List<ContinuousVectorEvent> live6 =
+        service.onBucketMutation(bucketId, memberId, 6L, "doc-6", vec, true);
+    List<ContinuousVectorEvent> live7 =
+        service.onBucketMutation(bucketId, memberId, 7L, "doc-7", vec, true);
+    assertThat(live6).isEmpty();
+    assertThat(live7).isEmpty();
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(1L, 2L);
+
+    // Drain the queued replay task -> replays v=3,4,5 first, then drains buffered live v=6,7
+    queuedReplayTasks.poll().run();
+
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L);
+    assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
+    assertThat(clientGate.getDiscardedCount()).isZero();
+
+    // Verify RejectedExecutionException cleanly releases the barrier instead of wedging bucketId
+    PartitionListener rejectingListener = service.createPartitionListener(val -> (float[]) val,
+        task -> {
+          throw new RejectedExecutionException("shutting down");
+        });
+    rejectingListener.afterPrimary(bucketId);
+    List<ContinuousVectorEvent> afterReject =
+        service.onBucketMutation(bucketId, memberId, 8L, "doc-8", vec, true);
+    assertThat(afterReject).hasSize(1);
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L);
+  }
+
+  @Test
+  public void unregisteringSubscriptionRemovesClientGateStateAndAllowsTailCompaction() {
+    float[] vec = new float[] {1, 0, 0, 0};
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    RvvClientGate clientGate = new RvvClientGate();
+    service.attachClientGate(clientGate);
+    service.addEventSink(clientGate::tryAccept);
+
+    service.registerSubscription("sub-1", vec, 0.9f);
+    service.registerSubscription("sub-2", vec, 0.9f);
+
+    int bucketId = 3;
+    String memberId = "member-compact";
+
+    for (long v = 1L; v <= 5L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "doc-" + v, vec, true);
+    }
+    assertThat(clientGate.getHighWaterVersion("sub-1", bucketId, memberId)).isEqualTo(5L);
+    assertThat(clientGate.getHighWaterVersion("sub-2", bucketId, memberId)).isEqualTo(5L);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(5L);
+
+    // Unregister sub-1 -> must purge sub-1 from clientGate so it does not pin V_ckpt at 5
+    assertThat(service.unregisterSubscription("sub-1")).isTrue();
+    assertThat(clientGate.getHighWaterVersion("sub-1", bucketId, memberId)).isZero();
+
+    for (long v = 6L; v <= 10L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "doc-" + v, vec, true);
+    }
+    assertThat(clientGate.getHighWaterVersion("sub-2", bucketId, memberId)).isEqualTo(10L);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(10L);
+
+    // Compact dispatcher tail using safe checkpoint -> reclaims all sub-1 and sub-2 tail entries
+    service.compactUpTo(bucketId, memberId,
+        clientGate.getSafeCheckpointVersion(bucketId, memberId));
+    assertThat(service.getDispatcher().getCheckpointVersion(bucketId, memberId)).isEqualTo(10L);
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isZero();
+  }
+
+  @Test
+  public void concurrentTryAcceptOnSameStreamSerializesListenerDeliveryStrictlyMonotonically()
+      throws Exception {
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try {
+      for (int round = 0; round < 200; round++) {
+        RvvClientGate gate = new RvvClientGate();
+        List<ContinuousVectorEvent> received = new CopyOnWriteArrayList<>();
+        gate.addListener(event -> {
+          if (event.getRegionVersion() == 5L) {
+            // Widen concurrency window to expose unsynchronized listener races
+            Thread.yield();
+          }
+          received.add(event);
+        });
+
+        ContinuousVectorEvent v5 = new ContinuousVectorEvent("sub-race", "k5", 0.99f, 1, "m1", 5L,
+            1, 1005L, false);
+        ContinuousVectorEvent v6 = new ContinuousVectorEvent("sub-race", "k6", 0.99f, 1, "m1", 6L,
+            1, 1006L, false);
+
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        Future<Boolean> f1 = pool.submit(() -> {
+          barrier.await(5, TimeUnit.SECONDS);
+          return gate.tryAccept(v5);
+        });
+        Future<Boolean> f2 = pool.submit(() -> {
+          barrier.await(5, TimeUnit.SECONDS);
+          return gate.tryAccept(v6);
+        });
+
+        boolean a5 = f1.get(5, TimeUnit.SECONDS);
+        boolean a6 = f2.get(5, TimeUnit.SECONDS);
+
+        assertThat(a6).isTrue();
+        assertThat(RvvClientGate.verifyStrictMonotonicity(received))
+            .as("Round %d produced out-of-order concurrent callback delivery", round)
+            .isEmpty();
+        if (a5) {
+          assertThat(received).extracting(ContinuousVectorEvent::getRegionVersion)
+              .containsExactly(5L, 6L);
+        } else {
+          assertThat(received).extracting(ContinuousVectorEvent::getRegionVersion)
+              .containsExactly(6L);
+        }
+      }
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  @Test
+  public void tailBufferOverflowEmitsCounterResyncSignalAndOverflowCallback() {
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(4);
+    router.addSubscription(new VectorSubscription("sub-ovf", new float[] {1, 0, 0, 0}, 0.8f));
+    RvvMonotonicVectorDispatcher dispatcher = new RvvMonotonicVectorDispatcher(router, 4);
+
+    List<Long> evictedVersions = new ArrayList<>();
+    dispatcher.addTailOverflowListener((bucketId, memberId, evictedVersion, ckpt, maxTail) -> {
+      assertThat(bucketId).isEqualTo(3);
+      assertThat(memberId).isEqualTo("srv-overflow");
+      assertThat(ckpt).isZero();
+      assertThat(maxTail).isEqualTo(4);
+      evictedVersions.add(evictedVersion);
+    });
+
+    for (long v = 1L; v <= 7L; v++) {
+      dispatcher.onBucketMutation(3, "srv-overflow", v, 1, "k-" + v, new float[] {1, 0, 0, 0},
+          false);
+    }
+
+    assertThat(dispatcher.getTailSize(3)).isEqualTo(4);
+    assertThat(dispatcher.getTailOverflowCount()).isEqualTo(3L);
+    assertThat(evictedVersions).containsExactly(1L, 2L, 3L);
+    assertThat(dispatcher.isResyncRequired(3, "srv-overflow")).isTrue();
+    assertThat(dispatcher.getResyncRequiredStreams())
+        .containsExactly(new RvvStreamKey(3, "srv-overflow"));
+
+    dispatcher.clearResyncRequired(3, "srv-overflow");
+    assertThat(dispatcher.isResyncRequired(3, "srv-overflow")).isFalse();
   }
 }

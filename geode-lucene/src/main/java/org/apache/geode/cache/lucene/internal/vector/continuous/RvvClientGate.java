@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -34,7 +33,9 @@ import java.util.function.Consumer;
  * <p>
  * Tracks high-water version {@code V_client[subscriptionId, b, m]} and deterministically discards
  * any incoming event carrying {@code v_{b,m} <= V_client[subscriptionId, b, m]}, accepting only
- * strictly increasing {@code v_{b,m} > V_client[subscriptionId, b, m]}.
+ * strictly increasing {@code v_{b,m} > V_client[subscriptionId, b, m]}. Check, high-water advance,
+ * and downstream listener delivery are serialized per {@code (subscriptionId, bucketId, memberId)}
+ * stream so concurrent callers can never observe out-of-order callbacks.
  */
 public class RvvClientGate {
 
@@ -69,7 +70,11 @@ public class RvvClientGate {
     }
   }
 
-  private final ConcurrentHashMap<SubscriptionStreamKey, Long> highWaterVersions =
+  private static final class StreamState {
+    volatile long highWaterVersion;
+  }
+
+  private final ConcurrentHashMap<SubscriptionStreamKey, StreamState> streamStates =
       new ConcurrentHashMap<>();
   private final CopyOnWriteArrayList<Consumer<ContinuousVectorEvent>> listeners =
       new CopyOnWriteArrayList<>();
@@ -89,7 +94,27 @@ public class RvvClientGate {
   }
 
   /**
-   * Evaluates the RVV high-water gate for {@code event}.
+   * Removes all tracked high-water state for an unregistered subscription so it cannot pin
+   * {@link #getSafeCheckpointVersion(int, String)} or block server-side tail compaction.
+   *
+   * @return number of {@code (subscriptionId, bucketId, memberId)} stream entries removed.
+   */
+  public int removeSubscription(String subscriptionId) {
+    if (subscriptionId == null) {
+      return 0;
+    }
+    int removed = 0;
+    for (SubscriptionStreamKey key : streamStates.keySet()) {
+      if (subscriptionId.equals(key.subscriptionId) && streamStates.remove(key) != null) {
+        removed++;
+      }
+    }
+    return removed;
+  }
+
+  /**
+   * Evaluates the RVV high-water gate for {@code event}, serializing high-water advancement and
+   * listener delivery per {@code (subscriptionId, bucketId, memberId)} stream.
    *
    * @return {@code true} if {@code event.getRegionVersion() > V_client[sub, b, m]} (accepted and
    *         forwarded to downstream listeners), or {@code false} if deterministically discarded as
@@ -100,26 +125,19 @@ public class RvvClientGate {
     SubscriptionStreamKey key = new SubscriptionStreamKey(event.getSubscriptionId(),
         event.getBucketId(), event.getMemberId());
     long incomingVersion = event.getRegionVersion();
-    AtomicBoolean accepted = new AtomicBoolean(false);
+    StreamState state = streamStates.computeIfAbsent(key, ignored -> new StreamState());
 
-    highWaterVersions.compute(key, (k, prev) -> {
-      long current = prev == null ? 0L : prev;
-      if (incomingVersion <= current) {
-        return prev;
+    synchronized (state) {
+      if (incomingVersion <= state.highWaterVersion) {
+        discardedCount.incrementAndGet();
+        return false;
       }
-      accepted.set(true);
-      return incomingVersion;
-    });
-
-    if (accepted.get()) {
+      state.highWaterVersion = incomingVersion;
       acceptedCount.incrementAndGet();
       for (Consumer<ContinuousVectorEvent> listener : listeners) {
         listener.accept(event);
       }
       return true;
-    } else {
-      discardedCount.incrementAndGet();
-      return false;
     }
   }
 
@@ -128,23 +146,27 @@ public class RvvClientGate {
    * accepted yet for that stream.
    */
   public long getHighWaterVersion(String subscriptionId, int bucketId, String memberId) {
-    Long v = highWaterVersions.get(new SubscriptionStreamKey(subscriptionId, bucketId, memberId));
-    return v == null ? 0L : v;
+    StreamState state =
+        streamStates.get(new SubscriptionStreamKey(subscriptionId, bucketId, memberId));
+    return state == null ? 0L : state.highWaterVersion;
   }
 
   /**
    * Returns a safe checkpoint bound {@code V_ckpt[b, m] <= min_q V_client[q, b, m]} across all
-   * subscriptions that have received events for {@code (bucketId, memberId)}.
+   * currently active subscriptions that have received events for {@code (bucketId, memberId)}.
    */
   public long getSafeCheckpointVersion(int bucketId, String memberId) {
     long min = Long.MAX_VALUE;
     boolean found = false;
-    for (Map.Entry<SubscriptionStreamKey, Long> entry : highWaterVersions.entrySet()) {
+    for (Map.Entry<SubscriptionStreamKey, StreamState> entry : streamStates.entrySet()) {
       SubscriptionStreamKey k = entry.getKey();
       if (k.bucketId == bucketId && k.memberId.equals(memberId)) {
-        found = true;
-        if (entry.getValue() < min) {
-          min = entry.getValue();
+        long version = entry.getValue().highWaterVersion;
+        if (version > 0L) {
+          found = true;
+          if (version < min) {
+            min = version;
+          }
         }
       }
     }
@@ -156,10 +178,14 @@ public class RvvClientGate {
    */
   public Map<RvvStreamKey, Long> getSafeCheckpointSnapshot() {
     Map<RvvStreamKey, Long> snapshot = new HashMap<>();
-    for (Map.Entry<SubscriptionStreamKey, Long> entry : highWaterVersions.entrySet()) {
+    for (Map.Entry<SubscriptionStreamKey, StreamState> entry : streamStates.entrySet()) {
+      long version = entry.getValue().highWaterVersion;
+      if (version <= 0L) {
+        continue;
+      }
       SubscriptionStreamKey k = entry.getKey();
       RvvStreamKey streamKey = new RvvStreamKey(k.bucketId, k.memberId);
-      snapshot.merge(streamKey, entry.getValue(), Math::min);
+      snapshot.merge(streamKey, version, Math::min);
     }
     return Collections.unmodifiableMap(snapshot);
   }
@@ -169,10 +195,14 @@ public class RvvClientGate {
    */
   public Map<String, Map<RvvStreamKey, Long>> getHighWaterSnapshotBySubscription() {
     Map<String, Map<RvvStreamKey, Long>> result = new HashMap<>();
-    for (Map.Entry<SubscriptionStreamKey, Long> entry : highWaterVersions.entrySet()) {
+    for (Map.Entry<SubscriptionStreamKey, StreamState> entry : streamStates.entrySet()) {
+      long version = entry.getValue().highWaterVersion;
+      if (version <= 0L) {
+        continue;
+      }
       SubscriptionStreamKey k = entry.getKey();
       result.computeIfAbsent(k.subscriptionId, ignored -> new HashMap<>())
-          .put(new RvvStreamKey(k.bucketId, k.memberId), entry.getValue());
+          .put(new RvvStreamKey(k.bucketId, k.memberId), version);
     }
     return result;
   }

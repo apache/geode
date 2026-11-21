@@ -319,6 +319,66 @@ public class ChordalVoronoiRouterTest {
             .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> router.route(new float[] {1, 0}))
         .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> router.routeNormalized(new float[] {Float.NaN, 0, 0, 1}))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> router.routeNormalized(new float[] {Float.POSITIVE_INFINITY, 0, 0, 0}))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> router.routeNormalized(new float[] {Float.NEGATIVE_INFINITY, 0, 0, 0}))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void highDimension4096BoundaryVectorsGuaranteeZeroFnrWithScaledSafetyEpsilon() {
+    int dim = 4096;
+    assertThat(ChordalVoronoiRouter.computeFloatDotSafetyEpsilon(dim))
+        .isGreaterThan(ChordalVoronoiRouter.FLOAT_DOT_SAFETY_EPSILON)
+        .isGreaterThanOrEqualTo(dim * 1.0e-6d);
+
+    Random rng = new Random(4096L);
+    RouterConfig config = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .hysteresisDelta(0.15d)
+        .randomSeed(4096L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(config);
+
+    float[][] topics = new float[8][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVector(rng, dim);
+    }
+
+    float subNoise = 0.40f / (float) Math.sqrt(dim);
+    List<VectorSubscription> subs = new ArrayList<>(64);
+    for (int m = 0; m < 64; m++) {
+      float[] q = perturbVector(rng, topics[m % topics.length], subNoise);
+      float threshold = (m % 8 == 0) ? 0.9999f : 0.70f + (m % 5) * 0.05f;
+      subs.add(new VectorSubscription("hd-sub-" + m, q, threshold));
+    }
+    router.addSubscriptions(subs);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(router.getFloatDotSafetyEpsilon()).isGreaterThanOrEqualTo(dim * 1.0e-6d);
+
+    // 100 adversarial boundary vectors (exact copies + vectors placed right at cos == tau_m)
+    for (int i = 0; i < 100; i++) {
+      VectorSubscription target = subs.get(i % subs.size());
+      float[] q = target.getNormalizedQueryVector();
+      float[] query = (i % 2 == 0)
+          ? q.clone()
+          : vectorAtExactCosine(rng, q, target.getSimilarityThreshold());
+      FnrVerificationResult res = router.verifyAgainstBruteForce(query);
+      assertThat(res.getFalseNegatives())
+          .as("High-dim d=4096 boundary FNR must be strictly 0 at iter=%d", i)
+          .isZero();
+      assertThat(res.getFalsePositives()).isZero();
+    }
+
+    // 100 random vectors verifying pruning remains active with FNR=0
+    for (int i = 0; i < 100; i++) {
+      FnrVerificationResult res = router.verifyAgainstBruteForce(randomUnitVector(rng, dim));
+      assertThat(res.isExactMatch()).isTrue();
+    }
+    assertThat(router.getTelemetry().getPruneRatio()).isGreaterThan(0.20d);
   }
 
   private static float[] randomUnitVector(Random rng, int dim) {
