@@ -102,6 +102,24 @@ public class ContinuousVectorQueryService {
   }
 
   /**
+   * Configures an optional asynchronous dispatch executor on the underlying
+   * {@link RvvMonotonicVectorDispatcher}. When non-null, matched event batches are enqueued onto a
+   * strictly ordered per-bucket FIFO queue so region mutation threads never block on network I/O
+   * while preserving Theorem 3's per-{@code (bucketId, memberId)} monotonicity.
+   */
+  public void setAsyncDispatchExecutor(Executor dispatchExecutor) {
+    dispatcher.setDispatchExecutor(dispatchExecutor);
+  }
+
+  /**
+   * Waits up to {@code timeoutMillis} for all asynchronously queued event batches across all
+   * buckets to finish draining to registered sinks.
+   */
+  public boolean awaitPendingDispatches(long timeoutMillis) throws InterruptedException {
+    return dispatcher.awaitPendingDispatches(timeoutMillis);
+  }
+
+  /**
    * Processes a bucket vector mutation with explicit RVV coordinates.
    */
   public List<ContinuousVectorEvent> onBucketMutation(int bucketId, String memberId,

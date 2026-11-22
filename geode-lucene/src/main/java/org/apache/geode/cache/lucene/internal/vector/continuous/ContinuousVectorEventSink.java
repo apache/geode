@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.vector.continuous;
 
+import java.util.List;
+
 /**
  * Outgoing sink receiving RVV-stamped {@link ContinuousVectorEvent} notifications from
  * {@link RvvMonotonicVectorDispatcher}.
@@ -26,4 +28,16 @@ public interface ContinuousVectorEventSink {
    * Dispatches a matched continuous vector event to a client or transport channel.
    */
   void onEvent(ContinuousVectorEvent event);
+
+  /**
+   * Dispatches a coalesced batch of matched {@link ContinuousVectorEvent}s originating from a
+   * single bucket mutation (all sharing identical {@code (bucketId, memberId, regionVersion)}).
+   * Network-backed transports should override this method to serialize and flush the entire batch
+   * in a single frame rather than performing one flush per matched subscription.
+   */
+  default void onEventBatch(List<ContinuousVectorEvent> events) {
+    for (ContinuousVectorEvent event : events) {
+      onEvent(event);
+    }
+  }
 }

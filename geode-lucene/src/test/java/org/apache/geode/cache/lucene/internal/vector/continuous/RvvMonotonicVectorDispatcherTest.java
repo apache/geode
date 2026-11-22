@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -405,5 +406,86 @@ public class RvvMonotonicVectorDispatcherTest {
 
     dispatcher.clearResyncRequired(3, "srv-overflow");
     assertThat(dispatcher.isResyncRequired(3, "srv-overflow")).isFalse();
+  }
+
+  @Test
+  public void coalescedBatchAndAsyncPerBucketDispatchPreservesStrictRvvMonotonicityAcrossFailover()
+      throws Exception {
+    int dim = 4;
+    float[] vec = new float[] {1, 0, 0, 0};
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(dim);
+
+    // Register 64 matching subscriptions so each mutation produces a 64-event coalesced batch
+    int numSubs = 64;
+    for (int m = 0; m < numSubs; m++) {
+      service.registerSubscription("batch-sub-" + m, vec, 0.85f);
+    }
+
+    ExecutorService asyncDispatchPool = Executors.newFixedThreadPool(4);
+    try {
+      service.setAsyncDispatchExecutor(asyncDispatchPool);
+
+      RvvClientGate clientGate = new RvvClientGate();
+      List<ContinuousVectorEvent> accepted = new CopyOnWriteArrayList<>();
+      clientGate.addListener(accepted::add);
+
+      AtomicInteger batchCalls = new AtomicInteger(0);
+      AtomicInteger singleEventFallbackCalls = new AtomicInteger(0);
+      service.addEventSink(new ContinuousVectorEventSink() {
+        @Override
+        public void onEvent(ContinuousVectorEvent event) {
+          singleEventFallbackCalls.incrementAndGet();
+          clientGate.tryAccept(event);
+        }
+
+        @Override
+        public void onEventBatch(List<ContinuousVectorEvent> events) {
+          batchCalls.incrementAndGet();
+          assertThat(events).hasSize(numSubs);
+          clientGate.tryAcceptBatch(events);
+        }
+      });
+
+      int bucketId = 5;
+      String memberId = "member-async";
+
+      // 1. Live primary mutations v=1..10 -> each mutation emits 1 coalesced batch of 64 events
+      for (long v = 1L; v <= 10L; v++) {
+        service.onBucketMutation(bucketId, memberId, v, "doc-" + v, vec, true);
+      }
+      assertThat(service.awaitPendingDispatches(5_000L)).isTrue();
+      assertThat(batchCalls.get()).isEqualTo(10);
+      assertThat(singleEventFallbackCalls.get()).isZero();
+      assertThat(accepted).hasSize(10 * numSubs);
+      assertThat(service.getDispatcher().getTotalBatchesDispatched()).isEqualTo(10L);
+
+      // Advance checkpoint to v=6, simulate secondary recording v=7..15 (uncertain tail)
+      service.acknowledgeCheckpoint(bucketId, memberId, 6L);
+      for (long v = 11L; v <= 15L; v++) {
+        service.onBucketMutation(bucketId, memberId, v, "doc-" + v, vec, false);
+      }
+
+      // 2. Primary failover promotion + concurrent live mutations v=16..20 under async dispatch
+      service.getDispatcher().beginAsyncPromotion(bucketId);
+      for (long v = 16L; v <= 20L; v++) {
+        service.onBucketMutation(bucketId, memberId, v, "doc-" + v, vec, true);
+      }
+      service.getDispatcher().completeAsyncPromotion(bucketId, Collections.emptyList());
+
+      assertThat(service.awaitPendingDispatches(5_000L)).isTrue();
+
+      // Strictly 20 unique versions * 64 subs = 1,280 accepted events; replayed v=7..10 deduped!
+      assertThat(accepted).hasSize(20 * numSubs);
+      assertThat(clientGate.getDiscardedCount()).isEqualTo(4L * numSubs);
+      assertThat(RvvClientGate.verifyStrictMonotonicity(accepted))
+          .as("Async per-bucket coalesced dispatch must preserve strict Theorem 3 RVV monotonicity")
+          .isEmpty();
+      for (int m = 0; m < numSubs; m++) {
+        assertThat(clientGate.getHighWaterVersion("batch-sub-" + m, bucketId, memberId))
+            .isEqualTo(20L);
+      }
+    } finally {
+      asyncDispatchPool.shutdownNow();
+    }
   }
 }

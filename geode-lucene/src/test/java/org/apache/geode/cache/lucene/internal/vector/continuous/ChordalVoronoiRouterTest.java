@@ -525,10 +525,17 @@ public class ChordalVoronoiRouterTest {
         .build();
     ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
 
-    // Seed 100 subscriptions so we are firmly in CHORDAL_VORONOI mode (20% churn threshold = 20)
+    // Seed 100 topic-clustered subscriptions so Voronoi stays active (p_bar << 0.85)
+    // and the 20% churn threshold triggers periodic k-means compaction at 20 removals
+    float[][] topics = new float[8][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVector(rng, dim);
+    }
+    float noise = 0.25f / (float) Math.sqrt(dim);
     List<VectorSubscription> subs = new ArrayList<>(100);
     for (int i = 0; i < 100; i++) {
-      subs.add(new VectorSubscription("inc-rm-" + i, randomUnitVector(rng, dim), 0.70f));
+      subs.add(new VectorSubscription("inc-rm-" + i, perturbVector(rng, topics[i % 8], noise),
+          0.80f));
     }
     router.addSubscriptions(subs);
     assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
@@ -577,6 +584,103 @@ public class ChordalVoronoiRouterTest {
       assertThat(router.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
           .isTrue();
     }
+  }
+
+  @Test
+  public void computeMCritReturnsMaxValueAtOrAboveSurvivalCeilingAndStaysFlatSimd() {
+    // At p_bar = 1.0 or >= maxVoronoiSurvivalRate (default 0.85), computeMCrit returns MAX_VALUE
+    assertThat(ChordalVoronoiRouter.computeMCrit(100, 64, 1.0d, 8, 1.0d, 2.0d))
+        .isEqualTo(Integer.MAX_VALUE);
+    assertThat(ChordalVoronoiRouter.computeMCrit(100, 64, 0.999d, 8, 1.0d, 2.0d))
+        .isEqualTo(Integer.MAX_VALUE);
+    assertThat(ChordalVoronoiRouter.computeMCrit(100, 64, 0.85d, 8, 1.0d, 2.0d))
+        .isEqualTo(Integer.MAX_VALUE);
+
+    // Below 0.85, matches Proposition 1 closed-form ceil(K * (1 + eta_d) / (1 - p_bar))
+    double eta = ChordalVoronoiRouter.computeEta(100, 8, 1.0d, 2.0d);
+    int expected84 = (int) Math.ceil((64 * (1.0d + eta)) / (1.0d - 0.84d));
+    assertThat(ChordalVoronoiRouter.computeMCrit(100, 64, 0.84d, 8, 1.0d, 2.0d))
+        .isEqualTo(expected84);
+
+    // Hysteresis thresholds never overflow when M_crit == Integer.MAX_VALUE
+    assertThat(ChordalVoronoiRouter.computeUpperSwitchThreshold(Integer.MAX_VALUE, 0.15d))
+        .isEqualTo(Integer.MAX_VALUE);
+    assertThat(ChordalVoronoiRouter.computeLowerSwitchThreshold(Integer.MAX_VALUE, 0.15d))
+        .isEqualTo(Integer.MAX_VALUE);
+
+    // Router configured with p_bar = 1.0 stays in FLAT_SIMD with zero transitions and FNR == 0
+    Random rng = new Random(1001L);
+    RouterConfig isoCfg = RouterConfig.builder(64)
+        .numClusters(16)
+        .expectedSurvivalFraction(1.0d)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(isoCfg);
+    assertThat(router.getMCrit()).isEqualTo(Integer.MAX_VALUE);
+    List<VectorSubscription> subs = new ArrayList<>(300);
+    for (int i = 0; i < 300; i++) {
+      subs.add(new VectorSubscription("iso-" + i, randomUnitVector(rng, 64), 0.70f));
+    }
+    router.addSubscriptions(subs);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    assertThat(router.getTelemetry().getModeTransitionCount()).isZero();
+    for (int q = 0; q < 50; q++) {
+      assertThat(router.verifyAgainstBruteForce(randomUnitVector(rng, 64)).isExactMatch()).isTrue();
+    }
+  }
+
+  @Test
+  public void onlineSurvivalRateGuardAutomaticallyRevertsIsotropicStreamsToFlatSimd() {
+    int dim = 100;
+    Random rng = new Random(20261122L);
+    RouterConfig cfg = RouterConfig.builder(dim)
+        .numClusters(32)
+        .expectedSurvivalFraction(0.15d)
+        .maxVoronoiSurvivalRate(0.85d)
+        .enableSurvivalGuard(true)
+        .survivalGuardMinSamples(24)
+        .hysteresisDelta(0.15d)
+        .randomSeed(20261122L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+
+    // Register 400 isotropic random unit subscriptions with broad threshold tau=0.30
+    // so p_bar_hat -> 1.00 (exceeding the 0.85 survival-rate ceiling)
+    List<VectorSubscription> subs = new ArrayList<>(400);
+    for (int i = 0; i < 400; i++) {
+      subs.add(new VectorSubscription("unif-" + i, randomUnitVector(rng, dim), 0.30f));
+    }
+    router.addSubscriptions(subs);
+    assertThat(router.getCurrentMode())
+        .as("400 subs should initially activate CHORDAL_VORONOI before online routing starts")
+        .isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(router.isSurvivalGuardTripped()).isFalse();
+
+    // Route 40 isotropic queries -> online EWMA detects p_bar_hat >= 0.85 and reverts to FLAT_SIMD
+    for (int q = 0; q < 40; q++) {
+      FnrVerificationResult res = router.verifyAgainstBruteForce(randomUnitVector(rng, dim));
+      assertThat(res.isExactMatch())
+          .as("FNR must remain strictly 0 before, during, and after survival-guard reversion")
+          .isTrue();
+    }
+
+    assertThat(router.isSurvivalGuardTripped()).isTrue();
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    assertThat(router.getEffectiveMCrit()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(router.getObservedSurvivalRate()).isGreaterThanOrEqualTo(0.85d);
+    assertThat(router.getTelemetry().getSurvivalGuardReversionCount()).isEqualTo(1L);
+    assertThat(router.getTelemetry().getActiveClusterCount()).isZero();
+
+    // Subsequent subscription churn must stay in FLAT_SIMD without thrashing back to Voronoi
+    long transitionsAfterTrip = router.getTelemetry().getModeTransitionCount();
+    router.addSubscription(new VectorSubscription("unif-extra", randomUnitVector(rng, dim), 0.30f));
+    router.removeSubscription("unif-0");
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    assertThat(router.getTelemetry().getModeTransitionCount()).isEqualTo(transitionsAfterTrip);
+
+    // Explicit recluster resets the guard cleanly
+    router.recluster();
+    assertThat(router.isSurvivalGuardTripped()).isFalse();
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
   }
 
   private static float[] randomUnitVector(Random rng, int dim) {

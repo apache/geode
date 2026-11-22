@@ -68,6 +68,15 @@ public class ChordalVoronoiRouter {
   public static final double DEFAULT_BOUND_CHECK_COST = 4.0d;
   /** Default expected unpruned survival fraction {@code p_bar}. */
   public static final double DEFAULT_EXPECTED_SURVIVAL_FRACTION = 0.15d;
+  /**
+   * Default online survival-rate ceiling above which Voronoi pruning provides insufficient work
+   * reduction and {@link RoutingMode#FLAT_SIMD} is automatically selected.
+   */
+  public static final double DEFAULT_MAX_VORONOI_SURVIVAL_RATE = 0.85d;
+  /** Default EWMA smoothing factor for online survival-rate estimation {@code p_bar_hat}. */
+  public static final double DEFAULT_SURVIVAL_EWMA_ALPHA = 0.10d;
+  /** Default minimum routed samples before the online survival-rate guard can trip. */
+  public static final int DEFAULT_SURVIVAL_GUARD_MIN_SAMPLES = 32;
   /** Default dual-threshold hysteresis half-width {@code delta = 0.15} -> [0.85, 1.15] * M_crit. */
   public static final double DEFAULT_HYSTERESIS_DELTA = 0.15d;
   /** Default cluster count {@code K}. */
@@ -92,6 +101,9 @@ public class ChordalVoronoiRouter {
     private final double simdFmaCost;
     private final double boundCheckCost;
     private final double expectedSurvivalFraction;
+    private final double maxVoronoiSurvivalRate;
+    private final boolean enableSurvivalGuard;
+    private final int survivalGuardMinSamples;
     private final double hysteresisDelta;
     private final int maxKMeansIterations;
     private final long randomSeed;
@@ -104,6 +116,9 @@ public class ChordalVoronoiRouter {
       this.simdFmaCost = builder.simdFmaCost;
       this.boundCheckCost = builder.boundCheckCost;
       this.expectedSurvivalFraction = builder.expectedSurvivalFraction;
+      this.maxVoronoiSurvivalRate = builder.maxVoronoiSurvivalRate;
+      this.enableSurvivalGuard = builder.enableSurvivalGuard;
+      this.survivalGuardMinSamples = builder.survivalGuardMinSamples;
       this.hysteresisDelta = builder.hysteresisDelta;
       this.maxKMeansIterations = builder.maxKMeansIterations;
       this.randomSeed = builder.randomSeed;
@@ -138,6 +153,18 @@ public class ChordalVoronoiRouter {
       return expectedSurvivalFraction;
     }
 
+    public double getMaxVoronoiSurvivalRate() {
+      return maxVoronoiSurvivalRate;
+    }
+
+    public boolean isEnableSurvivalGuard() {
+      return enableSurvivalGuard;
+    }
+
+    public int getSurvivalGuardMinSamples() {
+      return survivalGuardMinSamples;
+    }
+
     public double getHysteresisDelta() {
       return hysteresisDelta;
     }
@@ -166,6 +193,9 @@ public class ChordalVoronoiRouter {
       private double simdFmaCost = DEFAULT_SIMD_FMA_COST;
       private double boundCheckCost = DEFAULT_BOUND_CHECK_COST;
       private double expectedSurvivalFraction = DEFAULT_EXPECTED_SURVIVAL_FRACTION;
+      private double maxVoronoiSurvivalRate = DEFAULT_MAX_VORONOI_SURVIVAL_RATE;
+      private boolean enableSurvivalGuard = true;
+      private int survivalGuardMinSamples = DEFAULT_SURVIVAL_GUARD_MIN_SAMPLES;
       private double hysteresisDelta = DEFAULT_HYSTERESIS_DELTA;
       private int maxKMeansIterations = DEFAULT_MAX_KMEANS_ITERATIONS;
       private long randomSeed = 0x5EED1234L;
@@ -212,11 +242,35 @@ public class ChordalVoronoiRouter {
 
       public Builder expectedSurvivalFraction(double expectedSurvivalFraction) {
         if (!Double.isFinite(expectedSurvivalFraction) || expectedSurvivalFraction < 0.0d
-            || expectedSurvivalFraction >= 1.0d) {
+            || expectedSurvivalFraction > 1.0d) {
           throw new IllegalArgumentException(
-              "expectedSurvivalFraction must be in [0, 1), got: " + expectedSurvivalFraction);
+              "expectedSurvivalFraction must be in [0, 1], got: " + expectedSurvivalFraction);
         }
         this.expectedSurvivalFraction = expectedSurvivalFraction;
+        return this;
+      }
+
+      public Builder maxVoronoiSurvivalRate(double maxVoronoiSurvivalRate) {
+        if (!Double.isFinite(maxVoronoiSurvivalRate) || maxVoronoiSurvivalRate <= 0.0d
+            || maxVoronoiSurvivalRate > 1.0d) {
+          throw new IllegalArgumentException(
+              "maxVoronoiSurvivalRate must be in (0, 1], got: " + maxVoronoiSurvivalRate);
+        }
+        this.maxVoronoiSurvivalRate = maxVoronoiSurvivalRate;
+        return this;
+      }
+
+      public Builder enableSurvivalGuard(boolean enableSurvivalGuard) {
+        this.enableSurvivalGuard = enableSurvivalGuard;
+        return this;
+      }
+
+      public Builder survivalGuardMinSamples(int survivalGuardMinSamples) {
+        if (survivalGuardMinSamples <= 0) {
+          throw new IllegalArgumentException(
+              "survivalGuardMinSamples must be > 0, got: " + survivalGuardMinSamples);
+        }
+        this.survivalGuardMinSamples = survivalGuardMinSamples;
         return this;
       }
 
@@ -319,12 +373,16 @@ public class ChordalVoronoiRouter {
     private final long totalSubscriptionsPossible;
     private final long fnrVerificationRuns;
     private final long fnrVerificationFalseNegatives;
+    private final double observedSurvivalEwma;
+    private final boolean survivalGuardTripped;
+    private final long survivalGuardReversionCount;
 
     RouterTelemetry(RoutingMode currentMode, int subscriptionCount, int activeClusterCount,
         int mCrit, int upperSwitchThreshold, int lowerSwitchThreshold, long modeTransitionCount,
         long fullReclusterCount, long totalRoutedVectors, long totalCellsEvaluated,
         long totalCellsPruned, long totalSubscriptionsEvaluated, long totalSubscriptionsPossible,
-        long fnrVerificationRuns, long fnrVerificationFalseNegatives) {
+        long fnrVerificationRuns, long fnrVerificationFalseNegatives, double observedSurvivalEwma,
+        boolean survivalGuardTripped, long survivalGuardReversionCount) {
       this.currentMode = currentMode;
       this.subscriptionCount = subscriptionCount;
       this.activeClusterCount = activeClusterCount;
@@ -340,6 +398,9 @@ public class ChordalVoronoiRouter {
       this.totalSubscriptionsPossible = totalSubscriptionsPossible;
       this.fnrVerificationRuns = fnrVerificationRuns;
       this.fnrVerificationFalseNegatives = fnrVerificationFalseNegatives;
+      this.observedSurvivalEwma = observedSurvivalEwma;
+      this.survivalGuardTripped = survivalGuardTripped;
+      this.survivalGuardReversionCount = survivalGuardReversionCount;
     }
 
     public RoutingMode getCurrentMode() {
@@ -394,6 +455,18 @@ public class ChordalVoronoiRouter {
     public double getObservedSurvivalFraction() {
       return totalSubscriptionsPossible == 0L ? 0.0d
           : (double) totalSubscriptionsEvaluated / (double) totalSubscriptionsPossible;
+    }
+
+    public double getObservedSurvivalEwma() {
+      return observedSurvivalEwma;
+    }
+
+    public boolean isSurvivalGuardTripped() {
+      return survivalGuardTripped;
+    }
+
+    public long getSurvivalGuardReversionCount() {
+      return survivalGuardReversionCount;
     }
 
     public long getFnrVerificationRuns() {
@@ -532,6 +605,11 @@ public class ChordalVoronoiRouter {
   private final AtomicLong totalSubscriptionsPossible = new AtomicLong();
   private final AtomicLong fnrVerificationRuns = new AtomicLong();
   private final AtomicLong fnrVerificationFalseNegatives = new AtomicLong();
+  private final AtomicLong survivalSampleCount = new AtomicLong();
+  private final AtomicLong observedSurvivalEwmaBits =
+      new AtomicLong(Double.doubleToRawLongBits(Double.NaN));
+  private volatile boolean survivalGuardTripped = false;
+  private final AtomicLong survivalGuardReversionCount = new AtomicLong();
 
   public ChordalVoronoiRouter(int dimension) {
     this(RouterConfig.builder(dimension).build());
@@ -541,7 +619,7 @@ public class ChordalVoronoiRouter {
     this.config = Objects.requireNonNull(config, "config must not be null");
     this.mCrit = computeMCrit(config.getDimension(), config.getNumClusters(),
         config.getExpectedSurvivalFraction(), config.getSimdLaneWidth(), config.getSimdFmaCost(),
-        config.getBoundCheckCost());
+        config.getBoundCheckCost(), config.getMaxVoronoiSurvivalRate());
     this.upperSwitchThreshold =
         computeUpperSwitchThreshold(this.mCrit, config.getHysteresisDelta());
     this.lowerSwitchThreshold =
@@ -631,28 +709,68 @@ public class ChordalVoronoiRouter {
 
   /**
    * Computes Proposition 1's closed-form crossover threshold
-   * {@code M_crit(d, K, p_bar) = ceil((K * (1 + eta_d)) / (1 - p_bar))}.
+   * {@code M_crit(d, K, p_bar) = ceil((K * (1 + eta_d)) / (1 - p_bar))} using the default
+   * survival-rate ceiling {@link #DEFAULT_MAX_VORONOI_SURVIVAL_RATE}. Returns
+   * {@link Integer#MAX_VALUE} whenever {@code expectedSurvivalFraction >= 1.0} or
+   * {@code expectedSurvivalFraction >= DEFAULT_MAX_VORONOI_SURVIVAL_RATE} (signaling that
+   * {@link RoutingMode#FLAT_SIMD} dominates unconditionally).
    */
   public static int computeMCrit(int dimension, int numClusters, double expectedSurvivalFraction,
       int simdLaneWidth, double simdFmaCost, double boundCheckCost) {
+    return computeMCrit(dimension, numClusters, expectedSurvivalFraction, simdLaneWidth,
+        simdFmaCost, boundCheckCost, DEFAULT_MAX_VORONOI_SURVIVAL_RATE);
+  }
+
+  /**
+   * Computes Proposition 1's closed-form crossover threshold
+   * {@code M_crit(d, K, p_bar) = ceil((K * (1 + eta_d)) / (1 - p_bar))}. Returns
+   * {@link Integer#MAX_VALUE} whenever {@code expectedSurvivalFraction >= 1.0} or
+   * {@code expectedSurvivalFraction >= maxVoronoiSurvivalRate}, avoiding division-by-zero and
+   * ensuring isotropic distributions stay in {@link RoutingMode#FLAT_SIMD}.
+   */
+  public static int computeMCrit(int dimension, int numClusters, double expectedSurvivalFraction,
+      int simdLaneWidth, double simdFmaCost, double boundCheckCost,
+      double maxVoronoiSurvivalRate) {
     if (numClusters <= 0) {
       throw new IllegalArgumentException("numClusters must be > 0");
     }
-    if (expectedSurvivalFraction < 0.0d || expectedSurvivalFraction >= 1.0d) {
-      throw new IllegalArgumentException("expectedSurvivalFraction must be in [0, 1)");
+    if (!Double.isFinite(expectedSurvivalFraction) || expectedSurvivalFraction < 0.0d) {
+      throw new IllegalArgumentException(
+          "expectedSurvivalFraction must be finite and >= 0, got: " + expectedSurvivalFraction);
+    }
+    if (!Double.isFinite(maxVoronoiSurvivalRate) || maxVoronoiSurvivalRate <= 0.0d
+        || maxVoronoiSurvivalRate > 1.0d) {
+      throw new IllegalArgumentException(
+          "maxVoronoiSurvivalRate must be in (0, 1], got: " + maxVoronoiSurvivalRate);
     }
     double eta = computeEta(dimension, simdLaneWidth, simdFmaCost, boundCheckCost);
+    if (expectedSurvivalFraction >= 1.0d || expectedSurvivalFraction >= maxVoronoiSurvivalRate) {
+      return Integer.MAX_VALUE;
+    }
     double raw = (numClusters * (1.0d + eta)) / (1.0d - expectedSurvivalFraction);
+    if (!Double.isFinite(raw) || raw >= Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    }
     return Math.max(1, (int) Math.ceil(raw));
   }
 
   /** Computes upper hysteresis threshold {@code M_up = ceil((1 + delta) * M_crit)}. */
   public static int computeUpperSwitchThreshold(int mCrit, double delta) {
-    return Math.max(1, (int) Math.ceil((1.0d + delta) * mCrit));
+    if (mCrit == Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    }
+    double raw = (1.0d + delta) * mCrit;
+    if (!Double.isFinite(raw) || raw >= Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    }
+    return Math.max(1, (int) Math.ceil(raw));
   }
 
   /** Computes lower hysteresis threshold {@code M_down = floor((1 - delta) * M_crit)}. */
   public static int computeLowerSwitchThreshold(int mCrit, double delta) {
+    if (mCrit == Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    }
     return Math.max(0, (int) Math.floor((1.0d - delta) * mCrit));
   }
 
@@ -773,15 +891,63 @@ public class ChordalVoronoiRouter {
 
   /**
    * Explicitly triggers full spherical k-means reclustering when in
-   * {@link RoutingMode#CHORDAL_VORONOI} mode.
+   * {@link RoutingMode#CHORDAL_VORONOI} mode, or re-evaluates mode eligibility if the online
+   * survival-rate guard had previously reverted the router to {@link RoutingMode#FLAT_SIMD}.
    */
   public void recluster() {
     writeLock.lock();
     try {
-      rebuildFullSnapshot(snapshot.mode);
+      boolean wasTripped = survivalGuardTripped;
+      resetSurvivalGuardLocked();
+      RoutingMode target =
+          wasTripped ? evaluateModeTransition(snapshot.mode, subscriptions.size()) : snapshot.mode;
+      if (target != snapshot.mode) {
+        modeTransitionCount.incrementAndGet();
+      }
+      rebuildFullSnapshot(target);
     } finally {
       writeLock.unlock();
     }
+  }
+
+  /**
+   * Resets the online survival-rate EWMA tracker and clears any tripped survival-rate guard so the
+   * router may re-evaluate {@link RoutingMode#CHORDAL_VORONOI} eligibility on future changes or
+   * {@link #recluster()}.
+   */
+  public void resetSurvivalGuard() {
+    writeLock.lock();
+    try {
+      resetSurvivalGuardLocked();
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  /**
+   * Returns the online EWMA estimate {@code p_bar_hat} of the Voronoi subscription survival rate,
+   * or {@code 0.0} if no Voronoi routes have been observed yet.
+   */
+  public double getObservedSurvivalRate() {
+    double val = Double.longBitsToDouble(observedSurvivalEwmaBits.get());
+    return Double.isNaN(val) ? 0.0d : val;
+  }
+
+  /**
+   * Returns {@code true} if the online survival-rate guard observed sustained
+   * {@code p_bar_hat >= maxVoronoiSurvivalRate} and automatically reverted routing to
+   * {@link RoutingMode#FLAT_SIMD}.
+   */
+  public boolean isSurvivalGuardTripped() {
+    return survivalGuardTripped;
+  }
+
+  /**
+   * Returns the effective analytical crossover threshold: {@link Integer#MAX_VALUE} when the
+   * online survival-rate guard is tripped, otherwise the configured {@link #getMCrit()}.
+   */
+  public int getEffectiveMCrit() {
+    return survivalGuardTripped ? Integer.MAX_VALUE : mCrit;
   }
 
   /**
@@ -869,12 +1035,13 @@ public class ChordalVoronoiRouter {
 
   public RouterTelemetry getTelemetry() {
     RouterSnapshot snap = this.snapshot;
-    return new RouterTelemetry(snap.mode, snap.subscriptionCount, snap.cells.length, mCrit,
-        upperSwitchThreshold, lowerSwitchThreshold, modeTransitionCount.get(),
+    return new RouterTelemetry(snap.mode, snap.subscriptionCount, snap.cells.length,
+        getEffectiveMCrit(), upperSwitchThreshold, lowerSwitchThreshold, modeTransitionCount.get(),
         fullReclusterCount.get(), totalRoutedVectors.get(), totalCellsEvaluated.get(),
         totalCellsPruned.get(), totalSubscriptionsEvaluated.get(),
         totalSubscriptionsPossible.get(), fnrVerificationRuns.get(),
-        fnrVerificationFalseNegatives.get());
+        fnrVerificationFalseNegatives.get(), getObservedSurvivalRate(), survivalGuardTripped,
+        survivalGuardReversionCount.get());
   }
 
   private List<MatchResult> routeFlatSimd(float[] unitEmbedding, RouterSnapshot snap) {
@@ -929,7 +1096,59 @@ public class ChordalVoronoiRouter {
     if (subsEvaluated > 0L) {
       totalSubscriptionsEvaluated.addAndGet(subsEvaluated);
     }
+    if (snap.subscriptionCount > 0) {
+      double sampleSurvival = (double) subsEvaluated / (double) snap.subscriptionCount;
+      recordSurvivalObservation(sampleSurvival);
+    }
     return matches == null ? Collections.emptyList() : matches;
+  }
+
+  private void recordSurvivalObservation(double sampleSurvival) {
+    long samples = survivalSampleCount.incrementAndGet();
+    double updatedEwma;
+    while (true) {
+      long prevBits = observedSurvivalEwmaBits.get();
+      double prev = Double.longBitsToDouble(prevBits);
+      updatedEwma = Double.isNaN(prev)
+          ? sampleSurvival
+          : (DEFAULT_SURVIVAL_EWMA_ALPHA * sampleSurvival
+              + (1.0d - DEFAULT_SURVIVAL_EWMA_ALPHA) * prev);
+      if (observedSurvivalEwmaBits.compareAndSet(prevBits,
+          Double.doubleToRawLongBits(updatedEwma))) {
+        break;
+      }
+    }
+    if (config.isEnableSurvivalGuard() && !survivalGuardTripped
+        && samples >= config.getSurvivalGuardMinSamples()
+        && updatedEwma >= config.getMaxVoronoiSurvivalRate()) {
+      tripSurvivalGuardToFlatSimd();
+    }
+  }
+
+  private void tripSurvivalGuardToFlatSimd() {
+    if (!writeLock.tryLock()) {
+      return;
+    }
+    try {
+      RouterSnapshot cur = this.snapshot;
+      if (survivalGuardTripped || cur.mode != RoutingMode.CHORDAL_VORONOI) {
+        return;
+      }
+      survivalGuardTripped = true;
+      survivalGuardReversionCount.incrementAndGet();
+      modeTransitionCount.incrementAndGet();
+      // O(1) zero-copy downgrade to FLAT_SIMD reusing existing contiguous flat subscription arrays
+      this.snapshot = new RouterSnapshot(RoutingMode.FLAT_SIMD, cur.dimension, cur.flatIds,
+          cur.flatVectors, cur.flatThresholds, new VoronoiCell[0], new float[0]);
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  private void resetSurvivalGuardLocked() {
+    survivalGuardTripped = false;
+    survivalSampleCount.set(0L);
+    observedSurvivalEwmaBits.set(Double.doubleToRawLongBits(Double.NaN));
   }
 
   private static List<MatchResult> scanFlat(float[] unitEmbedding, String[] ids, float[] vectors,
@@ -948,6 +1167,9 @@ public class ChordalVoronoiRouter {
   }
 
   private RoutingMode evaluateModeTransition(RoutingMode currentMode, int subscriptionCount) {
+    if (survivalGuardTripped || mCrit == Integer.MAX_VALUE) {
+      return RoutingMode.FLAT_SIMD;
+    }
     if (currentMode == RoutingMode.FLAT_SIMD) {
       if (subscriptionCount >= upperSwitchThreshold && subscriptionCount >= 2) {
         return RoutingMode.CHORDAL_VORONOI;

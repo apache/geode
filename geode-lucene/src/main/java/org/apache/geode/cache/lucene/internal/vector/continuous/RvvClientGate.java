@@ -142,6 +142,21 @@ public class RvvClientGate {
   }
 
   /**
+   * Evaluates the RVV high-water gate across a coalesced batch of {@link ContinuousVectorEvent}s
+   * in order, returning the number of accepted events.
+   */
+  public int tryAcceptBatch(List<ContinuousVectorEvent> events) {
+    Objects.requireNonNull(events, "events must not be null");
+    int accepted = 0;
+    for (ContinuousVectorEvent event : events) {
+      if (tryAccept(event)) {
+        accepted++;
+      }
+    }
+    return accepted;
+  }
+
+  /**
    * Returns {@code V_client[subscriptionId, bucketId, memberId]}, or {@code 0} if no event has been
    * accepted yet for that stream.
    */
