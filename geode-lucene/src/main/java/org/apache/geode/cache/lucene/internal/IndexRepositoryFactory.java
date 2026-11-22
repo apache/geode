@@ -156,11 +156,7 @@ public class IndexRepositoryFactory {
       Map<Object, Object> bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
       RegionDirectory dir =
           new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
-      IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
-      Map<String, VectorIndexMetadata> vectorFields = indexForPR.getVectorFields();
-      if (vectorFields != null && !vectorFields.isEmpty()) {
-        config.setCodec(VectorFieldMapper.createCodec(vectorFields));
-      }
+      IndexWriterConfig config = createIndexWriterConfig(indexForPR);
       try {
         attempts++;
         return getIndexWriter(dir, config);
@@ -176,6 +172,15 @@ public class IndexRepositoryFactory {
         }
       }
     }
+  }
+
+  protected IndexWriterConfig createIndexWriterConfig(LuceneIndexForPartitionedRegion indexForPR) {
+    IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+    Map<String, VectorIndexMetadata> vectorFields = indexForPR.getVectorFields();
+    if (vectorFields != null && !vectorFields.isEmpty()) {
+      VectorFieldMapper.configureVectorIndexWriterConfig(config, vectorFields);
+    }
+    return config;
   }
 
   protected IndexWriter getIndexWriter(RegionDirectory dir, IndexWriterConfig config)

@@ -34,8 +34,11 @@ import org.apache.lucene.codecs.lucene99.Lucene99HnswVectorsFormat;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.KnnFloatVectorField;
+import org.apache.lucene.index.ConcurrentMergeScheduler;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.SegmentReadState;
 import org.apache.lucene.index.SegmentWriteState;
+import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.index.VectorSimilarityFunction;
 
 import org.apache.geode.cache.lucene.LuceneService;
@@ -54,6 +57,21 @@ import org.apache.geode.pdx.PdxInstance;
 public final class VectorFieldMapper {
 
   private static final Field MISSING_FIELD_SENTINEL;
+
+  /** Tuned IndexWriter RAM buffer (MB) for vector-enabled indexes to reduce flush churn. */
+  public static final double VECTOR_RAM_BUFFER_SIZE_MB = 64.0;
+
+  /** Tuned TieredMergePolicy segments-per-tier bound for vector-enabled indexes. */
+  public static final double VECTOR_SEGMENTS_PER_TIER = 4.0;
+
+  /** Tuned TieredMergePolicy max-merge-at-once fan-in for vector-enabled indexes. */
+  public static final int VECTOR_MAX_MERGE_AT_ONCE = 8;
+
+  /** Tuned TieredMergePolicy floor segment size (MB) to consolidate tiny AEQ-flushed leaves. */
+  public static final double VECTOR_FLOOR_SEGMENT_MB = 16.0;
+
+  /** Tuned TieredMergePolicy maximum merged segment size (MB) for vector-enabled indexes. */
+  public static final double VECTOR_MAX_MERGED_SEGMENT_MB = 1024.0;
 
   static {
     try {
@@ -214,6 +232,38 @@ public final class VectorFieldMapper {
     Map<String, VectorIndexMetadata> snapshot =
         Collections.unmodifiableMap(new LinkedHashMap<>(vectorFields));
     return new VectorAwareLucene912Codec(snapshot);
+  }
+
+  /**
+   * Configures a Lucene {@link IndexWriterConfig} for vector-enabled indexes with the vector-aware
+   * codec, a bounded {@link TieredMergePolicy} ({@code segmentsPerTier=4.0},
+   * {@code maxMergeAtOnce=8}, {@code floorSegmentMB=16.0}, {@code maxMergedSegmentMB=1024.0}),
+   * {@code RAMBufferSizeMB=64.0}, and {@link ConcurrentMergeScheduler}.
+   *
+   * <p>
+   * Non-vector indexes ({@code vectorFields == null || vectorFields.isEmpty()}) are left
+   * completely untouched.
+   *
+   * @param config target {@link IndexWriterConfig}
+   * @param vectorFields map of configured vector fields
+   */
+  public static void configureVectorIndexWriterConfig(IndexWriterConfig config,
+      Map<String, VectorIndexMetadata> vectorFields) {
+    if (config == null) {
+      throw new IllegalArgumentException("IndexWriterConfig must not be null");
+    }
+    if (vectorFields == null || vectorFields.isEmpty()) {
+      return;
+    }
+    config.setCodec(createCodec(vectorFields));
+    config.setRAMBufferSizeMB(VECTOR_RAM_BUFFER_SIZE_MB);
+    TieredMergePolicy mergePolicy = new TieredMergePolicy();
+    mergePolicy.setSegmentsPerTier(VECTOR_SEGMENTS_PER_TIER);
+    mergePolicy.setMaxMergeAtOnce(VECTOR_MAX_MERGE_AT_ONCE);
+    mergePolicy.setFloorSegmentMB(VECTOR_FLOOR_SEGMENT_MB);
+    mergePolicy.setMaxMergedSegmentMB(VECTOR_MAX_MERGED_SEGMENT_MB);
+    config.setMergePolicy(mergePolicy);
+    config.setMergeScheduler(new ConcurrentMergeScheduler());
   }
 
   /**
