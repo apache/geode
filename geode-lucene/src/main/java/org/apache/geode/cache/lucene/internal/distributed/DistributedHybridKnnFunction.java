@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
@@ -44,6 +45,7 @@ import org.apache.lucene.search.TermQuery;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
@@ -70,6 +72,9 @@ import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -104,8 +109,22 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
    */
   static final int MAX_INLINE_MASK_TERMS = 512;
   private static final int MAX_LUCENE_K = 100_000;
+  private static final long MAX_CONCURRENT_FLUSH_WAIT_MILLIS = 500L;
+  private static final AtomicLong UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT = new AtomicLong(0L);
 
   private static final Logger logger = LogService.getLogger();
+
+  /**
+   * Returns the cumulative count of bucket flush-and-refresh fallbacks triggered when a hybrid
+   * k-NN query supplied a Lucene filter AST not natively supported by {@link Tier0MetadataMatcher}.
+   */
+  public static long getUnsupportedFilterFlushFallbackCount() {
+    return UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT.get();
+  }
+
+  static void resetUnsupportedFilterFlushFallbackCount() {
+    UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT.set(0L);
+  }
 
   private static final Comparator<EntryScore<Object>> SCORE_DESC_COMPARATOR = (a, b) -> {
     int cmp = Float.compare(b.getScore(), a.getScore());
@@ -193,7 +212,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
           IndexRepository repo = bucketEntry.getValue();
 
           TopEntriesCollector bucketCollector = executeOnBucket(
-              bucketId, repo, region.getFullPath(), knnContext, queryVector, userFilterQuery,
+              cache, region, bucketId, repo, knnContext, queryVector, userFilterQuery,
               tier0FilterPredicate, registry, manager);
           bucketCollectors.add(bucketCollector);
         }
@@ -214,21 +233,36 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     }
   }
 
-  private TopEntriesCollector executeOnBucket(int bucketId, IndexRepository repo, String regionPath,
-      HybridKnnQueryContext knnContext, float[] queryVector, Query userFilterQuery,
-      Predicate<Map<String, Object>> tier0FilterPredicate, Tier0VectorRegistry registry,
-      TopEntriesCollectorManager manager) throws IOException {
+  private TopEntriesCollector executeOnBucket(Cache cache, Region<?, ?> region, int bucketId,
+      IndexRepository repo, HybridKnnQueryContext knnContext, float[] queryVector,
+      Query userFilterQuery, Predicate<Map<String, Object>> tier0FilterPredicate,
+      Tier0VectorRegistry registry, TopEntriesCollectorManager manager) throws IOException {
     int k = knnContext.getK();
+    String regionPath = region.getFullPath();
+    boolean unsupportedFilter =
+        userFilterQuery != null && !Tier0MetadataMatcher.isSupported(userFilterQuery);
 
-    // Theorem 2 ordering: snapshot Tier-0 BEFORE querying Lucene to guarantee zero visibility gap
-    // across concurrent dual-epoch swaps and SearcherManager.maybeRefreshBlocking() transitions.
+    // Theorem 2 ordering: wait for any in-flight primary promotion hydration, then snapshot
+    // Tier-0 BEFORE querying Lucene to guarantee zero visibility gap across concurrent dual-epoch
+    // swaps, failovers, and SearcherManager.maybeRefreshBlocking() transitions.
     Tier0VectorDeltaBuffer.Snapshot<Object> tier0Snapshot = null;
     Set<Object> maskedKeys = Collections.emptySet();
     if (registry != null) {
+      registry.awaitHydration(regionPath, knnContext.getIndexName(), bucketId);
       Tier0VectorDeltaBuffer<Object> buffer =
           registry.getBuffer(regionPath, knnContext.getIndexName(), bucketId);
       if (buffer != null) {
         tier0Snapshot = buffer.snapshot();
+        if (unsupportedFilter && !tier0Snapshot.isEmpty() && repo != null) {
+          // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
+          // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
+          // bucket into Lucene + blocking-refresh so IndexSearcher evaluates the filter with zero
+          // RAW visibility gap.
+          flushBucketForUnsupportedFilter(
+              cache, region, regionPath, knnContext.getIndexName(), bucketId, registry, buffer,
+              repo);
+          tier0Snapshot = buffer.snapshot();
+        }
         maskedKeys = tier0Snapshot.getMaskedKeys();
       }
     }
@@ -286,6 +320,84 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
       bucketCollector.collect(sorted.get(i));
     }
     return bucketCollector;
+  }
+
+  private void flushBucketForUnsupportedFilter(Cache cache, Region<?, ?> region, String regionPath,
+      String indexName, int bucketId, Tier0VectorRegistry registry,
+      Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repo) throws IOException {
+    long deadlineNanos = System.nanoTime() + MAX_CONCURRENT_FLUSH_WAIT_MILLIS * 1_000_000L;
+    boolean flushedOrRefreshed = false;
+    while (true) {
+      try {
+        boolean flushed = registry.flushBucket(regionPath, indexName, bucketId, repo,
+            entry -> readRegionValueForFlush(cache, region, bucketId, entry.getKey()));
+        if (!flushed) {
+          repo.commitAndRefreshBlocking();
+        }
+        flushedOrRefreshed = true;
+        break;
+      } catch (IllegalStateException flushAlreadyInProgress) {
+        if (!buffer.isFlushing() || System.nanoTime() >= deadlineNanos) {
+          repo.commitAndRefreshBlocking();
+          flushedOrRefreshed = true;
+          break;
+        }
+        try {
+          Thread.sleep(1L);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          break;
+        }
+      }
+    }
+    if (flushedOrRefreshed) {
+      registry.incrementUnsupportedFilterFlushFallbackCount();
+      UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT.incrementAndGet();
+    }
+  }
+
+  private Object readRegionValueForFlush(Cache cache, Region<?, ?> region, int bucketId,
+      Object key) {
+    InternalCache internalCache = (cache instanceof InternalCache) ? (InternalCache) cache : null;
+    boolean initialPdxReadSerialized = false;
+    if (internalCache != null) {
+      initialPdxReadSerialized = internalCache.getPdxReadSerializedOverride();
+      internalCache.setPdxReadSerializedOverride(true);
+    }
+    try {
+      if (region instanceof PartitionedRegion) {
+        PartitionedRegion pr = (PartitionedRegion) region;
+        if (pr.getDataStore() != null) {
+          BucketRegion localBucket = pr.getDataStore().getLocalBucketById(bucketId);
+          if (localBucket != null) {
+            return extractEntryValue(localBucket.getEntry(key));
+          }
+        }
+      }
+      Region.Entry<?, ?> entry = region.getEntry(key);
+      if (entry != null) {
+        return extractEntryValue(entry);
+      }
+      return region.get(key);
+    } finally {
+      if (internalCache != null) {
+        internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
+      }
+    }
+  }
+
+  private Object extractEntryValue(Region.Entry<?, ?> entry) {
+    if (entry == null) {
+      return null;
+    }
+    try {
+      if (entry instanceof EntrySnapshot) {
+        return ((EntrySnapshot) entry).getRawValue(true);
+      }
+      return entry.getValue();
+    } catch (EntryDestroyedException e) {
+      return null;
+    }
   }
 
   private Map<Integer, IndexRepository> resolveRepositoriesByBucket(RepositoryManager repoManager,

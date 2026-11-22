@@ -93,6 +93,59 @@ public final class Tier0MetadataMatcher {
   }
 
   /**
+   * Returns {@code true} if every node in the Lucene {@link Query} AST is supported for exact
+   * in-memory Tier-0 metadata evaluation. Callers such as {@code DistributedHybridKnnFunction}
+   * use this to trigger a synchronous flush-and-refresh fallback before Lucene search whenever an
+   * unsupported query (e.g., {@code FuzzyQuery}, {@code SpanQuery}, or multi-dimensional
+   * {@code PointRangeQuery}) is supplied, preventing silent fail-closed Tier-0 drops.
+   */
+  public static boolean isSupported(Query query) {
+    if (query == null || query instanceof MatchAllDocsQuery || query instanceof MatchNoDocsQuery) {
+      return true;
+    }
+    if (query instanceof BoostQuery) {
+      return isSupported(((BoostQuery) query).getQuery());
+    }
+    if (query instanceof ConstantScoreQuery) {
+      return isSupported(((ConstantScoreQuery) query).getQuery());
+    }
+    if (query instanceof TermQuery
+        || query instanceof TermRangeQuery
+        || query instanceof PrefixQuery
+        || query instanceof TermInSetQuery
+        || query instanceof PhraseQuery) {
+      return true;
+    }
+    if (query instanceof AutomatonQuery) {
+      return ((AutomatonQuery) query).getAutomaton() != null;
+    }
+    if (query instanceof PointRangeQuery) {
+      return isSupportedPointRange((PointRangeQuery) query);
+    }
+    if (query instanceof BooleanQuery) {
+      for (BooleanClause clause : ((BooleanQuery) query).clauses()) {
+        if (!isSupported(clause.getQuery())) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean isSupportedPointRange(PointRangeQuery prq) {
+    if (prq.getNumDims() != 1) {
+      return false;
+    }
+    int bytesPerDim = prq.getBytesPerDim();
+    Class<?> enclosing = prq.getClass().getEnclosingClass();
+    return (enclosing == IntPoint.class && bytesPerDim == Integer.BYTES)
+        || (enclosing == FloatPoint.class && bytesPerDim == Float.BYTES)
+        || (enclosing == LongPoint.class && bytesPerDim == Long.BYTES)
+        || (enclosing == DoublePoint.class && bytesPerDim == Double.BYTES);
+  }
+
+  /**
    * Evaluates a parsed Lucene {@link Query} against an entry's metadata map.
    *
    * <p>

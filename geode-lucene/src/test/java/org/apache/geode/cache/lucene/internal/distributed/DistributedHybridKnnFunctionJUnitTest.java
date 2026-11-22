@@ -33,10 +33,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.KnnFloatVectorField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.KnnFloatVectorQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -259,5 +270,130 @@ public class DistributedHybridKnnFunctionJUnitTest {
     verify(healthyRepo).delete("k2");
     verify(healthyRepo).commitAndRefreshBlocking();
     assertThat(buffer.getTotalSize()).isEqualTo(0);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void unsupportedFuzzyFilterTriggersFlushAndRefreshFallbackReturningFreshTier0Entries()
+      throws Exception {
+    DistributedHybridKnnFunction.resetUnsupportedFilterFlushFallbackCount();
+
+    // Real in-memory Lucene IndexRepository so FuzzyQuery + KnnFloatVectorQuery execute end-to-end
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()));
+        SearcherManager searcherManager = new SearcherManager(writer, true, true, null)) {
+
+      IndexRepository realRepo = new IndexRepository() {
+        @Override
+        public void create(Object key, Object value) throws IOException {
+          update(key, value);
+        }
+
+        @Override
+        public void update(Object key, Object value) throws IOException {
+          Object[] pair = (Object[]) value;
+          Document doc = new Document();
+          org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil.addKey(key,
+              doc);
+          doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+              VectorSimilarityFunction.COSINE));
+          doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+          writer.updateDocument(
+              org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil
+                  .toKeyTerm(key),
+              doc);
+        }
+
+        @Override
+        public void delete(Object key) throws IOException {
+          writer.deleteDocuments(
+              org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil
+                  .toKeyTerm(key));
+        }
+
+        @Override
+        public void query(Query query, int limit, IndexResultCollector collector)
+            throws IOException {
+          IndexSearcher searcher = searcherManager.acquire();
+          try {
+            TopDocs td = searcher.search(query, limit);
+            for (ScoreDoc sd : td.scoreDocs) {
+              Object k = org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil
+                  .getKey(searcher.storedFields().document(sd.doc));
+              collector.collect(k, sd.score);
+            }
+          } finally {
+            searcherManager.release(searcher);
+          }
+        }
+
+        @Override
+        public void commit() throws IOException {
+          writer.commit();
+          searcherManager.maybeRefresh();
+        }
+
+        @Override
+        public void commitAndRefreshBlocking() throws IOException {
+          writer.commit();
+          searcherManager.maybeRefreshBlocking();
+        }
+
+        @Override
+        public Region<?, ?> getRegion() {
+          return mockRegion;
+        }
+
+        @Override
+        public boolean isClosed() {
+          return false;
+        }
+
+        @Override
+        public IndexWriter getWriter() {
+          return writer;
+        }
+
+        @Override
+        public void cleanup() {}
+      };
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, realRepo));
+
+      // Fresh uncommitted entries live ONLY in Tier-0 (0 documents in Lucene yet)
+      float[] matchVec = new float[] {1f, 0f, 0f, 0f};
+      float[] nonMatchVec = new float[] {0.99f, 0.1f, 0f, 0f};
+      when(mockRegion.get("fresh-books")).thenReturn(new Object[] {matchVec, "books"});
+      when(mockRegion.get("fresh-music")).thenReturn(new Object[] {nonMatchVec, "music"});
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+      registry.recordPut(REGION_PATH, INDEX_NAME, 0, "fresh-books", matchVec,
+          Map.of("category", "books"));
+      registry.recordPut(REGION_PATH, INDEX_NAME, 0, "fresh-music", nonMatchVec,
+          Map.of("category", "music"));
+
+      // FuzzyQuery ("category:boks~1") is NOT natively supported by Tier0MetadataMatcher:
+      // must flush+refresh Tier-0 into Lucene and return "fresh-books" instead of silently dropping
+      HybridKnnQueryContext queryContext = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, matchVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+      when(mockContext.getArguments()).thenReturn(queryContext);
+
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      ArgumentCaptor<TopEntriesCollector> resultCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(mockResultSender).lastResult(resultCaptor.capture());
+
+      List<EntryScore> hits = resultCaptor.getValue().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("fresh-books");
+      assertThat(registry.getUnsupportedFilterFlushFallbackCount()).isEqualTo(1L);
+      assertThat(DistributedHybridKnnFunction.getUnsupportedFilterFlushFallbackCount())
+          .isEqualTo(1L);
+      assertThat(registry.getBuffer(REGION_PATH, INDEX_NAME, 0).getTotalSize()).isEqualTo(0);
+    }
   }
 }

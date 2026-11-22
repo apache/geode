@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import org.apache.geode.cache.Cache;
@@ -38,11 +41,18 @@ import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
  */
 public class Tier0VectorRegistry {
 
+  /** Default bounded wait when a reader encounters an in-flight primary bucket hydration. */
+  public static final long DEFAULT_HYDRATION_AWAIT_MILLIS = 5_000L;
+
   private static final Map<Cache, Tier0VectorRegistry> CACHE_REGISTRIES =
       Collections.synchronizedMap(new WeakHashMap<>());
 
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, Tier0VectorDeltaBuffer<Object>>> buffers =
       new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, CountDownLatch>> hydrationBarriers =
+      new ConcurrentHashMap<>();
+  private final AtomicLong hydrationWaitCount = new AtomicLong(0L);
+  private final AtomicLong unsupportedFilterFlushFallbackCount = new AtomicLong(0L);
 
   public Tier0VectorRegistry() {}
 
@@ -113,6 +123,7 @@ public class Tier0VectorRegistry {
         removed.clear();
       }
     }
+    releaseHydrationLatch(key, bucketId);
   }
 
   public void removeIndex(String regionPath, String indexName) {
@@ -122,6 +133,7 @@ public class Tier0VectorRegistry {
       removed.values().forEach(Tier0VectorDeltaBuffer::clear);
       removed.clear();
     }
+    releaseHydrationLatchesForIndex(key);
   }
 
   /**
@@ -141,6 +153,134 @@ public class Tier0VectorRegistry {
       }
       return false;
     });
+    hydrationBarriers.keySet().removeIf(indexKey -> {
+      if (indexKey.regionPath.equals(normalized)) {
+        releaseHydrationLatchesForIndex(indexKey);
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
+   * Opens a per-bucket promotion hydration barrier so concurrent hybrid k-NN readers wait until
+   * primary bucket hydration populates {@link Tier0VectorDeltaBuffer}.
+   *
+   * @return the installed barrier latch token to pass to
+   *         {@link #completeHydration(String, String, int, CountDownLatch)}
+   */
+  public CountDownLatch beginHydration(String regionPath, String indexName, int bucketId) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    CountDownLatch latch = new CountDownLatch(1);
+    CountDownLatch previous = hydrationBarriers
+        .computeIfAbsent(key, k -> new ConcurrentHashMap<>())
+        .put(bucketId, latch);
+    if (previous != null) {
+      previous.countDown();
+    }
+    return latch;
+  }
+
+  /**
+   * Marks the specified hydration barrier complete and unblocks waiting readers.
+   */
+  public void completeHydration(String regionPath, String indexName, int bucketId,
+      CountDownLatch latch) {
+    if (latch == null) {
+      completeHydration(regionPath, indexName, bucketId);
+      return;
+    }
+    try {
+      IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+      ConcurrentHashMap<Integer, CountDownLatch> bucketMap = hydrationBarriers.get(key);
+      if (bucketMap != null) {
+        bucketMap.remove(bucketId, latch);
+      }
+    } finally {
+      latch.countDown();
+    }
+  }
+
+  /**
+   * Completes any currently active hydration barrier for {@code (regionPath, indexName, bucketId)}.
+   */
+  public void completeHydration(String regionPath, String indexName, int bucketId) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    releaseHydrationLatch(key, bucketId);
+  }
+
+  /**
+   * Waits (up to {@link #DEFAULT_HYDRATION_AWAIT_MILLIS}) for any active promotion hydration on
+   * {@code (regionPath, indexName, bucketId)} to finish before snapshotting Tier-0. Returns
+   * immediately with zero contention when no promotion is in progress.
+   */
+  public boolean awaitHydration(String regionPath, String indexName, int bucketId) {
+    return awaitHydration(regionPath, indexName, bucketId, DEFAULT_HYDRATION_AWAIT_MILLIS,
+        TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Waits up to {@code timeout} for any active promotion hydration on
+   * {@code (regionPath, indexName, bucketId)} to complete.
+   */
+  public boolean awaitHydration(String regionPath, String indexName, int bucketId, long timeout,
+      TimeUnit unit) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    ConcurrentHashMap<Integer, CountDownLatch> bucketMap = hydrationBarriers.get(key);
+    if (bucketMap == null) {
+      return true;
+    }
+    CountDownLatch latch = bucketMap.get(bucketId);
+    if (latch == null || latch.getCount() == 0L) {
+      return true;
+    }
+    hydrationWaitCount.incrementAndGet();
+    try {
+      return latch.await(timeout, unit);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    }
+  }
+
+  public boolean isHydrating(String regionPath, String indexName, int bucketId) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    ConcurrentHashMap<Integer, CountDownLatch> bucketMap = hydrationBarriers.get(key);
+    if (bucketMap == null) {
+      return false;
+    }
+    CountDownLatch latch = bucketMap.get(bucketId);
+    return latch != null && latch.getCount() > 0L;
+  }
+
+  public long getHydrationWaitCount() {
+    return hydrationWaitCount.get();
+  }
+
+  public long getUnsupportedFilterFlushFallbackCount() {
+    return unsupportedFilterFlushFallbackCount.get();
+  }
+
+  public long incrementUnsupportedFilterFlushFallbackCount() {
+    return unsupportedFilterFlushFallbackCount.incrementAndGet();
+  }
+
+  private void releaseHydrationLatch(IndexKey key, int bucketId) {
+    ConcurrentHashMap<Integer, CountDownLatch> bucketMap = hydrationBarriers.get(key);
+    if (bucketMap != null) {
+      CountDownLatch latch = bucketMap.remove(bucketId);
+      if (latch != null) {
+        latch.countDown();
+      }
+    }
+  }
+
+  private void releaseHydrationLatchesForIndex(IndexKey key) {
+    ConcurrentHashMap<Integer, CountDownLatch> bucketMap = hydrationBarriers.remove(key);
+    if (bucketMap != null) {
+      bucketMap.values().forEach(CountDownLatch::countDown);
+      bucketMap.clear();
+    }
   }
 
   /**
@@ -161,6 +301,11 @@ public class Tier0VectorRegistry {
       map.clear();
     });
     buffers.clear();
+    hydrationBarriers.values().forEach(map -> {
+      map.values().forEach(CountDownLatch::countDown);
+      map.clear();
+    });
+    hydrationBarriers.clear();
   }
 
   /**

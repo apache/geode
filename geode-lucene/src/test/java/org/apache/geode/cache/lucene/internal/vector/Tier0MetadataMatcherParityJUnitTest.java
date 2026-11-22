@@ -38,6 +38,10 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BoostQuery;
+import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.DisjunctionMaxQuery;
+import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
@@ -264,6 +268,47 @@ public class Tier0MetadataMatcherParityJUnitTest {
         }
       }
     }
+  }
+
+  @Test
+  public void isSupportedDistinguishesSupportedAndUnsupportedLuceneQueryAsts() {
+    assertThat(Tier0MetadataMatcher.isSupported(null)).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(new MatchAllDocsQuery())).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(new MatchNoDocsQuery())).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(new TermQuery(new Term("cat", "books")))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(
+        TermRangeQuery.newStringRange("sku", "a", "z", true, true))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(new WildcardQuery(new Term("cat", "boo*"))))
+        .isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(new PrefixQuery(new Term("cat", "bo")))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(new RegexpQuery(new Term("cat", "(a|b)"))))
+        .isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(
+        new TermInSetQuery("cat", new BytesRef("books")))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(IntPoint.newRangeQuery("p", 1, 10))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(FloatPoint.newRangeQuery("p", 1f, 10f))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(LongPoint.newRangeQuery("p", 1L, 10L))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(DoublePoint.newRangeQuery("p", 1.0, 10.0)))
+        .isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(
+        new BoostQuery(new TermQuery(new Term("cat", "books")), 2.0f))).isTrue();
+    assertThat(Tier0MetadataMatcher.isSupported(
+        new ConstantScoreQuery(new PrefixQuery(new Term("cat", "bo"))))).isTrue();
+
+    // Unsupported Lucene AST nodes must return false so DistributedHybridKnnFunction flushes
+    FuzzyQuery fuzzy = new FuzzyQuery(new Term("cat", "boks"), 1);
+    assertThat(Tier0MetadataMatcher.isSupported(fuzzy)).isFalse();
+    assertThat(Tier0MetadataMatcher.isSupported(
+        new DisjunctionMaxQuery(List.of(new TermQuery(new Term("cat", "books"))), 0.1f)))
+            .isFalse();
+    assertThat(Tier0MetadataMatcher.isSupported(
+        IntPoint.newRangeQuery("coords", new int[] {0, 0}, new int[] {10, 10}))).isFalse();
+    // Nested unsupported clause inside a BooleanQuery must also return false
+    BooleanQuery mixedBool = new BooleanQuery.Builder()
+        .add(new TermQuery(new Term("status", "active")), BooleanClause.Occur.FILTER)
+        .add(fuzzy, BooleanClause.Occur.MUST)
+        .build();
+    assertThat(Tier0MetadataMatcher.isSupported(mixedBool)).isFalse();
   }
 
   private static Set<String> searchKeys(IndexSearcher searcher, Query query) throws IOException {

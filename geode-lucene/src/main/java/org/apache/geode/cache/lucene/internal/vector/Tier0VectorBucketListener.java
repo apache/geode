@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal.vector;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
 
 import org.apache.geode.cache.Cache;
@@ -178,41 +179,47 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       }
       Cache cache = (Cache) pr.getRegionService();
       Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
-      Tier0VectorDeltaBuffer<Object> buffer =
-          registry.getOrCreateBuffer(pr.getFullPath(), indexName, bucketId);
-
-      InternalCache internalCache =
-          (cache instanceof InternalCache) ? (InternalCache) cache : null;
-      boolean initialPdxReadSerialized = false;
-      if (internalCache != null) {
-        initialPdxReadSerialized = internalCache.getPdxReadSerializedOverride();
-        internalCache.setPdxReadSerializedOverride(true);
-      }
+      CountDownLatch hydrationLatch =
+          registry.beginHydration(pr.getFullPath(), indexName, bucketId);
       try {
-        for (Object key : bucket.keySet()) {
-          // Fast skip if a concurrent live put/destroy already recorded this key in Tier-0
-          if (buffer.containsKey(key)) {
-            continue;
+        Tier0VectorDeltaBuffer<Object> buffer =
+            registry.getOrCreateBuffer(pr.getFullPath(), indexName, bucketId);
+
+        InternalCache internalCache =
+            (cache instanceof InternalCache) ? (InternalCache) cache : null;
+        boolean initialPdxReadSerialized = false;
+        if (internalCache != null) {
+          initialPdxReadSerialized = internalCache.getPdxReadSerializedOverride();
+          internalCache.setPdxReadSerializedOverride(true);
+        }
+        try {
+          for (Object key : bucket.keySet()) {
+            // Fast skip if a concurrent live put/destroy already recorded this key in Tier-0
+            if (buffer.containsKey(key)) {
+              continue;
+            }
+            V val = readEntryValueWithoutDeserializingPdx(bucket, key);
+            if (val == null) {
+              continue;
+            }
+            float[] vec = vectorExtractor.apply(val);
+            if (vec == null || vec.length == 0) {
+              continue;
+            }
+            Map<String, Object> metadata = metadataExtractor.apply(val);
+            // Re-verify the entry still exists in the bucket and use putIfAbsent so hydration can
+            // NEVER overwrite a concurrent live afterDestroy tombstone or newer afterUpdate put.
+            if (bucket.getEntry(key) != null) {
+              buffer.putIfAbsent(key, vec, metadata);
+            }
           }
-          V val = readEntryValueWithoutDeserializingPdx(bucket, key);
-          if (val == null) {
-            continue;
-          }
-          float[] vec = vectorExtractor.apply(val);
-          if (vec == null || vec.length == 0) {
-            continue;
-          }
-          Map<String, Object> metadata = metadataExtractor.apply(val);
-          // Re-verify the entry still exists in the bucket and use putIfAbsent so hydration can
-          // NEVER overwrite a concurrent live afterDestroy tombstone or newer afterUpdate put.
-          if (bucket.getEntry(key) != null) {
-            buffer.putIfAbsent(key, vec, metadata);
+        } finally {
+          if (internalCache != null) {
+            internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
           }
         }
       } finally {
-        if (internalCache != null) {
-          internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
-        }
+        registry.completeHydration(pr.getFullPath(), indexName, bucketId, hydrationLatch);
       }
     }
 

@@ -577,6 +577,77 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     assertThat(recreatedHits).isEmpty();
   }
 
+  @Test
+  public void unsupportedFuzzyFilterQueryFlushesTier0AndReturnsFreshWritesWithoutSilentDrops() {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    // Seed all buckets and flush once so every bucket's IndexRepository is initialized
+    float[] orthogonalSeed = new float[DIM];
+    orthogonalSeed[DIM - 1] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("seed-" + i, new VectorRecord(orthogonalSeed, "other", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    // Pause AEQ on both servers so fresh "books" and "music" docs live ONLY in Tier-0
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    Random rng = new Random(707L);
+    Map<String, VectorRecord> freshDocs = new HashMap<>();
+    for (int i = 0; i < 32; i++) {
+      float[] vec = randomUnitVector(rng, DIM);
+      vec[0] = Math.abs(vec[0]) + 0.5f;
+      normalizeInPlace(vec);
+      String tag = (i % 4 == 0) ? "books" : "music";
+      freshDocs.put("fuzzy-" + i, new VectorRecord(vec, tag, "all", "all"));
+    }
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (Map.Entry<String, VectorRecord> e : freshDocs.entrySet()) {
+        region.put(e.getKey(), e.getValue());
+      }
+    });
+
+    List<String> expectedTop5 = computeBruteForceTopK(
+        freshDocs, query, 5, VectorSimilarityFunction.COSINE,
+        rec -> "books".equals(rec.getMetadata().get("sel1")));
+    assertThat(expectedTop5).hasSize(5);
+
+    // Execute hybrid k-NN with a FuzzyQuery ("sel1:boks~1" matching "books" with edit distance 1)
+    // while AEQ is still paused: automatic flush-and-refresh fallback must return ALL fresh hits
+    List<String> actualKeys = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("sel1:boks~1", "sel1")
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+
+    assertThat(actualKeys).containsExactlyElementsOf(expectedTop5);
+
+    long fallbackCount = dataStore1.invoke(
+        () -> Tier0VectorRegistry.forCache(getCache()).getUnsupportedFilterFlushFallbackCount())
+        + dataStore2.invoke(
+            () -> Tier0VectorRegistry.forCache(getCache())
+                .getUnsupportedFilterFlushFallbackCount());
+    assertThat(fallbackCount).isGreaterThan(0L);
+
+    // Resume AEQ cleanly for teardown
+    dataStore1.invoke(() -> resumeIndexAeq(getCache()));
+    dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+  }
+
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,
       String filterField, int k, double minRecall) {
     List<String> expected = computeBruteForceTopK(

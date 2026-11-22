@@ -44,8 +44,17 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
+import org.apache.geode.cache.lucene.internal.distributed.DistributedHybridKnnFunction;
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.cache.lucene.internal.distributed.HybridKnnQueryContext;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
@@ -53,6 +62,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -307,6 +317,103 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     // Surviving odd keys were hydrated cleanly
     for (int i = 3; i < numKeys; i += 2) {
       assertThat(snap.getLiveEntries()).containsKey("k-" + i);
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void promotionHydrationBarrierBlocksConcurrentHybridReadsUntilHydrationCompletes()
+      throws Exception {
+    final int bucketId = 7;
+    CountDownLatch hydrationEntered = new CountDownLatch(1);
+    CountDownLatch allowHydrationFinish = new CountDownLatch(1);
+
+    EntrySnapshot es = mock(EntrySnapshot.class);
+    when(es.getRawValue(true)).thenAnswer(inv -> {
+      hydrationEntered.countDown();
+      allowHydrationFinish.await(5, TimeUnit.SECONDS);
+      return new float[] {1f, 0f, 0f, 0f};
+    });
+
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isEmpty()).thenReturn(false);
+    when(bucket.keySet()).thenReturn(Collections.singleton("promoted-k1"));
+    when(bucket.getEntry("promoted-k1")).thenReturn(es);
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(pr.getFullPath()).thenReturn(REGION_PATH);
+    when(pr.getRegionService()).thenReturn(cache);
+    when(pr.getDataStore()).thenReturn(dataStore);
+
+    Tier0VectorBucketListener<String, float[]> listener =
+        new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(pr);
+
+    // Wire DistributedHybridKnnFunction mocks with an empty Lucene repo (AEQ hasn't caught up)
+    InternalLuceneService mockService = mock(InternalLuceneService.class);
+    LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
+    PartitionedRepositoryManager mockRepoManager = mock(PartitionedRepositoryManager.class);
+    IndexRepository emptyLuceneRepo = mock(IndexRepository.class);
+    LuceneIndexStats mockStats = mock(LuceneIndexStats.class);
+    InternalRegionFunctionContext fnCtx = mock(InternalRegionFunctionContext.class);
+    ResultSender<TopEntriesCollector> resultSender = mock(ResultSender.class);
+
+    when(cache.getService(InternalLuceneService.class)).thenReturn(mockService);
+    when(mockService.getIndex(INDEX_NAME, REGION_PATH)).thenReturn(mockIndex);
+    when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
+    when(mockIndex.getIndexStats()).thenReturn(mockStats);
+    when(fnCtx.getCache()).thenReturn(cache);
+    when(fnCtx.getDataSet()).thenReturn(pr);
+    when(fnCtx.getResultSender()).thenReturn(resultSender);
+    when(mockRepoManager.getRepositoriesByBucket(fnCtx, false))
+        .thenReturn(Collections.singletonMap(bucketId, emptyLuceneRepo));
+
+    HybridKnnQueryContext queryContext = HybridKnnQueryContext
+        .builder(INDEX_NAME, "embedding", new float[] {1f, 0f, 0f, 0f}, 5)
+        .build();
+    when(fnCtx.getArguments()).thenReturn(queryContext);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try {
+      // 1. Start primary promotion hydration and pause mid-hydration
+      Future<?> hydrator = pool.submit(() -> partitionListener.afterPrimary(bucketId));
+      assertThat(hydrationEntered.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(registry.isHydrating(REGION_PATH, INDEX_NAME, bucketId)).isTrue();
+
+      // 2. Launch a concurrent hybrid k-NN read while hydration is still in flight
+      java.util.concurrent.atomic.AtomicReference<TopEntriesCollector> captured =
+          new java.util.concurrent.atomic.AtomicReference<>();
+      doAnswer(inv -> {
+        captured.set(inv.getArgument(0));
+        return null;
+      }).when(resultSender).lastResult(any(TopEntriesCollector.class));
+
+      Future<?> reader = pool.submit(() -> new DistributedHybridKnnFunction().execute(fnCtx));
+
+      // Wait until reader registers on the hydration barrier (proving it did NOT bypass with empty)
+      long waitDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+      while (registry.getHydrationWaitCount() == 0L && System.nanoTime() < waitDeadline) {
+        Thread.sleep(5L);
+      }
+      assertThat(registry.getHydrationWaitCount()).isGreaterThanOrEqualTo(1L);
+      assertThat(reader.isDone()).isFalse();
+
+      // 3. Release hydration -> reader unblocks and observes 100% of hydrated Tier-0 entries
+      allowHydrationFinish.countDown();
+      hydrator.get(5, TimeUnit.SECONDS);
+      reader.get(5, TimeUnit.SECONDS);
+
+      assertThat(registry.isHydrating(REGION_PATH, INDEX_NAME, bucketId)).isFalse();
+      assertThat(captured.get()).isNotNull();
+      java.util.List<EntryScore> hits = captured.get().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("promoted-k1");
+    } finally {
+      pool.shutdownNow();
     }
   }
 }
