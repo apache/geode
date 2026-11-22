@@ -311,6 +311,7 @@ public class ChordalVoronoiRouter {
     private final int upperSwitchThreshold;
     private final int lowerSwitchThreshold;
     private final long modeTransitionCount;
+    private final long fullReclusterCount;
     private final long totalRoutedVectors;
     private final long totalCellsEvaluated;
     private final long totalCellsPruned;
@@ -321,9 +322,9 @@ public class ChordalVoronoiRouter {
 
     RouterTelemetry(RoutingMode currentMode, int subscriptionCount, int activeClusterCount,
         int mCrit, int upperSwitchThreshold, int lowerSwitchThreshold, long modeTransitionCount,
-        long totalRoutedVectors, long totalCellsEvaluated, long totalCellsPruned,
-        long totalSubscriptionsEvaluated, long totalSubscriptionsPossible, long fnrVerificationRuns,
-        long fnrVerificationFalseNegatives) {
+        long fullReclusterCount, long totalRoutedVectors, long totalCellsEvaluated,
+        long totalCellsPruned, long totalSubscriptionsEvaluated, long totalSubscriptionsPossible,
+        long fnrVerificationRuns, long fnrVerificationFalseNegatives) {
       this.currentMode = currentMode;
       this.subscriptionCount = subscriptionCount;
       this.activeClusterCount = activeClusterCount;
@@ -331,6 +332,7 @@ public class ChordalVoronoiRouter {
       this.upperSwitchThreshold = upperSwitchThreshold;
       this.lowerSwitchThreshold = lowerSwitchThreshold;
       this.modeTransitionCount = modeTransitionCount;
+      this.fullReclusterCount = fullReclusterCount;
       this.totalRoutedVectors = totalRoutedVectors;
       this.totalCellsEvaluated = totalCellsEvaluated;
       this.totalCellsPruned = totalCellsPruned;
@@ -366,6 +368,10 @@ public class ChordalVoronoiRouter {
 
     public long getModeTransitionCount() {
       return modeTransitionCount;
+    }
+
+    public long getFullReclusterCount() {
+      return fullReclusterCount;
     }
 
     public long getTotalRoutedVectors() {
@@ -518,6 +524,7 @@ public class ChordalVoronoiRouter {
   private volatile RouterSnapshot snapshot;
 
   private final AtomicLong modeTransitionCount = new AtomicLong();
+  private final AtomicLong fullReclusterCount = new AtomicLong();
   private final AtomicLong totalRoutedVectors = new AtomicLong();
   private final AtomicLong totalCellsEvaluated = new AtomicLong();
   private final AtomicLong totalCellsPruned = new AtomicLong();
@@ -751,8 +758,13 @@ public class ChordalVoronoiRouter {
       RoutingMode nextMode = evaluateModeTransition(prevMode, subscriptions.size());
       if (nextMode != prevMode) {
         modeTransitionCount.incrementAndGet();
+        rebuildFullSnapshot(nextMode);
+      } else if (nextMode == RoutingMode.CHORDAL_VORONOI
+          && snapshot.cells.length > 0 && !shouldRecluster()) {
+        incrementallyRemoveFromVoronoi(subscriptionId);
+      } else {
+        rebuildFullSnapshot(nextMode);
       }
-      rebuildFullSnapshot(nextMode);
       return true;
     } finally {
       writeLock.unlock();
@@ -859,9 +871,10 @@ public class ChordalVoronoiRouter {
     RouterSnapshot snap = this.snapshot;
     return new RouterTelemetry(snap.mode, snap.subscriptionCount, snap.cells.length, mCrit,
         upperSwitchThreshold, lowerSwitchThreshold, modeTransitionCount.get(),
-        totalRoutedVectors.get(), totalCellsEvaluated.get(), totalCellsPruned.get(),
-        totalSubscriptionsEvaluated.get(), totalSubscriptionsPossible.get(),
-        fnrVerificationRuns.get(), fnrVerificationFalseNegatives.get());
+        fullReclusterCount.get(), totalRoutedVectors.get(), totalCellsEvaluated.get(),
+        totalCellsPruned.get(), totalSubscriptionsEvaluated.get(),
+        totalSubscriptionsPossible.get(), fnrVerificationRuns.get(),
+        fnrVerificationFalseNegatives.get());
   }
 
   private List<MatchResult> routeFlatSimd(float[] unitEmbedding, RouterSnapshot snap) {
@@ -1005,6 +1018,119 @@ public class ChordalVoronoiRouter {
         newFlatThresholds, newCells, prev.centroidMatrix);
   }
 
+  /**
+   * Incrementally removes {@code subscriptionId} from its Voronoi cell in {@code O(|V_k| * d)}
+   * without re-running spherical k-means. Because removing a member only shrinks the cell subset
+   * {@code V_k' subset V_k}, retaining the cell's conservative upper bound {@code B_k^up} and
+   * cosine threshold {@code s_k^min} strictly preserves Theorem 1 ({@code FNR == 0}) until the
+   * periodic 20%-churn recluster compacts cell radii.
+   */
+  private void incrementallyRemoveFromVoronoi(String subscriptionId) {
+    RouterSnapshot prev = this.snapshot;
+    int dim = config.getDimension();
+    int oldCount = prev.subscriptionCount;
+    if (oldCount <= 1) {
+      rebuildFullSnapshot(RoutingMode.CHORDAL_VORONOI);
+      return;
+    }
+
+    int flatIdx = -1;
+    for (int i = 0; i < oldCount; i++) {
+      if (subscriptionId.equals(prev.flatIds[i])) {
+        flatIdx = i;
+        break;
+      }
+    }
+    if (flatIdx < 0) {
+      rebuildFullSnapshot(RoutingMode.CHORDAL_VORONOI);
+      return;
+    }
+
+    VoronoiCell[] prevCells = prev.cells;
+    int cellIdx = -1;
+    int memberIdx = -1;
+    outer: for (int k = 0; k < prevCells.length; k++) {
+      String[] ids = prevCells[k].memberIds;
+      for (int j = 0; j < ids.length; j++) {
+        if (subscriptionId.equals(ids[j])) {
+          cellIdx = k;
+          memberIdx = j;
+          break outer;
+        }
+      }
+    }
+    if (cellIdx < 0) {
+      rebuildFullSnapshot(RoutingMode.CHORDAL_VORONOI);
+      return;
+    }
+
+    int newCount = oldCount - 1;
+    String[] newFlatIds = new String[newCount];
+    float[] newFlatVecs = new float[newCount * dim];
+    float[] newFlatThresholds = new float[newCount];
+    if (flatIdx > 0) {
+      System.arraycopy(prev.flatIds, 0, newFlatIds, 0, flatIdx);
+      System.arraycopy(prev.flatVectors, 0, newFlatVecs, 0, flatIdx * dim);
+      System.arraycopy(prev.flatThresholds, 0, newFlatThresholds, 0, flatIdx);
+    }
+    int tailFlat = oldCount - flatIdx - 1;
+    if (tailFlat > 0) {
+      System.arraycopy(prev.flatIds, flatIdx + 1, newFlatIds, flatIdx, tailFlat);
+      System.arraycopy(prev.flatVectors, (flatIdx + 1) * dim, newFlatVecs, flatIdx * dim,
+          tailFlat * dim);
+      System.arraycopy(prev.flatThresholds, flatIdx + 1, newFlatThresholds, flatIdx, tailFlat);
+    }
+
+    VoronoiCell target = prevCells[cellIdx];
+    VoronoiCell[] newCells;
+    float[] newCentroidMatrix;
+    if (target.size() == 1) {
+      if (prevCells.length <= 1) {
+        rebuildFullSnapshot(RoutingMode.CHORDAL_VORONOI);
+        return;
+      }
+      int newNumCells = prevCells.length - 1;
+      newCells = new VoronoiCell[newNumCells];
+      newCentroidMatrix = new float[newNumCells * dim];
+      if (cellIdx > 0) {
+        System.arraycopy(prevCells, 0, newCells, 0, cellIdx);
+        System.arraycopy(prev.centroidMatrix, 0, newCentroidMatrix, 0, cellIdx * dim);
+      }
+      int tailCells = prevCells.length - cellIdx - 1;
+      if (tailCells > 0) {
+        System.arraycopy(prevCells, cellIdx + 1, newCells, cellIdx, tailCells);
+        System.arraycopy(prev.centroidMatrix, (cellIdx + 1) * dim, newCentroidMatrix,
+            cellIdx * dim, tailCells * dim);
+      }
+    } else {
+      int newCellSize = target.size() - 1;
+      String[] cellIds = new String[newCellSize];
+      float[] cellVecs = new float[newCellSize * dim];
+      float[] cellThresholds = new float[newCellSize];
+      if (memberIdx > 0) {
+        System.arraycopy(target.memberIds, 0, cellIds, 0, memberIdx);
+        System.arraycopy(target.memberVectors, 0, cellVecs, 0, memberIdx * dim);
+        System.arraycopy(target.memberThresholds, 0, cellThresholds, 0, memberIdx);
+      }
+      int tailMembers = target.size() - memberIdx - 1;
+      if (tailMembers > 0) {
+        System.arraycopy(target.memberIds, memberIdx + 1, cellIds, memberIdx, tailMembers);
+        System.arraycopy(target.memberVectors, (memberIdx + 1) * dim, cellVecs, memberIdx * dim,
+            tailMembers * dim);
+        System.arraycopy(target.memberThresholds, memberIdx + 1, cellThresholds, memberIdx,
+            tailMembers);
+      }
+      newCells = Arrays.copyOf(prevCells, prevCells.length);
+      newCells[cellIdx] = new VoronoiCell(target.centroid, target.coveringRadius,
+          target.maxChordalTolerance, target.coupledBound, config.isUseCoupledBound(),
+          highamDotEpsilon, normMargin, cellIds, cellVecs, cellThresholds);
+      newCentroidMatrix = prev.centroidMatrix;
+    }
+
+    this.snapshot = new RouterSnapshot(RoutingMode.CHORDAL_VORONOI, dim, newFlatIds, newFlatVecs,
+        newFlatThresholds, newCells, newCentroidMatrix);
+  }
+
   private void rebuildFullSnapshot(RoutingMode targetMode) {
     int dim = config.getDimension();
     int count = subscriptions.size();
@@ -1032,6 +1158,7 @@ public class ChordalVoronoiRouter {
     }
 
     // Build K Voronoi cells using spherical k-means++ + Lloyd refinement on S^{d-1}
+    fullReclusterCount.incrementAndGet();
     VoronoiCell[] cells = buildSphericalVoronoiCells(list, dim);
     float[] centroidMatrix = new float[cells.length * dim];
     for (int k = 0; k < cells.length; k++) {

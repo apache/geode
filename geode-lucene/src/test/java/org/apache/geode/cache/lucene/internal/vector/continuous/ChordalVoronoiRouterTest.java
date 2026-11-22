@@ -513,6 +513,72 @@ public class ChordalVoronoiRouterTest {
         .isGreaterThanOrEqualTo(decoupled.getTelemetry().getPruneRatio());
   }
 
+  @Test
+  public void incrementalRemoveAvoidsFullKMeansUntilChurnThresholdAndPreservesZeroFnr() {
+    int dim = 64;
+    Random rng = new Random(9090L);
+    RouterConfig cfg = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .hysteresisDelta(0.15d)
+        .randomSeed(9090L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+
+    // Seed 100 subscriptions so we are firmly in CHORDAL_VORONOI mode (20% churn threshold = 20)
+    List<VectorSubscription> subs = new ArrayList<>(100);
+    for (int i = 0; i < 100; i++) {
+      subs.add(new VectorSubscription("inc-rm-" + i, randomUnitVector(rng, dim), 0.70f));
+    }
+    router.addSubscriptions(subs);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    long reclustersAfterInit = router.getTelemetry().getFullReclusterCount();
+    assertThat(reclustersAfterInit).isEqualTo(1L);
+
+    // Remove 10 subscriptions (< 20% of 90 = 18): must NOT trigger full spherical k-means
+    for (int i = 0; i < 10; i++) {
+      VectorSubscription removed = subs.get(i);
+      assertThat(router.removeSubscription(removed.getSubscriptionId())).isTrue();
+      assertThat(router.getTelemetry().getFullReclusterCount())
+          .as("Incremental remove #%d below 20%% churn must not trigger full k-means", i)
+          .isEqualTo(reclustersAfterInit);
+
+      // Verify removed subscription is never returned and FNR == 0 holds
+      List<ChordalVoronoiRouter.MatchResult> matches =
+          router.route(removed.getNormalizedQueryVector());
+      assertThat(matches)
+          .extracting(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+          .doesNotContain(removed.getSubscriptionId());
+      FnrVerificationResult verify =
+          router.verifyAgainstBruteForce(removed.getNormalizedQueryVector());
+      assertThat(verify.isExactMatch()).isTrue();
+    }
+
+    // Verify FNR == 0 across 200 random queries and all 90 remaining exact vectors
+    for (int i = 10; i < 100; i++) {
+      assertThat(router.verifyAgainstBruteForce(subs.get(i).getNormalizedQueryVector())
+          .isExactMatch()).isTrue();
+    }
+    for (int i = 0; i < 200; i++) {
+      assertThat(router.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
+          .isTrue();
+    }
+
+    // Remove 10 more subscriptions (cumulative churn hits 20 >= 20% of remaining) -> triggers
+    // recluster
+    for (int i = 10; i < 20; i++) {
+      assertThat(router.removeSubscription(subs.get(i).getSubscriptionId())).isTrue();
+    }
+    assertThat(router.getSubscriptionCount()).isEqualTo(80);
+    assertThat(router.getTelemetry().getFullReclusterCount())
+        .as("Reaching 20%% churn threshold must trigger periodic k-means compaction")
+        .isGreaterThan(reclustersAfterInit);
+    for (int i = 0; i < 100; i++) {
+      assertThat(router.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
+          .isTrue();
+    }
+  }
+
   private static float[] randomUnitVector(Random rng, int dim) {
     float[] v = new float[dim];
     for (int i = 0; i < dim; i++) {
