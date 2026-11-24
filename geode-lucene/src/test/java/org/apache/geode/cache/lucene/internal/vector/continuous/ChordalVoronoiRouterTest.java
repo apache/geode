@@ -827,6 +827,314 @@ public class ChordalVoronoiRouterTest {
     }
   }
 
+  @Test
+  public void subnormalAndExtremeMagnitudeVectorsNormalizeWithoutOverflowOrUnderflowAndYieldZeroFnr() {
+    float[][] edgeCases = new float[][] {
+        new float[] {Float.MIN_VALUE, 0.0f, 0.0f, 0.0f},
+        new float[] {Float.MIN_VALUE, -Float.MIN_VALUE, Float.MIN_VALUE, -Float.MIN_VALUE},
+        new float[] {1.0e-30f, 2.0e-30f, -1.0e-30f, 0.0f},
+        new float[] {1.0e-19f, -1.0e-19f, 1.0e-19f, 1.0e-19f},
+        new float[] {Float.MAX_VALUE, Float.MAX_VALUE, 0.0f, 0.0f},
+        new float[] {-Float.MAX_VALUE, 0.0f, Float.MAX_VALUE, 0.0f},
+        new float[] {Float.MIN_VALUE, 1.0f, 0.0f, 0.0f}
+    };
+    for (float[] raw : edgeCases) {
+      float[] unit = VectorSubscription.normalize(raw);
+      double normSq = 0.0d;
+      for (float u : unit) {
+        assertThat(Float.isFinite(u)).isTrue();
+        normSq += (double) u * (double) u;
+      }
+      assertThat(Math.sqrt(normSq)).isBetween(0.9999d, 1.0001d);
+    }
+
+    int dim = 64;
+    Random rng = new Random(20261124L);
+    RouterConfig cfg = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .hysteresisDelta(0.15d)
+        .randomSeed(20261124L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+
+    float[][] topics = new float[8][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVector(rng, dim);
+    }
+    float[] scales = new float[] {Float.MIN_VALUE, 1.0e-30f, 1.0e-19f, Float.MAX_VALUE, 1.0f};
+
+    List<VectorSubscription> subs = new ArrayList<>(64);
+    for (int i = 0; i < 64; i++) {
+      float[] base = perturbVector(rng, topics[i % topics.length], 0.05f);
+      float scale = scales[i % scales.length];
+      float[] scaled = new float[dim];
+      for (int d = 0; d < dim; d++) {
+        // Ensure non-zero subnormal coordinates even when |base[d]| is ~0.1
+        scaled[d] = (scale == Float.MIN_VALUE)
+            ? (base[d] >= 0.0f ? Float.MIN_VALUE : -Float.MIN_VALUE)
+            : base[d] * scale;
+      }
+      subs.add(new VectorSubscription("subnorm-" + i, scaled, 0.80f));
+    }
+    router.addSubscriptions(subs);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+    int totalBruteMatches = 0;
+    for (int i = 0; i < 200; i++) {
+      float[] q = (i % 2 == 0)
+          ? perturbVector(rng, topics[i % topics.length], 0.05f)
+          : randomUnitVector(rng, dim);
+      float scale = scales[i % scales.length];
+      float[] scaledQuery = new float[dim];
+      for (int d = 0; d < dim; d++) {
+        scaledQuery[d] = (scale == Float.MIN_VALUE)
+            ? (q[d] >= 0.0f ? Float.MIN_VALUE : -Float.MIN_VALUE)
+            : q[d] * scale;
+      }
+      FnrVerificationResult res = router.verifyAgainstBruteForce(scaledQuery);
+      assertThat(res.isExactMatch())
+          .as("Subnormal/extreme-scale query iter=%d scale=%g must yield FNR=0 and FP=0", i, scale)
+          .isTrue();
+      totalBruteMatches += res.getBruteForceMatchCount();
+    }
+    assertThat(totalBruteMatches).isGreaterThan(0);
+    assertThat(router.getTelemetry().getPruneRatio()).isGreaterThan(0.20d);
+  }
+
+  @Test
+  public void heterogeneousTauStratificationAndBoundAwareInsertIsolateOutliersWithZeroFnr() {
+    assertThatThrownBy(() -> RouterConfig.builder(8).thresholdStrata(0))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThat(RouterConfig.builder(8).build().getThresholdStrata())
+        .isEqualTo(ChordalVoronoiRouter.DEFAULT_THRESHOLD_STRATA);
+
+    int dim = 64;
+    Random rng = new Random(314159L);
+    float[][] topics = new float[8][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVector(rng, dim);
+    }
+
+    // 15% low-tau outliers (0.50..0.58) mixed across all 8 topics with 85% high-tau subs
+    // (0.93..0.97)
+    List<VectorSubscription> subs = new ArrayList<>(200);
+    float noise = 0.70f / (float) Math.sqrt(dim);
+    for (int i = 0; i < 200; i++) {
+      float[] q = perturbVector(rng, topics[i % topics.length], noise);
+      float tau = (i % 7 == 0)
+          ? 0.50f + (i % 5) * 0.02f
+          : 0.93f + (i % 5) * 0.01f;
+      subs.add(new VectorSubscription("strata-" + i, q, tau));
+    }
+
+    RouterConfig unstratifiedCfg = RouterConfig.builder(dim)
+        .numClusters(16)
+        .expectedSurvivalFraction(0.15d)
+        .thresholdStrata(1)
+        .enableSurvivalGuard(false)
+        .randomSeed(314159L)
+        .build();
+    RouterConfig stratifiedCfg = RouterConfig.builder(dim)
+        .numClusters(16)
+        .expectedSurvivalFraction(0.15d)
+        .thresholdStrata(4)
+        .enableSurvivalGuard(false)
+        .randomSeed(314159L)
+        .build();
+
+    ChordalVoronoiRouter unstratified = new ChordalVoronoiRouter(unstratifiedCfg);
+    ChordalVoronoiRouter stratified = new ChordalVoronoiRouter(stratifiedCfg);
+    unstratified.addSubscriptions(subs);
+    stratified.addSubscriptions(subs);
+
+    assertThat(unstratified.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(stratified.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+    for (int i = 0; i < 500; i++) {
+      float[] query = (i % 4 == 0)
+          ? perturbVector(rng, topics[i % topics.length], noise)
+          : randomUnitVector(rng, dim);
+      assertThat(unstratified.verifyAgainstBruteForce(query).isExactMatch()).isTrue();
+      assertThat(stratified.verifyAgainstBruteForce(query).isExactMatch()).isTrue();
+      unstratified.route(query);
+      stratified.route(query);
+    }
+
+    // Stratified router isolates low-tau outliers into dedicated bands and prunes far more cells
+    assertThat(stratified.getTelemetry().getPruneRatio())
+        .isGreaterThan(unstratified.getTelemetry().getPruneRatio() + 0.25d);
+    assertThat(stratified.getTelemetry().getObservedSurvivalFraction())
+        .isLessThan(unstratified.getTelemetry().getObservedSurvivalFraction());
+
+    // Bound-aware incremental insert: adding new low-tau outliers must NOT poison high-tau cells
+    ChordalVoronoiRouter.VoronoiCell[] cellsBefore = stratified.getCurrentCellsForTest();
+    int highTauCellsBefore = 0;
+    for (ChordalVoronoiRouter.VoronoiCell c : cellsBefore) {
+      if (c.minMemberThreshold >= 0.90f) {
+        highTauCellsBefore++;
+      }
+    }
+    assertThat(highTauCellsBefore).isGreaterThan(0);
+
+    for (int i = 0; i < 10; i++) {
+      stratified.addSubscription(new VectorSubscription("inc-outlier-" + i,
+          perturbVector(rng, topics[i % topics.length], noise), 0.51f + i * 0.005f));
+    }
+
+    ChordalVoronoiRouter.VoronoiCell[] cellsAfter = stratified.getCurrentCellsForTest();
+    int highTauCellsAfter = 0;
+    for (ChordalVoronoiRouter.VoronoiCell c : cellsAfter) {
+      if (c.minMemberThreshold >= 0.90f) {
+        highTauCellsAfter++;
+      }
+    }
+    assertThat(highTauCellsAfter)
+        .as("Bound-aware incremental insert must keep high-tau cells unpoisoned")
+        .isEqualTo(highTauCellsBefore);
+
+    for (int i = 0; i < 200; i++) {
+      assertThat(stratified.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
+          .isTrue();
+    }
+
+    // Guard check: K < 4 and narrow tauMax - tauMin < 0.03f cleanly remain single-stratum with
+    // FNR=0
+    ChordalVoronoiRouter smallKRouter = new ChordalVoronoiRouter(RouterConfig.builder(dim)
+        .numClusters(3)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .thresholdStrata(4)
+        .build());
+    smallKRouter.addSubscriptions(subs);
+    assertThat(smallKRouter.getTelemetry().getActiveClusterCount()).isEqualTo(3);
+    assertThat(smallKRouter.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
+        .isTrue();
+
+    List<VectorSubscription> narrowTauSubs = new ArrayList<>(64);
+    for (int i = 0; i < 64; i++) {
+      narrowTauSubs.add(new VectorSubscription("narrow-" + i,
+          perturbVector(rng, topics[i % topics.length], noise), 0.90f + (i % 3) * 0.01f));
+    }
+    ChordalVoronoiRouter narrowRouter = new ChordalVoronoiRouter(RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .thresholdStrata(4)
+        .build());
+    narrowRouter.addSubscriptions(narrowTauSubs);
+    assertThat(narrowRouter.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
+        .isTrue();
+  }
+
+  @Test
+  public void periodicSurvivalGuardReprobeRestoresVoronoiAfterRegimeShiftWithZeroFnr() {
+    RouterConfig defaults = RouterConfig.builder(8).build();
+    assertThat(defaults.getSurvivalGuardReprobeInterval())
+        .isEqualTo(ChordalVoronoiRouter.DEFAULT_SURVIVAL_GUARD_REPROBE_INTERVAL);
+    assertThat(defaults.getSurvivalGuardRecoveryMargin())
+        .isEqualTo(ChordalVoronoiRouter.DEFAULT_SURVIVAL_GUARD_RECOVERY_MARGIN);
+    assertThatThrownBy(() -> RouterConfig.builder(8).survivalGuardReprobeInterval(-1))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> RouterConfig.builder(8).survivalGuardRecoveryMargin(-0.01d))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> RouterConfig.builder(8).survivalGuardRecoveryMargin(1.0d))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    int dim = 64;
+    Random rng = new Random(20261125L);
+    float[] sharedAnchor = randomUnitVector(rng, dim);
+
+    // Place 8 subscription topics in the positive cap around sharedAnchor (dot ~ 0.80) so queries
+    // aligned with sharedAnchor match/survive every Voronoi cell (p_hat -> 1.0), whereas orthogonal
+    // queries prune 100% of cells (p_probe -> 0.0).
+    float[][] topics = new float[8][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = vectorAtExactCosine(rng, sharedAnchor, 0.82f);
+    }
+    List<VectorSubscription> subs = new ArrayList<>(128);
+    for (int i = 0; i < 128; i++) {
+      subs.add(new VectorSubscription("reprobe-" + i,
+          perturbVector(rng, topics[i % topics.length], 0.02f), 0.82f));
+    }
+
+    RouterConfig cfg = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .maxVoronoiSurvivalRate(0.85d)
+        .enableSurvivalGuard(true)
+        .survivalGuardMinSamples(24)
+        .survivalGuardReprobeInterval(64)
+        .survivalGuardRecoveryMargin(0.10d)
+        .hysteresisDelta(0.15d)
+        .randomSeed(20261125L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+    router.addSubscriptions(subs);
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+    // Phase 1: Anchor-aligned broad queries trip the survival guard -> FLAT_SIMD
+    for (int i = 0; i < 40; i++) {
+      FnrVerificationResult res =
+          router.verifyAgainstBruteForce(perturbVector(rng, sharedAnchor, 0.01f));
+      assertThat(res.isExactMatch()).isTrue();
+    }
+    assertThat(router.isSurvivalGuardTripped()).isTrue();
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    assertThat(router.getSurvivalGuardRecoveryCount()).isZero();
+    assertThat(router.getTelemetry().getActiveClusterCount()).isZero();
+
+    // Still in Phase 1 across a full reprobe interval + 16-sample burst: must stay FLAT_SIMD
+    for (int i = 0; i < 90; i++) {
+      FnrVerificationResult res =
+          router.verifyAgainstBruteForce(perturbVector(rng, sharedAnchor, 0.01f));
+      assertThat(res.isExactMatch()).isTrue();
+    }
+    assertThat(router.isSurvivalGuardTripped()).isTrue();
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    assertThat(router.getSurvivalGuardRecoveryCount()).isZero();
+
+    // Phase 2: Regime shifts to queries orthogonal to sharedAnchor (p_probe = 0.0 <= 0.75)
+    for (int i = 0; i < 100; i++) {
+      float[] orth = vectorAtExactCosine(rng, sharedAnchor, 0.0f);
+      FnrVerificationResult res = router.verifyAgainstBruteForce(orth);
+      assertThat(res.isExactMatch()).isTrue();
+    }
+    assertThat(router.isSurvivalGuardTripped()).isFalse();
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(router.getEffectiveMCrit()).isEqualTo(router.getMCrit());
+    assertThat(router.getSurvivalGuardRecoveryCount()).isEqualTo(1L);
+    assertThat(router.getTelemetry().getSurvivalGuardRecoveryCount()).isEqualTo(1L);
+    assertThat(router.getTelemetry().getActiveClusterCount()).isEqualTo(8);
+
+    // Verify survivalGuardReprobeInterval(0) disables automatic recovery
+    RouterConfig disabledCfg = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .maxVoronoiSurvivalRate(0.85d)
+        .enableSurvivalGuard(true)
+        .survivalGuardMinSamples(24)
+        .survivalGuardReprobeInterval(0)
+        .hysteresisDelta(0.15d)
+        .randomSeed(20261125L)
+        .build();
+    ChordalVoronoiRouter disabledRouter = new ChordalVoronoiRouter(disabledCfg);
+    disabledRouter.addSubscriptions(subs);
+    for (int i = 0; i < 40; i++) {
+      assertThat(disabledRouter.verifyAgainstBruteForce(perturbVector(rng, sharedAnchor, 0.01f))
+          .isExactMatch()).isTrue();
+    }
+    assertThat(disabledRouter.isSurvivalGuardTripped()).isTrue();
+    for (int i = 0; i < 200; i++) {
+      assertThat(
+          disabledRouter.verifyAgainstBruteForce(vectorAtExactCosine(rng, sharedAnchor, 0.0f))
+              .isExactMatch()).isTrue();
+    }
+    assertThat(disabledRouter.isSurvivalGuardTripped()).isTrue();
+    assertThat(disabledRouter.getCurrentMode()).isEqualTo(RoutingMode.FLAT_SIMD);
+    assertThat(disabledRouter.getSurvivalGuardRecoveryCount()).isZero();
+  }
+
   private static float[] randomUnitVector(Random rng, int dim) {
     float[] v = new float[dim];
     for (int i = 0; i < dim; i++) {

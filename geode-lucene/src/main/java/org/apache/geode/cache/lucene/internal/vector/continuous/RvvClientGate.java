@@ -271,6 +271,29 @@ public class RvvClientGate {
   }
 
   /**
+   * Returns a snapshot of safe high-water marks {@code min_q V_client[q, bucketId, memberId]}
+   * keyed by {@code memberId} for {@code bucketId}, suitable for passing to
+   * {@link RvvMonotonicVectorDispatcher#replayUncheckpointedForReconnect(int, Map)} on client
+   * reconnect.
+   */
+  public Map<String, Long> getSafeHighWaterByMember(int bucketId) {
+    Set<String> members = new HashSet<>();
+    for (SubscriptionStreamKey k : streamStates.keySet()) {
+      if (k.bucketId == bucketId) {
+        members.add(k.memberId);
+      }
+    }
+    Map<String, Long> result = new HashMap<>();
+    for (String memberId : members) {
+      long safe = getSafeCheckpointVersion(bucketId, memberId);
+      if (safe > 0L) {
+        result.put(memberId, safe);
+      }
+    }
+    return Collections.unmodifiableMap(result);
+  }
+
+  /**
    * Returns a snapshot of safe checkpoint versions per {@link RvvStreamKey}.
    */
   public Map<RvvStreamKey, Long> getSafeCheckpointSnapshot() {

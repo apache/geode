@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -82,6 +83,19 @@ public class ChordalVoronoiRouter {
   public static final double DEFAULT_SURVIVAL_EWMA_ALPHA = 0.10d;
   /** Default minimum routed samples before the online survival-rate guard can trip. */
   public static final int DEFAULT_SURVIVAL_GUARD_MIN_SAMPLES = 32;
+  /**
+   * Default routes between periodic 16-sample Voronoi survival re-probe bursts ({@code 0}
+   * disables).
+   */
+  public static final int DEFAULT_SURVIVAL_GUARD_REPROBE_INTERVAL = 4096;
+  /** Default survival-rate hysteresis margin below {@code maxVoronoiSurvivalRate} for recovery. */
+  public static final double DEFAULT_SURVIVAL_GUARD_RECOVERY_MARGIN = 0.10d;
+  /** Number of consecutive routes sampled in each periodic survival-guard re-probe burst. */
+  public static final int DEFAULT_SURVIVAL_GUARD_PROBE_BURST_SIZE = 16;
+  /** Default maximum quantile threshold strata when subscription thresholds are heterogeneous. */
+  public static final int DEFAULT_THRESHOLD_STRATA = 4;
+  /** Minimum {@code tauMax - tauMin} spread activating heterogeneous-tau stratification. */
+  static final float THRESHOLD_STRATIFICATION_MIN_SPREAD = 0.03f;
   /** Default dual-threshold hysteresis half-width {@code delta = 0.15} -> [0.85, 1.15] * M_crit. */
   public static final double DEFAULT_HYSTERESIS_DELTA = 0.15d;
   /** Default cluster count {@code K}. */
@@ -109,6 +123,9 @@ public class ChordalVoronoiRouter {
     private final double maxVoronoiSurvivalRate;
     private final boolean enableSurvivalGuard;
     private final int survivalGuardMinSamples;
+    private final int survivalGuardReprobeInterval;
+    private final double survivalGuardRecoveryMargin;
+    private final int thresholdStrata;
     private final double hysteresisDelta;
     private final int maxKMeansIterations;
     private final long randomSeed;
@@ -124,6 +141,9 @@ public class ChordalVoronoiRouter {
       this.maxVoronoiSurvivalRate = builder.maxVoronoiSurvivalRate;
       this.enableSurvivalGuard = builder.enableSurvivalGuard;
       this.survivalGuardMinSamples = builder.survivalGuardMinSamples;
+      this.survivalGuardReprobeInterval = builder.survivalGuardReprobeInterval;
+      this.survivalGuardRecoveryMargin = builder.survivalGuardRecoveryMargin;
+      this.thresholdStrata = builder.thresholdStrata;
       this.hysteresisDelta = builder.hysteresisDelta;
       this.maxKMeansIterations = builder.maxKMeansIterations;
       this.randomSeed = builder.randomSeed;
@@ -170,6 +190,18 @@ public class ChordalVoronoiRouter {
       return survivalGuardMinSamples;
     }
 
+    public int getSurvivalGuardReprobeInterval() {
+      return survivalGuardReprobeInterval;
+    }
+
+    public double getSurvivalGuardRecoveryMargin() {
+      return survivalGuardRecoveryMargin;
+    }
+
+    public int getThresholdStrata() {
+      return thresholdStrata;
+    }
+
     public double getHysteresisDelta() {
       return hysteresisDelta;
     }
@@ -201,6 +233,9 @@ public class ChordalVoronoiRouter {
       private double maxVoronoiSurvivalRate = DEFAULT_MAX_VORONOI_SURVIVAL_RATE;
       private boolean enableSurvivalGuard = true;
       private int survivalGuardMinSamples = DEFAULT_SURVIVAL_GUARD_MIN_SAMPLES;
+      private int survivalGuardReprobeInterval = DEFAULT_SURVIVAL_GUARD_REPROBE_INTERVAL;
+      private double survivalGuardRecoveryMargin = DEFAULT_SURVIVAL_GUARD_RECOVERY_MARGIN;
+      private int thresholdStrata = DEFAULT_THRESHOLD_STRATA;
       private double hysteresisDelta = DEFAULT_HYSTERESIS_DELTA;
       private int maxKMeansIterations = DEFAULT_MAX_KMEANS_ITERATIONS;
       private long randomSeed = 0x5EED1234L;
@@ -276,6 +311,50 @@ public class ChordalVoronoiRouter {
               "survivalGuardMinSamples must be > 0, got: " + survivalGuardMinSamples);
         }
         this.survivalGuardMinSamples = survivalGuardMinSamples;
+        return this;
+      }
+
+      /**
+       * Configures the periodic re-probe interval (in routed vectors while reverted to
+       * {@link RoutingMode#FLAT_SIMD}) between 16-sample {@code O(Kd)} Voronoi survival probe
+       * bursts. Pass {@code 0} to disable periodic re-probing (default {@code 4096}).
+       */
+      public Builder survivalGuardReprobeInterval(int survivalGuardReprobeInterval) {
+        if (survivalGuardReprobeInterval < 0) {
+          throw new IllegalArgumentException(
+              "survivalGuardReprobeInterval must be >= 0, got: " + survivalGuardReprobeInterval);
+        }
+        this.survivalGuardReprobeInterval = survivalGuardReprobeInterval;
+        return this;
+      }
+
+      /**
+       * Configures the hysteresis margin below {@code maxVoronoiSurvivalRate} required for a
+       * periodic survival-guard re-probe burst to restore {@link RoutingMode#CHORDAL_VORONOI}
+       * (default {@code 0.10}).
+       */
+      public Builder survivalGuardRecoveryMargin(double survivalGuardRecoveryMargin) {
+        if (!Double.isFinite(survivalGuardRecoveryMargin) || survivalGuardRecoveryMargin < 0.0d
+            || survivalGuardRecoveryMargin >= 1.0d) {
+          throw new IllegalArgumentException(
+              "survivalGuardRecoveryMargin must be in [0, 1), got: "
+                  + survivalGuardRecoveryMargin);
+        }
+        this.survivalGuardRecoveryMargin = survivalGuardRecoveryMargin;
+        return this;
+      }
+
+      /**
+       * Configures the maximum number of quantile {@code tau} strata used when clustering
+       * heterogeneous subscription thresholds ({@code tauMax - tauMin >= 0.03f} and {@code K >= 4},
+       * default {@code 4}). Pass {@code 1} to disable threshold stratification.
+       */
+      public Builder thresholdStrata(int thresholdStrata) {
+        if (thresholdStrata < 1) {
+          throw new IllegalArgumentException(
+              "thresholdStrata must be >= 1, got: " + thresholdStrata);
+        }
+        this.thresholdStrata = thresholdStrata;
         return this;
       }
 
@@ -381,13 +460,15 @@ public class ChordalVoronoiRouter {
     private final double observedSurvivalEwma;
     private final boolean survivalGuardTripped;
     private final long survivalGuardReversionCount;
+    private final long survivalGuardRecoveryCount;
 
     RouterTelemetry(RoutingMode currentMode, int subscriptionCount, int activeClusterCount,
         int mCrit, int upperSwitchThreshold, int lowerSwitchThreshold, long modeTransitionCount,
         long fullReclusterCount, long totalRoutedVectors, long totalCellsEvaluated,
         long totalCellsPruned, long totalSubscriptionsEvaluated, long totalSubscriptionsPossible,
         long fnrVerificationRuns, long fnrVerificationFalseNegatives, double observedSurvivalEwma,
-        boolean survivalGuardTripped, long survivalGuardReversionCount) {
+        boolean survivalGuardTripped, long survivalGuardReversionCount,
+        long survivalGuardRecoveryCount) {
       this.currentMode = currentMode;
       this.subscriptionCount = subscriptionCount;
       this.activeClusterCount = activeClusterCount;
@@ -406,6 +487,7 @@ public class ChordalVoronoiRouter {
       this.observedSurvivalEwma = observedSurvivalEwma;
       this.survivalGuardTripped = survivalGuardTripped;
       this.survivalGuardReversionCount = survivalGuardReversionCount;
+      this.survivalGuardRecoveryCount = survivalGuardRecoveryCount;
     }
 
     public RoutingMode getCurrentMode() {
@@ -474,6 +556,10 @@ public class ChordalVoronoiRouter {
       return survivalGuardReversionCount;
     }
 
+    public long getSurvivalGuardRecoveryCount() {
+      return survivalGuardRecoveryCount;
+    }
+
     public long getFnrVerificationRuns() {
       return fnrVerificationRuns;
     }
@@ -534,6 +620,8 @@ public class ChordalVoronoiRouter {
     final String[] memberIds;
     final float[] memberVectors; // contiguous: memberCount * dim
     final float[] memberThresholds;
+    final float minMemberThreshold;
+    final float maxMemberThreshold;
 
     VoronoiCell(float[] centroid, double coveringRadius, double maxChordalTolerance,
         double coupledBound, boolean useCoupledBound, double epsilonDot, double normMargin,
@@ -552,6 +640,18 @@ public class ChordalVoronoiRouter {
       this.memberIds = memberIds;
       this.memberVectors = memberVectors;
       this.memberThresholds = memberThresholds;
+      float minTau = Float.POSITIVE_INFINITY;
+      float maxTau = Float.NEGATIVE_INFINITY;
+      for (float tau : memberThresholds) {
+        if (tau < minTau) {
+          minTau = tau;
+        }
+        if (tau > maxTau) {
+          maxTau = tau;
+        }
+      }
+      this.minMemberThreshold = minTau;
+      this.maxMemberThreshold = maxTau;
     }
 
     int size() {
@@ -569,9 +669,19 @@ public class ChordalVoronoiRouter {
     final float[] flatThresholds;
     final VoronoiCell[] cells;
     final float[] centroidMatrix; // contiguous: cells.length * dim
+    final VoronoiCell[] probeCells; // retained in FLAT_SIMD when survival guard trips for O(Kd)
+                                    // periodic re-probing
+    final float[] probeCentroidMatrix;
 
     RouterSnapshot(RoutingMode mode, int dimension, int subscriptionCount, String[] flatIds,
         float[] flatVectors, float[] flatThresholds, VoronoiCell[] cells, float[] centroidMatrix) {
+      this(mode, dimension, subscriptionCount, flatIds, flatVectors, flatThresholds, cells,
+          centroidMatrix, null, null);
+    }
+
+    RouterSnapshot(RoutingMode mode, int dimension, int subscriptionCount, String[] flatIds,
+        float[] flatVectors, float[] flatThresholds, VoronoiCell[] cells, float[] centroidMatrix,
+        VoronoiCell[] probeCells, float[] probeCentroidMatrix) {
       this.mode = mode;
       this.dimension = dimension;
       this.subscriptionCount = subscriptionCount;
@@ -580,11 +690,13 @@ public class ChordalVoronoiRouter {
       this.flatThresholds = flatThresholds;
       this.cells = cells;
       this.centroidMatrix = centroidMatrix;
+      this.probeCells = probeCells;
+      this.probeCentroidMatrix = probeCentroidMatrix;
     }
 
     static RouterSnapshot empty(int dimension) {
       return new RouterSnapshot(RoutingMode.FLAT_SIMD, dimension, 0, new String[0], new float[0],
-          new float[0], new VoronoiCell[0], new float[0]);
+          new float[0], new VoronoiCell[0], new float[0], null, null);
     }
   }
 
@@ -617,6 +729,11 @@ public class ChordalVoronoiRouter {
       new AtomicLong(Double.doubleToRawLongBits(Double.NaN));
   private volatile boolean survivalGuardTripped = false;
   private final AtomicLong survivalGuardReversionCount = new AtomicLong();
+  private final AtomicLong survivalGuardRecoveryCount = new AtomicLong();
+  private final AtomicLong flatRoutesSinceLastProbe = new AtomicLong();
+  private final Object probeBurstLock = new Object();
+  private int probeBurstCollected = 0;
+  private double probeBurstSurvivalSum = 0.0d;
 
   public ChordalVoronoiRouter(int dimension) {
     this(RouterConfig.builder(dimension).build());
@@ -891,6 +1008,7 @@ public class ChordalVoronoiRouter {
       for (VectorSubscription sub : batch) {
         subscriptions.put(sub.getSubscriptionId(), sub);
       }
+      churnSinceLastCluster = 0;
       RoutingMode prevMode = snapshot.mode;
       RoutingMode nextMode = evaluateModeTransition(prevMode, subscriptions.size());
       if (nextMode != prevMode) {
@@ -985,6 +1103,14 @@ public class ChordalVoronoiRouter {
    */
   public boolean isSurvivalGuardTripped() {
     return survivalGuardTripped;
+  }
+
+  /**
+   * Returns the number of times the periodic survival-guard re-probe restored
+   * {@link RoutingMode#CHORDAL_VORONOI} after {@code p_probe <= maxVoronoiSurvivalRate - margin}.
+   */
+  public long getSurvivalGuardRecoveryCount() {
+    return survivalGuardRecoveryCount.get();
   }
 
   /**
@@ -1085,12 +1211,14 @@ public class ChordalVoronoiRouter {
         totalCellsPruned.get(), totalSubscriptionsEvaluated.get(),
         totalSubscriptionsPossible.get(), fnrVerificationRuns.get(),
         fnrVerificationFalseNegatives.get(), getObservedSurvivalRate(), survivalGuardTripped,
-        survivalGuardReversionCount.get());
+        survivalGuardReversionCount.get(), survivalGuardRecoveryCount.get());
   }
 
   private List<MatchResult> routeFlatSimd(float[] unitEmbedding, RouterSnapshot snap) {
     totalSubscriptionsEvaluated.addAndGet(snap.subscriptionCount);
-    return scanAllSubscriptions(unitEmbedding, snap);
+    List<MatchResult> matches = scanAllSubscriptions(unitEmbedding, snap);
+    maybeRunSurvivalGuardProbe(unitEmbedding, snap);
+    return matches;
   }
 
   private List<MatchResult> routeChordalVoronoi(float[] unitEmbedding, RouterSnapshot snap) {
@@ -1181,16 +1309,20 @@ public class ChordalVoronoiRouter {
       survivalGuardReversionCount.incrementAndGet();
       modeTransitionCount.incrementAndGet();
       subscriptionCellIndex.clear();
+      resetProbeBurstState();
+      boolean retainProbeCells = config.getSurvivalGuardReprobeInterval() > 0;
+      VoronoiCell[] probeCells = retainProbeCells ? cur.cells : null;
+      float[] probeCentroids = retainProbeCells ? cur.centroidMatrix : null;
       // One-time O(Md) materialization from Voronoi cells into contiguous flat SIMD arrays
       this.snapshot = materializeFlatSnapshotFromCells(cur.cells, cur.subscriptionCount,
-          cur.dimension);
+          cur.dimension, probeCells, probeCentroids);
     } finally {
       writeLock.unlock();
     }
   }
 
   private static RouterSnapshot materializeFlatSnapshotFromCells(VoronoiCell[] cells,
-      int subscriptionCount, int dim) {
+      int subscriptionCount, int dim, VoronoiCell[] probeCells, float[] probeCentroids) {
     if (subscriptionCount <= 0 || cells == null || cells.length == 0) {
       return RouterSnapshot.empty(dim);
     }
@@ -1206,13 +1338,113 @@ public class ChordalVoronoiRouter {
       offset += sz;
     }
     return new RouterSnapshot(RoutingMode.FLAT_SIMD, dim, offset, flatIds, flatVecs,
-        flatThresholds, new VoronoiCell[0], new float[0]);
+        flatThresholds, new VoronoiCell[0], new float[0], probeCells, probeCentroids);
+  }
+
+  private void maybeRunSurvivalGuardProbe(float[] unitEmbedding, RouterSnapshot snap) {
+    int reprobeInterval = config.getSurvivalGuardReprobeInterval();
+    if (reprobeInterval <= 0 || !survivalGuardTripped || snap.probeCells == null
+        || snap.probeCells.length == 0 || snap.subscriptionCount <= 0) {
+      return;
+    }
+    long count = flatRoutesSinceLastProbe.incrementAndGet();
+    if (count < reprobeInterval) {
+      return;
+    }
+    // O(Kd) Stage-1 centroid check only — never modifies FLAT_SIMD results or Stage-2 counters
+    double sampleSurvival = probeVoronoiSurvivalRate(unitEmbedding, snap);
+    boolean shouldRecover = false;
+    synchronized (probeBurstLock) {
+      if (!survivalGuardTripped || this.snapshot != snap) {
+        return;
+      }
+      if (flatRoutesSinceLastProbe.get() < reprobeInterval) {
+        return;
+      }
+      probeBurstCollected++;
+      probeBurstSurvivalSum += sampleSurvival;
+      if (probeBurstCollected >= DEFAULT_SURVIVAL_GUARD_PROBE_BURST_SIZE) {
+        double pProbe = probeBurstSurvivalSum / probeBurstCollected;
+        probeBurstCollected = 0;
+        probeBurstSurvivalSum = 0.0d;
+        flatRoutesSinceLastProbe.set(0L);
+        double recoveryCeiling =
+            config.getMaxVoronoiSurvivalRate() - config.getSurvivalGuardRecoveryMargin();
+        if (pProbe <= recoveryCeiling) {
+          shouldRecover = true;
+        }
+      }
+    }
+    if (shouldRecover) {
+      recoverVoronoiFromSurvivalGuard(snap);
+    }
+  }
+
+  private static double probeVoronoiSurvivalRate(float[] unitEmbedding, RouterSnapshot snap) {
+    VoronoiCell[] probeCells = snap.probeCells;
+    float[] probeCentroids = snap.probeCentroidMatrix;
+    int dim = snap.dimension;
+    int numCells = probeCells.length;
+    long unprunedSubs = 0L;
+    for (int k = 0; k < numCells; k++) {
+      VoronoiCell cell = probeCells[k];
+      float rawDot =
+          VectorSubscription.dotProductContiguous(unitEmbedding, probeCentroids, k * dim, dim);
+      if ((double) rawDot >= cell.minCosineThreshold) {
+        unprunedSubs += cell.size();
+      }
+    }
+    return snap.subscriptionCount == 0 ? 1.0d
+        : (double) unprunedSubs / (double) snap.subscriptionCount;
+  }
+
+  private void recoverVoronoiFromSurvivalGuard(RouterSnapshot expectedSnap) {
+    if (!writeLock.tryLock()) {
+      return;
+    }
+    try {
+      RouterSnapshot cur = this.snapshot;
+      if (!survivalGuardTripped || cur != expectedSnap) {
+        return;
+      }
+      int count = subscriptions.size();
+      if (mCrit == Integer.MAX_VALUE || count <= lowerSwitchThreshold || count < 2) {
+        return;
+      }
+      resetSurvivalGuardLocked();
+      survivalGuardRecoveryCount.incrementAndGet();
+      modeTransitionCount.incrementAndGet();
+      if (churnSinceLastCluster == 0 && cur.probeCells != null && cur.probeCells.length > 0
+          && cur.subscriptionCount == count) {
+        subscriptionCellIndex.clear();
+        for (int k = 0; k < cur.probeCells.length; k++) {
+          for (String memberId : cur.probeCells[k].memberIds) {
+            subscriptionCellIndex.put(memberId, k);
+          }
+        }
+        this.snapshot = new RouterSnapshot(RoutingMode.CHORDAL_VORONOI, cur.dimension, count,
+            null, null, null, cur.probeCells, cur.probeCentroidMatrix, null, null);
+      } else {
+        rebuildFullSnapshot(RoutingMode.CHORDAL_VORONOI);
+      }
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  private void resetProbeBurstState() {
+    flatRoutesSinceLastProbe.set(0L);
+    synchronized (probeBurstLock) {
+      probeBurstCollected = 0;
+      probeBurstSurvivalSum = 0.0d;
+    }
   }
 
   private void resetSurvivalGuardLocked() {
     survivalGuardTripped = false;
     survivalSampleCount.set(0L);
     observedSurvivalEwmaBits.set(Double.doubleToRawLongBits(Double.NaN));
+    resetProbeBurstState();
   }
 
   private static List<MatchResult> scanAllSubscriptions(float[] unitEmbedding,
@@ -1281,31 +1513,24 @@ public class ChordalVoronoiRouter {
   }
 
   /**
-   * Incrementally inserts {@code sub} into its nearest Voronoi cell using true per-cell
+   * Incrementally inserts {@code sub} into a compatible Voronoi cell using true per-cell
    * copy-on-write in {@code O((K + |V_k|) * d)} without touching or copying any global flat arrays
-   * or sibling cells.
+   * or sibling cells. Prefers tau-compatible cells so low-tau outliers do not poison high-tau
+   * cells.
    */
   private void incrementallyInsertIntoVoronoi(VectorSubscription sub) {
     RouterSnapshot prev = this.snapshot;
     int dim = config.getDimension();
     int newCount = prev.subscriptionCount + 1;
 
-    // Assign to nearest existing centroid and expand R_k, rho_k_max to preserve Theorem 1
     VoronoiCell[] prevCells = prev.cells;
-    int bestCellIdx = 0;
-    float bestDot = Float.NEGATIVE_INFINITY;
     float[] q = sub.getNormalizedQueryVectorUnsafe();
-    for (int k = 0; k < prevCells.length; k++) {
-      float dot = VectorSubscription.dotProductContiguous(q, prev.centroidMatrix, k * dim, dim);
-      if (dot > bestDot) {
-        bestDot = dot;
-        bestCellIdx = k;
-      }
-    }
+    double rhoUp = computeSafeChordalTolerance(sub.getSimilarityThreshold(), highamDotEpsilon);
+    int bestCellIdx = selectBestCellForIncrementalInsert(prevCells, prev.centroidMatrix, q, rhoUp,
+        sub.getSimilarityThreshold(), dim);
 
     VoronoiCell target = prevCells[bestCellIdx];
     double dist = VectorSubscription.euclideanChordalDistance(q, target.centroid);
-    double rhoUp = computeSafeChordalTolerance(sub.getSimilarityThreshold(), highamDotEpsilon);
     double newRadius = Math.max(target.coveringRadius, dist);
     double newMaxTol = Math.max(target.maxChordalTolerance, rhoUp);
     double newCoupledBound = Math.max(target.coupledBound, dist + rhoUp);
@@ -1326,6 +1551,85 @@ public class ChordalVoronoiRouter {
 
     this.snapshot = new RouterSnapshot(RoutingMode.CHORDAL_VORONOI, dim, newCount, null, null,
         null, newCells, prev.centroidMatrix);
+  }
+
+  private int selectBestCellForIncrementalInsert(VoronoiCell[] prevCells, float[] centroidMatrix,
+      float[] q, double rhoUp, float tau, int dim) {
+    double[] dots = new double[prevCells.length];
+    double[] candBounds = new double[prevCells.length];
+    double[] tauGaps = new double[prevCells.length];
+    double minTauGap = Double.POSITIVE_INFINITY;
+    boolean hasCompatible = false;
+    boolean hasTightCompatible = false;
+    double bestTightCandBound = Double.POSITIVE_INFINITY;
+
+    for (int k = 0; k < prevCells.length; k++) {
+      VoronoiCell cell = prevCells[k];
+      double dot = VectorSubscription.dotProductContiguous(q, centroidMatrix, k * dim, dim);
+      dots[k] = dot;
+      double dist = VectorSubscription.euclideanChordalDistance(q, cell.centroid);
+      double candCoupled = Math.max(cell.coupledBound, dist + rhoUp);
+      double candMaxTol = Math.max(cell.maxChordalTolerance, rhoUp);
+      double candRadius = Math.max(cell.coveringRadius, dist);
+      double rawBound =
+          (config.isUseCoupledBound() ? candCoupled : (candRadius + candMaxTol)) + normMargin;
+      candBounds[k] = Math.min(2.0d, Math.max(0.0d, rawBound));
+
+      double gap;
+      if (tau < cell.minMemberThreshold) {
+        gap = cell.minMemberThreshold - tau;
+      } else if (tau > cell.maxMemberThreshold) {
+        gap = tau - cell.maxMemberThreshold;
+      } else {
+        gap = 0.0d;
+        hasCompatible = true;
+        if (tau - cell.minMemberThreshold <= 0.10f) {
+          hasTightCompatible = true;
+          if (candBounds[k] < bestTightCandBound) {
+            bestTightCandBound = candBounds[k];
+          }
+        }
+      }
+      tauGaps[k] = gap;
+      if (gap < minTauGap) {
+        minTauGap = gap;
+      }
+    }
+
+    int bestCellIdx = 0;
+    double bestDot = Double.NEGATIVE_INFINITY;
+    double bestCandBound = Double.POSITIVE_INFINITY;
+
+    if (hasCompatible) {
+      for (int k = 0; k < prevCells.length; k++) {
+        if (tauGaps[k] != 0.0d) {
+          continue;
+        }
+        if (hasTightCompatible && (tau - prevCells[k].minMemberThreshold) > 0.10f
+            && bestTightCandBound + 0.05d < prevCells[k].effectiveUpperBound) {
+          continue;
+        }
+        if (dots[k] > bestDot || (dots[k] == bestDot && candBounds[k] < bestCandBound)) {
+          bestDot = dots[k];
+          bestCandBound = candBounds[k];
+          bestCellIdx = k;
+        }
+      }
+      return bestCellIdx;
+    }
+
+    double allowedGap = minTauGap + 0.02d;
+    for (int k = 0; k < prevCells.length; k++) {
+      if (tauGaps[k] > allowedGap) {
+        continue;
+      }
+      if (dots[k] > bestDot || (dots[k] == bestDot && candBounds[k] < bestCandBound)) {
+        bestDot = dots[k];
+        bestCandBound = candBounds[k];
+        bestCellIdx = k;
+      }
+    }
+    return bestCellIdx;
   }
 
   /**
@@ -1428,6 +1732,7 @@ public class ChordalVoronoiRouter {
     if (count == 0) {
       churnSinceLastCluster = 0;
       subscriptionCellIndex.clear();
+      resetProbeBurstState();
       this.snapshot = RouterSnapshot.empty(dim);
       return;
     }
@@ -1444,18 +1749,35 @@ public class ChordalVoronoiRouter {
         System.arraycopy(sub.getNormalizedQueryVectorUnsafe(), 0, flatVecs, i * dim, dim);
         flatThresholds[i] = sub.getSimilarityThreshold();
       }
+      VoronoiCell[] probeCells = null;
+      float[] probeCentroids = null;
+      if (survivalGuardTripped && config.getSurvivalGuardReprobeInterval() > 0
+          && mCrit != Integer.MAX_VALUE && count > lowerSwitchThreshold && count >= 2) {
+        RouterSnapshot prev = this.snapshot;
+        if (prev != null && prev.probeCells != null && prev.probeCells.length > 0
+            && churnSinceLastCluster > 0 && !shouldRecluster()) {
+          probeCells = prev.probeCells;
+          probeCentroids = prev.probeCentroidMatrix;
+        } else {
+          probeCells = buildSphericalVoronoiCells(list, dim);
+          probeCentroids = buildCentroidMatrix(probeCells, dim);
+          churnSinceLastCluster = 0;
+          resetProbeBurstState();
+        }
+      } else if (!survivalGuardTripped) {
+        resetProbeBurstState();
+      }
       this.snapshot = new RouterSnapshot(RoutingMode.FLAT_SIMD, dim, count, flatIds, flatVecs,
-          flatThresholds, new VoronoiCell[0], new float[0]);
+          flatThresholds, new VoronoiCell[0], new float[0], probeCells, probeCentroids);
       return;
     }
 
     // Build K Voronoi cells using spherical k-means++ + Lloyd refinement on S^{d-1}
     fullReclusterCount.incrementAndGet();
     VoronoiCell[] cells = buildSphericalVoronoiCells(list, dim);
-    float[] centroidMatrix = new float[cells.length * dim];
+    float[] centroidMatrix = buildCentroidMatrix(cells, dim);
     subscriptionCellIndex.clear();
     for (int k = 0; k < cells.length; k++) {
-      System.arraycopy(cells[k].centroid, 0, centroidMatrix, k * dim, dim);
       for (String memberId : cells[k].memberIds) {
         subscriptionCellIndex.put(memberId, k);
       }
@@ -1465,14 +1787,288 @@ public class ChordalVoronoiRouter {
         cells, centroidMatrix);
   }
 
+  private static float[] buildCentroidMatrix(VoronoiCell[] cells, int dim) {
+    float[] centroidMatrix = new float[cells.length * dim];
+    for (int k = 0; k < cells.length; k++) {
+      System.arraycopy(cells[k].centroid, 0, centroidMatrix, k * dim, dim);
+    }
+    return centroidMatrix;
+  }
+
   /**
-   * Partitions subscriptions into {@code K_eff = min(K, M)} spherical Voronoi cells via k-means++
-   * seeding and Lloyd iterations on {@code S^{d-1}}.
+   * Partitions subscriptions into {@code K_eff = min(K, M)} spherical Voronoi cells, automatically
+   * stratifying into up to {@code thresholdStrata} quantile {@code tau}-bands when
+   * {@code tauMax - tauMin >= 0.03f} and {@code K_eff >= 4} with proportional {@code K} allocation
+   * per band so low-{@code tau} outliers do not poison high-{@code tau} cells.
    */
   private VoronoiCell[] buildSphericalVoronoiCells(List<VectorSubscription> subs, int dim) {
     int m = subs.size();
     int kEff = Math.min(config.getNumClusters(), m);
-    Random rng = new Random(config.getRandomSeed() ^ (31L * m));
+    long baseSeed = config.getRandomSeed() ^ (31L * m);
+    if (config.getThresholdStrata() <= 1 || kEff < 4) {
+      return buildSingleStratumVoronoiCells(subs, kEff, dim, baseSeed);
+    }
+
+    float tauMin = Float.POSITIVE_INFINITY;
+    float tauMax = Float.NEGATIVE_INFINITY;
+    for (VectorSubscription sub : subs) {
+      float tau = sub.getSimilarityThreshold();
+      if (tau < tauMin) {
+        tauMin = tau;
+      }
+      if (tau > tauMax) {
+        tauMax = tau;
+      }
+    }
+    if ((tauMax - tauMin) < THRESHOLD_STRATIFICATION_MIN_SPREAD) {
+      return buildSingleStratumVoronoiCells(subs, kEff, dim, baseSeed);
+    }
+
+    List<VectorSubscription> sorted = new ArrayList<>(subs);
+    sorted.sort(Comparator.comparing(VectorSubscription::getSimilarityThreshold)
+        .thenComparing(VectorSubscription::getSubscriptionId));
+
+    List<List<VectorSubscription>> runs = new ArrayList<>();
+    for (VectorSubscription sub : sorted) {
+      if (runs.isEmpty() || Float.compare(sub.getSimilarityThreshold(),
+          runs.get(runs.size() - 1).get(0).getSimilarityThreshold()) != 0) {
+        List<VectorSubscription> run = new ArrayList<>();
+        run.add(sub);
+        runs.add(run);
+      } else {
+        runs.get(runs.size() - 1).add(sub);
+      }
+    }
+
+    int maxBands = Math.min(config.getThresholdStrata(), Math.min(kEff, runs.size()));
+    if (maxBands <= 1) {
+      return buildSingleStratumVoronoiCells(subs, kEff, dim, baseSeed);
+    }
+
+    // Evaluate S = 1 (unstratified) against quantile-stratified candidates up to maxBands and
+    // retain whichever partition minimizes expected subscription survival (with tighter B_k^up
+    // tie-break) so stratification strictly helps heterogeneous workloads without widening R_k
+    // when K_eff / S is smaller than the number of spatial topics.
+    VoronoiCell[] bestCells = buildSingleStratumVoronoiCells(subs, kEff, dim, baseSeed);
+    double[] bestScore = scorePartitionCandidate(bestCells, sorted, m, dim);
+
+    int[] candidateCounts;
+    if (maxBands == 2) {
+      candidateCounts = new int[] {2};
+    } else if (maxBands == 3) {
+      candidateCounts = new int[] {2, 3};
+    } else {
+      candidateCounts = new int[] {2, maxBands};
+    }
+
+    for (int numBands : candidateCounts) {
+      if (numBands > Math.min(kEff, runs.size())) {
+        continue;
+      }
+      VoronoiCell[] candidate = buildStratifiedVoronoiCells(runs, numBands, m, kEff, dim, baseSeed);
+      double[] score = scorePartitionCandidate(candidate, sorted, m, dim);
+      if (isBetterPartitionScore(score, bestScore)) {
+        bestCells = candidate;
+        bestScore = score;
+      }
+      VoronoiCell[] gapCandidate =
+          buildGapStratifiedVoronoiCellsIfSkewed(runs, numBands, m, kEff, dim, baseSeed);
+      if (gapCandidate != null) {
+        double[] gapScore = scorePartitionCandidate(gapCandidate, sorted, m, dim);
+        if (isBetterPartitionScore(gapScore, bestScore)) {
+          bestCells = gapCandidate;
+          bestScore = gapScore;
+        }
+      }
+    }
+    return bestCells;
+  }
+
+  private VoronoiCell[] buildGapStratifiedVoronoiCellsIfSkewed(List<List<VectorSubscription>> runs,
+      int numBands, int m, int kEff, int dim, long baseSeed) {
+    if (runs.size() <= numBands || numBands < 2) {
+      return null;
+    }
+    int numGaps = runs.size() - 1;
+    double[] gaps = new double[numGaps];
+    double maxGap = 0.0d;
+    for (int i = 0; i < numGaps; i++) {
+      float lo = runs.get(i).get(0).getSimilarityThreshold();
+      float hi = runs.get(i + 1).get(0).getSimilarityThreshold();
+      double g = hi - lo;
+      gaps[i] = g;
+      if (g > maxGap) {
+        maxGap = g;
+      }
+    }
+    if (maxGap < 0.10d) {
+      return null;
+    }
+    // Select the (numBands - 1) largest threshold gaps so skewed low-tau outlier tails form
+    // dedicated bands without contaminating high-tau subscriptions.
+    Integer[] gapOrder = new Integer[numGaps];
+    for (int i = 0; i < numGaps; i++) {
+      gapOrder[i] = i;
+    }
+    Arrays.sort(gapOrder, (a, b) -> Double.compare(gaps[b], gaps[a]));
+    int[] cutIndices = new int[numBands - 1];
+    for (int c = 0; c < numBands - 1; c++) {
+      cutIndices[c] = gapOrder[c];
+    }
+    Arrays.sort(cutIndices);
+
+    List<List<VectorSubscription>> bands = new ArrayList<>(numBands);
+    int runStart = 0;
+    for (int cut : cutIndices) {
+      List<VectorSubscription> band = new ArrayList<>();
+      for (int r = runStart; r <= cut; r++) {
+        band.addAll(runs.get(r));
+      }
+      bands.add(band);
+      runStart = cut + 1;
+    }
+    List<VectorSubscription> lastBand = new ArrayList<>();
+    for (int r = runStart; r < runs.size(); r++) {
+      lastBand.addAll(runs.get(r));
+    }
+    bands.add(lastBand);
+    return buildVoronoiCellsFromBands(bands, m, kEff, dim, baseSeed);
+  }
+
+  private VoronoiCell[] buildStratifiedVoronoiCells(List<List<VectorSubscription>> runs,
+      int numBands, int m, int kEff, int dim, long baseSeed) {
+    List<List<VectorSubscription>> bands;
+    if (runs.size() == numBands) {
+      bands = runs;
+    } else {
+      bands = new ArrayList<>(numBands);
+      int runIdx = 0;
+      int assigned = 0;
+      for (int b = 0; b < numBands; b++) {
+        int remainingBands = numBands - b;
+        if (remainingBands == 1) {
+          List<VectorSubscription> lastBand = new ArrayList<>();
+          while (runIdx < runs.size()) {
+            lastBand.addAll(runs.get(runIdx++));
+          }
+          bands.add(lastBand);
+          break;
+        }
+        int targetEnd = (int) Math.round(((double) (b + 1) * m) / numBands);
+        List<VectorSubscription> band = new ArrayList<>();
+        while (runIdx <= runs.size() - remainingBands) {
+          List<VectorSubscription> run = runs.get(runIdx);
+          if (!band.isEmpty()) {
+            int distBefore = Math.abs(assigned - targetEnd);
+            int distAfter = Math.abs((assigned + run.size()) - targetEnd);
+            if (assigned >= targetEnd || distAfter > distBefore) {
+              break;
+            }
+          }
+          band.addAll(run);
+          assigned += run.size();
+          runIdx++;
+        }
+        bands.add(band);
+      }
+    }
+
+    return buildVoronoiCellsFromBands(bands, m, kEff, dim, baseSeed);
+  }
+
+  private VoronoiCell[] buildVoronoiCellsFromBands(List<List<VectorSubscription>> bands, int m,
+      int kEff, int dim, long baseSeed) {
+    int numBands = bands.size();
+    int[] kPerBand = new int[numBands];
+    int allocated = 0;
+    for (int b = 0; b < numBands; b++) {
+      kPerBand[b] = 1;
+      allocated++;
+    }
+    int targetRemaining = kEff - allocated;
+    for (int b = 0; b < numBands; b++) {
+      double ideal = ((double) kEff * bands.get(b).size()) / m;
+      int extra = Math.min(bands.get(b).size() - kPerBand[b],
+          Math.max(0, (int) Math.floor(ideal) - kPerBand[b]));
+      if (extra > targetRemaining) {
+        extra = targetRemaining;
+      }
+      kPerBand[b] += extra;
+      targetRemaining -= extra;
+    }
+    while (targetRemaining > 0) {
+      int bestBand = -1;
+      double bestDeficit = Double.NEGATIVE_INFINITY;
+      for (int b = 0; b < numBands; b++) {
+        if (kPerBand[b] < bands.get(b).size()) {
+          double deficit = ((double) kEff * bands.get(b).size()) / m - kPerBand[b];
+          if (deficit > bestDeficit) {
+            bestDeficit = deficit;
+            bestBand = b;
+          }
+        }
+      }
+      if (bestBand < 0) {
+        break;
+      }
+      kPerBand[bestBand]++;
+      targetRemaining--;
+    }
+
+    List<VoronoiCell> allCells = new ArrayList<>(kEff);
+    for (int b = 0; b < numBands; b++) {
+      long bandSeed = baseSeed ^ (0x9E3779B97F4A7C15L * (b + 1L));
+      VoronoiCell[] bandCells =
+          buildSingleStratumVoronoiCells(bands.get(b), kPerBand[b], dim, bandSeed);
+      Collections.addAll(allCells, bandCells);
+    }
+    return allCells.toArray(new VoronoiCell[0]);
+  }
+
+  private static double[] scorePartitionCandidate(VoronoiCell[] cells,
+      List<VectorSubscription> sortedSubs, int totalSubs, int dim) {
+    int sampleTarget = Math.min(64, totalSubs);
+    int step = Math.max(1, totalSubs / sampleTarget);
+    int samples = 0;
+    long unpruned = 0L;
+    for (int i = 0; i < totalSubs && samples < sampleTarget; i += step) {
+      float[] q = sortedSubs.get(i).getNormalizedQueryVectorUnsafe();
+      for (VoronoiCell cell : cells) {
+        float dot = VectorSubscription.dotProductContiguous(q, cell.centroid, 0, dim);
+        if ((double) dot >= cell.minCosineThreshold) {
+          unpruned += cell.size();
+        }
+      }
+      samples++;
+    }
+    double sampleSurvival =
+        (samples == 0 || totalSubs == 0) ? 1.0d
+            : (double) unpruned / ((double) samples * totalSubs);
+    double weightedBoundSq = 0.0d;
+    for (VoronoiCell cell : cells) {
+      weightedBoundSq +=
+          ((double) cell.size() / Math.max(1, totalSubs))
+              * cell.effectiveUpperBound
+              * cell.effectiveUpperBound;
+    }
+    return new double[] {sampleSurvival, weightedBoundSq};
+  }
+
+  private static boolean isBetterPartitionScore(double[] candidate, double[] currentBest) {
+    if (candidate[0] < currentBest[0] - 1.0e-3d) {
+      return true;
+    }
+    if (candidate[0] > currentBest[0] + 1.0e-3d) {
+      return false;
+    }
+    return candidate[1] < currentBest[1] - 1.0e-6d;
+  }
+
+  private VoronoiCell[] buildSingleStratumVoronoiCells(List<VectorSubscription> subs, int kTarget,
+      int dim, long seed) {
+    int m = subs.size();
+    int kEff = Math.min(kTarget, m);
+    Random rng = new Random(seed);
 
     float[][] centroids = new float[kEff][dim];
     // Spherical k-means++ initialization using squared chordal distance d_ch^2 = 2(1 - cos)

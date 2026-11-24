@@ -78,26 +78,37 @@ public final class VectorSubscription implements Serializable {
   }
 
   /**
-   * L2-normalizes a float vector onto the unit hypersphere {@code S^{d-1}}.
+   * L2-normalizes a float vector onto the unit hypersphere {@code S^{d-1}} using unconditional
+   * max-abs pre-scaling in float64 so all finite non-zero float32 vectors (including subnormals and
+   * {@code Float.MAX_VALUE}) normalize without intermediate overflow or underflow.
    */
   public static float[] normalize(float[] vector) {
     if (vector == null || vector.length == 0) {
       throw new IllegalArgumentException("Vector must not be null or empty");
     }
-    double normSq = 0.0d;
+    double maxAbs = 0.0d;
     for (float v : vector) {
       if (!Float.isFinite(v)) {
         throw new IllegalArgumentException("Vector contains non-finite value: " + v);
       }
-      normSq += (double) v * (double) v;
+      double abs = Math.abs((double) v);
+      if (abs > maxAbs) {
+        maxAbs = abs;
+      }
     }
-    if (normSq == 0.0d) {
+    if (maxAbs == 0.0d) {
       throw new IllegalArgumentException("Vector must have non-zero L2 norm");
+    }
+    double normSq = 0.0d;
+    for (float v : vector) {
+      double scaled = (double) v / maxAbs;
+      normSq += scaled * scaled;
     }
     double invNorm = 1.0d / Math.sqrt(normSq);
     float[] unit = new float[vector.length];
     for (int i = 0; i < vector.length; i++) {
-      unit[i] = (float) (vector[i] * invNorm);
+      double scaled = (double) vector[i] / maxAbs;
+      unit[i] = (float) (scaled * invNorm);
     }
     return unit;
   }

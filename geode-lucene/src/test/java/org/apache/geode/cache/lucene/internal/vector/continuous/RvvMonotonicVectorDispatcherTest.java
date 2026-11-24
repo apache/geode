@@ -22,10 +22,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -589,5 +591,157 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(zeroMatchCallbacks.get()).isZero();
     assertThat(matchingCallbacks.get()).isEqualTo(totalLive + 15);
     assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
+  }
+
+  @Test
+  public void slowReconnectReplaysBothPreCrashAndPostPromotionStreamsWithWatermarksAndConcurrency()
+      throws Exception {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ContinuousVectorQueryService primary = new ContinuousVectorQueryService(4);
+    ContinuousVectorQueryService secondary = new ContinuousVectorQueryService(4);
+    primary.setHeartbeatIntervalEvents(4);
+    secondary.setHeartbeatIntervalEvents(4);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new CopyOnWriteArrayList<>();
+    AtomicInteger zeroMatchCallbacks = new AtomicInteger();
+    clientGate.addListener(ev -> {
+      accepted.add(ev);
+      if ("sub-zero".equals(ev.getSubscriptionId())) {
+        zeroMatchCallbacks.incrementAndGet();
+      }
+    });
+    primary.attachClientGate(clientGate);
+    primary.registerSubscription("sub-match", matchVec, 0.90f);
+    primary.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+    secondary.registerSubscription("sub-match", matchVec, 0.90f);
+    secondary.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+    // Phase 1: Pre-crash primary delivers v = 1..12; v = 13..20 are dropped before crash
+    ContinuousVectorEventSink primarySink = event -> {
+      if (event.getRegionVersion() <= 12L) {
+        clientGate.tryAccept(event);
+      }
+    };
+    primary.addEventSink(primarySink);
+
+    int bucketId = 9;
+    String memberP = "server1(id:1)";
+    String memberS = "server2(id:2)";
+    Set<String> expectedKeys = new HashSet<>();
+
+    for (long v = 1L; v <= 20L; v++) {
+      boolean isMatch = (v % 2L == 1L); // odd versions match
+      float[] vec = isMatch ? matchVec : nonMatchVec;
+      String key = "pre-" + v;
+      if (isMatch) {
+        expectedKeys.add(key);
+      }
+      primary.onBucketMutation(bucketId, memberP, v, key, vec, true);
+      secondary.onBucketMutation(bucketId, memberP, v, key, vec, false);
+    }
+    // Client saw up to v=12 (periodic heartbeat at 12, match at 11 -> safe high-water is 12)
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(12L);
+    secondary.acknowledgeCheckpoint(bucketId, memberP, 4L);
+
+    // Phase 2: Primary crashes & secondary promotes while client is DISCONNECTED (sink detached)
+    List<ContinuousVectorEvent> promotionEmitted = secondary.onPrimaryPromotion(bucketId);
+    assertThat(promotionEmitted).isNotEmpty();
+
+    // During slow disconnect window, post-promotion m_S writes v = 1..15 arrive while client is
+    // still disconnected (events dropped on dead pre-reconnect socket)
+    for (long v = 1L; v <= 15L; v++) {
+      boolean isMatch = (v % 3L != 0L); // v = 1,2,4,5,7,8,10,11,13,14 match
+      float[] vec = isMatch ? matchVec : nonMatchVec;
+      String key = "post-disconn-" + v;
+      if (isMatch) {
+        expectedKeys.add(key);
+      }
+      secondary.onBucketMutation(bucketId, memberS, v, key, vec, true);
+    }
+
+    // Phase 3: Client reconnects while concurrent live m_S writes (16..40) run on another thread
+    Set<Integer> liveEnabledBuckets = Collections.synchronizedSet(new HashSet<>());
+    ContinuousVectorEventSink reconnectSink = new ContinuousVectorEventSink() {
+      @Override
+      public void onEvent(ContinuousVectorEvent event) {
+        if (event.isReplayed() || liveEnabledBuckets.contains(event.getBucketId())) {
+          clientGate.tryAccept(event);
+        }
+      }
+    };
+    secondary.addEventSink(reconnectSink);
+
+    Map<String, Long> clientHighWater = clientGate.getSafeHighWaterByMember(bucketId);
+    assertThat(clientHighWater).containsEntry(memberP, 12L).doesNotContainKey(memberS);
+
+    for (long v = 16L; v <= 40L; v++) {
+      expectedKeys.add("post-conc-" + v);
+    }
+
+    ExecutorService writerPool = Executors.newSingleThreadExecutor();
+    try {
+      CountDownLatch writerStarted = new CountDownLatch(1);
+      Future<?> writerFuture = writerPool.submit(() -> {
+        writerStarted.countDown();
+        for (long v = 16L; v <= 40L; v++) {
+          secondary.onBucketMutation(bucketId, memberS, v, "post-conc-" + v, matchVec, true);
+          if (v == 20L || v == 28L) {
+            Thread.yield();
+          }
+        }
+      });
+      writerStarted.await(5, TimeUnit.SECONDS);
+
+      List<ContinuousVectorEvent> replayed = secondary.replayUncheckpointedForReconnect(bucketId,
+          clientHighWater, () -> liveEnabledBuckets.add(bucketId));
+      // Must skip pre-1..12 (already delivered to client) and replay strictly > 12 for m_P plus
+      // uncheckpointed m_S tail!
+      assertThat(replayed).isNotEmpty();
+      assertThat(replayed).allMatch(ContinuousVectorEvent::isReplayed);
+      assertThat(replayed)
+          .filteredOn(e -> memberP.equals(e.getMemberId()))
+          .extracting(ContinuousVectorEvent::getRegionVersion)
+          .containsExactly(13L, 15L, 17L, 19L);
+
+      writerFuture.get(10, TimeUnit.SECONDS);
+    } finally {
+      writerPool.shutdownNow();
+    }
+
+    // Verify 0 missed events, 0 duplicates, strict monotonicity, and trailing watermarks for 0%-sub
+    Set<Object> deliveredKeys = new HashSet<>();
+    for (ContinuousVectorEvent ev : accepted) {
+      deliveredKeys.add(ev.getKey());
+    }
+    assertThat(deliveredKeys).containsExactlyInAnyOrderElementsOf(expectedKeys);
+    assertThat(accepted).hasSize(expectedKeys.size());
+    assertThat(clientGate.getDiscardedCount()).isZero();
+    assertThat(zeroMatchCallbacks.get()).isZero();
+    assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(20L);
+    assertThat(clientGate.getHighWaterVersion("sub-match", bucketId, memberS)).isEqualTo(40L);
+    long safeMemberS = clientGate.getSafeCheckpointVersion(bucketId, memberS);
+    assertThat(safeMemberS).isBetween(36L, 40L);
+
+    // Null map / unpopulated bucket and post-checkpoint compaction edge cases must remain safe
+    assertThat(secondary.replayUncheckpointedForReconnect(9999, null)).isEmpty();
+    secondary.acknowledgeCheckpoint(bucketId, memberP,
+        clientGate.getSafeCheckpointVersion(bucketId, memberP));
+    if (safeMemberS < 40L) {
+      secondary.acknowledgeCheckpoint(bucketId, memberS, safeMemberS);
+      secondary.replayUncheckpointedForReconnect(bucketId, null);
+      assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberS)).isEqualTo(40L);
+      assertThat(accepted).hasSize(expectedKeys.size());
+      assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
+    }
+    secondary.acknowledgeCheckpoint(bucketId, memberS, 40L);
+    assertThat(secondary.getDispatcher().getTailSize(bucketId)).isZero();
+    assertThat(secondary.replayUncheckpointedForReconnect(bucketId, null)).isEmpty();
+    assertThat(secondary.getDispatcher().getTotalReconnectReplaysHandled())
+        .isGreaterThanOrEqualTo(3L);
   }
 }

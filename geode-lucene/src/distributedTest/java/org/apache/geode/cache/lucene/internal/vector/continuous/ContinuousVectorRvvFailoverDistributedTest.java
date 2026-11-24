@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,6 +83,8 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
   private static volatile TcpEventSink serverTcpSink;
   private static final AtomicBoolean dropOutboundEvents = new AtomicBoolean(false);
   private static final AtomicInteger phase2WrittenCount = new AtomicInteger(0);
+  private static final AtomicBoolean promotionCompleteFlag = new AtomicBoolean(false);
+  private static final AtomicBoolean reconnectStartedFlag = new AtomicBoolean(false);
 
   @Rule
   public transient ClusterStartupRule cluster = new ClusterStartupRule();
@@ -358,6 +361,292 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  @Test
+  public void slowReconnectAfterPrimaryKillWithConcurrentPromotedWritesGuaranteesZeroLoss()
+      throws Exception {
+    IgnoredException.addIgnoredException("MemberDepartedException");
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("PartitionOfflineException");
+    IgnoredException.addIgnoredException("CacheClosedException");
+    IgnoredException.addIgnoredException("CancelException");
+    IgnoredException.addIgnoredException("SocketException");
+    IgnoredException.addIgnoredException("EOFException");
+    IgnoredException.addIgnoredException("IOException");
+    IgnoredException.addIgnoredException("Membership: lead member");
+    IgnoredException.addIgnoredException("crashed");
+
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> acceptedEvents = new CopyOnWriteArrayList<>();
+    clientGate.addListener(acceptedEvents::add);
+    receiver = new ClientEventReceiver(clientGate);
+    int receiverPort = receiver.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM server3 = cluster.startServerVM(3, locatorPort);
+
+    Random rng = new Random(20261124L);
+    float[][] topics = new float[8][VECTOR_DIM];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+    }
+
+    ArrayList<VectorSubscription> subscriptions = new ArrayList<>(NUM_SUBSCRIPTIONS + 1);
+    for (int m = 0; m < NUM_SUBSCRIPTIONS; m++) {
+      float[] q = perturbVectorZeroLastDim(rng, topics[m % topics.length], 0.08f);
+      float threshold = 0.78f + (m % 5) * 0.03f;
+      subscriptions.add(new VectorSubscription("sub-" + m, q, threshold));
+    }
+    float[] orthogonalQuery = new float[VECTOR_DIM];
+    orthogonalQuery[VECTOR_DIM - 1] = 1.0f;
+    String zeroMatchSubId = "sub-zero-match";
+    subscriptions.add(new VectorSubscription(zeroMatchSubId, orthogonalQuery, 0.99f));
+    for (VectorSubscription sub : subscriptions) {
+      clientGate.registerSubscription(sub.getSubscriptionId());
+    }
+
+    final int reconnectTotalKeys = 240;
+    ArrayList<float[]> allVectors = new ArrayList<>(reconnectTotalKeys);
+    for (int i = 0; i < reconnectTotalKeys; i++) {
+      float[] v = (i % 2 == 0)
+          ? perturbVectorZeroLastDim(rng, topics[i % topics.length], 0.09f)
+          : randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+      allVectors.add(v);
+    }
+    Set<String> phase1ExpectedPairs =
+        computeBruteForceMatches(subscriptions, allVectors, 0, PHASE1_KEYS);
+    Set<String> totalExpectedPairs =
+        computeBruteForceMatches(subscriptions, allVectors, 0, reconnectTotalKeys);
+
+    for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+      server.invoke(() -> initializeServerNode(subscriptions, receiverPort));
+    }
+
+    // Phase 1: Ingest doc-0..doc-79 and confirm client receives all Phase 1 matches
+    server3.invoke(() -> {
+      Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < PHASE1_KEYS; i++) {
+        region.put("doc-" + i, allVectors.get(i));
+      }
+    });
+    await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(collectKeySubPairs(acceptedEvents)).containsAll(phase1ExpectedPairs);
+    });
+
+    Set<Integer> server1PrimaryBuckets = server1.invoke(() -> {
+      PartitionedRegion pr =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+    });
+    assertThat(server1PrimaryBuckets).isNotEmpty();
+    String server1MemberId = server1.invoke(() -> {
+      PartitionedRegion pr =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      int anyBucket = pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+      return pr.getDataStore().getLocalBucketById(anyBucket).getVersionMember().toString();
+    });
+    long s1DispatchedBeforePhase2 =
+        server1.invoke(() -> serverService.getDispatcher().getTotalEventsDispatched());
+
+    // Simulate slow client disconnect across ALL servers (pre-crash m_P tail + promotion replay +
+    // post-promotion m_S writes during the >=1500 ms reconnect gap do not reach the client socket)
+    for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+      server.invoke(() -> dropOutboundEvents.set(true));
+    }
+
+    server3.invoke(() -> {
+      phase2WrittenCount.set(0);
+      promotionCompleteFlag.set(false);
+      reconnectStartedFlag.set(false);
+    });
+    Set<String> retriedKeys = Collections.synchronizedSet(new HashSet<>());
+    Thread ingestionThread = new Thread(() -> {
+      ArrayList<String> retried = server3.invoke(() -> {
+        ArrayList<String> localRetried = new ArrayList<>();
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = PHASE1_KEYS; i < reconnectTotalKeys; i++) {
+          if (i == 160) {
+            long deadline = System.currentTimeMillis() + 45_000L;
+            while (!promotionCompleteFlag.get() && System.currentTimeMillis() < deadline) {
+              try {
+                Thread.sleep(25L);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return localRetried;
+              }
+            }
+          } else if (i == 200) {
+            long deadline = System.currentTimeMillis() + 45_000L;
+            while (!reconnectStartedFlag.get() && System.currentTimeMillis() < deadline) {
+              try {
+                Thread.sleep(20L);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return localRetried;
+              }
+            }
+          }
+
+          String key = "doc-" + i;
+          float[] vec = allVectors.get(i);
+          boolean stored = false;
+          for (int attempt = 0; attempt < 30 && !stored; attempt++) {
+            try {
+              region.put(key, vec);
+              stored = true;
+            } catch (RuntimeException e) {
+              localRetried.add(key);
+              try {
+                Thread.sleep(100L);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return localRetried;
+              }
+            }
+          }
+          if (!stored) {
+            throw new IllegalStateException("Failed to store key after failover retries: " + key);
+          }
+          phase2WrittenCount.incrementAndGet();
+          long paceMs = (i < 120 || i >= 200) ? 15L : (i < 160 ? 90L : 35L);
+          try {
+            Thread.sleep(paceMs);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            break;
+          }
+        }
+        return localRetried;
+      });
+      retriedKeys.addAll(retried);
+    }, "slow-reconnect-writer");
+    ingestionThread.start();
+
+    await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> server3.invoke(() -> phase2WrittenCount.get()) >= 35
+            && server1.invoke(() -> serverService.getDispatcher()
+                .getTotalEventsDispatched()) > s1DispatchedBeforePhase2);
+    cluster.crashVM(1);
+
+    // Wait until GMS finishes detecting server1's crash and survivors promote all crashed
+    // primaries (and drain async afterPrimary replay tasks while the client is still disconnected)
+    await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Set<Integer> survivorPrimaries = new HashSet<>();
+      survivorPrimaries.addAll(server2.invoke(() -> {
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+      }));
+      survivorPrimaries.addAll(server3.invoke(() -> {
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+      }));
+      long promotions =
+          server2.invoke(() -> serverService.getDispatcher().getTotalPromotionsHandled())
+              + server3.invoke(() -> serverService.getDispatcher().getTotalPromotionsHandled());
+      return survivorPrimaries.size() == NUM_BUCKETS
+          && survivorPrimaries.containsAll(server1PrimaryBuckets)
+          && promotions >= server1PrimaryBuckets.size();
+    });
+    for (MemberVM survivor : new MemberVM[] {server2, server3}) {
+      survivor.invoke(() -> {
+        try {
+          serverReplayExecutor.submit(() -> {
+          }).get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
+    server3.invoke(() -> promotionCompleteFlag.set(true));
+
+    // Hold client disconnected for >= 1500 ms post-promotion while m_S writes land into promoted
+    // buckets with dropOutboundEvents still true
+    Thread.sleep(1500L);
+    await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> server3.invoke(() -> phase2WrittenCount.get()) >= (195 - PHASE1_KEYS));
+
+    // Client reconnects while Phase 3 (doc-200..239) m_S ingestion executes concurrently!
+    HashMap<Integer, HashMap<String, Long>> clientHighWaterByBucket = new HashMap<>();
+    for (int b = 0; b < NUM_BUCKETS; b++) {
+      clientHighWaterByBucket.put(b, new HashMap<>(clientGate.getSafeHighWaterByMember(b)));
+    }
+    assertThat(ingestionThread.isAlive()).isTrue();
+    server3.invoke(() -> reconnectStartedFlag.set(true));
+    for (MemberVM survivor : new MemberVM[] {server2, server3}) {
+      survivor.invoke(() -> {
+        serverTcpSink.enableReconnectBucketGate();
+        dropOutboundEvents.set(false);
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (Integer b : pr.getDataStore().getAllLocalPrimaryBucketIds()) {
+          Map<String, Long> hw = clientHighWaterByBucket.get(b);
+          serverService.replayUncheckpointedForReconnect(b,
+              hw != null ? hw : Collections.emptyMap(),
+              () -> serverTcpSink.allowLiveBucket(b));
+        }
+      });
+    }
+
+    ingestionThread.join(60_000L);
+    assertThat(ingestionThread.isAlive()).isFalse();
+
+    await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(collectKeySubPairs(acceptedEvents)).containsAll(totalExpectedPairs);
+      assertThat(clientGate.getHeartbeatsAcceptedCount()).isGreaterThan(0L);
+    });
+    Thread.sleep(500L);
+
+    Set<String> actualPairs = collectKeySubPairs(acceptedEvents);
+    assertThat(actualPairs).containsExactlyInAnyOrderElementsOf(totalExpectedPairs);
+
+    Set<String> seenRvvCoords = new HashSet<>();
+    Map<String, Integer> pairCounts = new HashMap<>();
+    boolean sawReplayedPreCrash = false;
+    boolean sawReplayedPostPromotion = false;
+    for (ContinuousVectorEvent e : acceptedEvents) {
+      String rvvCoord = e.getSubscriptionId() + "|" + e.getBucketId() + "|" + e.getMemberId() + "|"
+          + e.getRegionVersion();
+      assertThat(seenRvvCoords.add(rvvCoord)).isTrue();
+      pairCounts.merge(e.getKey() + "|" + e.getSubscriptionId(), 1, Integer::sum);
+      if (e.isReplayed()) {
+        if (server1MemberId.equals(e.getMemberId())) {
+          sawReplayedPreCrash = true;
+        } else {
+          sawReplayedPostPromotion = true;
+        }
+      }
+    }
+    for (Map.Entry<String, Integer> entry : pairCounts.entrySet()) {
+      String key = entry.getKey().substring(0, entry.getKey().indexOf('|'));
+      if (!retriedKeys.contains(key)) {
+        assertThat(entry.getValue()).isEqualTo(1);
+      }
+    }
+
+    assertThat(sawReplayedPreCrash)
+        .as("Reconnect replay must recover uncheckpointed pre-crash m_P tail events")
+        .isTrue();
+    assertThat(sawReplayedPostPromotion)
+        .as("Reconnect replay must recover uncheckpointed post-promotion m_S tail events")
+        .isTrue();
+    assertThat(RvvClientGate.verifyStrictMonotonicity(acceptedEvents)).isEmpty();
+    assertThat(acceptedEvents)
+        .noneMatch(e -> e.isHeartbeat() || zeroMatchSubId.equals(e.getSubscriptionId()));
+
+    Map<RvvStreamKey, Long> safeCheckpoints = clientGate.getSafeCheckpointSnapshot();
+    long positiveCheckpoints =
+        safeCheckpoints.values().stream().filter(v -> v != null && v > 0L).count();
+    assertThat(positiveCheckpoints).isGreaterThanOrEqualTo(server1PrimaryBuckets.size());
+
+    for (MemberVM survivor : new MemberVM[] {server2, server3}) {
+      survivor.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     dropOutboundEvents.set(false);
@@ -452,6 +741,8 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     private final Socket socket;
     private final ObjectOutputStream out;
     private final AtomicBoolean dropFlag;
+    private volatile boolean enforceLiveBucketGate = false;
+    private final Set<Integer> liveEnabledBuckets = ConcurrentHashMap.newKeySet();
 
     TcpEventSink(int port, AtomicBoolean dropFlag) throws IOException {
       this.socket = new Socket(InetAddress.getLoopbackAddress(), port);
@@ -460,9 +751,22 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
       this.dropFlag = dropFlag;
     }
 
+    void enableReconnectBucketGate() {
+      liveEnabledBuckets.clear();
+      enforceLiveBucketGate = true;
+    }
+
+    void allowLiveBucket(int bucketId) {
+      liveEnabledBuckets.add(bucketId);
+    }
+
     @Override
     public synchronized void onEvent(ContinuousVectorEvent event) {
       if (dropFlag.get()) {
+        return;
+      }
+      if (enforceLiveBucketGate && !event.isReplayed()
+          && !liveEnabledBuckets.contains(event.getBucketId())) {
         return;
       }
       try {

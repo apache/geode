@@ -285,6 +285,35 @@ public class RvvMonotonicVectorDispatcher {
       return replay;
     }
 
+    synchronized List<TailMutation> collectReplayableTailForReconnect(
+        Map<String, Long> clientHighWaterByMember, Map<String, Long> maxVersionByMemberOut) {
+      List<TailMutation> replay = new ArrayList<>();
+      List<String> sortedMembers = new ArrayList<>(tailByMember.keySet());
+      Collections.sort(sortedMembers);
+      for (String memberId : sortedMembers) {
+        TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+        if (stream == null || stream.isEmpty()) {
+          continue;
+        }
+        long ckpt = checkpointByMember.getOrDefault(memberId, 0L);
+        long clientHighWater = 0L;
+        if (clientHighWaterByMember != null) {
+          Long hw = clientHighWaterByMember.get(memberId);
+          if (hw != null && hw > 0L) {
+            clientHighWater = hw;
+          }
+        }
+        long lowerExclusive = Math.max(ckpt, clientHighWater);
+        long streamHighWater = stream.lastKey();
+        if (lowerExclusive < streamHighWater) {
+          maxVersionByMemberOut.put(memberId, streamHighWater);
+          NavigableMap<Long, TailMutation> tail = stream.tailMap(lowerExclusive, false);
+          replay.addAll(tail.values());
+        }
+      }
+      return replay;
+    }
+
     synchronized void advanceCheckpoint(String memberId, long ackedVersion) {
       long prev = checkpointByMember.getOrDefault(memberId, 0L);
       if (ackedVersion <= prev) {
@@ -338,6 +367,7 @@ public class RvvMonotonicVectorDispatcher {
   private final AtomicLong totalHeartbeatsDispatched = new AtomicLong();
   private final AtomicLong totalReplayedEventsDispatched = new AtomicLong();
   private final AtomicLong totalPromotionsHandled = new AtomicLong();
+  private final AtomicLong totalReconnectReplaysHandled = new AtomicLong();
   private final AtomicLong tailOverflowCount = new AtomicLong();
   private volatile Executor dispatchExecutor;
   private volatile int heartbeatIntervalEvents;
@@ -603,6 +633,48 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   /**
+   * Replays all uncheckpointed tail mutations in
+   * {@code (max(V_ckpt[b, m], clientHighWaterByMember[m]), V_S[b, m]]} across every retained
+   * stream {@code m} (covering both pre-crash {@code m_P} and post-promotion {@code m_S}) under
+   * {@code synchronized (state)}, followed by trailing watermark heartbeats per {@code m}.
+   */
+  public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
+    return replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember, null);
+  }
+
+  /**
+   * Replays uncheckpointed tail mutations for client reconnect under {@code synchronized (state)},
+   * optionally invoking {@code onReplayedUnderLock} before releasing the bucket lock so callers
+   * can atomically transition from reconnect replay to live {@code m_S} event forwarding without
+   * overtaking replayed versions.
+   */
+  public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
+      Map<String, Long> clientHighWaterByMember, Runnable onReplayedUnderLock) {
+    totalReconnectReplaysHandled.incrementAndGet();
+    BucketState state = (onReplayedUnderLock != null)
+        ? bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState())
+        : bucketStates.get(bucketId);
+    if (state == null) {
+      return Collections.emptyList();
+    }
+    List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    synchronized (state) {
+      TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
+      List<TailMutation> toReplay =
+          state.collectReplayableTailForReconnect(clientHighWaterByMember, maxVersionByMember);
+      for (TailMutation mutation : toReplay) {
+        emitted.addAll(evaluateAndDispatch(state, mutation, true));
+      }
+      if (onReplayedUnderLock != null) {
+        onReplayedUnderLock.run();
+      }
+      emitStreamWatermarksLocked(state, bucketId, maxVersionByMember);
+    }
+    return emitted;
+  }
+
+  /**
    * Advances checkpoint {@code V_ckpt[bucketId, memberId]} monotonically up to
    * {@code ackedVersion} (maintaining {@code V_ckpt[b, m] <= V_client[b, m]}) and compacts tail
    * entries with {@code regionVersion <= V_ckpt[b, m]}.
@@ -707,6 +779,10 @@ public class RvvMonotonicVectorDispatcher {
 
   public long getTotalPromotionsHandled() {
     return totalPromotionsHandled.get();
+  }
+
+  public long getTotalReconnectReplaysHandled() {
+    return totalReconnectReplaysHandled.get();
   }
 
   /**
@@ -912,6 +988,15 @@ public class RvvMonotonicVectorDispatcher {
     TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
     for (TailMutation m : replayedMutations) {
       maxVersionByMember.merge(m.memberId, m.regionVersion, Math::max);
+    }
+    emitStreamWatermarksLocked(state, bucketId, maxVersionByMember);
+  }
+
+  private void emitStreamWatermarksLocked(BucketState state, int bucketId,
+      Map<String, Long> maxVersionByMember) {
+    if (heartbeatIntervalEvents <= 0 || maxVersionByMember == null
+        || maxVersionByMember.isEmpty()) {
+      return;
     }
     long now = System.currentTimeMillis();
     for (Map.Entry<String, Long> entry : maxVersionByMember.entrySet()) {

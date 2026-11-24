@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal.vector.continuous;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
@@ -188,6 +189,26 @@ public class ContinuousVectorQueryService {
         RvvMonotonicVectorDispatcher.extractBucketSnapshot(partitionedRegion, bucketId,
             vectorExtractor);
     return dispatcher.onPrimaryPromotion(bucketId, recovered);
+  }
+
+  /**
+   * Replays uncheckpointed tail mutations in
+   * {@code (max(V_ckpt[b, m], clientHighWaterByMember[m]), V_S[b, m]]} across all retained
+   * streams {@code m} (both pre-crash {@code m_P} and post-promotion {@code m_S}) on reconnect.
+   */
+  public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
+    return dispatcher.replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember);
+  }
+
+  /**
+   * Replays uncheckpointed tail mutations for client reconnect under {@code synchronized (state)},
+   * invoking {@code onReplayedUnderLock} before releasing the per-bucket lock.
+   */
+  public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
+      Map<String, Long> clientHighWaterByMember, Runnable onReplayedUnderLock) {
+    return dispatcher.replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember,
+        onReplayedUnderLock);
   }
 
   /**
