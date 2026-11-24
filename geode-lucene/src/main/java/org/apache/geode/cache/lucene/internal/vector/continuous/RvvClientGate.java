@@ -16,11 +16,14 @@
 package org.apache.geode.cache.lucene.internal.vector.continuous;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
@@ -76,10 +79,40 @@ public class RvvClientGate {
 
   private final ConcurrentHashMap<SubscriptionStreamKey, StreamState> streamStates =
       new ConcurrentHashMap<>();
+  private final Set<String> activeSubscriptionIds = ConcurrentHashMap.newKeySet();
   private final CopyOnWriteArrayList<Consumer<ContinuousVectorEvent>> listeners =
       new CopyOnWriteArrayList<>();
   private final AtomicLong acceptedCount = new AtomicLong();
   private final AtomicLong discardedCount = new AtomicLong();
+  private final AtomicLong heartbeatsAcceptedCount = new AtomicLong();
+
+  /**
+   * Registers an active subscription ID so {@link #getSafeCheckpointVersion(int, String)} and
+   * periodic per-bucket watermark heartbeats strictly track even 0%-match-rate subscribers.
+   */
+  public void registerSubscription(String subscriptionId) {
+    if (subscriptionId == null || subscriptionId.isEmpty()) {
+      throw new IllegalArgumentException("subscriptionId must not be null or empty");
+    }
+    activeSubscriptionIds.add(subscriptionId);
+  }
+
+  /**
+   * Registers a collection of active subscription IDs with this client gate.
+   */
+  public void registerSubscriptions(Collection<String> subscriptionIds) {
+    Objects.requireNonNull(subscriptionIds, "subscriptionIds must not be null");
+    for (String subscriptionId : subscriptionIds) {
+      registerSubscription(subscriptionId);
+    }
+  }
+
+  /**
+   * Returns an unmodifiable view of explicitly registered active subscription IDs.
+   */
+  public Set<String> getActiveSubscriptionIds() {
+    return Collections.unmodifiableSet(activeSubscriptionIds);
+  }
 
   /**
    * Registers a downstream listener invoked strictly once per accepted, monotonically ordered
@@ -103,6 +136,7 @@ public class RvvClientGate {
     if (subscriptionId == null) {
       return 0;
     }
+    activeSubscriptionIds.remove(subscriptionId);
     int removed = 0;
     for (SubscriptionStreamKey key : streamStates.keySet()) {
       if (subscriptionId.equals(key.subscriptionId) && streamStates.remove(key) != null) {
@@ -116,15 +150,39 @@ public class RvvClientGate {
    * Evaluates the RVV high-water gate for {@code event}, serializing high-water advancement and
    * listener delivery per {@code (subscriptionId, bucketId, memberId)} stream.
    *
-   * @return {@code true} if {@code event.getRegionVersion() > V_client[sub, b, m]} (accepted and
-   *         forwarded to downstream listeners), or {@code false} if deterministically discarded as
-   *         duplicate/stale.
+   * <p>
+   * If {@link ContinuousVectorEvent#isHeartbeat()} is {@code true}, no match listeners are invoked;
+   * instead, {@code highWaterVersion} is advanced monotonically to
+   * {@code max(highWaterVersion, event.getRegionVersion())} across all active subscriptions on the
+   * heartbeat's {@code (bucketId, memberId)} stream.
+   *
+   * @return {@code true} if accepted (or watermark heartbeat processed), or {@code false} if
+   *         deterministically discarded as duplicate/stale.
    */
   public boolean tryAccept(ContinuousVectorEvent event) {
     Objects.requireNonNull(event, "event must not be null");
+    long incomingVersion = event.getRegionVersion();
+    if (event.isHeartbeat()) {
+      int bucketId = event.getBucketId();
+      String memberId = event.getMemberId();
+      if (!activeSubscriptionIds.isEmpty()) {
+        for (String subId : activeSubscriptionIds) {
+          advanceWatermarkLocked(new SubscriptionStreamKey(subId, bucketId, memberId),
+              incomingVersion);
+        }
+      } else {
+        for (SubscriptionStreamKey key : streamStates.keySet()) {
+          if (key.bucketId == bucketId && key.memberId.equals(memberId)) {
+            advanceWatermarkLocked(key, incomingVersion);
+          }
+        }
+      }
+      heartbeatsAcceptedCount.incrementAndGet();
+      return true;
+    }
+
     SubscriptionStreamKey key = new SubscriptionStreamKey(event.getSubscriptionId(),
         event.getBucketId(), event.getMemberId());
-    long incomingVersion = event.getRegionVersion();
     StreamState state = streamStates.computeIfAbsent(key, ignored -> new StreamState());
 
     synchronized (state) {
@@ -138,6 +196,15 @@ public class RvvClientGate {
         listener.accept(event);
       }
       return true;
+    }
+  }
+
+  private void advanceWatermarkLocked(SubscriptionStreamKey key, long incomingVersion) {
+    StreamState state = streamStates.computeIfAbsent(key, ignored -> new StreamState());
+    synchronized (state) {
+      if (incomingVersion > state.highWaterVersion) {
+        state.highWaterVersion = incomingVersion;
+      }
     }
   }
 
@@ -168,9 +235,24 @@ public class RvvClientGate {
 
   /**
    * Returns a safe checkpoint bound {@code V_ckpt[b, m] <= min_q V_client[q, b, m]} across all
-   * currently active subscriptions that have received events for {@code (bucketId, memberId)}.
+   * currently active subscriptions for {@code (bucketId, memberId)}. When active subscriptions are
+   * registered via {@link #registerSubscription(String)}, returns {@code 0} if any registered
+   * subscription has not yet advanced past {@code 0}, strictly enforcing Theorem 3 Invariant 4.
    */
   public long getSafeCheckpointVersion(int bucketId, String memberId) {
+    if (!activeSubscriptionIds.isEmpty()) {
+      long min = Long.MAX_VALUE;
+      for (String subId : activeSubscriptionIds) {
+        long version = getHighWaterVersion(subId, bucketId, memberId);
+        if (version <= 0L) {
+          return 0L;
+        }
+        if (version < min) {
+          min = version;
+        }
+      }
+      return min == Long.MAX_VALUE ? 0L : min;
+    }
     long min = Long.MAX_VALUE;
     boolean found = false;
     for (Map.Entry<SubscriptionStreamKey, StreamState> entry : streamStates.entrySet()) {
@@ -192,6 +274,20 @@ public class RvvClientGate {
    * Returns a snapshot of safe checkpoint versions per {@link RvvStreamKey}.
    */
   public Map<RvvStreamKey, Long> getSafeCheckpointSnapshot() {
+    if (!activeSubscriptionIds.isEmpty()) {
+      Set<RvvStreamKey> observedStreams = new HashSet<>();
+      for (SubscriptionStreamKey k : streamStates.keySet()) {
+        observedStreams.add(new RvvStreamKey(k.bucketId, k.memberId));
+      }
+      Map<RvvStreamKey, Long> snapshot = new HashMap<>();
+      for (RvvStreamKey streamKey : observedStreams) {
+        long safe = getSafeCheckpointVersion(streamKey.getBucketId(), streamKey.getMemberId());
+        if (safe > 0L) {
+          snapshot.put(streamKey, safe);
+        }
+      }
+      return Collections.unmodifiableMap(snapshot);
+    }
     Map<RvvStreamKey, Long> snapshot = new HashMap<>();
     for (Map.Entry<SubscriptionStreamKey, StreamState> entry : streamStates.entrySet()) {
       long version = entry.getValue().highWaterVersion;
@@ -228,6 +324,10 @@ public class RvvClientGate {
 
   public long getDiscardedCount() {
     return discardedCount.get();
+  }
+
+  public long getHeartbeatsAcceptedCount() {
+    return heartbeatsAcceptedCount.get();
   }
 
   /**

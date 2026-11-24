@@ -125,26 +125,36 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     MemberVM server2 = cluster.startServerVM(2, locatorPort);
     MemberVM server3 = cluster.startServerVM(3, locatorPort);
 
-    // 3. Build deterministic subscriptions (40 > M_up=23 => CHORDAL_VORONOI mode) and dataset
+    // 3. Build deterministic subscriptions (40 matching + 1 healthy 0%-match subscriber)
+    // Put all topic & document vectors in dims 0..(VECTOR_DIM-2) with last coordinate = 0 so
+    // "sub-zero-match" aligned along e_{VECTOR_DIM-1} is strictly orthogonal (0% match rate).
     Random rng = new Random(2026L);
     float[][] topics = new float[8][VECTOR_DIM];
     for (int t = 0; t < topics.length; t++) {
-      topics[t] = randomUnitVector(rng, VECTOR_DIM);
+      topics[t] = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
     }
 
-    ArrayList<VectorSubscription> subscriptions = new ArrayList<>(NUM_SUBSCRIPTIONS);
+    ArrayList<VectorSubscription> subscriptions = new ArrayList<>(NUM_SUBSCRIPTIONS + 1);
     for (int m = 0; m < NUM_SUBSCRIPTIONS; m++) {
-      float[] q = perturbVector(rng, topics[m % topics.length], 0.08f);
+      float[] q = perturbVectorZeroLastDim(rng, topics[m % topics.length], 0.08f);
       float threshold = 0.78f + (m % 5) * 0.03f;
       subscriptions.add(new VectorSubscription("sub-" + m, q, threshold));
+    }
+    float[] orthogonalQuery = new float[VECTOR_DIM];
+    orthogonalQuery[VECTOR_DIM - 1] = 1.0f;
+    String zeroMatchSubId = "sub-zero-match";
+    subscriptions.add(new VectorSubscription(zeroMatchSubId, orthogonalQuery, 0.99f));
+
+    for (VectorSubscription sub : subscriptions) {
+      clientGate.registerSubscription(sub.getSubscriptionId());
     }
 
     ArrayList<float[]> allVectors = new ArrayList<>(TOTAL_KEYS);
     for (int i = 0; i < TOTAL_KEYS; i++) {
       // Mix topic-aligned vectors (guaranteed matches) with random background vectors
       float[] v = (i % 2 == 0)
-          ? perturbVector(rng, topics[i % topics.length], 0.09f)
-          : randomUnitVector(rng, VECTOR_DIM);
+          ? perturbVectorZeroLastDim(rng, topics[i % topics.length], 0.09f)
+          : randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
       allVectors.add(v);
     }
 
@@ -259,10 +269,11 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     assertThat(survivingSize).isEqualTo(TOTAL_KEYS);
 
     // 7. Wait for promoted secondaries on server2 & server3 to replay uncertain tail and deliver
-    // every single matching notification
+    // every single matching notification plus promotion watermark heartbeats
     await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
       Set<String> receivedPairs = collectKeySubPairs(acceptedEvents);
       assertThat(receivedPairs).containsAll(totalExpectedPairs);
+      assertThat(clientGate.getHeartbeatsAcceptedCount()).isGreaterThan(0L);
     });
 
     // Brief settle window to ensure no delayed duplicate events sneak past the client gate
@@ -325,6 +336,22 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
         .as("Chordal Voronoi routing should actively prune cells on surviving servers")
         .isGreaterThan(0.0d);
 
+    // (f) Verify RVV watermark heartbeats advanced safe checkpoints across active subscriptions
+    // (including the healthy 0%-match subscriber) without leaking heartbeats to match listeners
+    assertThat(clientGate.getHeartbeatsAcceptedCount())
+        .as("Periodic and promotion RVV watermark heartbeats must be received by the client gate")
+        .isGreaterThan(0L);
+    assertThat(acceptedEvents)
+        .as("Watermarks must not be delivered to match listeners and 0%%-match subscriber must have 0 matches")
+        .noneMatch(e -> e.isHeartbeat() || zeroMatchSubId.equals(e.getSubscriptionId()));
+    Map<RvvStreamKey, Long> safeCheckpoints =
+        clientGate.getSafeCheckpointSnapshot();
+    long positiveCheckpoints =
+        safeCheckpoints.values().stream().filter(v -> v != null && v > 0L).count();
+    assertThat(positiveCheckpoints)
+        .as("At least every failed-over primary bucket must advance safe V_ckpt > 0 even with a 0%%-match subscriber")
+        .isGreaterThanOrEqualTo(server1Primaries);
+
     // Cleanup server executors & TCP sinks on surviving VMs
     for (MemberVM survivor : new MemberVM[] {server2, server3}) {
       survivor.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
@@ -341,6 +368,7 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
         .randomSeed(777L)
         .build();
     serverService = new ContinuousVectorQueryService(config);
+    serverService.setHeartbeatIntervalEvents(4);
     serverService.registerSubscriptions(subscriptions);
 
     serverTcpSink = new TcpEventSink(receiverPort, dropOutboundEvents);
@@ -401,19 +429,21 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     return pairs;
   }
 
-  private static float[] randomUnitVector(Random rng, int dim) {
+  private static float[] randomUnitVectorZeroLastDim(Random rng, int dim) {
     float[] v = new float[dim];
-    for (int i = 0; i < dim; i++) {
+    for (int i = 0; i < dim - 1; i++) {
       v[i] = (float) rng.nextGaussian();
     }
+    v[dim - 1] = 0.0f;
     return VectorSubscription.normalize(v);
   }
 
-  private static float[] perturbVector(Random rng, float[] base, float noiseStd) {
+  private static float[] perturbVectorZeroLastDim(Random rng, float[] base, float noiseStd) {
     float[] v = new float[base.length];
-    for (int i = 0; i < base.length; i++) {
+    for (int i = 0; i < base.length - 1; i++) {
       v[i] = base[i] + (float) (rng.nextGaussian() * noiseStd);
     }
+    v[base.length - 1] = 0.0f;
     return VectorSubscription.normalize(v);
   }
 

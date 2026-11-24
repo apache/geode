@@ -683,6 +683,150 @@ public class ChordalVoronoiRouterTest {
     assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
   }
 
+  @Test
+  public void voronoiPerCellCopyOnWriteOmitsFlatArraysAndReplacesOnlyAffectedCell() {
+    int dim = 64;
+    Random rng = new Random(20261123L);
+    RouterConfig cfg = RouterConfig.builder(dim)
+        .numClusters(8)
+        .expectedSurvivalFraction(0.15d)
+        .hysteresisDelta(0.15d)
+        .randomSeed(20261123L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+
+    float[][] topics = new float[8][dim];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVector(rng, dim);
+    }
+    float noise = 0.20f / (float) Math.sqrt(dim);
+    List<VectorSubscription> subs = new ArrayList<>(80);
+    for (int i = 0; i < 80; i++) {
+      subs.add(new VectorSubscription("cow-" + i, perturbVector(rng, topics[i % 8], noise), 0.80f));
+    }
+    router.addSubscriptions(subs);
+
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(router.hasFlatArraysInCurrentSnapshot())
+        .as("CHORDAL_VORONOI snapshots must not maintain O(Md) flat arrays")
+        .isFalse();
+
+    // 1. Incremental insert replaces strictly 1 VoronoiCell and reuses all sibling cell references
+    ChordalVoronoiRouter.VoronoiCell[] beforeAdd = router.getCurrentCellsForTest();
+    assertThat(beforeAdd.length).isEqualTo(8);
+    router.addSubscription(
+        new VectorSubscription("cow-added", perturbVector(rng, topics[0], noise), 0.80f));
+    assertThat(router.hasFlatArraysInCurrentSnapshot()).isFalse();
+    ChordalVoronoiRouter.VoronoiCell[] afterAdd = router.getCurrentCellsForTest();
+    assertThat(afterAdd.length).isEqualTo(beforeAdd.length);
+    int replacedOnAdd = 0;
+    for (int k = 0; k < beforeAdd.length; k++) {
+      if (beforeAdd[k] != afterAdd[k]) {
+        replacedOnAdd++;
+      }
+    }
+    assertThat(replacedOnAdd)
+        .as("O((M/K)d) CoW insert must replace strictly 1 VoronoiCell")
+        .isEqualTo(1);
+    for (int q = 0; q < 50; q++) {
+      assertThat(router.verifyAgainstBruteForce(perturbVector(rng, topics[q % 8], noise))
+          .isExactMatch()).isTrue();
+    }
+
+    // 2. Incremental remove replaces strictly 1 VoronoiCell and preserves FNR == 0
+    ChordalVoronoiRouter.VoronoiCell[] beforeRemove = router.getCurrentCellsForTest();
+    assertThat(router.removeSubscription("cow-added")).isTrue();
+    assertThat(router.hasFlatArraysInCurrentSnapshot()).isFalse();
+    ChordalVoronoiRouter.VoronoiCell[] afterRemove = router.getCurrentCellsForTest();
+    assertThat(afterRemove.length).isEqualTo(beforeRemove.length);
+    int replacedOnRemove = 0;
+    for (int k = 0; k < beforeRemove.length; k++) {
+      if (beforeRemove[k] != afterRemove[k]) {
+        replacedOnRemove++;
+      }
+    }
+    assertThat(replacedOnRemove)
+        .as("O((M/K)d) CoW remove must replace strictly 1 VoronoiCell")
+        .isEqualTo(1);
+
+    // 3. Verify 1-member cell collapse shifts subscriptionCellIndex cleanly for subsequent removes
+    // Pick a cell, remove all its members to collapse it, then remove a member from a later cell
+    ChordalVoronoiRouter.VoronoiCell[] cells = router.getCurrentCellsForTest();
+    String[] firstCellIds = cells[0].memberIds.clone();
+    String laterCellMemberId = cells[cells.length - 1].memberIds[0];
+    for (String id : firstCellIds) {
+      assertThat(router.removeSubscription(id)).isTrue();
+    }
+    assertThat(router.removeSubscription(laterCellMemberId)).isTrue();
+    assertThat(router.getSubscriptionCount()).isEqualTo(80 - firstCellIds.length - 1);
+    for (int q = 0; q < 100; q++) {
+      assertThat(router.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
+          .isTrue();
+    }
+  }
+
+  @Test
+  public void theorem1Float64EtaAndOutwardRoundingGuaranteeZeroFnrNearDiameterTwoAndTauOne() {
+    assertThat(ChordalVoronoiRouter.FLOAT64_UNIT_ROUNDOFF).isEqualTo(Math.scalb(1.0d, -53));
+
+    int dim = 128;
+    double etaF64 = ChordalVoronoiRouter.computeFloat64Eta(dim);
+    double normMargin = ChordalVoronoiRouter.computeNormMargin(dim);
+    double epsDot = ChordalVoronoiRouter.computeHighamDotEpsilon(dim);
+    assertThat(etaF64).isGreaterThan(4.0d * ChordalVoronoiRouter.FLOAT64_UNIT_ROUNDOFF);
+    assertThat(normMargin).isGreaterThan(etaF64);
+
+    // Wide cell where B_k^up >= 2.0 must set minCosineThreshold == -Infinity (never prunes)
+    float[] unit = new float[dim];
+    unit[0] = 1.0f;
+    ChordalVoronoiRouter.VoronoiCell wideCell = new ChordalVoronoiRouter.VoronoiCell(unit, 1.5d,
+        0.6d, 2.05d, true, epsDot, normMargin, new String[] {"w1"}, unit, new float[] {0.5f});
+    assertThat(wideCell.effectiveUpperBound).isEqualTo(2.0d);
+    assertThat(wideCell.minCosineThreshold).isEqualTo(Double.NEGATIVE_INFINITY);
+
+    // Non-degenerate cell must apply 8 * u_f64 + Math.nextDown outward rounding strictly below
+    // 1 - B^2 / 2 - epsDot
+    double b = 0.75d;
+    ChordalVoronoiRouter.VoronoiCell tightCell = new ChordalVoronoiRouter.VoronoiCell(unit, 0.25d,
+        0.50d, b, true, epsDot, normMargin, new String[] {"t1"}, unit, new float[] {0.9f});
+    double unroundedUpper =
+        1.0d - 0.5d * tightCell.effectiveUpperBound * tightCell.effectiveUpperBound - epsDot;
+    assertThat(tightCell.minCosineThreshold).isLessThan(unroundedUpper);
+    assertThat(tightCell.minCosineThreshold).isEqualTo(
+        Math.nextDown(unroundedUpper - 8.0d * ChordalVoronoiRouter.FLOAT64_UNIT_ROUNDOFF));
+
+    // Adversarial FNR == 0 test combining antipodal pairs (B_k^up -> 2.0) and tau == 1.0f
+    Random rng = new Random(8888L);
+    RouterConfig cfg = RouterConfig.builder(dim)
+        .numClusters(4)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .randomSeed(8888L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+    List<VectorSubscription> subs = new ArrayList<>();
+    for (int i = 0; i < 16; i++) {
+      float[] q = randomUnitVector(rng, dim);
+      float[] antipodal = new float[dim];
+      for (int d = 0; d < dim; d++) {
+        antipodal[d] = -q[d];
+      }
+      subs.add(new VectorSubscription("pos-" + i, q, (i % 2 == 0) ? 1.0f : 0.01f));
+      subs.add(new VectorSubscription("neg-" + i, antipodal, (i % 2 == 0) ? 1.0f : 0.01f));
+    }
+    router.addSubscriptions(subs);
+    for (VectorSubscription sub : subs) {
+      assertThat(router.verifyAgainstBruteForce(sub.getNormalizedQueryVector()).isExactMatch())
+          .isTrue();
+    }
+    for (int i = 0; i < 100; i++) {
+      assertThat(router.verifyAgainstBruteForce(randomUnitVector(rng, dim)).isExactMatch())
+          .isTrue();
+    }
+  }
+
   private static float[] randomUnitVector(Random rng, int dim) {
     float[] v = new float[dim];
     for (int i = 0; i < dim; i++) {

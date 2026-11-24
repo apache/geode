@@ -74,6 +74,12 @@ public class RvvMonotonicVectorDispatcher {
 
   private static final Logger logger = LogService.getLogger();
   public static final int DEFAULT_MAX_TAIL_PER_STREAM = 100_000;
+  /**
+   * Default per-{@code (bucketId, memberId)} mutation stride between lightweight RVV watermark
+   * heartbeats ({@code O(1/H)} per connection, independent of subscription count {@code M}). Set
+   * to {@code 0} to disable heartbeats.
+   */
+  public static final int DEFAULT_HEARTBEAT_INTERVAL_EVENTS = 64;
 
   /**
    * Callback invoked whenever a per-{@code (bucketId, memberId)} tail buffer exceeds
@@ -193,11 +199,29 @@ public class RvvMonotonicVectorDispatcher {
     final Map<String, TreeMap<Long, TailMutation>> tailByMember = new HashMap<>();
     final Map<String, Long> checkpointByMember = new HashMap<>();
     final Map<String, AtomicLong> fallbackVersionByMember = new HashMap<>();
+    final Map<String, Long> eventsSinceHeartbeatByMember = new HashMap<>();
     final List<TailMutation> pendingLiveMutations = new ArrayList<>();
     final ConcurrentLinkedQueue<List<ContinuousVectorEvent>> pendingDispatchBatches =
         new ConcurrentLinkedQueue<>();
     final AtomicBoolean dispatchDraining = new AtomicBoolean(false);
     int pendingAsyncPromotions = 0;
+
+    synchronized boolean shouldEmitPeriodicHeartbeat(String memberId, int interval) {
+      if (interval <= 0) {
+        return false;
+      }
+      long next = eventsSinceHeartbeatByMember.getOrDefault(memberId, 0L) + 1L;
+      if (next >= interval) {
+        eventsSinceHeartbeatByMember.put(memberId, 0L);
+        return true;
+      }
+      eventsSinceHeartbeatByMember.put(memberId, next);
+      return false;
+    }
+
+    synchronized void resetHeartbeatCounter(String memberId) {
+      eventsSinceHeartbeatByMember.put(memberId, 0L);
+    }
 
     synchronized List<Long> append(TailMutation mutation, int maxTailPerStream) {
       long ckpt = checkpointByMember.getOrDefault(mutation.memberId, 0L);
@@ -311,27 +335,59 @@ public class RvvMonotonicVectorDispatcher {
 
   private final AtomicLong totalEventsDispatched = new AtomicLong();
   private final AtomicLong totalBatchesDispatched = new AtomicLong();
+  private final AtomicLong totalHeartbeatsDispatched = new AtomicLong();
   private final AtomicLong totalReplayedEventsDispatched = new AtomicLong();
   private final AtomicLong totalPromotionsHandled = new AtomicLong();
   private final AtomicLong tailOverflowCount = new AtomicLong();
   private volatile Executor dispatchExecutor;
+  private volatile int heartbeatIntervalEvents;
 
   public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router) {
-    this(router, DEFAULT_MAX_TAIL_PER_STREAM, null);
+    this(router, DEFAULT_MAX_TAIL_PER_STREAM, null, DEFAULT_HEARTBEAT_INTERVAL_EVENTS);
   }
 
   public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router, int maxTailPerStream) {
-    this(router, maxTailPerStream, null);
+    this(router, maxTailPerStream, null, DEFAULT_HEARTBEAT_INTERVAL_EVENTS);
   }
 
   public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router, int maxTailPerStream,
       Executor dispatchExecutor) {
+    this(router, maxTailPerStream, dispatchExecutor, DEFAULT_HEARTBEAT_INTERVAL_EVENTS);
+  }
+
+  public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router, int maxTailPerStream,
+      Executor dispatchExecutor, int heartbeatIntervalEvents) {
     this.router = Objects.requireNonNull(router, "router must not be null");
     if (maxTailPerStream <= 0) {
       throw new IllegalArgumentException("maxTailPerStream must be > 0, got: " + maxTailPerStream);
     }
+    if (heartbeatIntervalEvents < 0) {
+      throw new IllegalArgumentException(
+          "heartbeatIntervalEvents must be >= 0, got: " + heartbeatIntervalEvents);
+    }
     this.maxTailPerStream = maxTailPerStream;
     this.dispatchExecutor = dispatchExecutor;
+    this.heartbeatIntervalEvents = heartbeatIntervalEvents;
+  }
+
+  /**
+   * Configures the per-{@code (bucketId, memberId)} mutation stride between lightweight RVV
+   * watermark heartbeats. Pass {@code 0} to disable periodic heartbeats.
+   */
+  public void setHeartbeatIntervalEvents(int heartbeatIntervalEvents) {
+    if (heartbeatIntervalEvents < 0) {
+      throw new IllegalArgumentException(
+          "heartbeatIntervalEvents must be >= 0, got: " + heartbeatIntervalEvents);
+    }
+    this.heartbeatIntervalEvents = heartbeatIntervalEvents;
+  }
+
+  public int getHeartbeatIntervalEvents() {
+    return heartbeatIntervalEvents;
+  }
+
+  public long getTotalHeartbeatsDispatched() {
+    return totalHeartbeatsDispatched.get();
   }
 
   /**
@@ -475,6 +531,7 @@ public class RvvMonotonicVectorDispatcher {
       for (TailMutation mutation : toReplay) {
         emitted.addAll(evaluateAndDispatch(state, mutation, true));
       }
+      emitPromotionWatermarksLocked(state, bucketId, toReplay);
       if (state.pendingAsyncPromotions > 0) {
         state.pendingAsyncPromotions--;
       }
@@ -537,6 +594,7 @@ public class RvvMonotonicVectorDispatcher {
       for (TailMutation mutation : toReplay) {
         emitted.addAll(evaluateAndDispatch(state, mutation, true));
       }
+      emitPromotionWatermarksLocked(state, bucketId, toReplay);
     }
     if (!overflows.isEmpty()) {
       notifyOverflows(overflows);
@@ -801,35 +859,86 @@ public class RvvMonotonicVectorDispatcher {
       boolean replayed) {
     List<ChordalVoronoiRouter.MatchResult> matches =
         router.routeNormalized(mutation.getNormalizedVectorUnsafe());
-    if (matches.isEmpty()) {
+    boolean emitHeartbeat =
+        !replayed && state.shouldEmitPeriodicHeartbeat(mutation.memberId, heartbeatIntervalEvents);
+    if (matches.isEmpty() && !emitHeartbeat) {
       return Collections.emptyList();
     }
-    List<ContinuousVectorEvent> events = new ArrayList<>(matches.size());
-    for (ChordalVoronoiRouter.MatchResult match : matches) {
-      events.add(new ContinuousVectorEvent(match.getSubscriptionId(), mutation.key,
-          match.getSimilarityScore(), mutation.bucketId, mutation.memberId, mutation.regionVersion,
-          mutation.entryVersion, mutation.timestamp, replayed));
-    }
-    int count = events.size();
-    totalEventsDispatched.addAndGet(count);
-    totalBatchesDispatched.incrementAndGet();
-    if (replayed) {
-      totalReplayedEventsDispatched.addAndGet(count);
+
+    List<ContinuousVectorEvent> matchEvents;
+    if (matches.isEmpty()) {
+      matchEvents = Collections.emptyList();
+    } else {
+      List<ContinuousVectorEvent> events = new ArrayList<>(matches.size());
+      for (ChordalVoronoiRouter.MatchResult match : matches) {
+        events.add(new ContinuousVectorEvent(match.getSubscriptionId(), mutation.key,
+            match.getSimilarityScore(), mutation.bucketId, mutation.memberId,
+            mutation.regionVersion, mutation.entryVersion, mutation.timestamp, replayed));
+      }
+      int count = events.size();
+      totalEventsDispatched.addAndGet(count);
+      if (replayed) {
+        totalReplayedEventsDispatched.addAndGet(count);
+      }
+      matchEvents = Collections.unmodifiableList(events);
     }
 
-    List<ContinuousVectorEvent> batch = Collections.unmodifiableList(events);
+    List<ContinuousVectorEvent> sinkBatch;
+    if (!emitHeartbeat) {
+      sinkBatch = matchEvents;
+    } else {
+      ContinuousVectorEvent heartbeat = ContinuousVectorEvent.watermarkHeartbeat(mutation.bucketId,
+          mutation.memberId, mutation.regionVersion, mutation.timestamp);
+      totalHeartbeatsDispatched.incrementAndGet();
+      if (matchEvents.isEmpty()) {
+        sinkBatch = Collections.singletonList(heartbeat);
+      } else {
+        List<ContinuousVectorEvent> combined = new ArrayList<>(matchEvents.size() + 1);
+        combined.addAll(matchEvents);
+        combined.add(heartbeat);
+        sinkBatch = Collections.unmodifiableList(combined);
+      }
+    }
+
+    enqueueOrDispatchBatchLocked(state, sinkBatch);
+    return matchEvents;
+  }
+
+  private void emitPromotionWatermarksLocked(BucketState state, int bucketId,
+      List<TailMutation> replayedMutations) {
+    if (heartbeatIntervalEvents <= 0 || replayedMutations == null || replayedMutations.isEmpty()) {
+      return;
+    }
+    TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
+    for (TailMutation m : replayedMutations) {
+      maxVersionByMember.merge(m.memberId, m.regionVersion, Math::max);
+    }
+    long now = System.currentTimeMillis();
+    for (Map.Entry<String, Long> entry : maxVersionByMember.entrySet()) {
+      String memberId = entry.getKey();
+      long maxVersion = entry.getValue();
+      state.resetHeartbeatCounter(memberId);
+      ContinuousVectorEvent hb =
+          ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, maxVersion, now);
+      totalHeartbeatsDispatched.incrementAndGet();
+      enqueueOrDispatchBatchLocked(state, Collections.singletonList(hb));
+    }
+  }
+
+  private void enqueueOrDispatchBatchLocked(BucketState state,
+      List<ContinuousVectorEvent> sinkBatch) {
+    totalBatchesDispatched.incrementAndGet();
     Executor exec = this.dispatchExecutor;
     if (exec != null) {
       // Enqueued inside synchronized(state) -> preserves exact ascending per-(b, m) RVV order
-      state.pendingDispatchBatches.offer(batch);
+      state.pendingDispatchBatches.offer(sinkBatch);
       scheduleBucketDrain(state, exec);
     } else {
       if (!state.pendingDispatchBatches.isEmpty()) {
         drainBucketDispatchQueue(state, null);
       }
-      dispatchBatchToSinks(batch);
+      dispatchBatchToSinks(sinkBatch);
     }
-    return batch;
   }
 
   private void scheduleBucketDrain(BucketState state, Executor exec) {

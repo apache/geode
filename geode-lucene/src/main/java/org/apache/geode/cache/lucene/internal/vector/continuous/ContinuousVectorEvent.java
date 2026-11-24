@@ -26,6 +26,13 @@ import java.util.Objects;
 public final class ContinuousVectorEvent implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Sentinel subscription ID carried by periodic per-bucket RVV watermark heartbeats that advance
+   * client high-water marks across all active subscriptions on a {@code (bucketId, memberId)}
+   * stream without triggering match callbacks.
+   */
+  public static final String HEARTBEAT_SUBSCRIPTION_ID = "*";
+
   private final String subscriptionId;
   private final Object key;
   private final float similarityScore;
@@ -35,10 +42,18 @@ public final class ContinuousVectorEvent implements Serializable {
   private final int entryVersion;
   private final long timestamp;
   private final boolean replayed;
+  private final boolean heartbeat;
 
   public ContinuousVectorEvent(String subscriptionId, Object key, float similarityScore,
       int bucketId, String memberId, long regionVersion, int entryVersion, long timestamp,
       boolean replayed) {
+    this(subscriptionId, key, similarityScore, bucketId, memberId, regionVersion, entryVersion,
+        timestamp, replayed, false);
+  }
+
+  public ContinuousVectorEvent(String subscriptionId, Object key, float similarityScore,
+      int bucketId, String memberId, long regionVersion, int entryVersion, long timestamp,
+      boolean replayed, boolean heartbeat) {
     if (subscriptionId == null || subscriptionId.isEmpty()) {
       throw new IllegalArgumentException("subscriptionId must not be null or empty");
     }
@@ -57,6 +72,18 @@ public final class ContinuousVectorEvent implements Serializable {
     this.entryVersion = entryVersion;
     this.timestamp = timestamp;
     this.replayed = replayed;
+    this.heartbeat = heartbeat;
+  }
+
+  /**
+   * Creates a lightweight per-bucket RVV watermark heartbeat carrying {@code (bucketId, memberId,
+   * regionVersion)} so healthy selective or 0%-match subscribers advance their high-water marks
+   * and unblock server-side tail compaction without pinning {@code V_ckpt}.
+   */
+  public static ContinuousVectorEvent watermarkHeartbeat(int bucketId, String memberId,
+      long regionVersion, long timestamp) {
+    return new ContinuousVectorEvent(HEARTBEAT_SUBSCRIPTION_ID, null, 0.0f, bucketId, memberId,
+        regionVersion, 0, timestamp, false, true);
   }
 
   public String getSubscriptionId() {
@@ -95,6 +122,10 @@ public final class ContinuousVectorEvent implements Serializable {
     return replayed;
   }
 
+  public boolean isHeartbeat() {
+    return heartbeat;
+  }
+
   public RvvStreamKey getStreamKey() {
     return new RvvStreamKey(bucketId, memberId);
   }
@@ -114,6 +145,7 @@ public final class ContinuousVectorEvent implements Serializable {
         && entryVersion == that.entryVersion
         && timestamp == that.timestamp
         && replayed == that.replayed
+        && heartbeat == that.heartbeat
         && Objects.equals(subscriptionId, that.subscriptionId)
         && Objects.equals(key, that.key)
         && Objects.equals(memberId, that.memberId);
@@ -122,7 +154,7 @@ public final class ContinuousVectorEvent implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(subscriptionId, key, similarityScore, bucketId, memberId, regionVersion,
-        entryVersion, timestamp, replayed);
+        entryVersion, timestamp, replayed, heartbeat);
   }
 
   @Override
@@ -136,6 +168,7 @@ public final class ContinuousVectorEvent implements Serializable {
         + ", regionVersion=" + regionVersion
         + ", entryVersion=" + entryVersion
         + ", replayed=" + replayed
+        + ", heartbeat=" + heartbeat
         + '}';
   }
 }

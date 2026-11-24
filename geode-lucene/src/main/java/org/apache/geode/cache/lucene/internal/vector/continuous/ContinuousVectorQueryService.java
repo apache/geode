@@ -58,11 +58,15 @@ public class ContinuousVectorQueryService {
   }
 
   /**
-   * Attaches a client-side {@link RvvClientGate} so {@link #unregisterSubscription(String)}
-   * automatically purges stale high-water entries and avoids pinning {@code V_ckpt}.
+   * Attaches a client-side {@link RvvClientGate} so subscription registrations and
+   * {@link #unregisterSubscription(String)} automatically synchronize active subscription IDs
+   * (enabling watermark heartbeats for 0%-match subscribers and avoiding stale {@code V_ckpt}
+   * pinning).
    */
   public void attachClientGate(RvvClientGate gate) {
-    clientGates.add(Objects.requireNonNull(gate, "gate must not be null"));
+    Objects.requireNonNull(gate, "gate must not be null");
+    gate.registerSubscriptions(router.getSubscriptionIds());
+    clientGates.add(gate);
   }
 
   public boolean detachClientGate(RvvClientGate gate) {
@@ -71,16 +75,23 @@ public class ContinuousVectorQueryService {
 
   public void registerSubscription(VectorSubscription subscription) {
     router.addSubscription(subscription);
+    for (RvvClientGate gate : clientGates) {
+      gate.registerSubscription(subscription.getSubscriptionId());
+    }
   }
 
   public void registerSubscription(String subscriptionId, float[] queryVector,
       float similarityThreshold) {
-    router
-        .addSubscription(new VectorSubscription(subscriptionId, queryVector, similarityThreshold));
+    registerSubscription(new VectorSubscription(subscriptionId, queryVector, similarityThreshold));
   }
 
   public void registerSubscriptions(Collection<VectorSubscription> subscriptions) {
     router.addSubscriptions(subscriptions);
+    for (RvvClientGate gate : clientGates) {
+      for (VectorSubscription sub : subscriptions) {
+        gate.registerSubscription(sub.getSubscriptionId());
+      }
+    }
   }
 
   public boolean unregisterSubscription(String subscriptionId) {
@@ -91,6 +102,14 @@ public class ContinuousVectorQueryService {
       }
     }
     return removed;
+  }
+
+  public void setHeartbeatIntervalEvents(int heartbeatIntervalEvents) {
+    dispatcher.setHeartbeatIntervalEvents(heartbeatIntervalEvents);
+  }
+
+  public int getHeartbeatIntervalEvents() {
+    return dispatcher.getHeartbeatIntervalEvents();
   }
 
   public void addEventSink(ContinuousVectorEventSink sink) {

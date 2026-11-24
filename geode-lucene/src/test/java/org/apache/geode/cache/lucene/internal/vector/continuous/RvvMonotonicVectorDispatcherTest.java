@@ -430,6 +430,7 @@ public class RvvMonotonicVectorDispatcherTest {
       clientGate.addListener(accepted::add);
 
       AtomicInteger batchCalls = new AtomicInteger(0);
+      AtomicInteger heartbeatBatches = new AtomicInteger(0);
       AtomicInteger singleEventFallbackCalls = new AtomicInteger(0);
       service.addEventSink(new ContinuousVectorEventSink() {
         @Override
@@ -440,6 +441,11 @@ public class RvvMonotonicVectorDispatcherTest {
 
         @Override
         public void onEventBatch(List<ContinuousVectorEvent> events) {
+          if (events.size() == 1 && events.get(0).isHeartbeat()) {
+            heartbeatBatches.incrementAndGet();
+            clientGate.tryAcceptBatch(events);
+            return;
+          }
           batchCalls.incrementAndGet();
           assertThat(events).hasSize(numSubs);
           clientGate.tryAcceptBatch(events);
@@ -476,6 +482,7 @@ public class RvvMonotonicVectorDispatcherTest {
 
       // Strictly 20 unique versions * 64 subs = 1,280 accepted events; replayed v=7..10 deduped!
       assertThat(accepted).hasSize(20 * numSubs);
+      assertThat(heartbeatBatches.get()).isEqualTo(1);
       assertThat(clientGate.getDiscardedCount()).isEqualTo(4L * numSubs);
       assertThat(RvvClientGate.verifyStrictMonotonicity(accepted))
           .as("Async per-bucket coalesced dispatch must preserve strict Theorem 3 RVV monotonicity")
@@ -487,5 +494,100 @@ public class RvvMonotonicVectorDispatcherTest {
     } finally {
       asyncDispatchPool.shutdownNow();
     }
+  }
+
+  @Test
+  public void zeroMatchSubscriberAdvancesCheckpointViaHeartbeatsWithoutTailOverflowOrFailoverLoss() {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+    int maxTail = 32;
+    int heartbeatInterval = 8;
+
+    ChordalVoronoiRouter primaryRouter = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher primaryDispatcher =
+        new RvvMonotonicVectorDispatcher(primaryRouter, maxTail, null, heartbeatInterval);
+    ContinuousVectorQueryService primary =
+        new ContinuousVectorQueryService(primaryRouter, primaryDispatcher);
+
+    ChordalVoronoiRouter secondaryRouter = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher secondaryDispatcher =
+        new RvvMonotonicVectorDispatcher(secondaryRouter, maxTail, null, heartbeatInterval);
+    ContinuousVectorQueryService secondary =
+        new ContinuousVectorQueryService(secondaryRouter, secondaryDispatcher);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    AtomicInteger matchingCallbacks = new AtomicInteger();
+    AtomicInteger zeroMatchCallbacks = new AtomicInteger();
+    List<ContinuousVectorEvent> accepted = new ArrayList<>();
+    clientGate.addListener(ev -> {
+      accepted.add(ev);
+      if ("sub-matching".equals(ev.getSubscriptionId())) {
+        matchingCallbacks.incrementAndGet();
+      } else if ("sub-zero-match".equals(ev.getSubscriptionId())) {
+        zeroMatchCallbacks.incrementAndGet();
+      }
+    });
+
+    primary.attachClientGate(clientGate);
+    primary.registerSubscription("sub-matching", matchVec, 0.85f);
+    primary.registerSubscription("sub-zero-match", zeroMatchQuery, 0.99f);
+    secondary.registerSubscription("sub-matching", matchVec, 0.85f);
+    secondary.registerSubscription("sub-zero-match", zeroMatchQuery, 0.99f);
+
+    primary.addEventSink(clientGate::tryAccept);
+    secondary.addEventSink(clientGate::tryAccept);
+
+    int bucketId = 2;
+    String memberId = "srv-heartbeat";
+    int totalLive = 5 * maxTail; // 160 mutations >> maxTail (32)
+
+    for (long v = 1L; v <= totalLive; v++) {
+      List<ContinuousVectorEvent> emitted =
+          primary.onBucketMutation(bucketId, memberId, v, "k-" + v, matchVec, true);
+      secondary.onBucketMutation(bucketId, memberId, v, "k-" + v, matchVec, false);
+      // Returned list contains strictly match events (no heartbeats leaking into caller result)
+      assertThat(emitted).hasSize(1);
+      assertThat(emitted.get(0).isHeartbeat()).isFalse();
+
+      // Advance server checkpoints strictly from safe client checkpoint across ALL active subs
+      long safeCkpt = clientGate.getSafeCheckpointVersion(bucketId, memberId);
+      if (v < heartbeatInterval) {
+        // Before first heartbeat, 0%-match subscriber is at 0 -> safe checkpoint must be 0
+        assertThat(safeCkpt).isZero();
+      }
+      primary.acknowledgeCheckpoint(bucketId, memberId, safeCkpt);
+      secondary.acknowledgeCheckpoint(bucketId, memberId, safeCkpt);
+    }
+
+    assertThat(primaryDispatcher.getTailOverflowCount()).isZero();
+    assertThat(primaryDispatcher.isResyncRequired(bucketId, memberId)).isFalse();
+    assertThat(secondaryDispatcher.getTailOverflowCount()).isZero();
+    assertThat(primaryDispatcher.getTotalHeartbeatsDispatched())
+        .isEqualTo(totalLive / heartbeatInterval);
+    assertThat(clientGate.getHeartbeatsAcceptedCount())
+        .isEqualTo(totalLive / heartbeatInterval);
+    assertThat(clientGate.getHighWaterVersion("sub-zero-match", bucketId, memberId))
+        .isEqualTo(totalLive);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(totalLive);
+    assertThat(primaryDispatcher.getTailSize(bucketId)).isZero();
+    assertThat(zeroMatchCallbacks.get()).isZero();
+    assertThat(matchingCallbacks.get()).isEqualTo(totalLive);
+
+    // Failover phase: primary crashes after replicating v=161..175 to secondary without delivering
+    for (long v = totalLive + 1L; v <= totalLive + 15L; v++) {
+      secondary.onBucketMutation(bucketId, memberId, v, "k-" + v, matchVec, false);
+    }
+    List<ContinuousVectorEvent> replayed = secondary.onPrimaryPromotion(bucketId);
+    assertThat(replayed).hasSize(15);
+    assertThat(replayed).allMatch(ContinuousVectorEvent::isReplayed);
+
+    // Trailing promotion watermark heartbeat advances even the 0%-match subscriber to v=175!
+    assertThat(clientGate.getHighWaterVersion("sub-zero-match", bucketId, memberId))
+        .isEqualTo(totalLive + 15L);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId))
+        .isEqualTo(totalLive + 15L);
+    assertThat(zeroMatchCallbacks.get()).isZero();
+    assertThat(matchingCallbacks.get()).isEqualTo(totalLive + 15);
+    assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
   }
 }
