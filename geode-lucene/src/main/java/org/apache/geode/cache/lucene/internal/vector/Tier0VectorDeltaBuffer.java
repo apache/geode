@@ -123,7 +123,25 @@ public class Tier0VectorDeltaBuffer<K> {
     Map<String, Object> metadataCopy = (metadata == null || metadata.isEmpty())
         ? Collections.emptyMap()
         : Collections.unmodifiableMap(new HashMap<>(metadata));
+    return insertIfAbsent(key, vectorCopy, metadataCopy, false);
+  }
 
+  /**
+   * Inserts a tombstone entry into {@code E_active} ONLY if {@code key} is currently absent from
+   * both {@code E_active} and {@code E_flushing} (including live entries). Used during primary
+   * bucket hydration and pre-crash tombstone reconciliation so hydration never overwrites a
+   * concurrent or post-promotion live {@code put}.
+   *
+   * @return monotonically increasing sequence number if inserted, or {@code -1L} if {@code key}
+   *         was already present
+   */
+  public long deleteIfAbsent(K key) {
+    Objects.requireNonNull(key, "key must not be null");
+    return insertIfAbsent(key, null, Collections.emptyMap(), true);
+  }
+
+  private long insertIfAbsent(K key, float[] vector, Map<String, Object> metadata,
+      boolean tombstone) {
     while (true) {
       EpochState<K> state = stateRef.get();
       EpochBucket<K> active = state.active;
@@ -136,14 +154,15 @@ public class Tier0VectorDeltaBuffer<K> {
         continue;
       }
       try {
-        if (state.flushing != null && state.flushing.entries.containsKey(key)) {
+        EpochBucket<K> flushing = stateRef.get().flushing;
+        if (flushing != null && flushing.entries.containsKey(key)) {
           return -1L;
         }
         long[] insertedSeq = new long[] {-1L};
         active.entries.computeIfAbsent(key, k -> {
           long seq = sequenceGenerator.incrementAndGet();
           insertedSeq[0] = seq;
-          return new DeltaEntry<>(k, vectorCopy, metadataCopy, false, active.epoch, seq);
+          return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq);
         });
         return insertedSeq[0];
       } finally {

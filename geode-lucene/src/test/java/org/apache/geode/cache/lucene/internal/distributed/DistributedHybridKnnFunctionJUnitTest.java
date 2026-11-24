@@ -682,6 +682,137 @@ public class DistributedHybridKnnFunctionJUnitTest {
         .isEqualTo(HybridKnnQueryContext.MAX_RERANK_OVERSAMPLE_FACTOR);
   }
 
+  @Test
+  @SuppressWarnings("unchecked")
+  public void isoEfSearchRerankBeamCandidatesExecutesFp32RerankWithoutBeamInflation()
+      throws Exception {
+    float[] query = new float[] {1f, 0f, 0f, 0f};
+
+    // 1. Default rerankBeamCandidates is false; builder setter and Java serialization preserve it
+    HybridKnnQueryContext defaultCtx =
+        HybridKnnQueryContext.builder(INDEX_NAME, VECTOR_FIELD, query, 10).build();
+    assertThat(defaultCtx.isRerankBeamCandidates()).isFalse();
+    assertThat(defaultCtx.getRerankOversampleFactor()).isEqualTo(1);
+
+    HybridKnnQueryContext isoCtx = HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+        .rerankBeamCandidates(true)
+        .build();
+    assertThat(isoCtx.isRerankBeamCandidates()).isTrue();
+    assertThat(isoCtx.getRerankOversampleFactor()).isEqualTo(1);
+
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    try (java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(baos)) {
+      oos.writeObject(isoCtx);
+    }
+    try (java.io.ObjectInputStream ois =
+        new java.io.ObjectInputStream(new java.io.ByteArrayInputStream(baos.toByteArray()))) {
+      HybridKnnQueryContext deserialized = (HybridKnnQueryContext) ois.readObject();
+      assertThat(deserialized.isRerankBeamCandidates()).isTrue();
+      assertThat(deserialized.getRerankOversampleFactor()).isEqualTo(1);
+    }
+
+    // 2. Verify DistributedHybridKnnFunction routes rerankOversampleFactor==1 &&
+    // rerankBeamCandidates==true to repo.queryWithFp32Rerank with queryK == luceneK (zero
+    // inflation)
+    when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+        .thenReturn(Map.of(0, mockRepoBucket0));
+    when(mockContext.getArguments()).thenReturn(isoCtx);
+
+    new DistributedHybridKnnFunction().execute(mockContext);
+
+    ArgumentCaptor<Query> queryCaptor = ArgumentCaptor.forClass(Query.class);
+    verify(mockRepoBucket0).queryWithFp32Rerank(
+        queryCaptor.capture(), eq(10), eq(10), eq(VECTOR_FIELD),
+        any(float[].class), eq(VectorSimilarityFunction.COSINE),
+        any(IndexResultCollector.class));
+    verify(mockRepoBucket0, org.mockito.Mockito.never())
+        .query(any(Query.class), anyInt(), any(IndexResultCollector.class));
+    assertThat(((KnnFloatVectorQuery) queryCaptor.getValue()).getK()).isEqualTo(10);
+
+    // 3. Verify end-to-end exact FP32 .vec rescoring on real Lucene SQ8 segments at strict iso-efS
+    final int dim = 128;
+    final int numDocs = 240;
+    final int efS = 16;
+    Random rng = new Random(909L);
+    Map<String, float[]> vectorsByKey = new LinkedHashMap<>(numDocs);
+    float[] baseDir = randomUnitVector(rng, dim);
+    for (int i = 0; i < numDocs; i++) {
+      float[] v = new float[dim];
+      for (int d = 0; d < dim; d++) {
+        v[d] = baseDir[d] * 0.6f + (float) (rng.nextGaussian() * 0.08);
+      }
+      if (i % 12 == 0) {
+        v[i % dim] += 3.0f;
+      }
+      normalize(v);
+      vectorsByKey.put("iso-" + i, v);
+    }
+
+    IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
+    iwc.setCodec(new Lucene912Codec() {
+      @Override
+      public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
+        return new Lucene99HnswScalarQuantizedVectorsFormat(16, 100);
+      }
+    });
+    LuceneSerializer<float[]> vecSerializer = (idx, vec) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, VectorSimilarityFunction.COSINE));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, iwc)) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockRegion, writer, vecSerializer, mockStats, mockRegion, null, "lock", mockIndex);
+      int count = 0;
+      for (Map.Entry<String, float[]> e : vectorsByKey.entrySet()) {
+        repo.update(e.getKey(), e.getValue());
+        if (++count % 80 == 0) {
+          repo.commitAndRefreshBlocking();
+        }
+      }
+      repo.commitAndRefreshBlocking();
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      float[] q = new float[dim];
+      for (int d = 0; d < dim; d++) {
+        q[d] = baseDir[d] * 0.6f + (float) (rng.nextGaussian() * 0.05);
+      }
+      normalize(q);
+
+      ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(localSender);
+      HybridKnnQueryContext realIsoCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, q, efS)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .rerankOversampleFactor(1)
+          .rerankBeamCandidates(true)
+          .build();
+      when(mockContext.getArguments()).thenReturn(realIsoCtx);
+
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      ArgumentCaptor<TopEntriesCollector> captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(localSender).lastResult(captor.capture());
+      List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+      assertThat(hits).hasSize(efS);
+      for (int i = 0; i < hits.size(); i++) {
+        EntryScore<Object> hit = hits.get(i);
+        float exactFp32 = VectorSimilarityScorer.score(
+            q, vectorsByKey.get(hit.getKey()), VectorSimilarityFunction.COSINE);
+        assertThat(hit.getScore()).isCloseTo(exactFp32, within(1e-5f));
+        if (i > 0) {
+          assertThat(hits.get(i - 1).getScore()).isGreaterThanOrEqualTo(hit.getScore());
+        }
+      }
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private List<EntryScore<Object>> executeHybridQuery(float[] query, int k, int rerankFactor) {
     ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);

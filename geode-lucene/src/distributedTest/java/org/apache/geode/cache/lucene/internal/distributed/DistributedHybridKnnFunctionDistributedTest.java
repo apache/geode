@@ -65,8 +65,12 @@ import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.cache.lucene.internal.vector.VectorSimilarityScorer;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -122,6 +126,7 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
+    props.put(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "true");
     props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
         VectorRecord.class.getName() + ";"
             + VectorRecordLuceneSerializer.class.getName() + ";"
@@ -648,6 +653,213 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     dataStore2.invoke(() -> resumeIndexAeq(getCache()));
   }
 
+  @Test
+  public void failoverAeqDeltaHydrationReconcilesPreCrashTombstonesWithZeroGhostsAndDrainsToZero() {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    // Seed 160 committed docs across all 16 buckets with strictly distinct cosine similarities
+    // (0.40 .. 0.877) so top-k ranking is tie-free and deterministic.
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+
+    Map<String, VectorRecord> groundTruth = new HashMap<>();
+    for (int i = 0; i < NUM_BUCKETS * 10; i++) {
+      float cos = 0.40f + 0.003f * i;
+      float[] vec = new float[DIM];
+      vec[0] = cos;
+      vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+      groundTruth.put("seed-" + i, new VectorRecord(vec, "all", "all", "all"));
+    }
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (Map.Entry<String, VectorRecord> e : groundTruth.entrySet()) {
+        region.put(e.getKey(), e.getValue());
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    // Ensure redundancy is established on dataStore2 and secondary shadow queues are drained to 0
+    // before pausing AEQ so |AEQ_b| reflects strictly the uncommitted pre-crash mutations.
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      int ds2Buckets = dataStore2.invoke(this::countLocalBuckets);
+      assertThat(ds2Buckets).isEqualTo(NUM_BUCKETS);
+      int shadowSize = dataStore1.invoke(() -> countShadowQueueLocalSize(getCache()))
+          + dataStore2.invoke(() -> countShadowQueueLocalSize(getCache()));
+      assertThat(shadowSize).isEqualTo(0);
+    });
+
+    // Identify primary buckets hosted on dataStore1 and choose:
+    // - emptiedBucketId: all keys destroyed pre-crash so bucket.isEmpty() == true on failover
+    // - untouchedBucketId: zero uncommitted mutations so |AEQ_b| == 0 and |T_mask| == 0
+    // - partialDestroyBuckets: subset of keys destroyed + fresh uncommitted puts
+    Map<Integer, List<String>> ds1BucketKeys = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      Map<Integer, List<String>> map = new HashMap<>();
+      for (int bid : pr.getDataStore().getAllLocalPrimaryBucketIds()) {
+        BucketRegion br = pr.getDataStore().getLocalBucketById(bid);
+        List<String> keys = new ArrayList<>();
+        for (Object k : br.keySet()) {
+          keys.add((String) k);
+        }
+        Collections.sort(keys);
+        map.put(bid, keys);
+      }
+      return map;
+    });
+    assertThat(ds1BucketKeys.size()).isGreaterThanOrEqualTo(3);
+
+    List<Integer> ds1Bids = new ArrayList<>(ds1BucketKeys.keySet());
+    Collections.sort(ds1Bids);
+    int emptiedBucketId = ds1Bids.get(0);
+    int untouchedBucketId = ds1Bids.get(1);
+    Set<Integer> activeDeltaBuckets = new HashSet<>(ds1Bids.subList(2, ds1Bids.size()));
+
+    Set<String> destroyedKeys = new HashSet<>();
+    for (String k : ds1BucketKeys.get(emptiedBucketId)) {
+      destroyedKeys.add(k);
+    }
+    for (int bid : activeDeltaBuckets) {
+      List<String> bKeys = ds1BucketKeys.get(bid);
+      for (int idx = 0; idx < bKeys.size(); idx += 2) {
+        destroyedKeys.add(bKeys.get(idx));
+      }
+    }
+
+    // Pause AEQ on both servers so destroys and puts stay uncommitted in AEQ shadow buckets
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    // Pre-crash destroys (including emptying emptiedBucketId completely) + fresh uncommitted puts
+    // routed to activeDeltaBuckets
+    List<String> freshPutKeys = new ArrayList<>();
+    Map<String, VectorRecord> freshPutRecords = new HashMap<>();
+    for (int i = 0; i < 160 && freshPutKeys.size() < 8; i++) {
+      String candidateKey = "fresh-put-" + i;
+      int targetBucket = accessor.invoke(() -> {
+        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+        return pr.getKeyInfo(candidateKey).getBucketId();
+      });
+      if (activeDeltaBuckets.contains(targetBucket)) {
+        float cos = 0.95f + 0.005f * freshPutKeys.size();
+        float[] freshVec = new float[DIM];
+        freshVec[0] = cos;
+        freshVec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+        freshPutKeys.add(candidateKey);
+        freshPutRecords.put(candidateKey, new VectorRecord(freshVec, "all", "all", "all"));
+      }
+    }
+    assertThat(freshPutKeys).isNotEmpty();
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (String dk : destroyedKeys) {
+        region.destroy(dk);
+      }
+      for (Map.Entry<String, VectorRecord> e : freshPutRecords.entrySet()) {
+        region.put(e.getKey(), e.getValue());
+      }
+    });
+    destroyedKeys.forEach(groundTruth::remove);
+    groundTruth.putAll(freshPutRecords);
+
+    // Secondary dataStore2 must have 0 Tier-0 entries before failover
+    assertThat(dataStore2.invoke(this::countTier0Entries)).isEqualTo(0);
+
+    // Crash primary dataStore1 abruptly; wait for dataStore2 to take ownership of all 16 buckets
+    DistributedTestUtils.crashDistributedSystem(dataStore1);
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(dataStore2.invoke(this::countLocalPrimaryBuckets))
+            .isEqualTo(NUM_BUCKETS));
+
+    // Verify AEQ-delta hydration telemetry and O(|AEQ_b|) |T_mask| BEFORE AEQ resumes
+    dataStore2.invoke(() -> {
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
+      assertThat(registry.getAeqDeltaHydrationCount())
+          .isGreaterThanOrEqualTo(ds1Bids.size());
+      assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+      assertThat(registry.getHydratedTombstonesCount()).isEqualTo(destroyedKeys.size());
+      assertThat(registry.getHydratedKeysCount())
+          .isEqualTo(destroyedKeys.size() + freshPutKeys.size());
+
+      // Untouched bucket with |AEQ_b| == 0 must stay empty in Tier-0 (O(|AEQ_b|), not O(|B_local|))
+      Tier0VectorDeltaBuffer<Object> untouchedBuf =
+          registry.getBuffer("/" + REGION_NAME, INDEX_NAME, untouchedBucketId);
+      if (untouchedBuf != null) {
+        assertThat(untouchedBuf.getTotalSize()).isEqualTo(0);
+      }
+
+      // Emptied bucket (bucket.isEmpty() == true) MUST still hold all destroyed tombstones
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      BucketRegion emptiedBucket = pr.getDataStore().getLocalBucketById(emptiedBucketId);
+      assertThat(emptiedBucket.isEmpty()).isTrue();
+      Tier0VectorDeltaBuffer<Object> emptiedBuf =
+          registry.getBuffer("/" + REGION_NAME, INDEX_NAME, emptiedBucketId);
+      assertThat(emptiedBuf).isNotNull();
+      assertThat(emptiedBuf.snapshot().getTombstonedKeys())
+          .containsExactlyInAnyOrderElementsOf(ds1BucketKeys.get(emptiedBucketId));
+    });
+
+    // Query immediately BEFORE AEQ resumes on dataStore2: ZERO tombstone ghosts, 100% recall!
+    List<String> expectedTop25 =
+        computeBruteForceTopK(groundTruth, query, 25, VectorSimilarityFunction.COSINE, null);
+    List<String> preFlushHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 25)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(preFlushHits)
+        .as("Pre-crash destroyed keys must NEVER leak as tombstone ghosts post-failover")
+        .doesNotContainAnyElementsOf(destroyedKeys);
+    assertThat(preFlushHits).containsAll(freshPutKeys);
+    assertThat(computeRecall(expectedTop25, preFlushHits)).isEqualTo(1.0);
+
+    // Exhaustive cluster-wide k=200 query (> total docs) to prove ZERO ghosts across ALL buckets
+    List<String> preFlushAllHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 200)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(preFlushAllHits).doesNotContainAnyElementsOf(destroyedKeys);
+    assertThat(preFlushAllHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
+
+    // Resume AEQ on surviving dataStore2, wait for flush, verify |T_mask| drains to 0 via
+    // evictCommitted and post-flush queries still have 0 ghosts and 100% recall
+    dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+    waitForLuceneFlush(accessor);
+
+    assertThat(dataStore2.invoke(this::countTier0Entries)).isEqualTo(0);
+
+    List<String> postFlushHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 25)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(postFlushHits).doesNotContainAnyElementsOf(destroyedKeys);
+    assertThat(computeRecall(expectedTop25, postFlushHits)).isEqualTo(1.0);
+
+    List<String> postFlushAllHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 200)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(postFlushAllHits).doesNotContainAnyElementsOf(destroyedKeys);
+    assertThat(postFlushAllHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
+  }
+
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,
       String filterField, int k, double minRecall) {
     List<String> expected = computeBruteForceTopK(
@@ -769,6 +981,25 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   private int countLocalPrimaryBuckets() {
     PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
     return pr.getDataStore().getAllLocalPrimaryBucketIds().size();
+  }
+
+  private int countLocalBuckets() {
+    PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+    return pr.getDataStore().getAllLocalBucketRegions().size();
+  }
+
+  private int countShadowQueueLocalSize(Cache cache) {
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
+    AsyncEventQueueImpl queue = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+    if (queue == null || queue.getSender() == null
+        || queue.getSender().getEventProcessor() == null) {
+      return 0;
+    }
+    Object q = queue.getSender().getEventProcessor().getQueue();
+    if (q instanceof ConcurrentParallelGatewaySenderQueue) {
+      return ((ConcurrentParallelGatewaySenderQueue) q).localSize(true);
+    }
+    return 0;
   }
 
   private static List<String> extractKeys(TopEntries<String> topEntries) {

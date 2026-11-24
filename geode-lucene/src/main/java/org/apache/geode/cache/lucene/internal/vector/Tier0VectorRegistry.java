@@ -52,6 +52,10 @@ public class Tier0VectorRegistry {
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, CountDownLatch>> hydrationBarriers =
       new ConcurrentHashMap<>();
   private final AtomicLong hydrationWaitCount = new AtomicLong(0L);
+  private final AtomicLong hydratedKeysCount = new AtomicLong(0L);
+  private final AtomicLong hydratedTombstonesCount = new AtomicLong(0L);
+  private final AtomicLong aeqDeltaHydrationCount = new AtomicLong(0L);
+  private final AtomicLong fullScanHydrationCount = new AtomicLong(0L);
   private final AtomicLong unsupportedFilterFlushFallbackCount = new AtomicLong(0L);
   private final AtomicLong inlineMaskQueryCount = new AtomicLong(0L);
   private final AtomicLong oversampleFallbackQueryCount = new AtomicLong(0L);
@@ -257,6 +261,38 @@ public class Tier0VectorRegistry {
 
   public long getHydrationWaitCount() {
     return hydrationWaitCount.get();
+  }
+
+  public long getHydratedKeysCount() {
+    return hydratedKeysCount.get();
+  }
+
+  public long incrementHydratedKeysCount() {
+    return hydratedKeysCount.incrementAndGet();
+  }
+
+  public long getHydratedTombstonesCount() {
+    return hydratedTombstonesCount.get();
+  }
+
+  public long incrementHydratedTombstonesCount() {
+    return hydratedTombstonesCount.incrementAndGet();
+  }
+
+  public long getAeqDeltaHydrationCount() {
+    return aeqDeltaHydrationCount.get();
+  }
+
+  public long incrementAeqDeltaHydrationCount() {
+    return aeqDeltaHydrationCount.incrementAndGet();
+  }
+
+  public long getFullScanHydrationCount() {
+    return fullScanHydrationCount.get();
+  }
+
+  public long incrementFullScanHydrationCount() {
+    return fullScanHydrationCount.incrementAndGet();
   }
 
   public long getUnsupportedFilterFlushFallbackCount() {

@@ -322,6 +322,9 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     }
 
     int rerankFactor = knnContext.getRerankOversampleFactor();
+    boolean executeFp32Rerank =
+        rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR
+            || knnContext.isRerankBeamCandidates();
     int queryK = luceneK;
     if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
       long targetOversample = oversampleMaskFallback
@@ -338,7 +341,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     RawListResultCollector luceneRawCollector =
         new RawListResultCollector("bucket-" + bucketId, luceneK);
     if (repo != null) {
-      if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
+      if (executeFp32Rerank) {
         repo.queryWithFp32Rerank(knnQuery, luceneK, queryK, knnContext.getVectorFieldName(),
             queryVector, knnContext.getSimilarityFunction(), luceneRawCollector);
       } else {

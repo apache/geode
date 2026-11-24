@@ -89,6 +89,7 @@ public class LuceneEventListener implements AsyncEventListener {
     Set<IndexRepository> affectedRepos = new HashSet<>();
     Map<IndexRepository, Tier0VectorDeltaBuffer<Object>> tier0BuffersByRepo = null;
     Map<IndexRepository, Map<Object, Long>> committedKeySeqsByRepo = null;
+    Set<Integer> awaitedHydrationBuckets = null;
     InternalLuceneIndex partitionedIndex =
         (repositoryManager instanceof PartitionedRepositoryManager)
             ? ((PartitionedRepositoryManager) repositoryManager).getIndex()
@@ -107,6 +108,13 @@ public class LuceneEventListener implements AsyncEventListener {
 
         if (tier0Registry != null && repository.getRegion() instanceof BucketRegion) {
           int bucketId = ((BucketRegion) repository.getRegion()).getId();
+          if (awaitedHydrationBuckets == null) {
+            awaitedHydrationBuckets = new HashSet<>();
+          }
+          if (awaitedHydrationBuckets.add(bucketId)) {
+            tier0Registry.awaitHydration(
+                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+          }
           Tier0VectorDeltaBuffer<Object> buffer = tier0Registry.getBuffer(
               partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
           if (buffer != null) {

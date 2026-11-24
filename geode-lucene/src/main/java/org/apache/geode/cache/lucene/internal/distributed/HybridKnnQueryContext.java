@@ -44,6 +44,7 @@ public class HybridKnnQueryContext implements Serializable {
   private final HashMap<String, String> metadataEqualityFilters;
   private final boolean includeTier0;
   private final int rerankOversampleFactor;
+  private final boolean rerankBeamCandidates;
 
   private HybridKnnQueryContext(Builder builder) {
     this.indexName = builder.indexName;
@@ -56,6 +57,7 @@ public class HybridKnnQueryContext implements Serializable {
     this.metadataEqualityFilters = new HashMap<>(builder.metadataEqualityFilters);
     this.includeTier0 = builder.includeTier0;
     this.rerankOversampleFactor = builder.rerankOversampleFactor;
+    this.rerankBeamCandidates = builder.rerankBeamCandidates;
   }
 
   public static Builder builder(String indexName, String vectorFieldName, float[] queryVector,
@@ -103,15 +105,25 @@ public class HybridKnnQueryContext implements Serializable {
 
   /**
    * Oversampling multiplier for optional exact FP32 {@code .vec} reranking on SQ8-quantized
-   * indexes. A value of {@code 1} (default) disables FP32 reranking; values in {@code [2, 64]}
-   * fetch {@code k * rerankOversampleFactor} candidates from HNSW and rescore them with exact
-   * stored FP32 vectors before returning top-{@code k}.
+   * indexes. A value of {@code 1} (default) performs no beam oversampling (disabling reranking
+   * unless {@link #isRerankBeamCandidates()} is {@code true}); values in {@code [2, 64]} fetch
+   * {@code k * rerankOversampleFactor} candidates from HNSW and rescore them with exact stored
+   * FP32 vectors before returning top-{@code k}.
    */
   public int getRerankOversampleFactor() {
     if (rerankOversampleFactor <= 0) {
       return DEFAULT_RERANK_OVERSAMPLE_FACTOR;
     }
     return Math.min(rerankOversampleFactor, MAX_RERANK_OVERSAMPLE_FACTOR);
+  }
+
+  /**
+   * Returns {@code true} if exact FP32 {@code .vec} rescoring should run over the HNSW beam
+   * candidates even when {@link #getRerankOversampleFactor()} is {@code 1} (strict iso-efSearch
+   * reranking without beam inflation).
+   */
+  public boolean isRerankBeamCandidates() {
+    return rerankBeamCandidates;
   }
 
   public static final class Builder {
@@ -125,6 +137,7 @@ public class HybridKnnQueryContext implements Serializable {
     private final HashMap<String, String> metadataEqualityFilters = new HashMap<>();
     private boolean includeTier0 = true;
     private int rerankOversampleFactor = DEFAULT_RERANK_OVERSAMPLE_FACTOR;
+    private boolean rerankBeamCandidates = false;
 
     private Builder(String indexName, String vectorFieldName, float[] queryVector, int k) {
       this.indexName = Objects.requireNonNull(indexName, "indexName must not be null");
@@ -180,6 +193,11 @@ public class HybridKnnQueryContext implements Serializable {
                 + MAX_RERANK_OVERSAMPLE_FACTOR + "], got: " + rerankOversampleFactor);
       }
       this.rerankOversampleFactor = rerankOversampleFactor;
+      return this;
+    }
+
+    public Builder rerankBeamCandidates(boolean rerankBeamCandidates) {
+      this.rerankBeamCandidates = rerankBeamCandidates;
       return this;
     }
 

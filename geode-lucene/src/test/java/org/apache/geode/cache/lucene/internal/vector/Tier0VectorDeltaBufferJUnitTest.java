@@ -815,6 +815,91 @@ public class Tier0VectorDeltaBufferJUnitTest {
     assertThat(buffer.getTotalSize()).isEqualTo(0);
   }
 
+  @Test
+  public void deleteIfAbsentInsertsTombstoneWithoutOverwritingLivePutsOrFlushingEntries() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(12);
+
+    // 1. Inserts tombstone when key is absent from both E_active and E_flushing
+    long tombSeq1 = buffer.deleteIfAbsent("ghost-1");
+    assertThat(tombSeq1).isPositive();
+    assertThat(buffer.deleteIfAbsent("ghost-1")).isEqualTo(-1L);
+
+    // 2. Does not overwrite live put already in E_active
+    long putSeq = buffer.put("live-1", new float[] {1f, 0f}, Map.of("cat", "a"));
+    assertThat(putSeq).isGreaterThan(tombSeq1);
+    assertThat(buffer.deleteIfAbsent("live-1")).isEqualTo(-1L);
+
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+    assertThat(snap.isTombstoned("ghost-1")).isTrue();
+    assertThat(snap.isMasked("ghost-1")).isTrue();
+    assertThat(snap.getLiveEntries()).containsOnlyKeys("live-1");
+
+    // 3. Skips key currently residing in E_flushing while allowing new keys in E_active
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+    assertThat(batch).isNotNull();
+    assertThat(buffer.deleteIfAbsent("live-1")).isEqualTo(-1L);
+    assertThat(buffer.deleteIfAbsent("ghost-1")).isEqualTo(-1L);
+    long tombSeq2 = buffer.deleteIfAbsent("ghost-2");
+    assertThat(tombSeq2).isGreaterThan(putSeq);
+
+    buffer.completeFlush(batch.getEpoch());
+    Tier0VectorDeltaBuffer.Snapshot<String> afterFlush = buffer.snapshot();
+    assertThat(afterFlush.getLiveEntries()).isEmpty();
+    assertThat(afterFlush.getTombstonedKeys()).containsExactly("ghost-2");
+
+    // 4. Drains cleanly on evictCommitted
+    buffer.evictCommitted(Collections.singletonMap("ghost-2", tombSeq2));
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+  }
+
+  @Test
+  public void deleteIfAbsentNeverOverwritesConcurrentLivePostPromotionPuts() throws Exception {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(13);
+    final int numKeys = 200;
+    Set<String> livePutKeys = ConcurrentHashMap.newKeySet();
+
+    ExecutorService pool = Executors.newFixedThreadPool(3);
+    try {
+      Future<?> writer = pool.submit(() -> {
+        for (int i = 0; i < numKeys; i += 2) {
+          String key = "race-" + i;
+          buffer.put(key, new float[] {0f, 1f}, Map.of("idx", i));
+          livePutKeys.add(key);
+        }
+      });
+      Future<?> hydrator = pool.submit(() -> {
+        for (int i = 0; i < numKeys; i++) {
+          buffer.deleteIfAbsent("race-" + i);
+        }
+      });
+      Future<?> flusher = pool.submit(() -> {
+        for (int i = 0; i < 20; i++) {
+          Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+          if (batch != null) {
+            buffer.abortFlush(batch.getEpoch());
+          }
+        }
+      });
+
+      writer.get();
+      hydrator.get();
+      flusher.get();
+    } finally {
+      pool.shutdownNow();
+    }
+
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+    // Every key written via live put MUST remain live (not clobbered by deleteIfAbsent)
+    for (String liveKey : livePutKeys) {
+      assertThat(snap.getLiveEntries()).containsKey(liveKey);
+      assertThat(snap.isTombstoned(liveKey)).isFalse();
+    }
+    // Odd keys not written by live put MUST be tombstoned
+    for (int i = 1; i < numKeys; i += 2) {
+      assertThat(snap.isTombstoned("race-" + i)).isTrue();
+    }
+  }
+
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,
       VectorSimilarityFunction similarity) throws IOException {
     Document doc = new Document();

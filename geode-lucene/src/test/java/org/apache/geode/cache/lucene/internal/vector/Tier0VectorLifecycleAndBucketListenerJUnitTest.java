@@ -24,8 +24,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +36,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -42,8 +46,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
@@ -62,7 +68,14 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
+import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -415,5 +428,224 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     } finally {
       pool.shutdownNow();
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void afterPrimaryAeqDeltaHydrationReconcilesUncommittedPutsAndTombstonesInOaeqSize() {
+    final int bucketId = 4;
+    Map<Object, float[]> bucketData = new HashMap<>();
+    for (int i = 0; i < 100; i++) {
+      bucketData.put("committed-" + i, new float[] {1f, 0f});
+    }
+    bucketData.put("aeq-live-1", new float[] {0.5f, 0.5f});
+    bucketData.put("aeq-recreated", new float[] {0.8f, 0.2f});
+    bucketData.put("post-promo-live", new float[] {0f, 1f});
+
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isEmpty()).thenReturn(false);
+    when(bucket.keySet()).thenReturn(bucketData.keySet());
+    when(bucket.getEntry(any())).thenAnswer(inv -> {
+      Object k = inv.getArgument(0);
+      float[] v = bucketData.get(k);
+      if (v == null) {
+        return null;
+      }
+      EntrySnapshot es = mock(EntrySnapshot.class);
+      when(es.getRawValue(true)).thenReturn(v);
+      return es;
+    });
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(pr.getFullPath()).thenReturn(REGION_PATH);
+    when(pr.getRegionService()).thenReturn(cache);
+    when(pr.getDataStore()).thenReturn(dataStore);
+
+    // Wire shadow bucket with uncommitted puts/destroys (chronological shadowKeys)
+    Map<Long, GatewaySenderEventImpl> shadowEntries = new HashMap<>();
+    shadowEntries.put(10L, mockShadowEvent("aeq-live-1", Operation.CREATE, 10L));
+    shadowEntries.put(11L, mockShadowEvent("aeq-recreated", Operation.DESTROY, 11L));
+    shadowEntries.put(12L, mockShadowEvent("aeq-recreated", Operation.CREATE, 12L));
+    shadowEntries.put(13L, mockShadowEvent("aeq-deleted", Operation.CREATE, 13L));
+    shadowEntries.put(14L, mockShadowEvent("aeq-deleted", Operation.DESTROY, 14L));
+    shadowEntries.put(15L, mockShadowEvent("precrash-destroy", Operation.DESTROY, 15L));
+    shadowEntries.put(16L, mockShadowEvent("missing-in-bucket", Operation.UPDATE, 16L));
+    shadowEntries.put(17L, mockShadowEvent("post-promo-live", Operation.DESTROY, 17L));
+
+    wireMockAeqShadowBucket(pr, bucketId, shadowEntries);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    // Simulate a live post-promotion put already recorded before afterPrimary reaches the key
+    registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "post-promo-live",
+        new float[] {0f, 1f}, Map.of());
+
+    Tier0VectorBucketListener<String, float[]> listener =
+        new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(pr);
+    partitionListener.afterPrimary(bucketId);
+
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+    Tier0VectorDeltaBuffer.Snapshot<Object> snap = buffer.snapshot();
+
+    // Only O(|AEQ_b|) keys were hydrated; the 100 already-committed keys stay out of Tier-0!
+    assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(1L);
+    assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+    assertThat(registry.getHydratedKeysCount()).isEqualTo(5L);
+    assertThat(registry.getHydratedTombstonesCount()).isEqualTo(3L);
+    assertThat(snap.getLiveEntries())
+        .containsOnlyKeys("aeq-live-1", "aeq-recreated", "post-promo-live");
+    assertThat(snap.getLiveEntries().get("post-promo-live").getVector()).containsExactly(0f, 1f);
+    assertThat(snap.getTombstonedKeys())
+        .containsExactlyInAnyOrder("aeq-deleted", "precrash-destroy", "missing-in-bucket");
+    for (int i = 0; i < 100; i++) {
+      assertThat(snap.isMasked("committed-" + i)).isFalse();
+    }
+
+    // Draining AEQ via evictCommitted drains |T_mask| completely to 0
+    Map<Object, Long> committedSeqs = new HashMap<>();
+    for (Object k : snap.getMaskedKeys()) {
+      committedSeqs.put(k, buffer.getKeySequence(k));
+    }
+    buffer.evictCommitted(committedSeqs);
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+  }
+
+  @Test
+  public void afterPrimaryEmptyBucketStillHydratesPreCrashAeqTombstones() {
+    final int bucketId = 6;
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isEmpty()).thenReturn(true);
+    when(bucket.keySet()).thenReturn(Collections.emptySet());
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(pr.getFullPath()).thenReturn(REGION_PATH);
+    when(pr.getRegionService()).thenReturn(cache);
+    when(pr.getDataStore()).thenReturn(dataStore);
+
+    Map<Long, GatewaySenderEventImpl> shadowEntries = new HashMap<>();
+    shadowEntries.put(1L, mockShadowEvent("emptied-ghost-1", Operation.DESTROY, 1L));
+    shadowEntries.put(2L, mockShadowEvent("emptied-ghost-2", Operation.INVALIDATE, 2L));
+    wireMockAeqShadowBucket(pr, bucketId, shadowEntries);
+
+    Tier0VectorBucketListener<String, float[]> listener =
+        new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(pr);
+    partitionListener.afterPrimary(bucketId);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(1L);
+    assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+    assertThat(registry.getHydratedKeysCount()).isEqualTo(2L);
+    assertThat(registry.getHydratedTombstonesCount()).isEqualTo(2L);
+
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(buffer.snapshot().getTombstonedKeys())
+        .containsExactlyInAnyOrder("emptied-ghost-1", "emptied-ghost-2");
+  }
+
+  @Test
+  public void afterPrimaryFallbackScansRegionMapTombstonesEvenWhenBucketIsEmpty() {
+    final int bucketId = 8;
+    RegionEntry tombA = mock(RegionEntry.class);
+    when(tombA.isTombstone()).thenReturn(true);
+    when(tombA.getKey()).thenReturn("tomb-a");
+
+    RegionEntry tombB = mock(RegionEntry.class);
+    when(tombB.isTombstone()).thenReturn(true);
+    when(tombB.getKey()).thenReturn("tomb-b");
+
+    RegionEntry nonTombRemoved = mock(RegionEntry.class);
+    when(nonTombRemoved.isTombstone()).thenReturn(false);
+    when(nonTombRemoved.getKey()).thenReturn("removed-c");
+
+    List<RegionEntry> regionEntries = new ArrayList<>();
+    regionEntries.add(tombA);
+    regionEntries.add(tombB);
+    regionEntries.add(nonTombRemoved);
+
+    RegionMap regionMap = mock(RegionMap.class);
+    when(regionMap.regionEntries()).thenReturn(regionEntries);
+
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isEmpty()).thenReturn(true);
+    when(bucket.keySet()).thenReturn(Collections.emptySet());
+    when(bucket.getRegionMap()).thenReturn(regionMap);
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(pr.getFullPath()).thenReturn(REGION_PATH);
+    when(pr.getRegionService()).thenReturn(cache);
+    when(pr.getDataStore()).thenReturn(dataStore);
+
+    // No AEQ registered on cache -> forces fallback full-scan path
+    Tier0VectorBucketListener<String, float[]> listener =
+        new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(pr);
+    partitionListener.afterPrimary(bucketId);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    assertThat(registry.getFullScanHydrationCount()).isEqualTo(1L);
+    assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(0L);
+    assertThat(registry.getHydratedKeysCount()).isEqualTo(2L);
+    assertThat(registry.getHydratedTombstonesCount()).isEqualTo(2L);
+
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(buffer.snapshot().getTombstonedKeys())
+        .containsExactlyInAnyOrder("tomb-a", "tomb-b");
+  }
+
+  private GatewaySenderEventImpl mockShadowEvent(String key, Operation op, long shadowKey) {
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.getKey()).thenReturn(key);
+    when(event.getOperation()).thenReturn(op);
+    when(event.getRegionPath()).thenReturn(REGION_PATH);
+    when(event.getShadowKey()).thenReturn(shadowKey);
+    return event;
+  }
+
+  @SuppressWarnings("unchecked")
+  private void wireMockAeqShadowBucket(PartitionedRegion pr, int bucketId,
+      Map<Long, GatewaySenderEventImpl> shadowEntries) {
+    BucketRegion shadowBucket = mock(BucketRegion.class);
+    when(shadowBucket.isDestroyed()).thenReturn(false);
+    when(shadowBucket.keySet()).thenReturn(new LinkedHashSet<>(shadowEntries.keySet()));
+    when(shadowBucket.getValueInVMOrDiskWithoutFaultIn(any())).thenAnswer(inv -> {
+      Object sk = inv.getArgument(0);
+      return shadowEntries.get(sk);
+    });
+
+    PartitionedRegionDataStore shadowStore = mock(PartitionedRegionDataStore.class);
+    when(shadowStore.getLocalBucketById(bucketId)).thenReturn(shadowBucket);
+    PartitionedRegion shadowPr = mock(PartitionedRegion.class);
+    when(shadowPr.isDestroyed()).thenReturn(false);
+    when(shadowPr.getDataStore()).thenReturn(shadowStore);
+
+    ParallelGatewaySenderQueue parallelQueue = mock(ParallelGatewaySenderQueue.class);
+    when(parallelQueue.getRegion(REGION_PATH)).thenReturn(shadowPr);
+    when(parallelQueue.getBucketToTempQueueMap())
+        .thenReturn(Map.of(bucketId, new LinkedBlockingQueue<>()));
+
+    ConcurrentParallelGatewaySenderQueue concurrentQueue =
+        mock(ConcurrentParallelGatewaySenderQueue.class);
+    when(concurrentQueue.getQueueByBucket(bucketId)).thenReturn(parallelQueue);
+    when(concurrentQueue.getRegion(REGION_PATH)).thenReturn(shadowPr);
+
+    AbstractGatewaySenderEventProcessor processor = mock(AbstractGatewaySenderEventProcessor.class);
+    when(processor.getQueue()).thenReturn(concurrentQueue);
+    InternalGatewaySender sender = mock(InternalGatewaySender.class);
+    when(sender.getEventProcessor()).thenReturn(processor);
+    AsyncEventQueueImpl aeq = mock(AsyncEventQueueImpl.class);
+    when(aeq.getSender()).thenReturn(sender);
+
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_PATH);
+    when(cache.getAsyncEventQueue(aeqId)).thenReturn(aeq);
   }
 }
