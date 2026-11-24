@@ -108,7 +108,10 @@ public class HybridKnnQueryContext implements Serializable {
    * stored FP32 vectors before returning top-{@code k}.
    */
   public int getRerankOversampleFactor() {
-    return rerankOversampleFactor <= 0 ? DEFAULT_RERANK_OVERSAMPLE_FACTOR : rerankOversampleFactor;
+    if (rerankOversampleFactor <= 0) {
+      return DEFAULT_RERANK_OVERSAMPLE_FACTOR;
+    }
+    return Math.min(rerankOversampleFactor, MAX_RERANK_OVERSAMPLE_FACTOR);
   }
 
   public static final class Builder {

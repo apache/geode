@@ -53,6 +53,7 @@ import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.KnnFloatVectorQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.SearcherManager;
@@ -565,6 +566,120 @@ public class DistributedHybridKnnFunctionJUnitTest {
           .isGreaterThanOrEqualTo(avgSq8Recall)
           .isGreaterThanOrEqualTo(0.95);
     }
+  }
+
+  /**
+   * Regression test for PR2-V7-B1: verifies {@link IndexRepositoryImpl#queryWithFp32Rerank}
+   * strictly upholds {@code DocIdSetIterator.advance(target > docID())} across sparse/mixed leaves
+   * (docs lacking the vector field before, between, and past the last vector doc, plus a leaf
+   * completely lacking the vector field) under {@code -ea}.
+   */
+  @Test
+  public void queryWithFp32RerankHandlesSparseMixedLeavesWithoutAdvanceContractViolation()
+      throws Exception {
+    float[] query = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] noVec = new float[0];
+    float[] v1 = new float[] {0.0f, 1.0f, 0.0f, 0.0f}; // cosine = 0.5
+    float[] v3 = new float[] {1.0f, 0.0f, 0.0f, 0.0f}; // cosine = 1.0
+    float[] v9 = new float[] {-1.0f, 0.0f, 0.0f, 0.0f}; // cosine = 0.0
+
+    LuceneSerializer<float[]> sparseSerializer = (idx, vec) -> {
+      Document doc = new Document();
+      if (vec != null && vec.length > 0) {
+        doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, VectorSimilarityFunction.COSINE));
+      } else {
+        doc.add(new StringField("tag", "no_vector", Field.Store.NO));
+      }
+      return Collections.singletonList(doc);
+    };
+
+    IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, iwc)) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockRegion, writer, sparseSerializer, mockStats, mockRegion, null, "lock", mockIndex);
+
+      // Leaf 1 (mixed sparse): doc0(no vec), doc1(vec), doc2(no vec), doc3(vec),
+      // doc4(no vec -> NO_MORE_DOCS), doc5(no vec -> already at NO_MORE_DOCS)
+      repo.update("k0", noVec);
+      repo.update("k1", v1);
+      repo.update("k2", noVec);
+      repo.update("k3", v3);
+      repo.update("k4", noVec);
+      repo.update("k5", noVec);
+      repo.commitAndRefreshBlocking();
+
+      // Leaf 2 (no vector field at all -> getFloatVectorValues() == null)
+      repo.update("k6", noVec);
+      repo.update("k7", noVec);
+      repo.commitAndRefreshBlocking();
+
+      // Leaf 3 (mixed sparse)
+      repo.update("k8", noVec);
+      repo.update("k9", v9);
+      repo.commitAndRefreshBlocking();
+
+      Map<Object, Float> collected = new LinkedHashMap<>();
+      IndexResultCollector collector = new IndexResultCollector() {
+        @Override
+        public String getName() {
+          return "sparse-test";
+        }
+
+        @Override
+        public int size() {
+          return collected.size();
+        }
+
+        @Override
+        public void collect(Object key, float score) {
+          collected.put(key, score);
+        }
+      };
+      repo.queryWithFp32Rerank(new MatchAllDocsQuery(), 10, 10, VECTOR_FIELD, query,
+          VectorSimilarityFunction.COSINE, collector);
+
+      assertThat(collected).hasSize(10);
+      assertThat(collected.get("k1")).isCloseTo(
+          VectorSimilarityScorer.score(query, v1, VectorSimilarityFunction.COSINE), within(1e-5f));
+      assertThat(collected.get("k3")).isCloseTo(
+          VectorSimilarityScorer.score(query, v3, VectorSimilarityFunction.COSINE), within(1e-5f));
+      assertThat(collected.get("k9")).isCloseTo(
+          VectorSimilarityScorer.score(query, v9, VectorSimilarityFunction.COSINE), within(1e-5f));
+      for (String nonVecKey : new String[] {"k0", "k2", "k4", "k5", "k6", "k7", "k8"}) {
+        assertThat(collected.get(nonVecKey)).isCloseTo(1.0f, within(1e-5f));
+      }
+    }
+  }
+
+  /**
+   * Regression test for PR2-V7-M1: verifies {@link HybridKnnQueryContext#getRerankOversampleFactor}
+   * symmetrically clamps both lower ({@code <= 0} -> 1) and upper ({@code > 64} -> 64) bounds on
+   * deserialized or crafted payloads.
+   */
+  @Test
+  public void getRerankOversampleFactorClampsDeserializedOutOfRangeValues() throws Exception {
+    HybridKnnQueryContext ctx = HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, new float[] {1.0f, 0.0f}, 5)
+        .rerankOversampleFactor(4)
+        .build();
+    assertThat(ctx.getRerankOversampleFactor()).isEqualTo(4);
+
+    java.lang.reflect.Field field =
+        HybridKnnQueryContext.class.getDeclaredField("rerankOversampleFactor");
+    field.setAccessible(true);
+
+    field.setInt(ctx, 0);
+    assertThat(ctx.getRerankOversampleFactor())
+        .isEqualTo(HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR);
+
+    field.setInt(ctx, -10);
+    assertThat(ctx.getRerankOversampleFactor())
+        .isEqualTo(HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR);
+
+    field.setInt(ctx, 999);
+    assertThat(ctx.getRerankOversampleFactor())
+        .isEqualTo(HybridKnnQueryContext.MAX_RERANK_OVERSAMPLE_FACTOR);
   }
 
   @SuppressWarnings("unchecked")

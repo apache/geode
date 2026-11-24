@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -210,17 +209,32 @@ public class IndexRepositoryImpl implements IndexRepository {
       for (Map.Entry<Integer, List<ScoreDoc>> leafEntry : scoreDocsByLeaf.entrySet()) {
         LeafReaderContext leaf = leaves.get(leafEntry.getKey());
         List<ScoreDoc> leafScoreDocs = leafEntry.getValue();
-        // FloatVectorValues extends DocIdSetIterator: advance() MUST move monotonically per leaf.
-        leafScoreDocs.sort(Comparator.comparingInt(sd -> sd.doc));
+        // FloatVectorValues extends DocIdSetIterator: advance() MUST move strictly monotonically
+        // per leaf (target > docID()). Sort ascending by doc, highest score first on ties.
+        leafScoreDocs.sort((a, b) -> {
+          int cmp = Integer.compare(a.doc, b.doc);
+          return cmp != 0 ? cmp : Float.compare(b.score, a.score);
+        });
 
         FloatVectorValues vectorValues = leaf.reader().getFloatVectorValues(vectorField);
+        int lastDocInLeaf = -1;
         for (ScoreDoc sd : leafScoreDocs) {
           int docInLeaf = sd.doc - leaf.docBase;
+          if (docInLeaf == lastDocInLeaf) {
+            continue;
+          }
+          lastDocInLeaf = docInLeaf;
           float score = sd.score;
-          if (vectorValues != null && vectorValues.advance(docInLeaf) == docInLeaf) {
-            float[] stored = vectorValues.vectorValue();
-            if (stored != null && stored.length == queryVector.length) {
-              score = VectorSimilarityScorer.score(queryVector, stored, similarity);
+          if (vectorValues != null) {
+            int currentDoc = vectorValues.docID();
+            if (currentDoc < docInLeaf) {
+              currentDoc = vectorValues.advance(docInLeaf);
+            }
+            if (currentDoc == docInLeaf) {
+              float[] stored = vectorValues.vectorValue();
+              if (stored != null && stored.length == queryVector.length) {
+                score = VectorSimilarityScorer.score(queryVector, stored, similarity);
+              }
             }
           }
           Document doc = storedFields.document(sd.doc);
