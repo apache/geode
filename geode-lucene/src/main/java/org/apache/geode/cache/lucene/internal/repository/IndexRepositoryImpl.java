@@ -16,14 +16,24 @@
 package org.apache.geode.cache.lucene.internal.repository;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.IntSupplier;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.FloatVectorValues;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.ReaderUtil;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -35,7 +45,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
+import org.apache.geode.cache.lucene.internal.vector.VectorSimilarityScorer;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.LockNotHeldException;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -156,6 +168,82 @@ public class IndexRepositoryImpl implements IndexRepository {
           logger.debug("query found doc:" + doc + ":" + scoreDoc);
         }
         collector.collect(key, scoreDoc.score);
+      }
+    } finally {
+      searcherManager.release(searcher);
+      stats.endRepositoryQuery(start, totalHits);
+    }
+  }
+
+  @Override
+  public void queryWithFp32Rerank(Query query, int k, int oversampleK, String vectorField,
+      float[] queryVector, VectorSimilarityFunction similarity, IndexResultCollector collector)
+      throws IOException {
+    if (k <= 0 || oversampleK <= 0) {
+      return;
+    }
+    if (vectorField == null || queryVector == null || similarity == null) {
+      query(query, k, collector);
+      return;
+    }
+    int effectiveOversampleK = Math.max(k, oversampleK);
+    long start = stats.startRepositoryQuery();
+    int totalHits = 0;
+    IndexSearcher searcher = searcherManager.acquire();
+    try {
+      TopDocs docs = searcher.search(query, effectiveOversampleK);
+      totalHits = (int) docs.totalHits.value;
+      if (docs.scoreDocs.length == 0) {
+        return;
+      }
+
+      List<LeafReaderContext> leaves = searcher.getIndexReader().leaves();
+      Map<Integer, List<ScoreDoc>> scoreDocsByLeaf = new HashMap<>();
+      for (ScoreDoc sd : docs.scoreDocs) {
+        int leafIdx = ReaderUtil.subIndex(sd.doc, leaves);
+        scoreDocsByLeaf.computeIfAbsent(leafIdx, idx -> new ArrayList<>()).add(sd);
+      }
+
+      StoredFields storedFields = searcher.storedFields();
+      List<EntryScore<Object>> reranked = new ArrayList<>(docs.scoreDocs.length);
+
+      for (Map.Entry<Integer, List<ScoreDoc>> leafEntry : scoreDocsByLeaf.entrySet()) {
+        LeafReaderContext leaf = leaves.get(leafEntry.getKey());
+        List<ScoreDoc> leafScoreDocs = leafEntry.getValue();
+        // FloatVectorValues extends DocIdSetIterator: advance() MUST move monotonically per leaf.
+        leafScoreDocs.sort(Comparator.comparingInt(sd -> sd.doc));
+
+        FloatVectorValues vectorValues = leaf.reader().getFloatVectorValues(vectorField);
+        for (ScoreDoc sd : leafScoreDocs) {
+          int docInLeaf = sd.doc - leaf.docBase;
+          float score = sd.score;
+          if (vectorValues != null && vectorValues.advance(docInLeaf) == docInLeaf) {
+            float[] stored = vectorValues.vectorValue();
+            if (stored != null && stored.length == queryVector.length) {
+              score = VectorSimilarityScorer.score(queryVector, stored, similarity);
+            }
+          }
+          Document doc = storedFields.document(sd.doc);
+          Object key = SerializerUtil.getKey(doc);
+          if (logger.isDebugEnabled()) {
+            logger.debug("queryWithFp32Rerank found doc:" + doc + ":" + sd + " reranked=" + score);
+          }
+          reranked.add(new EntryScore<>(key, score));
+        }
+      }
+
+      reranked.sort((a, b) -> {
+        int cmp = Float.compare(b.getScore(), a.getScore());
+        if (cmp != 0) {
+          return cmp;
+        }
+        return String.valueOf(a.getKey()).compareTo(String.valueOf(b.getKey()));
+      });
+
+      int limit = Math.min(k, reranked.size());
+      for (int i = 0; i < limit; i++) {
+        EntryScore<Object> hit = reranked.get(i);
+        collector.collect(hit.getKey(), hit.getScore());
       }
     } finally {
       searcherManager.release(searcher);

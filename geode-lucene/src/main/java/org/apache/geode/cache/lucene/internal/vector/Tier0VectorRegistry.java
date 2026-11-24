@@ -53,6 +53,8 @@ public class Tier0VectorRegistry {
       new ConcurrentHashMap<>();
   private final AtomicLong hydrationWaitCount = new AtomicLong(0L);
   private final AtomicLong unsupportedFilterFlushFallbackCount = new AtomicLong(0L);
+  private final AtomicLong inlineMaskQueryCount = new AtomicLong(0L);
+  private final AtomicLong oversampleFallbackQueryCount = new AtomicLong(0L);
 
   public Tier0VectorRegistry() {}
 
@@ -263,6 +265,22 @@ public class Tier0VectorRegistry {
 
   public long incrementUnsupportedFilterFlushFallbackCount() {
     return unsupportedFilterFlushFallbackCount.incrementAndGet();
+  }
+
+  public long getInlineMaskQueryCount() {
+    return inlineMaskQueryCount.get();
+  }
+
+  public long incrementInlineMaskQueryCount() {
+    return inlineMaskQueryCount.incrementAndGet();
+  }
+
+  public long getOversampleFallbackQueryCount() {
+    return oversampleFallbackQueryCount.get();
+  }
+
+  public long incrementOversampleFallbackQueryCount() {
+    return oversampleFallbackQueryCount.incrementAndGet();
   }
 
   private void releaseHydrationLatch(IndexKey key, int bucketId) {

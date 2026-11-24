@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal.repository;
 import java.io.IOException;
 
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.search.Query;
 
 import org.apache.geode.cache.Region;
@@ -54,6 +55,18 @@ public interface IndexRepository {
    *
    */
   void query(Query query, int limit, IndexResultCollector collector) throws IOException;
+
+  /**
+   * Executes {@code query} fetching up to {@code oversampleK} candidates from Lucene HNSW and
+   * rescores them using exact stored FP32 {@code .vec} vectors from each leaf's
+   * {@code FloatVectorValues} before passing the top {@code k} hits in descending score order to
+   * {@code collector}.
+   */
+  default void queryWithFp32Rerank(Query query, int k, int oversampleK, String vectorField,
+      float[] queryVector, VectorSimilarityFunction similarity, IndexResultCollector collector)
+      throws IOException {
+    query(query, k, collector);
+  }
 
   /**
    * Commit the changes to all lucene index

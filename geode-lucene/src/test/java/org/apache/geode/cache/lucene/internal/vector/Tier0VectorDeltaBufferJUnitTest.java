@@ -682,6 +682,139 @@ public class Tier0VectorDeltaBufferJUnitTest {
         .containsExactlyInAnyOrderElementsOf(pinnedKeys);
   }
 
+  @Test
+  public void concurrentBMaxCappedPartialDrainWithEvictCommittedAndBeginAbortFlushHasZeroRawGaps()
+      throws Exception {
+    final int bMax = 1_000;
+    final int numWriters = 4;
+    final int writesPerWriter = 900; // 3,600 total > 3 * B_max
+    final int totalWrites = numWriters * writesPerWriter;
+
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(11);
+    ConcurrentHashMap<String, float[]> regionStore = new ConcurrentHashMap<>();
+    ConcurrentHashMap<String, float[]> committedIndex = new ConcurrentHashMap<>();
+    java.util.concurrent.ConcurrentLinkedQueue<String> aeqPendingQueue =
+        new java.util.concurrent.ConcurrentLinkedQueue<>();
+    Set<String> acknowledgedKeys = ConcurrentHashMap.newKeySet();
+    AtomicBoolean writersDone = new AtomicBoolean(false);
+    AtomicBoolean flusherDone = new AtomicBoolean(false);
+    AtomicInteger visibilityGaps = new AtomicInteger(0);
+    AtomicInteger partialBatchesDrained = new AtomicInteger(0);
+    AtomicInteger snapshotsChecked = new AtomicInteger(0);
+
+    ExecutorService pool = Executors.newFixedThreadPool(numWriters + 3);
+    try {
+      // Flusher drains AEQ batches capped strictly at B_max = 1,000 using getKeySequence() before
+      // reading -> commit -> evictCommitted(), interleaved with periodic beginFlush()/abortFlush().
+      Future<?> flusher = pool.submit(() -> {
+        int cycle = 0;
+        while (!writersDone.get() || !aeqPendingQueue.isEmpty() || buffer.getTotalSize() > 0) {
+          if ((cycle % 3) == 1) {
+            Tier0VectorDeltaBuffer.FlushBatch<String> aborted = buffer.beginFlush();
+            if (aborted != null) {
+              buffer.abortFlush(aborted.getEpoch());
+            }
+          }
+          List<String> batchKeys = new ArrayList<>(bMax);
+          String pending;
+          while (batchKeys.size() < bMax && (pending = aeqPendingQueue.poll()) != null) {
+            batchKeys.add(pending);
+          }
+          if (batchKeys.isEmpty()) {
+            // Drain any remaining keys after writers finish
+            if (writersDone.get() && buffer.getTotalSize() > 0) {
+              Tier0VectorDeltaBuffer.Snapshot<String> rem = buffer.snapshot();
+              batchKeys.addAll(rem.getLiveEntries().keySet());
+            } else {
+              Thread.yield();
+              continue;
+            }
+          }
+
+          // Exact LuceneEventListener partial-drain protocol:
+          // 1. Capture seqBeforeRead per key BEFORE reading region value
+          Map<String, Long> seqBeforeRead = new HashMap<>(batchKeys.size());
+          Map<String, float[]> stagedWrites = new HashMap<>(batchKeys.size());
+          for (String k : batchKeys) {
+            long seq = buffer.getKeySequence(k);
+            if (seq >= 0L) {
+              seqBeforeRead.merge(k, seq, Math::max);
+            }
+            float[] val = regionStore.get(k);
+            if (val != null) {
+              stagedWrites.put(k, val);
+            }
+          }
+          // 2. Publish batch atomically to committedIndex (simulating commitAndRefreshBlocking)
+          committedIndex.putAll(stagedWrites);
+          // 3. Evict only entries with seq <= seqBeforeRead
+          buffer.evictCommitted(seqBeforeRead);
+          partialBatchesDrained.incrementAndGet();
+          cycle++;
+        }
+      });
+
+      // Two concurrent readers verifying Theorem 2 zero-gap visibility across B_max partial drains
+      List<Future<?>> readers = new ArrayList<>();
+      for (int r = 0; r < 2; r++) {
+        readers.add(pool.submit(() -> {
+          while (!flusherDone.get()) {
+            List<String> mustBeVisible = new ArrayList<>(acknowledgedKeys);
+            if (mustBeVisible.isEmpty()) {
+              Thread.yield();
+              continue;
+            }
+            // Theorem 2 ordering: snapshot Tier-0 FIRST, THEN read committed index
+            Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+            Map<String, Tier0VectorDeltaBuffer.DeltaEntry<String>> live = snap.getLiveEntries();
+            for (String ackKey : mustBeVisible) {
+              if (!live.containsKey(ackKey) && !committedIndex.containsKey(ackKey)) {
+                visibilityGaps.incrementAndGet();
+              }
+            }
+            snapshotsChecked.incrementAndGet();
+          }
+        }));
+      }
+
+      // Four concurrent writers pushing 3,600 (> 3 * B_max) entries
+      List<Future<?>> writers = new ArrayList<>();
+      for (int w = 0; w < numWriters; w++) {
+        final int writerId = w;
+        writers.add(pool.submit(() -> {
+          for (int i = 0; i < writesPerWriter; i++) {
+            String key = "bmax-w" + writerId + "-k" + i;
+            float[] vec = new float[] {1f, (float) i, (float) writerId, 0.5f};
+            regionStore.put(key, vec);
+            buffer.put(key, vec);
+            aeqPendingQueue.add(key);
+            acknowledgedKeys.add(key);
+          }
+        }));
+      }
+
+      for (Future<?> wf : writers) {
+        wf.get();
+      }
+      writersDone.set(true);
+      flusher.get();
+      flusherDone.set(true);
+      for (Future<?> rf : readers) {
+        rf.get();
+      }
+    } finally {
+      pool.shutdownNow();
+    }
+
+    assertThat(visibilityGaps.get())
+        .as("Zero RAW visibility gaps across >3*B_max writes and B_max-capped partial drains")
+        .isEqualTo(0);
+    assertThat(partialBatchesDrained.get()).isGreaterThanOrEqualTo(3);
+    assertThat(snapshotsChecked.get()).isGreaterThan(0);
+    assertThat(committedIndex).hasSize(totalWrites);
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+  }
+
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,
       VectorSimilarityFunction similarity) throws IOException {
     Document doc = new Document();

@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal.distributed;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,11 +29,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.codecs.KnnVectorsFormat;
+import org.apache.lucene.codecs.lucene912.Lucene912Codec;
+import org.apache.lucene.codecs.lucene99.Lucene99HnswScalarQuantizedVectorsFormat;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.KnnFloatVectorField;
@@ -58,14 +68,17 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
+import org.apache.geode.cache.lucene.internal.vector.VectorSimilarityScorer;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -394,6 +407,211 @@ public class DistributedHybridKnnFunctionJUnitTest {
       assertThat(DistributedHybridKnnFunction.getUnsupportedFilterFlushFallbackCount())
           .isEqualTo(1L);
       assertThat(registry.getBuffer(REGION_PATH, INDEX_NAME, 0).getTotalSize()).isEqualTo(0);
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void maskTelemetryTracksInlineAndOversampleFallbackPaths() throws Exception {
+    DistributedHybridKnnFunction.resetMaskTelemetry();
+    when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+        .thenReturn(Map.of(0, mockRepoBucket0));
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    for (int i = 0; i < 10; i++) {
+      registry.recordDestroy(REGION_PATH, INDEX_NAME, 0, "inline-tomb-" + i);
+    }
+
+    HybridKnnQueryContext inlineCtx = HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, new float[] {1f, 0f}, 5)
+        .build();
+    when(mockContext.getArguments()).thenReturn(inlineCtx);
+
+    new DistributedHybridKnnFunction().execute(mockContext);
+    assertThat(DistributedHybridKnnFunction.getInlineMaskQueryCount()).isEqualTo(1L);
+    assertThat(DistributedHybridKnnFunction.getOversampleFallbackQueryCount()).isEqualTo(0L);
+    assertThat(registry.getInlineMaskQueryCount()).isEqualTo(1L);
+    assertThat(registry.getOversampleFallbackQueryCount()).isEqualTo(0L);
+
+    // Push |T_mask| above 512 so the oversampling fallback branch triggers
+    for (int i = 0; i < 520; i++) {
+      registry.recordDestroy(REGION_PATH, INDEX_NAME, 0, "overflow-tomb-" + i);
+    }
+    new DistributedHybridKnnFunction().execute(mockContext);
+
+    assertThat(DistributedHybridKnnFunction.getInlineMaskQueryCount()).isEqualTo(1L);
+    assertThat(DistributedHybridKnnFunction.getOversampleFallbackQueryCount()).isEqualTo(1L);
+    assertThat(registry.getOversampleFallbackQueryCount()).isEqualTo(1L);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void fp32RerankOverSq8QuantizedIndexImprovesRecallAndMatchesExactTier0Fp32Scores()
+      throws Exception {
+    // Validate rerankOversampleFactor bounds on HybridKnnQueryContext.Builder
+    assertThat(HybridKnnQueryContext.builder(INDEX_NAME, VECTOR_FIELD, new float[] {1f, 0f}, 5)
+        .build().getRerankOversampleFactor()).isEqualTo(1);
+    assertThatThrownBy(() -> HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, new float[] {1f, 0f}, 5).rerankOversampleFactor(0))
+            .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, new float[] {1f, 0f}, 5).rerankOversampleFactor(65))
+            .isInstanceOf(IllegalArgumentException.class);
+
+    final int dim = 256;
+    final int numDocs = 600;
+    final int k = 10;
+    final int numQueries = 20;
+    Random rng = new Random(2026L);
+
+    // Generate anisotropic clustered vectors with outlier spikes where SQ8 quantization error
+    // perturbs top-10 ranking, while exact FP32 .vec reranking restores exact FP32 recall & scores.
+    Map<String, float[]> vectorsByKey = new LinkedHashMap<>(numDocs);
+    float[] baseDir = randomUnitVector(rng, dim);
+    for (int i = 0; i < numDocs; i++) {
+      float[] v = new float[dim];
+      for (int d = 0; d < dim; d++) {
+        v[d] = baseDir[d] * 0.6f + (float) (rng.nextGaussian() * 0.08);
+      }
+      // Inject occasional strong outlier coordinate to stress SQ8 dynamic range
+      if (i % 15 == 0) {
+        v[i % dim] += 3.5f;
+      }
+      normalize(v);
+      vectorsByKey.put("sq8-" + i, v);
+    }
+
+    IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
+    iwc.setCodec(new Lucene912Codec() {
+      @Override
+      public KnnVectorsFormat getKnnVectorsFormatForField(String field) {
+        return new Lucene99HnswScalarQuantizedVectorsFormat(16, 100);
+      }
+    });
+
+    LuceneSerializer<float[]> vecSerializer = (idx, vec) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, VectorSimilarityFunction.COSINE));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, iwc)) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockRegion, writer, vecSerializer, mockStats, mockRegion, null, "lock", mockIndex);
+
+      // Commit across 3 batches to guarantee multiple Lucene leaf segments (testing per-leaf sort
+      // and monotonic FloatVectorValues.advance())
+      int count = 0;
+      for (Map.Entry<String, float[]> e : vectorsByKey.entrySet()) {
+        repo.update(e.getKey(), e.getValue());
+        count++;
+        if (count % 200 == 0) {
+          repo.commitAndRefreshBlocking();
+        }
+      }
+      repo.commitAndRefreshBlocking();
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      double totalSq8Recall = 0.0;
+      double totalRerankedRecall = 0.0;
+
+      for (int qIdx = 0; qIdx < numQueries; qIdx++) {
+        float[] query = new float[dim];
+        for (int d = 0; d < dim; d++) {
+          query[d] = baseDir[d] * 0.6f + (float) (rng.nextGaussian() * 0.06);
+        }
+        normalize(query);
+
+        // Exact FP32 ground truth top-k
+        List<EntryScore<String>> exactAll = new ArrayList<>(numDocs);
+        for (Map.Entry<String, float[]> e : vectorsByKey.entrySet()) {
+          exactAll.add(new EntryScore<>(e.getKey(),
+              VectorSimilarityScorer.score(query, e.getValue(), VectorSimilarityFunction.COSINE)));
+        }
+        exactAll.sort(Comparator.<EntryScore<String>>comparingDouble(EntryScore::getScore)
+            .reversed().thenComparing(EntryScore::getKey));
+        Set<String> groundTruthTopK = new HashSet<>();
+        for (int i = 0; i < k; i++) {
+          groundTruthTopK.add(exactAll.get(i).getKey());
+        }
+
+        // 1. Raw SQ8 (rerankOversampleFactor = 1)
+        List<EntryScore<Object>> sq8Hits = executeHybridQuery(query, k, 1);
+        totalSq8Recall += recall(groundTruthTopK, sq8Hits);
+
+        // 2. SQ8 + 4x FP32 .vec reranking (rerankOversampleFactor = 4)
+        List<EntryScore<Object>> rerankedHits = executeHybridQuery(query, k, 4);
+        totalRerankedRecall += recall(groundTruthTopK, rerankedHits);
+
+        // Every FP32-reranked hit MUST carry the exact FP32 similarity score matching Tier-0 FP32
+        assertThat(rerankedHits).hasSize(k);
+        for (EntryScore<Object> hit : rerankedHits) {
+          float expectedFp32 = VectorSimilarityScorer.score(
+              query, vectorsByKey.get(hit.getKey()), VectorSimilarityFunction.COSINE);
+          assertThat(hit.getScore())
+              .as("Reranked FP32 score mismatch for key=%s", hit.getKey())
+              .isCloseTo(expectedFp32, within(1e-5f));
+        }
+      }
+
+      double avgSq8Recall = totalSq8Recall / numQueries;
+      double avgRerankedRecall = totalRerankedRecall / numQueries;
+      assertThat(avgRerankedRecall)
+          .as("4x FP32 .vec reranking (%.4f) must improve/preserve SQ8 Recall@10 (%.4f)",
+              avgRerankedRecall, avgSq8Recall)
+          .isGreaterThanOrEqualTo(avgSq8Recall)
+          .isGreaterThanOrEqualTo(0.95);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<EntryScore<Object>> executeHybridQuery(float[] query, int k, int rerankFactor) {
+    ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+    when(mockContext.getResultSender()).thenReturn(localSender);
+    HybridKnnQueryContext ctx = HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, query, k)
+        .similarityFunction(VectorSimilarityFunction.COSINE)
+        .rerankOversampleFactor(rerankFactor)
+        .build();
+    when(mockContext.getArguments()).thenReturn(ctx);
+
+    new DistributedHybridKnnFunction().execute(mockContext);
+
+    ArgumentCaptor<TopEntriesCollector> captor = ArgumentCaptor.forClass(TopEntriesCollector.class);
+    verify(localSender).lastResult(captor.capture());
+    return captor.getValue().getEntries().getHits();
+  }
+
+  private static double recall(Set<String> groundTruth, List<EntryScore<Object>> hits) {
+    int matched = 0;
+    for (EntryScore<Object> h : hits) {
+      if (groundTruth.contains(h.getKey())) {
+        matched++;
+      }
+    }
+    return (double) matched / groundTruth.size();
+  }
+
+  private static float[] randomUnitVector(Random rng, int dim) {
+    float[] v = new float[dim];
+    for (int i = 0; i < dim; i++) {
+      v[i] = (float) rng.nextGaussian();
+    }
+    normalize(v);
+    return v;
+  }
+
+  private static void normalize(float[] v) {
+    double normSq = 0.0;
+    for (float x : v) {
+      normSq += (double) x * x;
+    }
+    float inv = (float) (1.0 / Math.sqrt(Math.max(normSq, 1e-12)));
+    for (int i = 0; i < v.length; i++) {
+      v[i] *= inv;
     }
   }
 }

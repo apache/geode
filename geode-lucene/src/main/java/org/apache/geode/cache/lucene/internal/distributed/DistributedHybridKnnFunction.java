@@ -111,6 +111,8 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
   private static final int MAX_LUCENE_K = 100_000;
   private static final long MAX_CONCURRENT_FLUSH_WAIT_MILLIS = 500L;
   private static final AtomicLong UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT = new AtomicLong(0L);
+  private static final AtomicLong INLINE_MASK_QUERY_COUNT = new AtomicLong(0L);
+  private static final AtomicLong OVERSAMPLE_FALLBACK_QUERY_COUNT = new AtomicLong(0L);
 
   private static final Logger logger = LogService.getLogger();
 
@@ -124,6 +126,32 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
 
   static void resetUnsupportedFilterFlushFallbackCount() {
     UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT.set(0L);
+  }
+
+  /**
+   * Returns the cumulative count of bucket queries that pushed inline {@code MUST_NOT} clauses
+   * into Lucene's {@link KnnFloatVectorQuery} ({@code 0 < |T_mask| <= maxInlineTerms}).
+   */
+  public static long getInlineMaskQueryCount() {
+    return INLINE_MASK_QUERY_COUNT.get();
+  }
+
+  /**
+   * Returns the cumulative count of bucket queries that switched from inline {@code MUST_NOT}
+   * masking to bounded {@code k + |T_mask|} oversampling + post-masking
+   * ({@code |T_mask| > maxInlineTerms}).
+   */
+  public static long getOversampleFallbackQueryCount() {
+    return OVERSAMPLE_FALLBACK_QUERY_COUNT.get();
+  }
+
+  /**
+   * Resets the static server-side masking path telemetry counters (primarily for testing and
+   * benchmark instrumentation).
+   */
+  public static void resetMaskTelemetry() {
+    INLINE_MASK_QUERY_COUNT.set(0L);
+    OVERSAMPLE_FALLBACK_QUERY_COUNT.set(0L);
   }
 
   private static final Comparator<EntryScore<Object>> SCORE_DESC_COMPARATOR = (a, b) -> {
@@ -271,6 +299,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     int maxInlineTerms =
         Math.min(MAX_INLINE_MASK_TERMS, Math.max(0, IndexSearcher.getMaxClauseCount() - 2));
     int luceneK;
+    boolean oversampleMaskFallback = false;
     Query effectiveFilterQuery;
     if (maskedKeys.isEmpty()) {
       effectiveFilterQuery = userFilterQuery;
@@ -278,20 +307,43 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     } else if (maskedKeys.size() <= maxInlineTerms) {
       effectiveFilterQuery = buildMaskedFilterQuery(userFilterQuery, maskedKeys);
       luceneK = k;
+      INLINE_MASK_QUERY_COUNT.incrementAndGet();
+      if (registry != null) {
+        registry.incrementInlineMaskQueryCount();
+      }
     } else {
       effectiveFilterQuery = userFilterQuery;
       luceneK = (int) Math.min((long) k + maskedKeys.size(), MAX_LUCENE_K);
+      oversampleMaskFallback = true;
+      OVERSAMPLE_FALLBACK_QUERY_COUNT.incrementAndGet();
+      if (registry != null) {
+        registry.incrementOversampleFallbackQueryCount();
+      }
+    }
+
+    int rerankFactor = knnContext.getRerankOversampleFactor();
+    int queryK = luceneK;
+    if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
+      long targetOversample = oversampleMaskFallback
+          ? (long) k * rerankFactor + maskedKeys.size()
+          : (long) k * rerankFactor;
+      queryK = Math.max(luceneK, (int) Math.min(targetOversample, MAX_LUCENE_K));
     }
 
     KnnFloatVectorQuery knnQuery = effectiveFilterQuery == null
-        ? new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, luceneK)
-        : new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, luceneK,
+        ? new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK)
+        : new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK,
             effectiveFilterQuery);
 
     RawListResultCollector luceneRawCollector =
         new RawListResultCollector("bucket-" + bucketId, luceneK);
     if (repo != null) {
-      repo.query(knnQuery, luceneK, luceneRawCollector);
+      if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
+        repo.queryWithFp32Rerank(knnQuery, luceneK, queryK, knnContext.getVectorFieldName(),
+            queryVector, knnContext.getSimilarityFunction(), luceneRawCollector);
+      } else {
+        repo.query(knnQuery, luceneK, luceneRawCollector);
+      }
     }
 
     // Union Lucene HNSW hits (masked by Tier-0 keys) with exact Tier-0 delta hits
