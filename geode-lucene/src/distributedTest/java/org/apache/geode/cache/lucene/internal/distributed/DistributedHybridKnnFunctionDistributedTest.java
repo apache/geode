@@ -66,7 +66,9 @@ import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.cache.lucene.internal.vector.VectorSimilarityScorer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -1137,6 +1139,265 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     });
     assertThat(postFlushHits).doesNotContainAnyElementsOf(allDestroyedKeys);
     assertThat(postFlushHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
+  }
+
+  @Test
+  public void supportedFilterSearcherEpochPreventsTwoKeyTornCutAcrossServers() throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+
+    // Seed warmup keys first so PartitionedRegion allocates primary buckets before inspection
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      float[] warmupVec = new float[DIM];
+      warmupVec[1] = 1.0f;
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("warmup-" + i, new VectorRecord(warmupVec, "warmup", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    // Select a primary bucket on dataStore1 and find two keys (x_c, y_c) per cycle routing to it
+    int targetBucketId = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+    });
+
+    int cycles = 8;
+    List<String> keysX = new ArrayList<>();
+    List<String> keysY = new ArrayList<>();
+    for (int i = 0; i < 1000 && keysX.size() < cycles; i++) {
+      String candidateX = "cut-x-" + i;
+      int bx = accessor.invoke(() -> ((PartitionedRegion) getCache().getRegion(REGION_NAME))
+          .getKeyInfo(candidateX).getBucketId());
+      if (bx == targetBucketId) {
+        keysX.add(candidateX);
+      }
+    }
+    for (int i = 0; i < 1000 && keysY.size() < cycles; i++) {
+      String candidateY = "cut-y-" + i;
+      int by = accessor.invoke(() -> ((PartitionedRegion) getCache().getRegion(REGION_NAME))
+          .getKeyInfo(candidateY).getBucketId());
+      if (by == targetBucketId) {
+        keysY.add(candidateY);
+      }
+    }
+    assertThat(keysX).hasSize(cycles);
+    assertThat(keysY).hasSize(cycles);
+
+    float[] v0 = new float[DIM];
+    v0[0] = 0.20f;
+    v0[1] = (float) Math.sqrt(1.0 - 0.04);
+    float[] v1 = new float[DIM];
+    v1[0] = 0.85f;
+    v1[1] = (float) Math.sqrt(1.0 - 0.85 * 0.85);
+    float[] v2 = new float[DIM];
+    v2[0] = 0.99f;
+    v2[1] = (float) Math.sqrt(1.0 - 0.99 * 0.99);
+    float[] vY = new float[DIM];
+    vY[0] = 0.90f;
+    vY[1] = (float) Math.sqrt(1.0 - 0.81);
+    float expectedV2Score =
+        VectorSimilarityScorer.score(query, v2, VectorSimilarityFunction.COSINE);
+
+    for (int c = 0; c < cycles; c++) {
+      String kx = keysX.get(c);
+      String ky = keysY.get(c);
+      String tag = "cycle-" + c;
+
+      // Commit baseline {kx=v0} while ky is absent
+      accessor.invoke(() -> {
+        getCache().<String, VectorRecord>getRegion(REGION_NAME)
+            .put(kx, new VectorRecord(v0, tag, "all", "all"));
+      });
+      waitForLuceneFlush(accessor);
+
+      // Pause AEQ and write kx=v1 into Tier-0
+      dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+      dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+      accessor.invoke(() -> {
+        getCache().<String, VectorRecord>getRegion(REGION_NAME)
+            .put(kx, new VectorRecord(v1, tag, "all", "all"));
+      });
+
+      accessor.invoke(() -> REMOTE_WRITER_STOP.set(false));
+      ExecutorService readerPool = Executors.newSingleThreadExecutor();
+      try {
+        Future<?> readerFuture = readerPool.submit(() -> {
+          accessor.invoke(() -> {
+            Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+            while (!REMOTE_WRITER_STOP.get()) {
+              HybridKnnQueryContext ctx = HybridKnnQueryContext
+                  .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+                  .similarityFunction(VectorSimilarityFunction.COSINE)
+                  .addMetadataFilter("sel1", tag)
+                  .build();
+              TopEntries<String> res = DistributedHybridKnnFunction.executeOnRegion(region, ctx);
+              Map<String, Float> scoreByKey = new HashMap<>();
+              for (EntryScore<String> hit : res.getHits()) {
+                scoreByKey.put(hit.getKey(), hit.getScore());
+              }
+              if (scoreByKey.containsKey(ky)) {
+                assertThat(scoreByKey).containsKey(kx);
+                assertThat(scoreByKey.get(kx))
+                    .as("Torn cut {x=v1, y} detected on cycle %d",
+                        Integer.valueOf(tag.substring(6)))
+                    .isGreaterThanOrEqualTo(expectedV2Score - 1e-3f);
+              }
+            }
+            return null;
+          });
+          return null;
+        });
+
+        // Write kx=v2, ky=vY and resume AEQ so Path A commits {kx=v2, ky} concurrently with readers
+        accessor.invoke(() -> {
+          Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+          region.put(kx, new VectorRecord(v2, tag, "all", "all"));
+          region.put(ky, new VectorRecord(vY, tag, "all", "all"));
+        });
+        dataStore1.invoke(() -> resumeIndexAeq(getCache()));
+        dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+        waitForLuceneFlush(accessor);
+
+        accessor.invoke(() -> REMOTE_WRITER_STOP.set(true));
+        readerFuture.get(30, TimeUnit.SECONDS);
+      } finally {
+        accessor.invoke(() -> REMOTE_WRITER_STOP.set(true));
+        readerPool.shutdownNow();
+      }
+    }
+
+    // Verify true flush-cycle telemetry was captured cleanly on dataStore1 across the flushes
+    int recordedSamples = dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+        .drainFlushCycleSamples("/" + REGION_NAME, INDEX_NAME).size());
+    assertThat(recordedSamples).isGreaterThan(0);
+  }
+
+  @Test
+  public void promotionStaleLuceneDocWithMissingAeqAndExpiredTombstoneReconcilesZeroGhosts()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+
+    Map<String, VectorRecord> seedData = new HashMap<>();
+    for (int i = 0; i < NUM_BUCKETS * 4; i++) {
+      float cos = 0.45f + 0.004f * i;
+      float[] vec = new float[DIM];
+      vec[0] = cos;
+      vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+      seedData.put("live-base-" + i, new VectorRecord(vec, "all", "all", "all"));
+    }
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (Map.Entry<String, VectorRecord> e : seedData.entrySet()) {
+        region.put(e.getKey(), e.getValue());
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    // Find a key whose primary bucket lives on dataStore1 and seed it with top-1 cosine 0.99
+    Set<Integer> ds1Primaries = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+    });
+    String staleKey = null;
+    int staleBucketId = -1;
+    for (int i = 0; i < 500; i++) {
+      String candidate = "stale-expired-" + i;
+      int bid = accessor.invoke(() -> ((PartitionedRegion) getCache().getRegion(REGION_NAME))
+          .getKeyInfo(candidate).getBucketId());
+      if (ds1Primaries.contains(bid)) {
+        staleKey = candidate;
+        staleBucketId = bid;
+        break;
+      }
+    }
+    assertThat(staleKey).isNotNull();
+
+    float[] staleVec = new float[DIM];
+    staleVec[0] = 0.99f;
+    staleVec[1] = (float) Math.sqrt(1.0 - 0.99 * 0.99);
+    String finalStaleKey = staleKey;
+    int finalStaleBucketId = staleBucketId;
+
+    accessor.invoke(() -> {
+      getCache().<String, VectorRecord>getRegion(REGION_NAME)
+          .put(finalStaleKey, new VectorRecord(staleVec, "all", "all", "all"));
+    });
+    waitForLuceneFlush(accessor);
+
+    // Wait until secondary fileAndChunkRegion replicates APACHE_GEODE_INDEX_COMPLETE and shadow=0
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(dataStore2.invoke(this::countLocalBuckets)).isEqualTo(NUM_BUCKETS);
+      int shadowSize = dataStore1.invoke(() -> countShadowQueueLocalSize(getCache()))
+          + dataStore2.invoke(() -> countShadowQueueLocalSize(getCache()));
+      assertThat(shadowSize).isEqualTo(0);
+    });
+
+    // Pause AEQ, destroy staleKey from region, then expire region tombstone & remove local AEQ
+    // coverage on dataStore2 so staleKey remains ONLY as a committed stale doc in Lucene.
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+    accessor.invoke(() -> getCache().getRegion(REGION_NAME).destroy(finalStaleKey));
+
+    dataStore2.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      BucketRegion localBucket = pr.getDataStore().getLocalBucketById(finalStaleBucketId);
+      RegionEntry re = localBucket.getRegionMap().getEntry(finalStaleKey);
+      assertThat(re).isNotNull();
+      assertThat(re.isTombstone()).isTrue();
+      boolean removed =
+          localBucket.getRegionMap().removeTombstone(re, re.getVersionStamp().asVersionTag());
+      assertThat(removed).isTrue();
+      assertThat(localBucket.getRegionMap().getEntry(finalStaleKey)).isNull();
+
+      String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
+      AsyncEventQueueImpl q = (AsyncEventQueueImpl) getCache().getAsyncEventQueue(aeqId);
+      if (q != null) {
+        q.stop();
+        ((InternalCache) getCache()).removeAsyncEventQueue(q);
+      }
+      Tier0VectorRegistry.forCache(getCache())
+          .removeBucket("/" + REGION_NAME, INDEX_NAME, finalStaleBucketId);
+    });
+
+    // Crash primary dataStore1: dataStore2 promotes without AEQ coverage and without tombstone!
+    DistributedTestUtils.crashDistributedSystem(dataStore1);
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(dataStore2.invoke(this::countLocalPrimaryBuckets))
+            .isEqualTo(NUM_BUCKETS));
+
+    dataStore2.invoke(() -> {
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
+      assertThat(registry.getFullScanHydrationCount()).isGreaterThan(0L);
+      assertThat(registry.getReconciledStaleIndexKeysCount()).isGreaterThanOrEqualTo(1L);
+      assertThat(registry.getHydratedTombstonesCount()).isGreaterThanOrEqualTo(1L);
+      Tier0VectorDeltaBuffer<Object> buf =
+          registry.getBuffer("/" + REGION_NAME, INDEX_NAME, finalStaleBucketId);
+      assertThat(buf).isNotNull();
+      assertThat(buf.snapshot().getTombstonedKeys()).contains(finalStaleKey);
+    });
+
+    // Verify 0 resurrected ghosts in exhaustive query across the promoted node
+    List<String> hits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 200)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(hits).doesNotContain(finalStaleKey);
+    assertThat(hits).containsExactlyInAnyOrderElementsOf(seedData.keySet());
   }
 
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,

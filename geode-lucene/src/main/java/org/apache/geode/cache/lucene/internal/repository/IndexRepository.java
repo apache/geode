@@ -16,6 +16,8 @@
 package org.apache.geode.cache.lucene.internal.repository;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.VectorSimilarityFunction;
@@ -97,6 +99,77 @@ public interface IndexRepository {
         onSearcherAcquired.run();
       }
     }
+  }
+
+  /**
+   * Returns the monotonic even/odd {@code searcherEpoch} fencing commits and searcher refreshes.
+   * Even values denote a quiescent searcher state; odd values denote an in-progress commit/refresh.
+   */
+  default long getSearcherEpoch() {
+    return 0L;
+  }
+
+  /**
+   * Executes {@link #query(Query, int, IndexResultCollector)} only if {@link #getSearcherEpoch()}
+   * equals the even {@code expectedEpoch} through {@code IndexSearcher} acquisition.
+   *
+   * @return {@code true} if the searcher epoch matched and hits were collected, {@code false} if
+   *         the index committed/refreshed or {@code expectedEpoch} was odd (no hits collected)
+   */
+  default boolean tryQueryAtEpoch(long expectedEpoch, Query query, int limit,
+      IndexResultCollector collector) throws IOException {
+    return tryQueryAtEpoch(expectedEpoch, query, limit, collector, null);
+  }
+
+  /**
+   * Executes {@link #query(Query, int, IndexResultCollector, Runnable)} only if
+   * {@link #getSearcherEpoch()} equals the even {@code expectedEpoch} through {@code IndexSearcher}
+   * acquisition, invoking {@code onSearcherAcquired} right after confirming the epoch cut.
+   */
+  default boolean tryQueryAtEpoch(long expectedEpoch, Query query, int limit,
+      IndexResultCollector collector, Runnable onSearcherAcquired) throws IOException {
+    if ((expectedEpoch & 1L) != 0L || getSearcherEpoch() != expectedEpoch) {
+      return false;
+    }
+    query(query, limit, collector, onSearcherAcquired);
+    return true;
+  }
+
+  /**
+   * Executes {@link #queryWithFp32Rerank} only if {@link #getSearcherEpoch()} equals the even
+   * {@code expectedEpoch} through {@code IndexSearcher} acquisition.
+   */
+  default boolean tryQueryWithFp32RerankAtEpoch(long expectedEpoch, Query query, int k,
+      int oversampleK, String vectorField, float[] queryVector,
+      VectorSimilarityFunction similarity, IndexResultCollector collector) throws IOException {
+    return tryQueryWithFp32RerankAtEpoch(expectedEpoch, query, k, oversampleK, vectorField,
+        queryVector, similarity, collector, null);
+  }
+
+  /**
+   * Executes {@link #queryWithFp32Rerank} with {@code onSearcherAcquired} callback only if
+   * {@link #getSearcherEpoch()} equals the even {@code expectedEpoch} through {@code IndexSearcher}
+   * acquisition.
+   */
+  default boolean tryQueryWithFp32RerankAtEpoch(long expectedEpoch, Query query, int k,
+      int oversampleK, String vectorField, float[] queryVector,
+      VectorSimilarityFunction similarity, IndexResultCollector collector,
+      Runnable onSearcherAcquired) throws IOException {
+    if ((expectedEpoch & 1L) != 0L || getSearcherEpoch() != expectedEpoch) {
+      return false;
+    }
+    queryWithFp32Rerank(
+        query, k, oversampleK, vectorField, queryVector, similarity, collector,
+        onSearcherAcquired);
+    return true;
+  }
+
+  /**
+   * Returns all live (non-deleted) region keys currently visible in this Lucene repository for
+   * promotion fallback reconciliation when AEQ delta coverage is absent.
+   */
+  default Set<Object> collectIndexedKeys() throws IOException {
+    return Collections.emptySet();
   }
 
   /**

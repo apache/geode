@@ -89,6 +89,8 @@ public class LuceneEventListener implements AsyncEventListener {
     Set<IndexRepository> affectedRepos = new HashSet<>();
     Map<IndexRepository, Tier0VectorDeltaBuffer<Object>> tier0BuffersByRepo = null;
     Map<IndexRepository, Map<Object, Long>> committedKeySeqsByRepo = null;
+    Map<IndexRepository, Integer> batchCountsByRepo = null;
+    Map<IndexRepository, Long> updateNanosByRepo = null;
     Set<Integer> awaitedHydrationBuckets = null;
     InternalLuceneIndex partitionedIndex =
         (repositoryManager instanceof PartitionedRepositoryManager)
@@ -96,6 +98,8 @@ public class LuceneEventListener implements AsyncEventListener {
             : null;
     Tier0VectorRegistry tier0Registry =
         (partitionedIndex != null && cache != null) ? Tier0VectorRegistry.forCache(cache) : null;
+    final boolean trackFlushCycles =
+        tier0Registry != null && tier0Registry.isFlushCycleSamplingEnabled();
 
     try {
       for (AsyncEvent event : events) {
@@ -105,6 +109,7 @@ public class LuceneEventListener implements AsyncEventListener {
         Object callbackArgument = event.getCallbackArgument();
 
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
+        Tier0VectorDeltaBuffer<Object> eventBuffer = null;
 
         if (tier0Registry != null && repository.getRegion() instanceof BucketRegion) {
           int bucketId = ((BucketRegion) repository.getRegion()).getId();
@@ -115,27 +120,36 @@ public class LuceneEventListener implements AsyncEventListener {
             tier0Registry.awaitHydration(
                 partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
           }
-          Tier0VectorDeltaBuffer<Object> buffer = tier0Registry.getBuffer(
+          eventBuffer = tier0Registry.getBuffer(
               partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
-          if (buffer != null) {
-            long seqBeforeRead = buffer.getKeySequence(key);
+          if (eventBuffer != null) {
+            long seqBeforeRead = eventBuffer.getKeySequence(key);
             if (seqBeforeRead >= 0L) {
               if (tier0BuffersByRepo == null) {
                 tier0BuffersByRepo = new HashMap<>();
                 committedKeySeqsByRepo = new HashMap<>();
               }
-              tier0BuffersByRepo.put(repository, buffer);
+              tier0BuffersByRepo.put(repository, eventBuffer);
               committedKeySeqsByRepo.computeIfAbsent(repository, r -> new HashMap<>())
                   .merge(key, seqBeforeRead, Math::max);
             }
           }
         }
 
+        long opStartNanos = (eventBuffer != null && trackFlushCycles) ? System.nanoTime() : 0L;
         Object value = getValue(region.getEntry(key));
         if (value != null) {
           repository.update(key, value);
         } else {
           repository.delete(key);
+        }
+        if (eventBuffer != null && trackFlushCycles) {
+          if (batchCountsByRepo == null) {
+            batchCountsByRepo = new HashMap<>();
+            updateNanosByRepo = new HashMap<>();
+          }
+          batchCountsByRepo.merge(repository, 1, Integer::sum);
+          updateNanosByRepo.merge(repository, System.nanoTime() - opStartNanos, Long::sum);
         }
 
         affectedRepos.add(repository);
@@ -145,8 +159,26 @@ public class LuceneEventListener implements AsyncEventListener {
         Tier0VectorDeltaBuffer<Object> buffer =
             tier0BuffersByRepo == null ? null : tier0BuffersByRepo.get(repo);
         if (buffer != null) {
+          long commitStartNanos = trackFlushCycles ? System.nanoTime() : 0L;
           repo.commitAndRefreshBlocking();
+          long commitEndNanos = trackFlushCycles ? System.nanoTime() : 0L;
+          int preEvictTier0Size = trackFlushCycles ? buffer.getTotalSize() : 0;
           buffer.evictCommitted(committedKeySeqsByRepo.get(repo));
+          if (trackFlushCycles) {
+            long updateNanos =
+                updateNanosByRepo == null ? 0L : updateNanosByRepo.getOrDefault(repo, 0L);
+            long flushDurationNanos = updateNanos + (commitEndNanos - commitStartNanos);
+            int bucketId = ((BucketRegion) repo.getRegion()).getId();
+            int batchSize =
+                batchCountsByRepo == null ? 0 : batchCountsByRepo.getOrDefault(repo, 0);
+            tier0Registry.recordFlushCycle(
+                partitionedIndex.getRegionPath(),
+                partitionedIndex.getName(),
+                bucketId,
+                batchSize,
+                preEvictTier0Size,
+                flushDurationNanos);
+          }
         } else {
           repo.commit();
         }

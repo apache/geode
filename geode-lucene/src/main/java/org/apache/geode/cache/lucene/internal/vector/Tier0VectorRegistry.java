@@ -18,7 +18,10 @@ package org.apache.geode.cache.lucene.internal.vector;
 import static org.apache.geode.cache.Region.SEPARATOR;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -43,6 +46,8 @@ public class Tier0VectorRegistry {
 
   /** Default bounded wait when a reader encounters an in-flight primary bucket hydration. */
   public static final long DEFAULT_HYDRATION_AWAIT_MILLIS = 5_000L;
+  /** Default capacity of each per-bucket flush-cycle sample ring buffer. */
+  public static final int DEFAULT_FLUSH_CYCLE_RING_CAPACITY = 4096;
 
   private static final Map<Cache, Tier0VectorRegistry> CACHE_REGISTRIES =
       Collections.synchronizedMap(new WeakHashMap<>());
@@ -51,11 +56,15 @@ public class Tier0VectorRegistry {
       new ConcurrentHashMap<>();
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, CountDownLatch>> hydrationBarriers =
       new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, FlushCycleRing>> flushCycleRings =
+      new ConcurrentHashMap<>();
+  private volatile boolean flushCycleSamplingEnabled = true;
   private final AtomicLong hydrationWaitCount = new AtomicLong(0L);
   private final AtomicLong hydratedKeysCount = new AtomicLong(0L);
   private final AtomicLong hydratedTombstonesCount = new AtomicLong(0L);
   private final AtomicLong aeqDeltaHydrationCount = new AtomicLong(0L);
   private final AtomicLong fullScanHydrationCount = new AtomicLong(0L);
+  private final AtomicLong reconciledStaleIndexKeysCount = new AtomicLong(0L);
   private final AtomicLong lastHydrationEventsInspected = new AtomicLong(0L);
   private final AtomicLong lastHydrationKeysRestored = new AtomicLong(0L);
   private final AtomicLong unsupportedFilterFlushFallbackCount = new AtomicLong(0L);
@@ -132,6 +141,13 @@ public class Tier0VectorRegistry {
       }
     }
     releaseHydrationLatch(key, bucketId);
+    ConcurrentHashMap<Integer, FlushCycleRing> ringMap = flushCycleRings.get(key);
+    if (ringMap != null) {
+      FlushCycleRing ring = ringMap.remove(bucketId);
+      if (ring != null) {
+        ring.clear();
+      }
+    }
   }
 
   public void removeIndex(String regionPath, String indexName) {
@@ -142,6 +158,11 @@ public class Tier0VectorRegistry {
       removed.clear();
     }
     releaseHydrationLatchesForIndex(key);
+    ConcurrentHashMap<Integer, FlushCycleRing> removedRings = flushCycleRings.remove(key);
+    if (removedRings != null) {
+      removedRings.values().forEach(FlushCycleRing::clear);
+      removedRings.clear();
+    }
   }
 
   /**
@@ -164,6 +185,17 @@ public class Tier0VectorRegistry {
     hydrationBarriers.keySet().removeIf(indexKey -> {
       if (indexKey.regionPath.equals(normalized)) {
         releaseHydrationLatchesForIndex(indexKey);
+        return true;
+      }
+      return false;
+    });
+    flushCycleRings.keySet().removeIf(indexKey -> {
+      if (indexKey.regionPath.equals(normalized)) {
+        ConcurrentHashMap<Integer, FlushCycleRing> removedRings = flushCycleRings.remove(indexKey);
+        if (removedRings != null) {
+          removedRings.values().forEach(FlushCycleRing::clear);
+          removedRings.clear();
+        }
         return true;
       }
       return false;
@@ -297,6 +329,72 @@ public class Tier0VectorRegistry {
     return fullScanHydrationCount.incrementAndGet();
   }
 
+  public long getReconciledStaleIndexKeysCount() {
+    return reconciledStaleIndexKeysCount.get();
+  }
+
+  public long incrementReconciledStaleIndexKeysCount() {
+    return reconciledStaleIndexKeysCount.incrementAndGet();
+  }
+
+  public boolean isFlushCycleSamplingEnabled() {
+    return flushCycleSamplingEnabled;
+  }
+
+  public void setFlushCycleSamplingEnabled(boolean flushCycleSamplingEnabled) {
+    this.flushCycleSamplingEnabled = flushCycleSamplingEnabled;
+  }
+
+  /**
+   * Records a per-bucket AEQ flush-cycle sample into a bounded circular ring buffer when flush
+   * cycle sampling is enabled.
+   */
+  public void recordFlushCycle(String regionPath, String indexName, int bucketId, int batchSize,
+      int preEvictTier0Size, long flushDurationNanos) {
+    if (!flushCycleSamplingEnabled) {
+      return;
+    }
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    FlushCycleSample sample = new FlushCycleSample(
+        bucketId, batchSize, preEvictTier0Size, flushDurationNanos, System.nanoTime());
+    flushCycleRings
+        .computeIfAbsent(key, k -> new ConcurrentHashMap<>())
+        .computeIfAbsent(bucketId, b -> new FlushCycleRing(DEFAULT_FLUSH_CYCLE_RING_CAPACITY))
+        .record(sample);
+  }
+
+  /**
+   * Drains all recorded flush-cycle samples for {@code (regionPath, indexName, bucketId)} in
+   * chronological order and clears the bucket ring buffer.
+   */
+  public List<FlushCycleSample> drainFlushCycleSamples(String regionPath, String indexName,
+      int bucketId) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    ConcurrentHashMap<Integer, FlushCycleRing> bucketMap = flushCycleRings.get(key);
+    if (bucketMap == null) {
+      return Collections.emptyList();
+    }
+    FlushCycleRing ring = bucketMap.get(bucketId);
+    return ring == null ? Collections.emptyList() : ring.drain();
+  }
+
+  /**
+   * Drains all recorded flush-cycle samples across all buckets for {@code (regionPath, indexName)}
+   * and clears their ring buffers.
+   */
+  public List<FlushCycleSample> drainFlushCycleSamples(String regionPath, String indexName) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    ConcurrentHashMap<Integer, FlushCycleRing> bucketMap = flushCycleRings.get(key);
+    if (bucketMap == null || bucketMap.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<FlushCycleSample> all = new ArrayList<>();
+    for (FlushCycleRing ring : bucketMap.values()) {
+      all.addAll(ring.drain());
+    }
+    return all;
+  }
+
   public long getLastHydrationEventsInspected() {
     return lastHydrationEventsInspected.get();
   }
@@ -375,6 +473,11 @@ public class Tier0VectorRegistry {
       map.clear();
     });
     hydrationBarriers.clear();
+    flushCycleRings.values().forEach(map -> {
+      map.values().forEach(FlushCycleRing::clear);
+      map.clear();
+    });
+    flushCycleRings.clear();
   }
 
   /**
@@ -461,6 +564,89 @@ public class Tier0VectorRegistry {
     @Override
     public int hashCode() {
       return Objects.hash(regionPath, indexName);
+    }
+  }
+
+  /**
+   * Per-bucket true flush-cycle sample measured around AEQ commit/refresh and prior to Tier-0
+   * eviction.
+   */
+  public static final class FlushCycleSample {
+    private final int bucketId;
+    private final int batchSize;
+    private final int preEvictTier0Size;
+    private final long flushDurationNanos;
+    private final long recordedAtNanos;
+
+    public FlushCycleSample(int bucketId, int batchSize, int preEvictTier0Size,
+        long flushDurationNanos, long recordedAtNanos) {
+      this.bucketId = bucketId;
+      this.batchSize = batchSize;
+      this.preEvictTier0Size = preEvictTier0Size;
+      this.flushDurationNanos = flushDurationNanos;
+      this.recordedAtNanos = recordedAtNanos;
+    }
+
+    public int getBucketId() {
+      return bucketId;
+    }
+
+    public int getBatchSize() {
+      return batchSize;
+    }
+
+    public int getPreEvictTier0Size() {
+      return preEvictTier0Size;
+    }
+
+    public long getFlushDurationNanos() {
+      return flushDurationNanos;
+    }
+
+    public long getRecordedAtNanos() {
+      return recordedAtNanos;
+    }
+  }
+
+  private static final class FlushCycleRing {
+    private final FlushCycleSample[] ring;
+    private int head;
+    private int size;
+
+    FlushCycleRing(int capacity) {
+      this.ring = new FlushCycleSample[capacity];
+    }
+
+    synchronized void record(FlushCycleSample sample) {
+      int tail = (head + size) % ring.length;
+      ring[tail] = sample;
+      if (size == ring.length) {
+        head = (head + 1) % ring.length;
+      } else {
+        size++;
+      }
+    }
+
+    synchronized List<FlushCycleSample> drain() {
+      if (size == 0) {
+        return Collections.emptyList();
+      }
+      List<FlushCycleSample> out = new ArrayList<>(size);
+      for (int i = 0; i < size; i++) {
+        out.add(ring[(head + i) % ring.length]);
+      }
+      Arrays.fill(ring, null);
+      head = 0;
+      size = 0;
+      return out;
+    }
+
+    synchronized void clear() {
+      if (size > 0) {
+        Arrays.fill(ring, null);
+        head = 0;
+        size = 0;
+      }
     }
   }
 }

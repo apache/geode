@@ -21,8 +21,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -112,7 +115,7 @@ public class DistributedHybridKnnFunctionJUnitTest {
 
   @Before
   @SuppressWarnings("unchecked")
-  public void setUp() {
+  public void setUp() throws Exception {
     mockCache = mock(InternalCache.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(mockCache.getCancelCriterion()).thenReturn(cancelCriterion);
@@ -126,6 +129,8 @@ public class DistributedHybridKnnFunctionJUnitTest {
     mockRepoManager = mock(PartitionedRepositoryManager.class);
     mockRepoBucket0 = mock(IndexRepository.class);
     mockRepoBucket1 = mock(IndexRepository.class);
+    wireRealDefaultQueryMethods(mockRepoBucket0);
+    wireRealDefaultQueryMethods(mockRepoBucket1);
 
     when(mockContext.getCache()).thenReturn(mockCache);
     when(mockContext.getDataSet()).thenReturn(mockRegion);
@@ -136,6 +141,19 @@ public class DistributedHybridKnnFunctionJUnitTest {
     when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
     when(mockIndex.getIndexStats()).thenReturn(mockStats);
     when(mockIndex.getAnalyzer()).thenReturn(new StandardAnalyzer());
+  }
+
+  private static void wireRealDefaultQueryMethods(IndexRepository mockRepo) throws IOException {
+    doCallRealMethod().when(mockRepo).query(any(), anyInt(), any(), nullable(Runnable.class));
+    doCallRealMethod().when(mockRepo).queryWithFp32Rerank(
+        any(), anyInt(), anyInt(), any(), any(), any(), any(), nullable(Runnable.class));
+    when(mockRepo.tryQueryAtEpoch(anyLong(), any(), anyInt(), any())).thenCallRealMethod();
+    when(mockRepo.tryQueryAtEpoch(anyLong(), any(), anyInt(), any(), nullable(Runnable.class)))
+        .thenCallRealMethod();
+    when(mockRepo.tryQueryWithFp32RerankAtEpoch(
+        anyLong(), any(), anyInt(), anyInt(), any(), any(), any(), any())).thenCallRealMethod();
+    when(mockRepo.tryQueryWithFp32RerankAtEpoch(anyLong(), any(), anyInt(), anyInt(), any(), any(),
+        any(), any(), nullable(Runnable.class))).thenCallRealMethod();
   }
 
   @After
@@ -1106,6 +1124,257 @@ public class DistributedHybridKnnFunctionJUnitTest {
         }
       }
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void supportedFilterSearcherEpochValidationPreventsTwoKeyTornCut() throws Exception {
+    for (boolean rerankBeam : new boolean[] {false, true}) {
+      Tier0VectorRegistry.removeCache(mockCache);
+      LuceneSerializer<float[]> serializer = (idx, vec) -> {
+        Document doc = new Document();
+        doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, VectorSimilarityFunction.COSINE));
+        doc.add(new StringField("tag", "all", Field.Store.NO));
+        return Collections.singletonList(doc);
+      };
+
+      try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+          IndexWriter writer =
+              new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+        IndexRepositoryImpl delegate = new IndexRepositoryImpl(
+            mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex);
+
+        float[] v0 = new float[] {0.20f, (float) Math.sqrt(1.0 - 0.04), 0f, 0f};
+        float[] v1 = new float[] {0.85f, (float) Math.sqrt(1.0 - 0.85 * 0.85), 0f, 0f};
+        float[] v2 = new float[] {0.99f, (float) Math.sqrt(1.0 - 0.99 * 0.99), 0f, 0f};
+        float[] vY = new float[] {0.90f, (float) Math.sqrt(1.0 - 0.81), 0f, 0f};
+        float[] queryVec = new float[] {1f, 0f, 0f, 0f};
+
+        delegate.update("x", v0);
+        delegate.commitAndRefreshBlocking();
+        long initialEpoch = delegate.getSearcherEpoch();
+        assertThat(initialEpoch % 2L).isEqualTo(0L);
+
+        Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+        Tier0VectorDeltaBuffer<Object> buffer =
+            registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+        buffer.put("x", v1, Map.of("tag", "all"));
+
+        java.util.concurrent.atomic.AtomicInteger queryAttempts =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+
+        IndexRepository interleavingRepo = new IndexRepository() {
+          private void triggerTwoKeyInterleavingAfterSnapshotBeforeAcquire() throws IOException {
+            // Simulate {x=v2, y} acked + Path A committed & evicted AFTER snapshot captured
+            // {x=v1} and strictly BEFORE searcher acquisition validates epoch0.
+            long seqX = buffer.put("x", v2, Map.of("tag", "all"));
+            long seqY = buffer.put("y", vY, Map.of("tag", "all"));
+            delegate.update("x", v2);
+            delegate.update("y", vY);
+            delegate.commitAndRefreshBlocking();
+            buffer.evictCommitted(Map.of("x", seqX, "y", seqY));
+          }
+
+          @Override
+          public void create(Object key, Object value) throws IOException {
+            delegate.create(key, value);
+          }
+
+          @Override
+          public void update(Object key, Object value) throws IOException {
+            delegate.update(key, value);
+          }
+
+          @Override
+          public void delete(Object key) throws IOException {
+            delegate.delete(key);
+          }
+
+          @Override
+          public void query(Query query, int limit, IndexResultCollector collector)
+              throws IOException {
+            delegate.query(query, limit, collector);
+          }
+
+          @Override
+          public long getSearcherEpoch() {
+            return delegate.getSearcherEpoch();
+          }
+
+          @Override
+          public boolean tryQueryAtEpoch(long expectedEpoch, Query query, int limit,
+              IndexResultCollector collector, Runnable onSearcherAcquired) throws IOException {
+            if (queryAttempts.incrementAndGet() == 1) {
+              triggerTwoKeyInterleavingAfterSnapshotBeforeAcquire();
+            }
+            return delegate.tryQueryAtEpoch(
+                expectedEpoch, query, limit, collector, onSearcherAcquired);
+          }
+
+          @Override
+          public boolean tryQueryWithFp32RerankAtEpoch(long expectedEpoch, Query query, int k,
+              int oversampleK, String vectorField, float[] queryVector,
+              VectorSimilarityFunction similarity, IndexResultCollector collector,
+              Runnable onSearcherAcquired) throws IOException {
+            if (queryAttempts.incrementAndGet() == 1) {
+              triggerTwoKeyInterleavingAfterSnapshotBeforeAcquire();
+            }
+            return delegate.tryQueryWithFp32RerankAtEpoch(expectedEpoch, query, k, oversampleK,
+                vectorField, queryVector, similarity, collector, onSearcherAcquired);
+          }
+
+          @Override
+          public void commit() throws IOException {
+            delegate.commit();
+          }
+
+          @Override
+          public void commitAndRefreshBlocking() throws IOException {
+            delegate.commitAndRefreshBlocking();
+          }
+
+          @Override
+          public Region<?, ?> getRegion() {
+            return delegate.getRegion();
+          }
+
+          @Override
+          public boolean isClosed() {
+            return delegate.isClosed();
+          }
+
+          @Override
+          public IndexWriter getWriter() {
+            return delegate.getWriter();
+          }
+
+          @Override
+          public void cleanup() {
+            delegate.cleanup();
+          }
+        };
+
+        when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+            .thenReturn(Map.of(0, interleavingRepo));
+        ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+        when(mockContext.getResultSender()).thenReturn(localSender);
+
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("tag", "all")
+            .rerankBeamCandidates(rerankBeam)
+            .build();
+        when(mockContext.getArguments()).thenReturn(ctx);
+
+        new DistributedHybridKnnFunction().execute(mockContext);
+
+        assertThat(queryAttempts.get()).isEqualTo(2);
+        assertThat(delegate.getSearcherEpoch()).isGreaterThan(initialEpoch);
+
+        ArgumentCaptor<TopEntriesCollector> captor =
+            ArgumentCaptor.forClass(TopEntriesCollector.class);
+        verify(localSender).lastResult(captor.capture());
+        List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+        assertThat(hits).extracting(EntryScore::getKey).containsExactly("x", "y");
+        // x MUST hold score of v2 (~0.995 cosine), NEVER stale v1 (~0.925)!
+        float expectedScoreX =
+            VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+        assertThat(hits.get(0).getScore()).isCloseTo(expectedScoreX, within(1e-4f));
+      }
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void supportedFilterFallsBackToWriteBarrierAfterSixteenContendedSearcherEpochRetries()
+      throws Exception {
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+    float[] q = new float[] {1f, 0f, 0f, 0f};
+    buffer.put("k-contended", q, Map.of("tag", "all"));
+
+    java.util.concurrent.atomic.AtomicInteger attempts =
+        new java.util.concurrent.atomic.AtomicInteger(0);
+    java.util.concurrent.atomic.AtomicLong fakeEpoch =
+        new java.util.concurrent.atomic.AtomicLong(2L);
+    AtomicBoolean fallbackBarrierHeld = new AtomicBoolean(false);
+    AtomicBoolean barrierReleasedAfterAcquire = new AtomicBoolean(false);
+
+    IndexRepository contendedRepo = new IndexRepository() {
+      @Override
+      public void create(Object key, Object value) {}
+
+      @Override
+      public void update(Object key, Object value) {}
+
+      @Override
+      public void delete(Object key) {}
+
+      @Override
+      public void query(Query query, int limit, IndexResultCollector collector) {}
+
+      @Override
+      public long getSearcherEpoch() {
+        return fakeEpoch.get();
+      }
+
+      @Override
+      public boolean tryQueryAtEpoch(long expectedEpoch, Query query, int limit,
+          IndexResultCollector collector, Runnable onSearcherAcquired) {
+        int call = attempts.incrementAndGet();
+        if (call <= DistributedHybridKnnFunction.MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES) {
+          fakeEpoch.addAndGet(2L);
+          return false;
+        }
+        fallbackBarrierHeld.set(buffer.isPathBWriteHeldByCurrentThread());
+        if (onSearcherAcquired != null) {
+          onSearcherAcquired.run();
+        }
+        barrierReleasedAfterAcquire.set(!buffer.isPathBWriteHeldByCurrentThread());
+        return true;
+      }
+
+      @Override
+      public void commit() {}
+
+      @Override
+      public Region<?, ?> getRegion() {
+        return mockRegion;
+      }
+
+      @Override
+      public boolean isClosed() {
+        return false;
+      }
+
+      @Override
+      public IndexWriter getWriter() {
+        return null;
+      }
+
+      @Override
+      public void cleanup() {}
+    };
+
+    when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+        .thenReturn(Map.of(0, contendedRepo));
+    ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+    when(mockContext.getResultSender()).thenReturn(localSender);
+
+    HybridKnnQueryContext ctx = HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, q, 5)
+        .similarityFunction(VectorSimilarityFunction.COSINE)
+        .build();
+    when(mockContext.getArguments()).thenReturn(ctx);
+
+    new DistributedHybridKnnFunction().execute(mockContext);
+
+    assertThat(attempts.get())
+        .isEqualTo(DistributedHybridKnnFunction.MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES + 1);
+    assertThat(fallbackBarrierHeld.get()).isTrue();
+    assertThat(barrierReleasedAfterAcquire.get()).isTrue();
+    assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
   }
 
   @SuppressWarnings("unchecked")

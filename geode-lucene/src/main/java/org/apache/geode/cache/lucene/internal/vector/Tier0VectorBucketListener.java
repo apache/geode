@@ -15,8 +15,10 @@
 
 package org.apache.geode.cache.lucene.internal.vector;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
+
+import org.apache.lucene.store.AlreadyClosedException;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryDestroyedException;
@@ -35,11 +39,19 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
+import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
+import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.ColocationHelper;
@@ -216,7 +228,7 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
         }
         try {
           if (!tryHydrateFromAeqDelta(cache, pr, bucket, bucketId, buffer, registry)) {
-            hydrateFromFullBucketScan(bucket, buffer, registry);
+            hydrateFromFullBucketScan(cache, pr, bucket, bucketId, buffer, registry);
           }
         } finally {
           if (internalCache != null) {
@@ -476,18 +488,17 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       return action == 2 || action == 5;
     }
 
-    private void hydrateFromFullBucketScan(BucketRegion bucket,
-        Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
+    private void hydrateFromFullBucketScan(Cache cache, PartitionedRegion pr, BucketRegion bucket,
+        int bucketId, Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
       registry.incrementFullScanHydrationCount();
       long eventsInspected = 0L;
       long keysRestored = 0L;
       Set<Object> liveKeys = bucket.keySet();
-      if (liveKeys != null) {
-        for (Object key : liveKeys) {
-          eventsInspected++;
-          if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry)) {
-            keysRestored++;
-          }
+      Set<Object> liveKeySet = liveKeys == null ? Collections.emptySet() : new HashSet<>(liveKeys);
+      for (Object key : liveKeySet) {
+        eventsInspected++;
+        if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry)) {
+          keysRestored++;
         }
       }
       RegionMap regionMap = bucket.getRegionMap();
@@ -503,7 +514,57 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
           }
         }
       }
+      try {
+        Set<Object> indexedKeys = collectIndexedKeysForReconciliation(cache, pr, bucketId);
+        if (indexedKeys != null && !indexedKeys.isEmpty()) {
+          for (Object staleKey : indexedKeys) {
+            if (staleKey == null || liveKeySet.contains(staleKey)) {
+              continue;
+            }
+            eventsInspected++;
+            if (!buffer.containsKey(staleKey) && bucket.getEntry(staleKey) == null
+                && reconcileTombstone(staleKey, buffer, registry)) {
+              registry.incrementReconciledStaleIndexKeysCount();
+              keysRestored++;
+            }
+          }
+        }
+      } catch (IOException | AlreadyClosedException ignored) {
+        // Repository closed or transient store issue while moving bucket; ignore safely.
+      }
       registry.recordLastHydrationStats(eventsInspected, keysRestored);
+    }
+
+    private Set<Object> collectIndexedKeysForReconciliation(Cache cache, PartitionedRegion pr,
+        int bucketId) throws IOException {
+      if (cache == null) {
+        return Collections.emptySet();
+      }
+      try {
+        LuceneService luceneService = LuceneServiceProvider.get(cache);
+        if (luceneService == null) {
+          return Collections.emptySet();
+        }
+        LuceneIndex index = luceneService.getIndex(indexName, pr.getFullPath());
+        if (!(index instanceof InternalLuceneIndex)) {
+          return Collections.emptySet();
+        }
+        RepositoryManager repoManager = ((InternalLuceneIndex) index).getRepositoryManager();
+        if (repoManager instanceof PartitionedRepositoryManager) {
+          PartitionedRepositoryManager prRepoManager = (PartitionedRepositoryManager) repoManager;
+          Set<Object> indexedKeys = prRepoManager.collectIndexedKeysIfReady(bucketId);
+          if (indexedKeys != null && !indexedKeys.isEmpty()) {
+            return indexedKeys;
+          }
+          IndexRepository repo = prRepoManager.getRepositoryIfReady(bucketId);
+          if (repo != null && !repo.isClosed()) {
+            return repo.collectIndexedKeys();
+          }
+        }
+      } catch (BucketNotFoundException | RuntimeException ignored) {
+        // Bucket demoted, index destroyed, or mocked cache without Lucene service.
+      }
+      return Collections.emptySet();
     }
 
     private boolean hydrateLiveOrMissingEntry(BucketRegion bucket, Object key,

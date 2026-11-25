@@ -18,6 +18,8 @@ package org.apache.geode.cache.lucene.internal.vector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -41,6 +43,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.KnnFloatVectorField;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.VectorSimilarityFunction;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,9 +59,12 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneEventListener;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
@@ -62,6 +74,7 @@ import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.cache.lucene.internal.distributed.HybridKnnQueryContext;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
@@ -372,6 +385,7 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
     PartitionedRepositoryManager mockRepoManager = mock(PartitionedRepositoryManager.class);
     IndexRepository emptyLuceneRepo = mock(IndexRepository.class);
+    when(emptyLuceneRepo.tryQueryAtEpoch(anyLong(), any(), anyInt(), any())).thenCallRealMethod();
     LuceneIndexStats mockStats = mock(LuceneIndexStats.class);
     InternalRegionFunctionContext fnCtx = mock(InternalRegionFunctionContext.class);
     ResultSender<TopEntriesCollector> resultSender = mock(ResultSender.class);
@@ -673,6 +687,146 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
         .containsExactly(0f, 1f);
     assertThat(snap.getTombstonedKeys())
         .containsExactlyInAnyOrder("deleted-k", "tiebreak-k");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void afterPrimaryFallbackReconcilesStaleIndexedKeysWithMissingAeqAndExpiredTombstones()
+      throws Exception {
+    int bucketId = 21;
+    LuceneSerializer<float[]> serializer = (idx, vec) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField("embedding", vec, VectorSimilarityFunction.COSINE));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      BucketRegion bucket = mock(BucketRegion.class);
+      when(bucket.isEmpty()).thenReturn(false);
+      when(bucket.keySet()).thenReturn(Collections.singleton("live-1"));
+      Region.Entry<Object, Object> liveEntry = mock(Region.Entry.class);
+      when(liveEntry.getValue()).thenReturn(new float[] {0f, 1f});
+      when(bucket.getEntry("live-1")).thenReturn(liveEntry);
+      when(bucket.getEntry("stale-expired-doc")).thenReturn(null);
+
+      // Expired tombstone GC: RegionMap has 0 tombstones and 0 entries for stale-expired-doc.
+      RegionMap regionMap = mock(RegionMap.class);
+      when(regionMap.regionEntries()).thenReturn(Collections.emptyList());
+      when(bucket.getRegionMap()).thenReturn(regionMap);
+
+      PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+      when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+      PartitionedRegion pr = mock(PartitionedRegion.class);
+      when(pr.getFullPath()).thenReturn(REGION_PATH);
+      when(pr.getRegionService()).thenReturn(cache);
+      when(pr.getDataStore()).thenReturn(dataStore);
+      when(pr.isDestroyed()).thenReturn(false);
+
+      LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
+      LuceneIndexStats mockStats = mock(LuceneIndexStats.class);
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          bucket, writer, serializer, mockStats, bucket, null, "lock", mockIndex);
+      repo.update("live-1", new float[] {0f, 1f});
+      repo.update("stale-expired-doc", new float[] {1f, 0f});
+      repo.commitAndRefreshBlocking();
+      assertThat(repo.collectIndexedKeys())
+          .containsExactlyInAnyOrder("live-1", "stale-expired-doc");
+
+      PartitionedRepositoryManager mockRepoManager = mock(PartitionedRepositoryManager.class);
+      when(mockRepoManager.getRepositoryIfReady(bucketId)).thenReturn(repo);
+      InternalLuceneService mockService = mock(InternalLuceneService.class);
+      when(mockService.getIndex(INDEX_NAME, REGION_PATH)).thenReturn(mockIndex);
+      when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
+      when(cache.getService(InternalLuceneService.class)).thenReturn(mockService);
+
+      // No AEQ registered on cache -> forces fallback full-scan path + Lucene reconciliation
+      Tier0VectorBucketListener<String, float[]> listener =
+          new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+      PartitionListener partitionListener = listener.createPartitionListener();
+      partitionListener.afterRegionCreate(pr);
+      partitionListener.afterPrimary(bucketId);
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+      assertThat(registry.getFullScanHydrationCount()).isEqualTo(1L);
+      assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(0L);
+      assertThat(registry.getReconciledStaleIndexKeysCount()).isEqualTo(1L);
+      assertThat(registry.getHydratedTombstonesCount()).isEqualTo(1L);
+      assertThat(registry.getHydratedKeysCount()).isEqualTo(2L);
+
+      Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+      Tier0VectorDeltaBuffer.Snapshot<Object> snap = buffer.snapshot();
+      assertThat(snap.getLiveEntries()).containsOnlyKeys("live-1");
+      assertThat(snap.getTombstonedKeys()).containsExactly("stale-expired-doc");
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void luceneEventListenerRecordsTrueFlushCycleSamplesAndRespectsDisabledFlag()
+      throws Exception {
+    int bucketId = 0;
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "k0", new float[] {1f, 0f}, Map.of());
+    registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "k1", new float[] {0f, 1f}, Map.of());
+    registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "k2", new float[] {0.5f, 0.5f}, Map.of());
+
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.getId()).thenReturn(bucketId);
+    EntrySnapshot es0 = mock(EntrySnapshot.class);
+    when(es0.getRawValue(true)).thenReturn(new float[] {1f, 0f});
+    EntrySnapshot es1 = mock(EntrySnapshot.class);
+    when(es1.getRawValue(true)).thenReturn(new float[] {0f, 1f});
+    EntrySnapshot es2 = mock(EntrySnapshot.class);
+    when(es2.getRawValue(true)).thenReturn(new float[] {0.5f, 0.5f});
+
+    Region<Object, Object> region = mock(Region.class);
+    when(region.getEntry("k0")).thenReturn(es0);
+    when(region.getEntry("k1")).thenReturn(es1);
+    when(region.getEntry("k2")).thenReturn(es2);
+
+    IndexRepository repo = mock(IndexRepository.class);
+    when(repo.getRegion()).thenReturn(bucket);
+
+    LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+
+    PartitionedRepositoryManager repoManager = mock(PartitionedRepositoryManager.class);
+    when(repoManager.getIndex()).thenReturn(mockIndex);
+    when(repoManager.getRepository(any(), any(), any())).thenReturn(repo);
+
+    AsyncEvent e0 = mock(AsyncEvent.class);
+    when(e0.getRegion()).thenReturn(region);
+    when(e0.getKey()).thenReturn("k0");
+    AsyncEvent e1 = mock(AsyncEvent.class);
+    when(e1.getRegion()).thenReturn(region);
+    when(e1.getKey()).thenReturn("k1");
+    AsyncEvent e2 = mock(AsyncEvent.class);
+    when(e2.getRegion()).thenReturn(region);
+    when(e2.getKey()).thenReturn("k2");
+
+    LuceneEventListener aeqListener = new LuceneEventListener(cache, repoManager);
+    assertThat(aeqListener.processEvents(List.of(e0, e1))).isTrue();
+
+    // k2 remains unevicted in Tier-0 after flushing batch [k0, k1]
+    assertThat(registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId).getTotalSize()).isEqualTo(1);
+    List<Tier0VectorRegistry.FlushCycleSample> samples =
+        registry.drainFlushCycleSamples(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(samples).hasSize(1);
+    Tier0VectorRegistry.FlushCycleSample sample = samples.get(0);
+    assertThat(sample.getBucketId()).isEqualTo(bucketId);
+    assertThat(sample.getBatchSize()).isEqualTo(2);
+    assertThat(sample.getPreEvictTier0Size()).isEqualTo(3);
+    assertThat(sample.getFlushDurationNanos()).isGreaterThanOrEqualTo(0L);
+    // Second drain is empty
+    assertThat(registry.drainFlushCycleSamples(REGION_PATH, INDEX_NAME)).isEmpty();
+
+    // Disabling sampling skips sample recording with zero allocations
+    registry.setFlushCycleSamplingEnabled(false);
+    assertThat(aeqListener.processEvents(List.of(e2))).isTrue();
+    assertThat(registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId).getTotalSize()).isEqualTo(0);
+    assertThat(registry.drainFlushCycleSamples(REGION_PATH, INDEX_NAME, bucketId)).isEmpty();
   }
 
   private GatewaySenderEventImpl mockShadowEvent(String key, Operation op, long shadowKey) {

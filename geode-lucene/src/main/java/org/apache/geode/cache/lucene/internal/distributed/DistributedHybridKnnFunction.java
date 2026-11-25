@@ -112,6 +112,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
    * post-masking.
    */
   static final int MAX_INLINE_MASK_TERMS = 512;
+  static final int MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES = 16;
   private static final int MAX_LUCENE_K = 100_000;
   private static final long MAX_CONCURRENT_FLUSH_WAIT_MILLIS = 500L;
   private static final AtomicLong UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT = new AtomicLong(0L);
@@ -274,25 +275,99 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     boolean unsupportedFilter =
         userFilterQuery != null && !Tier0MetadataMatcher.isSupported(userFilterQuery);
 
-    // Theorem 2 ordering: wait for any in-flight primary promotion hydration, then snapshot
-    // Tier-0 BEFORE querying Lucene to guarantee zero visibility gap across concurrent dual-epoch
-    // swaps, failovers, and SearcherManager.maybeRefreshBlocking() transitions. For unsupported
-    // filters (Path B), acquire the per-bucket write barrier around flush + snapshot + Lucene
-    // searcher acquisition so concurrent puts/destroys cannot leak into T_mask and get dropped by
-    // fail-closed Tier0MetadataMatcher evaluation.
+    // Theorem 2 ordering: wait for any in-flight primary promotion hydration, then bind the
+    // Tier-0 snapshot and Lucene IndexSearcher acquisition to a single consistent epoch/cut.
+    // For unsupported filters (Path B), acquire the per-bucket write barrier around flush +
+    // snapshot + IndexSearcher acquisition so T_mask is empty at the searcher cut. For supported
+    // filters, validate IndexRepository.getSearcherEpoch() optimistically up to 16 times across
+    // snapshot -> searcher acquisition, falling back to the per-bucket write barrier if contended.
     Tier0VectorDeltaBuffer.Snapshot<Object> tier0Snapshot = null;
     Set<Object> maskedKeys = Collections.emptySet();
     Tier0VectorDeltaBuffer<Object> pathBBuffer = null;
     final AtomicBoolean pathBWriteReleased = new AtomicBoolean(false);
     Runnable pathBReleaseBarrier = null;
-    RawListResultCollector luceneRawCollector;
+    RawListResultCollector luceneRawCollector = null;
+    boolean usedInlineMask = false;
+    boolean usedOversampleFallback = false;
     try {
+      Tier0VectorDeltaBuffer<Object> buffer = null;
       if (registry != null) {
         registry.awaitHydration(regionPath, knnContext.getIndexName(), bucketId);
-        Tier0VectorDeltaBuffer<Object> buffer =
-            registry.getBuffer(regionPath, knnContext.getIndexName(), bucketId);
-        if (buffer != null) {
-          if (unsupportedFilter && repo != null) {
+        buffer = registry.getBuffer(regionPath, knnContext.getIndexName(), bucketId);
+      }
+
+      if (unsupportedFilter && buffer != null && repo != null) {
+        buffer.lockPathBWrite();
+        pathBBuffer = buffer;
+        final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
+        pathBReleaseBarrier = () -> {
+          if (pathBWriteReleased.compareAndSet(false, true)) {
+            lockedBuffer.unlockPathBWrite();
+          }
+        };
+        tier0Snapshot = buffer.snapshot();
+        if (!tier0Snapshot.isEmpty()) {
+          // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
+          // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
+          // bucket into Lucene + blocking-refresh while holding the write barrier so
+          // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
+          flushBucketForUnsupportedFilter(
+              cache, region, regionPath, knnContext.getIndexName(), bucketId, registry,
+              buffer, repo);
+          tier0Snapshot = buffer.snapshot();
+        }
+        maskedKeys = tier0Snapshot.getMaskedKeys();
+        PreparedBucketQuery prepared = prepareBucketQuery(
+            knnContext, k, queryVector, userFilterQuery, maskedKeys);
+        usedInlineMask = prepared.usedInlineMask;
+        usedOversampleFallback = prepared.usedOversampleFallback;
+        luceneRawCollector = new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
+        if (prepared.executeFp32Rerank) {
+          repo.queryWithFp32Rerank(prepared.knnQuery, prepared.luceneK, prepared.queryK,
+              knnContext.getVectorFieldName(), queryVector, knnContext.getSimilarityFunction(),
+              luceneRawCollector, pathBReleaseBarrier);
+        } else {
+          repo.query(prepared.knnQuery, prepared.luceneK, luceneRawCollector, pathBReleaseBarrier);
+        }
+      } else {
+        boolean queryCompleted = false;
+        for (int attempt = 0; attempt < MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES; attempt++) {
+          long epoch0 = repo != null ? repo.getSearcherEpoch() : 0L;
+          if (repo != null && (epoch0 & 1L) != 0L) {
+            Thread.onSpinWait();
+            continue;
+          }
+          tier0Snapshot = buffer != null ? buffer.snapshot() : null;
+          maskedKeys =
+              tier0Snapshot != null ? tier0Snapshot.getMaskedKeys() : Collections.emptySet();
+          PreparedBucketQuery prepared = prepareBucketQuery(
+              knnContext, k, queryVector, userFilterQuery, maskedKeys);
+          RawListResultCollector attemptCollector =
+              new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
+          if (repo == null) {
+            luceneRawCollector = attemptCollector;
+            usedInlineMask = prepared.usedInlineMask;
+            usedOversampleFallback = prepared.usedOversampleFallback;
+            queryCompleted = true;
+            break;
+          }
+          boolean epochMatched = prepared.executeFp32Rerank
+              ? repo.tryQueryWithFp32RerankAtEpoch(epoch0, prepared.knnQuery, prepared.luceneK,
+                  prepared.queryK, knnContext.getVectorFieldName(), queryVector,
+                  knnContext.getSimilarityFunction(), attemptCollector)
+              : repo.tryQueryAtEpoch(epoch0, prepared.knnQuery, prepared.luceneK, attemptCollector);
+          if (epochMatched) {
+            luceneRawCollector = attemptCollector;
+            usedInlineMask = prepared.usedInlineMask;
+            usedOversampleFallback = prepared.usedOversampleFallback;
+            queryCompleted = true;
+            break;
+          }
+          Thread.onSpinWait();
+        }
+
+        if (!queryCompleted && repo != null) {
+          if (buffer != null) {
             buffer.lockPathBWrite();
             pathBBuffer = buffer;
             final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
@@ -301,83 +376,57 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
                 lockedBuffer.unlockPathBWrite();
               }
             };
-            tier0Snapshot = buffer.snapshot();
-            if (!tier0Snapshot.isEmpty()) {
-              // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
-              // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
-              // bucket into Lucene + blocking-refresh while holding the write barrier so
-              // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
-              flushBucketForUnsupportedFilter(
-                  cache, region, regionPath, knnContext.getIndexName(), bucketId, registry,
-                  buffer, repo);
-              tier0Snapshot = buffer.snapshot();
+          }
+          long deadlineNanos = System.nanoTime() + MAX_CONCURRENT_FLUSH_WAIT_MILLIS * 1_000_000L;
+          while (!queryCompleted) {
+            long fallbackEpoch = repo.getSearcherEpoch();
+            if ((fallbackEpoch & 1L) != 0L && System.nanoTime() < deadlineNanos) {
+              Thread.yield();
+              continue;
             }
-          } else {
-            tier0Snapshot = buffer.snapshot();
-          }
-          maskedKeys = tier0Snapshot.getMaskedKeys();
-        }
-      }
-
-      // Build pre-filtered Lucene 9.x KnnFloatVectorQuery with safe |T_mask| capping
-      int maxInlineTerms =
-          Math.min(MAX_INLINE_MASK_TERMS, Math.max(0, IndexSearcher.getMaxClauseCount() - 2));
-      int luceneK;
-      boolean oversampleMaskFallback = false;
-      Query effectiveFilterQuery;
-      if (maskedKeys.isEmpty()) {
-        effectiveFilterQuery = userFilterQuery;
-        luceneK = k;
-      } else if (maskedKeys.size() <= maxInlineTerms) {
-        effectiveFilterQuery = buildMaskedFilterQuery(userFilterQuery, maskedKeys);
-        luceneK = k;
-        INLINE_MASK_QUERY_COUNT.incrementAndGet();
-        if (registry != null) {
-          registry.incrementInlineMaskQueryCount();
-        }
-      } else {
-        effectiveFilterQuery = userFilterQuery;
-        luceneK = (int) Math.min((long) k + maskedKeys.size(), MAX_LUCENE_K);
-        oversampleMaskFallback = true;
-        OVERSAMPLE_FALLBACK_QUERY_COUNT.incrementAndGet();
-        if (registry != null) {
-          registry.incrementOversampleFallbackQueryCount();
-        }
-      }
-
-      int rerankFactor = knnContext.getRerankOversampleFactor();
-      boolean executeFp32Rerank =
-          rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR
-              || knnContext.isRerankBeamCandidates();
-      int queryK = luceneK;
-      if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
-        long targetOversample = oversampleMaskFallback
-            ? (long) k * rerankFactor + maskedKeys.size()
-            : (long) k * rerankFactor;
-        queryK = Math.max(luceneK, (int) Math.min(targetOversample, MAX_LUCENE_K));
-      }
-
-      KnnFloatVectorQuery knnQuery = effectiveFilterQuery == null
-          ? new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK)
-          : new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK,
-              effectiveFilterQuery);
-
-      luceneRawCollector = new RawListResultCollector("bucket-" + bucketId, luceneK);
-      if (repo != null) {
-        if (pathBReleaseBarrier != null) {
-          if (executeFp32Rerank) {
-            repo.queryWithFp32Rerank(knnQuery, luceneK, queryK, knnContext.getVectorFieldName(),
-                queryVector, knnContext.getSimilarityFunction(), luceneRawCollector,
-                pathBReleaseBarrier);
-          } else {
-            repo.query(knnQuery, luceneK, luceneRawCollector, pathBReleaseBarrier);
-          }
-        } else {
-          if (executeFp32Rerank) {
-            repo.queryWithFp32Rerank(knnQuery, luceneK, queryK, knnContext.getVectorFieldName(),
-                queryVector, knnContext.getSimilarityFunction(), luceneRawCollector);
-          } else {
-            repo.query(knnQuery, luceneK, luceneRawCollector);
+            tier0Snapshot = buffer != null ? buffer.snapshot() : null;
+            maskedKeys =
+                tier0Snapshot != null ? tier0Snapshot.getMaskedKeys() : Collections.emptySet();
+            PreparedBucketQuery prepared = prepareBucketQuery(
+                knnContext, k, queryVector, userFilterQuery, maskedKeys);
+            RawListResultCollector attemptCollector =
+                new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
+            boolean epochMatched = false;
+            if ((fallbackEpoch & 1L) == 0L) {
+              epochMatched = prepared.executeFp32Rerank
+                  ? repo.tryQueryWithFp32RerankAtEpoch(fallbackEpoch, prepared.knnQuery,
+                      prepared.luceneK, prepared.queryK, knnContext.getVectorFieldName(),
+                      queryVector, knnContext.getSimilarityFunction(), attemptCollector,
+                      pathBReleaseBarrier)
+                  : repo.tryQueryAtEpoch(fallbackEpoch, prepared.knnQuery, prepared.luceneK,
+                      attemptCollector, pathBReleaseBarrier);
+            }
+            if (epochMatched) {
+              luceneRawCollector = attemptCollector;
+              usedInlineMask = prepared.usedInlineMask;
+              usedOversampleFallback = prepared.usedOversampleFallback;
+              queryCompleted = true;
+            } else if (((fallbackEpoch & 1L) == 0L && repo.getSearcherEpoch() == fallbackEpoch)
+                || System.nanoTime() >= deadlineNanos) {
+              // Either repository is a non-epoch-tracking implementation (e.g. unstubbed mock) or
+              // continuous commit contention hit bounded wait: run once under the write barrier.
+              RawListResultCollector finalCollector =
+                  new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
+              if (prepared.executeFp32Rerank) {
+                repo.queryWithFp32Rerank(prepared.knnQuery, prepared.luceneK, prepared.queryK,
+                    knnContext.getVectorFieldName(), queryVector,
+                    knnContext.getSimilarityFunction(), finalCollector, pathBReleaseBarrier);
+              } else {
+                repo.query(
+                    prepared.knnQuery, prepared.luceneK, finalCollector, pathBReleaseBarrier);
+              }
+              luceneRawCollector = finalCollector;
+              usedInlineMask = prepared.usedInlineMask;
+              usedOversampleFallback = prepared.usedOversampleFallback;
+              queryCompleted = true;
+            } else {
+              Thread.yield();
+            }
           }
         }
       }
@@ -389,11 +438,25 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
       }
     }
 
+    if (usedInlineMask) {
+      INLINE_MASK_QUERY_COUNT.incrementAndGet();
+      if (registry != null) {
+        registry.incrementInlineMaskQueryCount();
+      }
+    } else if (usedOversampleFallback) {
+      OVERSAMPLE_FALLBACK_QUERY_COUNT.incrementAndGet();
+      if (registry != null) {
+        registry.incrementOversampleFallbackQueryCount();
+      }
+    }
+
     // Union Lucene HNSW hits (masked by Tier-0 keys) with exact Tier-0 delta hits
     Map<Object, EntryScore<Object>> mergedByKey = new HashMap<>();
-    for (EntryScore<Object> hit : luceneRawCollector.getHits()) {
-      if (!maskedKeys.contains(hit.getKey())) {
-        mergedByKey.put(hit.getKey(), hit);
+    if (luceneRawCollector != null) {
+      for (EntryScore<Object> hit : luceneRawCollector.getHits()) {
+        if (!maskedKeys.contains(hit.getKey())) {
+          mergedByKey.put(hit.getKey(), hit);
+        }
       }
     }
 
@@ -415,6 +478,67 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
       bucketCollector.collect(sorted.get(i));
     }
     return bucketCollector;
+  }
+
+  private static PreparedBucketQuery prepareBucketQuery(HybridKnnQueryContext knnContext, int k,
+      float[] queryVector, Query userFilterQuery, Set<Object> maskedKeys) {
+    int maxInlineTerms =
+        Math.min(MAX_INLINE_MASK_TERMS, Math.max(0, IndexSearcher.getMaxClauseCount() - 2));
+    int luceneK;
+    boolean usedInlineMask = false;
+    boolean usedOversampleFallback = false;
+    Query effectiveFilterQuery;
+    if (maskedKeys.isEmpty()) {
+      effectiveFilterQuery = userFilterQuery;
+      luceneK = k;
+    } else if (maskedKeys.size() <= maxInlineTerms) {
+      effectiveFilterQuery = buildMaskedFilterQuery(userFilterQuery, maskedKeys);
+      luceneK = k;
+      usedInlineMask = true;
+    } else {
+      effectiveFilterQuery = userFilterQuery;
+      luceneK = (int) Math.min((long) k + maskedKeys.size(), MAX_LUCENE_K);
+      usedOversampleFallback = true;
+    }
+
+    int rerankFactor = knnContext.getRerankOversampleFactor();
+    boolean executeFp32Rerank =
+        rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR
+            || knnContext.isRerankBeamCandidates();
+    int queryK = luceneK;
+    if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
+      long targetOversample = usedOversampleFallback
+          ? (long) k * rerankFactor + maskedKeys.size()
+          : (long) k * rerankFactor;
+      queryK = Math.max(luceneK, (int) Math.min(targetOversample, MAX_LUCENE_K));
+    }
+
+    KnnFloatVectorQuery knnQuery = effectiveFilterQuery == null
+        ? new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK)
+        : new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK,
+            effectiveFilterQuery);
+
+    return new PreparedBucketQuery(
+        knnQuery, luceneK, queryK, executeFp32Rerank, usedInlineMask, usedOversampleFallback);
+  }
+
+  private static final class PreparedBucketQuery {
+    final KnnFloatVectorQuery knnQuery;
+    final int luceneK;
+    final int queryK;
+    final boolean executeFp32Rerank;
+    final boolean usedInlineMask;
+    final boolean usedOversampleFallback;
+
+    PreparedBucketQuery(KnnFloatVectorQuery knnQuery, int luceneK, int queryK,
+        boolean executeFp32Rerank, boolean usedInlineMask, boolean usedOversampleFallback) {
+      this.knnQuery = knnQuery;
+      this.luceneK = luceneK;
+      this.queryK = queryK;
+      this.executeFp32Rerank = executeFp32Rerank;
+      this.usedInlineMask = usedInlineMask;
+      this.usedOversampleFallback = usedOversampleFallback;
+    }
   }
 
   private void flushBucketForUnsupportedFilter(Cache cache, Region<?, ?> region, String regionPath,
