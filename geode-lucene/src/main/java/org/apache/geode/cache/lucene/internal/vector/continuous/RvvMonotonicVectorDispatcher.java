@@ -195,15 +195,26 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
+  private static final class PendingDispatchBatch {
+    final List<ContinuousVectorEvent> events;
+    final ContinuousVectorEventSink targetSink;
+
+    PendingDispatchBatch(List<ContinuousVectorEvent> events, ContinuousVectorEventSink targetSink) {
+      this.events = events;
+      this.targetSink = targetSink;
+    }
+  }
+
   private static final class BucketState {
     final Map<String, TreeMap<Long, TailMutation>> tailByMember = new HashMap<>();
     final Map<String, Long> checkpointByMember = new HashMap<>();
     final Map<String, AtomicLong> fallbackVersionByMember = new HashMap<>();
     final Map<String, Long> eventsSinceHeartbeatByMember = new HashMap<>();
     final List<TailMutation> pendingLiveMutations = new ArrayList<>();
-    final ConcurrentLinkedQueue<List<ContinuousVectorEvent>> pendingDispatchBatches =
+    final ConcurrentLinkedQueue<PendingDispatchBatch> pendingDispatchBatches =
         new ConcurrentLinkedQueue<>();
     final AtomicBoolean dispatchDraining = new AtomicBoolean(false);
+    volatile Thread drainOwnerThread = null;
     int pendingAsyncPromotions = 0;
 
     synchronized boolean shouldEmitPeriodicHeartbeat(String memberId, int interval) {
@@ -640,17 +651,32 @@ public class RvvMonotonicVectorDispatcher {
    */
   public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
       Map<String, Long> clientHighWaterByMember) {
-    return replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember, null);
+    return replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember, null, null);
   }
 
   /**
    * Replays uncheckpointed tail mutations for client reconnect under {@code synchronized (state)},
-   * optionally invoking {@code onReplayedUnderLock} before releasing the bucket lock so callers
-   * can atomically transition from reconnect replay to live {@code m_S} event forwarding without
-   * overtaking replayed versions.
+   * pushing replayed batches and trailing watermarks onto the per-bucket serial FIFO queue before
+   * invoking {@code onReplayedUnderLock} and releasing the bucket lock so callers can atomically
+   * transition from reconnect replay to live {@code m_S} event forwarding without overtaking
+   * replayed versions.
    */
   public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
       Map<String, Long> clientHighWaterByMember, Runnable onReplayedUnderLock) {
+    return replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember, null,
+        onReplayedUnderLock);
+  }
+
+  /**
+   * Replays uncheckpointed tail mutations for a specific reconnecting client sink
+   * ({@code targetSink}; {@code null} broadcasts to all registered sinks) under
+   * {@code synchronized (state)}, pushing replayed batches and trailing watermarks onto the same
+   * per-bucket serial FIFO queue before invoking {@code onReplayedUnderLock} and releasing the
+   * bucket lock.
+   */
+  public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
+      Map<String, Long> clientHighWaterByMember, ContinuousVectorEventSink targetSink,
+      Runnable onReplayedUnderLock) {
     totalReconnectReplaysHandled.incrementAndGet();
     BucketState state = (onReplayedUnderLock != null)
         ? bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState())
@@ -664,12 +690,12 @@ public class RvvMonotonicVectorDispatcher {
       List<TailMutation> toReplay =
           state.collectReplayableTailForReconnect(clientHighWaterByMember, maxVersionByMember);
       for (TailMutation mutation : toReplay) {
-        emitted.addAll(evaluateAndDispatch(state, mutation, true));
+        emitted.addAll(evaluateAndDispatch(state, mutation, true, targetSink));
       }
+      emitStreamWatermarksLocked(state, bucketId, maxVersionByMember, targetSink);
       if (onReplayedUnderLock != null) {
         onReplayedUnderLock.run();
       }
-      emitStreamWatermarksLocked(state, bucketId, maxVersionByMember);
     }
     return emitted;
   }
@@ -933,6 +959,11 @@ public class RvvMonotonicVectorDispatcher {
 
   private List<ContinuousVectorEvent> evaluateAndDispatch(BucketState state, TailMutation mutation,
       boolean replayed) {
+    return evaluateAndDispatch(state, mutation, replayed, null);
+  }
+
+  private List<ContinuousVectorEvent> evaluateAndDispatch(BucketState state, TailMutation mutation,
+      boolean replayed, ContinuousVectorEventSink targetSink) {
     List<ChordalVoronoiRouter.MatchResult> matches =
         router.routeNormalized(mutation.getNormalizedVectorUnsafe());
     boolean emitHeartbeat =
@@ -959,6 +990,8 @@ public class RvvMonotonicVectorDispatcher {
       matchEvents = Collections.unmodifiableList(events);
     }
 
+    // Data-before-watermark invariant at equal version v_h: place all match alerts strictly before
+    // the v_h watermark heartbeat in the same atomic batch pushed onto the per-bucket FIFO queue.
     List<ContinuousVectorEvent> sinkBatch;
     if (!emitHeartbeat) {
       sinkBatch = matchEvents;
@@ -976,7 +1009,7 @@ public class RvvMonotonicVectorDispatcher {
       }
     }
 
-    enqueueOrDispatchBatchLocked(state, sinkBatch);
+    enqueueOrDispatchBatchLocked(state, sinkBatch, targetSink);
     return matchEvents;
   }
 
@@ -989,11 +1022,11 @@ public class RvvMonotonicVectorDispatcher {
     for (TailMutation m : replayedMutations) {
       maxVersionByMember.merge(m.memberId, m.regionVersion, Math::max);
     }
-    emitStreamWatermarksLocked(state, bucketId, maxVersionByMember);
+    emitStreamWatermarksLocked(state, bucketId, maxVersionByMember, null);
   }
 
   private void emitStreamWatermarksLocked(BucketState state, int bucketId,
-      Map<String, Long> maxVersionByMember) {
+      Map<String, Long> maxVersionByMember, ContinuousVectorEventSink targetSink) {
     if (heartbeatIntervalEvents <= 0 || maxVersionByMember == null
         || maxVersionByMember.isEmpty()) {
       return;
@@ -1002,27 +1035,41 @@ public class RvvMonotonicVectorDispatcher {
     for (Map.Entry<String, Long> entry : maxVersionByMember.entrySet()) {
       String memberId = entry.getKey();
       long maxVersion = entry.getValue();
-      state.resetHeartbeatCounter(memberId);
+      if (targetSink == null) {
+        state.resetHeartbeatCounter(memberId);
+      }
       ContinuousVectorEvent hb =
-          ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, maxVersion, now);
+          ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, maxVersion, now, true);
       totalHeartbeatsDispatched.incrementAndGet();
-      enqueueOrDispatchBatchLocked(state, Collections.singletonList(hb));
+      enqueueOrDispatchBatchLocked(state, Collections.singletonList(hb), targetSink);
     }
   }
 
   private void enqueueOrDispatchBatchLocked(BucketState state,
-      List<ContinuousVectorEvent> sinkBatch) {
+      List<ContinuousVectorEvent> sinkBatch, ContinuousVectorEventSink targetSink) {
     totalBatchesDispatched.incrementAndGet();
+    PendingDispatchBatch batch = new PendingDispatchBatch(sinkBatch, targetSink);
+    state.pendingDispatchBatches.offer(batch);
     Executor exec = this.dispatchExecutor;
     if (exec != null) {
       // Enqueued inside synchronized(state) -> preserves exact ascending per-(b, m) RVV order
-      state.pendingDispatchBatches.offer(sinkBatch);
       scheduleBucketDrain(state, exec);
     } else {
-      if (!state.pendingDispatchBatches.isEmpty()) {
+      drainSynchronously(state);
+    }
+  }
+
+  private void drainSynchronously(BucketState state) {
+    Thread current = Thread.currentThread();
+    while (!state.pendingDispatchBatches.isEmpty()) {
+      if (state.dispatchDraining.compareAndSet(false, true)) {
         drainBucketDispatchQueue(state, null);
+        return;
       }
-      dispatchBatchToSinks(sinkBatch);
+      if (state.drainOwnerThread == current) {
+        return;
+      }
+      Thread.yield();
     }
   }
 
@@ -1031,29 +1078,51 @@ public class RvvMonotonicVectorDispatcher {
       try {
         exec.execute(() -> drainBucketDispatchQueue(state, exec));
       } catch (RejectedExecutionException rejected) {
-        state.dispatchDraining.set(false);
         drainBucketDispatchQueue(state, null);
       }
     }
   }
 
   private void drainBucketDispatchQueue(BucketState state, Executor exec) {
+    state.drainOwnerThread = Thread.currentThread();
     try {
-      List<ContinuousVectorEvent> next;
-      while ((next = state.pendingDispatchBatches.poll()) != null) {
-        dispatchBatchToSinks(next);
+      while (true) {
+        PendingDispatchBatch next;
+        while ((next = state.pendingDispatchBatches.poll()) != null) {
+          dispatchBatchToSinks(next);
+        }
+        state.drainOwnerThread = null;
+        state.dispatchDraining.set(false);
+        if (state.pendingDispatchBatches.isEmpty()) {
+          break;
+        }
+        if (exec == null) {
+          if (!state.dispatchDraining.compareAndSet(false, true)) {
+            break;
+          }
+          state.drainOwnerThread = Thread.currentThread();
+        } else {
+          scheduleBucketDrain(state, exec);
+          break;
+        }
       }
-    } finally {
+    } catch (RuntimeException | Error t) {
+      state.drainOwnerThread = null;
       state.dispatchDraining.set(false);
       if (!state.pendingDispatchBatches.isEmpty() && exec != null) {
         scheduleBucketDrain(state, exec);
       }
+      throw t;
     }
   }
 
-  private void dispatchBatchToSinks(List<ContinuousVectorEvent> batch) {
+  private void dispatchBatchToSinks(PendingDispatchBatch batch) {
+    if (batch.targetSink != null) {
+      batch.targetSink.onEventBatch(batch.events);
+      return;
+    }
     for (ContinuousVectorEventSink sink : sinks) {
-      sink.onEventBatch(batch);
+      sink.onEventBatch(batch.events);
     }
   }
 }

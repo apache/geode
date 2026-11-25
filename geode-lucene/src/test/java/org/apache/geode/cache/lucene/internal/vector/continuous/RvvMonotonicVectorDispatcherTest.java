@@ -744,4 +744,276 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(secondary.getDispatcher().getTotalReconnectReplaysHandled())
         .isGreaterThanOrEqualTo(3L);
   }
+
+  @Test
+  public void matchExactlyOnHeartbeatMutation64DeliversMatchStrictlyBeforeWatermarkAndAdvancesZeroMatchClient()
+      throws Exception {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ExecutorService exec4T = Executors.newFixedThreadPool(4);
+    try {
+      ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+      // Verify default stride is H = 64
+      assertThat(service.getHeartbeatIntervalEvents())
+          .isEqualTo(RvvMonotonicVectorDispatcher.DEFAULT_HEARTBEAT_INTERVAL_EVENTS)
+          .isEqualTo(64);
+      service.setAsyncDispatchExecutor(exec4T);
+      service.registerSubscription("sub-match", matchVec, 0.90f);
+      service.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+      RvvClientGate clientGate = new RvvClientGate();
+      List<ContinuousVectorEvent> acceptedMatches = new CopyOnWriteArrayList<>();
+      AtomicInteger zeroCallbacks = new AtomicInteger();
+      clientGate.addListener(ev -> {
+        acceptedMatches.add(ev);
+        if ("sub-zero".equals(ev.getSubscriptionId())) {
+          zeroCallbacks.incrementAndGet();
+        }
+      });
+      service.attachClientGate(clientGate);
+
+      List<List<ContinuousVectorEvent>> observedBatches = new CopyOnWriteArrayList<>();
+      List<ContinuousVectorEvent> flattenedDelivered = new CopyOnWriteArrayList<>();
+      service.addEventSink(new ContinuousVectorEventSink() {
+        @Override
+        public void onEvent(ContinuousVectorEvent event) {
+          flattenedDelivered.add(event);
+          clientGate.tryAccept(event);
+        }
+
+        @Override
+        public void onEventBatch(List<ContinuousVectorEvent> events) {
+          observedBatches.add(events);
+          for (ContinuousVectorEvent ev : events) {
+            onEvent(ev);
+          }
+        }
+      });
+
+      int bucketId = 5;
+      String memberId = "server1(id:1)";
+      for (long v = 1L; v <= 63L; v++) {
+        service.onBucketMutation(bucketId, memberId, v, "nomatch-" + v, nonMatchVec, true);
+      }
+      assertThat(service.awaitPendingDispatches(5_000L)).isTrue();
+      assertThat(observedBatches).isEmpty();
+      assertThat(acceptedMatches).isEmpty();
+      assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isZero();
+
+      // Mutation #64 (v_h = 64) triggers BOTH a match and the periodic #64 watermark heartbeat!
+      service.onBucketMutation(bucketId, memberId, 64L, "match-64", matchVec, true);
+      assertThat(service.awaitPendingDispatches(5_000L)).isTrue();
+
+      assertThat(observedBatches).hasSize(1);
+      List<ContinuousVectorEvent> boundaryBatch = observedBatches.get(0);
+      assertThat(boundaryBatch).hasSize(2);
+      // Equal-version v_h ordering: match alert MUST precede watermarkHeartbeat(v_h)
+      assertThat(boundaryBatch.get(0).isHeartbeat()).isFalse();
+      assertThat(boundaryBatch.get(0).getRegionVersion()).isEqualTo(64L);
+      assertThat(boundaryBatch.get(0).getKey()).isEqualTo("match-64");
+      assertThat(boundaryBatch.get(1).isHeartbeat()).isTrue();
+      assertThat(boundaryBatch.get(1).getRegionVersion()).isEqualTo(64L);
+
+      assertThat(flattenedDelivered).hasSize(2);
+      assertThat(flattenedDelivered.get(0).isHeartbeat()).isFalse();
+      assertThat(flattenedDelivered.get(1).isHeartbeat()).isTrue();
+
+      assertThat(acceptedMatches).hasSize(1);
+      assertThat(acceptedMatches.get(0).getKey()).isEqualTo("match-64");
+      assertThat(clientGate.getDiscardedCount()).isZero();
+      assertThat(clientGate.getHeartbeatsAcceptedCount()).isEqualTo(1L);
+      assertThat(clientGate.getHighWaterVersion("sub-zero", bucketId, memberId)).isEqualTo(64L);
+      assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(64L);
+      assertThat(zeroCallbacks.get()).isZero();
+      assertThat(RvvClientGate.verifyStrictMonotonicity(acceptedMatches)).isEmpty();
+    } finally {
+      exec4T.shutdownNow();
+    }
+  }
+
+  @Test
+  public void slowReconnectWithFourThreadExecutorConcurrentWritesAndTwoClientsAtDifferentWatermarks()
+      throws Exception {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ExecutorService exec4TPrimary = Executors.newFixedThreadPool(4);
+    ExecutorService exec4TSecondary = Executors.newFixedThreadPool(4);
+    ExecutorService writerPool = Executors.newSingleThreadExecutor();
+    try {
+      ContinuousVectorQueryService primary = new ContinuousVectorQueryService(4);
+      ContinuousVectorQueryService secondary = new ContinuousVectorQueryService(4);
+      primary.setHeartbeatIntervalEvents(4);
+      secondary.setHeartbeatIntervalEvents(4);
+      primary.setAsyncDispatchExecutor(exec4TPrimary);
+      secondary.setAsyncDispatchExecutor(exec4TSecondary);
+
+      RvvClientGate gateA = new RvvClientGate();
+      RvvClientGate gateB = new RvvClientGate();
+      List<ContinuousVectorEvent> acceptedA = new CopyOnWriteArrayList<>();
+      List<ContinuousVectorEvent> acceptedB = new CopyOnWriteArrayList<>();
+      gateA.addListener(acceptedA::add);
+      gateB.addListener(acceptedB::add);
+      primary.attachClientGate(gateA);
+      primary.attachClientGate(gateB);
+      primary.registerSubscription("sub-match", matchVec, 0.90f);
+      primary.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+      secondary.registerSubscription("sub-match", matchVec, 0.90f);
+      secondary.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+      // Client B disconnects after v=4; Client A disconnects after v=12 (V_client_A != V_client_B)
+      primary.addEventSink(event -> {
+        if (event.getRegionVersion() <= 12L) {
+          gateA.tryAccept(event);
+        }
+        if (event.getRegionVersion() <= 4L) {
+          gateB.tryAccept(event);
+        }
+      });
+
+      int bucketId = 11;
+      String memberP = "server1(id:1)";
+      String memberS = "server2(id:2)";
+      Set<String> expectedKeys = new HashSet<>();
+
+      for (long v = 1L; v <= 20L; v++) {
+        boolean isMatch = (v % 2L == 1L);
+        float[] vec = isMatch ? matchVec : nonMatchVec;
+        String key = "pre-" + v;
+        if (isMatch) {
+          expectedKeys.add(key);
+        }
+        primary.onBucketMutation(bucketId, memberP, v, key, vec, true);
+        secondary.onBucketMutation(bucketId, memberP, v, key, vec, false);
+      }
+      assertThat(primary.awaitPendingDispatches(5_000L)).isTrue();
+      assertThat(gateA.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(12L);
+      assertThat(gateB.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(4L);
+
+      // Safe checkpoint cannot exceed min(V_client_A, V_client_B) = 4
+      secondary.acknowledgeCheckpoint(bucketId, memberP, 4L);
+
+      // Primary crashes; secondary promotes & ingests post-promotion m_S 1..20 while BOTH clients
+      // remain disconnected
+      secondary.onPrimaryPromotion(bucketId);
+      assertThat(secondary.awaitPendingDispatches(5_000L)).isTrue();
+      for (long v = 1L; v <= 20L; v++) {
+        boolean isMatch = (v % 2L == 0L); // includes heartbeat boundaries 4, 8, 12, 16, 20
+        float[] vec = isMatch ? matchVec : nonMatchVec;
+        String key = "post-disconn-" + v;
+        if (isMatch) {
+          expectedKeys.add(key);
+        }
+        secondary.onBucketMutation(bucketId, memberS, v, key, vec, true);
+      }
+      assertThat(secondary.awaitPendingDispatches(5_000L)).isTrue();
+
+      // Reconnect both clients with per-client sinks while concurrent m_S writes 21..80 blast
+      // through the 4-thread async executor
+      Set<Integer> liveA = Collections.synchronizedSet(new HashSet<>());
+      Set<Integer> liveB = Collections.synchronizedSet(new HashSet<>());
+      List<ContinuousVectorEvent> wireA = new CopyOnWriteArrayList<>();
+      List<ContinuousVectorEvent> wireB = new CopyOnWriteArrayList<>();
+
+      ContinuousVectorEventSink sinkA = new ContinuousVectorEventSink() {
+        @Override
+        public void onEvent(ContinuousVectorEvent event) {
+          if (event.isReplayed() || liveA.contains(event.getBucketId())) {
+            wireA.add(event);
+            gateA.tryAccept(event);
+          }
+        }
+      };
+      ContinuousVectorEventSink sinkB = new ContinuousVectorEventSink() {
+        @Override
+        public void onEvent(ContinuousVectorEvent event) {
+          if (event.isReplayed() || liveB.contains(event.getBucketId())) {
+            wireB.add(event);
+            gateB.tryAccept(event);
+          }
+        }
+      };
+      secondary.addEventSink(sinkA);
+      secondary.addEventSink(sinkB);
+
+      for (long v = 21L; v <= 80L; v++) {
+        expectedKeys.add("post-conc-" + v);
+      }
+
+      Map<String, Long> hwA = gateA.getSafeHighWaterByMember(bucketId);
+      Map<String, Long> hwB = gateB.getSafeHighWaterByMember(bucketId);
+      assertThat(hwA).containsEntry(memberP, 12L);
+      assertThat(hwB).containsEntry(memberP, 4L);
+
+      CountDownLatch writerStarted = new CountDownLatch(1);
+      Future<?> writerFuture = writerPool.submit(() -> {
+        writerStarted.countDown();
+        for (long v = 21L; v <= 80L; v++) {
+          secondary.onBucketMutation(bucketId, memberS, v, "post-conc-" + v, matchVec, true);
+          if (v % 10L == 0L) {
+            Thread.yield();
+          }
+        }
+      });
+      writerStarted.await(5, TimeUnit.SECONDS);
+
+      List<ContinuousVectorEvent> replayA =
+          secondary.replayUncheckpointedForReconnect(bucketId, hwA, sinkA,
+              () -> liveA.add(bucketId));
+      List<ContinuousVectorEvent> replayB =
+          secondary.replayUncheckpointedForReconnect(bucketId, hwB, sinkB,
+              () -> liveB.add(bucketId));
+
+      writerFuture.get(10, TimeUnit.SECONDS);
+      assertThat(secondary.awaitPendingDispatches(10_000L)).isTrue();
+
+      // Client A only needed m_P > 12 (versions 13, 15, 17, 19); Client B needed m_P > 4 (5..19)
+      assertThat(replayA)
+          .filteredOn(e -> memberP.equals(e.getMemberId()))
+          .extracting(ContinuousVectorEvent::getRegionVersion)
+          .containsExactly(13L, 15L, 17L, 19L);
+      assertThat(replayB)
+          .filteredOn(e -> memberP.equals(e.getMemberId()))
+          .extracting(ContinuousVectorEvent::getRegionVersion)
+          .containsExactly(5L, 7L, 9L, 11L, 13L, 15L, 17L, 19L);
+
+      for (List<ContinuousVectorEvent> accepted : java.util.Arrays.asList(acceptedA, acceptedB)) {
+        Set<Object> deliveredKeys = new HashSet<>();
+        for (ContinuousVectorEvent ev : accepted) {
+          deliveredKeys.add(ev.getKey());
+        }
+        assertThat(deliveredKeys).containsExactlyInAnyOrderElementsOf(expectedKeys);
+        assertThat(accepted).hasSize(expectedKeys.size());
+        assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
+      }
+      assertThat(gateA.getDiscardedCount()).isZero();
+      assertThat(gateB.getDiscardedCount()).isZero();
+      assertThat(gateA.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(20L);
+      assertThat(gateB.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(20L);
+      assertThat(gateA.getSafeCheckpointVersion(bucketId, memberS)).isEqualTo(80L);
+      assertThat(gateB.getSafeCheckpointVersion(bucketId, memberS)).isEqualTo(80L);
+      assertDataStrictlyBeforeEqualVersionHeartbeat(wireA);
+      assertDataStrictlyBeforeEqualVersionHeartbeat(wireB);
+    } finally {
+      writerPool.shutdownNow();
+      exec4TPrimary.shutdownNow();
+      exec4TSecondary.shutdownNow();
+    }
+  }
+
+  private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
+      List<ContinuousVectorEvent> wireEvents) {
+    Set<String> seenHeartbeats = new HashSet<>();
+    for (ContinuousVectorEvent ev : wireEvents) {
+      String coord = ev.getBucketId() + "|" + ev.getMemberId() + "|" + ev.getRegionVersion();
+      if (ev.isHeartbeat()) {
+        seenHeartbeats.add(coord);
+      } else {
+        assertThat(seenHeartbeats).doesNotContain(coord);
+      }
+    }
+  }
 }

@@ -80,8 +80,11 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
   // Per-JVM server state (isolated inside each DUnit server VM)
   private static volatile ContinuousVectorQueryService serverService;
   private static volatile ExecutorService serverReplayExecutor;
+  private static volatile ExecutorService serverDispatchExecutor;
   private static volatile TcpEventSink serverTcpSink;
+  private static volatile TcpEventSink serverTcpSinkB;
   private static final AtomicBoolean dropOutboundEvents = new AtomicBoolean(false);
+  private static final AtomicBoolean dropOutboundEventsB = new AtomicBoolean(false);
   private static final AtomicInteger phase2WrittenCount = new AtomicInteger(0);
   private static final AtomicBoolean promotionCompleteFlag = new AtomicBoolean(false);
   private static final AtomicBoolean reconnectStartedFlag = new AtomicBoolean(false);
@@ -90,11 +93,15 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
   public transient ClusterStartupRule cluster = new ClusterStartupRule();
 
   private transient ClientEventReceiver receiver;
+  private transient ClientEventReceiver receiverB;
 
   @After
   public void tearDown() {
     if (receiver != null) {
       receiver.close();
+    }
+    if (receiverB != null) {
+      receiverB.close();
     }
     IgnoredException.removeAllExpectedExceptions();
   }
@@ -647,9 +654,362 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  @Test
+  public void slowReconnectWithFourThreadExecutorTwoClientsAndMutation64Boundary()
+      throws Exception {
+    IgnoredException.addIgnoredException("MemberDepartedException");
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("PartitionOfflineException");
+    IgnoredException.addIgnoredException("CacheClosedException");
+    IgnoredException.addIgnoredException("CancelException");
+    IgnoredException.addIgnoredException("SocketException");
+    IgnoredException.addIgnoredException("EOFException");
+    IgnoredException.addIgnoredException("IOException");
+    IgnoredException.addIgnoredException("Membership: lead member");
+    IgnoredException.addIgnoredException("crashed");
+
+    RvvClientGate clientGateA = new RvvClientGate();
+    RvvClientGate clientGateB = new RvvClientGate();
+    List<ContinuousVectorEvent> acceptedA = new CopyOnWriteArrayList<>();
+    List<ContinuousVectorEvent> acceptedB = new CopyOnWriteArrayList<>();
+    clientGateA.addListener(acceptedA::add);
+    clientGateB.addListener(acceptedB::add);
+    receiver = new ClientEventReceiver(clientGateA);
+    receiverB = new ClientEventReceiver(clientGateB);
+    int portA = receiver.getPort();
+    int portB = receiverB.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM server3 = cluster.startServerVM(3, locatorPort);
+
+    Random rng = new Random(20261125L);
+    float[][] topics = new float[8][VECTOR_DIM];
+    for (int t = 0; t < topics.length; t++) {
+      topics[t] = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+    }
+
+    ArrayList<VectorSubscription> subscriptions = new ArrayList<>(NUM_SUBSCRIPTIONS + 1);
+    for (int m = 0; m < NUM_SUBSCRIPTIONS; m++) {
+      float[] q = perturbVectorZeroLastDim(rng, topics[m % topics.length], 0.08f);
+      float threshold = 0.78f + (m % 5) * 0.03f;
+      subscriptions.add(new VectorSubscription("sub-" + m, q, threshold));
+    }
+    float[] orthogonalQuery = new float[VECTOR_DIM];
+    orthogonalQuery[VECTOR_DIM - 1] = 1.0f;
+    String zeroMatchSubId = "sub-zero-match";
+    subscriptions.add(new VectorSubscription(zeroMatchSubId, orthogonalQuery, 0.99f));
+    for (VectorSubscription sub : subscriptions) {
+      clientGateA.registerSubscription(sub.getSubscriptionId());
+      clientGateB.registerSubscription(sub.getSubscriptionId());
+    }
+
+    final int test3Buckets = 8;
+    final int phase1aKeys = 40;
+    final int maxPhase1bEnd = 1000;
+    final int phase2And3Count = 160;
+    final int maxTotalKeys = maxPhase1bEnd + phase2And3Count;
+    ArrayList<float[]> allVectors = new ArrayList<>(maxTotalKeys);
+    for (int i = 0; i < maxTotalKeys; i++) {
+      // Topic-aligned vectors guarantee every doc including mutation #64 matches subscriptions
+      allVectors.add(perturbVectorZeroLastDim(rng, topics[i % topics.length], 0.08f));
+    }
+
+    for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+      server.invoke(() -> initializeServerNode(subscriptions, portA, portB, test3Buckets,
+          RvvMonotonicVectorDispatcher.DEFAULT_HEARTBEAT_INTERVAL_EVENTS, 4));
+    }
+
+    // Phase 1a: Ingest doc-0..doc-39 with BOTH clients connected (< 64 writes per bucket yet)
+    server3.invoke(() -> {
+      Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < phase1aKeys; i++) {
+        region.put("doc-" + i, allVectors.get(i));
+      }
+    });
+    Set<String> phase1aExpectedPairs =
+        computeBruteForceMatches(subscriptions, allVectors, 0, phase1aKeys);
+    await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(collectKeySubPairs(acceptedA)).containsAll(phase1aExpectedPairs);
+      assertThat(collectKeySubPairs(acceptedB)).containsAll(phase1aExpectedPairs);
+    });
+    assertThat(clientGateA.getHeartbeatsAcceptedCount()).isZero();
+    assertThat(clientGateB.getHeartbeatsAcceptedCount()).isZero();
+
+    Set<Integer> server1PrimaryBuckets = server1.invoke(() -> {
+      PartitionedRegion pr =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+    });
+    assertThat(server1PrimaryBuckets).isNotEmpty();
+    String server1MemberId = server1.invoke(() -> {
+      PartitionedRegion pr =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      int anyBucket = pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+      return pr.getDataStore().getLocalBucketById(anyBucket).getVersionMember().toString();
+    });
+
+    // Disconnect Client B EARLY so V_client_B freezes at Phase 1a while Client A advances across
+    // #64
+    for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+      server.invoke(() -> dropOutboundEventsB.set(true));
+    }
+
+    // Phase 1b: Ingest batches until H=64 triggers on at least one bucket -> exact mutation #64
+    // delivers match alerts + trailing watermarkHeartbeat(v_h) to Client A via the 4T executor!
+    int cursor = phase1aKeys;
+    while (cursor < maxPhase1bEnd) {
+      final int startIdx = cursor;
+      final int endIdx = Math.min(maxPhase1bEnd, startIdx + 32);
+      server3.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = startIdx; i < endIdx; i++) {
+          region.put("doc-" + i, allVectors.get(i));
+        }
+      });
+      cursor = endIdx;
+      long hbCount =
+          server1.invoke(() -> serverService.getDispatcher().getTotalHeartbeatsDispatched())
+              + server2.invoke(() -> serverService.getDispatcher().getTotalHeartbeatsDispatched())
+              + server3.invoke(() -> serverService.getDispatcher().getTotalHeartbeatsDispatched());
+      if (hbCount > 0L) {
+        break;
+      }
+    }
+    final int phase1bEnd = cursor;
+    for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+      server.invoke(() -> {
+        try {
+          assertThat(serverService.awaitPendingDispatches(10_000L)).isTrue();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException(e);
+        }
+      });
+    }
+    Set<String> phase1bExpectedPairs =
+        computeBruteForceMatches(subscriptions, allVectors, 0, phase1bEnd);
+    await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(collectKeySubPairs(acceptedA)).containsAll(phase1bExpectedPairs);
+      assertThat(clientGateA.getHeartbeatsAcceptedCount()).isGreaterThan(0L);
+    });
+    assertThat(clientGateB.getHeartbeatsAcceptedCount()).isZero();
+    assertThat(clientGateA.getSafeCheckpointSnapshot()).isNotEmpty();
+    assertThat(clientGateB.getSafeCheckpointSnapshot()).isEmpty();
+    assertThat(clientGateA.getDiscardedCount()).isZero();
+
+    // Now disconnect Client A too while preserving V_client_A != V_client_B
+    for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+      server.invoke(() -> dropOutboundEvents.set(true));
+    }
+    long s1DispatchedBeforePhase2 =
+        server1.invoke(() -> serverService.getDispatcher().getTotalEventsDispatched());
+
+    final int test3TotalKeys = phase1bEnd + phase2And3Count;
+    final int gatePostPromoIdx = phase1bEnd + 80;
+    final int gateReconnectIdx = phase1bEnd + 120;
+    Set<String> totalExpectedPairs =
+        computeBruteForceMatches(subscriptions, allVectors, 0, test3TotalKeys);
+
+    server3.invoke(() -> {
+      phase2WrittenCount.set(0);
+      promotionCompleteFlag.set(false);
+      reconnectStartedFlag.set(false);
+    });
+    Set<String> retriedKeys = Collections.synchronizedSet(new HashSet<>());
+    Thread ingestionThread = new Thread(() -> {
+      ArrayList<String> retried = server3.invoke(() -> {
+        ArrayList<String> localRetried = new ArrayList<>();
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = phase1bEnd; i < test3TotalKeys; i++) {
+          if (i == gatePostPromoIdx) {
+            long deadline = System.currentTimeMillis() + 45_000L;
+            while (!promotionCompleteFlag.get() && System.currentTimeMillis() < deadline) {
+              try {
+                Thread.sleep(25L);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return localRetried;
+              }
+            }
+          } else if (i == gateReconnectIdx) {
+            long deadline = System.currentTimeMillis() + 45_000L;
+            while (!reconnectStartedFlag.get() && System.currentTimeMillis() < deadline) {
+              try {
+                Thread.sleep(20L);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return localRetried;
+              }
+            }
+          }
+          String key = "doc-" + i;
+          float[] vec = allVectors.get(i);
+          boolean stored = false;
+          for (int attempt = 0; attempt < 30 && !stored; attempt++) {
+            try {
+              region.put(key, vec);
+              stored = true;
+            } catch (RuntimeException e) {
+              localRetried.add(key);
+              try {
+                Thread.sleep(100L);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return localRetried;
+              }
+            }
+          }
+          if (!stored) {
+            throw new IllegalStateException("Failed to store key after retries: " + key);
+          }
+          phase2WrittenCount.incrementAndGet();
+          long paceMs = (i < phase1bEnd + 40 || i >= gateReconnectIdx) ? 15L
+              : (i < gatePostPromoIdx ? 90L : 35L);
+          try {
+            Thread.sleep(paceMs);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            break;
+          }
+        }
+        return localRetried;
+      });
+      retriedKeys.addAll(retried);
+    }, "v10-dual-reconnect-writer");
+    ingestionThread.start();
+
+    await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> server3.invoke(() -> phase2WrittenCount.get()) >= 35
+            && server1.invoke(() -> serverService.getDispatcher()
+                .getTotalEventsDispatched()) > s1DispatchedBeforePhase2);
+    cluster.crashVM(1);
+
+    await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Set<Integer> survivorPrimaries = new HashSet<>();
+      survivorPrimaries.addAll(server2.invoke(() -> {
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+      }));
+      survivorPrimaries.addAll(server3.invoke(() -> {
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+      }));
+      long promotions =
+          server2.invoke(() -> serverService.getDispatcher().getTotalPromotionsHandled())
+              + server3.invoke(() -> serverService.getDispatcher().getTotalPromotionsHandled());
+      return survivorPrimaries.size() == test3Buckets
+          && survivorPrimaries.containsAll(server1PrimaryBuckets)
+          && promotions >= server1PrimaryBuckets.size();
+    });
+    for (MemberVM survivor : new MemberVM[] {server2, server3}) {
+      survivor.invoke(() -> {
+        try {
+          serverReplayExecutor.submit(() -> {
+          }).get(10, TimeUnit.SECONDS);
+          assertThat(serverService.awaitPendingDispatches(10_000L)).isTrue();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
+    server3.invoke(() -> promotionCompleteFlag.set(true));
+
+    Thread.sleep(1500L);
+    await().atMost(30, TimeUnit.SECONDS).until(() -> server3
+        .invoke(() -> phase2WrittenCount.get()) >= (gateReconnectIdx - 5 - phase1bEnd));
+
+    HashMap<Integer, HashMap<String, Long>> hwAByBucket = new HashMap<>();
+    HashMap<Integer, HashMap<String, Long>> hwBByBucket = new HashMap<>();
+    for (int b = 0; b < test3Buckets; b++) {
+      hwAByBucket.put(b, new HashMap<>(clientGateA.getSafeHighWaterByMember(b)));
+      hwBByBucket.put(b, new HashMap<>(clientGateB.getSafeHighWaterByMember(b)));
+    }
+    assertThat(ingestionThread.isAlive()).isTrue();
+    server3.invoke(() -> reconnectStartedFlag.set(true));
+
+    for (MemberVM survivor : new MemberVM[] {server2, server3}) {
+      survivor.invoke(() -> {
+        serverTcpSink.enableReconnectBucketGate();
+        serverTcpSinkB.enableReconnectBucketGate();
+        dropOutboundEvents.set(false);
+        dropOutboundEventsB.set(false);
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (Integer b : pr.getDataStore().getAllLocalPrimaryBucketIds()) {
+          Map<String, Long> hwA = hwAByBucket.get(b);
+          Map<String, Long> hwB = hwBByBucket.get(b);
+          serverService.replayUncheckpointedForReconnect(b,
+              hwA != null ? hwA : Collections.emptyMap(),
+              serverTcpSink, () -> serverTcpSink.allowLiveBucket(b));
+          serverService.replayUncheckpointedForReconnect(b,
+              hwB != null ? hwB : Collections.emptyMap(),
+              serverTcpSinkB, () -> serverTcpSinkB.allowLiveBucket(b));
+        }
+      });
+    }
+
+    ingestionThread.join(60_000L);
+    assertThat(ingestionThread.isAlive()).isFalse();
+    for (MemberVM survivor : new MemberVM[] {server2, server3}) {
+      survivor.invoke(() -> {
+        try {
+          assertThat(serverService.awaitPendingDispatches(10_000L)).isTrue();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException(e);
+        }
+      });
+    }
+
+    await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(collectKeySubPairs(acceptedA)).containsAll(totalExpectedPairs);
+      assertThat(collectKeySubPairs(acceptedB)).containsAll(totalExpectedPairs);
+      assertThat(clientGateA.getHeartbeatsAcceptedCount()).isGreaterThan(0L);
+      assertThat(clientGateB.getHeartbeatsAcceptedCount()).isGreaterThan(0L);
+    });
+    Thread.sleep(300L);
+
+    assertThat(collectKeySubPairs(acceptedA))
+        .containsExactlyInAnyOrderElementsOf(totalExpectedPairs);
+    assertThat(collectKeySubPairs(acceptedB))
+        .containsExactlyInAnyOrderElementsOf(totalExpectedPairs);
+    assertThat(RvvClientGate.verifyStrictMonotonicity(acceptedA)).isEmpty();
+    assertThat(RvvClientGate.verifyStrictMonotonicity(acceptedB)).isEmpty();
+    assertThat(acceptedA)
+        .noneMatch(e -> e.isHeartbeat() || zeroMatchSubId.equals(e.getSubscriptionId()));
+    assertThat(acceptedB)
+        .noneMatch(e -> e.isHeartbeat() || zeroMatchSubId.equals(e.getSubscriptionId()));
+
+    long replayedACount = acceptedA.stream().filter(ContinuousVectorEvent::isReplayed).count();
+    long replayedBCount = acceptedB.stream().filter(ContinuousVectorEvent::isReplayed).count();
+    assertThat(replayedBCount)
+        .as("Slower client B must replay strictly more events across (V_client_B, V_S] than client A")
+        .isGreaterThan(replayedACount);
+    assertThat(acceptedA.stream().anyMatch(
+        e -> e.isReplayed() && server1MemberId.equals(e.getMemberId()))).isTrue();
+    assertThat(acceptedA.stream().anyMatch(
+        e -> e.isReplayed() && !server1MemberId.equals(e.getMemberId()))).isTrue();
+
+    for (MemberVM survivor : new MemberVM[] {server2, server3}) {
+      survivor.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
+    initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);
+  }
+
+  private static void initializeServerNode(List<VectorSubscription> subscriptions,
+      int receiverPortA, int receiverPortB, int numBuckets, int heartbeatInterval,
+      int asyncDispatchThreads) throws IOException {
     dropOutboundEvents.set(false);
+    dropOutboundEventsB.set(false);
     RouterConfig config = RouterConfig.builder(VECTOR_DIM)
         .numClusters(8)
         .expectedSurvivalFraction(0.20d)
@@ -657,11 +1017,23 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
         .randomSeed(777L)
         .build();
     serverService = new ContinuousVectorQueryService(config);
-    serverService.setHeartbeatIntervalEvents(4);
+    serverService.setHeartbeatIntervalEvents(heartbeatInterval);
     serverService.registerSubscriptions(subscriptions);
+    if (asyncDispatchThreads > 1) {
+      serverDispatchExecutor = Executors.newFixedThreadPool(asyncDispatchThreads, r -> {
+        Thread t = new Thread(r, "rvv-failover-async-dispatch");
+        t.setDaemon(true);
+        return t;
+      });
+      serverService.setAsyncDispatchExecutor(serverDispatchExecutor);
+    }
 
-    serverTcpSink = new TcpEventSink(receiverPort, dropOutboundEvents);
+    serverTcpSink = new TcpEventSink(receiverPortA, dropOutboundEvents);
     serverService.addEventSink(serverTcpSink);
+    if (receiverPortB > 0) {
+      serverTcpSinkB = new TcpEventSink(receiverPortB, dropOutboundEventsB);
+      serverService.addEventSink(serverTcpSinkB);
+    }
 
     serverReplayExecutor = Executors.newSingleThreadExecutor(r -> {
       Thread t = new Thread(r, "rvv-failover-replay");
@@ -672,7 +1044,7 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     Cache cache = ClusterStartupRule.getCache();
     PartitionAttributesFactory<String, float[]> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(1);
-    paf.setTotalNumBuckets(NUM_BUCKETS);
+    paf.setTotalNumBuckets(numBuckets);
     paf.addPartitionListener(
         serverService.createPartitionListener(val -> (float[]) val, serverReplayExecutor));
 
@@ -687,9 +1059,17 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
       serverReplayExecutor.shutdownNow();
       serverReplayExecutor = null;
     }
+    if (serverDispatchExecutor != null) {
+      serverDispatchExecutor.shutdownNow();
+      serverDispatchExecutor = null;
+    }
     if (serverTcpSink != null) {
       serverTcpSink.close();
       serverTcpSink = null;
+    }
+    if (serverTcpSinkB != null) {
+      serverTcpSinkB.close();
+      serverTcpSinkB = null;
     }
     serverService = null;
   }

@@ -82,8 +82,18 @@ public final class ContinuousVectorEvent implements Serializable {
    */
   public static ContinuousVectorEvent watermarkHeartbeat(int bucketId, String memberId,
       long regionVersion, long timestamp) {
+    return watermarkHeartbeat(bucketId, memberId, regionVersion, timestamp, false);
+  }
+
+  /**
+   * Creates a lightweight per-bucket RVV watermark heartbeat carrying {@code (bucketId, memberId,
+   * regionVersion)}, optionally tagged {@code replayed=true} when emitted at the tail of a primary
+   * promotion or client reconnect replay sequence.
+   */
+  public static ContinuousVectorEvent watermarkHeartbeat(int bucketId, String memberId,
+      long regionVersion, long timestamp, boolean replayed) {
     return new ContinuousVectorEvent(HEARTBEAT_SUBSCRIPTION_ID, null, 0.0f, bucketId, memberId,
-        regionVersion, 0, timestamp, false, true);
+        regionVersion, 0, timestamp, replayed, true);
   }
 
   public String getSubscriptionId() {

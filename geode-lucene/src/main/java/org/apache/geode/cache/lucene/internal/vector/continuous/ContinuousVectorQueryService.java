@@ -203,12 +203,26 @@ public class ContinuousVectorQueryService {
 
   /**
    * Replays uncheckpointed tail mutations for client reconnect under {@code synchronized (state)},
-   * invoking {@code onReplayedUnderLock} before releasing the per-bucket lock.
+   * pushing replayed batches and trailing watermarks onto the per-bucket serial FIFO queue before
+   * invoking {@code onReplayedUnderLock} and releasing the bucket lock.
    */
   public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
       Map<String, Long> clientHighWaterByMember, Runnable onReplayedUnderLock) {
     return dispatcher.replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember,
         onReplayedUnderLock);
+  }
+
+  /**
+   * Replays uncheckpointed tail mutations for a specific reconnecting client sink
+   * ({@code targetSink}) under {@code synchronized (state)}, pushing replayed batches and trailing
+   * watermarks onto the per-bucket serial FIFO queue before invoking {@code onReplayedUnderLock}
+   * and releasing the bucket lock.
+   */
+  public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
+      Map<String, Long> clientHighWaterByMember, ContinuousVectorEventSink targetSink,
+      Runnable onReplayedUnderLock) {
+    return dispatcher.replayUncheckpointedForReconnect(bucketId, clientHighWaterByMember,
+        targetSink, onReplayedUnderLock);
   }
 
   /**

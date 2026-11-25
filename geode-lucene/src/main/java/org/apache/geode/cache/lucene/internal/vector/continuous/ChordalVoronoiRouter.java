@@ -43,7 +43,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Theorem 3.1 ({@code gamma_d = d * u_f32 / (1 - d * u_f32)}). Pruning cell {@code V_k} iff
  * {@code s_hat_k < s_k^min} (and {@code B_k^up < 2}) eliminates {@code Math.sqrt} from the hot
  * routing path and avoids the {@code 1 / sqrt(1 - s)} singularity near {@code s -> 1}, guaranteeing
- * {@code FNR = 0} unconditionally.</li>
+ * zero pruning-induced false negatives ({@code FNR = 0} relative to the Stage-2 float32 scan)
+ * unconditionally across all {@code d >= 1}.</li>
  * <li><b>Proposition 1 (SIMD-to-Voronoi Analytical Crossover {@code M_crit} and Dual-Threshold
  * Hysteresis)</b>: dynamically switches between flat contiguous unrolled SIMD-friendly batch
  * dot-product evaluation ({@link RoutingMode#FLAT_SIMD}) and two-stage Chordal Voronoi routing
@@ -55,6 +56,9 @@ public class ChordalVoronoiRouter {
 
   /** IEEE-754 binary32 (float32) unit roundoff {@code u_f32 = 2^-24}. */
   public static final double FLOAT32_UNIT_ROUNDOFF = Math.scalb(1.0d, -24);
+
+  /** IEEE-754 binary32 minimum positive normal / FTZ underflow quantum {@code eta_f32 = 2^-126}. */
+  public static final double FLOAT32_UNDERFLOW_QUANTUM = Math.scalb(1.0d, -126);
 
   /** IEEE-754 binary64 (float64) unit roundoff {@code u_f64 = 2^-53}. */
   public static final double FLOAT64_UNIT_ROUNDOFF = Math.scalb(1.0d, -53);
@@ -640,8 +644,8 @@ public class ChordalVoronoiRouter {
       this.memberIds = memberIds;
       this.memberVectors = memberVectors;
       this.memberThresholds = memberThresholds;
-      float minTau = Float.POSITIVE_INFINITY;
-      float maxTau = Float.NEGATIVE_INFINITY;
+      float minTau = memberThresholds.length == 0 ? 0.0f : Float.POSITIVE_INFINITY;
+      float maxTau = memberThresholds.length == 0 ? 0.0f : Float.NEGATIVE_INFINITY;
       for (float tau : memberThresholds) {
         if (tau < minTau) {
           minTau = tau;
@@ -773,11 +777,13 @@ public class ChordalVoronoiRouter {
 
   /**
    * Computes the sqrt-free cosine pruning error margin {@code epsilon_dot(d)} strictly dominating
-   * worst-case Higham float32 dot-product rounding and unit-normalization error on {@code S^{d-1}}.
+   * worst-case Higham float32 dot-product rounding, binary32 FTZ/subnormal underflow
+   * ({@code d * 2^-126}), and unit-normalization error on {@code S^{d-1}}.
    */
   public static double computeHighamDotEpsilon(int dimension) {
     double gamma = computeHighamGamma(dimension);
-    return 2.0d * gamma + HIGHAM_DOT_SAFETY_FLOOR;
+    double underflowBound = dimension * FLOAT32_UNDERFLOW_QUANTUM;
+    return 2.0d * gamma + underflowBound + HIGHAM_DOT_SAFETY_FLOOR;
   }
 
   /**
@@ -1802,6 +1808,9 @@ public class ChordalVoronoiRouter {
    * per band so low-{@code tau} outliers do not poison high-{@code tau} cells.
    */
   private VoronoiCell[] buildSphericalVoronoiCells(List<VectorSubscription> subs, int dim) {
+    if (subs == null || subs.isEmpty()) {
+      return new VoronoiCell[0];
+    }
     int m = subs.size();
     int kEff = Math.min(config.getNumClusters(), m);
     long baseSeed = config.getRandomSeed() ^ (31L * m);
@@ -2017,9 +2026,13 @@ public class ChordalVoronoiRouter {
 
     List<VoronoiCell> allCells = new ArrayList<>(kEff);
     for (int b = 0; b < numBands; b++) {
+      List<VectorSubscription> bandSubs = bands.get(b);
+      if (bandSubs.isEmpty() || kPerBand[b] <= 0) {
+        continue;
+      }
       long bandSeed = baseSeed ^ (0x9E3779B97F4A7C15L * (b + 1L));
       VoronoiCell[] bandCells =
-          buildSingleStratumVoronoiCells(bands.get(b), kPerBand[b], dim, bandSeed);
+          buildSingleStratumVoronoiCells(bandSubs, kPerBand[b], dim, bandSeed);
       Collections.addAll(allCells, bandCells);
     }
     return allCells.toArray(new VoronoiCell[0]);
@@ -2066,6 +2079,9 @@ public class ChordalVoronoiRouter {
 
   private VoronoiCell[] buildSingleStratumVoronoiCells(List<VectorSubscription> subs, int kTarget,
       int dim, long seed) {
+    if (subs == null || subs.isEmpty() || kTarget <= 0) {
+      return new VoronoiCell[0];
+    }
     int m = subs.size();
     int kEff = Math.min(kTarget, m);
     Random rng = new Random(seed);
@@ -2169,6 +2185,8 @@ public class ChordalVoronoiRouter {
             for (int d = 0; d < dim; d++) {
               centroids[k][d] = (float) (sum[d] * invNorm);
             }
+          } else {
+            assignDeterministicFallbackCentroid(subs, assignments, k, centroids[k], dim);
           }
         }
       }
@@ -2232,6 +2250,29 @@ public class ChordalVoronoiRouter {
           memberThresholds));
     }
     return nonEmptyCells.toArray(new VoronoiCell[0]);
+  }
+
+  private static void assignDeterministicFallbackCentroid(List<VectorSubscription> subs,
+      int[] assignments, int clusterIndex, float[] outCentroid, int dim) {
+    VectorSubscription chosen = null;
+    for (int i = 0; i < subs.size(); i++) {
+      if (assignments[i] == clusterIndex) {
+        VectorSubscription candidate = subs.get(i);
+        if (chosen == null
+            || candidate.getSubscriptionId().compareTo(chosen.getSubscriptionId()) < 0) {
+          chosen = candidate;
+        }
+      }
+    }
+    if (chosen == null && !subs.isEmpty()) {
+      chosen = subs.get(0);
+    }
+    if (chosen != null) {
+      System.arraycopy(chosen.getNormalizedQueryVectorUnsafe(), 0, outCentroid, 0, dim);
+    } else if (dim > 0) {
+      Arrays.fill(outCentroid, 0.0f);
+      outCentroid[0] = 1.0f;
+    }
   }
 
   private static int findFarthestPoint(List<VectorSubscription> subs, int[] assignments,

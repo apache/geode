@@ -1135,6 +1135,143 @@ public class ChordalVoronoiRouterTest {
     assertThat(disabledRouter.getSurvivalGuardRecoveryCount()).isZero();
   }
 
+  @Test
+  public void oneDimensionalSubscriptionsAndAntipodalZeroCentroidFallbackPreserveZeroFnr() {
+    // Verify computeHighamDotEpsilon explicitly accounts for binary32 underflow d * 2^-126
+    for (int dim : new int[] {1, 64, 768}) {
+      double gamma = ChordalVoronoiRouter.computeHighamGamma(dim);
+      double expectedEps = 2.0d * gamma + dim * ChordalVoronoiRouter.FLOAT32_UNDERFLOW_QUANTUM
+          + ChordalVoronoiRouter.HIGHAM_DOT_SAFETY_FLOOR;
+      assertThat(ChordalVoronoiRouter.computeHighamDotEpsilon(dim)).isEqualTo(expectedEps);
+      assertThat(ChordalVoronoiRouter.computeNormMargin(dim)).isPositive();
+    }
+    assertThat(ChordalVoronoiRouter.FLOAT32_UNDERFLOW_QUANTUM).isEqualTo(Math.scalb(1.0d, -126));
+
+    // d == 1 with K = 8 (> |S^0| = 2): unstratified collapses empty clusters cleanly to <= 2 cells,
+    // and thresholdStrata=4 produces <= 8 non-empty stratified cells, both preserving FNR = 0
+    List<VectorSubscription> dim1Subs = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      float dir = (i % 2 == 0) ? (1.0f + i) : -(1.0f + i);
+      float tau = (i % 2 == 0) ? (0.45f + 0.05f * i) : (0.95f - 0.04f * i);
+      dim1Subs.add(new VectorSubscription("d1-" + i, new float[] {dir}, tau));
+    }
+
+    RouterConfig dim1UnstratCfg = RouterConfig.builder(1)
+        .numClusters(8)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .thresholdStrata(1)
+        .randomSeed(10101L)
+        .build();
+    ChordalVoronoiRouter dim1Unstrat = new ChordalVoronoiRouter(dim1UnstratCfg);
+    dim1Unstrat.addSubscriptions(dim1Subs);
+    assertThat(dim1Unstrat.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(dim1Unstrat.getTelemetry().getActiveClusterCount()).isBetween(1, 2);
+
+    RouterConfig dim1Config = RouterConfig.builder(1)
+        .numClusters(8)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .thresholdStrata(4)
+        .randomSeed(10101L)
+        .build();
+    ChordalVoronoiRouter dim1Router = new ChordalVoronoiRouter(dim1Config);
+    dim1Router.addSubscriptions(dim1Subs);
+    assertThat(dim1Router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(dim1Router.getTelemetry().getActiveClusterCount()).isBetween(1, 8);
+
+    for (float probe : new float[] {1.0f, -1.0f, 42.5f, -Float.MIN_VALUE, 1.0e-30f,
+        -Float.MAX_VALUE}) {
+      assertThat(dim1Unstrat.verifyAgainstBruteForce(new float[] {probe}).isExactMatch()).isTrue();
+      FnrVerificationResult res = dim1Router.verifyAgainstBruteForce(new float[] {probe});
+      assertThat(res.isExactMatch())
+          .as("d=1 routing for probe=%g must achieve zero FNR and exact brute-force parity", probe)
+          .isTrue();
+    }
+
+    // Exact antipodal zero-sum centroids (sum == 0) in K = 1 for both d = 1 and d = 4
+    RouterConfig antipodalD1Cfg = RouterConfig.builder(1)
+        .numClusters(1)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .build();
+    ChordalVoronoiRouter antipodalD1 = new ChordalVoronoiRouter(antipodalD1Cfg);
+    antipodalD1.addSubscription(new VectorSubscription("pos-1", new float[] {1.0f}, 0.8f));
+    antipodalD1.addSubscription(new VectorSubscription("neg-1", new float[] {-1.0f}, 0.8f));
+    assertThat(antipodalD1.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(antipodalD1.verifyAgainstBruteForce(new float[] {5.0f}).isExactMatch()).isTrue();
+    assertThat(antipodalD1.verifyAgainstBruteForce(new float[] {-5.0f}).isExactMatch()).isTrue();
+
+    RouterConfig antipodalD4Cfg = RouterConfig.builder(4)
+        .numClusters(1)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .build();
+    ChordalVoronoiRouter antipodalD4 = new ChordalVoronoiRouter(antipodalD4Cfg);
+    antipodalD4
+        .addSubscription(
+            new VectorSubscription("pos-d4", new float[] {1.0f, 0.0f, 0.0f, 0.0f}, 0.9f));
+    antipodalD4.addSubscription(
+        new VectorSubscription("neg-d4", new float[] {-1.0f, 0.0f, 0.0f, 0.0f}, 0.9f));
+    assertThat(antipodalD4.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(
+        antipodalD4.verifyAgainstBruteForce(new float[] {1.0f, 0.0f, 0.0f, 0.0f}).isExactMatch())
+            .isTrue();
+    assertThat(
+        antipodalD4.verifyAgainstBruteForce(new float[] {-1.0f, 0.0f, 0.0f, 0.0f}).isExactMatch())
+            .isTrue();
+    assertThat(
+        antipodalD4.verifyAgainstBruteForce(new float[] {0.0f, 1.0f, 0.0f, 0.0f}).isExactMatch())
+            .isTrue();
+  }
+
+  @Test
+  public void identicalTwoDimensionalDiagonalVectorAtTauOneYieldsZeroPruningFnr() {
+    RouterConfig cfg = RouterConfig.builder(2)
+        .numClusters(2)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .randomSeed(2026L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+    // Identical input (1, 1) at tau=1.0 may yield float32 normalized squared dot ~0.99999994 < 1.0
+    // in Stage-2 float32 scan; Theorem 1 guarantees ZERO pruning-induced FNR relative to Stage-2
+    // scan (cell must not be pruned, and Voronoi output must match brute-force float32 scan
+    // identically).
+    router.addSubscription(
+        new VectorSubscription("exact-11-tau1", new float[] {1.0f, 1.0f}, 1.0f));
+    router.addSubscription(
+        new VectorSubscription("exact-11-near", new float[] {1.0f, 1.0f}, 0.999999f));
+    router.addSubscription(
+        new VectorSubscription("orth-distractor", new float[] {-1.0f, 1.0f}, 0.99f));
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+
+    FnrVerificationResult resSame = router.verifyAgainstBruteForce(new float[] {1.0f, 1.0f});
+    assertThat(resSame.isZeroFalseNegatives()).isTrue();
+    assertThat(resSame.isExactMatch()).isTrue();
+    assertThat(router.route(new float[] {1.0f, 1.0f}))
+        .extracting(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+        .contains("exact-11-near")
+        .containsExactlyInAnyOrderElementsOf(
+            router.routeBruteForce(new float[] {1.0f, 1.0f}).stream()
+                .map(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+                .collect(java.util.stream.Collectors.toList()));
+
+    FnrVerificationResult resScaled =
+        router.verifyAgainstBruteForce(new float[] {1024.0f, 1024.0f});
+    assertThat(resScaled.isExactMatch()).isTrue();
+  }
+
   private static float[] randomUnitVector(Random rng, int dim) {
     float[] v = new float[dim];
     for (int i = 0; i < dim; i++) {
