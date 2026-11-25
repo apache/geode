@@ -50,14 +50,14 @@ class DependencyConstraints {
     deps.put("log4j.version", "2.25.5")
     deps.put("log4j-slf4j2-impl.version", "2.23.1")
     deps.put("micrometer.version", "1.16.7")
-    deps.put("shiro.version", "3.0.0")
+    deps.put("shiro.version", "3.0.2")
     // GEODE-10583: Pin Bouncy Castle (transitive via shiro-crypto-hash) to a fixed version
     deps.put("bouncycastle.version", "1.86")
     // GEODE-10681: Pin hibernate-validator to a fixed version
     deps.put("hibernate-validator.version", "8.0.6.Final")
     // GEODE-10687: Pin ASM (transitive via Jetty) to a fixed version
     deps.put("asm.version", "9.11.1")
-    deps.put("slf4j-api.version", "2.0.18")
+    deps.put("slf4j-api.version", "2.0.20")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.21.8")
