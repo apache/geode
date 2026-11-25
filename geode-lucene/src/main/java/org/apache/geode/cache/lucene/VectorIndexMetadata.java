@@ -61,6 +61,17 @@ public final class VectorIndexMetadata implements Serializable {
   private final boolean quantizeSQ8;
 
   /**
+   * Private no-arg constructor for serialization test harnesses (e.g.,
+   * {@code AnalyzeLuceneSerializablesIntegrationTest}). Populates valid defaults so {@code
+   * readObject} invariants remain strictly enforced.
+   */
+  @SuppressWarnings("unused")
+  private VectorIndexMetadata() {
+    this("default", 1, VectorSimilarityFunction.COSINE, DEFAULT_MAX_CONNECTIONS, DEFAULT_BEAM_WIDTH,
+        false);
+  }
+
+  /**
    * Constructs a {@code VectorIndexMetadata} descriptor using default HNSW graph parameters
    * ({@link #DEFAULT_MAX_CONNECTIONS} and {@link #DEFAULT_BEAM_WIDTH}).
    *

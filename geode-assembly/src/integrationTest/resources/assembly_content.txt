@@ -392,6 +392,7 @@ javadoc/org/apache/geode/cache/lucene/LuceneSerializer.html
 javadoc/org/apache/geode/cache/lucene/LuceneService.html
 javadoc/org/apache/geode/cache/lucene/LuceneServiceProvider.html
 javadoc/org/apache/geode/cache/lucene/PageableLuceneQueryResults.html
+javadoc/org/apache/geode/cache/lucene/VectorIndexMetadata.html
 javadoc/org/apache/geode/cache/lucene/management/LuceneIndexMetrics.html
 javadoc/org/apache/geode/cache/lucene/management/LuceneServiceMXBean.html
 javadoc/org/apache/geode/cache/lucene/management/configuration/Index.Field.html
