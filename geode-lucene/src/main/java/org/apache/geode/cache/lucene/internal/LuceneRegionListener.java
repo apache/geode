@@ -16,6 +16,8 @@ package org.apache.geode.cache.lucene.internal;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,6 +28,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionListener;
@@ -44,6 +47,8 @@ public class LuceneRegionListener implements RegionListener {
 
   private final Map<String, Analyzer> fieldAnalyzers;
 
+  private final Map<String, VectorIndexMetadata> vectorFields;
+
   private final String[] fields;
 
   private final LuceneSerializer serializer;
@@ -59,12 +64,22 @@ public class LuceneRegionListener implements RegionListener {
   public LuceneRegionListener(LuceneServiceImpl service, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
       LuceneSerializer serializer) {
+    this(service, indexName, regionPath, fields, analyzer, fieldAnalyzers, Collections.emptyMap(),
+        serializer);
+  }
+
+  public LuceneRegionListener(LuceneServiceImpl service, String indexName,
+      String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
+      Map<String, VectorIndexMetadata> vectorFields, LuceneSerializer serializer) {
     this.service = service;
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.fields = fields;
     this.analyzer = analyzer;
     this.fieldAnalyzers = fieldAnalyzers;
+    this.vectorFields = vectorFields == null || vectorFields.isEmpty()
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(new LinkedHashMap<>(vectorFields));
     this.serializer = serializer;
   }
 
@@ -97,10 +112,15 @@ public class LuceneRegionListener implements RegionListener {
 
       // Add index creation profile
       internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName,
-          regionPath, fields, analyzer, fieldAnalyzers, serializer));
+          regionPath, fields, analyzer, fieldAnalyzers, serializer, vectorFields));
 
-      luceneIndex = service.beforeDataRegionCreated(indexName, regionPath, attrs,
-          analyzer, fieldAnalyzers, aeqId, serializer, fields);
+      if (vectorFields.isEmpty()) {
+        luceneIndex = service.beforeDataRegionCreated(indexName, regionPath, attrs,
+            analyzer, fieldAnalyzers, aeqId, serializer, fields);
+      } else {
+        luceneIndex = service.beforeDataRegionCreated(indexName, regionPath, attrs,
+            analyzer, fieldAnalyzers, vectorFields, aeqId, serializer, fields);
+      }
 
       // Add internal async event id
       internalRegionArgs.addInternalAsyncEventQueueId(aeqId);

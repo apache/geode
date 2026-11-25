@@ -17,12 +17,14 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -39,14 +41,25 @@ class PdxLuceneSerializer implements LuceneSerializer {
   public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     Document doc = new Document();
     PdxInstance pdx = (PdxInstance) value;
-    for (String field : index.getFieldNames()) {
-      if (pdx.hasField(field)) {
-        Object fieldValue = pdx.getField(field);
-        if (fieldValue == null) {
+    Map<String, VectorIndexMetadata> vectorFields =
+        index.getVectorFields() == null ? Collections.emptyMap() : index.getVectorFields();
+    String[] fieldNames = index.getFieldNames();
+    if (fieldNames != null) {
+      for (String field : fieldNames) {
+        if (vectorFields.containsKey(field)) {
           continue;
         }
-        SerializerUtil.addField(doc, field, fieldValue);
+        if (pdx.hasField(field)) {
+          Object fieldValue = pdx.getField(field);
+          if (fieldValue == null) {
+            continue;
+          }
+          SerializerUtil.addField(doc, field, fieldValue);
+        }
       }
+    }
+    if (!vectorFields.isEmpty()) {
+      VectorFieldMapper.addVectorFields(doc, vectorFields.values(), pdx);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("PdxLuceneSerializer.toDocument:" + doc);

@@ -22,7 +22,9 @@ import java.util.function.IntSupplier;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.ConcurrentMergeScheduler;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.MergeScheduler;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -210,6 +212,46 @@ public class IndexRepositoryImpl implements IndexRepository {
       } catch (LockNotHeldException e) {
         logger.debug("Tried to unlock file region lock(" + lockName + ") that we did not hold", e);
       }
+    }
+  }
+
+  @Override
+  public synchronized boolean maybeCompactSegments(int maxSegments) throws IOException {
+    if (maxSegments < 1) {
+      throw new IllegalArgumentException("maxSegments must be >= 1, got: " + maxSegments);
+    }
+    if (isClosed()) {
+      return false;
+    }
+    searcherManager.maybeRefreshBlocking();
+    if (currentLeafCount() <= maxSegments) {
+      return false;
+    }
+    writer.maybeMerge();
+    MergeScheduler mergeScheduler = writer.getConfig().getMergeScheduler();
+    if (mergeScheduler instanceof ConcurrentMergeScheduler) {
+      ((ConcurrentMergeScheduler) mergeScheduler).sync();
+    }
+    searcherManager.maybeRefreshBlocking();
+    if (currentLeafCount() > maxSegments) {
+      writer.forceMerge(maxSegments, true);
+    }
+    long start = stats.startCommit();
+    try {
+      writer.commit();
+      searcherManager.maybeRefreshBlocking();
+    } finally {
+      stats.endCommit(start);
+    }
+    return true;
+  }
+
+  private int currentLeafCount() throws IOException {
+    IndexSearcher searcher = searcherManager.acquire();
+    try {
+      return searcher.getIndexReader().leaves().size();
+    } finally {
+      searcherManager.release(searcher);
     }
   }
 

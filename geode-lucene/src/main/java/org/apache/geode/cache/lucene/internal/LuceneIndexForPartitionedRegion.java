@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -237,6 +238,25 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     PartitionedRegion fileAndChunkRegion = getFileAndChunkRegion();
     return (fileAndChunkRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE, id) != null
         || !LuceneServiceImpl.LUCENE_REINDEX);
+  }
+
+  /**
+   * Internal bounded compaction helper that consolidates local primary bucket Lucene repositories
+   * whose live segment count exceeds {@code maxSegments}.
+   *
+   * @param maxSegments maximum desired segment count per local bucket (must be {@code >= 1})
+   * @return number of local bucket repositories compacted
+   * @throws IOException if compaction fails on any bucket repository
+   * @throws IllegalArgumentException if {@code maxSegments < 1}
+   */
+  public int maybeCompactSegments(int maxSegments) throws IOException {
+    if (maxSegments < 1) {
+      throw new IllegalArgumentException("maxSegments must be >= 1, got: " + maxSegments);
+    }
+    if (repositoryManager instanceof PartitionedRepositoryManager) {
+      return ((PartitionedRepositoryManager) repositoryManager).maybeCompactSegments(maxSegments);
+    }
+    return 0;
   }
 
   private void destroyOnRemoteMembers() {

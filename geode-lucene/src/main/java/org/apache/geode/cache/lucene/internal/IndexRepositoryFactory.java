@@ -27,10 +27,12 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
+import org.apache.geode.cache.lucene.internal.repository.serializer.VectorFieldMapper;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
@@ -154,7 +156,7 @@ public class IndexRepositoryFactory {
       Map<Object, Object> bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
       RegionDirectory dir =
           new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
-      IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+      IndexWriterConfig config = createIndexWriterConfig(indexForPR);
       try {
         attempts++;
         return getIndexWriter(dir, config);
@@ -170,6 +172,15 @@ public class IndexRepositoryFactory {
         }
       }
     }
+  }
+
+  protected IndexWriterConfig createIndexWriterConfig(LuceneIndexForPartitionedRegion indexForPR) {
+    IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+    Map<String, VectorIndexMetadata> vectorFields = indexForPR.getVectorFields();
+    if (vectorFields != null && !vectorFields.isEmpty()) {
+      VectorFieldMapper.configureVectorIndexWriterConfig(config, vectorFields);
+    }
+    return config;
   }
 
   protected IndexWriter getIndexWriter(RegionDirectory dir, IndexWriterConfig config)
