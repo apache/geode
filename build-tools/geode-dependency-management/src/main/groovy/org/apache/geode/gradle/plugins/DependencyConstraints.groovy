@@ -57,7 +57,7 @@ class DependencyConstraints {
     deps.put("hibernate-validator.version", "8.0.6.Final")
     // GEODE-10687: Pin ASM (transitive via Jetty) to a fixed version
     deps.put("asm.version", "9.11.1")
-    deps.put("slf4j-api.version", "2.0.18")
+    deps.put("slf4j-api.version", "2.0.20")
     deps.put("jakarta.transaction-api.version", "2.0.1")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.21.8")

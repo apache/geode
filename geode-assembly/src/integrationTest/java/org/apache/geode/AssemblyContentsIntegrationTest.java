@@ -62,7 +62,7 @@ public class AssemblyContentsIntegrationTest {
 
     assertThat(currentAssemblyContent)
         .as("The assembly contents have changed. Verify dependencies and "
-            + "copy geode-assembly/build/integrationTest/assembly_content.txt to "
+            + "copy geode-assembly/build/resources/integrationTest/assembly_content.txt to "
             + "geode-assembly/src/integrationTest/resources/assembly_content.txt")
         .containsExactlyInAnyOrderElementsOf(expectedAssemblyContent);
   }

@@ -21,6 +21,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -44,6 +45,7 @@ public class CustomAuthRealm extends AuthorizingRealm {
   public CustomAuthRealm(SecurityManager securityManager) {
     this.securityManager = securityManager;
     setAuthenticationTokenClass(GeodeAuthenticationToken.class);
+    setCredentialsMatcher(new AllowAllCredentialsMatcher());
   }
 
   @Override
