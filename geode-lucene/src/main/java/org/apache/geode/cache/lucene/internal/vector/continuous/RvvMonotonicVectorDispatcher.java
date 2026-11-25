@@ -248,9 +248,9 @@ public class RvvMonotonicVectorDispatcher {
     final Map<String, Long> checkpointByMember = new HashMap<>();
     final Map<String, AtomicLong> fallbackVersionByMember = new HashMap<>();
     final Map<String, Long> eventsSinceHeartbeatByMember = new HashMap<>();
+    final Map<String, Long> oldestUncoveredMutationTimeMsByMember = new HashMap<>();
     final Map<String, Long> nextExpectedVersionByMember = new HashMap<>();
     final Map<String, TreeMap<Long, TailMutation>> holdbackByMember = new HashMap<>();
-    final Map<String, Long> lastMutationTimeMsByMember = new HashMap<>();
     final Map<String, Long> lastDispatchedVersionByMember = new HashMap<>();
     final List<TailMutation> pendingLiveMutations = new ArrayList<>();
     final ConcurrentLinkedQueue<PendingDispatchBatch> pendingDispatchBatches =
@@ -260,13 +260,24 @@ public class RvvMonotonicVectorDispatcher {
     int pendingAsyncPromotions = 0;
 
     synchronized boolean shouldEmitPeriodicHeartbeat(String memberId, int interval) {
+      return shouldEmitPeriodicHeartbeat(memberId, interval, System.currentTimeMillis());
+    }
+
+    synchronized boolean shouldEmitPeriodicHeartbeat(String memberId, int interval,
+        long mutationTimestampMs) {
       if (interval <= 0) {
         return false;
       }
-      long next = eventsSinceHeartbeatByMember.getOrDefault(memberId, 0L) + 1L;
+      long prev = eventsSinceHeartbeatByMember.getOrDefault(memberId, 0L);
+      long next = prev + 1L;
       if (next >= interval) {
         eventsSinceHeartbeatByMember.put(memberId, 0L);
+        oldestUncoveredMutationTimeMsByMember.put(memberId, 0L);
         return true;
+      }
+      if (prev == 0L) {
+        long firstTs = mutationTimestampMs > 0L ? mutationTimestampMs : System.currentTimeMillis();
+        oldestUncoveredMutationTimeMsByMember.put(memberId, firstTs);
       }
       eventsSinceHeartbeatByMember.put(memberId, next);
       return false;
@@ -274,6 +285,7 @@ public class RvvMonotonicVectorDispatcher {
 
     synchronized void resetHeartbeatCounter(String memberId) {
       eventsSinceHeartbeatByMember.put(memberId, 0L);
+      oldestUncoveredMutationTimeMsByMember.put(memberId, 0L);
     }
 
     synchronized List<Long> append(TailMutation mutation, int maxTailPerStream) {
@@ -558,23 +570,28 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
-  /** Flushes trailing watermark heartbeats for streams idle for at least {@code maxIdleMillis}. */
-  public int flushIdleHeartbeats(long maxIdleMillis) {
-    return flushIdleHeartbeats(System.currentTimeMillis(), maxIdleMillis);
+  /**
+   * Flushes trailing watermark heartbeats for streams whose oldest uncovered mutation reached
+   * {@code maxAgeMillis}.
+   */
+  public int flushIdleHeartbeats(long maxAgeMillis) {
+    return flushIdleHeartbeats(System.currentTimeMillis(), maxAgeMillis);
   }
 
   /**
    * Checks every {@code (bucketId, memberId)} stream and emits a trailing
    * {@link ContinuousVectorEvent#watermarkHeartbeat} carrying the last contiguously dispatched
-   * version whenever {@code eventsSinceHeartbeat > 0} (an idle sub-{@code H} tail of
-   * {@code 1..H-1} mutations) and {@code nowMillis - lastMutationTimeMs >= maxIdleMillis},
-   * resetting {@code eventsSinceHeartbeat} to {@code 0}.
+   * version whenever {@code eventsSinceHeartbeat > 0} and the age since the oldest uncovered
+   * mutation reaches {@code maxAgeMillis}
+   * ({@code nowMillis - oldestUncoveredMutationTimeMs >= maxAgeMillis}), resetting both
+   * {@code eventsSinceHeartbeat} and {@code oldestUncoveredMutationTimeMs} to {@code 0}. This
+   * prevents starvation under both idle tails and steady sub-{@code H} trickles.
    *
-   * @return number of idle-tail watermark heartbeats emitted.
+   * @return number of age-bounded watermark heartbeats emitted.
    */
-  public int flushIdleHeartbeats(long nowMillis, long maxIdleMillis) {
-    if (maxIdleMillis < 0L) {
-      throw new IllegalArgumentException("maxIdleMillis must be >= 0, got: " + maxIdleMillis);
+  public int flushIdleHeartbeats(long nowMillis, long maxAgeMillis) {
+    if (maxAgeMillis < 0L) {
+      throw new IllegalArgumentException("maxAgeMillis must be >= 0, got: " + maxAgeMillis);
     }
     if (heartbeatIntervalEvents <= 0) {
       return 0;
@@ -594,15 +611,16 @@ public class RvvMonotonicVectorDispatcher {
           if (pending <= 0L) {
             continue;
           }
-          long lastMutationMs = state.lastMutationTimeMsByMember.getOrDefault(memberId, 0L);
-          if (lastMutationMs <= 0L || (nowMillis - lastMutationMs) < maxIdleMillis) {
+          long oldestUncoveredMs =
+              state.oldestUncoveredMutationTimeMsByMember.getOrDefault(memberId, 0L);
+          if (oldestUncoveredMs <= 0L || (nowMillis - oldestUncoveredMs) < maxAgeMillis) {
             continue;
           }
           long lastVersion = state.lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
           if (lastVersion <= 0L) {
             continue;
           }
-          state.eventsSinceHeartbeatByMember.put(memberId, 0L);
+          state.resetHeartbeatCounter(memberId);
           ContinuousVectorEvent hb = ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId,
               lastVersion, nowMillis);
           totalHeartbeatsDispatched.incrementAndGet();
@@ -702,7 +720,6 @@ public class RvvMonotonicVectorDispatcher {
     List<ContinuousVectorEvent> emitted;
     // Serialize append + contiguous ordering + dispatch per bucket to preserve per-(b, m) order
     synchronized (state) {
-      state.lastMutationTimeMsByMember.put(memberId, mutation.timestamp);
       if (isPrimary && state.pendingAsyncPromotions > 0) {
         // Gate live primary writes behind the pending async promotion replay barrier
         state.pendingLiveMutations.add(mutation);
@@ -748,7 +765,6 @@ public class RvvMonotonicVectorDispatcher {
     long nowMs = System.currentTimeMillis();
     TailMutation marker = TailMutation.nonMatchingMarker(bucketId, memberId, regionVersion, nowMs);
     synchronized (state) {
-      state.lastMutationTimeMsByMember.put(memberId, nowMs);
       if (state.pendingAsyncPromotions > 0) {
         state.pendingLiveMutations.add(marker);
         return;
@@ -996,7 +1012,6 @@ public class RvvMonotonicVectorDispatcher {
     buffered.sort(Comparator.comparing(TailMutation::getMemberId)
         .thenComparingLong(TailMutation::getRegionVersion));
     for (TailMutation live : buffered) {
-      state.lastMutationTimeMsByMember.put(live.memberId, live.timestamp);
       if (!live.isNonMatchingMarker()) {
         List<Long> evicted = state.append(live, maxTailPerStream);
         if (!evicted.isEmpty()) {
@@ -1108,7 +1123,8 @@ public class RvvMonotonicVectorDispatcher {
     if (mutation.isNonMatchingMarker()) {
       boolean emitHeartbeat =
           !replayed
-              && state.shouldEmitPeriodicHeartbeat(mutation.memberId, heartbeatIntervalEvents);
+              && state.shouldEmitPeriodicHeartbeat(mutation.memberId, heartbeatIntervalEvents,
+                  mutation.timestamp);
       if (emitHeartbeat) {
         ContinuousVectorEvent hb = ContinuousVectorEvent.watermarkHeartbeat(mutation.bucketId,
             mutation.memberId, mutation.regionVersion, mutation.timestamp);
@@ -1323,7 +1339,8 @@ public class RvvMonotonicVectorDispatcher {
     List<ChordalVoronoiRouter.MatchResult> matches =
         router.routeNormalized(mutation.getNormalizedVectorUnsafe());
     boolean emitHeartbeat =
-        !replayed && state.shouldEmitPeriodicHeartbeat(mutation.memberId, heartbeatIntervalEvents);
+        !replayed && state.shouldEmitPeriodicHeartbeat(mutation.memberId, heartbeatIntervalEvents,
+            mutation.timestamp);
     if (matches.isEmpty() && !emitHeartbeat) {
       return Collections.emptyList();
     }

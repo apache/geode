@@ -181,6 +181,10 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     Map<String, Long> getCommittedHighWaterByMember(int bucketId,
         Collection<String> activeSubscriptionIds);
 
+    default long getLowestPendingVersion(String subscriptionId, int bucketId, String memberId) {
+      return Long.MAX_VALUE;
+    }
+
     /** Returns every committed {@code (subscriptionId, bucketId, memberId) -> version} entry. */
     default Map<EventDeliveryId, Long> getCommittedWatermarkSnapshot() {
       return Collections.emptyMap();
@@ -346,6 +350,21 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     }
 
     @Override
+    public long getLowestPendingVersion(String subscriptionId, int bucketId, String memberId) {
+      long lowest = Long.MAX_VALUE;
+      for (EventDeliveryId id : pendingIntents.keySet()) {
+        if (id.getBucketId() == bucketId
+            && Objects.equals(subscriptionId, id.getSubscriptionId())
+            && Objects.equals(memberId, id.getMemberId())) {
+          if (id.getRegionVersion() < lowest) {
+            lowest = id.getRegionVersion();
+          }
+        }
+      }
+      return lowest;
+    }
+
+    @Override
     public Map<EventDeliveryId, Long> getCommittedWatermarkSnapshot() {
       Map<EventDeliveryId, Long> snapshot = new HashMap<>(committedWatermarks.size() * 2);
       for (Map.Entry<StreamCoords, Long> entry : committedWatermarks.entrySet()) {
@@ -403,13 +422,37 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
       if (subs.isEmpty()) {
         subs = store.getTrackedSubscriptions(bucketId, memberId);
       }
+      boolean blockedByPending = false;
+      Map<String, Long> safeGateAdvances = null;
       for (String subId : subs) {
         Object lock = streamLocks.computeIfAbsent(subId + "|" + bucketId + "|" + memberId,
             ignored -> new Object());
         synchronized (lock) {
           store.persistReceivedWatermark(subId, bucketId, memberId, ver);
-          store.persistCommittedWatermark(subId, bucketId, memberId, ver);
+          long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
+          long safeCommit =
+              (lowestPending == Long.MAX_VALUE) ? ver : Math.min(ver, lowestPending - 1L);
+          if (safeCommit > store.getCommittedWatermark(subId, bucketId, memberId)) {
+            store.persistCommittedWatermark(subId, bucketId, memberId, safeCommit);
+          }
+          if (lowestPending <= ver) {
+            blockedByPending = true;
+          }
+          if (safeCommit > 0L) {
+            if (safeGateAdvances == null) {
+              safeGateAdvances = new HashMap<>();
+            }
+            safeGateAdvances.put(subId, safeCommit);
+          }
         }
+      }
+      if (blockedByPending) {
+        if (safeGateAdvances != null) {
+          for (Map.Entry<String, Long> e : safeGateAdvances.entrySet()) {
+            gate.restoreHighWaterVersion(e.getKey(), bucketId, memberId, e.getValue());
+          }
+        }
+        return true;
       }
       return gate.tryAccept(event);
     }

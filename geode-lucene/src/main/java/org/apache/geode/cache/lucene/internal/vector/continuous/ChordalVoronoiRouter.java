@@ -465,6 +465,7 @@ public class ChordalVoronoiRouter {
     private final boolean survivalGuardTripped;
     private final long survivalGuardReversionCount;
     private final long survivalGuardRecoveryCount;
+    private final int maxCellSize;
 
     RouterTelemetry(RoutingMode currentMode, int subscriptionCount, int activeClusterCount,
         int mCrit, int upperSwitchThreshold, int lowerSwitchThreshold, long modeTransitionCount,
@@ -472,7 +473,7 @@ public class ChordalVoronoiRouter {
         long totalCellsPruned, long totalSubscriptionsEvaluated, long totalSubscriptionsPossible,
         long fnrVerificationRuns, long fnrVerificationFalseNegatives, double observedSurvivalEwma,
         boolean survivalGuardTripped, long survivalGuardReversionCount,
-        long survivalGuardRecoveryCount) {
+        long survivalGuardRecoveryCount, int maxCellSize) {
       this.currentMode = currentMode;
       this.subscriptionCount = subscriptionCount;
       this.activeClusterCount = activeClusterCount;
@@ -492,6 +493,7 @@ public class ChordalVoronoiRouter {
       this.survivalGuardTripped = survivalGuardTripped;
       this.survivalGuardReversionCount = survivalGuardReversionCount;
       this.survivalGuardRecoveryCount = survivalGuardRecoveryCount;
+      this.maxCellSize = maxCellSize;
     }
 
     public RoutingMode getCurrentMode() {
@@ -570,6 +572,10 @@ public class ChordalVoronoiRouter {
 
     public long getFnrVerificationFalseNegatives() {
       return fnrVerificationFalseNegatives;
+    }
+
+    public int getMaxCellSize() {
+      return maxCellSize;
     }
   }
 
@@ -1209,15 +1215,32 @@ public class ChordalVoronoiRouter {
         falsePositives);
   }
 
+  public int getMaxCellSize() {
+    RouterSnapshot snap = this.snapshot;
+    int maxCell = 0;
+    for (VoronoiCell cell : snap.cells) {
+      if (cell.size() > maxCell) {
+        maxCell = cell.size();
+      }
+    }
+    return maxCell;
+  }
+
   public RouterTelemetry getTelemetry() {
     RouterSnapshot snap = this.snapshot;
+    int maxCell = 0;
+    for (VoronoiCell cell : snap.cells) {
+      if (cell.size() > maxCell) {
+        maxCell = cell.size();
+      }
+    }
     return new RouterTelemetry(snap.mode, snap.subscriptionCount, snap.cells.length,
         getEffectiveMCrit(), upperSwitchThreshold, lowerSwitchThreshold, modeTransitionCount.get(),
         fullReclusterCount.get(), totalRoutedVectors.get(), totalCellsEvaluated.get(),
         totalCellsPruned.get(), totalSubscriptionsEvaluated.get(),
         totalSubscriptionsPossible.get(), fnrVerificationRuns.get(),
         fnrVerificationFalseNegatives.get(), getObservedSurvivalRate(), survivalGuardTripped,
-        survivalGuardReversionCount.get(), survivalGuardRecoveryCount.get());
+        survivalGuardReversionCount.get(), survivalGuardRecoveryCount.get(), maxCell);
   }
 
   private List<MatchResult> routeFlatSimd(float[] unitEmbedding, RouterSnapshot snap) {

@@ -78,9 +78,12 @@ public final class VectorSubscription implements Serializable {
   }
 
   /**
-   * L2-normalizes a float vector onto the unit hypersphere {@code S^{d-1}} using unconditional
-   * max-abs pre-scaling in float64 so all finite non-zero float32 vectors (including subnormals and
-   * {@code Float.MAX_VALUE}) normalize without intermediate overflow or underflow.
+   * L2-normalizes a float vector onto the unit hypersphere {@code S^{d-1}} by widening each
+   * {@code binary32} coordinate unconditionally to {@code binary64} ({@code (double) v}) before any
+   * floating-point arithmetic (preserving all binary32 subnormals down to {@code Float.MIN_VALUE =
+   * 2^-149} under DAZ/FTZ execution), followed by max-abs pre-scaling in float64 so all finite
+   * non-zero vectors (including {@code Float.MIN_VALUE} through {@code Float.MAX_VALUE}) normalize
+   * without intermediate overflow or underflow.
    */
   public static float[] normalize(float[] vector) {
     if (vector == null || vector.length == 0) {

@@ -1272,6 +1272,86 @@ public class ChordalVoronoiRouterTest {
     assertThat(resScaled.isExactMatch()).isTrue();
   }
 
+  @Test
+  public void allSubnormalWideningExactThresholdEqualityAndMaxCellSizeTelemetry() {
+    // 1. All-subnormal vectors must preserve direction via float32 -> float64 widening before any
+    // arithmetic and match exact threshold equality dot == tau == 1.0f / 0.6f.
+    float[] unitSubX =
+        VectorSubscription.normalize(new float[] {Float.MIN_VALUE, 0.0f, 0.0f, 0.0f});
+    assertThat(unitSubX).containsExactly(1.0f, 0.0f, 0.0f, 0.0f);
+
+    float[] allSubMixed =
+        VectorSubscription.normalize(new float[] {Float.MIN_VALUE, -Float.MIN_VALUE, 0.0f, 0.0f});
+    assertThat(allSubMixed[0]).isGreaterThan(0.7f);
+    assertThat(allSubMixed[1]).isLessThan(-0.7f);
+
+    // Build router with K=2 on dim=4 testing exact dot == tau boundary and maxCellSize telemetry
+    RouterConfig cfg = RouterConfig.builder(4)
+        .numClusters(2)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .randomSeed(404L)
+        .build();
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(cfg);
+    assertThat(router.getTelemetry().getMaxCellSize()).isZero();
+
+    router.addSubscription(
+        new VectorSubscription("subnorm-tau1", new float[] {Float.MIN_VALUE, 0.0f, 0.0f, 0.0f},
+            1.0f));
+    router.addSubscription(
+        new VectorSubscription("pyth-tau1", new float[] {0.6f, 0.8f, 0.0f, 0.0f}, 1.0f));
+    router.addSubscription(
+        new VectorSubscription("eq-06", new float[] {0.6f, 0.8f, 0.0f, 0.0f}, 0.6f));
+    router.addSubscription(
+        new VectorSubscription("orth-z", new float[] {0.0f, 0.0f, Float.MIN_VALUE, 0.0f}, 0.9f));
+
+    assertThat(router.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    int maxCell = router.getTelemetry().getMaxCellSize();
+    assertThat(maxCell).isEqualTo(router.getMaxCellSize()).isBetween(1, 4);
+
+    // Exact dot == tau == 1.0f on subnormal axis-aligned and Pythagorean (0.6, 0.8, 0, 0)
+    assertThat(router.route(new float[] {Float.MIN_VALUE, 0.0f, 0.0f, 0.0f}))
+        .extracting(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+        .containsExactlyInAnyOrder("subnorm-tau1", "eq-06");
+    assertThat(
+        router.verifyAgainstBruteForce(new float[] {Float.MIN_VALUE, 0.0f, 0.0f, 0.0f})
+            .isExactMatch())
+                .isTrue();
+
+    assertThat(router.route(new float[] {3.0f, 4.0f, 0.0f, 0.0f}))
+        .extracting(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+        .containsExactlyInAnyOrder("pyth-tau1", "eq-06");
+    assertThat(router.verifyAgainstBruteForce(new float[] {3.0f, 4.0f, 0.0f, 0.0f}).isExactMatch())
+        .isTrue();
+
+    // 64-D all-subnormal vector batch must yield unit norms and 0 pruning/overall FNR
+    int dim64 = 64;
+    Random rng = new Random(9090L);
+    ChordalVoronoiRouter r64 = new ChordalVoronoiRouter(RouterConfig.builder(dim64)
+        .numClusters(4)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .randomSeed(9090L)
+        .build());
+    for (int i = 0; i < 16; i++) {
+      float[] rawSub64 = new float[dim64];
+      for (int d = 0; d < dim64; d++) {
+        rawSub64[d] = (rng.nextBoolean() ? Float.MIN_VALUE : -Float.MIN_VALUE);
+      }
+      r64.addSubscription(new VectorSubscription("s64-" + i, rawSub64, 0.95f));
+    }
+    assertThat(r64.getTelemetry().getMaxCellSize()).isBetween(1, 16);
+    float[] probe64 = new float[dim64];
+    for (int d = 0; d < dim64; d++) {
+      probe64[d] = Float.MIN_VALUE;
+    }
+    assertThat(r64.verifyAgainstBruteForce(probe64).isExactMatch()).isTrue();
+  }
+
   private static float[] randomUnitVector(Random rng, int dim) {
     float[] v = new float[dim];
     for (int i = 0; i < dim; i++) {

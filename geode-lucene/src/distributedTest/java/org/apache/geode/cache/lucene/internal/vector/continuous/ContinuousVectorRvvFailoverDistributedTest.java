@@ -1017,6 +1017,153 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  /**
+   * M4 DUnit regression: proves (a) a steady stream of zero-match bucket puts spaced 40 ms apart
+   * (&lt; maxAge=100 ms, total &lt; H=64) advances {@code V_ckpt} continuously via oldest-uncovered
+   * heartbeat age tracking instead of starving indefinitely, and (b) an idle tail of 63 rapid
+   * zero-match mutations (&lt; H=64) advances {@code V_ckpt} across the cluster when flushed.
+   */
+  @Test
+  public void steadyTrickleAndIdleTailHeartbeatFlushAdvanceCheckpointAcrossCluster()
+      throws Exception {
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new CopyOnWriteArrayList<>();
+    clientGate.addListener(accepted::add);
+    receiver = new ClientEventReceiver(clientGate);
+    int receiverPort = receiver.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM server3 = cluster.startServerVM(3, locatorPort);
+
+    try {
+      Random rng = new Random(20261126L);
+      ArrayList<VectorSubscription> subscriptions = new ArrayList<>(5);
+      for (int m = 0; m < 4; m++) {
+        subscriptions.add(new VectorSubscription("sub-trickle-" + m,
+            randomUnitVectorZeroLastDim(rng, VECTOR_DIM), 0.78f));
+      }
+      float[] orthogonalQuery = new float[VECTOR_DIM];
+      orthogonalQuery[VECTOR_DIM - 1] = 1.0f;
+      subscriptions.add(new VectorSubscription("sub-zero-match", orthogonalQuery, 0.99f));
+      for (VectorSubscription sub : subscriptions) {
+        clientGate.registerSubscription(sub.getSubscriptionId());
+      }
+
+      for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+        server.invoke(() -> {
+          initializeServerNode(subscriptions, receiverPort, -1, 1,
+              RvvMonotonicVectorDispatcher.DEFAULT_HEARTBEAT_INTERVAL_EVENTS, 1);
+          serverService.startIdleHeartbeatScheduler(100L, 20L);
+        });
+      }
+
+      final float[] nonMatchVec = new float[VECTOR_DIM];
+      nonMatchVec[VECTOR_DIM - 1] = -1.0f;
+
+      // Seed bucket 0 with a single non-matching vector to bind primary member ID and baseline.
+      server3.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("seed-nonmatch-0", nonMatchVec);
+      });
+
+      String primaryMemberId = null;
+      for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+        String candidate = server.invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          return null;
+        });
+        if (candidate != null) {
+          primaryMemberId = candidate;
+          break;
+        }
+      }
+      assertThat(primaryMemberId).isNotNull();
+      final String bucket0Member = primaryMemberId;
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member))
+            .isGreaterThanOrEqualTo(1L);
+        assertThat(clientGate.getHeartbeatsAcceptedCount()).isGreaterThanOrEqualTo(1L);
+      });
+      long baseCkpt = clientGate.getSafeCheckpointVersion(0, bucket0Member);
+
+      // Phase A: Steady 40 ms zero-match trickle (< 100 ms maxAge, 15 writes < H=64).
+      // Oldest-uncovered age tracking guarantees periodic heartbeats rather than resetting age.
+      server3.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 0; i < 15; i++) {
+          region.put("trickle-" + i, nonMatchVec);
+          try {
+            Thread.sleep(40L);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+          }
+        }
+      });
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member))
+            .isEqualTo(baseCkpt + 15L);
+        assertThat(clientGate.getHeartbeatsAcceptedCount()).isGreaterThanOrEqualTo(3L);
+      });
+      assertThat(accepted).isEmpty();
+
+      // Phase B: Stop background scheduler, verify quiescent baseline, then write 63 rapid
+      // zero-match puts (< H=64) and flush idle tail across the cluster.
+      long flushNow = System.currentTimeMillis() + 500L;
+      for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+        server.invoke(() -> {
+          serverService.stopIdleHeartbeatScheduler();
+          serverService.flushIdleHeartbeats(flushNow, 100L);
+          try {
+            assertThat(serverService.awaitPendingDispatches(10_000L)).isTrue();
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+          }
+        });
+      }
+      long ckptBeforeTail = clientGate.getSafeCheckpointVersion(0, bucket0Member);
+      assertThat(ckptBeforeTail).isEqualTo(baseCkpt + 15L);
+      long hbBeforeTail = clientGate.getHeartbeatsAcceptedCount();
+
+      server3.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 0; i < 63; i++) {
+          region.put("idle-tail-" + i, nonMatchVec);
+        }
+      });
+      assertThat(clientGate.getHeartbeatsAcceptedCount()).isEqualTo(hbBeforeTail);
+      assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member)).isEqualTo(ckptBeforeTail);
+
+      long tailFlushNow = System.currentTimeMillis() + 500L;
+      int flushedTotal = 0;
+      for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+        flushedTotal += server.invoke(() -> serverService.flushIdleHeartbeats(tailFlushNow, 100L));
+      }
+      assertThat(flushedTotal).isGreaterThanOrEqualTo(1);
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(clientGate.getHeartbeatsAcceptedCount()).isGreaterThan(hbBeforeTail);
+        assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member))
+            .isEqualTo(ckptBeforeTail + 63L);
+      });
+      assertThat(accepted).isEmpty();
+    } finally {
+      for (MemberVM server : new MemberVM[] {server1, server2, server3}) {
+        server.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+      }
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);
