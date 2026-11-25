@@ -47,6 +47,16 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
   private List<LuceneSearchResults> searchResults = null;
 
   /**
+   * Backward-compatible overload for Java callers and unit tests without vector query parameters.
+   */
+  public ResultModel searchIndex(final String indexName, final String regionPath,
+      final String queryString, final String defaultField, final int limit, boolean keysOnly)
+      throws Exception {
+    return searchIndex(indexName, regionPath, queryString, defaultField, limit, keysOnly, null,
+        null, -1, null);
+  }
+
+  /**
    * Internally, we verify the resource operation permissions DATA:READ:[RegionName]
    */
   @ShellMethod(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP,
@@ -62,9 +72,11 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
       @ShellOption(
           value = {LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,
               LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRINGS},
+          defaultValue = ShellOption.NULL,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING__HELP) final String queryString,
 
       @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD,
+          defaultValue = ShellOption.NULL,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP) final String defaultField,
 
       @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__LIMIT,
@@ -73,14 +85,97 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
 
       @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
           defaultValue = "false", arity = 0,
-          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly)
+          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly,
+
+      @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__VECTOR_FIELD,
+          defaultValue = ShellOption.NULL,
+          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__VECTOR_FIELD__HELP) final String vectorField,
+
+      @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_VECTOR,
+          defaultValue = ShellOption.NULL,
+          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_VECTOR__HELP) final String queryVector,
+
+      @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__K,
+          defaultValue = "-1",
+          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__K__HELP) final int k,
+
+      @ShellOption(value = LuceneCliStrings.LUCENE_SEARCH_INDEX__FILTER_QUERY,
+          defaultValue = ShellOption.NULL,
+          help = LuceneCliStrings.LUCENE_SEARCH_INDEX__FILTER_QUERY__HELP) final String filterQuery)
       throws Exception {
     authorize(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ, regionPath);
-    LuceneQueryInfo queryInfo =
-        new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
+
+    if (limit != -1 && limit <= 0) {
+      throw new UserErrorException("--limit must be a positive integer, got: " + limit);
+    }
+
+    final LuceneQueryInfo queryInfo;
+    if (queryVector != null && !queryVector.trim().isEmpty()) {
+      float[] parsedVector = parseQueryVector(queryVector);
+      if (k != -1 && k <= 0) {
+        throw new UserErrorException("--k must be a positive integer, got: " + k);
+      }
+      int effectiveLimit = limit > 0 ? limit : k;
+      queryInfo = new LuceneQueryInfo(indexName, regionPath, queryString, defaultField,
+          effectiveLimit, keysOnly, vectorField, parsedVector, k, filterQuery);
+    } else {
+      if ((vectorField != null && !vectorField.trim().isEmpty())
+          || k != -1
+          || (filterQuery != null && !filterQuery.trim().isEmpty())) {
+        throw new UserErrorException(
+            "--vector-field, --k, and --filter-query require --query-vector.");
+      }
+      if (queryString == null || queryString.trim().isEmpty()) {
+        throw new UserErrorException(
+            "Either --queryString or --query-vector must be specified for search lucene.");
+      }
+      if (defaultField == null || defaultField.trim().isEmpty()) {
+        throw new UserErrorException(
+            "--defaultField must be specified when executing a text --queryString search.");
+      }
+      queryInfo =
+          new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
+    }
+
     searchResults = getSearchResults(queryInfo);
 
     return displayResults(getPageSize(), keysOnly);
+  }
+
+  private float[] parseQueryVector(String rawVector) {
+    String cleaned = rawVector.trim();
+    boolean startsWithBracket = cleaned.startsWith("[");
+    boolean endsWithBracket = cleaned.endsWith("]");
+    if (startsWithBracket != endsWithBracket) {
+      throw new UserErrorException("Unmatched brackets in --query-vector: '" + rawVector + "'");
+    }
+    if (startsWithBracket) {
+      cleaned = cleaned.substring(1, cleaned.length() - 1).trim();
+    }
+    if (cleaned.isEmpty()) {
+      throw new UserErrorException("--query-vector must contain at least one float value.");
+    }
+    String[] parts = cleaned.split(",", -1);
+    float[] vector = new float[parts.length];
+    for (int i = 0; i < parts.length; i++) {
+      String token = parts[i].trim();
+      if (token.isEmpty()) {
+        throw new UserErrorException(
+            "Empty element in --query-vector at index " + i + ": '" + rawVector + "'");
+      }
+      try {
+        float val = Float.parseFloat(token);
+        if (!Float.isFinite(val)) {
+          throw new UserErrorException(
+              "--query-vector element at index " + i + " must be finite, got: " + val);
+        }
+        vector[i] = val;
+      } catch (NumberFormatException e) {
+        throw new UserErrorException(
+            "Invalid float in --query-vector at index " + i + ": '" + token + "'", e);
+      }
+    }
+    return vector;
   }
 
   protected int getPageSize() {

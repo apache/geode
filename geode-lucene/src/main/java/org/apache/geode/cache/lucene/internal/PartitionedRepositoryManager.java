@@ -190,4 +190,29 @@ public class PartitionedRepositoryManager implements RepositoryManager {
         /* expected exception */}
     }
   }
+
+  /**
+   * Internal bounded compaction helper that consolidates any open local bucket repositories whose
+   * live Lucene segment count exceeds {@code maxSegments}.
+   *
+   * @param maxSegments maximum desired segment count per bucket (must be {@code >= 1})
+   * @return number of local bucket repositories compacted
+   * @throws IOException if compaction fails on any bucket repository
+   * @throws IllegalArgumentException if {@code maxSegments < 1}
+   */
+  public int maybeCompactSegments(int maxSegments) throws IOException {
+    if (maxSegments < 1) {
+      throw new IllegalArgumentException("maxSegments must be >= 1, got: " + maxSegments);
+    }
+    if (closed) {
+      return 0;
+    }
+    int compacted = 0;
+    for (IndexRepository repo : indexRepositories.values()) {
+      if (repo != null && !repo.isClosed() && repo.maybeCompactSegments(maxSegments)) {
+        compacted++;
+      }
+    }
+    return compacted;
+  }
 }

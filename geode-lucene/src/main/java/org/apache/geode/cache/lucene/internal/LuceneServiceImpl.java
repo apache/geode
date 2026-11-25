@@ -51,6 +51,7 @@ import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.cache.lucene.internal.distributed.IndexingInProgressFunction;
@@ -190,34 +191,57 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
   public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers,
       LuceneSerializer serializer, boolean allowOnExistingRegion) {
-    if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
+    createIndex(indexName, regionPath, fieldAnalyzers, Collections.emptyMap(), serializer,
+        allowOnExistingRegion);
+  }
+
+  public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers,
+      Map<String, VectorIndexMetadata> vectorFields, LuceneSerializer serializer,
+      boolean allowOnExistingRegion) {
+    boolean hasTextFields = fieldAnalyzers != null && !fieldAnalyzers.isEmpty();
+    boolean hasVectorFields = vectorFields != null && !vectorFields.isEmpty();
+    if (!hasTextFields && !hasVectorFields) {
       throw new IllegalArgumentException("At least one field must be indexed");
     }
-    Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzers);
-    Set<String> fieldsSet = fieldAnalyzers.keySet();
+    Map<String, Analyzer> effectiveFieldAnalyzers =
+        fieldAnalyzers == null ? Collections.emptyMap() : fieldAnalyzers;
+    Analyzer analyzer =
+        new PerFieldAnalyzerWrapper(new StandardAnalyzer(), effectiveFieldAnalyzers);
+    Set<String> fieldsSet = effectiveFieldAnalyzers.keySet();
     String[] fields = fieldsSet.toArray(new String[fieldsSet.size()]);
 
-    createIndex(indexName, regionPath, analyzer, fieldAnalyzers, serializer, allowOnExistingRegion,
-        fields);
+    createIndex(indexName, regionPath, analyzer, effectiveFieldAnalyzers, vectorFields, serializer,
+        allowOnExistingRegion, fields);
   }
 
   public void createIndex(final String indexName, String regionPath, final Analyzer analyzer,
       final Map<String, Analyzer> fieldAnalyzers, final LuceneSerializer serializer,
+      boolean allowOnExistingRegion, final String... fields) {
+    createIndex(indexName, regionPath, analyzer, fieldAnalyzers, Collections.emptyMap(), serializer,
+        allowOnExistingRegion, fields);
+  }
+
+  public void createIndex(final String indexName, String regionPath, final Analyzer analyzer,
+      final Map<String, Analyzer> fieldAnalyzers,
+      final Map<String, VectorIndexMetadata> vectorFields, final LuceneSerializer serializer,
       boolean allowOnExistingRegion, final String... fields) {
 
     if (!regionPath.startsWith(SEPARATOR)) {
       regionPath = SEPARATOR + regionPath;
     }
 
+    Map<String, VectorIndexMetadata> effectiveVectorFields =
+        vectorFields == null ? Collections.emptyMap() : vectorFields;
+
     // We must always register the index (this is where IndexAlreadyExistsException is detected)
     registerDefinedIndex(indexName, regionPath, new LuceneIndexCreationProfile(indexName,
-        regionPath, fields, analyzer, fieldAnalyzers, serializer));
+        regionPath, fields, analyzer, fieldAnalyzers, serializer, effectiveVectorFields));
     try {
       // If the region does not yet exist, install LuceneRegionListener and return
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
       if (region == null) {
         LuceneRegionListener regionListener = new LuceneRegionListener(this, indexName,
-            regionPath, fields, analyzer, fieldAnalyzers, serializer);
+            regionPath, fields, analyzer, fieldAnalyzers, effectiveVectorFields, serializer);
         cache.addRegionListener(regionListener);
         return;
       } else if (allowOnExistingRegion) {
@@ -231,7 +255,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
       // do work normally handled by LuceneRegionListener (if region already exists)
       createIndexOnExistingRegion(region, indexName, regionPath, fields, analyzer, fieldAnalyzers,
-          serializer);
+          effectiveVectorFields, serializer);
     } catch (Exception exception) {
       definedIndexMap.remove(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath));
       throw exception;
@@ -255,11 +279,11 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
   private void createIndexOnExistingRegion(PartitionedRegion region, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
-      LuceneSerializer serializer) {
+      Map<String, VectorIndexMetadata> vectorFields, LuceneSerializer serializer) {
     validateRegionAttributes(region.getAttributes());
 
     LuceneIndexCreationProfile luceneIndexCreationProfile = new LuceneIndexCreationProfile(
-        indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer);
+        indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer, vectorFields);
 
     Runnable validateIndexProfile =
         getIndexValidationRunnable(region, indexName, luceneIndexCreationProfile);
@@ -268,7 +292,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     region.updatePRConfigWithNewGatewaySenderAfterAssigningBuckets(aeqId);
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
-        region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
+        region.getAttributes(), analyzer, fieldAnalyzers, vectorFields, aeqId, serializer, fields);
 
     try {
       afterDataRegionCreated(luceneIndex);
@@ -392,10 +416,20 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       RegionAttributes attributes, final Analyzer analyzer,
       final Map<String, Analyzer> fieldAnalyzers, String aeqId, final LuceneSerializer serializer,
       final String... fields) {
+    return beforeDataRegionCreated(indexName, regionPath, attributes, analyzer, fieldAnalyzers,
+        Collections.emptyMap(), aeqId, serializer, fields);
+  }
+
+  public LuceneIndexImpl beforeDataRegionCreated(final String indexName, final String regionPath,
+      RegionAttributes attributes, final Analyzer analyzer,
+      final Map<String, Analyzer> fieldAnalyzers,
+      final Map<String, VectorIndexMetadata> vectorFields, String aeqId,
+      final LuceneSerializer serializer, final String... fields) {
     LuceneIndexImpl index = createIndexObject(indexName, regionPath);
     index.setSearchableFields(fields);
     index.setAnalyzer(analyzer);
     index.setFieldAnalyzers(fieldAnalyzers);
+    index.setVectorFields(vectorFields);
     index.setLuceneSerializer(serializer);
     index.setupRepositoryManager(serializer);
     index.createAEQ(attributes, aeqId);

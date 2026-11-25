@@ -67,11 +67,25 @@ public class LuceneIndexStatsMonitor extends MBeanStatsMonitor {
     int commitsInProgress = getStatistic(StatsKey.COMMITS_IN_PROGRESS).intValue();
 
     int documents = getStatistic(StatsKey.DOCUMENTS).intValue();
+    long segmentMemoryBytes = 0L;
+    if (index instanceof LuceneIndexImpl && ((LuceneIndexImpl) index).getIndexStats() != null) {
+      segmentMemoryBytes = ((LuceneIndexImpl) index).getIndexStats().getSegmentMemoryBytes();
+    }
+    if (segmentMemoryBytes == 0L) {
+      Number segmentBytesStat = getStatistic(StatsKey.SEGMENT_MEMORY_BYTES);
+      if (segmentBytesStat != null) {
+        segmentMemoryBytes = segmentBytesStat.longValue();
+      }
+    }
+    long estimatedOffHeapVectorBytes =
+        LuceneIndexMetrics.estimateOffHeapVectorBytes(documents, index.getVectorFields());
+    String[] vectorFields =
+        LuceneIndexMetrics.formatVectorFieldDescriptors(index.getVectorFields());
 
     return new LuceneIndexMetrics(index.getRegionPath(), index.getName(), queryExecutions,
         queryExecutionTime, queryRateAverageLatencyValue, queryExecutionsInProgress,
         queryExecutionTotalHits, updates, updateTime, updateRateAverageLatencyValue,
         updatesInProgress, commits, commitTime, commitRateAverageLatencyValue, commitsInProgress,
-        documents);
+        documents, segmentMemoryBytes, estimatedOffHeapVectorBytes, vectorFields);
   }
 }

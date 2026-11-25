@@ -30,4 +30,7 @@ public class StatsKey {
   public static final String QUERIES_TOTAL_HITS = "queryExecutionTotalHits";
 
   public static final String DOCUMENTS = "documents";
+
+  public static final String SEGMENT_MEMORY_BYTES = "segmentMemoryBytes";
+  public static final String VECTOR_FIELD_COUNT = "vectorFieldCount";
 }

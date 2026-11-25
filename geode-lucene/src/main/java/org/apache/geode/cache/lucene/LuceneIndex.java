@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.lucene;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -88,5 +89,17 @@ public interface LuceneIndex {
    */
 
   boolean isIndexingInProgress();
+
+  /**
+   * Returns an unmodifiable map of vector field names to their {@link VectorIndexMetadata}
+   * descriptors configured on this index.
+   *
+   * @return map of vector field names to {@link VectorIndexMetadata}, or an empty map if no vector
+   *         fields are configured
+   * @since Geode 2.1
+   */
+  default Map<String, VectorIndexMetadata> getVectorFields() {
+    return Collections.emptyMap();
+  }
 
 }

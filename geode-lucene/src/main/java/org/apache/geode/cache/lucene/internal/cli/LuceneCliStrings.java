@@ -47,6 +47,18 @@ public class LuceneCliStrings {
   public static final String LUCENE_CREATE_INDEX__SERIALIZER = "serializer";
   public static final String LUCENE_CREATE_INDEX__SERIALIZER_HELP =
       "Fully qualified class name of the LuceneSerializer to use with this index.\n";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_FIELD = "vector-field";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_FIELD_HELP =
+      "Vector field name(s) on the region values to index using Lucene HNSW.";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_DIM = "vector-dim";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_DIM_HELP =
+      "Vector dimensionality corresponding to each --vector-field (positive integer).";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_SIMILARITY = "vector-similarity";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_SIMILARITY_HELP =
+      "Vector similarity function (COSINE, DOT_PRODUCT, EUCLIDEAN) for each --vector-field. Defaults to COSINE.";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_SQ8 = "vector-sq8";
+  public static final String LUCENE_CREATE_INDEX__VECTOR_SQ8_HELP =
+      "Enable 8-bit scalar quantization (true/false) for each --vector-field. Defaults to false.";
 
   // Describe lucene index commands
   public static final String LUCENE_DESCRIBE_INDEX = "describe lucene index";
@@ -81,6 +93,18 @@ public class LuceneCliStrings {
   public static final String LUCENE_SEARCH_INDEX__KEYSONLY = "keys-only";
   public static final String LUCENE_SEARCH_INDEX__KEYSONLY__HELP =
       "Return only keys of search results.";
+  public static final String LUCENE_SEARCH_INDEX__VECTOR_FIELD = "vector-field";
+  public static final String LUCENE_SEARCH_INDEX__VECTOR_FIELD__HELP =
+      "Vector field name to search when executing a k-NN query. Optional if the index defines a single vector field.";
+  public static final String LUCENE_SEARCH_INDEX__QUERY_VECTOR = "query-vector";
+  public static final String LUCENE_SEARCH_INDEX__QUERY_VECTOR__HELP =
+      "Comma-separated float query vector (e.g. \"0.1,0.2,0.3\") for k-NN vector search.";
+  public static final String LUCENE_SEARCH_INDEX__K = "k";
+  public static final String LUCENE_SEARCH_INDEX__K__HELP =
+      "Number of nearest neighbors (top-k) to return for a vector k-NN search.";
+  public static final String LUCENE_SEARCH_INDEX__FILTER_QUERY = "filter-query";
+  public static final String LUCENE_SEARCH_INDEX__FILTER_QUERY__HELP =
+      "Optional Lucene metadata filter query applied during pre-filtered HNSW k-NN search.";
 
   // Destroy lucene index command
   public static final String LUCENE_DESTROY_INDEX = "destroy lucene index";

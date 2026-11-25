@@ -62,7 +62,9 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
       return Collections.emptyList();
     }
 
-    LuceneSerializer mapper = getFieldMapper(value, index.getFieldNames());
+    String[] indexedFields =
+        index.getFieldNames() == null ? new String[0] : index.getFieldNames();
+    LuceneSerializer mapper = getFieldMapper(value, indexedFields);
 
     Collection<Document> docs = mapper.toDocuments(index, value);
     if (logger.isDebugEnabled()) {

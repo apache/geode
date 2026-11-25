@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.cli;
 
+import java.util.Arrays;
+
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 
 public class LuceneQueryInfo extends LuceneFunctionSerializable {
@@ -23,14 +25,28 @@ public class LuceneQueryInfo extends LuceneFunctionSerializable {
   private final String defaultField;
   private final int limit;
   private final boolean keysOnly;
+  private final String vectorField;
+  private final float[] queryVector;
+  private final int k;
+  private final String filterQuery;
 
   public LuceneQueryInfo(final String indexName, final String regionPath, final String queryString,
       final String defaultField, final int limit, final boolean keysOnly) {
+    this(indexName, regionPath, queryString, defaultField, limit, keysOnly, null, null, -1, null);
+  }
+
+  public LuceneQueryInfo(final String indexName, final String regionPath, final String queryString,
+      final String defaultField, final int limit, final boolean keysOnly,
+      final String vectorField, final float[] queryVector, final int k, final String filterQuery) {
     super(indexName, regionPath);
     this.queryString = queryString;
     this.defaultField = defaultField;
     this.limit = limit;
     this.keysOnly = keysOnly;
+    this.vectorField = vectorField;
+    this.queryVector = queryVector == null ? null : Arrays.copyOf(queryVector, queryVector.length);
+    this.k = k;
+    this.filterQuery = filterQuery;
   }
 
   public String getQueryString() {
@@ -51,6 +67,30 @@ public class LuceneQueryInfo extends LuceneFunctionSerializable {
 
   public boolean getKeysOnly() {
     return keysOnly;
+  }
+
+  public String getVectorField() {
+    return vectorField;
+  }
+
+  public float[] getQueryVector() {
+    return queryVector == null ? null : Arrays.copyOf(queryVector, queryVector.length);
+  }
+
+  public int getK() {
+    return k;
+  }
+
+  public int getEffectiveK() {
+    return k > 0 ? k : getLimit();
+  }
+
+  public String getFilterQuery() {
+    return filterQuery;
+  }
+
+  public boolean isVectorQuery() {
+    return queryVector != null && queryVector.length > 0;
   }
 
 }

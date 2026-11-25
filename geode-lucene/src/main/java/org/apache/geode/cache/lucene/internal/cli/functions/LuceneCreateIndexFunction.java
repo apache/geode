@@ -19,6 +19,8 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateLuceneIndexName;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateRegionName;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -29,6 +31,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
@@ -82,20 +85,31 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
       String serializerName = indexInfo.getSerializer();
+      Map<String, VectorIndexMetadata> vectorFields = indexInfo.getVectorFields();
 
       final LuceneIndexFactoryImpl indexFactory =
           (LuceneIndexFactoryImpl) service.createIndexFactory();
-      if (analyzerName == null || analyzerName.length == 0) {
-        for (String field : fields) {
-          indexFactory.addField(field);
+      if (fields != null && fields.length > 0) {
+        if (analyzerName == null || analyzerName.length == 0) {
+          for (String field : fields) {
+            indexFactory.addField(field);
+          }
+        } else {
+          if (analyzerName.length != fields.length) {
+            throw new Exception("Mismatch in lengths of fields and analyzers");
+          }
+          for (int i = 0; i < fields.length; i++) {
+            Analyzer analyzer = toAnalyzer(analyzerName[i]);
+            indexFactory.addField(fields[i], analyzer);
+          }
         }
-      } else {
-        if (analyzerName.length != fields.length) {
-          throw new Exception("Mismatch in lengths of fields and analyzers");
-        }
-        for (int i = 0; i < fields.length; i++) {
-          Analyzer analyzer = toAnalyzer(analyzerName[i]);
-          indexFactory.addField(fields[i], analyzer);
+      } else if (analyzerName != null && analyzerName.length > 0) {
+        throw new Exception("Mismatch in lengths of fields and analyzers");
+      }
+
+      if (vectorFields != null && !vectorFields.isEmpty()) {
+        for (VectorIndexMetadata vectorMetadata : vectorFields.values()) {
+          indexFactory.addVectorField(vectorMetadata);
         }
       }
 

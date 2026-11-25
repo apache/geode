@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -30,6 +31,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.VectorIndexMetadata;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.InternalCache;
@@ -48,6 +50,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected final LuceneIndexStats indexStats;
 
   protected Map<String, Analyzer> fieldAnalyzers;
+  protected Map<String, VectorIndexMetadata> vectorFields = Collections.emptyMap();
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
   protected Analyzer analyzer;
@@ -139,6 +142,20 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   @Override
+  public Map<String, VectorIndexMetadata> getVectorFields() {
+    return vectorFields;
+  }
+
+  public void setVectorFields(Map<String, VectorIndexMetadata> vectorFields) {
+    this.vectorFields = vectorFields == null || vectorFields.isEmpty()
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(new LinkedHashMap<>(vectorFields));
+    if (indexStats != null) {
+      indexStats.setVectorFieldCount(this.vectorFields.size());
+    }
+  }
+
+  @Override
   public LuceneIndexStats getIndexStats() {
     return indexStats;
   }
@@ -209,6 +226,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.addFieldNames(getFieldNames());
     creation.setRegion(dataRegion);
     creation.setFieldAnalyzers(getFieldAnalyzers());
+    creation.setVectorFields(getVectorFields());
     creation.setLuceneSerializer(getLuceneSerializer());
     dataRegion.getExtensionPoint().addExtension(creation);
   }

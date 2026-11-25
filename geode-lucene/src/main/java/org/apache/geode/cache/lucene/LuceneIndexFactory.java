@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.VectorSimilarityFunction;
 
 /**
  * A factory for creating a lucene index on the current member. Obtain a factory from
@@ -95,4 +96,60 @@ public interface LuceneIndexFactory {
    * @since Geode 1.4
    */
   LuceneIndexFactory setLuceneSerializer(LuceneSerializer luceneSerializer);
+
+  /**
+   * Add a vector field to be indexed using HNSW approximate nearest-neighbor search with default
+   * HNSW graph parameters ({@link VectorIndexMetadata#DEFAULT_MAX_CONNECTIONS} and
+   * {@link VectorIndexMetadata#DEFAULT_BEAM_WIDTH}).
+   *
+   * @param name Name of the vector field on the POJO or {@link org.apache.geode.pdx.PdxInstance}.
+   * @param dimension Dimensionality of the float vector (must be &gt; 0).
+   * @param similarity Similarity metric ({@link VectorSimilarityFunction#COSINE},
+   *        {@link VectorSimilarityFunction#DOT_PRODUCT}, or
+   *        {@link VectorSimilarityFunction#EUCLIDEAN}).
+   * @param sq8 If {@code true}, enables scalar quantization (SQ8).
+   * @return this factory
+   * @throws IllegalArgumentException if {@code name} is null/empty, {@code dimension <= 0}, or
+   *         {@code similarity} is null
+   * @since Geode 2.1
+   */
+  default LuceneIndexFactory addVectorField(String name, int dimension,
+      VectorSimilarityFunction similarity, boolean sq8) {
+    return addVectorField(name, dimension, similarity,
+        VectorIndexMetadata.DEFAULT_MAX_CONNECTIONS, VectorIndexMetadata.DEFAULT_BEAM_WIDTH, sq8);
+  }
+
+  /**
+   * Add a vector field to be indexed using HNSW approximate nearest-neighbor search with explicit
+   * HNSW graph construction parameters.
+   *
+   * @param name Name of the vector field on the POJO or {@link org.apache.geode.pdx.PdxInstance}.
+   * @param dimension Dimensionality of the float vector (must be &gt; 0).
+   * @param similarity Similarity metric.
+   * @param maxConnections Maximum number of bidirectional links per HNSW node (M, must be &gt; 0).
+   * @param beamWidth Size of the dynamic candidate list during HNSW graph construction
+   *        (efConstruction, must be &gt; 0).
+   * @param sq8 If {@code true}, enables scalar quantization (SQ8).
+   * @return this factory
+   * @throws IllegalArgumentException if any parameter is invalid
+   * @since Geode 2.1
+   */
+  default LuceneIndexFactory addVectorField(String name, int dimension,
+      VectorSimilarityFunction similarity, int maxConnections, int beamWidth, boolean sq8) {
+    return addVectorField(
+        new VectorIndexMetadata(name, dimension, similarity, maxConnections, beamWidth, sq8));
+  }
+
+  /**
+   * Add a vector field configured by an immutable {@link VectorIndexMetadata} descriptor.
+   *
+   * @param metadata The vector field metadata descriptor (must not be null).
+   * @return this factory
+   * @throws IllegalArgumentException if {@code metadata} is null
+   * @since Geode 2.1
+   */
+  default LuceneIndexFactory addVectorField(VectorIndexMetadata metadata) {
+    throw new UnsupportedOperationException(
+        "Vector fields are not supported by " + getClass().getName());
+  }
 }

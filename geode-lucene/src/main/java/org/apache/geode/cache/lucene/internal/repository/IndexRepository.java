@@ -79,4 +79,21 @@ public interface IndexRepository {
    * Clean up any resources associated with this index repository.
    */
   void cleanup();
+
+  /**
+   * Compact the underlying Lucene index to at most {@code maxSegments} segments if its live leaf
+   * count currently exceeds {@code maxSegments}. Intended as an internal bounded compaction helper
+   * for vector-enabled indexes to prevent tiny HNSW segment proliferation under frequent commits.
+   *
+   * @param maxSegments maximum desired number of live segments (must be {@code >= 1})
+   * @return {@code true} if compaction ran, {@code false} if already within budget or closed
+   * @throws IOException if Lucene fails to merge, commit, or refresh the index
+   * @throws IllegalArgumentException if {@code maxSegments < 1}
+   */
+  default boolean maybeCompactSegments(int maxSegments) throws IOException {
+    if (maxSegments < 1) {
+      throw new IllegalArgumentException("maxSegments must be >= 1, got: " + maxSegments);
+    }
+    return false;
+  }
 }
