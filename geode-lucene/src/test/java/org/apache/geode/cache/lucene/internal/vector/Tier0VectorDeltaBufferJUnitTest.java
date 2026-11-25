@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
@@ -898,6 +899,117 @@ public class Tier0VectorDeltaBufferJUnitTest {
     for (int i = 1; i < numKeys; i += 2) {
       assertThat(snap.isTombstoned("race-" + i)).isTrue();
     }
+  }
+
+  @Test
+  public void snapshotSeqlockFencesOutStaleFlushingTombstoneAfterConcurrentEviction() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(14);
+    float[] vec1 = new float[] {1f, 0f, 0f};
+    float[] vec2 = new float[] {0.9f, 0.1f, 0f};
+
+    long put1Seq = buffer.put("recreated", vec1, Map.of("v", 1));
+    Tier0VectorDeltaBuffer.FlushBatch<String> initBatch = buffer.beginFlush();
+    buffer.completeFlush(initBatch.getEpoch());
+    buffer.evictCommitted(Collections.singletonMap("recreated", put1Seq));
+
+    // Tombstone e1 enters E_flushing; live recreation e2 > e1 enters E_active.
+    buffer.destroy("recreated");
+    Tier0VectorDeltaBuffer.FlushBatch<String> tombBatch = buffer.beginFlush();
+    assertThat(tombBatch).isNotNull();
+    long recreateSeq = buffer.put("recreated", vec2, Map.of("v", 2));
+
+    // Deterministically simulate Path-A committing e2 to Lucene and evicting both epochs right
+    // after snapshot() scans stale tombstone e1 in E_flushing and before scanning E_active.
+    AtomicInteger hookInvocations = new AtomicInteger(0);
+    long beforeVersion = buffer.getEvictionVersion();
+    assertThat(beforeVersion % 2L).isEqualTo(0L);
+
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot(() -> {
+      hookInvocations.incrementAndGet();
+      buffer.evictCommitted(Collections.singletonMap("recreated", recreateSeq));
+    });
+
+    assertThat(hookInvocations.get()).isEqualTo(1);
+    assertThat(buffer.getEvictionVersion()).isGreaterThan(beforeVersion);
+    assertThat(buffer.getEvictionVersion() % 2L).isEqualTo(0L);
+    // Seqlock fence must have retried after eviction and never exposed stale tombstone e1 in T_mask
+    assertThat(snap.getTombstonedKeys()).doesNotContain("recreated");
+    assertThat(snap.getMaskedKeys()).doesNotContain("recreated");
+    assertThat(snap.isEmpty()).isTrue();
+  }
+
+  @Test
+  public void snapshotSeqlockFencesOutCompleteFlushMidSnapshot() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(15);
+    buffer.put("k1", new float[] {1f, 0f});
+    buffer.destroy("k1");
+    Tier0VectorDeltaBuffer.FlushBatch<String> tombBatch = buffer.beginFlush();
+    long seq2 = buffer.put("k1", new float[] {0.5f, 0.5f});
+
+    Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot(() -> {
+      buffer.completeFlush(tombBatch.getEpoch());
+      buffer.evictCommitted(Collections.singletonMap("k1", seq2));
+    });
+
+    assertThat(snap.getTombstonedKeys()).doesNotContain("k1");
+    assertThat(snap.getMaskedKeys()).doesNotContain("k1");
+  }
+
+  @Test
+  public void snapshotUnderConcurrentEvictAndRecreateChurnNeverExposesStaleTombstone()
+      throws Exception {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(16);
+    final int cycles = 1500;
+    final AtomicBoolean done = new AtomicBoolean(false);
+    final AtomicInteger recreatedUpTo = new AtomicInteger(-1);
+    final AtomicInteger snapshotsChecked = new AtomicInteger(0);
+    final AtomicInteger violationCycle = new AtomicInteger(-1);
+
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try {
+      Future<?> reader = pool.submit(() -> {
+        while (!done.get() && violationCycle.get() < 0) {
+          // Read volatile bound BEFORE snapshot() so any key <= bound was already recreated live
+          // before snapshot() started; stale E_flushing tombstones must never appear.
+          int mustNeverTombstoneUpTo = recreatedUpTo.get();
+          Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+          snapshotsChecked.incrementAndGet();
+          for (String tombKey : snap.getTombstonedKeys()) {
+            int cycle = Integer.parseInt(tombKey.substring(2));
+            if (cycle <= mustNeverTombstoneUpTo) {
+              violationCycle.compareAndSet(-1, cycle);
+            }
+          }
+        }
+      });
+
+      for (int i = 0; i < cycles; i++) {
+        String key = "k-" + i;
+        buffer.destroy(key);
+        Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+        long liveSeq = buffer.put(key, new float[] {0f, 1f}, Map.of("cycle", i));
+        recreatedUpTo.set(i);
+        if (i % 2 == 0) {
+          buffer.evictCommitted(Collections.singletonMap(key, liveSeq));
+          if (batch != null) {
+            buffer.completeFlush(batch.getEpoch());
+          }
+        } else {
+          if (batch != null) {
+            buffer.completeFlush(batch.getEpoch());
+          }
+          buffer.evictCommitted(Collections.singletonMap(key, liveSeq));
+        }
+      }
+      done.set(true);
+      reader.get(15, TimeUnit.SECONDS);
+    } finally {
+      pool.shutdownNow();
+    }
+
+    assertThat(violationCycle.get()).isEqualTo(-1);
+    assertThat(snapshotsChecked.get()).isGreaterThan(0);
+    assertThat(buffer.getEvictionVersion() % 2L).isEqualTo(0L);
   }
 
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,

@@ -274,22 +274,28 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
           ? parallelQueue.getBucketToTempQueueMap().get(bucketId)
           : concurrentQueue.getBucketTmpQueue(bucketId);
 
-      List<GatewaySenderEventImpl> shadowEvents =
+      List<ShadowEventRecord> shadowEvents =
           collectUncommittedShadowEvents(shadowBucket, tempQueue, pr.getFullPath());
       Map<Object, GatewaySenderEventImpl> latestByUserKey = collapseLatestByUserKey(shadowEvents);
 
       registry.incrementAeqDeltaHydrationCount();
+      long keysRestored = 0L;
       for (Map.Entry<Object, GatewaySenderEventImpl> entry : latestByUserKey.entrySet()) {
         Object key = entry.getKey();
         if (buffer.containsKey(key)) {
           continue;
         }
         if (isDestroyOrInvalidateEvent(entry.getValue())) {
-          reconcileTombstone(key, buffer, registry);
+          if (reconcileTombstone(key, buffer, registry)) {
+            keysRestored++;
+          }
         } else {
-          hydrateLiveOrMissingEntry(bucket, key, buffer, registry);
+          if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry)) {
+            keysRestored++;
+          }
         }
       }
+      registry.recordLastHydrationStats(shadowEvents.size(), keysRestored);
       return true;
     }
 
@@ -317,36 +323,59 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       return concurrentQueue != null ? concurrentQueue.getRegion(path) : null;
     }
 
-    private List<GatewaySenderEventImpl> collectUncommittedShadowEvents(BucketRegion shadowBucket,
+    private List<ShadowEventRecord> collectUncommittedShadowEvents(BucketRegion shadowBucket,
         BlockingQueue<GatewaySenderEventImpl> tempQueue, String regionPath) {
-      List<GatewaySenderEventImpl> events = new ArrayList<>();
+      List<ShadowEventRecord> events = new ArrayList<>();
+      int orderIndex = 0;
       Set<Object> shadowKeys = shadowBucket.keySet();
       if (shadowKeys != null && !shadowKeys.isEmpty()) {
-        List<Object> orderedKeys = new ArrayList<>(shadowKeys);
-        orderedKeys.sort((a, b) -> {
-          if (a instanceof Long && b instanceof Long) {
-            return Long.compare((Long) a, (Long) b);
-          }
-          return 0;
-        });
-        for (Object shadowKey : orderedKeys) {
+        for (Object shadowKey : shadowKeys) {
           GatewaySenderEventImpl event = readShadowEvent(shadowBucket, shadowKey);
           if (event != null && matchesRegionPath(event, regionPath)) {
-            events.add(event);
+            events.add(new ShadowEventRecord(
+                resolveEffectiveShadowKey(event, shadowKey),
+                resolveEventTimestamp(event),
+                0,
+                orderIndex++,
+                event));
           }
         }
       }
       if (tempQueue != null && !tempQueue.isEmpty()) {
         for (GatewaySenderEventImpl event : tempQueue) {
           if (event != null && matchesRegionPath(event, regionPath)) {
-            events.add(event);
+            events.add(new ShadowEventRecord(
+                resolveEffectiveShadowKey(event, null),
+                resolveEventTimestamp(event),
+                1,
+                orderIndex++,
+                event));
           }
         }
       }
       if (events.size() > 1) {
-        events.sort((a, b) -> Long.compare(a.getShadowKey(), b.getShadowKey()));
+        Collections.sort(events);
       }
       return events;
+    }
+
+    private static long resolveEffectiveShadowKey(GatewaySenderEventImpl event, Object mapKey) {
+      Long eventShadowKey = event.getShadowKey();
+      if (eventShadowKey != null && eventShadowKey > 0L) {
+        return eventShadowKey;
+      }
+      if (mapKey instanceof Long) {
+        return (Long) mapKey;
+      }
+      if (mapKey instanceof Number) {
+        return ((Number) mapKey).longValue();
+      }
+      return eventShadowKey != null ? eventShadowKey : Long.MIN_VALUE;
+    }
+
+    private static long resolveEventTimestamp(GatewaySenderEventImpl event) {
+      long versionTimestamp = event.getVersionTimeStamp();
+      return versionTimestamp > 0L ? versionTimestamp : event.getCreationTime();
     }
 
     private GatewaySenderEventImpl readShadowEvent(BucketRegion shadowBucket, Object shadowKey) {
@@ -386,15 +415,56 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     }
 
     private static Map<Object, GatewaySenderEventImpl> collapseLatestByUserKey(
-        List<GatewaySenderEventImpl> events) {
-      Map<Object, GatewaySenderEventImpl> latestByUserKey = new LinkedHashMap<>(events.size());
-      for (GatewaySenderEventImpl event : events) {
-        Object userKey = event.getKey();
+        List<ShadowEventRecord> events) {
+      Map<Object, ShadowEventRecord> latestRecords = new LinkedHashMap<>(events.size());
+      for (ShadowEventRecord record : events) {
+        Object userKey = record.event.getKey();
         if (userKey != null) {
-          latestByUserKey.put(userKey, event);
+          latestRecords.merge(
+              userKey, record, (existing, incoming) -> incoming.compareTo(existing) >= 0
+                  ? incoming : existing);
         }
       }
+      Map<Object, GatewaySenderEventImpl> latestByUserKey =
+          new LinkedHashMap<>(latestRecords.size());
+      for (Map.Entry<Object, ShadowEventRecord> entry : latestRecords.entrySet()) {
+        latestByUserKey.put(entry.getKey(), entry.getValue().event);
+      }
       return latestByUserKey;
+    }
+
+    private static final class ShadowEventRecord implements Comparable<ShadowEventRecord> {
+      private final long effectiveShadowKey;
+      private final long eventTimestamp;
+      private final int sourceRank;
+      private final int orderIndex;
+      private final GatewaySenderEventImpl event;
+
+      ShadowEventRecord(long effectiveShadowKey, long eventTimestamp, int sourceRank,
+          int orderIndex, GatewaySenderEventImpl event) {
+        this.effectiveShadowKey = effectiveShadowKey;
+        this.eventTimestamp = eventTimestamp;
+        this.sourceRank = sourceRank;
+        this.orderIndex = orderIndex;
+        this.event = event;
+      }
+
+      @Override
+      public int compareTo(ShadowEventRecord other) {
+        int cmp = Long.compare(this.effectiveShadowKey, other.effectiveShadowKey);
+        if (cmp != 0) {
+          return cmp;
+        }
+        cmp = Long.compare(this.eventTimestamp, other.eventTimestamp);
+        if (cmp != 0) {
+          return cmp;
+        }
+        cmp = Integer.compare(this.sourceRank, other.sourceRank);
+        if (cmp != 0) {
+          return cmp;
+        }
+        return Integer.compare(this.orderIndex, other.orderIndex);
+      }
     }
 
     private static boolean isDestroyOrInvalidateEvent(GatewaySenderEventImpl event) {
@@ -409,38 +479,45 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     private void hydrateFromFullBucketScan(BucketRegion bucket,
         Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
       registry.incrementFullScanHydrationCount();
+      long eventsInspected = 0L;
+      long keysRestored = 0L;
       Set<Object> liveKeys = bucket.keySet();
       if (liveKeys != null) {
         for (Object key : liveKeys) {
-          hydrateLiveOrMissingEntry(bucket, key, buffer, registry);
+          eventsInspected++;
+          if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry)) {
+            keysRestored++;
+          }
         }
       }
       RegionMap regionMap = bucket.getRegionMap();
       if (regionMap != null) {
         for (RegionEntry re : regionMap.regionEntries()) {
           if (re != null && re.isTombstone()) {
+            eventsInspected++;
             Object tombKey = re.getKey();
-            if (tombKey != null && !buffer.containsKey(tombKey)) {
-              reconcileTombstone(tombKey, buffer, registry);
+            if (tombKey != null && !buffer.containsKey(tombKey)
+                && reconcileTombstone(tombKey, buffer, registry)) {
+              keysRestored++;
             }
           }
         }
       }
+      registry.recordLastHydrationStats(eventsInspected, keysRestored);
     }
 
-    private void hydrateLiveOrMissingEntry(BucketRegion bucket, Object key,
+    private boolean hydrateLiveOrMissingEntry(BucketRegion bucket, Object key,
         Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
       if (buffer.containsKey(key)) {
-        return;
+        return false;
       }
       V val = readEntryValueWithoutDeserializingPdx(bucket, key);
       if (val == null) {
-        reconcileTombstone(key, buffer, registry);
-        return;
+        return reconcileTombstone(key, buffer, registry);
       }
       float[] vec = vectorExtractor.apply(val);
       if (vec == null || vec.length == 0) {
-        return;
+        return false;
       }
       Map<String, Object> metadata = metadataExtractor.apply(val);
       // Re-verify the entry still exists in the bucket and use putIfAbsent so hydration can
@@ -448,18 +525,21 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       if (bucket.getEntry(key) != null) {
         if (buffer.putIfAbsent(key, vec, metadata) >= 0L) {
           registry.incrementHydratedKeysCount();
+          return true;
         }
-      } else {
-        reconcileTombstone(key, buffer, registry);
+        return false;
       }
+      return reconcileTombstone(key, buffer, registry);
     }
 
-    private static void reconcileTombstone(Object key, Tier0VectorDeltaBuffer<Object> buffer,
+    private static boolean reconcileTombstone(Object key, Tier0VectorDeltaBuffer<Object> buffer,
         Tier0VectorRegistry registry) {
       if (buffer.deleteIfAbsent(key) >= 0L) {
         registry.incrementHydratedKeysCount();
         registry.incrementHydratedTombstonesCount();
+        return true;
       }
+      return false;
     }
 
     @SuppressWarnings("unchecked")

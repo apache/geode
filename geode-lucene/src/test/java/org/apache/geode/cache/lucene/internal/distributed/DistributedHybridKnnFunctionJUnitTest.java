@@ -38,6 +38,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.codecs.KnnVectorsFormat;
@@ -808,6 +814,295 @@ public class DistributedHybridKnnFunctionJUnitTest {
         assertThat(hit.getScore()).isCloseTo(exactFp32, within(1e-5f));
         if (i > 0) {
           assertThat(hits.get(i - 1).getScore()).isGreaterThanOrEqualTo(hit.getScore());
+        }
+      }
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void pathBBarrierHoldsWriteLockAcrossSearcherCutBlockingConcurrentOverwriteAndRecreation()
+      throws Exception {
+    DistributedHybridKnnFunction.resetUnsupportedFilterFlushFallbackCount();
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()));
+        SearcherManager searcherManager = new SearcherManager(writer, true, true, null)) {
+
+      CountDownLatch commitReached = new CountDownLatch(1);
+      AtomicBoolean armed = new AtomicBoolean(false);
+      AtomicBoolean concurrentWriterBlockedWhileCommitRunning = new AtomicBoolean(false);
+      AtomicBoolean lockHeldAtAcquire = new AtomicBoolean(false);
+      AtomicBoolean lockReleasedAtAcquire = new AtomicBoolean(false);
+      AtomicBoolean concurrentWriterCompleted = new AtomicBoolean(false);
+      AtomicBoolean queryCallbackRan = new AtomicBoolean(false);
+
+      float[] overwriteVec = new float[] {0.95f, 0.31f, 0f, 0f};
+      float[] initialBooksVec = new float[] {1f, 0f, 0f, 0f};
+      float[] freshPendingVec = new float[] {0.8f, 0.6f, 0f, 0f};
+
+      when(mockRegion.get("doc-books")).thenReturn(new Object[] {initialBooksVec, "books"});
+      when(mockRegion.get("doc-init")).thenReturn(new Object[] {freshPendingVec, "books"});
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+      Tier0VectorDeltaBuffer<Object> buffer =
+          registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+
+      IndexRepository bareRepo = new IndexRepository() {
+        @Override
+        public void create(Object key, Object value) throws IOException {
+          update(key, value);
+        }
+
+        @Override
+        public void update(Object key, Object value) throws IOException {
+          Object[] pair = (Object[]) value;
+          Document doc = new Document();
+          org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil.addKey(key,
+              doc);
+          doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+              VectorSimilarityFunction.COSINE));
+          doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+          writer.updateDocument(
+              org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil
+                  .toKeyTerm(key),
+              doc);
+        }
+
+        @Override
+        public void delete(Object key) throws IOException {
+          writer.deleteDocuments(
+              org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil
+                  .toKeyTerm(key));
+        }
+
+        @Override
+        public void query(Query query, int limit, IndexResultCollector collector)
+            throws IOException {
+          query(query, limit, collector, null);
+        }
+
+        @Override
+        public void query(Query query, int limit, IndexResultCollector collector,
+            Runnable onSearcherAcquired) throws IOException {
+          IndexSearcher searcher = searcherManager.acquire();
+          try {
+            if (onSearcherAcquired != null) {
+              // Concurrent overwrite must still be blocked right at searcher acquisition!
+              concurrentWriterBlockedWhileCommitRunning.set(!concurrentWriterCompleted.get());
+              lockHeldAtAcquire.set(buffer.isPathBWriteHeldByCurrentThread());
+              onSearcherAcquired.run();
+              lockReleasedAtAcquire.set(!buffer.isPathBWriteHeldByCurrentThread());
+              queryCallbackRan.set(true);
+            }
+            TopDocs td = searcher.search(query, limit);
+            for (ScoreDoc sd : td.scoreDocs) {
+              Object k = org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil
+                  .getKey(searcher.storedFields().document(sd.doc));
+              collector.collect(k, sd.score);
+            }
+          } finally {
+            searcherManager.release(searcher);
+          }
+        }
+
+        @Override
+        public void commit() throws IOException {
+          writer.commit();
+          searcherManager.maybeRefresh();
+        }
+
+        @Override
+        public void commitAndRefreshBlocking() throws IOException {
+          writer.commit();
+          searcherManager.maybeRefreshBlocking();
+          if (armed.get()) {
+            commitReached.countDown();
+            // Yield briefly so concurrent writer thread enters readLock().lock() before
+            // searcher cut.
+            try {
+              Thread.sleep(25L);
+            } catch (InterruptedException ie) {
+              Thread.currentThread().interrupt();
+            }
+          }
+        }
+
+        @Override
+        public IndexWriter getWriter() {
+          return writer;
+        }
+
+        @Override
+        public Region<?, ?> getRegion() {
+          return mockRegion;
+        }
+
+        @Override
+        public boolean isClosed() {
+          return false;
+        }
+
+        @Override
+        public void cleanup() {}
+      };
+
+      // Seed "doc-books" in Lucene and put "doc-init" into Tier-0 to trigger Path B
+      bareRepo.update("doc-books", new Object[] {initialBooksVec, "books"});
+      bareRepo.commitAndRefreshBlocking();
+      registry.recordPut(REGION_PATH, INDEX_NAME, 0, "doc-init", freshPendingVec,
+          Map.of("category", "books"));
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, bareRepo));
+      armed.set(true);
+
+      ExecutorService pool = Executors.newSingleThreadExecutor();
+      Future<?> writerFuture;
+      try {
+        writerFuture = pool.submit(() -> {
+          if (!commitReached.await(5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("commitReached timed out");
+          }
+          // Concurrent matching overwrite on already-committed "doc-books" and fresh creation
+          buffer.put("doc-books", overwriteVec, Map.of("category", "books"));
+          buffer.put("doc-after-cut", overwriteVec, Map.of("category", "books"));
+          concurrentWriterCompleted.set(true);
+          return null;
+        });
+
+        HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, initialBooksVec, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("category:boks~1", "category")
+            .build();
+        when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+
+        new DistributedHybridKnnFunction().execute(mockContext);
+        writerFuture.get(5, TimeUnit.SECONDS);
+      } finally {
+        pool.shutdownNow();
+      }
+
+      assertThat(queryCallbackRan.get()).isTrue();
+      assertThat(lockHeldAtAcquire.get()).isTrue();
+      assertThat(lockReleasedAtAcquire.get()).isTrue();
+      assertThat(concurrentWriterBlockedWhileCommitRunning.get()).isTrue();
+      assertThat(concurrentWriterCompleted.get()).isTrue();
+      assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
+
+      ArgumentCaptor<TopEntriesCollector> resultCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(mockResultSender).lastResult(resultCaptor.capture());
+      List<EntryScore> hits = resultCaptor.getValue().getEntries().getHits();
+      // Both doc-books and doc-init MUST be returned; doc-books was NEVER masked/dropped!
+      assertThat(hits).extracting(EntryScore::getKey)
+          .containsExactlyInAnyOrder("doc-books", "doc-init");
+      // Concurrent writes executed strictly AFTER searcher cut remain safely in Tier-0
+      assertThat(buffer.containsKey("doc-books")).isTrue();
+      assertThat(buffer.containsKey("doc-after-cut")).isTrue();
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void pathBBarrierReleasesWriteLockWhenFp32RerankThrows() throws Exception {
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+    float[] q = new float[] {1f, 0f, 0f, 0f};
+    buffer.put("k-err", q, Map.of("category", "books"));
+    when(mockRegion.get("k-err")).thenReturn(new Object[] {q, "books"});
+
+    IndexRepository failingRepo = mock(IndexRepository.class);
+    when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+        .thenReturn(Map.of(0, failingRepo));
+    doThrow(new IOException("simulated searcher failure")).when(failingRepo)
+        .queryWithFp32Rerank(any(), anyInt(), anyInt(), any(), any(), any(), any(), any());
+
+    HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+        .builder(INDEX_NAME, VECTOR_FIELD, q, 5)
+        .similarityFunction(VectorSimilarityFunction.COSINE)
+        .rerankOversampleFactor(2)
+        .filterQuery("category:boks~1", "category")
+        .build();
+    when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+
+    assertThatThrownBy(() -> new DistributedHybridKnnFunction().execute(mockContext))
+        .isInstanceOf(InternalFunctionInvocationTargetException.class)
+        .hasCauseInstanceOf(IOException.class);
+
+    assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
+  }
+
+  @Test
+  public void indexRepositoryImplInvokesSearcherAcquiredBarrierBeforeScanning() throws Exception {
+    float[] q = new float[] {1f, 0f, 0f, 0f};
+    LuceneSerializer<float[]> serializer = (idx, vec) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, VectorSimilarityFunction.COSINE));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex);
+      repo.update("k1", q);
+      repo.commitAndRefreshBlocking();
+
+      Tier0VectorDeltaBuffer<Object> buffer = new Tier0VectorDeltaBuffer<>(0);
+      for (boolean useRerank : new boolean[] {false, true}) {
+        AtomicBoolean acquiredBeforeCollect = new AtomicBoolean(false);
+        AtomicBoolean writerDone = new AtomicBoolean(false);
+        AtomicBoolean writerBlockedAtAcquire = new AtomicBoolean(false);
+
+        buffer.lockPathBWrite();
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        try {
+          Future<?> writerFuture = pool.submit(() -> {
+            buffer.put("concurrent-" + useRerank, q);
+            writerDone.set(true);
+          });
+          // Let worker park on pathBBarrierLock.readLock() briefly
+          Thread.sleep(20L);
+
+          Runnable onAcquired = () -> {
+            writerBlockedAtAcquire.set(!writerDone.get());
+            buffer.unlockPathBWrite();
+            acquiredBeforeCollect.set(true);
+          };
+          List<Object> keys = new ArrayList<>();
+          IndexResultCollector collector = new IndexResultCollector() {
+            @Override
+            public String getName() {
+              return "barrier-test";
+            }
+
+            @Override
+            public int size() {
+              return keys.size();
+            }
+
+            @Override
+            public void collect(Object key, float score) {
+              assertThat(acquiredBeforeCollect.get()).isTrue();
+              keys.add(key);
+            }
+          };
+
+          if (useRerank) {
+            repo.queryWithFp32Rerank(new MatchAllDocsQuery(), 5, 5, VECTOR_FIELD, q,
+                VectorSimilarityFunction.COSINE, collector, onAcquired);
+          } else {
+            repo.query(new MatchAllDocsQuery(), 5, collector, onAcquired);
+          }
+
+          writerFuture.get(5, TimeUnit.SECONDS);
+          assertThat(writerBlockedAtAcquire.get()).isTrue();
+          assertThat(acquiredBeforeCollect.get()).isTrue();
+          assertThat(keys).containsExactly("k1");
+          assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
+        } finally {
+          pool.shutdownNow();
         }
       }
     }

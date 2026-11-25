@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -600,6 +601,78 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
     assertThat(buffer.snapshot().getTombstonedKeys())
         .containsExactlyInAnyOrder("tomb-a", "tomb-b");
+    assertThat(registry.getLastHydrationEventsInspected()).isEqualTo(2L);
+    assertThat(registry.getLastHydrationKeysRestored()).isEqualTo(2L);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void aeqDeltaHydrationResolvesOutOfOrderSameKeySequencesAndTempQueueTiebreak() {
+    int bucketId = 19;
+
+    // 1. Scramble shadowKey iteration order for multi-op same-key sequences:
+    // recreate-k: CREATE(10) -> DESTROY(20) -> UPDATE(30) => latest is LIVE
+    // deleted-k: CREATE(40) -> DESTROY(50) => latest is TOMBSTONE
+    // tiebreak-k: CREATE(60 in shadowBucket) vs DESTROY(60 in tempQueue) => tempQueue wins (TOMB)
+    // temp-recreate-k: DESTROY(70 in shadowBucket) vs UPDATE(80 in tempQueue) => LIVE
+    Map<Long, GatewaySenderEventImpl> shadowEntries = new LinkedHashMap<>();
+    shadowEntries.put(30L, mockShadowEvent("recreate-k", Operation.UPDATE, 30L));
+    shadowEntries.put(10L, mockShadowEvent("recreate-k", Operation.CREATE, 10L));
+    shadowEntries.put(20L, mockShadowEvent("recreate-k", Operation.DESTROY, 20L));
+    shadowEntries.put(50L, mockShadowEvent("deleted-k", Operation.DESTROY, 50L));
+    shadowEntries.put(40L, mockShadowEvent("deleted-k", Operation.CREATE, 40L));
+    shadowEntries.put(60L, mockShadowEvent("tiebreak-k", Operation.CREATE, 60L));
+    shadowEntries.put(70L, mockShadowEvent("temp-recreate-k", Operation.DESTROY, 70L));
+
+    LinkedBlockingQueue<GatewaySenderEventImpl> tempQueue = new LinkedBlockingQueue<>();
+    tempQueue.add(mockShadowEvent("tiebreak-k", Operation.DESTROY, 60L));
+    tempQueue.add(mockShadowEvent("temp-recreate-k", Operation.UPDATE, 80L));
+
+    Region.Entry<Object, Object> recreateEntry = mock(Region.Entry.class);
+    when(recreateEntry.getValue()).thenReturn(new float[] {1f, 0f});
+    Region.Entry<Object, Object> tempRecreateEntry = mock(Region.Entry.class);
+    when(tempRecreateEntry.getValue()).thenReturn(new float[] {0f, 1f});
+
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isEmpty()).thenReturn(false);
+    when(bucket.getEntry("recreate-k")).thenReturn(recreateEntry);
+    when(bucket.getEntry("deleted-k")).thenReturn(null);
+    when(bucket.getEntry("tiebreak-k")).thenReturn(null);
+    when(bucket.getEntry("temp-recreate-k")).thenReturn(tempRecreateEntry);
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(pr.getFullPath()).thenReturn(REGION_PATH);
+    when(pr.getRegionService()).thenReturn(cache);
+    when(pr.getDataStore()).thenReturn(dataStore);
+
+    wireMockAeqShadowBucket(pr, bucketId, shadowEntries, tempQueue);
+
+    Tier0VectorBucketListener<String, float[]> listener =
+        new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(pr);
+    partitionListener.afterPrimary(bucketId);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(1L);
+    assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+    assertThat(registry.getLastHydrationEventsInspected()).isEqualTo(9L);
+    assertThat(registry.getLastHydrationKeysRestored()).isEqualTo(4L);
+    assertThat(registry.getHydratedKeysCount()).isEqualTo(4L);
+    assertThat(registry.getHydratedTombstonesCount()).isEqualTo(2L);
+
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+    Tier0VectorDeltaBuffer.Snapshot<Object> snap = buffer.snapshot();
+    assertThat(snap.getLiveEntries().keySet())
+        .containsExactlyInAnyOrder("recreate-k", "temp-recreate-k");
+    assertThat(snap.getLiveEntries().get("recreate-k").getVector())
+        .containsExactly(1f, 0f);
+    assertThat(snap.getLiveEntries().get("temp-recreate-k").getVector())
+        .containsExactly(0f, 1f);
+    assertThat(snap.getTombstonedKeys())
+        .containsExactlyInAnyOrder("deleted-k", "tiebreak-k");
   }
 
   private GatewaySenderEventImpl mockShadowEvent(String key, Operation op, long shadowKey) {
@@ -611,9 +684,15 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     return event;
   }
 
-  @SuppressWarnings("unchecked")
   private void wireMockAeqShadowBucket(PartitionedRegion pr, int bucketId,
       Map<Long, GatewaySenderEventImpl> shadowEntries) {
+    wireMockAeqShadowBucket(pr, bucketId, shadowEntries, new LinkedBlockingQueue<>());
+  }
+
+  @SuppressWarnings("unchecked")
+  private void wireMockAeqShadowBucket(PartitionedRegion pr, int bucketId,
+      Map<Long, GatewaySenderEventImpl> shadowEntries,
+      LinkedBlockingQueue<GatewaySenderEventImpl> tempQueue) {
     BucketRegion shadowBucket = mock(BucketRegion.class);
     when(shadowBucket.isDestroyed()).thenReturn(false);
     when(shadowBucket.keySet()).thenReturn(new LinkedHashSet<>(shadowEntries.keySet()));
@@ -630,8 +709,7 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
 
     ParallelGatewaySenderQueue parallelQueue = mock(ParallelGatewaySenderQueue.class);
     when(parallelQueue.getRegion(REGION_PATH)).thenReturn(shadowPr);
-    when(parallelQueue.getBucketToTempQueueMap())
-        .thenReturn(Map.of(bucketId, new LinkedBlockingQueue<>()));
+    when(parallelQueue.getBucketToTempQueueMap()).thenReturn(Map.of(bucketId, tempQueue));
 
     ConcurrentParallelGatewaySenderQueue concurrentQueue =
         mock(ConcurrentParallelGatewaySenderQueue.class);

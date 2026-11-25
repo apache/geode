@@ -97,6 +97,7 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   private static final String VECTOR_FIELD = "embedding";
   private static final int NUM_BUCKETS = 16;
   private static final int DIM = 16;
+  private static final AtomicBoolean REMOTE_WRITER_STOP = new AtomicBoolean(false);
 
   private VM dataStore1;
   private VM dataStore2;
@@ -858,6 +859,284 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     });
     assertThat(postFlushAllHits).doesNotContainAnyElementsOf(destroyedKeys);
     assertThat(postFlushAllHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
+  }
+
+  @Test
+  public void pathBUnsupportedFuzzyFilterZeroDroppedMatchingEntriesUnderConcurrentOverwrites()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+
+    List<String> stableKeys = new ArrayList<>();
+    for (int i = 0; i < 12; i++) {
+      String key = "stable-books-" + i;
+      stableKeys.add(key);
+      float cos = 0.70f + 0.01f * i;
+      float[] vec = new float[DIM];
+      vec[0] = cos;
+      vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+      String finalKey = key;
+      accessor.invoke(() -> getCache().<String, VectorRecord>getRegion(REGION_NAME)
+          .put(finalKey, new VectorRecord(vec, "books", "all", "all")));
+    }
+    for (int i = 0; i < 12; i++) {
+      String noiseKey = "noise-" + i;
+      float cos = 0.90f - 0.005f * i;
+      float[] vec = new float[DIM];
+      vec[0] = cos;
+      vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+      accessor.invoke(() -> getCache().<String, VectorRecord>getRegion(REGION_NAME)
+          .put(noiseKey, new VectorRecord(vec, "other", "all", "all")));
+    }
+    waitForLuceneFlush(accessor);
+
+    // Pause AEQ so concurrent overwrites and fresh puts stay in Tier-0 E_active during Path B.
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    List<String> freshBooksKeys = List.of("fresh-books-0", "fresh-books-1");
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < freshBooksKeys.size(); i++) {
+        float cos = 0.85f + 0.02f * i;
+        float[] vec = new float[DIM];
+        vec[0] = cos;
+        vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+        region.put(freshBooksKeys.get(i), new VectorRecord(vec, "books", "all", "all"));
+      }
+    });
+
+    accessor.invoke(() -> REMOTE_WRITER_STOP.set(false));
+    ExecutorService writerPool = Executors.newSingleThreadExecutor();
+    try {
+      Future<?> writerFuture = writerPool.submit(() -> {
+        accessor.invoke(() -> {
+          Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+          long deadlineMs = System.currentTimeMillis() + 60_000L;
+          int iter = 0;
+          while (!REMOTE_WRITER_STOP.get() && System.currentTimeMillis() < deadlineMs) {
+            String targetKey = stableKeys.get(iter % stableKeys.size());
+            float cos = 0.72f + 0.005f * (iter % 10);
+            float[] vec = new float[DIM];
+            vec[0] = cos;
+            vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+            region.put(targetKey, new VectorRecord(vec, "books", "all", "all"));
+            iter++;
+          }
+          return null;
+        });
+        return null;
+      });
+
+      List<String> expectedAllMatching = new ArrayList<>(stableKeys);
+      expectedAllMatching.addAll(freshBooksKeys);
+
+      for (int q = 0; q < 20; q++) {
+        List<String> hits = accessor.invoke(() -> {
+          Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+          HybridKnnQueryContext ctx = HybridKnnQueryContext
+              .builder(INDEX_NAME, VECTOR_FIELD, query, 50)
+              .similarityFunction(VectorSimilarityFunction.COSINE)
+              .filterQuery("sel1:boks~1", "sel1")
+              .build();
+          return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+        });
+        assertThat(hits)
+            .as("Path-B FuzzyQuery iteration %d must never drop concurrently overwritten keys", q)
+            .containsAll(expectedAllMatching);
+        for (String hit : hits) {
+          assertThat(hit).doesNotStartWith("noise-");
+        }
+      }
+
+      accessor.invoke(() -> REMOTE_WRITER_STOP.set(true));
+      writerFuture.get(30, TimeUnit.SECONDS);
+    } finally {
+      accessor.invoke(() -> REMOTE_WRITER_STOP.set(true));
+      writerPool.shutdownNow();
+    }
+
+    dataStore1.invoke(() -> {
+      resumeIndexAeq(getCache());
+      for (Tier0VectorDeltaBuffer<Object> buf : Tier0VectorRegistry.forCache(getCache())
+          .getBuckets("/" + REGION_NAME, INDEX_NAME).values()) {
+        assertThat(buf.isPathBWriteHeldByCurrentThread()).isFalse();
+      }
+    });
+    dataStore2.invoke(() -> {
+      resumeIndexAeq(getCache());
+      for (Tier0VectorDeltaBuffer<Object> buf : Tier0VectorRegistry.forCache(getCache())
+          .getBuckets("/" + REGION_NAME, INDEX_NAME).values()) {
+        assertThat(buf.isPathBWriteHeldByCurrentThread()).isFalse();
+      }
+    });
+  }
+
+  @Test
+  public void failoverSameKeyPutDestroyRecreateAndPutDestroyWithAeqDeltaHydrationTelemetry() {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+
+    Map<String, VectorRecord> groundTruth = new HashMap<>();
+    List<String> committedToDestroy = new ArrayList<>();
+    List<String> committedToRecreate = new ArrayList<>();
+    for (int i = 0; i < NUM_BUCKETS * 6; i++) {
+      float cos = 0.50f + 0.002f * i;
+      float[] vec = new float[DIM];
+      vec[0] = cos;
+      vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+      String key = "base-" + i;
+      groundTruth.put(key, new VectorRecord(vec, "all", "all", "all"));
+      if (i < NUM_BUCKETS) {
+        committedToDestroy.add(key);
+      } else if (i < NUM_BUCKETS * 2) {
+        committedToRecreate.add(key);
+      }
+    }
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (Map.Entry<String, VectorRecord> e : groundTruth.entrySet()) {
+        region.put(e.getKey(), e.getValue());
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(dataStore2.invoke(this::countLocalBuckets)).isEqualTo(NUM_BUCKETS);
+      int shadowSize = dataStore1.invoke(() -> countShadowQueueLocalSize(getCache()))
+          + dataStore2.invoke(() -> countShadowQueueLocalSize(getCache()));
+      assertThat(shadowSize).isEqualTo(0);
+    });
+
+    List<Integer> ds1Bids = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<Integer> bids = new ArrayList<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+      Collections.sort(bids);
+      return bids;
+    });
+    assertThat(ds1Bids).isNotEmpty();
+
+    // Pause AEQ so all same-key sequences remain uncommitted in AEQ shadow queues until crash
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    // Find one uncommitted recreate key AND one uncommitted put->destroy key per dataStore1 bucket
+    Map<Integer, String> uncommittedRecreateByBucket = new HashMap<>();
+    Map<Integer, String> uncommittedDestroyByBucket = new HashMap<>();
+    Set<Integer> ds1BidSet = new HashSet<>(ds1Bids);
+    for (int i = 0; i < 1000
+        && (uncommittedRecreateByBucket.size() < ds1BidSet.size()
+            || uncommittedDestroyByBucket.size() < ds1BidSet.size()); i++) {
+      String candRec = "rec-seq-" + i;
+      int recBid = accessor.invoke(() -> ((PartitionedRegion) getCache().getRegion(REGION_NAME))
+          .getKeyInfo(candRec).getBucketId());
+      if (ds1BidSet.contains(recBid) && !uncommittedRecreateByBucket.containsKey(recBid)) {
+        uncommittedRecreateByBucket.put(recBid, candRec);
+      }
+      String candDes = "des-seq-" + i;
+      int desBid = accessor.invoke(() -> ((PartitionedRegion) getCache().getRegion(REGION_NAME))
+          .getKeyInfo(candDes).getBucketId());
+      if (ds1BidSet.contains(desBid) && !uncommittedDestroyByBucket.containsKey(desBid)) {
+        uncommittedDestroyByBucket.put(desBid, candDes);
+      }
+    }
+    assertThat(uncommittedRecreateByBucket).hasSameSizeAs(ds1BidSet);
+    assertThat(uncommittedDestroyByBucket).hasSameSizeAs(ds1BidSet);
+
+    float[] vOld = new float[DIM];
+    vOld[0] = 0.60f;
+    vOld[1] = (float) Math.sqrt(1.0 - 0.36);
+    float[] vRecreate = new float[DIM];
+    vRecreate[0] = 0.99f;
+    vRecreate[1] = (float) Math.sqrt(1.0 - 0.99 * 0.99);
+
+    Set<String> allDestroyedKeys = new HashSet<>(committedToDestroy);
+    allDestroyedKeys.addAll(uncommittedDestroyByBucket.values());
+    Set<String> allRecreatedKeys = new HashSet<>(committedToRecreate);
+    allRecreatedKeys.addAll(uncommittedRecreateByBucket.values());
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (String key : committedToDestroy) {
+        region.put(key, new VectorRecord(vOld, "all", "all", "all"));
+        region.destroy(key);
+      }
+      for (String key : committedToRecreate) {
+        region.destroy(key);
+        region.put(key, new VectorRecord(vRecreate, "all", "all", "all"));
+      }
+      for (String key : uncommittedDestroyByBucket.values()) {
+        region.put(key, new VectorRecord(vOld, "all", "all", "all"));
+        region.destroy(key);
+      }
+      for (String key : uncommittedRecreateByBucket.values()) {
+        region.put(key, new VectorRecord(vOld, "all", "all", "all"));
+        region.destroy(key);
+        region.put(key, new VectorRecord(vRecreate, "all", "all", "all"));
+      }
+    });
+
+    for (String dk : allDestroyedKeys) {
+      groundTruth.remove(dk);
+    }
+    for (String rk : allRecreatedKeys) {
+      groundTruth.put(rk, new VectorRecord(vRecreate, "all", "all", "all"));
+    }
+
+    // Crash primary dataStore1; wait for dataStore2 promotion + AEQ-delta hydration
+    DistributedTestUtils.crashDistributedSystem(dataStore1);
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(dataStore2.invoke(this::countLocalPrimaryBuckets))
+            .isEqualTo(NUM_BUCKETS));
+
+    dataStore2.invoke(() -> {
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
+      assertThat(registry.getAeqDeltaHydrationCount()).isGreaterThanOrEqualTo(ds1Bids.size());
+      assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+      assertThat(registry.getLastHydrationEventsInspected()).isGreaterThan(0L);
+      assertThat(registry.getLastHydrationKeysRestored()).isGreaterThan(0L);
+      assertThat(registry.getHydratedTombstonesCount()).isGreaterThanOrEqualTo(
+          uncommittedDestroyByBucket.size());
+      assertThat(registry.getHydratedKeysCount()).isGreaterThanOrEqualTo(
+          uncommittedDestroyByBucket.size() + uncommittedRecreateByBucket.size());
+    });
+
+    // Exhaustive pre-flush verification: 100% recreated live, 0 destroyed ghosts
+    List<String> preFlushHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 300)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(preFlushHits).doesNotContainAnyElementsOf(allDestroyedKeys);
+    assertThat(preFlushHits).containsAll(allRecreatedKeys);
+    assertThat(preFlushHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
+
+    // Resume AEQ, drain Tier-0 -> 0, and re-verify parity post-flush
+    dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+    waitForLuceneFlush(accessor);
+    assertThat(dataStore2.invoke(this::countTier0Entries)).isEqualTo(0);
+
+    List<String> postFlushHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 300)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(postFlushHits).doesNotContainAnyElementsOf(allDestroyedKeys);
+    assertThat(postFlushHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
   }
 
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,

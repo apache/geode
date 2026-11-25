@@ -153,10 +153,19 @@ public class IndexRepositoryImpl implements IndexRepository {
 
   @Override
   public void query(Query query, int limit, IndexResultCollector collector) throws IOException {
+    query(query, limit, collector, null);
+  }
+
+  @Override
+  public void query(Query query, int limit, IndexResultCollector collector,
+      Runnable onSearcherAcquired) throws IOException {
     long start = stats.startRepositoryQuery();
     int totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
     try {
+      if (onSearcherAcquired != null) {
+        onSearcherAcquired.run();
+      }
       TopDocs docs = searcher.search(query, limit);
       // Lucene 9.x: totalHits is now a TotalHits object with value field
       totalHits = (int) docs.totalHits.value;
@@ -178,11 +187,22 @@ public class IndexRepositoryImpl implements IndexRepository {
   public void queryWithFp32Rerank(Query query, int k, int oversampleK, String vectorField,
       float[] queryVector, VectorSimilarityFunction similarity, IndexResultCollector collector)
       throws IOException {
+    queryWithFp32Rerank(
+        query, k, oversampleK, vectorField, queryVector, similarity, collector, null);
+  }
+
+  @Override
+  public void queryWithFp32Rerank(Query query, int k, int oversampleK, String vectorField,
+      float[] queryVector, VectorSimilarityFunction similarity, IndexResultCollector collector,
+      Runnable onSearcherAcquired) throws IOException {
     if (k <= 0 || oversampleK <= 0) {
+      if (onSearcherAcquired != null) {
+        onSearcherAcquired.run();
+      }
       return;
     }
     if (vectorField == null || queryVector == null || similarity == null) {
-      query(query, k, collector);
+      query(query, k, collector, onSearcherAcquired);
       return;
     }
     int effectiveOversampleK = Math.max(k, oversampleK);
@@ -190,6 +210,9 @@ public class IndexRepositoryImpl implements IndexRepository {
     int totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
     try {
+      if (onSearcherAcquired != null) {
+        onSearcherAcquired.run();
+      }
       TopDocs docs = searcher.search(query, effectiveOversampleK);
       totalHits = (int) docs.totalHits.value;
       if (docs.scoreDocs.length == 0) {

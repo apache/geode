@@ -56,6 +56,8 @@ public class Tier0VectorRegistry {
   private final AtomicLong hydratedTombstonesCount = new AtomicLong(0L);
   private final AtomicLong aeqDeltaHydrationCount = new AtomicLong(0L);
   private final AtomicLong fullScanHydrationCount = new AtomicLong(0L);
+  private final AtomicLong lastHydrationEventsInspected = new AtomicLong(0L);
+  private final AtomicLong lastHydrationKeysRestored = new AtomicLong(0L);
   private final AtomicLong unsupportedFilterFlushFallbackCount = new AtomicLong(0L);
   private final AtomicLong inlineMaskQueryCount = new AtomicLong(0L);
   private final AtomicLong oversampleFallbackQueryCount = new AtomicLong(0L);
@@ -293,6 +295,19 @@ public class Tier0VectorRegistry {
 
   public long incrementFullScanHydrationCount() {
     return fullScanHydrationCount.incrementAndGet();
+  }
+
+  public long getLastHydrationEventsInspected() {
+    return lastHydrationEventsInspected.get();
+  }
+
+  public long getLastHydrationKeysRestored() {
+    return lastHydrationKeysRestored.get();
+  }
+
+  public void recordLastHydrationStats(long eventsInspected, long keysRestored) {
+    lastHydrationEventsInspected.set(Math.max(0L, eventsInspected));
+    lastHydrationKeysRestored.set(Math.max(0L, keysRestored));
   }
 
   public long getUnsupportedFilterFlushFallbackCount() {

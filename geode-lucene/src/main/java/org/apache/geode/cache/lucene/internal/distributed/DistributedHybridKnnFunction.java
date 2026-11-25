@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
@@ -72,10 +73,13 @@ import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -272,80 +276,116 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
 
     // Theorem 2 ordering: wait for any in-flight primary promotion hydration, then snapshot
     // Tier-0 BEFORE querying Lucene to guarantee zero visibility gap across concurrent dual-epoch
-    // swaps, failovers, and SearcherManager.maybeRefreshBlocking() transitions.
+    // swaps, failovers, and SearcherManager.maybeRefreshBlocking() transitions. For unsupported
+    // filters (Path B), acquire the per-bucket write barrier around flush + snapshot + Lucene
+    // searcher acquisition so concurrent puts/destroys cannot leak into T_mask and get dropped by
+    // fail-closed Tier0MetadataMatcher evaluation.
     Tier0VectorDeltaBuffer.Snapshot<Object> tier0Snapshot = null;
     Set<Object> maskedKeys = Collections.emptySet();
-    if (registry != null) {
-      registry.awaitHydration(regionPath, knnContext.getIndexName(), bucketId);
-      Tier0VectorDeltaBuffer<Object> buffer =
-          registry.getBuffer(regionPath, knnContext.getIndexName(), bucketId);
-      if (buffer != null) {
-        tier0Snapshot = buffer.snapshot();
-        if (unsupportedFilter && !tier0Snapshot.isEmpty() && repo != null) {
-          // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
-          // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
-          // bucket into Lucene + blocking-refresh so IndexSearcher evaluates the filter with zero
-          // RAW visibility gap.
-          flushBucketForUnsupportedFilter(
-              cache, region, regionPath, knnContext.getIndexName(), bucketId, registry, buffer,
-              repo);
-          tier0Snapshot = buffer.snapshot();
+    Tier0VectorDeltaBuffer<Object> pathBBuffer = null;
+    final AtomicBoolean pathBWriteReleased = new AtomicBoolean(false);
+    Runnable pathBReleaseBarrier = null;
+    RawListResultCollector luceneRawCollector;
+    try {
+      if (registry != null) {
+        registry.awaitHydration(regionPath, knnContext.getIndexName(), bucketId);
+        Tier0VectorDeltaBuffer<Object> buffer =
+            registry.getBuffer(regionPath, knnContext.getIndexName(), bucketId);
+        if (buffer != null) {
+          if (unsupportedFilter && repo != null) {
+            buffer.lockPathBWrite();
+            pathBBuffer = buffer;
+            final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
+            pathBReleaseBarrier = () -> {
+              if (pathBWriteReleased.compareAndSet(false, true)) {
+                lockedBuffer.unlockPathBWrite();
+              }
+            };
+            tier0Snapshot = buffer.snapshot();
+            if (!tier0Snapshot.isEmpty()) {
+              // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
+              // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
+              // bucket into Lucene + blocking-refresh while holding the write barrier so
+              // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
+              flushBucketForUnsupportedFilter(
+                  cache, region, regionPath, knnContext.getIndexName(), bucketId, registry,
+                  buffer, repo);
+              tier0Snapshot = buffer.snapshot();
+            }
+          } else {
+            tier0Snapshot = buffer.snapshot();
+          }
+          maskedKeys = tier0Snapshot.getMaskedKeys();
         }
-        maskedKeys = tier0Snapshot.getMaskedKeys();
       }
-    }
 
-    // Build pre-filtered Lucene 9.x KnnFloatVectorQuery with safe |T_mask| capping
-    int maxInlineTerms =
-        Math.min(MAX_INLINE_MASK_TERMS, Math.max(0, IndexSearcher.getMaxClauseCount() - 2));
-    int luceneK;
-    boolean oversampleMaskFallback = false;
-    Query effectiveFilterQuery;
-    if (maskedKeys.isEmpty()) {
-      effectiveFilterQuery = userFilterQuery;
-      luceneK = k;
-    } else if (maskedKeys.size() <= maxInlineTerms) {
-      effectiveFilterQuery = buildMaskedFilterQuery(userFilterQuery, maskedKeys);
-      luceneK = k;
-      INLINE_MASK_QUERY_COUNT.incrementAndGet();
-      if (registry != null) {
-        registry.incrementInlineMaskQueryCount();
-      }
-    } else {
-      effectiveFilterQuery = userFilterQuery;
-      luceneK = (int) Math.min((long) k + maskedKeys.size(), MAX_LUCENE_K);
-      oversampleMaskFallback = true;
-      OVERSAMPLE_FALLBACK_QUERY_COUNT.incrementAndGet();
-      if (registry != null) {
-        registry.incrementOversampleFallbackQueryCount();
-      }
-    }
-
-    int rerankFactor = knnContext.getRerankOversampleFactor();
-    boolean executeFp32Rerank =
-        rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR
-            || knnContext.isRerankBeamCandidates();
-    int queryK = luceneK;
-    if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
-      long targetOversample = oversampleMaskFallback
-          ? (long) k * rerankFactor + maskedKeys.size()
-          : (long) k * rerankFactor;
-      queryK = Math.max(luceneK, (int) Math.min(targetOversample, MAX_LUCENE_K));
-    }
-
-    KnnFloatVectorQuery knnQuery = effectiveFilterQuery == null
-        ? new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK)
-        : new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK,
-            effectiveFilterQuery);
-
-    RawListResultCollector luceneRawCollector =
-        new RawListResultCollector("bucket-" + bucketId, luceneK);
-    if (repo != null) {
-      if (executeFp32Rerank) {
-        repo.queryWithFp32Rerank(knnQuery, luceneK, queryK, knnContext.getVectorFieldName(),
-            queryVector, knnContext.getSimilarityFunction(), luceneRawCollector);
+      // Build pre-filtered Lucene 9.x KnnFloatVectorQuery with safe |T_mask| capping
+      int maxInlineTerms =
+          Math.min(MAX_INLINE_MASK_TERMS, Math.max(0, IndexSearcher.getMaxClauseCount() - 2));
+      int luceneK;
+      boolean oversampleMaskFallback = false;
+      Query effectiveFilterQuery;
+      if (maskedKeys.isEmpty()) {
+        effectiveFilterQuery = userFilterQuery;
+        luceneK = k;
+      } else if (maskedKeys.size() <= maxInlineTerms) {
+        effectiveFilterQuery = buildMaskedFilterQuery(userFilterQuery, maskedKeys);
+        luceneK = k;
+        INLINE_MASK_QUERY_COUNT.incrementAndGet();
+        if (registry != null) {
+          registry.incrementInlineMaskQueryCount();
+        }
       } else {
-        repo.query(knnQuery, luceneK, luceneRawCollector);
+        effectiveFilterQuery = userFilterQuery;
+        luceneK = (int) Math.min((long) k + maskedKeys.size(), MAX_LUCENE_K);
+        oversampleMaskFallback = true;
+        OVERSAMPLE_FALLBACK_QUERY_COUNT.incrementAndGet();
+        if (registry != null) {
+          registry.incrementOversampleFallbackQueryCount();
+        }
+      }
+
+      int rerankFactor = knnContext.getRerankOversampleFactor();
+      boolean executeFp32Rerank =
+          rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR
+              || knnContext.isRerankBeamCandidates();
+      int queryK = luceneK;
+      if (rerankFactor > HybridKnnQueryContext.DEFAULT_RERANK_OVERSAMPLE_FACTOR) {
+        long targetOversample = oversampleMaskFallback
+            ? (long) k * rerankFactor + maskedKeys.size()
+            : (long) k * rerankFactor;
+        queryK = Math.max(luceneK, (int) Math.min(targetOversample, MAX_LUCENE_K));
+      }
+
+      KnnFloatVectorQuery knnQuery = effectiveFilterQuery == null
+          ? new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK)
+          : new KnnFloatVectorQuery(knnContext.getVectorFieldName(), queryVector, queryK,
+              effectiveFilterQuery);
+
+      luceneRawCollector = new RawListResultCollector("bucket-" + bucketId, luceneK);
+      if (repo != null) {
+        if (pathBReleaseBarrier != null) {
+          if (executeFp32Rerank) {
+            repo.queryWithFp32Rerank(knnQuery, luceneK, queryK, knnContext.getVectorFieldName(),
+                queryVector, knnContext.getSimilarityFunction(), luceneRawCollector,
+                pathBReleaseBarrier);
+          } else {
+            repo.query(knnQuery, luceneK, luceneRawCollector, pathBReleaseBarrier);
+          }
+        } else {
+          if (executeFp32Rerank) {
+            repo.queryWithFp32Rerank(knnQuery, luceneK, queryK, knnContext.getVectorFieldName(),
+                queryVector, knnContext.getSimilarityFunction(), luceneRawCollector);
+          } else {
+            repo.query(knnQuery, luceneK, luceneRawCollector);
+          }
+        }
+      }
+    } finally {
+      if (pathBReleaseBarrier != null) {
+        pathBReleaseBarrier.run();
+      } else if (pathBBuffer != null && pathBWriteReleased.compareAndSet(false, true)) {
+        pathBBuffer.unlockPathBWrite();
       }
     }
 
@@ -392,10 +432,16 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         flushedOrRefreshed = true;
         break;
       } catch (IllegalStateException flushAlreadyInProgress) {
-        if (!buffer.isFlushing() || System.nanoTime() >= deadlineNanos) {
+        boolean inProgressMsg = flushAlreadyInProgress.getMessage() != null
+            && flushAlreadyInProgress.getMessage().contains("Flush already in progress");
+        if (System.nanoTime() >= deadlineNanos || (!inProgressMsg && !buffer.isFlushing())) {
           repo.commitAndRefreshBlocking();
           flushedOrRefreshed = true;
           break;
+        }
+        if (!buffer.isFlushing()) {
+          // Concurrent flush completed while we were racing to beginFlush; retry immediately.
+          continue;
         }
         try {
           Thread.sleep(1L);
@@ -425,6 +471,32 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         if (pr.getDataStore() != null) {
           BucketRegion localBucket = pr.getDataStore().getLocalBucketById(bucketId);
           if (localBucket != null) {
+            // Read lock-free from VM memory first to preserve strict lock ordering against
+            // RegionMapPut/Destroy (synchronized(RegionEntry) -> CacheListener -> readLock).
+            RegionEntry re = localBucket.getRegionEntry(key);
+            if (re != null) {
+              if (re.isRemoved()) {
+                return null;
+              }
+              Object vmVal = re.getValueInVM(localBucket);
+              if (vmVal == null || vmVal == Token.TOMBSTONE || Token.isInvalidOrRemoved(vmVal)) {
+                return null;
+              }
+              if (vmVal != Token.NOT_AVAILABLE) {
+                if (vmVal instanceof CachedDeserializable) {
+                  Object deserialized =
+                      ((CachedDeserializable) vmVal).getDeserializedValue(null, null);
+                  if (deserialized == null || deserialized == Token.TOMBSTONE
+                      || Token.isInvalidOrRemoved(deserialized)) {
+                    return null;
+                  }
+                  return deserialized;
+                }
+                return vmVal;
+              }
+              // Only fault in from disk when evicted (Token.NOT_AVAILABLE).
+              return extractEntryValue(localBucket.getEntry(key));
+            }
             return extractEntryValue(localBucket.getEntry(key));
           }
         }
