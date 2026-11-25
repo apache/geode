@@ -1004,6 +1004,273 @@ public class RvvMonotonicVectorDispatcherTest {
     }
   }
 
+  @Test
+  public void outOfOrderHoldbackOrders65And66StrictlyBehindDelayed64PlusNonVectorGapWithoutDrops() {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    assertThat(service.isEnforceContiguousVersions()).isTrue();
+    service.registerSubscription("sub-match", matchVec, 0.90f);
+    service.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new ArrayList<>();
+    clientGate.addListener(accepted::add);
+    service.attachClientGate(clientGate);
+    service.addEventSink(clientGate::tryAccept);
+
+    int bucketId = 4;
+    String memberId = "server1(id:1)";
+
+    // Feed contiguous prefix 1..63 (non-matching so no callbacks, 63 events toward H=64)
+    for (long v = 1L; v <= 63L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k-" + v, nonMatchVec, true);
+    }
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isZero();
+    assertThat(accepted).isEmpty();
+
+    // Concurrent thread reordering: v=65 and v=66 arrive BEFORE v=64
+    assertThat(service.onBucketMutation(bucketId, memberId, 65L, "k-65", matchVec, true)).isEmpty();
+    assertThat(service.onBucketMutation(bucketId, memberId, 66L, "k-66", matchVec, true)).isEmpty();
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isEqualTo(2);
+    assertThat(accepted).isEmpty();
+    assertThat(clientGate.getDiscardedCount()).isZero();
+
+    // Delayed v=64 arrives (right on H=64 boundary!): drains 64 -> 65 -> 66 strictly in order
+    service.onBucketMutation(bucketId, memberId, 64L, "k-64", matchVec, true);
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isZero();
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L);
+    assertThat(clientGate.getDiscardedCount()).isZero();
+    assertThat(clientGate.getHighWaterVersion("sub-zero", bucketId, memberId)).isEqualTo(64L);
+    assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
+
+    // Destroy/invalidate/non-vector gap at v=67 while v=68 arrives first
+    assertThat(service.onBucketMutation(bucketId, memberId, 68L, "k-68", matchVec, true)).isEmpty();
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isEqualTo(1);
+    service.onNonMatchingBucketVersion(bucketId, memberId, 67L);
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isZero();
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L, 68L);
+    assertThat(clientGate.getDiscardedCount()).isZero();
+
+    // Bounded maxHoldbackGap escape prevents permanent deadlock if an operation aborts past gap
+    service.setMaxHoldbackGap(3);
+    service.onBucketMutation(bucketId, memberId, 70L, "k-70", matchVec, true);
+    service.onBucketMutation(bucketId, memberId, 71L, "k-71", matchVec, true);
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isEqualTo(2);
+    // Skipping 69, arriving 73 gives span 73 - 69 = 4 > 3 -> drains 70, 71 cleanly (73 held)
+    service.onBucketMutation(bucketId, memberId, 73L, "k-73", matchVec, true);
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L, 68L, 70L, 71L);
+    assertThat(clientGate.getDiscardedCount()).isZero();
+    assertThat(RvvClientGate.verifyStrictMonotonicity(accepted)).isEmpty();
+  }
+
+  @Test
+  public void timedIdleTailHeartbeatFlushAdvancesCheckpointForSubIntervalZeroMatchStream()
+      throws Exception {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    assertThat(service.getHeartbeatIntervalEvents()).isEqualTo(64);
+    service.registerSubscription("sub-match", matchVec, 0.90f);
+    service.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new ArrayList<>();
+    AtomicInteger matchCallbacks = new AtomicInteger();
+    AtomicInteger zeroCallbacks = new AtomicInteger();
+    clientGate.addListener(ev -> {
+      accepted.add(ev);
+      if ("sub-match".equals(ev.getSubscriptionId())) {
+        matchCallbacks.incrementAndGet();
+      } else {
+        zeroCallbacks.incrementAndGet();
+      }
+    });
+    service.attachClientGate(clientGate);
+    service.addEventSink(clientGate::tryAccept);
+
+    int bucketId = 3;
+    String memberId = "srv-idle";
+
+    // Send 63 zero-match mutations (1..63 < H=64) and then go permanently idle
+    for (long v = 1L; v <= 63L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "idle-doc-" + v, nonMatchVec, true);
+    }
+    assertThat(matchCallbacks.get()).isZero();
+    assertThat(zeroCallbacks.get()).isZero();
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isZero();
+
+    long baseNow = System.currentTimeMillis();
+    // Before idle window expires -> no flush
+    assertThat(service.flushIdleHeartbeats(baseNow, 60_000L)).isZero();
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isZero();
+
+    // After idle window expires -> emits trailing watermarkHeartbeat(63) & resets pending counter
+    assertThat(service.flushIdleHeartbeats(baseNow + 65_000L, 60_000L)).isEqualTo(1);
+    assertThat(clientGate.getHighWaterVersion("sub-zero", bucketId, memberId)).isEqualTo(63L);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(63L);
+    assertThat(matchCallbacks.get()).isZero();
+    assertThat(zeroCallbacks.get()).isZero();
+    assertThat(service.getDispatcher().getTotalIdleHeartbeatsFlushed()).isEqualTo(1L);
+
+    // Repeating immediately must not emit redundant heartbeat since eventsSinceHeartbeat reset to 0
+    assertThat(service.flushIdleHeartbeats(baseNow + 120_000L, 60_000L)).isZero();
+
+    // Verify background idle scheduler also flushes a subsequent sub-H tail (64..68 -> 68)
+    service.startIdleHeartbeatScheduler(25L, 15L);
+    try {
+      for (long v = 64L; v <= 68L; v++) {
+        service.onBucketMutation(bucketId, memberId, v, "idle-doc-" + v, nonMatchVec, true);
+      }
+      long deadline = System.currentTimeMillis() + 5_000L;
+      while (clientGate.getSafeCheckpointVersion(bucketId, memberId) < 68L
+          && System.currentTimeMillis() < deadline) {
+        Thread.sleep(20L);
+      }
+      assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(68L);
+      assertThat(matchCallbacks.get()).isZero();
+      assertThat(zeroCallbacks.get()).isZero();
+    } finally {
+      service.stopIdleHeartbeatScheduler();
+    }
+  }
+
+  @Test
+  public void idempotentRvvConsumerSurvivesBothClientCrashBoundariesWithZeroLossAndZeroDuplicates() {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ContinuousVectorQueryService server = new ContinuousVectorQueryService(4);
+    server.setHeartbeatIntervalEvents(4);
+    server.registerSubscription("sub-match", matchVec, 0.90f);
+    server.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore durableStore =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> appliedEffectLog = new ArrayList<>();
+    Set<IdempotentRvvConsumer.EventDeliveryId> idempotentExternalSink = new HashSet<>();
+
+    int bucketId = 6;
+    String memberId = "srv-crash-test";
+
+    class SimulatedClientCrashException extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+    }
+
+    // --- Process Instance 1: Crash Boundary A (after watermark/intent persist, BEFORE effect) ---
+    RvvClientGate gate1 = new RvvClientGate();
+    server.attachClientGate(gate1);
+    IdempotentRvvConsumer consumer1 = new IdempotentRvvConsumer(gate1, durableStore,
+        (ev, id) -> {
+          if (idempotentExternalSink.add(id)) {
+            appliedEffectLog.add(id);
+          }
+        },
+        (phase, ev, id) -> {
+          if (phase == IdempotentRvvConsumer.CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT
+              && ev.getRegionVersion() == 3L) {
+            throw new SimulatedClientCrashException();
+          }
+        });
+    server.addEventSink(consumer1);
+
+    server.onBucketMutation(bucketId, memberId, 1L, "k1", matchVec, true);
+    server.onBucketMutation(bucketId, memberId, 2L, "k2", matchVec, true);
+    boolean crashedAtBoundaryA = false;
+    try {
+      server.onBucketMutation(bucketId, memberId, 3L, "k3", matchVec, true);
+    } catch (SimulatedClientCrashException expected) {
+      crashedAtBoundaryA = true;
+    }
+    assertThat(crashedAtBoundaryA).isTrue();
+    // Pre-effect crash left receivedWatermark at 3, committedWatermark at 2, and v=3 in pending
+    // WAL!
+    assertThat(durableStore.getReceivedWatermark("sub-match", bucketId, memberId)).isEqualTo(3L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(2L);
+    assertThat(appliedEffectLog).hasSize(2);
+
+    // --- Process Instance 2: Recover Boundary A & trigger Boundary B (after effect, BEFORE
+    // committed watermark persist) ---
+    server.removeEventSink(consumer1);
+    server.detachClientGate(gate1);
+
+    RvvClientGate gate2 = new RvvClientGate();
+    server.attachClientGate(gate2);
+    IdempotentRvvConsumer consumer2 = new IdempotentRvvConsumer(gate2, durableStore,
+        (ev, id) -> {
+          if (idempotentExternalSink.add(id)) {
+            appliedEffectLog.add(id);
+          }
+        },
+        (phase, ev, id) -> {
+          if (phase == IdempotentRvvConsumer.CrashPhase.AFTER_EFFECT_BEFORE_WATERMARK_COMMIT
+              && ev.getRegionVersion() == 4L) {
+            throw new SimulatedClientCrashException();
+          }
+        });
+    int recoveredA = consumer2.recover();
+    assertThat(recoveredA).isEqualTo(1);
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 3L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(3L);
+
+    server.addEventSink(consumer2);
+    boolean crashedAtBoundaryB = false;
+    try {
+      server.onBucketMutation(bucketId, memberId, 4L, "k4", matchVec, true);
+    } catch (SimulatedClientCrashException expected) {
+      crashedAtBoundaryB = true;
+    }
+    assertThat(crashedAtBoundaryB).isTrue();
+    // Boundary B executed effect #4 & marked applied ledger, BEFORE committed watermark updated!
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 3L, 4L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(3L);
+
+    // --- Process Instance 3: Crash recovery + server reconnect replay + continued live writes ---
+    server.removeEventSink(consumer2);
+    server.detachClientGate(gate2);
+
+    RvvClientGate gate3 = new RvvClientGate();
+    server.attachClientGate(gate3);
+    IdempotentRvvConsumer consumer3 = new IdempotentRvvConsumer(gate3, durableStore,
+        (ev, id) -> {
+          if (idempotentExternalSink.add(id)) {
+            appliedEffectLog.add(id);
+          }
+        });
+
+    // Test server reconnect replay from committedWatermark=3 (replays v=4) -> ledger deduplicates!
+    server.addEventSink(consumer3);
+    Map<String, Long> reconnectHw = consumer3.getCommittedHighWaterByMember(bucketId);
+    // 0%-match sub had heartbeat at v=4 skipped during crash B -> committed safe HW is 0 -> replays
+    // v=1..4 safely while applied ledger suppresses duplicates 1..4!
+    server.replayUncheckpointedForReconnect(bucketId, reconnectHw);
+    int recoveredB = consumer3.recover();
+    assertThat(recoveredB).isZero();
+    assertThat(consumer3.getDeduplicatedEffectsCount()).isGreaterThanOrEqualTo(4L);
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 3L, 4L);
+
+    // Continue live mutations 5..8 -> zero losses, zero duplicates, committed watermarks advance
+    for (long v = 5L; v <= 8L; v++) {
+      server.onBucketMutation(bucketId, memberId, v, "k" + v, matchVec, true);
+    }
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L);
+    assertThat(appliedEffectLog).doesNotHaveDuplicates();
+    assertThat(durableStore.getCommittedHighWaterByMember(bucketId,
+        gate3.getActiveSubscriptionIds())).containsEntry(memberId, 8L);
+    assertThat(gate3.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(8L);
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

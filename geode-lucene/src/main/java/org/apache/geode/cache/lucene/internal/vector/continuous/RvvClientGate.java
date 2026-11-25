@@ -39,6 +39,15 @@ import java.util.function.Consumer;
  * strictly increasing {@code v_{b,m} > V_client[subscriptionId, b, m]}. Check, high-water advance,
  * and downstream listener delivery are serialized per {@code (subscriptionId, bucketId, memberId)}
  * stream so concurrent callers can never observe out-of-order callbacks.
+ *
+ * <p>
+ * <b>Delivery boundary across client crashes</b>: standalone {@code RvvClientGate} guarantees
+ * strictly monotonic, duplicate-free callback dispatch while its in-memory high-water state
+ * survives live delivery, server primary failovers, and client reconnects. If downstream consumer
+ * side effects and external watermark persistence are separate non-atomic operations across a
+ * <i>client process crash</i>, wrap this gate with {@link IdempotentRvvConsumer}, which pairs a
+ * durable pending-intent log with an idempotent ledger keyed by {@code (subscriptionId, bucketId,
+ * memberId, regionVersion)} so neither crash window drops or duplicates side effects.
  */
 public class RvvClientGate {
 
@@ -206,6 +215,24 @@ public class RvvClientGate {
         state.highWaterVersion = incomingVersion;
       }
     }
+  }
+
+  /**
+   * Restores or advances the in-memory gate high-water mark monotonically (e.g., during client
+   * crash recovery from a {@link IdempotentRvvConsumer.DurableDeliveryStore}) without invoking
+   * live listeners.
+   */
+  public void restoreHighWaterVersion(String subscriptionId, int bucketId, String memberId,
+      long regionVersion) {
+    if (regionVersion <= 0L) {
+      return;
+    }
+    if (subscriptionId == null || subscriptionId.isEmpty() || memberId == null
+        || memberId.isEmpty()) {
+      throw new IllegalArgumentException("subscriptionId and memberId must not be null or empty");
+    }
+    advanceWatermarkLocked(new SubscriptionStreamKey(subscriptionId, bucketId, memberId),
+        regionVersion);
   }
 
   /**

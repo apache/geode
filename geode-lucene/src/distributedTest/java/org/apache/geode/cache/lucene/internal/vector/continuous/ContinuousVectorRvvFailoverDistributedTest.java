@@ -757,6 +757,23 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
       server.invoke(() -> dropOutboundEventsB.set(true));
     }
 
+    // Exercise real Geode afterDestroy -> onNonMatchingBucketVersion without stalling contiguous
+    // RVV sequencing (negative last-dim unit vector matches 0 of the 41 subscriptions)
+    server3.invoke(() -> {
+      Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      float[] noMatchVec = new float[VECTOR_DIM];
+      noMatchVec[VECTOR_DIM - 1] = -1.0f;
+      region.put("doc-destroy-probe", noMatchVec);
+      region.destroy("doc-destroy-probe");
+    });
+    long nonMatchObserved =
+        server1.invoke(() -> serverService.getDispatcher().getTotalNonMatchingVersionsObserved())
+            + server2
+                .invoke(() -> serverService.getDispatcher().getTotalNonMatchingVersionsObserved())
+            + server3
+                .invoke(() -> serverService.getDispatcher().getTotalNonMatchingVersionsObserved());
+    assertThat(nonMatchObserved).isGreaterThanOrEqualTo(1L);
+
     // Phase 1b: Ingest batches until H=64 triggers on at least one bucket -> exact mutation #64
     // delivers match alerts + trailing watermarkHeartbeat(v_h) to Client A via the 4T executor!
     int cursor = phase1aKeys;
@@ -1071,7 +1088,10 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
       serverTcpSinkB.close();
       serverTcpSinkB = null;
     }
-    serverService = null;
+    if (serverService != null) {
+      serverService.stopIdleHeartbeatScheduler();
+      serverService = null;
+    }
   }
 
   private static Set<String> computeBruteForceMatches(List<VectorSubscription> subscriptions,

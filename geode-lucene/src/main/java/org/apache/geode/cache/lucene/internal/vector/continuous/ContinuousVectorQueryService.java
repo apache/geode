@@ -113,6 +113,38 @@ public class ContinuousVectorQueryService {
     return dispatcher.getHeartbeatIntervalEvents();
   }
 
+  public void setEnforceContiguousVersions(boolean enforceContiguousVersions) {
+    dispatcher.setEnforceContiguousVersions(enforceContiguousVersions);
+  }
+
+  public boolean isEnforceContiguousVersions() {
+    return dispatcher.isEnforceContiguousVersions();
+  }
+
+  public void setMaxHoldbackGap(int maxHoldbackGap) {
+    dispatcher.setMaxHoldbackGap(maxHoldbackGap);
+  }
+
+  public int getMaxHoldbackGap() {
+    return dispatcher.getMaxHoldbackGap();
+  }
+
+  public int flushIdleHeartbeats(long maxIdleMillis) {
+    return dispatcher.flushIdleHeartbeats(maxIdleMillis);
+  }
+
+  public int flushIdleHeartbeats(long nowMillis, long maxIdleMillis) {
+    return dispatcher.flushIdleHeartbeats(nowMillis, maxIdleMillis);
+  }
+
+  public void startIdleHeartbeatScheduler(long maxIdleMillis, long checkPeriodMillis) {
+    dispatcher.startIdleHeartbeatScheduler(maxIdleMillis, checkPeriodMillis);
+  }
+
+  public void stopIdleHeartbeatScheduler() {
+    dispatcher.stopIdleHeartbeatScheduler();
+  }
+
   public void addEventSink(ContinuousVectorEventSink sink) {
     dispatcher.addEventSink(sink);
   }
@@ -154,6 +186,14 @@ public class ContinuousVectorQueryService {
       long regionVersion, int entryVersion, Object key, float[] embedding, boolean isPrimary) {
     return dispatcher.onBucketMutation(bucketId, memberId, regionVersion, entryVersion, key,
         embedding, isPrimary);
+  }
+
+  /**
+   * Advances contiguous RVV sequencing past a non-vector bucket operation (such as {@code destroy},
+   * {@code invalidate}, or a non-vector entry update) without emitting vector matches.
+   */
+  public void onNonMatchingBucketVersion(int bucketId, String memberId, long regionVersion) {
+    dispatcher.onNonMatchingBucketVersion(bucketId, memberId, regionVersion);
   }
 
   /**
@@ -256,14 +296,36 @@ public class ContinuousVectorQueryService {
         handleEvent(event);
       }
 
+      @Override
+      public void afterDestroy(EntryEvent<K, V> event) {
+        handleNonVectorEvent(event);
+      }
+
+      @Override
+      public void afterInvalidate(EntryEvent<K, V> event) {
+        handleNonVectorEvent(event);
+      }
+
       private void handleEvent(EntryEvent<K, V> event) {
         V newValue = event.getNewValue();
         if (newValue == null) {
+          handleNonVectorEvent(event);
           return;
         }
         float[] embedding = vectorExtractor.apply(newValue);
         if (embedding != null) {
           onBucketMutation(event, embedding);
+        } else {
+          handleNonVectorEvent(event);
+        }
+      }
+
+      private void handleNonVectorEvent(EntryEvent<K, V> event) {
+        RvvMonotonicVectorDispatcher.ExtractedRvvStamp stamp =
+            RvvMonotonicVectorDispatcher.extractFromEntryEvent(event);
+        if (stamp.isPrimary() && stamp.getRegionVersion() > 0L) {
+          onNonMatchingBucketVersion(stamp.getBucketId(), stamp.getMemberId(),
+              stamp.getRegionVersion());
         }
       }
     };

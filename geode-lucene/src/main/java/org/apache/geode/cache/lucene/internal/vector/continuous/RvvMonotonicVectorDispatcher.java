@@ -31,7 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -80,6 +83,11 @@ public class RvvMonotonicVectorDispatcher {
    * to {@code 0} to disable heartbeats.
    */
   public static final int DEFAULT_HEARTBEAT_INTERVAL_EVENTS = 64;
+  /**
+   * Default bounded per-{@code (bucketId, memberId)} out-of-order version holdback window before a
+   * missing hole is skipped to prevent indefinite stalling under aborted writes.
+   */
+  public static final int DEFAULT_MAX_HOLDBACK_GAP = 128;
 
   /**
    * Callback invoked whenever a per-{@code (bucketId, memberId)} tail buffer exceeds
@@ -96,6 +104,8 @@ public class RvvMonotonicVectorDispatcher {
    * Immutable mutation record stored in a bucket's replayable delta tail buffer.
    */
   public static final class TailMutation {
+    private static final float[] NO_VECTOR_MARKER = new float[0];
+
     private final Object key;
     private final float[] normalizedVector;
     private final int bucketId;
@@ -103,6 +113,7 @@ public class RvvMonotonicVectorDispatcher {
     private final long regionVersion;
     private final int entryVersion;
     private final long timestamp;
+    private final boolean nonMatchingMarker;
 
     public TailMutation(Object key, float[] normalizedVector, int bucketId, String memberId,
         long regionVersion, int entryVersion, long timestamp) {
@@ -120,6 +131,33 @@ public class RvvMonotonicVectorDispatcher {
       this.regionVersion = regionVersion;
       this.entryVersion = entryVersion;
       this.timestamp = timestamp;
+      this.nonMatchingMarker = false;
+    }
+
+    private TailMutation(int bucketId, String memberId, long regionVersion, long timestamp) {
+      if (memberId == null || memberId.isEmpty()) {
+        throw new IllegalArgumentException("memberId must not be null or empty");
+      }
+      if (regionVersion <= 0L) {
+        throw new IllegalArgumentException("regionVersion must be > 0, got: " + regionVersion);
+      }
+      this.key = null;
+      this.normalizedVector = NO_VECTOR_MARKER;
+      this.bucketId = bucketId;
+      this.memberId = memberId;
+      this.regionVersion = regionVersion;
+      this.entryVersion = 0;
+      this.timestamp = timestamp;
+      this.nonMatchingMarker = true;
+    }
+
+    static TailMutation nonMatchingMarker(int bucketId, String memberId, long regionVersion,
+        long timestamp) {
+      return new TailMutation(bucketId, memberId, regionVersion, timestamp);
+    }
+
+    boolean isNonMatchingMarker() {
+      return nonMatchingMarker;
     }
 
     public Object getKey() {
@@ -210,6 +248,10 @@ public class RvvMonotonicVectorDispatcher {
     final Map<String, Long> checkpointByMember = new HashMap<>();
     final Map<String, AtomicLong> fallbackVersionByMember = new HashMap<>();
     final Map<String, Long> eventsSinceHeartbeatByMember = new HashMap<>();
+    final Map<String, Long> nextExpectedVersionByMember = new HashMap<>();
+    final Map<String, TreeMap<Long, TailMutation>> holdbackByMember = new HashMap<>();
+    final Map<String, Long> lastMutationTimeMsByMember = new HashMap<>();
+    final Map<String, Long> lastDispatchedVersionByMember = new HashMap<>();
     final List<TailMutation> pendingLiveMutations = new ArrayList<>();
     final ConcurrentLinkedQueue<PendingDispatchBatch> pendingDispatchBatches =
         new ConcurrentLinkedQueue<>();
@@ -297,7 +339,8 @@ public class RvvMonotonicVectorDispatcher {
     }
 
     synchronized List<TailMutation> collectReplayableTailForReconnect(
-        Map<String, Long> clientHighWaterByMember, Map<String, Long> maxVersionByMemberOut) {
+        Map<String, Long> clientHighWaterByMember, boolean respectHoldbackCeiling,
+        Map<String, Long> maxVersionByMemberOut) {
       List<TailMutation> replay = new ArrayList<>();
       List<String> sortedMembers = new ArrayList<>(tailByMember.keySet());
       Collections.sort(sortedMembers);
@@ -316,9 +359,14 @@ public class RvvMonotonicVectorDispatcher {
         }
         long lowerExclusive = Math.max(ckpt, clientHighWater);
         long streamHighWater = stream.lastKey();
+        TreeMap<Long, TailMutation> held = holdbackByMember.get(memberId);
+        if (respectHoldbackCeiling && held != null && !held.isEmpty()) {
+          streamHighWater = Math.min(streamHighWater, held.firstKey() - 1L);
+        }
         if (lowerExclusive < streamHighWater) {
           maxVersionByMemberOut.put(memberId, streamHighWater);
-          NavigableMap<Long, TailMutation> tail = stream.tailMap(lowerExclusive, false);
+          NavigableMap<Long, TailMutation> tail =
+              stream.subMap(lowerExclusive, false, streamHighWater, true);
           replay.addAll(tail.values());
         }
       }
@@ -345,6 +393,14 @@ public class RvvMonotonicVectorDispatcher {
       int total = 0;
       for (TreeMap<Long, TailMutation> stream : tailByMember.values()) {
         total += stream.size();
+      }
+      return total;
+    }
+
+    synchronized int getHoldbackSize() {
+      int total = 0;
+      for (TreeMap<Long, TailMutation> holdback : holdbackByMember.values()) {
+        total += holdback.size();
       }
       return total;
     }
@@ -380,8 +436,15 @@ public class RvvMonotonicVectorDispatcher {
   private final AtomicLong totalPromotionsHandled = new AtomicLong();
   private final AtomicLong totalReconnectReplaysHandled = new AtomicLong();
   private final AtomicLong tailOverflowCount = new AtomicLong();
+  private final AtomicLong totalIdleHeartbeatsFlushed = new AtomicLong();
+  private final AtomicLong totalHoldbackBufferedCount = new AtomicLong();
+  private final AtomicLong totalNonMatchingVersionsObserved = new AtomicLong();
+  private final Object idleSchedulerLock = new Object();
   private volatile Executor dispatchExecutor;
   private volatile int heartbeatIntervalEvents;
+  private volatile boolean enforceContiguousVersions = true;
+  private volatile int maxHoldbackGap = DEFAULT_MAX_HOLDBACK_GAP;
+  private ScheduledExecutorService idleHeartbeatScheduler;
 
   public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router) {
     this(router, DEFAULT_MAX_TAIL_PER_STREAM, null, DEFAULT_HEARTBEAT_INTERVAL_EVENTS);
@@ -429,6 +492,127 @@ public class RvvMonotonicVectorDispatcher {
 
   public long getTotalHeartbeatsDispatched() {
     return totalHeartbeatsDispatched.get();
+  }
+
+  /**
+   * Controls whether live primary events must strictly follow contiguous ascending
+   * {@code regionVersion} ordering per {@code (bucketId, memberId)} via the bounded holdback
+   * buffer (default {@code true}).
+   */
+  public void setEnforceContiguousVersions(boolean enforceContiguousVersions) {
+    this.enforceContiguousVersions = enforceContiguousVersions;
+  }
+
+  public boolean isEnforceContiguousVersions() {
+    return enforceContiguousVersions;
+  }
+
+  /**
+   * Configures the maximum out-of-order version gap held in the per-{@code (bucketId, memberId)}
+   * holdback buffer before advancing past a missing hole (default {@code 128}).
+   */
+  public void setMaxHoldbackGap(int maxHoldbackGap) {
+    if (maxHoldbackGap <= 0) {
+      throw new IllegalArgumentException("maxHoldbackGap must be > 0, got: " + maxHoldbackGap);
+    }
+    this.maxHoldbackGap = maxHoldbackGap;
+  }
+
+  public int getMaxHoldbackGap() {
+    return maxHoldbackGap;
+  }
+
+  /**
+   * Starts a background daemon scheduler that periodically flushes idle-tail watermark heartbeats
+   * via {@link #flushIdleHeartbeats(long, long)}.
+   */
+  public void startIdleHeartbeatScheduler(long maxIdleMillis, long checkPeriodMillis) {
+    if (maxIdleMillis < 0L) {
+      throw new IllegalArgumentException("maxIdleMillis must be >= 0, got: " + maxIdleMillis);
+    }
+    if (checkPeriodMillis <= 0L) {
+      throw new IllegalArgumentException(
+          "checkPeriodMillis must be > 0, got: " + checkPeriodMillis);
+    }
+    synchronized (idleSchedulerLock) {
+      stopIdleHeartbeatScheduler();
+      ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "rvv-idle-heartbeat-flusher");
+        t.setDaemon(true);
+        return t;
+      });
+      scheduler.scheduleWithFixedDelay(
+          () -> flushIdleHeartbeats(System.currentTimeMillis(), maxIdleMillis), checkPeriodMillis,
+          checkPeriodMillis, TimeUnit.MILLISECONDS);
+      this.idleHeartbeatScheduler = scheduler;
+    }
+  }
+
+  /** Stops the background idle-tail watermark heartbeat scheduler, if running. */
+  public void stopIdleHeartbeatScheduler() {
+    synchronized (idleSchedulerLock) {
+      if (idleHeartbeatScheduler != null) {
+        idleHeartbeatScheduler.shutdownNow();
+        idleHeartbeatScheduler = null;
+      }
+    }
+  }
+
+  /** Flushes trailing watermark heartbeats for streams idle for at least {@code maxIdleMillis}. */
+  public int flushIdleHeartbeats(long maxIdleMillis) {
+    return flushIdleHeartbeats(System.currentTimeMillis(), maxIdleMillis);
+  }
+
+  /**
+   * Checks every {@code (bucketId, memberId)} stream and emits a trailing
+   * {@link ContinuousVectorEvent#watermarkHeartbeat} carrying the last contiguously dispatched
+   * version whenever {@code eventsSinceHeartbeat > 0} (an idle sub-{@code H} tail of
+   * {@code 1..H-1} mutations) and {@code nowMillis - lastMutationTimeMs >= maxIdleMillis},
+   * resetting {@code eventsSinceHeartbeat} to {@code 0}.
+   *
+   * @return number of idle-tail watermark heartbeats emitted.
+   */
+  public int flushIdleHeartbeats(long nowMillis, long maxIdleMillis) {
+    if (maxIdleMillis < 0L) {
+      throw new IllegalArgumentException("maxIdleMillis must be >= 0, got: " + maxIdleMillis);
+    }
+    if (heartbeatIntervalEvents <= 0) {
+      return 0;
+    }
+    int flushed = 0;
+    for (Map.Entry<Integer, BucketState> bucketEntry : bucketStates.entrySet()) {
+      int bucketId = bucketEntry.getKey();
+      BucketState state = bucketEntry.getValue();
+      synchronized (state) {
+        if (state.eventsSinceHeartbeatByMember.isEmpty()) {
+          continue;
+        }
+        List<String> members = new ArrayList<>(state.eventsSinceHeartbeatByMember.keySet());
+        Collections.sort(members);
+        for (String memberId : members) {
+          long pending = state.eventsSinceHeartbeatByMember.getOrDefault(memberId, 0L);
+          if (pending <= 0L) {
+            continue;
+          }
+          long lastMutationMs = state.lastMutationTimeMsByMember.getOrDefault(memberId, 0L);
+          if (lastMutationMs <= 0L || (nowMillis - lastMutationMs) < maxIdleMillis) {
+            continue;
+          }
+          long lastVersion = state.lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
+          if (lastVersion <= 0L) {
+            continue;
+          }
+          state.eventsSinceHeartbeatByMember.put(memberId, 0L);
+          ContinuousVectorEvent hb = ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId,
+              lastVersion, nowMillis);
+          totalHeartbeatsDispatched.incrementAndGet();
+          totalIdleHeartbeatsFlushed.incrementAndGet();
+          enqueueOrDispatchBatchLocked(state, Collections.singletonList(hb), null);
+          flushed++;
+        }
+      }
+    }
+    return flushed;
   }
 
   /**
@@ -516,8 +700,9 @@ public class RvvMonotonicVectorDispatcher {
 
     List<TailOverflowRecord> overflows = null;
     List<ContinuousVectorEvent> emitted;
-    // Serialize append + dispatch per bucket to preserve per-(b, m) version ordering
+    // Serialize append + contiguous ordering + dispatch per bucket to preserve per-(b, m) order
     synchronized (state) {
+      state.lastMutationTimeMsByMember.put(memberId, mutation.timestamp);
       if (isPrimary && state.pendingAsyncPromotions > 0) {
         // Gate live primary writes behind the pending async promotion replay barrier
         state.pendingLiveMutations.add(mutation);
@@ -533,14 +718,47 @@ public class RvvMonotonicVectorDispatcher {
       }
       if (!isPrimary) {
         emitted = Collections.emptyList();
+      } else if (enforceContiguousVersions) {
+        emitted = dispatchContiguousOrHoldLocked(state, mutation);
       } else {
-        emitted = evaluateAndDispatch(state, mutation, false);
+        emitted = dispatchSingleVersionLocked(state, mutation, false);
       }
     }
     if (overflows != null) {
       notifyOverflows(overflows);
     }
     return emitted;
+  }
+
+  /**
+   * Records a non-matching bucket RVV version (e.g., {@code destroy}, {@code invalidate}, or a
+   * non-vector entry mutation) so contiguous {@code nextExpectedVersion} sequencing advances
+   * cleanly without leaving a permanent gap in the holdback buffer.
+   */
+  public void onNonMatchingBucketVersion(int bucketId, String memberId, long regionVersion) {
+    if (memberId == null || memberId.isEmpty()) {
+      throw new IllegalArgumentException("memberId must not be null or empty");
+    }
+    if (regionVersion <= 0L) {
+      return;
+    }
+    totalNonMatchingVersionsObserved.incrementAndGet();
+    BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+    state.observeVersion(memberId, regionVersion);
+    long nowMs = System.currentTimeMillis();
+    TailMutation marker = TailMutation.nonMatchingMarker(bucketId, memberId, regionVersion, nowMs);
+    synchronized (state) {
+      state.lastMutationTimeMsByMember.put(memberId, nowMs);
+      if (state.pendingAsyncPromotions > 0) {
+        state.pendingLiveMutations.add(marker);
+        return;
+      }
+      if (enforceContiguousVersions) {
+        dispatchContiguousOrHoldLocked(state, marker);
+      } else {
+        dispatchSingleVersionLocked(state, marker, false);
+      }
+    }
   }
 
   /**
@@ -570,9 +788,13 @@ public class RvvMonotonicVectorDispatcher {
       List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
           maxTailPerStream, overflows);
       for (TailMutation mutation : toReplay) {
-        emitted.addAll(evaluateAndDispatch(state, mutation, true));
+        emitted.addAll(dispatchSingleVersionLocked(state, mutation, true));
+        state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
+            Math::max);
       }
-      emitPromotionWatermarksLocked(state, bucketId, toReplay);
+      List<TailMutation> allReplayed = new ArrayList<>(toReplay);
+      drainAllHoldbackOnPromotionLocked(state, emitted, allReplayed);
+      emitPromotionWatermarksLocked(state, bucketId, allReplayed);
       if (state.pendingAsyncPromotions > 0) {
         state.pendingAsyncPromotions--;
       }
@@ -633,9 +855,13 @@ public class RvvMonotonicVectorDispatcher {
       List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
           maxTailPerStream, overflows);
       for (TailMutation mutation : toReplay) {
-        emitted.addAll(evaluateAndDispatch(state, mutation, true));
+        emitted.addAll(dispatchSingleVersionLocked(state, mutation, true));
+        state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
+            Math::max);
       }
-      emitPromotionWatermarksLocked(state, bucketId, toReplay);
+      List<TailMutation> allReplayed = new ArrayList<>(toReplay);
+      drainAllHoldbackOnPromotionLocked(state, emitted, allReplayed);
+      emitPromotionWatermarksLocked(state, bucketId, allReplayed);
     }
     if (!overflows.isEmpty()) {
       notifyOverflows(overflows);
@@ -687,8 +913,8 @@ public class RvvMonotonicVectorDispatcher {
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
     synchronized (state) {
       TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
-      List<TailMutation> toReplay =
-          state.collectReplayableTailForReconnect(clientHighWaterByMember, maxVersionByMember);
+      List<TailMutation> toReplay = state.collectReplayableTailForReconnect(
+          clientHighWaterByMember, enforceContiguousVersions, maxVersionByMember);
       for (TailMutation mutation : toReplay) {
         emitted.addAll(evaluateAndDispatch(state, mutation, true, targetSink));
       }
@@ -731,6 +957,11 @@ public class RvvMonotonicVectorDispatcher {
     return state == null ? 0 : state.getTailSize();
   }
 
+  public int getHoldbackSize(int bucketId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0 : state.getHoldbackSize();
+  }
+
   public long getTailOverflowCount() {
     return tailOverflowCount.get();
   }
@@ -765,15 +996,128 @@ public class RvvMonotonicVectorDispatcher {
     buffered.sort(Comparator.comparing(TailMutation::getMemberId)
         .thenComparingLong(TailMutation::getRegionVersion));
     for (TailMutation live : buffered) {
-      List<Long> evicted = state.append(live, maxTailPerStream);
-      if (!evicted.isEmpty()) {
-        long ckpt = state.getCheckpoint(live.memberId);
-        for (long evictedVersion : evicted) {
-          overflows.add(new TailOverflowRecord(live.bucketId, live.memberId, evictedVersion, ckpt));
+      state.lastMutationTimeMsByMember.put(live.memberId, live.timestamp);
+      if (!live.isNonMatchingMarker()) {
+        List<Long> evicted = state.append(live, maxTailPerStream);
+        if (!evicted.isEmpty()) {
+          long ckpt = state.getCheckpoint(live.memberId);
+          for (long evictedVersion : evicted) {
+            overflows
+                .add(new TailOverflowRecord(live.bucketId, live.memberId, evictedVersion, ckpt));
+          }
         }
       }
-      emitted.addAll(evaluateAndDispatch(state, live, false));
+      if (enforceContiguousVersions) {
+        emitted.addAll(dispatchContiguousOrHoldLocked(state, live));
+      } else {
+        emitted.addAll(dispatchSingleVersionLocked(state, live, false));
+      }
     }
+  }
+
+  private List<ContinuousVectorEvent> dispatchContiguousOrHoldLocked(BucketState state,
+      TailMutation mutation) {
+    long v = mutation.regionVersion;
+    long nextExpected = state.nextExpectedVersionByMember.getOrDefault(mutation.memberId, 1L);
+    if (v < nextExpected) {
+      return Collections.emptyList();
+    }
+    if (v > nextExpected) {
+      TreeMap<Long, TailMutation> holdback =
+          state.holdbackByMember.computeIfAbsent(mutation.memberId, ignored -> new TreeMap<>());
+      if (holdback.putIfAbsent(v, mutation) == null) {
+        totalHoldbackBufferedCount.incrementAndGet();
+      }
+      long highestHeld = holdback.lastKey();
+      if ((highestHeld - nextExpected) <= maxHoldbackGap && holdback.size() <= maxHoldbackGap) {
+        return Collections.emptyList();
+      }
+      state.nextExpectedVersionByMember.put(mutation.memberId, holdback.firstKey());
+      return drainContiguousHoldbackLocked(state, mutation.memberId, holdback);
+    }
+
+    List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    emitted.addAll(dispatchSingleVersionLocked(state, mutation, false));
+    TreeMap<Long, TailMutation> holdback = state.holdbackByMember.get(mutation.memberId);
+    if (holdback != null && !holdback.isEmpty()) {
+      emitted.addAll(drainContiguousHoldbackLocked(state, mutation.memberId, holdback));
+    }
+    return emitted;
+  }
+
+  private List<ContinuousVectorEvent> drainContiguousHoldbackLocked(BucketState state,
+      String memberId, TreeMap<Long, TailMutation> holdback) {
+    List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    try {
+      while (!holdback.isEmpty()) {
+        long nextExpected = state.nextExpectedVersionByMember.getOrDefault(memberId, 1L);
+        long first = holdback.firstKey();
+        if (first < nextExpected) {
+          holdback.pollFirstEntry();
+          continue;
+        }
+        if (first > nextExpected) {
+          if ((holdback.lastKey() - nextExpected) <= maxHoldbackGap
+              && holdback.size() <= maxHoldbackGap) {
+            break;
+          }
+        }
+        TailMutation ready = holdback.pollFirstEntry().getValue();
+        emitted.addAll(dispatchSingleVersionLocked(state, ready, false));
+      }
+    } finally {
+      if (holdback.isEmpty()) {
+        state.holdbackByMember.remove(memberId);
+      }
+    }
+    return emitted;
+  }
+
+  private void drainAllHoldbackOnPromotionLocked(BucketState state,
+      List<ContinuousVectorEvent> emitted, List<TailMutation> replayedOut) {
+    if (state.holdbackByMember.isEmpty()) {
+      return;
+    }
+    List<String> members = new ArrayList<>(state.holdbackByMember.keySet());
+    Collections.sort(members);
+    for (String memberId : members) {
+      TreeMap<Long, TailMutation> holdback = state.holdbackByMember.get(memberId);
+      if (holdback == null) {
+        continue;
+      }
+      while (!holdback.isEmpty()) {
+        long nextExpected = state.nextExpectedVersionByMember.getOrDefault(memberId, 1L);
+        TailMutation ready = holdback.pollFirstEntry().getValue();
+        if (ready.regionVersion < nextExpected) {
+          continue;
+        }
+        emitted.addAll(dispatchSingleVersionLocked(state, ready, true));
+        if (!ready.isNonMatchingMarker()) {
+          replayedOut.add(ready);
+        }
+      }
+    }
+    state.holdbackByMember.clear();
+  }
+
+  private List<ContinuousVectorEvent> dispatchSingleVersionLocked(BucketState state,
+      TailMutation mutation, boolean replayed) {
+    state.lastDispatchedVersionByMember.merge(mutation.memberId, mutation.regionVersion, Math::max);
+    state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
+        Math::max);
+    if (mutation.isNonMatchingMarker()) {
+      boolean emitHeartbeat =
+          !replayed
+              && state.shouldEmitPeriodicHeartbeat(mutation.memberId, heartbeatIntervalEvents);
+      if (emitHeartbeat) {
+        ContinuousVectorEvent hb = ContinuousVectorEvent.watermarkHeartbeat(mutation.bucketId,
+            mutation.memberId, mutation.regionVersion, mutation.timestamp);
+        totalHeartbeatsDispatched.incrementAndGet();
+        enqueueOrDispatchBatchLocked(state, Collections.singletonList(hb), null);
+      }
+      return Collections.emptyList();
+    }
+    return evaluateAndDispatch(state, mutation, replayed);
   }
 
   private void notifyOverflows(List<TailOverflowRecord> overflows) {
@@ -809,6 +1153,18 @@ public class RvvMonotonicVectorDispatcher {
 
   public long getTotalReconnectReplaysHandled() {
     return totalReconnectReplaysHandled.get();
+  }
+
+  public long getTotalIdleHeartbeatsFlushed() {
+    return totalIdleHeartbeatsFlushed.get();
+  }
+
+  public long getTotalHoldbackBufferedCount() {
+    return totalHoldbackBufferedCount.get();
+  }
+
+  public long getTotalNonMatchingVersionsObserved() {
+    return totalNonMatchingVersionsObserved.get();
   }
 
   /**
