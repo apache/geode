@@ -1012,6 +1012,120 @@ public class Tier0VectorDeltaBufferJUnitTest {
     assertThat(buffer.getEvictionVersion() % 2L).isEqualTo(0L);
   }
 
+  @Test
+  public void snapshotNoCommitPreventsTwoKeyTornCut() throws Exception {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(17);
+    buffer.put("x", new float[] {1f, 0f}, Map.of("seq", 0));
+    buffer.put("y", new float[] {1f, 0f}, Map.of("seq", 0));
+
+    long evictionBefore = buffer.getEvictionVersion();
+    long mutationBefore = buffer.getMutationVersion();
+    AtomicInteger hookInvocations = new AtomicInteger(0);
+    ExecutorService writerPool = Executors.newSingleThreadExecutor();
+    try {
+      Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot(null, () -> {
+        hookInvocations.incrementAndGet();
+        try {
+          writerPool.submit(() -> {
+            buffer.put("x", new float[] {0f, 1f}, Map.of("seq", 1));
+            buffer.put("y", new float[] {0f, 1f}, Map.of("seq", 1));
+          }).get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+          throw new AssertionError(e);
+        }
+      });
+
+      assertThat(hookInvocations.get()).isEqualTo(1);
+      assertThat(buffer.getEvictionVersion()).isEqualTo(evictionBefore);
+      assertThat(buffer.getMutationVersion()).isEqualTo(mutationBefore + 2L);
+      assertThat(snap.getLiveEntries()).containsKeys("x", "y");
+      assertThat(snap.getLiveEntries().get("x").getMetadata().get("seq")).isEqualTo(1);
+      assertThat(snap.getLiveEntries().get("y").getMetadata().get("seq")).isEqualTo(1);
+    } finally {
+      writerPool.shutdownNow();
+    }
+  }
+
+  @Test
+  public void snapshotResolvesOlderFlushingPutAgainstNewerActiveDelete() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(18);
+    buffer.put("k1", new float[] {1f, 0f}, Map.of("v", 1));
+    Tier0VectorDeltaBuffer.FlushBatch<String> flush1 = buffer.beginFlush();
+    assertThat(flush1).isNotNull();
+    buffer.destroy("k1");
+
+    Tier0VectorDeltaBuffer.Snapshot<String> staticSnap = buffer.snapshot();
+    assertThat(staticSnap.getLiveEntries()).doesNotContainKey("k1");
+    assertThat(staticSnap.getTombstonedKeys()).containsExactly("k1");
+    assertThat(staticSnap.getMaskedKeys()).containsExactly("k1");
+    buffer.completeFlush(flush1.getEpoch());
+    buffer.clear();
+
+    // Simulate concurrent destroy in E_active after scanning E_flushing put without any commit
+    buffer.put("k2", new float[] {0f, 1f}, Map.of("v", 1));
+    Tier0VectorDeltaBuffer.FlushBatch<String> flush2 = buffer.beginFlush();
+    assertThat(flush2).isNotNull();
+    AtomicInteger hookRuns = new AtomicInteger(0);
+    Tier0VectorDeltaBuffer.Snapshot<String> racedSnap = buffer.snapshot(() -> {
+      hookRuns.incrementAndGet();
+      buffer.destroy("k2");
+    });
+
+    assertThat(hookRuns.get()).isEqualTo(1);
+    assertThat(racedSnap.getLiveEntries()).doesNotContainKey("k2");
+    assertThat(racedSnap.getTombstonedKeys()).containsExactly("k2");
+    assertThat(racedSnap.getMaskedKeys()).containsExactly("k2");
+    buffer.completeFlush(flush2.getEpoch());
+  }
+
+  @Test
+  public void snapshotNoCommitConcurrentTwoKeyScheduleNeverExposesOldXNewY() throws Exception {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(19);
+    buffer.put("x", new float[] {1f, 0f}, Map.of("seq", 0));
+    buffer.put("y", new float[] {1f, 0f}, Map.of("seq", 0));
+
+    final int iterations = 5000;
+    final AtomicBoolean done = new AtomicBoolean(false);
+    final AtomicInteger snapshotsObserved = new AtomicInteger(0);
+    final AtomicInteger tornX = new AtomicInteger(-1);
+    final AtomicInteger tornY = new AtomicInteger(-1);
+
+    ExecutorService pool = Executors.newSingleThreadExecutor();
+    try {
+      Future<?> reader = pool.submit(() -> {
+        while (!done.get() && tornX.get() < 0) {
+          Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+          snapshotsObserved.incrementAndGet();
+          Tier0VectorDeltaBuffer.DeltaEntry<String> ex = snap.getLiveEntries().get("x");
+          Tier0VectorDeltaBuffer.DeltaEntry<String> ey = snap.getLiveEntries().get("y");
+          if (ex == null || ey == null) {
+            tornX.compareAndSet(-1, -2);
+            break;
+          }
+          int sx = (Integer) ex.getMetadata().get("seq");
+          int sy = (Integer) ey.getMetadata().get("seq");
+          if (sx < sy) {
+            tornX.compareAndSet(-1, sx);
+            tornY.compareAndSet(-1, sy);
+          }
+        }
+      });
+
+      for (int i = 1; i <= iterations; i++) {
+        buffer.put("x", new float[] {1f, i * 0.0001f}, Map.of("seq", i));
+        buffer.put("y", new float[] {1f, i * 0.0001f}, Map.of("seq", i));
+      }
+      done.set(true);
+      reader.get(15, TimeUnit.SECONDS);
+    } finally {
+      pool.shutdownNow();
+    }
+
+    assertThat(tornX.get()).as("Found torn (old x=%d, new y=%d)", tornX.get(), tornY.get())
+        .isEqualTo(-1);
+    assertThat(snapshotsObserved.get()).isGreaterThan(0);
+  }
+
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,
       VectorSimilarityFunction similarity) throws IOException {
     Document doc = new Document();

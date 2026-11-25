@@ -493,6 +493,9 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       registry.incrementFullScanHydrationCount();
       long eventsInspected = 0L;
       long keysRestored = 0L;
+      // Step 1: Hydrate every live replicated entry (covering unindexed inserts, acknowledged
+      // overwrites x=v1->v2, and delete-recreates x=v1->del->x=v3; putIfAbsent puts x into
+      // E_active and T_mask so stale Lucene versions are masked cleanly).
       Set<Object> liveKeys = bucket.keySet();
       Set<Object> liveKeySet = liveKeys == null ? Collections.emptySet() : new HashSet<>(liveKeys);
       for (Object key : liveKeySet) {

@@ -763,6 +763,99 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
 
   @Test
   @SuppressWarnings("unchecked")
+  public void afterPrimaryFallbackReconcilesOverwritesUnindexedInsertsAndDeleteRecreates()
+      throws Exception {
+    int bucketId = 22;
+    LuceneSerializer<float[]> serializer = (idx, vec) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField("embedding", vec, VectorSimilarityFunction.COSINE));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      BucketRegion bucket = mock(BucketRegion.class);
+      when(bucket.isEmpty()).thenReturn(false);
+      when(bucket.keySet())
+          .thenReturn(Set.of("overwrite-key", "unindexed-insert", "del-recreate-key"));
+
+      float[] overwriteV2 = new float[] {0.98f, 0.2f};
+      float[] unindexedV1 = new float[] {0.97f, 0.24f};
+      float[] delRecreateV3 = new float[] {0.96f, 0.28f};
+
+      Region.Entry<Object, Object> overwriteEntry = mock(Region.Entry.class);
+      when(overwriteEntry.getValue()).thenReturn(overwriteV2);
+      Region.Entry<Object, Object> insertEntry = mock(Region.Entry.class);
+      when(insertEntry.getValue()).thenReturn(unindexedV1);
+      Region.Entry<Object, Object> recreateEntry = mock(Region.Entry.class);
+      when(recreateEntry.getValue()).thenReturn(delRecreateV3);
+
+      when(bucket.getEntry("overwrite-key")).thenReturn(overwriteEntry);
+      when(bucket.getEntry("unindexed-insert")).thenReturn(insertEntry);
+      when(bucket.getEntry("del-recreate-key")).thenReturn(recreateEntry);
+      when(bucket.getEntry("expired-tombstone")).thenReturn(null);
+
+      RegionMap regionMap = mock(RegionMap.class);
+      when(regionMap.regionEntries()).thenReturn(Collections.emptyList());
+      when(bucket.getRegionMap()).thenReturn(regionMap);
+
+      PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+      when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+      PartitionedRegion pr = mock(PartitionedRegion.class);
+      when(pr.getFullPath()).thenReturn(REGION_PATH);
+      when(pr.getRegionService()).thenReturn(cache);
+      when(pr.getDataStore()).thenReturn(dataStore);
+      when(pr.isDestroyed()).thenReturn(false);
+
+      // Lucene holds stale v1 for overwrite-key, stale v1 for del-recreate-key, and stale
+      // expired-tombstone; unindexed-insert is absent from Lucene completely.
+      LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
+      LuceneIndexStats mockStats = mock(LuceneIndexStats.class);
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          bucket, writer, serializer, mockStats, bucket, null, "lock", mockIndex);
+      repo.update("overwrite-key", new float[] {0f, 1f});
+      repo.update("del-recreate-key", new float[] {0.1f, 0.99f});
+      repo.update("expired-tombstone", new float[] {1f, 0f});
+      repo.commitAndRefreshBlocking();
+
+      PartitionedRepositoryManager mockRepoManager = mock(PartitionedRepositoryManager.class);
+      when(mockRepoManager.getRepositoryIfReady(bucketId)).thenReturn(repo);
+      InternalLuceneService mockService = mock(InternalLuceneService.class);
+      when(mockService.getIndex(INDEX_NAME, REGION_PATH)).thenReturn(mockIndex);
+      when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
+      when(cache.getService(InternalLuceneService.class)).thenReturn(mockService);
+
+      Tier0VectorBucketListener<String, float[]> listener =
+          new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+      PartitionListener partitionListener = listener.createPartitionListener();
+      partitionListener.afterRegionCreate(pr);
+      partitionListener.afterPrimary(bucketId);
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+      assertThat(registry.getFullScanHydrationCount()).isEqualTo(1L);
+      assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(0L);
+      assertThat(registry.getReconciledStaleIndexKeysCount()).isEqualTo(1L);
+      assertThat(registry.getHydratedTombstonesCount()).isEqualTo(1L);
+      assertThat(registry.getHydratedKeysCount()).isEqualTo(4L);
+
+      Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+      Tier0VectorDeltaBuffer.Snapshot<Object> snap = buffer.snapshot();
+      assertThat(snap.getLiveEntries())
+          .containsOnlyKeys("overwrite-key", "unindexed-insert", "del-recreate-key");
+      assertThat(snap.getLiveEntries().get("overwrite-key").getVector())
+          .containsExactly(overwriteV2);
+      assertThat(snap.getLiveEntries().get("unindexed-insert").getVector())
+          .containsExactly(unindexedV1);
+      assertThat(snap.getLiveEntries().get("del-recreate-key").getVector())
+          .containsExactly(delRecreateV3);
+      assertThat(snap.getTombstonedKeys()).containsExactly("expired-tombstone");
+      assertThat(snap.getMaskedKeys()).containsExactlyInAnyOrder(
+          "overwrite-key", "unindexed-insert", "del-recreate-key", "expired-tombstone");
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   public void luceneEventListenerRecordsTrueFlushCycleSamplesAndRespectsDisabledFlag()
       throws Exception {
     int bucketId = 0;
