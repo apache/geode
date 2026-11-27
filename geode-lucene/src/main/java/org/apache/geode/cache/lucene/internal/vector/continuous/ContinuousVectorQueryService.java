@@ -129,6 +129,39 @@ public class ContinuousVectorQueryService {
     return dispatcher.getMaxHoldbackGap();
   }
 
+  public void setMaxHoldbackAgeMillis(long maxHoldbackAgeMillis) {
+    dispatcher.setMaxHoldbackAgeMillis(maxHoldbackAgeMillis);
+  }
+
+  public long getMaxHoldbackAgeMillis() {
+    return dispatcher.getMaxHoldbackAgeMillis();
+  }
+
+  public int flushExpiredHoldbackGaps() {
+    return dispatcher.flushExpiredHoldbackGaps();
+  }
+
+  public int flushExpiredHoldbackGaps(long nowMillis) {
+    return dispatcher.flushExpiredHoldbackGaps(nowMillis);
+  }
+
+  public long getHoldbackGapClosedCount() {
+    return dispatcher.getHoldbackGapClosedCount();
+  }
+
+  public boolean isResyncRequired(int bucketId, String memberId) {
+    return dispatcher.isResyncRequired(bucketId, memberId);
+  }
+
+  public void addHoldbackGapListener(RvvMonotonicVectorDispatcher.HoldbackGapListener listener) {
+    dispatcher.addHoldbackGapListener(listener);
+  }
+
+  public boolean removeHoldbackGapListener(
+      RvvMonotonicVectorDispatcher.HoldbackGapListener listener) {
+    return dispatcher.removeHoldbackGapListener(listener);
+  }
+
   public int flushIdleHeartbeats(long maxIdleMillis) {
     return dispatcher.flushIdleHeartbeats(maxIdleMillis);
   }

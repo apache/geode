@@ -483,10 +483,20 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
         crashHook.onBoundary(CrashPhase.AFTER_EFFECT_BEFORE_WATERMARK_COMMIT, event, id);
       }
 
-      store.persistCommittedWatermark(event.getSubscriptionId(), event.getBucketId(),
-          event.getMemberId(), event.getRegionVersion());
       store.markPendingCompleted(id);
-      gate.tryAccept(event);
+      String subId = event.getSubscriptionId();
+      int bucketId = event.getBucketId();
+      String memberId = event.getMemberId();
+      long ver = event.getRegionVersion();
+      long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
+      if (lowestPending > ver) {
+        long prevCommitted = store.getCommittedWatermark(subId, bucketId, memberId);
+        long committed = advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, ver);
+        gate.tryAccept(event);
+        if (committed > prevCommitted && committed > ver) {
+          gate.restoreHighWaterVersion(subId, bucketId, memberId, committed);
+        }
+      }
       return appliedNow;
     }
   }
@@ -508,11 +518,11 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
       Object lock = streamLocks.computeIfAbsent(lockKey, ignored -> new Object());
       synchronized (lock) {
         executeIdempotentlyLocked(event, id);
-        store.persistCommittedWatermark(event.getSubscriptionId(), event.getBucketId(),
-            event.getMemberId(), event.getRegionVersion());
         store.markPendingCompleted(id);
+        long committed = advanceContiguousCommittedWatermarkLocked(event.getSubscriptionId(),
+            event.getBucketId(), event.getMemberId(), event.getRegionVersion());
         gate.restoreHighWaterVersion(event.getSubscriptionId(), event.getBucketId(),
-            event.getMemberId(), event.getRegionVersion());
+            event.getMemberId(), committed);
         recovered++;
       }
     }
@@ -529,6 +539,24 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
           entry.getValue());
     }
     return recovered;
+  }
+
+  private long advanceContiguousCommittedWatermarkLocked(String subId, int bucketId,
+      String memberId, long completedVersion) {
+    long prevCommitted = store.getCommittedWatermark(subId, bucketId, memberId);
+    long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
+    if (lowestPending <= completedVersion) {
+      return prevCommitted;
+    }
+    long safe = Math.max(prevCommitted, completedVersion);
+    while (safe + 1L < lowestPending
+        && store.isEffectApplied(new EventDeliveryId(subId, bucketId, memberId, safe + 1L))) {
+      safe++;
+    }
+    if (safe > prevCommitted) {
+      store.persistCommittedWatermark(subId, bucketId, memberId, safe);
+    }
+    return safe;
   }
 
   private boolean executeIdempotentlyLocked(ContinuousVectorEvent event, EventDeliveryId id) {

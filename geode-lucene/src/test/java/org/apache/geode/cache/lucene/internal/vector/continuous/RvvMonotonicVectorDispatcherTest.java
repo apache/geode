@@ -1472,6 +1472,163 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(gate2.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(8L);
   }
 
+  @Test
+  public void delayedPredecessorExceedingMaxHoldbackAgeClosesGapEmitsResyncNotificationAndUnblocksZeroMatchCheckpoints() {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    service.setHeartbeatIntervalEvents(64);
+    service.setMaxHoldbackAgeMillis(100L);
+    service.registerSubscription("sub-match", matchVec, 0.90f);
+    service.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new ArrayList<>();
+    clientGate.addListener(accepted::add);
+    service.attachClientGate(clientGate);
+    service.addEventSink(clientGate::tryAccept);
+
+    List<String> gapNotifications = new ArrayList<>();
+    service.addHoldbackGapListener(
+        (bId, mId, expectedVer, resumedVer, reason) -> gapNotifications
+            .add(bId + "|" + mId + "|" + expectedVer + "->" + resumedVer + "|" + reason));
+
+    int bucketId = 10;
+    String memberId = "srv-holdback-age";
+
+    // Contiguous prefix 1..2 (non-matching)
+    service.onBucketMutation(bucketId, memberId, 1L, "k1", nonMatchVec, true);
+    service.onBucketMutation(bucketId, memberId, 2L, "k2", nonMatchVec, true);
+    long t0 = System.currentTimeMillis();
+
+    // Out-of-order arrivals v=4 (match) and v=5 (non-match) leaving predecessor v=3 missing
+    assertThat(service.onBucketMutation(bucketId, memberId, 4L, "k4", matchVec, true)).isEmpty();
+    service.onBucketMutation(bucketId, memberId, 5L, "k5", nonMatchVec, true);
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isEqualTo(2);
+    assertThat(accepted).isEmpty();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+
+    // Before maxHoldbackAgeMillis=100ms expires, holdback must remain intact (no premature skip)
+    service.flushIdleHeartbeats(t0 + 40L, 20L);
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isEqualTo(2);
+    assertThat(service.getHoldbackGapClosedCount()).isZero();
+    assertThat(accepted).isEmpty();
+
+    // Once age reaches maxHoldbackAgeMillis=100ms, holdback gap 3 closes deterministically,
+    // emits resync notification, dispatches v=4, and emits trailing heartbeat for v=5!
+    int flushedHb = service.flushIdleHeartbeats(t0 + 150L, 100L);
+    assertThat(flushedHb).isGreaterThanOrEqualTo(1);
+    assertThat(service.getDispatcher().getHoldbackSize(bucketId)).isZero();
+    assertThat(service.getHoldbackGapClosedCount()).isEqualTo(1L);
+    assertThat(service.isResyncRequired(bucketId, memberId)).isTrue();
+    assertThat(gapNotifications)
+        .containsExactly("10|srv-holdback-age|3->4|MAX_HOLDBACK_AGE_EXCEEDED");
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion).containsExactly(4L);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(5L);
+
+    // Late aborted predecessor v=3 arriving after closure is safely ignored without regressing
+    assertThat(service.onBucketMutation(bucketId, memberId, 3L, "k3-late", matchVec, true))
+        .isEmpty();
+    assertThat(accepted).extracting(ContinuousVectorEvent::getRegionVersion).containsExactly(4L);
+    service.getDispatcher().clearResyncRequired(bucketId, memberId);
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+  }
+
+  @Test
+  public void outOfOrderMatchCommitCannotAdvanceCommittedWatermarkPastEarlierPendingIntent() {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ContinuousVectorQueryService server = new ContinuousVectorQueryService(4);
+    server.setHeartbeatIntervalEvents(8);
+    server.registerSubscription("sub-match", matchVec, 0.90f);
+    server.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore durableStore =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> appliedEffectLog = new ArrayList<>();
+    Set<IdempotentRvvConsumer.EventDeliveryId> idempotentExternalSink = new HashSet<>();
+
+    int bucketId = 11;
+    String memberId = "srv-ooo-commit";
+
+    class PreEffectCrashException extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+    }
+
+    RvvClientGate gate1 = new RvvClientGate();
+    server.attachClientGate(gate1);
+    IdempotentRvvConsumer consumer1 = new IdempotentRvvConsumer(gate1, durableStore,
+        (ev, id) -> {
+          if (idempotentExternalSink.add(id)) {
+            appliedEffectLog.add(id);
+          }
+        },
+        (phase, ev, id) -> {
+          if (phase == IdempotentRvvConsumer.CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT
+              && ev.getRegionVersion() == 3L) {
+            throw new PreEffectCrashException();
+          }
+        });
+    server.addEventSink(consumer1);
+
+    server.onBucketMutation(bucketId, memberId, 1L, "k1", matchVec, true);
+    server.onBucketMutation(bucketId, memberId, 2L, "k2", matchVec, true);
+    boolean crashed = false;
+    try {
+      server.onBucketMutation(bucketId, memberId, 3L, "k3", matchVec, true);
+    } catch (PreEffectCrashException expected) {
+      crashed = true;
+    }
+    assertThat(crashed).isTrue();
+    assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId)).isEqualTo(3L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(2L);
+
+    // Before pending v=3 recovers, out-of-order matches v=4 and v=5 execute and complete.
+    // Neither match commit nor gate high-water may advance committedWatermark past pending v=3!
+    server.removeEventSink(consumer1);
+    server.detachClientGate(gate1);
+    RvvClientGate gate2 = new RvvClientGate();
+    server.attachClientGate(gate2);
+    IdempotentRvvConsumer consumer2 = new IdempotentRvvConsumer(gate2, durableStore, (ev, id) -> {
+      if (idempotentExternalSink.add(id)) {
+        appliedEffectLog.add(id);
+      }
+    });
+    gate2.restoreHighWaterVersion("sub-match", bucketId, memberId, 2L);
+
+    long now = System.currentTimeMillis();
+    consumer2.processEvent(new ContinuousVectorEvent("sub-match", "k4", 1.0f, bucketId, memberId,
+        4L, 1, now, false));
+    consumer2.processEvent(new ContinuousVectorEvent("sub-match", "k5", 1.0f, bucketId, memberId,
+        5L, 1, now, false));
+
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 4L, 5L);
+    assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId)).isEqualTo(3L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(2L);
+    assertThat(gate2.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(2L);
+    assertThat(durableStore.getCommittedHighWaterByMember(bucketId,
+        Collections.singletonList("sub-match"))).containsEntry(memberId, 2L);
+
+    // Recover pending v=3 -> drains v=3 once and walks contiguous applied ledger 3->4->5 cleanly
+    assertThat(consumer2.recover()).isEqualTo(1);
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 4L, 5L, 3L);
+    assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId))
+        .isEqualTo(Long.MAX_VALUE);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(5L);
+    assertThat(gate2.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(5L);
+
+    // Duplicate replay from server for v=3..5 executes zero extra effects
+    server.addEventSink(consumer2);
+    server.replayUncheckpointedForReconnect(bucketId,
+        consumer2.getCommittedHighWaterByMember(bucketId));
+    assertThat(appliedEffectLog).hasSize(5).doesNotHaveDuplicates();
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

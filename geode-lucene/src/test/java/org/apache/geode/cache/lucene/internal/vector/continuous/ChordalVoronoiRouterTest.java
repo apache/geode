@@ -1352,6 +1352,72 @@ public class ChordalVoronoiRouterTest {
     assertThat(r64.verifyAgainstBruteForce(probe64).isExactMatch()).isTrue();
   }
 
+  @Test
+  public void oneDimensionalTauOneSubnormalWideningAndBoundaryDimsOneSevenEightNineYieldZeroFnr() {
+    // Verify binary32 -> binary64 widening precedes any arithmetic for d=1 subnormal inputs
+    assertThat(VectorSubscription.normalize(new float[] {Float.MIN_VALUE})).containsExactly(1.0f);
+    assertThat(VectorSubscription.normalize(new float[] {-Float.MIN_VALUE})).containsExactly(-1.0f);
+    assertThat(VectorSubscription.normalize(new float[] {Float.MAX_VALUE})).containsExactly(1.0f);
+
+    // d = 1 router at tau = 1.0 boundary with normal and subnormal vectors
+    ChordalVoronoiRouter r1 = new ChordalVoronoiRouter(RouterConfig.builder(1)
+        .numClusters(2)
+        .boundCheckCost(0.0d)
+        .expectedSurvivalFraction(0.0d)
+        .hysteresisDelta(0.01d)
+        .enableSurvivalGuard(false)
+        .randomSeed(101L)
+        .build());
+    r1.addSubscription(new VectorSubscription("pos-d1-tau1", new float[] {1.0f}, 1.0f));
+    r1.addSubscription(new VectorSubscription("neg-d1-tau1", new float[] {-1.0f}, 1.0f));
+    r1.addSubscription(
+        new VectorSubscription("subnorm-d1-tau1", new float[] {Float.MIN_VALUE}, 1.0f));
+    r1.addSubscription(new VectorSubscription("pos-d1-tau0", new float[] {1.0f}, 0.0f));
+
+    assertThat(r1.getCurrentMode()).isEqualTo(RoutingMode.CHORDAL_VORONOI);
+    assertThat(r1.verifyAgainstBruteForce(new float[] {Float.MIN_VALUE}).isExactMatch()).isTrue();
+    assertThat(r1.verifyAgainstBruteForce(new float[] {-Float.MIN_VALUE}).isExactMatch()).isTrue();
+    assertThat(r1.verifyAgainstBruteForce(new float[] {1.0f}).isExactMatch()).isTrue();
+    assertThat(r1.route(new float[] {Float.MIN_VALUE}))
+        .extracting(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+        .containsExactlyInAnyOrder("pos-d1-tau1", "subnorm-d1-tau1", "pos-d1-tau0");
+    assertThat(r1.route(new float[] {-Float.MIN_VALUE}))
+        .extracting(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+        .containsExactlyInAnyOrder("neg-d1-tau1");
+
+    // Verify FMA 8-way vs scalar tail dimensions (d = 1, 7, 8, 9) with all-subnormal
+    // (Float.MIN_VALUE, 0, ...) and tau = 1.0f / 0.9f
+    for (int dim : new int[] {1, 7, 8, 9}) {
+      float[] qSub = new float[dim];
+      qSub[0] = Float.MIN_VALUE;
+      assertThat(VectorSubscription.normalize(qSub)[0]).isEqualTo(1.0f);
+
+      ChordalVoronoiRouter router = new ChordalVoronoiRouter(RouterConfig.builder(dim)
+          .numClusters(2)
+          .boundCheckCost(0.0d)
+          .expectedSurvivalFraction(0.0d)
+          .hysteresisDelta(0.01d)
+          .enableSurvivalGuard(false)
+          .randomSeed(303L + dim)
+          .build());
+      router.addSubscription(new VectorSubscription("sub-tau1-" + dim, qSub, 1.0f));
+      router.addSubscription(new VectorSubscription("sub-tau09-" + dim, qSub, 0.9f));
+      float[] negQ = new float[dim];
+      negQ[dim - 1] = -Float.MIN_VALUE;
+      router.addSubscription(new VectorSubscription("neg-tail-" + dim, negQ, 0.95f));
+
+      assertThat(router.verifyAgainstBruteForce(qSub).isExactMatch()).isTrue();
+      assertThat(router.route(qSub))
+          .extracting(ChordalVoronoiRouter.MatchResult::getSubscriptionId)
+          .contains("sub-tau1-" + dim, "sub-tau09-" + dim);
+
+      float[] allMin = new float[dim];
+      java.util.Arrays.fill(allMin, Float.MIN_VALUE);
+      assertThat(router.verifyAgainstBruteForce(allMin).isZeroFalseNegatives()).isTrue();
+      assertThat(router.verifyAgainstBruteForce(allMin).isExactMatch()).isTrue();
+    }
+  }
+
   private static float[] randomUnitVector(Random rng, int dim) {
     float[] v = new float[dim];
     for (int i = 0; i < dim; i++) {

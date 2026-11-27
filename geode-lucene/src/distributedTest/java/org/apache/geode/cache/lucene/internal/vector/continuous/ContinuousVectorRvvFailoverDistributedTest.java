@@ -1164,6 +1164,97 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  /**
+   * R1 M2 / R2 M5 DUnit regression: verifies delayed-predecessor holdback gap closure across a
+   * cluster emits a resync-required notification after {@code maxHoldbackAgeMillis}, unblocks held
+   * successor events without stalling, and advances client checkpoints monotonically.
+   */
+  @Test
+  public void delayedPredecessorExceedingMaxHoldbackAgeClosesGapAcrossCluster() throws Exception {
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new CopyOnWriteArrayList<>();
+    clientGate.addListener(accepted::add);
+    receiver = new ClientEventReceiver(clientGate);
+    int receiverPort = receiver.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+
+    try {
+      Random rng = new Random(20261127L);
+      float[] queryVec = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+      List<VectorSubscription> subscriptions = Collections
+          .singletonList(new VectorSubscription("sub-gap-cluster", queryVec, 0.90f));
+      clientGate.registerSubscription("sub-gap-cluster");
+
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(() -> {
+          initializeServerNode(subscriptions, receiverPort, -1, 1, 64, 1);
+          serverService.setMaxHoldbackAgeMillis(150L);
+          serverService.startIdleHeartbeatScheduler(50L, 25L);
+        });
+      }
+
+      // Seed bucket 0 with v=1 match put to resolve its primary VM and member ID
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("seed-gap-1", queryVec);
+      });
+
+      MemberVM primaryVm = null;
+      String primaryMemberId = null;
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        String candidate = server.invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          return null;
+        });
+        if (candidate != null) {
+          primaryVm = server;
+          primaryMemberId = candidate;
+          break;
+        }
+      }
+      assertThat(primaryVm).isNotNull();
+      assertThat(primaryMemberId).isNotNull();
+      final MemberVM resolvedPrimary = primaryVm;
+      final String bucket0Member = primaryMemberId;
+
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> clientGate.getSafeCheckpointVersion(0, bucket0Member) >= 1L);
+      final long seedVer = clientGate.getSafeCheckpointVersion(0, bucket0Member);
+      final long successorVer = seedVer + 2L;
+
+      // Inject out-of-order v=seedVer+2 ahead of missing predecessor seedVer+1 -> held briefly
+      // behind gap, then closed automatically once age exceeds maxHoldbackAgeMillis=150 ms
+      resolvedPrimary.invoke(() -> serverService.onBucketMutation(0, bucket0Member, successorVer,
+          "gap-successor-3", queryVec, true));
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(resolvedPrimary.invoke(() -> serverService.isResyncRequired(0, bucket0Member)))
+            .isTrue();
+        assertThat(resolvedPrimary.invoke(() -> serverService.getHoldbackGapClosedCount()))
+            .isGreaterThanOrEqualTo(1L);
+        assertThat(
+            resolvedPrimary.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
+                .isZero();
+        assertThat(accepted).extracting(ContinuousVectorEvent::getKey)
+            .contains("seed-gap-1", "gap-successor-3");
+        assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member))
+            .isGreaterThanOrEqualTo(successorVer);
+      });
+    } finally {
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+      }
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);

@@ -88,6 +88,23 @@ public class RvvMonotonicVectorDispatcher {
    * missing hole is skipped to prevent indefinite stalling under aborted writes.
    */
   public static final int DEFAULT_MAX_HOLDBACK_GAP = 128;
+  /**
+   * Default bounded per-{@code (bucketId, memberId)} maximum holdback age (milliseconds) before a
+   * persistent missing predecessor version gap is closed and marked resync-required so contiguous
+   * dispatch and watermark checkpoints cannot stall indefinitely ({@code 0} disables age expiry).
+   */
+  public static final long DEFAULT_MAX_HOLDBACK_AGE_MILLIS = 5_000L;
+
+  /**
+   * Callback invoked whenever a per-{@code (bucketId, memberId)} holdback gap is force-closed due
+   * to exceeding {@code maxHoldbackGap} or {@code maxHoldbackAgeMillis}, notifying listeners that
+   * the skipped version hole requires subscriber resynchronization.
+   */
+  @FunctionalInterface
+  public interface HoldbackGapListener {
+    void onHoldbackGapClosed(int bucketId, String memberId, long expectedVersion,
+        long resumedVersion, String reason);
+  }
 
   /**
    * Callback invoked whenever a per-{@code (bucketId, memberId)} tail buffer exceeds
@@ -251,6 +268,7 @@ public class RvvMonotonicVectorDispatcher {
     final Map<String, Long> oldestUncoveredMutationTimeMsByMember = new HashMap<>();
     final Map<String, Long> nextExpectedVersionByMember = new HashMap<>();
     final Map<String, TreeMap<Long, TailMutation>> holdbackByMember = new HashMap<>();
+    final Map<String, Long> holdbackGapStartTimeMsByMember = new HashMap<>();
     final Map<String, Long> lastDispatchedVersionByMember = new HashMap<>();
     final List<TailMutation> pendingLiveMutations = new ArrayList<>();
     final ConcurrentLinkedQueue<PendingDispatchBatch> pendingDispatchBatches =
@@ -432,12 +450,31 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
+  private static final class HoldbackGapRecord {
+    final int bucketId;
+    final String memberId;
+    final long expectedVersion;
+    final long resumedVersion;
+    final String reason;
+
+    HoldbackGapRecord(int bucketId, String memberId, long expectedVersion, long resumedVersion,
+        String reason) {
+      this.bucketId = bucketId;
+      this.memberId = memberId;
+      this.expectedVersion = expectedVersion;
+      this.resumedVersion = resumedVersion;
+      this.reason = reason;
+    }
+  }
+
   private final ChordalVoronoiRouter router;
   private final int maxTailPerStream;
   private final ConcurrentHashMap<Integer, BucketState> bucketStates = new ConcurrentHashMap<>();
   private final CopyOnWriteArrayList<ContinuousVectorEventSink> sinks =
       new CopyOnWriteArrayList<>();
   private final CopyOnWriteArrayList<TailOverflowListener> overflowListeners =
+      new CopyOnWriteArrayList<>();
+  private final CopyOnWriteArrayList<HoldbackGapListener> holdbackGapListeners =
       new CopyOnWriteArrayList<>();
   private final Set<RvvStreamKey> resyncRequiredStreams = ConcurrentHashMap.newKeySet();
 
@@ -448,6 +485,7 @@ public class RvvMonotonicVectorDispatcher {
   private final AtomicLong totalPromotionsHandled = new AtomicLong();
   private final AtomicLong totalReconnectReplaysHandled = new AtomicLong();
   private final AtomicLong tailOverflowCount = new AtomicLong();
+  private final AtomicLong holdbackGapClosedCount = new AtomicLong();
   private final AtomicLong totalIdleHeartbeatsFlushed = new AtomicLong();
   private final AtomicLong totalHoldbackBufferedCount = new AtomicLong();
   private final AtomicLong totalNonMatchingVersionsObserved = new AtomicLong();
@@ -456,6 +494,7 @@ public class RvvMonotonicVectorDispatcher {
   private volatile int heartbeatIntervalEvents;
   private volatile boolean enforceContiguousVersions = true;
   private volatile int maxHoldbackGap = DEFAULT_MAX_HOLDBACK_GAP;
+  private volatile long maxHoldbackAgeMillis = DEFAULT_MAX_HOLDBACK_AGE_MILLIS;
   private ScheduledExecutorService idleHeartbeatScheduler;
 
   public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router) {
@@ -535,6 +574,82 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   /**
+   * Configures the bounded maximum holdback age (milliseconds) before a delayed predecessor gap in
+   * the per-{@code (bucketId, memberId)} holdback buffer is closed and flagged as resync-required
+   * (default {@code 5000 ms}; pass {@code 0} to disable age-based gap closure).
+   */
+  public void setMaxHoldbackAgeMillis(long maxHoldbackAgeMillis) {
+    if (maxHoldbackAgeMillis < 0L) {
+      throw new IllegalArgumentException(
+          "maxHoldbackAgeMillis must be >= 0, got: " + maxHoldbackAgeMillis);
+    }
+    this.maxHoldbackAgeMillis = maxHoldbackAgeMillis;
+  }
+
+  public long getMaxHoldbackAgeMillis() {
+    return maxHoldbackAgeMillis;
+  }
+
+  /**
+   * Closes any held out-of-order version gaps whose oldest holdback entry has waited at least
+   * {@link #getMaxHoldbackAgeMillis()}, marking the affected {@code (bucketId, memberId)} stream
+   * as resync-required and draining buffered successors contiguously.
+   *
+   * @return number of holdback version gaps closed.
+   */
+  public int flushExpiredHoldbackGaps() {
+    return flushExpiredHoldbackGaps(System.currentTimeMillis());
+  }
+
+  /**
+   * Closes any held out-of-order version gaps whose oldest holdback entry reached
+   * {@link #getMaxHoldbackAgeMillis()} as of {@code nowMillis}, marking affected streams
+   * resync-required and draining ready successors contiguously.
+   *
+   * @return number of holdback version gaps closed.
+   */
+  public int flushExpiredHoldbackGaps(long nowMillis) {
+    if (!enforceContiguousVersions || maxHoldbackAgeMillis <= 0L) {
+      return 0;
+    }
+    List<HoldbackGapRecord> gapRecords = new ArrayList<>();
+    for (Map.Entry<Integer, BucketState> bucketEntry : bucketStates.entrySet()) {
+      int bucketId = bucketEntry.getKey();
+      BucketState state = bucketEntry.getValue();
+      synchronized (state) {
+        if (state.holdbackByMember.isEmpty()) {
+          continue;
+        }
+        List<String> members = new ArrayList<>(state.holdbackByMember.keySet());
+        Collections.sort(members);
+        for (String memberId : members) {
+          TreeMap<Long, TailMutation> holdback = state.holdbackByMember.get(memberId);
+          if (holdback == null || holdback.isEmpty()) {
+            continue;
+          }
+          long gapStartMs = resolveOldestHoldbackTimestampLocked(state, memberId, holdback,
+              nowMillis);
+          if (gapStartMs <= 0L || (nowMillis - gapStartMs) < maxHoldbackAgeMillis) {
+            continue;
+          }
+          long nextExpected = state.nextExpectedVersionByMember.getOrDefault(memberId, 1L);
+          long firstHeld = holdback.firstKey();
+          if (firstHeld > nextExpected) {
+            gapRecords.add(new HoldbackGapRecord(bucketId, memberId, nextExpected, firstHeld,
+                "MAX_HOLDBACK_AGE_EXCEEDED"));
+            state.nextExpectedVersionByMember.put(memberId, firstHeld);
+          }
+          drainContiguousHoldbackLocked(state, bucketId, memberId, holdback, nowMillis, gapRecords);
+        }
+      }
+    }
+    if (!gapRecords.isEmpty()) {
+      notifyHoldbackGaps(gapRecords);
+    }
+    return gapRecords.size();
+  }
+
+  /**
    * Starts a background daemon scheduler that periodically flushes idle-tail watermark heartbeats
    * via {@link #flushIdleHeartbeats(long, long)}.
    */
@@ -592,6 +707,9 @@ public class RvvMonotonicVectorDispatcher {
   public int flushIdleHeartbeats(long nowMillis, long maxAgeMillis) {
     if (maxAgeMillis < 0L) {
       throw new IllegalArgumentException("maxAgeMillis must be >= 0, got: " + maxAgeMillis);
+    }
+    if (maxHoldbackAgeMillis > 0L) {
+      flushExpiredHoldbackGaps(nowMillis);
     }
     if (heartbeatIntervalEvents <= 0) {
       return 0;
@@ -687,6 +805,14 @@ public class RvvMonotonicVectorDispatcher {
     return overflowListeners.remove(listener);
   }
 
+  public void addHoldbackGapListener(HoldbackGapListener listener) {
+    holdbackGapListeners.add(Objects.requireNonNull(listener, "listener must not be null"));
+  }
+
+  public boolean removeHoldbackGapListener(HoldbackGapListener listener) {
+    return holdbackGapListeners.remove(listener);
+  }
+
   /**
    * Handles a bucket mutation on either a primary or secondary replica.
    *
@@ -717,6 +843,7 @@ public class RvvMonotonicVectorDispatcher {
         entryVersion, System.currentTimeMillis());
 
     List<TailOverflowRecord> overflows = null;
+    List<HoldbackGapRecord> gapRecords = null;
     List<ContinuousVectorEvent> emitted;
     // Serialize append + contiguous ordering + dispatch per bucket to preserve per-(b, m) order
     synchronized (state) {
@@ -736,13 +863,17 @@ public class RvvMonotonicVectorDispatcher {
       if (!isPrimary) {
         emitted = Collections.emptyList();
       } else if (enforceContiguousVersions) {
-        emitted = dispatchContiguousOrHoldLocked(state, mutation);
+        gapRecords = new ArrayList<>(1);
+        emitted = dispatchContiguousOrHoldLocked(state, bucketId, mutation, gapRecords);
       } else {
         emitted = dispatchSingleVersionLocked(state, mutation, false);
       }
     }
     if (overflows != null) {
       notifyOverflows(overflows);
+    }
+    if (gapRecords != null && !gapRecords.isEmpty()) {
+      notifyHoldbackGaps(gapRecords);
     }
     return emitted;
   }
@@ -764,16 +895,21 @@ public class RvvMonotonicVectorDispatcher {
     state.observeVersion(memberId, regionVersion);
     long nowMs = System.currentTimeMillis();
     TailMutation marker = TailMutation.nonMatchingMarker(bucketId, memberId, regionVersion, nowMs);
+    List<HoldbackGapRecord> gapRecords = null;
     synchronized (state) {
       if (state.pendingAsyncPromotions > 0) {
         state.pendingLiveMutations.add(marker);
         return;
       }
       if (enforceContiguousVersions) {
-        dispatchContiguousOrHoldLocked(state, marker);
+        gapRecords = new ArrayList<>(1);
+        dispatchContiguousOrHoldLocked(state, bucketId, marker, gapRecords);
       } else {
         dispatchSingleVersionLocked(state, marker, false);
       }
+    }
+    if (gapRecords != null && !gapRecords.isEmpty()) {
+      notifyHoldbackGaps(gapRecords);
     }
   }
 
@@ -799,6 +935,7 @@ public class RvvMonotonicVectorDispatcher {
     totalPromotionsHandled.incrementAndGet();
     BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
     List<TailOverflowRecord> overflows = new ArrayList<>();
+    List<HoldbackGapRecord> gapRecords = new ArrayList<>();
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
     synchronized (state) {
       List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
@@ -815,11 +952,14 @@ public class RvvMonotonicVectorDispatcher {
         state.pendingAsyncPromotions--;
       }
       if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
-        drainPendingLiveMutationsLocked(state, emitted, overflows);
+        drainPendingLiveMutationsLocked(state, emitted, overflows, gapRecords);
       }
     }
     if (!overflows.isEmpty()) {
       notifyOverflows(overflows);
+    }
+    if (!gapRecords.isEmpty()) {
+      notifyHoldbackGaps(gapRecords);
     }
     return emitted;
   }
@@ -834,17 +974,21 @@ public class RvvMonotonicVectorDispatcher {
       return;
     }
     List<TailOverflowRecord> overflows = new ArrayList<>();
+    List<HoldbackGapRecord> gapRecords = new ArrayList<>();
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
     synchronized (state) {
       if (state.pendingAsyncPromotions > 0) {
         state.pendingAsyncPromotions--;
       }
       if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
-        drainPendingLiveMutationsLocked(state, emitted, overflows);
+        drainPendingLiveMutationsLocked(state, emitted, overflows, gapRecords);
       }
     }
     if (!overflows.isEmpty()) {
       notifyOverflows(overflows);
+    }
+    if (!gapRecords.isEmpty()) {
+      notifyHoldbackGaps(gapRecords);
     }
   }
 
@@ -1006,7 +1150,8 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   private void drainPendingLiveMutationsLocked(BucketState state,
-      List<ContinuousVectorEvent> emitted, List<TailOverflowRecord> overflows) {
+      List<ContinuousVectorEvent> emitted, List<TailOverflowRecord> overflows,
+      List<HoldbackGapRecord> gapRecords) {
     List<TailMutation> buffered = new ArrayList<>(state.pendingLiveMutations);
     state.pendingLiveMutations.clear();
     buffered.sort(Comparator.comparing(TailMutation::getMemberId)
@@ -1023,7 +1168,7 @@ public class RvvMonotonicVectorDispatcher {
         }
       }
       if (enforceContiguousVersions) {
-        emitted.addAll(dispatchContiguousOrHoldLocked(state, live));
+        emitted.addAll(dispatchContiguousOrHoldLocked(state, live.bucketId, live, gapRecords));
       } else {
         emitted.addAll(dispatchSingleVersionLocked(state, live, false));
       }
@@ -1031,8 +1176,9 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   private List<ContinuousVectorEvent> dispatchContiguousOrHoldLocked(BucketState state,
-      TailMutation mutation) {
+      int bucketId, TailMutation mutation, List<HoldbackGapRecord> gapRecords) {
     long v = mutation.regionVersion;
+    long nowMs = mutation.timestamp > 0L ? mutation.timestamp : System.currentTimeMillis();
     long nextExpected = state.nextExpectedVersionByMember.getOrDefault(mutation.memberId, 1L);
     if (v < nextExpected) {
       return Collections.emptyList();
@@ -1040,29 +1186,53 @@ public class RvvMonotonicVectorDispatcher {
     if (v > nextExpected) {
       TreeMap<Long, TailMutation> holdback =
           state.holdbackByMember.computeIfAbsent(mutation.memberId, ignored -> new TreeMap<>());
+      boolean wasEmpty = holdback.isEmpty();
       if (holdback.putIfAbsent(v, mutation) == null) {
         totalHoldbackBufferedCount.incrementAndGet();
       }
+      if (wasEmpty) {
+        state.holdbackGapStartTimeMsByMember.put(mutation.memberId, nowMs);
+      } else {
+        state.holdbackGapStartTimeMsByMember.putIfAbsent(mutation.memberId, nowMs);
+      }
       long highestHeld = holdback.lastKey();
-      if ((highestHeld - nextExpected) <= maxHoldbackGap && holdback.size() <= maxHoldbackGap) {
+      boolean gapExceeded =
+          (highestHeld - nextExpected) > maxHoldbackGap || holdback.size() > maxHoldbackGap;
+      long gapStartMs =
+          resolveOldestHoldbackTimestampLocked(state, mutation.memberId, holdback, nowMs);
+      boolean ageExceeded =
+          maxHoldbackAgeMillis > 0L && gapStartMs > 0L
+              && (nowMs - gapStartMs) >= maxHoldbackAgeMillis;
+      if (!gapExceeded && !ageExceeded) {
         return Collections.emptyList();
       }
-      state.nextExpectedVersionByMember.put(mutation.memberId, holdback.firstKey());
-      return drainContiguousHoldbackLocked(state, mutation.memberId, holdback);
+      String reason = gapExceeded ? "MAX_HOLDBACK_GAP_EXCEEDED" : "MAX_HOLDBACK_AGE_EXCEEDED";
+      long resumed = holdback.firstKey();
+      if (gapRecords != null) {
+        gapRecords.add(
+            new HoldbackGapRecord(bucketId, mutation.memberId, nextExpected, resumed, reason));
+      }
+      state.nextExpectedVersionByMember.put(mutation.memberId, resumed);
+      state.holdbackGapStartTimeMsByMember.put(mutation.memberId, nowMs);
+      return drainContiguousHoldbackLocked(state, bucketId, mutation.memberId, holdback, nowMs,
+          gapRecords);
     }
 
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
     emitted.addAll(dispatchSingleVersionLocked(state, mutation, false));
     TreeMap<Long, TailMutation> holdback = state.holdbackByMember.get(mutation.memberId);
     if (holdback != null && !holdback.isEmpty()) {
-      emitted.addAll(drainContiguousHoldbackLocked(state, mutation.memberId, holdback));
+      emitted.addAll(drainContiguousHoldbackLocked(state, bucketId, mutation.memberId, holdback,
+          nowMs, gapRecords));
     }
     return emitted;
   }
 
   private List<ContinuousVectorEvent> drainContiguousHoldbackLocked(BucketState state,
-      String memberId, TreeMap<Long, TailMutation> holdback) {
+      int bucketId, String memberId, TreeMap<Long, TailMutation> holdback, long nowMillis,
+      List<HoldbackGapRecord> gapRecords) {
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    long initialExpected = state.nextExpectedVersionByMember.getOrDefault(memberId, 1L);
     try {
       while (!holdback.isEmpty()) {
         long nextExpected = state.nextExpectedVersionByMember.getOrDefault(memberId, 1L);
@@ -1072,10 +1242,22 @@ public class RvvMonotonicVectorDispatcher {
           continue;
         }
         if (first > nextExpected) {
-          if ((holdback.lastKey() - nextExpected) <= maxHoldbackGap
-              && holdback.size() <= maxHoldbackGap) {
+          boolean gapExceeded =
+              (holdback.lastKey() - nextExpected) > maxHoldbackGap
+                  || holdback.size() > maxHoldbackGap;
+          long gapStartMs =
+              resolveOldestHoldbackTimestampLocked(state, memberId, holdback, nowMillis);
+          boolean ageExceeded = maxHoldbackAgeMillis > 0L && gapStartMs > 0L
+              && (nowMillis - gapStartMs) >= maxHoldbackAgeMillis;
+          if (!gapExceeded && !ageExceeded) {
             break;
           }
+          String reason = gapExceeded ? "MAX_HOLDBACK_GAP_EXCEEDED" : "MAX_HOLDBACK_AGE_EXCEEDED";
+          if (gapRecords != null) {
+            gapRecords.add(new HoldbackGapRecord(bucketId, memberId, nextExpected, first, reason));
+          }
+          state.nextExpectedVersionByMember.put(memberId, first);
+          state.holdbackGapStartTimeMsByMember.put(memberId, nowMillis);
         }
         TailMutation ready = holdback.pollFirstEntry().getValue();
         emitted.addAll(dispatchSingleVersionLocked(state, ready, false));
@@ -1083,9 +1265,36 @@ public class RvvMonotonicVectorDispatcher {
     } finally {
       if (holdback.isEmpty()) {
         state.holdbackByMember.remove(memberId);
+        state.holdbackGapStartTimeMsByMember.remove(memberId);
+      } else {
+        long afterExpected = state.nextExpectedVersionByMember.getOrDefault(memberId, 1L);
+        if (afterExpected > initialExpected) {
+          long oldestRemainingTs = holdback.firstEntry().getValue().timestamp;
+          state.holdbackGapStartTimeMsByMember.put(memberId,
+              oldestRemainingTs > 0L ? oldestRemainingTs : nowMillis);
+        } else {
+          state.holdbackGapStartTimeMsByMember.putIfAbsent(memberId, nowMillis);
+        }
       }
     }
     return emitted;
+  }
+
+  private long resolveOldestHoldbackTimestampLocked(BucketState state, String memberId,
+      TreeMap<Long, TailMutation> holdback, long fallbackNowMs) {
+    Long recorded = state.holdbackGapStartTimeMsByMember.get(memberId);
+    if (recorded != null && recorded > 0L) {
+      return recorded;
+    }
+    if (!holdback.isEmpty()) {
+      long ts = holdback.firstEntry().getValue().timestamp;
+      if (ts > 0L) {
+        state.holdbackGapStartTimeMsByMember.put(memberId, ts);
+        return ts;
+      }
+    }
+    state.holdbackGapStartTimeMsByMember.put(memberId, fallbackNowMs);
+    return fallbackNowMs;
   }
 
   private void drainAllHoldbackOnPromotionLocked(BucketState state,
@@ -1113,6 +1322,7 @@ public class RvvMonotonicVectorDispatcher {
       }
     }
     state.holdbackByMember.clear();
+    state.holdbackGapStartTimeMsByMember.clear();
   }
 
   private List<ContinuousVectorEvent> dispatchSingleVersionLocked(BucketState state,
@@ -1151,6 +1361,21 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
+  private void notifyHoldbackGaps(List<HoldbackGapRecord> gapRecords) {
+    for (HoldbackGapRecord rec : gapRecords) {
+      holdbackGapClosedCount.incrementAndGet();
+      resyncRequiredStreams.add(new RvvStreamKey(rec.bucketId, rec.memberId));
+      logger.warn(
+          "RVV holdback gap closed on bucket={}, member={}: missing expectedVersion={}..{} "
+              + "(reason={}); stream marked for resync",
+          rec.bucketId, rec.memberId, rec.expectedVersion, rec.resumedVersion - 1L, rec.reason);
+      for (HoldbackGapListener listener : holdbackGapListeners) {
+        listener.onHoldbackGapClosed(rec.bucketId, rec.memberId, rec.expectedVersion,
+            rec.resumedVersion, rec.reason);
+      }
+    }
+  }
+
   public long getTotalEventsDispatched() {
     return totalEventsDispatched.get();
   }
@@ -1181,6 +1406,10 @@ public class RvvMonotonicVectorDispatcher {
 
   public long getTotalNonMatchingVersionsObserved() {
     return totalNonMatchingVersionsObserved.get();
+  }
+
+  public long getHoldbackGapClosedCount() {
+    return holdbackGapClosedCount.get();
   }
 
   /**
