@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -1037,7 +1038,7 @@ public class Tier0VectorDeltaBufferJUnitTest {
 
       assertThat(hookInvocations.get()).isEqualTo(1);
       assertThat(buffer.getEvictionVersion()).isEqualTo(evictionBefore);
-      assertThat(buffer.getMutationVersion()).isEqualTo(mutationBefore + 2L);
+      assertThat(buffer.getMutationVersion()).isEqualTo(mutationBefore + 4L);
       assertThat(snap.getLiveEntries()).containsKeys("x", "y");
       assertThat(snap.getLiveEntries().get("x").getMetadata().get("seq")).isEqualTo(1);
       assertThat(snap.getLiveEntries().get("y").getMetadata().get("seq")).isEqualTo(1);
@@ -1124,6 +1125,79 @@ public class Tier0VectorDeltaBufferJUnitTest {
     assertThat(tornX.get()).as("Found torn (old x=%d, new y=%d)", tornX.get(), tornY.get())
         .isEqualTo(-1);
     assertThat(snapshotsObserved.get()).isGreaterThan(0);
+  }
+
+  @Test
+  public void snapshotNoCommitPrePinnedTwoWritersNeverExposesOldXNewY() throws Exception {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(20);
+    buffer.put("x", new float[] {1f, 0f}, Map.of("seq", 0));
+    buffer.put("y", new float[] {1f, 0f}, Map.of("seq", 0));
+
+    long evictionBefore = buffer.getEvictionVersion();
+    long mutationBefore = buffer.getMutationVersion();
+    ExecutorService writersPool = Executors.newFixedThreadPool(2);
+    try {
+      // Exact R1 F1 schedule: after snapshot observes writerState == 0, two distinct-key writers
+      // both pin active.writerState and execute their pre-increment BEFORE snapshot reads m1.
+      // After snapshot reads the first key (seq=0), both writers publish seq=1, post-increment,
+      // and unpin BEFORE snapshot reads the second key and validates. Post-increment ensures
+      // m2 != m1 rejects the torn {0, 1} cut on attempt 0 and returns atomic {1, 1}.
+      CountDownLatch bothPreIncremented = new CountDownLatch(2);
+      CountDownLatch allowPublish = new CountDownLatch(1);
+      AtomicInteger writerCheckHooks = new AtomicInteger(0);
+      AtomicInteger midScanHooks = new AtomicInteger(0);
+      List<Future<Long>> writerFutures = new ArrayList<>(2);
+
+      Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot(
+          () -> {
+            writerCheckHooks.incrementAndGet();
+            writerFutures.add(writersPool.submit(() -> buffer.putWithPreMutateHookForTest(
+                "x", new float[] {0f, 1f}, Map.of("seq", 1), () -> {
+                  bothPreIncremented.countDown();
+                  try {
+                    assertThat(allowPublish.await(5, TimeUnit.SECONDS)).isTrue();
+                  } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                  }
+                })));
+            writerFutures.add(writersPool.submit(() -> buffer.putWithPreMutateHookForTest(
+                "y", new float[] {0f, 1f}, Map.of("seq", 1), () -> {
+                  bothPreIncremented.countDown();
+                  try {
+                    assertThat(allowPublish.await(5, TimeUnit.SECONDS)).isTrue();
+                  } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                  }
+                })));
+            try {
+              assertThat(bothPreIncremented.await(5, TimeUnit.SECONDS)).isTrue();
+            } catch (InterruptedException ie) {
+              Thread.currentThread().interrupt();
+              throw new AssertionError(ie);
+            }
+          },
+          null,
+          () -> {
+            midScanHooks.incrementAndGet();
+            allowPublish.countDown();
+            for (Future<Long> f : writerFutures) {
+              try {
+                f.get(5, TimeUnit.SECONDS);
+              } catch (Exception e) {
+                throw new AssertionError(e);
+              }
+            }
+          });
+
+      assertThat(writerCheckHooks.get()).isEqualTo(1);
+      assertThat(midScanHooks.get()).isEqualTo(1);
+      assertThat(buffer.getEvictionVersion()).isEqualTo(evictionBefore);
+      assertThat(buffer.getMutationVersion()).isEqualTo(mutationBefore + 4L);
+      assertThat(snap.getLiveEntries().get("x").getMetadata().get("seq")).isEqualTo(1);
+      assertThat(snap.getLiveEntries().get("y").getMetadata().get("seq")).isEqualTo(1);
+    } finally {
+      writersPool.shutdownNow();
+    }
   }
 
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,

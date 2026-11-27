@@ -505,27 +505,126 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
     Tier0VectorDeltaBuffer.Snapshot<Object> snap = buffer.snapshot();
 
-    // Only O(|AEQ_b|) keys were hydrated; the 100 already-committed keys stay out of Tier-0!
+    // AEQ-delta path runs first (replaying AEQ puts/tombstones without overwriting post-promo-live)
+    // and unconditional full-bucket completeness pass hydrates remaining live entries cleanly.
     assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(1L);
     assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
-    assertThat(registry.getHydratedKeysCount()).isEqualTo(5L);
+    assertThat(registry.getHydratedKeysCount()).isEqualTo(105L);
     assertThat(registry.getHydratedTombstonesCount()).isEqualTo(3L);
-    assertThat(snap.getLiveEntries())
-        .containsOnlyKeys("aeq-live-1", "aeq-recreated", "post-promo-live");
+    assertThat(snap.getLiveEntries()).containsKeys("aeq-live-1", "aeq-recreated",
+        "post-promo-live");
+    assertThat(snap.getLiveEntries()).hasSize(103);
     assertThat(snap.getLiveEntries().get("post-promo-live").getVector()).containsExactly(0f, 1f);
     assertThat(snap.getTombstonedKeys())
         .containsExactlyInAnyOrder("aeq-deleted", "precrash-destroy", "missing-in-bucket");
-    for (int i = 0; i < 100; i++) {
-      assertThat(snap.isMasked("committed-" + i)).isFalse();
-    }
 
-    // Draining AEQ via evictCommitted drains |T_mask| completely to 0
+    // Draining AEQ via evictCommitted drains |T_mask| for AEQ keys and all tombstones to 0
     Map<Object, Long> committedSeqs = new HashMap<>();
-    for (Object k : snap.getMaskedKeys()) {
+    for (Object k : snap.getTombstonedKeys()) {
       committedSeqs.put(k, buffer.getKeySequence(k));
     }
+    committedSeqs.put("aeq-live-1", buffer.getKeySequence("aeq-live-1"));
+    committedSeqs.put("aeq-recreated", buffer.getKeySequence("aeq-recreated"));
+    committedSeqs.put("post-promo-live", buffer.getKeySequence("post-promo-live"));
     buffer.evictCommitted(committedSeqs);
-    assertThat(buffer.getTotalSize()).isEqualTo(0);
+    assertThat(buffer.snapshot().getTombstonedKeys()).isEmpty();
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void afterPrimaryPartialNonEmptyAeqReconcilesMissingOverwriteInsertDeleteAndExpiredTombstone()
+      throws Exception {
+    int bucketId = 23;
+    LuceneSerializer<float[]> serializer = (idx, vec) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField("embedding", vec, VectorSimilarityFunction.COSINE));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      BucketRegion bucket = mock(BucketRegion.class);
+      when(bucket.isEmpty()).thenReturn(false);
+      when(bucket.keySet())
+          .thenReturn(Set.of("aeq-anchor", "overwrite-missing-aeq", "unindexed-missing-aeq"));
+
+      float[] anchorVec = new float[] {0f, 1f};
+      float[] overwriteV2 = new float[] {0.99f, 0.14f};
+      float[] unindexedV1 = new float[] {0.98f, 0.2f};
+
+      Region.Entry<Object, Object> anchorEntry = mock(Region.Entry.class);
+      when(anchorEntry.getValue()).thenReturn(anchorVec);
+      Region.Entry<Object, Object> overwriteEntry = mock(Region.Entry.class);
+      when(overwriteEntry.getValue()).thenReturn(overwriteV2);
+      Region.Entry<Object, Object> unindexedEntry = mock(Region.Entry.class);
+      when(unindexedEntry.getValue()).thenReturn(unindexedV1);
+
+      when(bucket.getEntry("aeq-anchor")).thenReturn(anchorEntry);
+      when(bucket.getEntry("overwrite-missing-aeq")).thenReturn(overwriteEntry);
+      when(bucket.getEntry("unindexed-missing-aeq")).thenReturn(unindexedEntry);
+      when(bucket.getEntry("tombstone-missing-aeq")).thenReturn(null);
+      when(bucket.getEntry("expired-missing-aeq")).thenReturn(null);
+
+      RegionEntry liveTombstone = mock(RegionEntry.class);
+      when(liveTombstone.isTombstone()).thenReturn(true);
+      when(liveTombstone.getKey()).thenReturn("tombstone-missing-aeq");
+      RegionMap regionMap = mock(RegionMap.class);
+      when(regionMap.regionEntries()).thenReturn(List.of(liveTombstone));
+      when(bucket.getRegionMap()).thenReturn(regionMap);
+
+      PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+      when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+      PartitionedRegion pr = mock(PartitionedRegion.class);
+      when(pr.getFullPath()).thenReturn(REGION_PATH);
+      when(pr.getRegionService()).thenReturn(cache);
+      when(pr.getDataStore()).thenReturn(dataStore);
+      when(pr.isDestroyed()).thenReturn(false);
+
+      // Non-empty AEQ contains ONLY aeq-anchor; overwrite, unindexed insert, and deletes are absent
+      Map<Long, GatewaySenderEventImpl> shadowEntries = new HashMap<>();
+      shadowEntries.put(1L, mockShadowEvent("aeq-anchor", Operation.CREATE, 1L));
+      wireMockAeqShadowBucket(pr, bucketId, shadowEntries);
+
+      // Lucene holds stale v1 for overwrite-missing-aeq and stale docs for deleted keys
+      LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
+      LuceneIndexStats mockStats = mock(LuceneIndexStats.class);
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          bucket, writer, serializer, mockStats, bucket, null, "lock", mockIndex);
+      repo.update("overwrite-missing-aeq", new float[] {0.1f, 0.99f});
+      repo.update("tombstone-missing-aeq", new float[] {0.9f, 0.4f});
+      repo.update("expired-missing-aeq", new float[] {1f, 0f});
+      repo.commitAndRefreshBlocking();
+
+      PartitionedRepositoryManager mockRepoManager = mock(PartitionedRepositoryManager.class);
+      when(mockRepoManager.getRepositoryIfReady(bucketId)).thenReturn(repo);
+      InternalLuceneService mockService = mock(InternalLuceneService.class);
+      when(mockService.getIndex(INDEX_NAME, REGION_PATH)).thenReturn(mockIndex);
+      when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
+      when(cache.getService(InternalLuceneService.class)).thenReturn(mockService);
+
+      Tier0VectorBucketListener<String, float[]> listener =
+          new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+      PartitionListener partitionListener = listener.createPartitionListener();
+      partitionListener.afterRegionCreate(pr);
+      partitionListener.afterPrimary(bucketId);
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+      assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(1L);
+      assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+      assertThat(registry.getReconciledStaleIndexKeysCount()).isEqualTo(1L);
+      assertThat(registry.getHydratedTombstonesCount()).isEqualTo(2L);
+
+      Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+      Tier0VectorDeltaBuffer.Snapshot<Object> snap = buffer.snapshot();
+      assertThat(snap.getLiveEntries())
+          .containsOnlyKeys("aeq-anchor", "overwrite-missing-aeq", "unindexed-missing-aeq");
+      assertThat(snap.getLiveEntries().get("overwrite-missing-aeq").getVector())
+          .containsExactly(overwriteV2);
+      assertThat(snap.getLiveEntries().get("unindexed-missing-aeq").getVector())
+          .containsExactly(unindexedV1);
+      assertThat(snap.getTombstonedKeys())
+          .containsExactlyInAnyOrder("tombstone-missing-aeq", "expired-missing-aeq");
+    }
   }
 
   @Test

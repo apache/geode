@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -66,11 +67,14 @@ import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.cache.lucene.internal.vector.VectorSimilarityScorer;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -777,7 +781,7 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
         .untilAsserted(() -> assertThat(dataStore2.invoke(this::countLocalPrimaryBuckets))
             .isEqualTo(NUM_BUCKETS));
 
-    // Verify AEQ-delta hydration telemetry and O(|AEQ_b|) |T_mask| BEFORE AEQ resumes
+    // Verify AEQ-delta hydration + unconditional completeness reconciliation BEFORE AEQ resumes
     dataStore2.invoke(() -> {
       Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
       assertThat(registry.getAeqDeltaHydrationCount())
@@ -785,13 +789,13 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
       assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
       assertThat(registry.getHydratedTombstonesCount()).isEqualTo(destroyedKeys.size());
       assertThat(registry.getHydratedKeysCount())
-          .isEqualTo(destroyedKeys.size() + freshPutKeys.size());
+          .isGreaterThanOrEqualTo(destroyedKeys.size() + freshPutKeys.size());
 
-      // Untouched bucket with |AEQ_b| == 0 must stay empty in Tier-0 (O(|AEQ_b|), not O(|B_local|))
+      // Untouched bucket with |AEQ_b| == 0 must have 0 tombstones in Tier-0
       Tier0VectorDeltaBuffer<Object> untouchedBuf =
           registry.getBuffer("/" + REGION_NAME, INDEX_NAME, untouchedBucketId);
       if (untouchedBuf != null) {
-        assertThat(untouchedBuf.getTotalSize()).isEqualTo(0);
+        assertThat(untouchedBuf.snapshot().getTombstonedKeys()).isEmpty();
       }
 
       // Emptied bucket (bucket.isEmpty() == true) MUST still hold all destroyed tombstones
@@ -834,12 +838,13 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     assertThat(preFlushAllHits).doesNotContainAnyElementsOf(destroyedKeys);
     assertThat(preFlushAllHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
 
-    // Resume AEQ on surviving dataStore2, wait for flush, verify |T_mask| drains to 0 via
-    // evictCommitted and post-flush queries still have 0 ghosts and 100% recall
+    // Resume AEQ on surviving dataStore2, wait for flush, verify tombstones and AEQ-delta keys
+    // drain completely via evictCommitted while post-flush queries have 0 ghosts and 100% recall
     dataStore2.invoke(() -> resumeIndexAeq(getCache()));
     waitForLuceneFlush(accessor);
 
-    assertThat(dataStore2.invoke(this::countTier0Entries)).isEqualTo(0);
+    assertThat(dataStore2.invoke(this::countTier0Tombstones)).isEqualTo(0);
+    dataStore2.invoke(() -> assertTier0DoesNotMaskKeys(destroyedKeys, freshPutKeys));
 
     List<String> postFlushHits = accessor.invoke(() -> {
       Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
@@ -1125,10 +1130,11 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     assertThat(preFlushHits).containsAll(allRecreatedKeys);
     assertThat(preFlushHits).containsExactlyInAnyOrderElementsOf(groundTruth.keySet());
 
-    // Resume AEQ, drain Tier-0 -> 0, and re-verify parity post-flush
+    // Resume AEQ, drain tombstones & AEQ keys -> 0, and re-verify parity post-flush
     dataStore2.invoke(() -> resumeIndexAeq(getCache()));
     waitForLuceneFlush(accessor);
-    assertThat(dataStore2.invoke(this::countTier0Entries)).isEqualTo(0);
+    assertThat(dataStore2.invoke(this::countTier0Tombstones)).isEqualTo(0);
+    dataStore2.invoke(() -> assertTier0DoesNotMaskKeys(allDestroyedKeys, allRecreatedKeys));
 
     List<String> postFlushHits = accessor.invoke(() -> {
       Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
@@ -1568,6 +1574,186 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     assertThat(allHits).containsExactlyInAnyOrderElementsOf(expectedAll);
   }
 
+  @Test
+  public void partialNonEmptyAeqOnPromotionReconcilesMissingAckedOverwriteInsertAndDelete()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+
+    Map<String, VectorRecord> seedData = new HashMap<>();
+    for (int i = 0; i < NUM_BUCKETS * 4; i++) {
+      float cos = 0.40f + 0.003f * i;
+      float[] vec = new float[DIM];
+      vec[0] = cos;
+      vec[1] = (float) Math.sqrt(1.0 - (double) cos * cos);
+      seedData.put("paeq-seed-" + i, new VectorRecord(vec, "all", "all", "all"));
+    }
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (Map.Entry<String, VectorRecord> e : seedData.entrySet()) {
+        region.put(e.getKey(), e.getValue());
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    Set<Integer> ds1Primaries = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+    });
+    assertThat(ds1Primaries).isNotEmpty();
+    int targetBucketId = ds1Primaries.iterator().next();
+
+    List<String> bucketKeys = new ArrayList<>(5);
+    for (int i = 0; i < 3000 && bucketKeys.size() < 5; i++) {
+      String candidate = "paeq-case-" + i;
+      int bid = accessor.invoke(() -> ((PartitionedRegion) getCache().getRegion(REGION_NAME))
+          .getKeyInfo(candidate).getBucketId());
+      if (bid == targetBucketId) {
+        bucketKeys.add(candidate);
+      }
+    }
+    assertThat(bucketKeys).hasSize(5);
+
+    String aeqAnchorKey = bucketKeys.get(0);
+    String overwriteKey = bucketKeys.get(1);
+    String unindexedKey = bucketKeys.get(2);
+    String tombstoneKey = bucketKeys.get(3);
+    String expiredKey = bucketKeys.get(4);
+
+    float[] lowCos30 = new float[DIM];
+    lowCos30[0] = 0.30f;
+    lowCos30[1] = (float) Math.sqrt(1.0 - 0.09);
+    float[] highCos99 = new float[DIM];
+    highCos99[0] = 0.99f;
+    highCos99[1] = (float) Math.sqrt(1.0 - 0.99 * 0.99);
+    float[] highCos985 = new float[DIM];
+    highCos985[0] = 0.985f;
+    highCos985[1] = (float) Math.sqrt(1.0 - 0.985 * 0.985);
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(overwriteKey, new VectorRecord(lowCos30, "all", "all", "all"));
+      region.put(tombstoneKey, new VectorRecord(highCos99, "all", "all", "all"));
+      region.put(expiredKey, new VectorRecord(highCos985, "all", "all", "all"));
+    });
+    waitForLuceneFlush(accessor);
+
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(dataStore2.invoke(this::countLocalBuckets)).isEqualTo(NUM_BUCKETS);
+      int shadowSize = dataStore1.invoke(() -> countShadowQueueLocalSize(getCache()))
+          + dataStore2.invoke(() -> countShadowQueueLocalSize(getCache()));
+      assertThat(shadowSize).isEqualTo(0);
+    });
+
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    float[] anchorVec = new float[DIM];
+    anchorVec[0] = 0.50f;
+    anchorVec[1] = (float) Math.sqrt(1.0 - 0.25);
+    float[] overwriteV2 = new float[DIM];
+    overwriteV2[0] = 0.98f;
+    overwriteV2[1] = (float) Math.sqrt(1.0 - 0.98 * 0.98);
+    float[] unindexedV1 = new float[DIM];
+    unindexedV1[0] = 0.97f;
+    unindexedV1[1] = (float) Math.sqrt(1.0 - 0.97 * 0.97);
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(aeqAnchorKey, new VectorRecord(anchorVec, "all", "all", "all"));
+      region.put(overwriteKey, new VectorRecord(overwriteV2, "all", "all", "all"));
+      region.put(unindexedKey, new VectorRecord(unindexedV1, "all", "all", "all"));
+      region.destroy(tombstoneKey);
+      region.destroy(expiredKey);
+    });
+
+    // Drop AEQ shadow entries for overwrite/unindexed/deleted keys on BOTH primary (dataStore1)
+    // and secondary (dataStore2) locally because BucketRegionQueue.destroyKey does not replicate
+    // removals synchronously; leave ONLY aeqAnchorKey in shadowBucket -> non-empty partial AEQ.
+    Set<String> dropFromAeq =
+        new HashSet<>(Arrays.asList(overwriteKey, unindexedKey, tombstoneKey, expiredKey));
+    dataStore1.invoke(() -> dropKeysFromAeqShadowQueue(getCache(), targetBucketId, dropFromAeq));
+
+    dataStore2.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      BucketRegion localBucket = pr.getDataStore().getLocalBucketById(targetBucketId);
+      RegionEntry re = localBucket.getRegionMap().getEntry(expiredKey);
+      assertThat(re).isNotNull();
+      assertThat(re.isTombstone()).isTrue();
+      assertThat(
+          localBucket.getRegionMap().removeTombstone(re, re.getVersionStamp().asVersionTag()))
+              .isTrue();
+
+      dropKeysFromAeqShadowQueue(getCache(), targetBucketId, dropFromAeq);
+
+      String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
+      AsyncEventQueueImpl q = (AsyncEventQueueImpl) getCache().getAsyncEventQueue(aeqId);
+      ConcurrentParallelGatewaySenderQueue cq =
+          (ConcurrentParallelGatewaySenderQueue) q.getSender().getEventProcessor().getQueue();
+      BucketRegion shadowBucket = cq.getRegion("/" + REGION_NAME)
+          .getDataStore().getLocalBucketById(targetBucketId);
+      assertThat(shadowBucket.isEmpty()).isFalse();
+      for (Object sk : new ArrayList<>(shadowBucket.keySet())) {
+        Object val =
+            shadowBucket.getEntry(sk) != null ? shadowBucket.getEntry(sk).getValue() : null;
+        if (val instanceof GatewaySenderEventImpl) {
+          assertThat(dropFromAeq).doesNotContain((String) ((GatewaySenderEventImpl) val).getKey());
+        }
+      }
+    });
+
+    DistributedTestUtils.crashDistributedSystem(dataStore1);
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(dataStore2.invoke(this::countLocalPrimaryBuckets))
+            .isEqualTo(NUM_BUCKETS));
+
+    dataStore2.invoke(() -> {
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
+      assertThat(registry.getAeqDeltaHydrationCount()).isGreaterThanOrEqualTo(ds1Primaries.size());
+      assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+      assertThat(registry.getReconciledStaleIndexKeysCount()).isGreaterThanOrEqualTo(1L);
+      Tier0VectorDeltaBuffer<Object> buf =
+          registry.getBuffer("/" + REGION_NAME, INDEX_NAME, targetBucketId);
+      assertThat(buf).isNotNull();
+      Tier0VectorDeltaBuffer.Snapshot<Object> snap = buf.snapshot();
+      assertThat(snap.getLiveEntries()).containsKeys(aeqAnchorKey, overwriteKey, unindexedKey);
+      assertThat(snap.getLiveEntries().get(overwriteKey).getVector()[0]).isCloseTo(0.98f,
+          within(1e-5f));
+      assertThat(snap.getLiveEntries().get(unindexedKey).getVector()[0]).isCloseTo(0.97f,
+          within(1e-5f));
+      assertThat(snap.getTombstonedKeys()).contains(tombstoneKey, expiredKey);
+    });
+
+    List<String> top2Hits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 2)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(top2Hits).containsExactly(overwriteKey, unindexedKey);
+
+    List<String> allHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 200)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    Set<String> expectedAll = new HashSet<>(seedData.keySet());
+    expectedAll.add(aeqAnchorKey);
+    expectedAll.add(overwriteKey);
+    expectedAll.add(unindexedKey);
+    assertThat(allHits).doesNotContain(tombstoneKey, expiredKey);
+    assertThat(allHits).containsExactlyInAnyOrderElementsOf(expectedAll);
+  }
+
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,
       String filterField, int k, double minRecall) {
     List<String> expected = computeBruteForceTopK(
@@ -1686,6 +1872,27 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     return total;
   }
 
+  private int countTier0Tombstones() {
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
+    int total = 0;
+    for (Tier0VectorDeltaBuffer<Object> buf : registry.getBuckets("/" + REGION_NAME, INDEX_NAME)
+        .values()) {
+      total += buf.snapshot().getTombstonedKeys().size();
+    }
+    return total;
+  }
+
+  private void assertTier0DoesNotMaskKeys(Collection<String> destroyed, Collection<String> puts) {
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
+    Set<Object> allMasked = new HashSet<>();
+    for (Tier0VectorDeltaBuffer<Object> buf : registry.getBuckets("/" + REGION_NAME, INDEX_NAME)
+        .values()) {
+      allMasked.addAll(buf.snapshot().getMaskedKeys());
+    }
+    assertThat(allMasked).doesNotContainAnyElementsOf(destroyed);
+    assertThat(allMasked).doesNotContainAnyElementsOf(puts);
+  }
+
   private int countLocalPrimaryBuckets() {
     PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
     return pr.getDataStore().getAllLocalPrimaryBucketIds().size();
@@ -1708,6 +1915,35 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
       return ((ConcurrentParallelGatewaySenderQueue) q).localSize(true);
     }
     return 0;
+  }
+
+  private void dropKeysFromAeqShadowQueue(Cache cache, int bucketId, Set<String> keysToDrop)
+      throws ForceReattemptException {
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
+    AsyncEventQueueImpl q = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+    ConcurrentParallelGatewaySenderQueue cq =
+        (ConcurrentParallelGatewaySenderQueue) q.getSender().getEventProcessor().getQueue();
+    BlockingQueue<GatewaySenderEventImpl> tmp = cq.getBucketTmpQueue(bucketId);
+    if (tmp != null) {
+      tmp.removeIf(ev -> keysToDrop.contains(ev.getKey()));
+    }
+    BucketRegion shadowBucket =
+        cq.getRegion("/" + REGION_NAME).getDataStore().getLocalBucketById(bucketId);
+    if (shadowBucket == null) {
+      return;
+    }
+    List<Object> shadowKeysToRemove = new ArrayList<>();
+    for (Object sk : new ArrayList<>(shadowBucket.keySet())) {
+      Object val =
+          shadowBucket.getEntry(sk) != null ? shadowBucket.getEntry(sk).getValue() : null;
+      if (val instanceof GatewaySenderEventImpl
+          && keysToDrop.contains(((GatewaySenderEventImpl) val).getKey())) {
+        shadowKeysToRemove.add(sk);
+      }
+    }
+    for (Object sk : shadowKeysToRemove) {
+      ((AbstractBucketRegionQueue) shadowBucket).destroyKey(sk);
+    }
   }
 
   private static List<String> extractKeys(TopEntries<String> topEntries) {

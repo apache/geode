@@ -176,13 +176,18 @@ public class Tier0VectorDeltaBuffer<K> {
               return -1L;
             }
           }
+          boolean[] mutated = new boolean[] {false};
           long[] insertedSeq = new long[] {-1L};
           active.entries.computeIfAbsent(key, k -> {
             mutationVersion.incrementAndGet();
+            mutated[0] = true;
             long seq = sequenceGenerator.incrementAndGet();
             insertedSeq[0] = seq;
             return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq);
           });
+          if (mutated[0]) {
+            mutationVersion.incrementAndGet();
+          }
           return insertedSeq[0];
         } finally {
           active.writerState.decrementAndGet();
@@ -207,6 +212,20 @@ public class Tier0VectorDeltaBuffer<K> {
 
   private long recordMutation(K key, float[] vector, Map<String, Object> metadata,
       boolean tombstone) {
+    return recordMutation(key, vector, metadata, tombstone, null);
+  }
+
+  long putWithPreMutateHookForTest(K key, float[] vector, Map<String, Object> metadata,
+      Runnable afterPreIncBeforeMutateHook) {
+    float[] vectorCopy = Arrays.copyOf(vector, vector.length);
+    Map<String, Object> metadataCopy = (metadata == null || metadata.isEmpty())
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(new HashMap<>(metadata));
+    return recordMutation(key, vectorCopy, metadataCopy, false, afterPreIncBeforeMutateHook);
+  }
+
+  private long recordMutation(K key, float[] vector, Map<String, Object> metadata,
+      boolean tombstone, Runnable afterPreIncBeforeMutateHook) {
     pathBBarrierLock.readLock().lock();
     try {
       while (true) {
@@ -221,18 +240,25 @@ public class Tier0VectorDeltaBuffer<K> {
         }
         try {
           mutationVersion.incrementAndGet();
-          long[] stampedSeq = new long[1];
-          active.entries.compute(key, (k, existing) -> {
-            long seq = sequenceGenerator.incrementAndGet();
-            if (existing == null || active.epoch > existing.epoch
-                || (active.epoch == existing.epoch && seq > existing.sequence)) {
-              stampedSeq[0] = seq;
-              return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq);
+          try {
+            if (afterPreIncBeforeMutateHook != null) {
+              afterPreIncBeforeMutateHook.run();
             }
-            stampedSeq[0] = existing.sequence;
-            return existing;
-          });
-          return stampedSeq[0];
+            long[] stampedSeq = new long[1];
+            active.entries.compute(key, (k, existing) -> {
+              long seq = sequenceGenerator.incrementAndGet();
+              if (existing == null || active.epoch > existing.epoch
+                  || (active.epoch == existing.epoch && seq > existing.sequence)) {
+                stampedSeq[0] = seq;
+                return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq);
+              }
+              stampedSeq[0] = existing.sequence;
+              return existing;
+            });
+            return stampedSeq[0];
+          } finally {
+            mutationVersion.incrementAndGet();
+          }
         } finally {
           active.writerState.decrementAndGet();
         }
@@ -382,10 +408,14 @@ public class Tier0VectorDeltaBuffer<K> {
           return false;
         }
         mutationVersion.incrementAndGet();
-        active.entries.compute(key,
-            (k, existing) -> (existing == null || oldEntry.isNewerThan(existing))
-                ? oldEntry : existing);
-        return true;
+        try {
+          active.entries.compute(key,
+              (k, existing) -> (existing == null || oldEntry.isNewerThan(existing))
+                  ? oldEntry : existing);
+          return true;
+        } finally {
+          mutationVersion.incrementAndGet();
+        }
       } finally {
         active.writerState.decrementAndGet();
       }
@@ -516,14 +546,19 @@ public class Tier0VectorDeltaBuffer<K> {
    * Lucene {@code IndexSearcher} to guarantee zero visibility gap across concurrent flush commits.
    */
   public Snapshot<K> snapshot() {
-    return snapshot(null, null);
+    return snapshot(null, null, null);
   }
 
   Snapshot<K> snapshot(Runnable afterFlushingScanHook) {
-    return snapshot(afterFlushingScanHook, null);
+    return snapshot(null, afterFlushingScanHook, null);
   }
 
   Snapshot<K> snapshot(Runnable afterFlushingScanHook, Runnable midActiveScanHook) {
+    return snapshot(null, afterFlushingScanHook, midActiveScanHook);
+  }
+
+  Snapshot<K> snapshot(Runnable afterWriterCheckHook, Runnable afterFlushingScanHook,
+      Runnable midActiveScanHook) {
     for (int attempt = 0; attempt < MAX_OPTIMISTIC_SNAPSHOT_RETRIES; attempt++) {
       long v1 = evictionVersion.get();
       if ((v1 & 1L) != 0L) {
@@ -531,7 +566,6 @@ public class Tier0VectorDeltaBuffer<K> {
         continue;
       }
 
-      long m1 = mutationVersion.get();
       EpochState<K> state = stateRef.get();
       EpochBucket<K> flushing = state.flushing;
       EpochBucket<K> active = state.active;
@@ -539,6 +573,10 @@ public class Tier0VectorDeltaBuffer<K> {
         Thread.onSpinWait();
         continue;
       }
+      if (attempt == 0 && afterWriterCheckHook != null) {
+        afterWriterCheckHook.run();
+      }
+      long m1 = mutationVersion.get();
       long expectedGeneration = active.generation;
 
       Map<K, DeltaEntry<K>> merged = scanEpochs(
@@ -548,12 +586,13 @@ public class Tier0VectorDeltaBuffer<K> {
           attempt == 0 ? midActiveScanHook : null);
 
       EpochState<K> after = stateRef.get();
-      long v2 = evictionVersion.get();
+      int activeWriterStateAfter = active.writerState.get();
       long m2 = mutationVersion.get();
+      long v2 = evictionVersion.get();
       if (v1 != v2 || (v2 & 1L) != 0L || m1 != m2
           || after.active.generation != expectedGeneration
           || after.active != active || after.flushing != flushing
-          || (active.writerState.get() & WRITER_MASK) != 0) {
+          || (activeWriterStateAfter & WRITER_MASK) != 0) {
         continue;
       }
 

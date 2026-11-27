@@ -227,9 +227,11 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
           internalCache.setPdxReadSerializedOverride(true);
         }
         try {
-          if (!tryHydrateFromAeqDelta(cache, pr, bucket, bucketId, buffer, registry)) {
-            hydrateFromFullBucketScan(cache, pr, bucket, bucketId, buffer, registry);
-          }
+          long[] aeqStats = tryHydrateFromAeqDelta(cache, pr, bucket, bucketId, buffer, registry);
+          // Unconditionally run full-bucket + Lucene reconciliation after AEQ delta so a
+          // partial non-empty AEQ can never miss an acknowledged write or leave a stale doc
+          // unmasked before releasing hydrationLatch.
+          hydrateFromFullBucketScan(cache, pr, bucket, bucketId, buffer, registry, aeqStats);
         } finally {
           if (internalCache != null) {
             internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
@@ -240,15 +242,15 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       }
     }
 
-    private boolean tryHydrateFromAeqDelta(Cache cache, PartitionedRegion pr, BucketRegion bucket,
+    private long[] tryHydrateFromAeqDelta(Cache cache, PartitionedRegion pr, BucketRegion bucket,
         int bucketId, Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
       if (cache == null) {
-        return false;
+        return null;
       }
       String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, pr.getFullPath());
       AsyncEventQueue aeq = cache.getAsyncEventQueue(aeqId);
       if (!(aeq instanceof AsyncEventQueueImpl)) {
-        return false;
+        return null;
       }
       InternalGatewaySender sender = ((AsyncEventQueueImpl) aeq).getSender();
       AbstractGatewaySenderEventProcessor ep = sender != null ? sender.getEventProcessor() : null;
@@ -265,21 +267,21 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       } else if (regionQueue instanceof ParallelGatewaySenderQueue) {
         parallelQueue = (ParallelGatewaySenderQueue) regionQueue;
       } else {
-        return false;
+        return null;
       }
 
       PartitionedRegion shadowPr = resolveShadowPr(parallelQueue, concurrentQueue, pr);
       if (shadowPr == null || shadowPr.isDestroyed() || shadowPr.getDataStore() == null) {
-        return false;
+        return null;
       }
       BucketRegion shadowBucket = shadowPr.getDataStore().getLocalBucketById(bucketId);
       if (shadowBucket == null || shadowBucket.isDestroyed()) {
-        return false;
+        return null;
       }
       if (shadowBucket instanceof AbstractBucketRegionQueue
           && shadowBucket.getRegionMap() != null
           && !((AbstractBucketRegionQueue) shadowBucket).isInitialized()) {
-        return false;
+        return null;
       }
 
       BlockingQueue<GatewaySenderEventImpl> tempQueue = parallelQueue != null
@@ -308,7 +310,7 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
         }
       }
       registry.recordLastHydrationStats(shadowEvents.size(), keysRestored);
-      return true;
+      return new long[] {shadowEvents.size(), keysRestored};
     }
 
     private PartitionedRegion resolveShadowPr(ParallelGatewaySenderQueue parallelQueue,
@@ -489,10 +491,13 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     }
 
     private void hydrateFromFullBucketScan(Cache cache, PartitionedRegion pr, BucketRegion bucket,
-        int bucketId, Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
-      registry.incrementFullScanHydrationCount();
-      long eventsInspected = 0L;
-      long keysRestored = 0L;
+        int bucketId, Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry,
+        long[] aeqStats) {
+      if (aeqStats == null) {
+        registry.incrementFullScanHydrationCount();
+      }
+      long eventsInspected = aeqStats != null ? aeqStats[0] : 0L;
+      long keysRestored = aeqStats != null ? aeqStats[1] : 0L;
       // Step 1: Hydrate every live replicated entry (covering unindexed inserts, acknowledged
       // overwrites x=v1->v2, and delete-recreates x=v1->del->x=v3; putIfAbsent puts x into
       // E_active and T_mask so stale Lucene versions are masked cleanly).
