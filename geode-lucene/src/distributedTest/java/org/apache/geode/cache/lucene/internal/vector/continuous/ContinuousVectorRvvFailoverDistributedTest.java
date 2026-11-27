@@ -1192,7 +1192,7 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
       for (MemberVM server : new MemberVM[] {server1, server2}) {
         server.invoke(() -> {
           initializeServerNode(subscriptions, receiverPort, -1, 1, 64, 1);
-          serverService.setMaxHoldbackAgeMillis(150L);
+          serverService.setMaxHoldbackAgeMillis(2_000L);
           serverService.startIdleHeartbeatScheduler(50L, 25L);
         });
       }
@@ -1228,12 +1228,45 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
       await().atMost(15, TimeUnit.SECONDS)
           .until(() -> clientGate.getSafeCheckpointVersion(0, bucket0Member) >= 1L);
       final long seedVer = clientGate.getSafeCheckpointVersion(0, bucket0Member);
-      final long successorVer = seedVer + 2L;
 
-      // Inject out-of-order v=seedVer+2 ahead of missing predecessor seedVer+1 -> held briefly
-      // behind gap, then closed automatically once age exceeds maxHoldbackAgeMillis=150 ms
-      resolvedPrimary.invoke(() -> serverService.onBucketMutation(0, bucket0Member, successorVer,
-          "gap-successor-3", queryVec, true));
+      // Phase (a): Temporary predecessor gap REPAIRED BEFORE maxHoldbackAgeMillis expiry (2000 ms)
+      // must preserve contiguous delivery (v=seedVer+1 before seedVer+2) with resyncRequired=false!
+      final long phaseAPredVer = seedVer + 1L;
+      final long phaseASuccVer = seedVer + 2L;
+      resolvedPrimary.invoke(() -> serverService.onBucketMutation(0, bucket0Member, phaseASuccVer,
+          "gap-before-expiry-succ", queryVec, true));
+      Thread.sleep(100L);
+      assertThat(resolvedPrimary.invoke(() -> serverService.isResyncRequired(0, bucket0Member)))
+          .isFalse();
+      assertThat(resolvedPrimary.invoke(() -> serverService.getHoldbackGapClosedCount())).isZero();
+      assertThat(resolvedPrimary.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
+          .isEqualTo(1);
+      assertThat(accepted).extracting(ContinuousVectorEvent::getKey).containsExactly("seed-gap-1");
+
+      resolvedPrimary.invoke(() -> serverService.onBucketMutation(0, bucket0Member, phaseAPredVer,
+          "gap-before-expiry-pred", queryVec, true));
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(resolvedPrimary.invoke(() -> serverService.isResyncRequired(0, bucket0Member)))
+            .isFalse();
+        assertThat(resolvedPrimary.invoke(() -> serverService.getHoldbackGapClosedCount()))
+            .isZero();
+        assertThat(
+            resolvedPrimary.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
+                .isZero();
+        assertThat(accepted).extracting(ContinuousVectorEvent::getKey).containsExactly(
+            "seed-gap-1", "gap-before-expiry-pred", "gap-before-expiry-succ");
+        assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member))
+            .isGreaterThanOrEqualTo(phaseASuccVer);
+      });
+
+      // Phase (b): Delayed predecessor EXCEEDING maxHoldbackAgeMillis (150 ms) closes missing gap
+      // deterministically, flags resyncRequired=true, and unblocks successor + checkpoints!
+      final long phaseBSkipSuccVer = seedVer + 4L;
+      resolvedPrimary.invoke(() -> {
+        serverService.setMaxHoldbackAgeMillis(150L);
+        serverService.onBucketMutation(0, bucket0Member, phaseBSkipSuccVer, "gap-successor-3",
+            queryVec, true);
+      });
 
       await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
         assertThat(resolvedPrimary.invoke(() -> serverService.isResyncRequired(0, bucket0Member)))
@@ -1243,10 +1276,10 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
         assertThat(
             resolvedPrimary.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
                 .isZero();
-        assertThat(accepted).extracting(ContinuousVectorEvent::getKey)
-            .contains("seed-gap-1", "gap-successor-3");
+        assertThat(accepted).extracting(ContinuousVectorEvent::getKey).containsExactly(
+            "seed-gap-1", "gap-before-expiry-pred", "gap-before-expiry-succ", "gap-successor-3");
         assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member))
-            .isGreaterThanOrEqualTo(successorVer);
+            .isGreaterThanOrEqualTo(phaseBSkipSuccVer);
       });
     } finally {
       for (MemberVM server : new MemberVM[] {server1, server2}) {

@@ -378,11 +378,14 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     }
   }
 
+  private static final int DELIVERY_STRIPE_COUNT = 256;
+
   private final RvvClientGate gate;
   private final DurableDeliveryStore store;
   private final EffectHandler effectHandler;
   private final CrashBoundaryHook crashHook;
-  private final ConcurrentHashMap<String, Object> streamLocks = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, Object> streamStageLocks = new ConcurrentHashMap<>();
+  private final Object[] deliveryStripes = new Object[DELIVERY_STRIPE_COUNT];
   private final AtomicLong effectsExecutedCount = new AtomicLong();
   private final AtomicLong deduplicatedEffectsCount = new AtomicLong();
   private final AtomicLong recoveredPendingCount = new AtomicLong();
@@ -398,6 +401,17 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     this.store = Objects.requireNonNull(store, "store must not be null");
     this.effectHandler = Objects.requireNonNull(effectHandler, "effectHandler must not be null");
     this.crashHook = crashHook;
+    for (int i = 0; i < deliveryStripes.length; i++) {
+      deliveryStripes[i] = new Object();
+    }
+  }
+
+  private Object getStreamStageLock(int bucketId, String memberId) {
+    return streamStageLocks.computeIfAbsent(bucketId + "|" + memberId, ignored -> new Object());
+  }
+
+  private Object getDeliveryLock(EventDeliveryId id) {
+    return deliveryStripes[(id.hashCode() & 0x7fffffff) % deliveryStripes.length];
   }
 
   @Override
@@ -406,28 +420,70 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   }
 
   /**
-   * Processes an incoming {@link ContinuousVectorEvent} through the durable pending-intent log,
-   * idempotent {@link EventDeliveryId} ledger, and committed-watermark persistence.
+   * Sequentially stages an incoming match event into the durable pending-intent log before effect
+   * execution or downstream watermark evaluation.
+   */
+  public EventDeliveryId stagePendingIntent(ContinuousVectorEvent event) {
+    Objects.requireNonNull(event, "event must not be null");
+    if (event.isHeartbeat()) {
+      return null;
+    }
+    EventDeliveryId id = EventDeliveryId.fromEvent(event);
+    synchronized (getStreamStageLock(event.getBucketId(), event.getMemberId())) {
+      store.stagePendingIntent(event, id);
+      store.persistReceivedWatermark(event.getSubscriptionId(), event.getBucketId(),
+          event.getMemberId(), event.getRegionVersion());
+    }
+    return id;
+  }
+
+  /**
+   * Processes a FIFO batch of received {@link ContinuousVectorEvent}s by sequentially staging every
+   * non-heartbeat match intent into durable {@code PENDING} state before executing side effects or
+   * advancing committed watermarks for any later match or trailing heartbeat in the batch.
+   *
+   * @return number of first-time match effects / heartbeats processed.
+   */
+  public int processEventBatch(List<ContinuousVectorEvent> events) {
+    Objects.requireNonNull(events, "events must not be null");
+    for (ContinuousVectorEvent event : events) {
+      if (event != null && !event.isHeartbeat()) {
+        stagePendingIntent(event);
+      }
+    }
+    int processed = 0;
+    for (ContinuousVectorEvent event : events) {
+      if (event != null && processEvent(event)) {
+        processed++;
+      }
+    }
+    return processed;
+  }
+
+  /**
+   * Processes an incoming {@link ContinuousVectorEvent} through sequential per-stream durable
+   * pending-intent staging, idempotent {@link EventDeliveryId} ledger checking, effect execution,
+   * and contiguous prefix watermark commitment below any unfinished {@code PENDING} intent.
    *
    * @return {@code true} if the event effect was executed (or heartbeat processed) for the first
    *         time, or {@code false} if deterministically suppressed as an already-applied duplicate.
    */
   public boolean processEvent(ContinuousVectorEvent event) {
     Objects.requireNonNull(event, "event must not be null");
+    int bucketId = event.getBucketId();
+    String memberId = event.getMemberId();
+    long ver = event.getRegionVersion();
+    Object streamLock = getStreamStageLock(bucketId, memberId);
+
     if (event.isHeartbeat()) {
-      int bucketId = event.getBucketId();
-      String memberId = event.getMemberId();
-      long ver = event.getRegionVersion();
-      Collection<String> subs = gate.getActiveSubscriptionIds();
-      if (subs.isEmpty()) {
-        subs = store.getTrackedSubscriptions(bucketId, memberId);
-      }
-      boolean blockedByPending = false;
-      Map<String, Long> safeGateAdvances = null;
-      for (String subId : subs) {
-        Object lock = streamLocks.computeIfAbsent(subId + "|" + bucketId + "|" + memberId,
-            ignored -> new Object());
-        synchronized (lock) {
+      synchronized (streamLock) {
+        Collection<String> subs = gate.getActiveSubscriptionIds();
+        if (subs.isEmpty()) {
+          subs = store.getTrackedSubscriptions(bucketId, memberId);
+        }
+        boolean blockedByPending = false;
+        Map<String, Long> safeGateAdvances = null;
+        for (String subId : subs) {
           store.persistReceivedWatermark(subId, bucketId, memberId, ver);
           long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
           long safeCommit =
@@ -445,49 +501,50 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
             safeGateAdvances.put(subId, safeCommit);
           }
         }
-      }
-      if (blockedByPending) {
-        if (safeGateAdvances != null) {
-          for (Map.Entry<String, Long> e : safeGateAdvances.entrySet()) {
-            gate.restoreHighWaterVersion(e.getKey(), bucketId, memberId, e.getValue());
+        if (blockedByPending) {
+          if (safeGateAdvances != null) {
+            for (Map.Entry<String, Long> e : safeGateAdvances.entrySet()) {
+              gate.restoreHighWaterVersion(e.getKey(), bucketId, memberId, e.getValue());
+            }
           }
+          return true;
         }
-        return true;
+        return gate.tryAccept(event);
       }
-      return gate.tryAccept(event);
     }
 
     EventDeliveryId id = EventDeliveryId.fromEvent(event);
-    String lockKey = event.getSubscriptionId() + "|" + event.getBucketId() + "|"
-        + event.getMemberId();
-    Object lock = streamLocks.computeIfAbsent(lockKey, ignored -> new Object());
-    synchronized (lock) {
-      long gateHighWater = gate.getHighWaterVersion(event.getSubscriptionId(), event.getBucketId(),
-          event.getMemberId());
-      if (event.getRegionVersion() <= gateHighWater && store.isEffectApplied(id)) {
+    String subId = event.getSubscriptionId();
+    synchronized (streamLock) {
+      long gateHighWater = gate.getHighWaterVersion(subId, bucketId, memberId);
+      if (ver <= gateHighWater && store.isEffectApplied(id)) {
+        store.markPendingCompleted(id);
         return false;
       }
 
-      // Window A: durably stage pending intent + received watermark BEFORE executing side effect
+      // Window A: durably stage pending intent + received watermark sequentially on receipt BEFORE
+      // releasing streamLock for side-effect execution so later matches & heartbeats cannot bypass
+      // an in-flight or delayed predecessor intent.
       store.stagePendingIntent(event, id);
-      store.persistReceivedWatermark(event.getSubscriptionId(), event.getBucketId(),
-          event.getMemberId(), event.getRegionVersion());
+      store.persistReceivedWatermark(subId, bucketId, memberId, ver);
+    }
+
+    boolean appliedNow;
+    synchronized (getDeliveryLock(id)) {
       if (crashHook != null) {
         crashHook.onBoundary(CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT, event, id);
       }
 
-      boolean appliedNow = executeIdempotentlyLocked(event, id);
+      appliedNow = executeIdempotentlyLocked(event, id);
 
       // Window B: crash-hook point right after effect+ledger execution, BEFORE committed watermark
       if (crashHook != null) {
         crashHook.onBoundary(CrashPhase.AFTER_EFFECT_BEFORE_WATERMARK_COMMIT, event, id);
       }
+    }
 
+    synchronized (streamLock) {
       store.markPendingCompleted(id);
-      String subId = event.getSubscriptionId();
-      int bucketId = event.getBucketId();
-      String memberId = event.getMemberId();
-      long ver = event.getRegionVersion();
       long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
       if (lowestPending > ver) {
         long prevCommitted = store.getCommittedWatermark(subId, bucketId, memberId);
@@ -513,11 +570,10 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     int recovered = 0;
     for (ContinuousVectorEvent event : pending) {
       EventDeliveryId id = EventDeliveryId.fromEvent(event);
-      String lockKey = event.getSubscriptionId() + "|" + event.getBucketId() + "|"
-          + event.getMemberId();
-      Object lock = streamLocks.computeIfAbsent(lockKey, ignored -> new Object());
-      synchronized (lock) {
-        executeIdempotentlyLocked(event, id);
+      synchronized (getStreamStageLock(event.getBucketId(), event.getMemberId())) {
+        synchronized (getDeliveryLock(id)) {
+          executeIdempotentlyLocked(event, id);
+        }
         store.markPendingCompleted(id);
         long committed = advanceContiguousCommittedWatermarkLocked(event.getSubscriptionId(),
             event.getBucketId(), event.getMemberId(), event.getRegionVersion());
