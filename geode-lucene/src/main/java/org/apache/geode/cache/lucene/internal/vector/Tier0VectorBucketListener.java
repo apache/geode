@@ -178,7 +178,7 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     return new Tier0PartitionListener<>(indexName, vectorExtractor, metadataExtractor);
   }
 
-  private static final class Tier0PartitionListener<K, V> extends PartitionListenerAdapter {
+  static final class Tier0PartitionListener<K, V> extends PartitionListenerAdapter {
     private final String indexName;
     private final Function<V, float[]> vectorExtractor;
     private final Function<V, Map<String, Object>> metadataExtractor;
@@ -199,6 +199,10 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
 
     @Override
     public void afterPrimary(int bucketId) {
+      afterPrimary(bucketId, null);
+    }
+
+    void afterPrimary(int bucketId, Runnable afterAeqBeforeFullScanHook) {
       Region<K, V> r = this.region;
       if (!(r instanceof PartitionedRegion)) {
         return;
@@ -218,6 +222,10 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       try {
         Tier0VectorDeltaBuffer<Object> buffer =
             registry.getOrCreateBuffer(pr.getFullPath(), indexName, bucketId);
+        // Live region puts/destroys (recordPut/recordDestroy) execute before or concurrently with
+        // afterPrimary with provisionalHydration=false and sequence >= 1, so only absent slots or
+        // provisional AEQ entries (maxExclusiveSeq = 0L) may be overwritten by bucket scan.
+        final long promotionStartSeq = 0L;
 
         InternalCache internalCache =
             (cache instanceof InternalCache) ? (InternalCache) cache : null;
@@ -227,11 +235,15 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
           internalCache.setPdxReadSerializedOverride(true);
         }
         try {
-          long[] aeqStats = tryHydrateFromAeqDelta(cache, pr, bucket, bucketId, buffer, registry);
-          // Unconditionally run full-bucket + Lucene reconciliation after AEQ delta so a
-          // partial non-empty AEQ can never miss an acknowledged write or leave a stale doc
-          // unmasked before releasing hydrationLatch.
-          hydrateFromFullBucketScan(cache, pr, bucket, bucketId, buffer, registry, aeqStats);
+          AeqHydrationResult aeqResult =
+              tryHydrateFromAeqDelta(cache, pr, bucket, bucketId, buffer, registry);
+          if (afterAeqBeforeFullScanHook != null) {
+            afterAeqBeforeFullScanHook.run();
+          }
+          // Unconditionally run authoritative bucket + Lucene reconciliation after AEQ delta using
+          // sequence-fenced overwrites before releasing hydrationLatch.
+          hydrateFromFullBucketScan(
+              cache, pr, bucket, bucketId, buffer, registry, promotionStartSeq, aeqResult);
         } finally {
           if (internalCache != null) {
             internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
@@ -242,8 +254,9 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       }
     }
 
-    private long[] tryHydrateFromAeqDelta(Cache cache, PartitionedRegion pr, BucketRegion bucket,
-        int bucketId, Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
+    private AeqHydrationResult tryHydrateFromAeqDelta(Cache cache, PartitionedRegion pr,
+        BucketRegion bucket, int bucketId, Tier0VectorDeltaBuffer<Object> buffer,
+        Tier0VectorRegistry registry) {
       if (cache == null) {
         return null;
       }
@@ -293,24 +306,24 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       Map<Object, GatewaySenderEventImpl> latestByUserKey = collapseLatestByUserKey(shadowEvents);
 
       registry.incrementAeqDeltaHydrationCount();
-      long keysRestored = 0L;
+      AeqHydrationResult result = new AeqHydrationResult(shadowEvents.size());
       for (Map.Entry<Object, GatewaySenderEventImpl> entry : latestByUserKey.entrySet()) {
         Object key = entry.getKey();
         if (buffer.containsKey(key)) {
           continue;
         }
         if (isDestroyOrInvalidateEvent(entry.getValue())) {
-          if (reconcileTombstone(key, buffer, registry)) {
-            keysRestored++;
+          if (reconcileTombstone(key, buffer, registry, -1L, result)) {
+            result.keysRestored++;
           }
         } else {
-          if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry)) {
-            keysRestored++;
+          if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry, -1L, result)) {
+            result.keysRestored++;
           }
         }
       }
-      registry.recordLastHydrationStats(shadowEvents.size(), keysRestored);
-      return new long[] {shadowEvents.size(), keysRestored};
+      registry.recordLastHydrationStats(result.eventsInspected, result.keysRestored);
+      return result;
     }
 
     private PartitionedRegion resolveShadowPr(ParallelGatewaySenderQueue parallelQueue,
@@ -492,20 +505,21 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
 
     private void hydrateFromFullBucketScan(Cache cache, PartitionedRegion pr, BucketRegion bucket,
         int bucketId, Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry,
-        long[] aeqStats) {
-      if (aeqStats == null) {
+        long promotionStartSeq, AeqHydrationResult aeqResult) {
+      if (aeqResult == null) {
         registry.incrementFullScanHydrationCount();
       }
-      long eventsInspected = aeqStats != null ? aeqStats[0] : 0L;
-      long keysRestored = aeqStats != null ? aeqStats[1] : 0L;
-      // Step 1: Hydrate every live replicated entry (covering unindexed inserts, acknowledged
-      // overwrites x=v1->v2, and delete-recreates x=v1->del->x=v3; putIfAbsent puts x into
-      // E_active and T_mask so stale Lucene versions are masked cleanly).
+      long eventsInspected = aeqResult != null ? aeqResult.eventsInspected : 0L;
+      long keysRestored = aeqResult != null ? aeqResult.keysRestored : 0L;
+      // Step 1: Hydrate every live replicated entry using sequence-fenced overwrite
+      // (seq < promotionStartSeq or provisional AEQ entry) so authoritative bucket values win
+      // over stale AEQ state while concurrent post-promotion writes (seq >= promotionStartSeq) win.
       Set<Object> liveKeys = bucket.keySet();
       Set<Object> liveKeySet = liveKeys == null ? Collections.emptySet() : new HashSet<>(liveKeys);
       for (Object key : liveKeySet) {
         eventsInspected++;
-        if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry)) {
+        if (hydrateLiveOrMissingEntry(
+            bucket, key, buffer, registry, promotionStartSeq, aeqResult)) {
           keysRestored++;
         }
       }
@@ -515,8 +529,8 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
           if (re != null && re.isTombstone()) {
             eventsInspected++;
             Object tombKey = re.getKey();
-            if (tombKey != null && !buffer.containsKey(tombKey)
-                && reconcileTombstone(tombKey, buffer, registry)) {
+            if (tombKey != null && reconcileTombstone(
+                tombKey, buffer, registry, promotionStartSeq, aeqResult)) {
               keysRestored++;
             }
           }
@@ -530,10 +544,14 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
               continue;
             }
             eventsInspected++;
-            if (!buffer.containsKey(staleKey) && bucket.getEntry(staleKey) == null
-                && reconcileTombstone(staleKey, buffer, registry)) {
+            boolean[] newlyRestored = new boolean[1];
+            if (bucket.getEntry(staleKey) == null
+                && applyTombstone(staleKey, buffer, registry, promotionStartSeq, aeqResult,
+                    newlyRestored) >= 0L) {
               registry.incrementReconciledStaleIndexKeysCount();
-              keysRestored++;
+              if (newlyRestored[0]) {
+                keysRestored++;
+              }
             }
           }
         }
@@ -576,39 +594,75 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     }
 
     private boolean hydrateLiveOrMissingEntry(BucketRegion bucket, Object key,
-        Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry) {
-      if (buffer.containsKey(key)) {
+        Tier0VectorDeltaBuffer<Object> buffer, Tier0VectorRegistry registry,
+        long promotionStartSeq, AeqHydrationResult aeqResult) {
+      if (promotionStartSeq < 0L && buffer.containsKey(key)) {
         return false;
       }
       V val = readEntryValueWithoutDeserializingPdx(bucket, key);
       if (val == null) {
-        return reconcileTombstone(key, buffer, registry);
+        return reconcileTombstone(key, buffer, registry, promotionStartSeq, aeqResult);
       }
       float[] vec = vectorExtractor.apply(val);
       if (vec == null || vec.length == 0) {
         return false;
       }
       Map<String, Object> metadata = metadataExtractor.apply(val);
-      // Re-verify the entry still exists in the bucket and use putIfAbsent so hydration can
-      // NEVER overwrite a concurrent live afterDestroy tombstone or newer afterUpdate put.
+      // Re-verify the entry still exists in the bucket; in authoritative bucket reconciliation
+      // (promotionStartSeq >= 0), putIfSequenceBefore overwrites stale pre-promotion/provisional
+      // entries while preserving any concurrent live post-promotion destroy or newer put.
       if (bucket.getEntry(key) != null) {
-        if (buffer.putIfAbsent(key, vec, metadata) >= 0L) {
-          registry.incrementHydratedKeysCount();
-          return true;
+        long seq = promotionStartSeq >= 0L
+            ? buffer.putIfSequenceBefore(key, vec, metadata, promotionStartSeq)
+            : buffer.putProvisionalIfAbsent(key, vec, metadata);
+        if (seq >= 0L) {
+          if (aeqResult == null || aeqResult.hydratedKeys.add(key)) {
+            registry.incrementHydratedKeysCount();
+            return true;
+          }
+          return false;
         }
         return false;
       }
-      return reconcileTombstone(key, buffer, registry);
+      return reconcileTombstone(key, buffer, registry, promotionStartSeq, aeqResult);
     }
 
     private static boolean reconcileTombstone(Object key, Tier0VectorDeltaBuffer<Object> buffer,
-        Tier0VectorRegistry registry) {
-      if (buffer.deleteIfAbsent(key) >= 0L) {
-        registry.incrementHydratedKeysCount();
-        registry.incrementHydratedTombstonesCount();
-        return true;
+        Tier0VectorRegistry registry, long promotionStartSeq, AeqHydrationResult aeqResult) {
+      boolean[] newlyRestored = new boolean[1];
+      applyTombstone(key, buffer, registry, promotionStartSeq, aeqResult, newlyRestored);
+      return newlyRestored[0];
+    }
+
+    private static long applyTombstone(Object key, Tier0VectorDeltaBuffer<Object> buffer,
+        Tier0VectorRegistry registry, long promotionStartSeq, AeqHydrationResult aeqResult,
+        boolean[] newlyRestoredOut) {
+      long seq = promotionStartSeq >= 0L
+          ? buffer.deleteIfSequenceBefore(key, promotionStartSeq)
+          : buffer.deleteProvisionalIfAbsent(key);
+      if (seq >= 0L) {
+        if (aeqResult == null || aeqResult.hydratedTombstoneKeys.add(key)) {
+          registry.incrementHydratedTombstonesCount();
+        }
+        if (aeqResult == null || aeqResult.hydratedKeys.add(key)) {
+          registry.incrementHydratedKeysCount();
+          if (newlyRestoredOut != null) {
+            newlyRestoredOut[0] = true;
+          }
+        }
       }
-      return false;
+      return seq;
+    }
+
+    private static final class AeqHydrationResult {
+      final long eventsInspected;
+      long keysRestored;
+      final Set<Object> hydratedKeys = new HashSet<>();
+      final Set<Object> hydratedTombstoneKeys = new HashSet<>();
+
+      AeqHydrationResult(long eventsInspected) {
+        this.eventsInspected = eventsInspected;
+      }
     }
 
     @SuppressWarnings("unchecked")

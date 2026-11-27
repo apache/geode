@@ -1754,6 +1754,193 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     assertThat(allHits).containsExactlyInAnyOrderElementsOf(expectedAll);
   }
 
+  @Test
+  public void promotionOverwritesConflictingAeqWithAuthoritativeBucketLiveAndTombstoneAndDrains()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    Map<String, VectorRecord> seedData = new HashMap<>();
+    Random seedRand = new Random(20260714L);
+    int seedCount = Math.max(60, NUM_BUCKETS * 4);
+    for (int i = 0; i < seedCount; i++) {
+      float[] vec = randomUnitVector(seedRand, DIM);
+      vec[0] = -Math.abs(vec[0]) * 0.5f;
+      normalizeInPlace(vec);
+      seedData.put("seed-" + i, new VectorRecord(vec, "all", "all", "all"));
+    }
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.putAll(seedData);
+    });
+    waitForLuceneFlush(accessor);
+
+    Set<Integer> ds1Primaries = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return new HashSet<>(pr.getDataStore().getAllLocalPrimaryBucketIds());
+    });
+    assertThat(ds1Primaries).isNotEmpty();
+    int targetBucketId = ds1Primaries.iterator().next();
+
+    List<String> bucketKeys = accessor.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<String> keys = new ArrayList<>();
+      for (int idx = 0; keys.size() < 4 && idx < 10_000; idx++) {
+        String candidate = "conf-case-" + idx;
+        if (pr.getKeyInfo(candidate).getBucketId() == targetBucketId) {
+          keys.add(candidate);
+        }
+      }
+      return keys;
+    });
+    assertThat(bucketKeys).hasSize(4);
+
+    String aeqDestroyVsBucketLiveKey = bucketKeys.get(0);
+    String aeqPutVsBucketTombKey = bucketKeys.get(1);
+    String staleBufVsBucketLiveKey = bucketKeys.get(2);
+    String postPromoLiveKey = bucketKeys.get(3);
+
+    float[] lowCos25 = new float[DIM];
+    lowCos25[0] = 0.25f;
+    lowCos25[1] = (float) Math.sqrt(1.0 - 0.25 * 0.25);
+    float[] highCos99 = new float[DIM];
+    highCos99[0] = 0.99f;
+    highCos99[1] = (float) Math.sqrt(1.0 - 0.99 * 0.99);
+    float[] highCos97 = new float[DIM];
+    highCos97[0] = 0.97f;
+    highCos97[1] = (float) Math.sqrt(1.0 - 0.97 * 0.97);
+    float[] postPromoVec = new float[DIM];
+    postPromoVec[0] = 0.995f;
+    postPromoVec[1] = (float) Math.sqrt(1.0 - 0.995 * 0.995);
+
+    // Commit v1 of aeqPutVsBucketTombKey and staleBufVsBucketLiveKey into Lucene first
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(aeqPutVsBucketTombKey, new VectorRecord(highCos99, "all", "all", "all"));
+      region.put(staleBufVsBucketLiveKey, new VectorRecord(lowCos25, "all", "all", "all"));
+    });
+    waitForLuceneFlush(accessor);
+
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(dataStore2.invoke(this::countLocalBuckets)).isEqualTo(NUM_BUCKETS);
+      int shadowSize = dataStore1.invoke(() -> countShadowQueueLocalSize(getCache()))
+          + dataStore2.invoke(() -> countShadowQueueLocalSize(getCache()));
+      assertThat(shadowSize).isEqualTo(0);
+    });
+
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      // Case 1: AEQ keeps DESTROY while authoritative bucket holds live highCos99
+      region.put(aeqDestroyVsBucketLiveKey, new VectorRecord(lowCos25, "all", "all", "all"));
+      region.destroy(aeqDestroyVsBucketLiveKey);
+      region.put(aeqDestroyVsBucketLiveKey, new VectorRecord(highCos99, "all", "all", "all"));
+
+      // Case 2: AEQ keeps UPDATE(lowCos25) while authoritative bucket holds TOMBSTONE
+      region.put(aeqPutVsBucketTombKey, new VectorRecord(lowCos25, "all", "all", "all"));
+      region.destroy(aeqPutVsBucketTombKey);
+
+      // Case 3: Committed v1 overwritten by v2 while v2 AEQ event is dropped -> authoritative
+      // bucket wins without needing AEQ event for v2
+      region.put(staleBufVsBucketLiveKey, new VectorRecord(highCos97, "all", "all", "all"));
+    });
+
+    // Forge conflicting AEQ shadow queues on both dataStore1 and dataStore2 so shadowBucket stays
+    // non-empty with DESTROY for aeqDestroyVsBucketLiveKey and UPDATE for aeqPutVsBucketTombKey,
+    // while staleBufVsBucketLiveKey has no v2 AEQ event.
+    dataStore1.invoke(() -> {
+      dropSelectiveAeqShadowEvents(getCache(), targetBucketId, aeqDestroyVsBucketLiveKey, false);
+      dropSelectiveAeqShadowEvents(getCache(), targetBucketId, aeqPutVsBucketTombKey, true);
+      dropKeysFromAeqShadowQueue(
+          getCache(), targetBucketId, Collections.singleton(staleBufVsBucketLiveKey));
+    });
+    dataStore2.invoke(() -> {
+      dropSelectiveAeqShadowEvents(getCache(), targetBucketId, aeqDestroyVsBucketLiveKey, false);
+      dropSelectiveAeqShadowEvents(getCache(), targetBucketId, aeqPutVsBucketTombKey, true);
+      dropKeysFromAeqShadowQueue(
+          getCache(), targetBucketId, Collections.singleton(staleBufVsBucketLiveKey));
+    });
+
+    DistributedTestUtils.crashDistributedSystem(dataStore1);
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(dataStore2.invoke(this::countLocalPrimaryBuckets))
+            .isEqualTo(NUM_BUCKETS));
+
+    dataStore2.invoke(() -> {
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(getCache());
+      Tier0VectorDeltaBuffer<Object> buf =
+          registry.getBuffer("/" + REGION_NAME, INDEX_NAME, targetBucketId);
+      assertThat(buf).isNotNull();
+      Tier0VectorDeltaBuffer.Snapshot<Object> snap = buf.snapshot();
+      assertThat(snap.getLiveEntries()).containsKeys(
+          aeqDestroyVsBucketLiveKey, staleBufVsBucketLiveKey);
+      assertThat(snap.getLiveEntries().get(aeqDestroyVsBucketLiveKey).getVector()[0])
+          .isCloseTo(0.99f, within(1e-5f));
+      assertThat(snap.getLiveEntries().get(staleBufVsBucketLiveKey).getVector()[0])
+          .isCloseTo(0.97f, within(1e-5f));
+      assertThat(snap.getTombstonedKeys()).contains(aeqPutVsBucketTombKey);
+    });
+
+    List<String> top2PostPromo = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 2)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(top2PostPromo)
+        .containsExactly(aeqDestroyVsBucketLiveKey, staleBufVsBucketLiveKey);
+
+    // Live post-promotion put succeeds cleanly and participates in top-k
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(postPromoLiveKey, new VectorRecord(postPromoVec, "all", "all", "all"));
+    });
+
+    List<String> top3WithPostPromo = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 3)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    assertThat(top3WithPostPromo).containsExactly(
+        postPromoLiveKey, aeqDestroyVsBucketLiveKey, staleBufVsBucketLiveKey);
+
+    dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+    waitForLuceneFlush(accessor);
+    dataStore2.invoke(() -> {
+      assertThat(countTier0Tombstones()).isEqualTo(0);
+      assertTier0DoesNotMaskKeys(
+          Collections.singletonList(aeqPutVsBucketTombKey),
+          Arrays.asList(aeqDestroyVsBucketLiveKey, postPromoLiveKey));
+    });
+
+    List<String> allPostFlush = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 200)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+    });
+    Set<String> expectedPostFlush = new HashSet<>(seedData.keySet());
+    expectedPostFlush.add(aeqDestroyVsBucketLiveKey);
+    expectedPostFlush.add(staleBufVsBucketLiveKey);
+    expectedPostFlush.add(postPromoLiveKey);
+    assertThat(allPostFlush).doesNotContain(aeqPutVsBucketTombKey);
+    assertThat(allPostFlush).containsExactlyInAnyOrderElementsOf(expectedPostFlush);
+  }
+
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,
       String filterField, int k, double minRecall) {
     List<String> expected = computeBruteForceTopK(
@@ -1919,13 +2106,33 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
 
   private void dropKeysFromAeqShadowQueue(Cache cache, int bucketId, Set<String> keysToDrop)
       throws ForceReattemptException {
+    removeMatchingAeqShadowEvents(
+        cache, bucketId, ev -> keysToDrop.contains(ev.getKey()));
+  }
+
+  private void dropSelectiveAeqShadowEvents(
+      Cache cache, int bucketId, String key, boolean dropDestroysOnly)
+      throws ForceReattemptException {
+    removeMatchingAeqShadowEvents(cache, bucketId, ev -> {
+      if (!key.equals(ev.getKey())) {
+        return false;
+      }
+      boolean isDestroyOrInvalidate = ev.getOperation() != null
+          && (ev.getOperation().isDestroy() || ev.getOperation().isInvalidate());
+      return dropDestroysOnly == isDestroyOrInvalidate;
+    });
+  }
+
+  private void removeMatchingAeqShadowEvents(Cache cache, int bucketId,
+      java.util.function.Predicate<GatewaySenderEventImpl> shouldDrop)
+      throws ForceReattemptException {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
     AsyncEventQueueImpl q = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
     ConcurrentParallelGatewaySenderQueue cq =
         (ConcurrentParallelGatewaySenderQueue) q.getSender().getEventProcessor().getQueue();
     BlockingQueue<GatewaySenderEventImpl> tmp = cq.getBucketTmpQueue(bucketId);
     if (tmp != null) {
-      tmp.removeIf(ev -> keysToDrop.contains(ev.getKey()));
+      tmp.removeIf(shouldDrop);
     }
     BucketRegion shadowBucket =
         cq.getRegion("/" + REGION_NAME).getDataStore().getLocalBucketById(bucketId);
@@ -1936,8 +2143,7 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     for (Object sk : new ArrayList<>(shadowBucket.keySet())) {
       Object val =
           shadowBucket.getEntry(sk) != null ? shadowBucket.getEntry(sk).getValue() : null;
-      if (val instanceof GatewaySenderEventImpl
-          && keysToDrop.contains(((GatewaySenderEventImpl) val).getKey())) {
+      if (val instanceof GatewaySenderEventImpl && shouldDrop.test((GatewaySenderEventImpl) val)) {
         shadowKeysToRemove.add(sk);
       }
     }

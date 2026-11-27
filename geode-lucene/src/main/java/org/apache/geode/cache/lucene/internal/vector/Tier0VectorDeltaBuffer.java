@@ -98,16 +98,7 @@ public class Tier0VectorDeltaBuffer<K> {
    */
   public long put(K key, float[] vector, Map<String, Object> metadata) {
     Objects.requireNonNull(key, "key must not be null");
-    Objects.requireNonNull(vector, "vector must not be null");
-    if (vector.length == 0) {
-      throw new IllegalArgumentException("vector must not be empty");
-    }
-    float[] vectorCopy = Arrays.copyOf(vector, vector.length);
-    Map<String, Object> metadataCopy = (metadata == null || metadata.isEmpty())
-        ? Collections.emptyMap()
-        : Collections.unmodifiableMap(new HashMap<>(metadata));
-
-    return recordMutation(key, vectorCopy, metadataCopy, false);
+    return recordMutation(key, copyVector(vector), copyMetadata(metadata), false);
   }
 
   /**
@@ -121,15 +112,38 @@ public class Tier0VectorDeltaBuffer<K> {
    */
   public long putIfAbsent(K key, float[] vector, Map<String, Object> metadata) {
     Objects.requireNonNull(key, "key must not be null");
-    Objects.requireNonNull(vector, "vector must not be null");
-    if (vector.length == 0) {
-      throw new IllegalArgumentException("vector must not be empty");
+    return insertOrOverwrite(key, copyVector(vector), copyMetadata(metadata), false, false, -1L);
+  }
+
+  /**
+   * Inserts a provisional AEQ-hydrated live vector entry into {@code E_active} ONLY if {@code key}
+   * is currently absent from both {@code E_active} and {@code E_flushing}. Subsequent authoritative
+   * bucket reconciliation can overwrite provisional entries via
+   * {@link #putIfSequenceBefore(Object, float[], Map, long)} or
+   * {@link #deleteIfSequenceBefore(Object, long)}.
+   */
+  long putProvisionalIfAbsent(K key, float[] vector, Map<String, Object> metadata) {
+    Objects.requireNonNull(key, "key must not be null");
+    return insertOrOverwrite(key, copyVector(vector), copyMetadata(metadata), false, true, -1L);
+  }
+
+  /**
+   * Inserts or overwrites a live vector entry in {@code E_active} ONLY when {@code key} is absent,
+   * holds a provisional AEQ-hydrated entry, or has a sequence strictly less than
+   * {@code maxExclusiveSeq} across both {@code E_active} and {@code E_flushing}. Preserves any
+   * concurrent live post-promotion mutation with {@code sequence >= maxExclusiveSeq}.
+   *
+   * @return newly stamped sequence number if applied, or {@code -1L} if preserved by a newer live
+   *         entry
+   */
+  public long putIfSequenceBefore(K key, float[] vector, Map<String, Object> metadata,
+      long maxExclusiveSeq) {
+    Objects.requireNonNull(key, "key must not be null");
+    if (maxExclusiveSeq < 0L) {
+      throw new IllegalArgumentException("maxExclusiveSeq must be >= 0");
     }
-    float[] vectorCopy = Arrays.copyOf(vector, vector.length);
-    Map<String, Object> metadataCopy = (metadata == null || metadata.isEmpty())
-        ? Collections.emptyMap()
-        : Collections.unmodifiableMap(new HashMap<>(metadata));
-    return insertIfAbsent(key, vectorCopy, metadataCopy, false);
+    return insertOrOverwrite(
+        key, copyVector(vector), copyMetadata(metadata), false, false, maxExclusiveSeq);
   }
 
   /**
@@ -143,11 +157,52 @@ public class Tier0VectorDeltaBuffer<K> {
    */
   public long deleteIfAbsent(K key) {
     Objects.requireNonNull(key, "key must not be null");
-    return insertIfAbsent(key, null, Collections.emptyMap(), true);
+    return insertOrOverwrite(key, null, Collections.emptyMap(), true, false, -1L);
   }
 
-  private long insertIfAbsent(K key, float[] vector, Map<String, Object> metadata,
-      boolean tombstone) {
+  /**
+   * Inserts a provisional AEQ-hydrated tombstone into {@code E_active} ONLY if {@code key} is
+   * currently absent from both {@code E_active} and {@code E_flushing}.
+   */
+  long deleteProvisionalIfAbsent(K key) {
+    Objects.requireNonNull(key, "key must not be null");
+    return insertOrOverwrite(key, null, Collections.emptyMap(), true, true, -1L);
+  }
+
+  /**
+   * Inserts or overwrites a tombstone in {@code E_active} ONLY when {@code key} is absent, holds a
+   * provisional AEQ-hydrated entry, or has a sequence strictly less than {@code maxExclusiveSeq}
+   * across both {@code E_active} and {@code E_flushing}. Preserves any concurrent live
+   * post-promotion mutation with {@code sequence >= maxExclusiveSeq}.
+   *
+   * @return newly stamped sequence number if applied, or {@code -1L} if preserved by a newer live
+   *         entry
+   */
+  public long deleteIfSequenceBefore(K key, long maxExclusiveSeq) {
+    Objects.requireNonNull(key, "key must not be null");
+    if (maxExclusiveSeq < 0L) {
+      throw new IllegalArgumentException("maxExclusiveSeq must be >= 0");
+    }
+    return insertOrOverwrite(
+        key, null, Collections.emptyMap(), true, false, maxExclusiveSeq);
+  }
+
+  private static float[] copyVector(float[] vector) {
+    Objects.requireNonNull(vector, "vector must not be null");
+    if (vector.length == 0) {
+      throw new IllegalArgumentException("vector must not be empty");
+    }
+    return Arrays.copyOf(vector, vector.length);
+  }
+
+  private static Map<String, Object> copyMetadata(Map<String, Object> metadata) {
+    return (metadata == null || metadata.isEmpty())
+        ? Collections.emptyMap()
+        : Collections.unmodifiableMap(new HashMap<>(metadata));
+  }
+
+  private long insertOrOverwrite(K key, float[] vector, Map<String, Object> metadata,
+      boolean tombstone, boolean provisionalHydration, long maxExclusiveSeq) {
     pathBBarrierLock.readLock().lock();
     try {
       while (true) {
@@ -166,29 +221,38 @@ public class Tier0VectorDeltaBuffer<K> {
           if (flushing != null) {
             if (flushing != active) {
               // Wait for any in-flight writers pinned to oldActive before inspecting flushing
-              // so an concurrent live put cannot finish in E_flushing after a newer tombstone
+              // so a concurrent live put cannot finish in E_flushing after a newer tombstone
               // is placed in E_active.
               while ((flushing.writerState.get() & WRITER_MASK) != 0) {
                 Thread.onSpinWait();
               }
             }
-            if (flushing.entries.containsKey(key)) {
+            DeltaEntry<K> flushingEntry = flushing.entries.get(key);
+            if (flushingEntry != null
+                && !shouldOverwriteEntry(flushingEntry, maxExclusiveSeq)) {
               return -1L;
             }
           }
           boolean[] mutated = new boolean[] {false};
-          long[] insertedSeq = new long[] {-1L};
-          active.entries.computeIfAbsent(key, k -> {
-            mutationVersion.incrementAndGet();
-            mutated[0] = true;
-            long seq = sequenceGenerator.incrementAndGet();
-            insertedSeq[0] = seq;
-            return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq);
-          });
-          if (mutated[0]) {
-            mutationVersion.incrementAndGet();
+          long[] stampedSeq = new long[] {-1L};
+          try {
+            active.entries.compute(key, (k, existing) -> {
+              if (!shouldOverwriteEntry(existing, maxExclusiveSeq)) {
+                return existing;
+              }
+              mutationVersion.incrementAndGet();
+              mutated[0] = true;
+              long seq = sequenceGenerator.incrementAndGet();
+              stampedSeq[0] = seq;
+              return new DeltaEntry<>(
+                  k, vector, metadata, tombstone, active.epoch, seq, provisionalHydration);
+            });
+          } finally {
+            if (mutated[0]) {
+              mutationVersion.incrementAndGet();
+            }
           }
-          return insertedSeq[0];
+          return stampedSeq[0];
         } finally {
           active.writerState.decrementAndGet();
         }
@@ -196,6 +260,16 @@ public class Tier0VectorDeltaBuffer<K> {
     } finally {
       pathBBarrierLock.readLock().unlock();
     }
+  }
+
+  private static <K> boolean shouldOverwriteEntry(DeltaEntry<K> existing, long maxExclusiveSeq) {
+    if (existing == null) {
+      return true;
+    }
+    if (maxExclusiveSeq < 0L) {
+      return false;
+    }
+    return existing.provisionalHydration || existing.sequence < maxExclusiveSeq;
   }
 
   /**
@@ -217,11 +291,8 @@ public class Tier0VectorDeltaBuffer<K> {
 
   long putWithPreMutateHookForTest(K key, float[] vector, Map<String, Object> metadata,
       Runnable afterPreIncBeforeMutateHook) {
-    float[] vectorCopy = Arrays.copyOf(vector, vector.length);
-    Map<String, Object> metadataCopy = (metadata == null || metadata.isEmpty())
-        ? Collections.emptyMap()
-        : Collections.unmodifiableMap(new HashMap<>(metadata));
-    return recordMutation(key, vectorCopy, metadataCopy, false, afterPreIncBeforeMutateHook);
+    return recordMutation(
+        key, copyVector(vector), copyMetadata(metadata), false, afterPreIncBeforeMutateHook);
   }
 
   private long recordMutation(K key, float[] vector, Map<String, Object> metadata,
@@ -772,6 +843,17 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
+   * Reserves and returns a fresh monotonic sequence fence strictly greater than all previously
+   * issued sequences and strictly less than all subsequent mutations. Used at the start of primary
+   * bucket hydration so authoritative bucket state overwrites stale pre-promotion entries
+   * ({@code sequence < promotionStartSeq}) while preserving concurrent post-promotion writes
+   * ({@code sequence >= promotionStartSeq}).
+   */
+  public long nextSequence() {
+    return sequenceGenerator.incrementAndGet();
+  }
+
+  /**
    * Immutable stamped mutation record stored in a Tier-0 epoch bucket.
    */
   public static final class DeltaEntry<K> {
@@ -781,15 +863,22 @@ public class Tier0VectorDeltaBuffer<K> {
     private final boolean tombstone;
     private final long epoch;
     private final long sequence;
+    private final boolean provisionalHydration;
 
     DeltaEntry(K key, float[] vector, Map<String, Object> metadata, boolean tombstone, long epoch,
         long sequence) {
+      this(key, vector, metadata, tombstone, epoch, sequence, false);
+    }
+
+    DeltaEntry(K key, float[] vector, Map<String, Object> metadata, boolean tombstone, long epoch,
+        long sequence, boolean provisionalHydration) {
       this.key = key;
       this.vector = vector;
       this.metadata = metadata;
       this.tombstone = tombstone;
       this.epoch = epoch;
       this.sequence = sequence;
+      this.provisionalHydration = provisionalHydration;
     }
 
     public K getKey() {

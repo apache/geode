@@ -1200,6 +1200,79 @@ public class Tier0VectorDeltaBufferJUnitTest {
     }
   }
 
+  @Test
+  public void putIfSequenceBeforeAndDeleteIfSequenceBeforeOverwriteStaleWhilePreservingPostFenceWrites() {
+    Tier0VectorDeltaBuffer<String> buffer = new Tier0VectorDeltaBuffer<>(21);
+    float[] v1 = new float[] {1f, 0f};
+    float[] v2 = new float[] {0f, 1f};
+    float[] v3 = new float[] {0.6f, 0.8f};
+
+    long sStalePut = buffer.put("stale-put", v1, Map.of("v", 1));
+    long sStaleLiveToTomb = buffer.put("stale-live-to-tomb", v1, Map.of("v", 1));
+    long sStaleTomb = buffer.destroy("stale-tomb");
+    long sProvisionalPut = buffer.putProvisionalIfAbsent("prov-put", v1, Map.of("v", 1));
+    long sProvisionalTomb = buffer.deleteProvisionalIfAbsent("prov-tomb");
+
+    long promotionStartSeq = buffer.nextSequence();
+    assertThat(sStalePut).isLessThan(promotionStartSeq);
+    assertThat(sStaleLiveToTomb).isLessThan(promotionStartSeq);
+    assertThat(sStaleTomb).isLessThan(promotionStartSeq);
+    assertThat(sProvisionalPut).isLessThan(promotionStartSeq);
+    assertThat(sProvisionalTomb).isLessThan(promotionStartSeq);
+
+    long sPostPut = buffer.put("post-put", v3, Map.of("v", 3));
+    long sPostDestroy = buffer.destroy("post-destroy");
+    long sPostFlushing = buffer.put("post-flushing", v3, Map.of("v", 3));
+    assertThat(sPostPut).isGreaterThanOrEqualTo(promotionStartSeq);
+    assertThat(sPostDestroy).isGreaterThanOrEqualTo(promotionStartSeq);
+    assertThat(sPostFlushing).isGreaterThanOrEqualTo(promotionStartSeq);
+
+    // Pre-promotion & provisional entries MUST be overwritten by authoritative bucket state
+    long mutBefore = buffer.getMutationVersion();
+    assertThat(buffer.putIfSequenceBefore("stale-put", v2, Map.of("v", 2), promotionStartSeq))
+        .isGreaterThanOrEqualTo(promotionStartSeq);
+    assertThat(buffer.deleteIfSequenceBefore("stale-live-to-tomb", promotionStartSeq))
+        .isGreaterThanOrEqualTo(promotionStartSeq);
+    assertThat(buffer.putIfSequenceBefore("stale-tomb", v2, Map.of("v", 2), promotionStartSeq))
+        .isGreaterThanOrEqualTo(promotionStartSeq);
+    assertThat(buffer.deleteIfSequenceBefore("prov-put", promotionStartSeq))
+        .isGreaterThanOrEqualTo(promotionStartSeq);
+    assertThat(buffer.putIfSequenceBefore("prov-tomb", v2, Map.of("v", 2), promotionStartSeq))
+        .isGreaterThanOrEqualTo(promotionStartSeq);
+    assertThat(buffer.getMutationVersion()).isEqualTo(mutBefore + 10L);
+
+    // Concurrent live post-promotion writes in E_active MUST NEVER be overwritten
+    long mutLiveCheck = buffer.getMutationVersion();
+    assertThat(buffer.putIfSequenceBefore("post-put", v1, Map.of("v", 1), promotionStartSeq))
+        .isEqualTo(-1L);
+    assertThat(buffer.deleteIfSequenceBefore("post-put", promotionStartSeq)).isEqualTo(-1L);
+    assertThat(buffer.putIfSequenceBefore("post-destroy", v1, Map.of("v", 1), promotionStartSeq))
+        .isEqualTo(-1L);
+    assertThat(buffer.getMutationVersion()).isEqualTo(mutLiveCheck);
+
+    // Rotate post-flushing into E_flushing and verify fencing also guards E_flushing
+    Tier0VectorDeltaBuffer.FlushBatch<String> batch = buffer.beginFlush();
+    assertThat(batch).isNotNull();
+    try {
+      assertThat(
+          buffer.putIfSequenceBefore("post-flushing", v1, Map.of("v", 1), promotionStartSeq))
+              .isEqualTo(-1L);
+      assertThat(buffer.deleteIfSequenceBefore("post-flushing", promotionStartSeq))
+          .isEqualTo(-1L);
+
+      Tier0VectorDeltaBuffer.Snapshot<String> snap = buffer.snapshot();
+      assertThat(snap.getLiveEntries().get("stale-put").getVector()).containsExactly(v2);
+      assertThat(snap.getLiveEntries().get("stale-tomb").getVector()).containsExactly(v2);
+      assertThat(snap.getLiveEntries().get("prov-tomb").getVector()).containsExactly(v2);
+      assertThat(snap.getLiveEntries().get("post-put").getVector()).containsExactly(v3);
+      assertThat(snap.getLiveEntries().get("post-flushing").getVector()).containsExactly(v3);
+      assertThat(snap.getTombstonedKeys())
+          .containsExactlyInAnyOrder("stale-live-to-tomb", "prov-put", "post-destroy");
+    } finally {
+      buffer.completeFlush(batch.getEpoch());
+    }
+  }
+
   private static void addVectorDoc(IndexWriter writer, String key, float[] vec,
       VectorSimilarityFunction similarity) throws IOException {
     Document doc = new Document();

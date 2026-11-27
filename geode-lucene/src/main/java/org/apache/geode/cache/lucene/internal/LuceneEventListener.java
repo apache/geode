@@ -123,6 +123,9 @@ public class LuceneEventListener implements AsyncEventListener {
           eventBuffer = tier0Registry.getBuffer(
               partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
           if (eventBuffer != null) {
+            // Capture the Tier-0 eviction watermark strictly BEFORE reading the live region payload
+            // via region.getEntry(key) so a newer concurrent overlay write arriving after the
+            // flushed payload was read can NEVER be evicted by this batch's commit.
             long seqBeforeRead = eventBuffer.getKeySequence(key);
             if (seqBeforeRead >= 0L) {
               if (tier0BuffersByRepo == null) {

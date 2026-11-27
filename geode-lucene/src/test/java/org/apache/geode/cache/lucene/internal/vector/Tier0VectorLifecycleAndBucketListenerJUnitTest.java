@@ -1021,6 +1021,229 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     assertThat(registry.drainFlushCycleSamples(REGION_PATH, INDEX_NAME, bucketId)).isEmpty();
   }
 
+  @Test
+  @SuppressWarnings("unchecked")
+  public void pathAFlushDoesNotEvictNewerOverlayPutWrittenAfterPayloadRead() throws Exception {
+    final int bucketId = 24;
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    float[] k1v1 = new float[] {1f, 0f};
+    float[] k1v2 = new float[] {0.6f, 0.8f};
+    float[] k2v1 = new float[] {0f, 1f};
+    long seqK1V1 = registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "k1", k1v1, Map.of());
+    registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "k2", k2v1, Map.of());
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.getId()).thenReturn(bucketId);
+
+    long[] concurrentSeqK1V2 = new long[] {-1L};
+    long[] concurrentDestroySeqK2 = new long[] {-1L};
+    EntrySnapshot es1 = mock(EntrySnapshot.class);
+    when(es1.getRawValue(true)).thenAnswer(inv -> {
+      // Simulate a concurrent post-read put arriving right after Path-A read payload v1
+      concurrentSeqK1V2[0] =
+          registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "k1", k1v2, Map.of());
+      return k1v1;
+    });
+    EntrySnapshot es2 = mock(EntrySnapshot.class);
+    when(es2.getRawValue(true)).thenAnswer(inv -> {
+      // Simulate a concurrent destroy arriving right after Path-A read payload v1 for k2
+      concurrentDestroySeqK2[0] =
+          registry.recordDestroy(REGION_PATH, INDEX_NAME, bucketId, "k2");
+      return k2v1;
+    });
+
+    Region<Object, Object> region = mock(Region.class);
+    when(region.getEntry("k1")).thenReturn(es1);
+    when(region.getEntry("k2")).thenReturn(es2);
+
+    IndexRepository repo = mock(IndexRepository.class);
+    when(repo.getRegion()).thenReturn(bucket);
+    LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+    PartitionedRepositoryManager repoManager = mock(PartitionedRepositoryManager.class);
+    when(repoManager.getIndex()).thenReturn(mockIndex);
+    when(repoManager.getRepository(any(), any(), any())).thenReturn(repo);
+
+    AsyncEvent e1 = mock(AsyncEvent.class);
+    when(e1.getRegion()).thenReturn(region);
+    when(e1.getKey()).thenReturn("k1");
+    AsyncEvent e2 = mock(AsyncEvent.class);
+    when(e2.getRegion()).thenReturn(region);
+    when(e2.getKey()).thenReturn("k2");
+
+    LuceneEventListener aeqListener = new LuceneEventListener(cache, repoManager);
+    assertThat(aeqListener.processEvents(List.of(e1, e2))).isTrue();
+
+    assertThat(concurrentSeqK1V2[0]).isGreaterThan(seqK1V1);
+    assertThat(concurrentDestroySeqK2[0]).isGreaterThan(seqK1V1);
+    org.mockito.Mockito.verify(repo).update("k1", k1v1);
+    org.mockito.Mockito.verify(repo).update("k2", k2v1);
+    org.mockito.Mockito.verify(repo).commitAndRefreshBlocking();
+
+    // Flush #1 installed v1 payloads, so evictCommitted MUST preserve k1=v2 and k2 tombstone
+    Tier0VectorDeltaBuffer.Snapshot<Object> snapAfterFirstFlush = buffer.snapshot();
+    assertThat(snapAfterFirstFlush.getLiveEntries()).containsOnlyKeys("k1");
+    assertThat(snapAfterFirstFlush.getLiveEntries().get("k1").getVector()).containsExactly(k1v2);
+    assertThat(snapAfterFirstFlush.getLiveEntries().get("k1").getSequence())
+        .isEqualTo(concurrentSeqK1V2[0]);
+    assertThat(snapAfterFirstFlush.getTombstonedKeys()).containsExactly("k2");
+
+    // Subsequent batch seeing v2 for k1 and tombstone (null) for k2 drains Tier-0 cleanly to 0
+    when(es1.getRawValue(true)).thenReturn(k1v2);
+    when(region.getEntry("k2")).thenReturn(null);
+    assertThat(aeqListener.processEvents(List.of(e1, e2))).isTrue();
+    assertThat(buffer.getTotalSize()).isEqualTo(0);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void afterPrimaryAuthoritativeBucketOverwritesConflictingAeqAndPreservesPostPromotionLiveWrites()
+      throws Exception {
+    final int bucketId = 25;
+    float[] v1Stale = new float[] {0.2f, 0.98f};
+    float[] v2Authoritative = new float[] {0.98f, 0.2f};
+    float[] v3PostPromo = new float[] {0.99f, 0.14f};
+
+    LuceneSerializer<float[]> serializer = (idx, vec) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField("embedding", vec, VectorSimilarityFunction.COSINE));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      BucketRegion bucket = mock(BucketRegion.class);
+      when(bucket.isEmpty()).thenReturn(false);
+      when(bucket.keySet()).thenReturn(Set.of(
+          "aeq-destroy-bucket-live",
+          "aeq-v1-bucket-v2",
+          "post-promo-live-race",
+          "post-promo-before-afterprimary"));
+
+      Region.Entry<Object, Object> liveV1Entry = mock(Region.Entry.class);
+      when(liveV1Entry.getValue()).thenReturn(v1Stale);
+      Region.Entry<Object, Object> liveV2Entry1 = mock(Region.Entry.class);
+      when(liveV2Entry1.getValue()).thenReturn(v2Authoritative);
+      Region.Entry<Object, Object> liveV2Entry2 = mock(Region.Entry.class);
+      when(liveV2Entry2.getValue()).thenReturn(v2Authoritative);
+      Region.Entry<Object, Object> liveRaceEntry = mock(Region.Entry.class);
+      when(liveRaceEntry.getValue()).thenReturn(v1Stale);
+
+      when(bucket.getEntry("aeq-destroy-bucket-live")).thenReturn(liveV2Entry1);
+      // tryHydrateFromAeqDelta reads v1Stale (2 getEntry calls), then hydrateFromFullBucketScan
+      // reads
+      // authoritative v2Authoritative.
+      when(bucket.getEntry("aeq-v1-bucket-v2"))
+          .thenReturn(liveV1Entry, liveV1Entry, liveV2Entry2);
+      // tryHydrateFromAeqDelta reads v1Stale, then bucket becomes tombstone (null) before full
+      // scan.
+      when(bucket.getEntry("aeq-put-bucket-tomb")).thenReturn(liveV1Entry, liveV1Entry, null);
+      when(bucket.getEntry("aeq-put-stale-lucene")).thenReturn(liveV1Entry, liveV1Entry, null);
+      when(bucket.getEntry("post-promo-live-race")).thenReturn(liveRaceEntry);
+      when(bucket.getEntry("post-promo-before-afterprimary")).thenReturn(liveRaceEntry);
+      when(bucket.getEntry("post-promo-destroy-race")).thenReturn(null);
+
+      RegionEntry tombEntry = mock(RegionEntry.class);
+      when(tombEntry.isTombstone()).thenReturn(true);
+      when(tombEntry.getKey()).thenReturn("aeq-put-bucket-tomb");
+      RegionEntry tombPostRaceEntry = mock(RegionEntry.class);
+      when(tombPostRaceEntry.isTombstone()).thenReturn(true);
+      when(tombPostRaceEntry.getKey()).thenReturn("post-promo-destroy-race");
+      RegionMap regionMap = mock(RegionMap.class);
+      when(regionMap.regionEntries()).thenReturn(List.of(tombEntry, tombPostRaceEntry));
+      when(bucket.getRegionMap()).thenReturn(regionMap);
+
+      PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+      when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+      PartitionedRegion pr = mock(PartitionedRegion.class);
+      when(pr.getFullPath()).thenReturn(REGION_PATH);
+      when(pr.getRegionService()).thenReturn(cache);
+      when(pr.getDataStore()).thenReturn(dataStore);
+      when(pr.isDestroyed()).thenReturn(false);
+
+      // AEQ shadow contains stale DESTROY for aeq-destroy-bucket-live and stale CREATE/UPDATE
+      // events for aeq-v1-bucket-v2, aeq-put-bucket-tomb, and aeq-put-stale-lucene.
+      Map<Long, GatewaySenderEventImpl> shadowEntries = new HashMap<>();
+      shadowEntries.put(1L, mockShadowEvent("aeq-destroy-bucket-live", Operation.DESTROY, 1L));
+      shadowEntries.put(2L, mockShadowEvent("aeq-v1-bucket-v2", Operation.CREATE, 2L));
+      shadowEntries.put(3L, mockShadowEvent("aeq-put-bucket-tomb", Operation.UPDATE, 3L));
+      shadowEntries.put(4L, mockShadowEvent("aeq-put-stale-lucene", Operation.CREATE, 4L));
+      wireMockAeqShadowBucket(pr, bucketId, shadowEntries);
+
+      LuceneIndexImpl mockIndex = mock(LuceneIndexImpl.class);
+      LuceneIndexStats mockStats = mock(LuceneIndexStats.class);
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          bucket, writer, serializer, mockStats, bucket, null, "lock", mockIndex);
+      repo.update("aeq-put-stale-lucene", v1Stale);
+      repo.commitAndRefreshBlocking();
+      PartitionedRepositoryManager mockRepoManager = mock(PartitionedRepositoryManager.class);
+      when(mockRepoManager.getRepositoryIfReady(bucketId)).thenReturn(repo);
+      InternalLuceneService mockService = mock(InternalLuceneService.class);
+      when(mockService.getIndex(INDEX_NAME, REGION_PATH)).thenReturn(mockIndex);
+      when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
+      when(cache.getService(InternalLuceneService.class)).thenReturn(mockService);
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+      // Live write landing ahead of afterPrimary MUST never be overwritten by bucket hydration
+      registry.recordPut(REGION_PATH, INDEX_NAME, bucketId, "post-promo-before-afterprimary",
+          v3PostPromo, Map.of());
+
+      Tier0VectorBucketListener<String, float[]> listener =
+          new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+      @SuppressWarnings("rawtypes")
+      Tier0VectorBucketListener.Tier0PartitionListener partitionListener =
+          (Tier0VectorBucketListener.Tier0PartitionListener) listener.createPartitionListener();
+      partitionListener.afterRegionCreate(pr);
+
+      Tier0VectorDeltaBuffer<Object> preBuffer =
+          registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
+      partitionListener.afterPrimary(bucketId, () -> {
+        // Right after tryHydrateFromAeqDelta, AEQ placed a provisional tombstone for
+        // aeq-destroy-bucket-live and provisional stale v1 entries for the remaining AEQ keys.
+        Tier0VectorDeltaBuffer.Snapshot<Object> midSnap = preBuffer.snapshot();
+        assertThat(midSnap.getTombstonedKeys()).contains("aeq-destroy-bucket-live");
+        assertThat(midSnap.getLiveEntries().get("aeq-v1-bucket-v2").getVector())
+            .containsExactly(v1Stale);
+        assertThat(midSnap.getLiveEntries().get("aeq-put-bucket-tomb").getVector())
+            .containsExactly(v1Stale);
+        assertThat(midSnap.getLiveEntries().get("aeq-put-stale-lucene").getVector())
+            .containsExactly(v1Stale);
+
+        // Concurrent live writes arriving during promotion MUST survive hydrateFromFullBucketScan
+        registry.recordPut(
+            REGION_PATH, INDEX_NAME, bucketId, "post-promo-live-race", v3PostPromo, Map.of());
+        registry.recordPut(
+            REGION_PATH, INDEX_NAME, bucketId, "post-promo-destroy-race", v3PostPromo, Map.of());
+      });
+
+      assertThat(registry.getAeqDeltaHydrationCount()).isEqualTo(1L);
+      assertThat(registry.getFullScanHydrationCount()).isEqualTo(0L);
+      assertThat(registry.getReconciledStaleIndexKeysCount()).isEqualTo(1L);
+
+      Tier0VectorDeltaBuffer.Snapshot<Object> snap = preBuffer.snapshot();
+      assertThat(snap.getLiveEntries()).containsOnlyKeys(
+          "aeq-destroy-bucket-live",
+          "aeq-v1-bucket-v2",
+          "post-promo-before-afterprimary",
+          "post-promo-live-race",
+          "post-promo-destroy-race");
+      assertThat(snap.getLiveEntries().get("aeq-destroy-bucket-live").getVector())
+          .containsExactly(v2Authoritative);
+      assertThat(snap.getLiveEntries().get("aeq-v1-bucket-v2").getVector())
+          .containsExactly(v2Authoritative);
+      assertThat(snap.getLiveEntries().get("post-promo-before-afterprimary").getVector())
+          .containsExactly(v3PostPromo);
+      assertThat(snap.getLiveEntries().get("post-promo-live-race").getVector())
+          .containsExactly(v3PostPromo);
+      assertThat(snap.getLiveEntries().get("post-promo-destroy-race").getVector())
+          .containsExactly(v3PostPromo);
+      assertThat(snap.getTombstonedKeys())
+          .containsExactlyInAnyOrder("aeq-put-bucket-tomb", "aeq-put-stale-lucene");
+    }
+  }
+
   private GatewaySenderEventImpl mockShadowEvent(String key, Operation op, long shadowKey) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
     when(event.getKey()).thenReturn(key);
