@@ -467,6 +467,11 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     processEvent(event);
   }
 
+  @Override
+  public void onEventBatch(List<ContinuousVectorEvent> events) {
+    processEventBatch(events);
+  }
+
   /**
    * Sequentially stages an incoming match event into the durable pending-intent log after
    * atomically verifying it has not already been committed, applied, or staged under the stream
@@ -815,6 +820,20 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     Objects.requireNonNull(service, "service must not be null");
     Map<String, Long> clientHw = prepareForReconnect(bucketId);
     return service.replayUncheckpointedForReconnect(bucketId, clientHw, targetSink,
+        onReplayedUnderLock);
+  }
+
+  /**
+   * Executes client-side pending intent retirement via {@link #prepareForReconnect(int)}, then
+   * atomically validates {@code V_client >= V_floor}, enrolls {@code subscriberId} in
+   * {@code S_healthy}, and replays {@code (V_client, V_S]} under server locks.
+   */
+  public List<ContinuousVectorEvent> admitAndReconnectReplay(ContinuousVectorQueryService service,
+      String subscriberId, int bucketId, ContinuousVectorEventSink targetSink,
+      Runnable onReplayedUnderLock) {
+    Objects.requireNonNull(service, "service must not be null");
+    Map<String, Long> clientHw = prepareForReconnect(bucketId);
+    return service.admitAndReplayForReconnect(subscriberId, bucketId, clientHw, targetSink,
         onReplayedUnderLock);
   }
 

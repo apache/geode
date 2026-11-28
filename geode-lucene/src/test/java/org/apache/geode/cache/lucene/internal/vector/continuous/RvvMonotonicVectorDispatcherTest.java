@@ -2347,6 +2347,236 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(secondary.isResyncRequired(bucketId, memberS)).isFalse();
   }
 
+  @Test
+  public void reconnectBetweenFloorAndCheckpointReplaysIntermediateVersionsAndBelowFloorTriggersResync() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    service.registerSubscription("sub-fast", vec, 0.90f);
+    service.registerSubscription("sub-lagging", vec, 0.90f);
+    service.registerSubscriberForCheckpoint("sub-fast");
+
+    int bucketId = 22;
+    String memberId = "srv-floor-ckpt";
+    for (long v = 1L; v <= 70L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k-" + v, vec, true);
+    }
+
+    // Compact tail through V_floor = 60, then advance logical replicated V_ckpt = 64 without
+    // compacting [61..64] yet -> V_floor=60 <= V_client=63 < V_ckpt=64, tail retains [61..70]
+    service.acknowledgeCheckpoint(bucketId, memberId, 60L);
+    service.recordReplicatedCheckpoint(bucketId, memberId, 64L);
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isEqualTo(60L);
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isEqualTo(64L);
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isEqualTo(10);
+
+    // (a) Returning subscriber at V_client=63 (V_floor=60 <= 63 < V_ckpt=64):
+    // MUST pass admission, atomically join S_healthy pinned at 63, and replay [64..70] (NOT skip
+    // 64!)
+    List<ContinuousVectorEvent> laggingReceived = new ArrayList<>();
+    ContinuousVectorEventSink laggingSink = laggingReceived::add;
+    List<ContinuousVectorEvent> replayed = service.admitAndReplayForReconnect("sub-lagging",
+        bucketId, Collections.singletonMap(memberId, 63L), laggingSink, null);
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+    assertThat(service.getDispatcher().getRegisteredCheckpointSubscribers())
+        .contains("sub-lagging");
+    assertThat(replayed).filteredOn(e -> "sub-lagging".equals(e.getSubscriptionId()))
+        .extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L, 67L, 68L, 69L, 70L);
+    assertThat(laggingReceived)
+        .filteredOn(e -> !e.isHeartbeat() && "sub-lagging".equals(e.getSubscriptionId()))
+        .extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L, 67L, 68L, 69L, 70L);
+
+    // Atomic S_healthy membership pin: fast subscriber acking 70 CANNOT advance V_floor past 63
+    // while sub-lagging has only acknowledged 63!
+    service.acknowledgeSubscriberCheckpoint("sub-fast", bucketId, memberId, 70L);
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isLessThanOrEqualTo(63L);
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isGreaterThanOrEqualTo(7);
+
+    // Once sub-lagging acks 70, both V_floor and V_ckpt advance cleanly to 70
+    service.acknowledgeSubscriberCheckpoint("sub-lagging", bucketId, memberId, 70L);
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isEqualTo(70L);
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isEqualTo(70L);
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isZero();
+
+    // (b) Stale subscriber below compacted V_floor (V_client=59 < V_floor=60 on fresh stream):
+    // IMMEDIATELY rejected with resyncRequired, NOT enrolled in S_healthy, 0 partial replay!
+    int bucketId2 = 23;
+    for (long v = 1L; v <= 70L; v++) {
+      service.onBucketMutation(bucketId2, memberId, v, "k2-" + v, vec, true);
+    }
+    service.acknowledgeCheckpoint(bucketId2, memberId, 60L);
+    service.recordReplicatedCheckpoint(bucketId2, memberId, 64L);
+
+    List<ContinuousVectorEvent> staleSinkEvents = new ArrayList<>();
+    List<ContinuousVectorEvent> staleReplayed = service.admitAndReplayForReconnect("sub-stale",
+        bucketId2, Collections.singletonMap(memberId, 59L), staleSinkEvents::add, null);
+    assertThat(staleReplayed).isEmpty();
+    assertThat(staleSinkEvents).isEmpty();
+    assertThat(service.isResyncRequired(bucketId2, memberId)).isTrue();
+    assertThat(service.getReplayFloorResyncCount()).isEqualTo(1L);
+    assertThat(service.getDispatcher().getRegisteredCheckpointSubscribers())
+        .doesNotContain("sub-stale");
+
+    // (c) Empty |S_healthy| == 0 AND |S| == 0 cleanly compacts tail and advances V_floor to V_S
+    service.unregisterSubscription("sub-fast");
+    service.unregisterSubscription("sub-lagging");
+    service.unregisterSubscriberForCheckpoint("sub-fast");
+    service.unregisterSubscriberForCheckpoint("sub-lagging");
+    assertThat(service.getReplayFloorVersion(bucketId2, memberId)).isEqualTo(70L);
+    assertThat(service.getDispatcher().getTailSize(bucketId2)).isZero();
+  }
+
+  @Test
+  public void multiSubscriptionRepeatedKeyPromotionCoveringHeartbeatAndLaggingReconnect()
+      throws Exception {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ContinuousVectorQueryService primary = new ContinuousVectorQueryService(4);
+    ContinuousVectorQueryService secondary = new ContinuousVectorQueryService(4);
+    primary.setHeartbeatIntervalEvents(4);
+    secondary.setHeartbeatIntervalEvents(4);
+    primary.registerSubscription("sub-A", vec, 0.90f);
+    primary.registerSubscription("sub-B", vec, 0.90f);
+    secondary.registerSubscription("sub-A", vec, 0.90f);
+    secondary.registerSubscription("sub-B", vec, 0.90f);
+
+    int bucketId = 24;
+    String memberP = "srv-multi-P";
+    String memberS = "srv-multi-S";
+
+    // Consumer 1 shares ONE IdempotentRvvConsumer + DurableDeliveryStore across sub-A and sub-B
+    // to prove EventDeliveryId (subId, b, m, v) never collides across subscriptions on one
+    // mutation, and covering HB(64) cannot retire sub-B's delayed v=63 match before
+    // admission/commit
+    RvvClientGate gate1 = new RvvClientGate();
+    gate1.registerSubscription("sub-A");
+    gate1.registerSubscription("sub-B");
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore store1 =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> applied1 = new CopyOnWriteArrayList<>();
+    CountDownLatch subBV63InFlight = new CountDownLatch(1);
+    CountDownLatch releaseSubBV63 = new CountDownLatch(1);
+    IdempotentRvvConsumer consumer1 = new IdempotentRvvConsumer(gate1, store1, (ev, id) -> {
+      if ("sub-B".equals(ev.getSubscriptionId()) && memberP.equals(ev.getMemberId())
+          && ev.getRegionVersion() == 63L) {
+        subBV63InFlight.countDown();
+        try {
+          releaseSubBV63.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+      applied1.add(id);
+    });
+
+    // Consumer 2 is a lagging subscriber that disconnects after v=63 and reconnects after failover
+    // in the V_floor=60 <= V_client=63 < V_ckpt=64 window!
+    RvvClientGate gate2 = new RvvClientGate();
+    gate2.registerSubscription("sub-A");
+    gate2.registerSubscription("sub-B");
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore store2 =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> applied2 = new CopyOnWriteArrayList<>();
+    IdempotentRvvConsumer consumer2 = new IdempotentRvvConsumer(gate2, store2,
+        (ev, id) -> applied2.add(id));
+
+    primary.addEventSink(consumer1);
+    primary.addEventSink(consumer2);
+
+    // Phase 1a: v=1..62 overwriting ONLY 4 hot keys ("hot-0".."hot-3"), matching BOTH sub-A & sub-B
+    Set<IdempotentRvvConsumer.EventDeliveryId> expectedIds = new HashSet<>();
+    for (long v = 1L; v <= 62L; v++) {
+      String key = "hot-" + (v % 4L);
+      expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-A", bucketId, memberP, v));
+      expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-B", bucketId, memberP, v));
+      primary.onBucketMutation(bucketId, memberP, v, key, vec, true);
+      secondary.onBucketMutation(bucketId, memberP, v, key, vec, false);
+    }
+    assertThat(applied1).hasSize(124);
+    assertThat(applied2).hasSize(124);
+
+    // Compact V_floor=60 on both primary and secondary, and replicate logical V_ckpt=64 while
+    // retaining [61..68] in the tail (V_floor=60 < V_ckpt=64)
+    primary.acknowledgeCheckpoint(bucketId, memberP, 60L);
+    secondary.acknowledgeCheckpoint(bucketId, memberP, 60L);
+    primary.recordReplicatedCheckpoint(bucketId, memberP, 64L);
+    secondary.recordReplicatedCheckpoint(bucketId, memberP, 64L);
+
+    // Phase 1b: v=63 executes on background thread so consumer1 holds sub-B v=63 in flight while
+    // sub-A v=63 completes cleanly and covering HB(64) arrives concurrently!
+    expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-A", bucketId, memberP, 63L));
+    expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-B", bucketId, memberP, 63L));
+    Thread v63Thread = new Thread(
+        () -> primary.onBucketMutation(bucketId, memberP, 63L, "hot-3", vec, true),
+        "multi-sub-v63-inflight");
+    v63Thread.start();
+    assertThat(subBV63InFlight.await(10, TimeUnit.SECONDS)).isTrue();
+    secondary.onBucketMutation(bucketId, memberP, 63L, "hot-3", vec, false);
+
+    // Covering heartbeat HB(63) arrives on consumer1 while sub-B v=63 is STILL PENDING!
+    // (In FIFO server dispatch, a covering HB(v) follows all matches of version v.)
+    consumer1.processEvent(ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberP, 63L,
+        System.currentTimeMillis()));
+    // sub-B MUST stay pinned at 62 (never retired by covering HB(63)!), while sub-A is independent
+    assertThat(store1.getCommittedWatermark("sub-B", bucketId, memberP)).isEqualTo(62L);
+    assertThat(store1.getCommittedWatermark("sub-A", bucketId, memberP)).isEqualTo(63L);
+    assertThat(consumer1.getCommittedHighWaterByMember(bucketId)).containsEntry(memberP, 62L);
+
+    // Release sub-B v=63 and detach both consumers before primary crashes during v=64..68
+    releaseSubBV63.countDown();
+    v63Thread.join(10_000L);
+    primary.removeEventSink(consumer1);
+    primary.removeEventSink(consumer2);
+
+    // Phase 1c: v=64..68 (same 4 hot keys!) on primary + secondary; v=64 triggers HB(64)
+    List<RvvMonotonicVectorDispatcher.TailMutation> coalescedSnapshot = new ArrayList<>();
+    for (long v = 64L; v <= 68L; v++) {
+      String key = "hot-" + (v % 4L);
+      expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-A", bucketId, memberP, v));
+      expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-B", bucketId, memberP, v));
+      primary.onBucketMutation(bucketId, memberP, v, key, vec, true);
+      secondary.onBucketMutation(bucketId, memberP, v, key, vec, false);
+      if (v >= 65L) {
+        coalescedSnapshot.add(new RvvMonotonicVectorDispatcher.TailMutation(key, vec, bucketId,
+            memberP, v, (int) v, System.currentTimeMillis()));
+      }
+    }
+
+    // Phase 2: Primary crashes -> secondary promotes (with V_floor=60, V_ckpt=64, tail=[61..68])
+    // and processes 8 more repeated-key updates on m_S BEFORE lagging consumers reconnect!
+    secondary.getDispatcher().onPrimaryPromotion(bucketId, coalescedSnapshot);
+    for (long v = 1L; v <= 8L; v++) {
+      String key = "hot-" + (v % 4L);
+      expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-A", bucketId, memberS, v));
+      expectedIds.add(new IdempotentRvvConsumer.EventDeliveryId("sub-B", bucketId, memberS, v));
+      secondary.onBucketMutation(bucketId, memberS, v, key, vec, true);
+    }
+
+    // Phase 3: Both consumers reconnect via prepareForReconnect -> admitAndReplayForReconnect!
+    // Consumer 2 presents V_client=63 in V_floor=60 <= 63 < V_ckpt=64 -> MUST receive v=64!
+    Map<String, Long> hw1 = consumer1.prepareForReconnect(bucketId);
+    Map<String, Long> hw2 = consumer2.prepareForReconnect(bucketId);
+    assertThat(hw2).containsEntry(memberP, 63L);
+
+    secondary.admitAndReplayForReconnect("consumer-1", bucketId, hw1, consumer1, null);
+    secondary.admitAndReplayForReconnect("consumer-2", bucketId, hw2, consumer2, null);
+
+    // Exact 152/152 (subId, b, m, v) effects on BOTH consumers, 0 misses, 0 duplicates, 0 resync!
+    assertThat(expectedIds).hasSize(152);
+    assertThat(applied1).containsExactlyInAnyOrderElementsOf(expectedIds).doesNotHaveDuplicates();
+    assertThat(applied2).containsExactlyInAnyOrderElementsOf(expectedIds).doesNotHaveDuplicates();
+    assertThat(applied2).contains(
+        new IdempotentRvvConsumer.EventDeliveryId("sub-A", bucketId, memberP, 64L),
+        new IdempotentRvvConsumer.EventDeliveryId("sub-B", bucketId, memberP, 64L));
+    assertThat(secondary.isResyncRequired(bucketId, memberP)).isFalse();
+    assertThat(secondary.isResyncRequired(bucketId, memberS)).isFalse();
+
+    // Verify stale subscriber at V_client=59 < V_floor=60 is rejected immediately
+    assertThat(secondary.admitAndReplayForReconnect("stale-sub", bucketId,
+        Collections.singletonMap(memberP, 59L))).isEmpty();
+    assertThat(secondary.isResyncRequired(bucketId, memberP)).isTrue();
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

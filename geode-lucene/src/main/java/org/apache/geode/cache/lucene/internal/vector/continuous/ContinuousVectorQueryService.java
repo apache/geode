@@ -268,9 +268,11 @@ public class ContinuousVectorQueryService {
   }
 
   /**
-   * Replays uncheckpointed tail mutations in
-   * {@code (max(V_ckpt[b, m], clientHighWaterByMember[m]), V_S[b, m]]} across all retained
-   * streams {@code m} (both pre-crash {@code m_P} and post-promotion {@code m_S}) on reconnect.
+   * Replays retained tail mutations strictly above {@code clientHighWaterByMember[m]} (for every
+   * admitted stream where {@code V_client[m] >= V_floor[b, m]}; or above
+   * {@code max(V_ckpt[b, m], V_floor[b, m])} when {@code clientHighWaterByMember == null}) across
+   * all retained streams {@code m} (both pre-crash {@code m_P} and post-promotion {@code m_S}) on
+   * reconnect.
    */
   public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
       Map<String, Long> clientHighWaterByMember) {
@@ -302,10 +304,36 @@ public class ContinuousVectorQueryService {
   }
 
   /**
-   * Advances server-side checkpoint {@code V_ckpt[bucketId, memberId]} after client acknowledgment.
+   * Atomically verifies {@code V_client >= V_floor}, enrolls {@code subscriberId} into
+   * {@code S_healthy} pinned at {@code clientHighWaterByMember}, and replays strictly
+   * {@code (V_client, V_S]} under {@code (subscriberRegistryLock, state)}.
+   */
+  public List<ContinuousVectorEvent> admitAndReplayForReconnect(String subscriberId, int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
+    return dispatcher.admitAndReplayForReconnect(subscriberId, bucketId, clientHighWaterByMember);
+  }
+
+  public List<ContinuousVectorEvent> admitAndReplayForReconnect(String subscriberId, int bucketId,
+      Map<String, Long> clientHighWaterByMember, ContinuousVectorEventSink targetSink,
+      Runnable onReplayedUnderLock) {
+    return dispatcher.admitAndReplayForReconnect(subscriberId, bucketId, clientHighWaterByMember,
+        targetSink, onReplayedUnderLock);
+  }
+
+  /**
+   * Advances server-side checkpoint {@code V_ckpt[bucketId, memberId]} and compaction floor
+   * {@code V_floor[bucketId, memberId]} after client acknowledgment.
    */
   public void acknowledgeCheckpoint(int bucketId, String memberId, long ackedVersion) {
     dispatcher.acknowledgeCheckpoint(bucketId, memberId, ackedVersion);
+  }
+
+  /**
+   * Advances logical replicated checkpoint {@code V_ckpt[bucketId, memberId]} without yet
+   * compacting retained tail entries in {@code (V_floor[b, m], V_ckpt[b, m]]}.
+   */
+  public void recordReplicatedCheckpoint(int bucketId, String memberId, long checkpointVersion) {
+    dispatcher.recordReplicatedCheckpoint(bucketId, memberId, checkpointVersion);
   }
 
   public void registerSubscriberForCheckpoint(String subscriberId) {
@@ -347,6 +375,12 @@ public class ContinuousVectorQueryService {
   public boolean admitSubscriberForContinuity(int bucketId,
       Map<String, Long> clientHighWaterByMember) {
     return dispatcher.admitSubscriberForContinuity(bucketId, clientHighWaterByMember);
+  }
+
+  public boolean admitSubscriberForContinuity(String subscriberId, int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
+    return dispatcher.admitSubscriberForContinuity(subscriberId, bucketId,
+        clientHighWaterByMember);
   }
 
   public void addReplayFloorResyncListener(

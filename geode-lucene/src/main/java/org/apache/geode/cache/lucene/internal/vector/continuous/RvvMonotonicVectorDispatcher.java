@@ -321,8 +321,8 @@ public class RvvMonotonicVectorDispatcher {
     }
 
     synchronized List<Long> append(TailMutation mutation, int maxTailPerStream) {
-      long ckpt = checkpointByMember.getOrDefault(mutation.memberId, 0L);
-      if (mutation.regionVersion <= ckpt) {
+      long floor = replayFloorByMember.getOrDefault(mutation.memberId, 0L);
+      if (mutation.regionVersion <= floor) {
         return Collections.emptyList();
       }
       TreeMap<Long, TailMutation> stream =
@@ -372,12 +372,12 @@ public class RvvMonotonicVectorDispatcher {
       List<String> sortedMembers = new ArrayList<>(tailByMember.keySet());
       Collections.sort(sortedMembers);
       for (String memberId : sortedMembers) {
-        long ckpt = checkpointByMember.getOrDefault(memberId, 0L);
+        long floor = replayFloorByMember.getOrDefault(memberId, 0L);
         TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
         if (stream == null || stream.isEmpty()) {
           continue;
         }
-        NavigableMap<Long, TailMutation> tail = stream.tailMap(ckpt, false);
+        NavigableMap<Long, TailMutation> tail = stream.tailMap(floor, false);
         replay.addAll(tail.values());
       }
       return replay;
@@ -395,12 +395,10 @@ public class RvvMonotonicVectorDispatcher {
       for (String memberId : sortedMembers) {
         long floor = replayFloorByMember.getOrDefault(memberId, 0L);
         long ckpt = checkpointByMember.getOrDefault(memberId, 0L);
-        long clientHighWater = 0L;
+        long lowerExclusive;
         if (clientHighWaterByMember != null) {
           Long hw = clientHighWaterByMember.get(memberId);
-          if (hw != null && hw > 0L) {
-            clientHighWater = hw;
-          }
+          long clientHighWater = (hw != null && hw > 0L) ? hw : 0L;
           if (floor > 0L && clientHighWater < floor) {
             if (floorViolationsOut != null) {
               floorViolationsOut.add(
@@ -408,12 +406,17 @@ public class RvvMonotonicVectorDispatcher {
             }
             continue;
           }
+          // Admitted returning subscriber (V_client >= V_floor): replay strictly above V_client
+          // (never max(V_ckpt, V_client)) so retained versions in (V_client, V_ckpt] when
+          // V_floor <= V_client < V_ckpt are delivered without gaps.
+          lowerExclusive = Math.max(floor, clientHighWater);
+        } else {
+          lowerExclusive = Math.max(ckpt, floor);
         }
         TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
         if (stream == null || stream.isEmpty()) {
           continue;
         }
-        long lowerExclusive = Math.max(Math.max(ckpt, floor), clientHighWater);
         long streamHighWater = stream.lastKey();
         TreeMap<Long, TailMutation> held = holdbackByMember.get(memberId);
         if (respectHoldbackCeiling && held != null && !held.isEmpty()) {
@@ -430,15 +433,54 @@ public class RvvMonotonicVectorDispatcher {
     }
 
     synchronized void advanceCheckpoint(String memberId, long ackedVersion) {
-      long prev = checkpointByMember.getOrDefault(memberId, 0L);
-      if (ackedVersion <= prev) {
+      long prevCkpt = checkpointByMember.getOrDefault(memberId, 0L);
+      long prevFloor = replayFloorByMember.getOrDefault(memberId, 0L);
+      if (ackedVersion <= prevCkpt && ackedVersion <= prevFloor) {
         return;
       }
-      checkpointByMember.put(memberId, ackedVersion);
-      replayFloorByMember.merge(memberId, ackedVersion, Math::max);
-      TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
-      if (stream != null) {
-        stream.headMap(ackedVersion, true).clear();
+      if (ackedVersion > prevCkpt) {
+        checkpointByMember.put(memberId, ackedVersion);
+      }
+      if (ackedVersion > prevFloor) {
+        replayFloorByMember.put(memberId, ackedVersion);
+        TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+        if (stream != null) {
+          stream.headMap(ackedVersion, true).clear();
+        }
+      }
+    }
+
+    synchronized void advanceCheckpointWithoutCompaction(String memberId, long checkpointVersion) {
+      long prevCkpt = checkpointByMember.getOrDefault(memberId, 0L);
+      if (checkpointVersion > prevCkpt) {
+        checkpointByMember.put(memberId, checkpointVersion);
+      }
+    }
+
+    synchronized void advanceFloorForEmptyHealthySet() {
+      Set<String> members = new HashSet<>(tailByMember.keySet());
+      members.addAll(lastDispatchedVersionByMember.keySet());
+      for (String memberId : members) {
+        long high = lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
+        TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+        if (stream != null && !stream.isEmpty()) {
+          high = Math.max(high, stream.lastKey());
+        }
+        if (high > 0L) {
+          advanceCheckpoint(memberId, high);
+        }
+      }
+    }
+
+    synchronized void pinSubscriberAckForAdmission(String subscriberId, String memberId,
+        long clientHighWater) {
+      Map<String, Long> acks =
+          subscriberAcksByMember.computeIfAbsent(memberId, ignored -> new HashMap<>());
+      long sanitized = Math.max(0L, clientHighWater);
+      if (sanitized == 0L) {
+        acks.putIfAbsent(subscriberId, 0L);
+      } else {
+        acks.merge(subscriberId, sanitized, Math::max);
       }
     }
 
@@ -1151,10 +1193,13 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   /**
-   * Replays all uncheckpointed tail mutations in
-   * {@code (max(V_ckpt[b, m], clientHighWaterByMember[m]), V_S[b, m]]} across every retained
-   * stream {@code m} (covering both pre-crash {@code m_P} and post-promotion {@code m_S}) under
-   * {@code synchronized (state)}, followed by trailing watermark heartbeats per {@code m}.
+   * Replays all retained tail mutations strictly above {@code clientHighWaterByMember[m]} (for
+   * every admitted stream where {@code V_client[m] >= V_floor[b, m]}; or above
+   * {@code max(V_ckpt[b, m], V_floor[b, m])} when {@code clientHighWaterByMember == null}) across
+   * every retained stream {@code m} (both pre-crash {@code m_P} and post-promotion {@code m_S})
+   * under {@code synchronized (state)}, followed by trailing watermark heartbeats per {@code m}.
+   * Any stream with {@code clientHighWater < V_floor[b, m]} is immediately flagged
+   * {@code resyncRequired} and skipped rather than partially replayed.
    */
   public List<ContinuousVectorEvent> replayUncheckpointedForReconnect(int bucketId,
       Map<String, Long> clientHighWaterByMember) {
@@ -1212,10 +1257,90 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   /**
+   * Atomically validates {@code clientHighWaterByMember[m] >= V_floor[bucketId, m]} across every
+   * tracked stream on {@code bucketId}, re-admits {@code subscriberId} into the healthy checkpoint
+   * set {@code S_healthy} pinned at {@code clientHighWaterByMember[m]} (preventing concurrent
+   * compaction from advancing {@code V_floor} past {@code V_client} during catch-up), and replays
+   * strictly {@code (V_client[m], V_S[m]]} onto the per-bucket serial FIFO queue before releasing
+   * locks. If any stream violates {@code V_client < V_floor}, {@code subscriberId} is NOT enrolled,
+   * {@code resyncRequired} is flagged immediately, and no partial replay is emitted.
+   */
+  public List<ContinuousVectorEvent> admitAndReplayForReconnect(String subscriberId, int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
+    return admitAndReplayForReconnect(subscriberId, bucketId, clientHighWaterByMember, null, null);
+  }
+
+  public List<ContinuousVectorEvent> admitAndReplayForReconnect(String subscriberId, int bucketId,
+      Map<String, Long> clientHighWaterByMember, ContinuousVectorEventSink targetSink,
+      Runnable onReplayedUnderLock) {
+    totalReconnectReplaysHandled.incrementAndGet();
+    List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    List<ReplayFloorViolationRecord> floorViolations = new ArrayList<>();
+    synchronized (subscriberRegistryLock) {
+      BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+      synchronized (state) {
+        Set<String> trackedMembers = new HashSet<>(state.tailByMember.keySet());
+        trackedMembers.addAll(state.replayFloorByMember.keySet());
+        if (clientHighWaterByMember != null) {
+          trackedMembers.addAll(clientHighWaterByMember.keySet());
+        }
+        List<String> sortedMembers = new ArrayList<>(trackedMembers);
+        Collections.sort(sortedMembers);
+        for (String memberId : sortedMembers) {
+          long floor = state.replayFloorByMember.getOrDefault(memberId, 0L);
+          long clientHw = 0L;
+          if (clientHighWaterByMember != null) {
+            Long hw = clientHighWaterByMember.get(memberId);
+            if (hw != null && hw > 0L) {
+              clientHw = hw;
+            }
+          }
+          if (floor > 0L && clientHw < floor) {
+            floorViolations.add(
+                new ReplayFloorViolationRecord(bucketId, memberId, clientHw, floor));
+          }
+        }
+        if (floorViolations.isEmpty()) {
+          if (subscriberId != null && !subscriberId.isEmpty()) {
+            registeredCheckpointSubscribers.add(subscriberId);
+            Set<String> healthy =
+                Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
+            for (String memberId : sortedMembers) {
+              Long hw = clientHighWaterByMember != null ? clientHighWaterByMember.get(memberId)
+                  : null;
+              long clientHw = (hw != null && hw > 0L) ? hw : 0L;
+              state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHw);
+              state.recomputeMinHealthyCheckpoint(memberId, healthy);
+            }
+          }
+          TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
+          List<TailMutation> toReplay = state.collectReplayableTailForReconnect(bucketId,
+              clientHighWaterByMember != null ? clientHighWaterByMember : Collections.emptyMap(),
+              enforceContiguousVersions, maxVersionByMember, floorViolations);
+          for (TailMutation mutation : toReplay) {
+            emitted.addAll(evaluateAndDispatch(state, mutation, true, targetSink));
+          }
+          emitStreamWatermarksLocked(state, bucketId, maxVersionByMember, targetSink);
+          if (onReplayedUnderLock != null) {
+            onReplayedUnderLock.run();
+          }
+        }
+      }
+    }
+    if (!floorViolations.isEmpty()) {
+      notifyReplayFloorViolations(floorViolations);
+    }
+    return emitted;
+  }
+
+  /**
    * Validates a reconnecting or newly joining subscriber's high-water mark against the stream's
    * compacted replay-retention floor {@code V_floor[bucketId, memberId]} before admitting it to
    * uninterrupted continuity. If {@code clientHighWater < V_floor}, immediately flags
    * {@code resyncRequired} and returns {@code false} without enrolling {@code subscriberId}.
+   * Otherwise atomically enrolls {@code subscriberId} into {@code S_healthy} pinned at
+   * {@code clientHighWater} under {@code (subscriberRegistryLock, state)} so compaction cannot
+   * advance {@code V_floor} past {@code clientHighWater} before catch-up replay completes.
    */
   public boolean admitSubscriberForContinuity(String subscriberId, int bucketId, String memberId,
       long clientHighWater) {
@@ -1225,15 +1350,16 @@ public class RvvMonotonicVectorDispatcher {
     ReplayFloorViolationRecord violation = null;
     synchronized (subscriberRegistryLock) {
       BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
-      long floor = state.getReplayFloor(memberId);
-      if (floor > 0L && clientHighWater < floor) {
-        violation = new ReplayFloorViolationRecord(bucketId, memberId, clientHighWater, floor);
-      } else if (subscriberId != null && !subscriberId.isEmpty()) {
-        registeredCheckpointSubscribers.add(subscriberId);
-        if (clientHighWater > 0L) {
+      synchronized (state) {
+        long floor = state.getReplayFloor(memberId);
+        if (floor > 0L && clientHighWater < floor) {
+          violation = new ReplayFloorViolationRecord(bucketId, memberId, clientHighWater, floor);
+        } else if (subscriberId != null && !subscriberId.isEmpty()) {
+          registeredCheckpointSubscribers.add(subscriberId);
+          state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHighWater);
           Set<String> healthy =
               Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
-          state.recordSubscriberAck(subscriberId, memberId, clientHighWater, healthy);
+          state.recomputeMinHealthyCheckpoint(memberId, healthy);
         }
       }
     }
@@ -1254,25 +1380,57 @@ public class RvvMonotonicVectorDispatcher {
    */
   public boolean admitSubscriberForContinuity(int bucketId,
       Map<String, Long> clientHighWaterByMember) {
-    BucketState state = bucketStates.get(bucketId);
-    if (state == null) {
-      return true;
-    }
+    return admitSubscriberForContinuity(null, bucketId, clientHighWaterByMember);
+  }
+
+  /**
+   * Validates every tracked member stream on {@code bucketId} against
+   * {@code clientHighWaterByMember} and, if all streams satisfy {@code V_client >= V_floor} and
+   * {@code subscriberId} is non-empty, atomically enrolls {@code subscriberId} into
+   * {@code S_healthy} pinned at {@code clientHighWaterByMember[m]} across all tracked streams.
+   */
+  public boolean admitSubscriberForContinuity(String subscriberId, int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
     List<ReplayFloorViolationRecord> violations = new ArrayList<>();
-    synchronized (state) {
-      List<String> members = new ArrayList<>(state.replayFloorByMember.keySet());
-      Collections.sort(members);
-      for (String memberId : members) {
-        long floor = state.replayFloorByMember.getOrDefault(memberId, 0L);
-        long clientHw = 0L;
+    synchronized (subscriberRegistryLock) {
+      BucketState state = (subscriberId != null && !subscriberId.isEmpty())
+          ? bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState())
+          : bucketStates.get(bucketId);
+      if (state == null) {
+        return true;
+      }
+      synchronized (state) {
+        Set<String> trackedMembers = new HashSet<>(state.replayFloorByMember.keySet());
+        trackedMembers.addAll(state.tailByMember.keySet());
         if (clientHighWaterByMember != null) {
-          Long hw = clientHighWaterByMember.get(memberId);
-          if (hw != null && hw > 0L) {
-            clientHw = hw;
+          trackedMembers.addAll(clientHighWaterByMember.keySet());
+        }
+        List<String> members = new ArrayList<>(trackedMembers);
+        Collections.sort(members);
+        for (String memberId : members) {
+          long floor = state.replayFloorByMember.getOrDefault(memberId, 0L);
+          long clientHw = 0L;
+          if (clientHighWaterByMember != null) {
+            Long hw = clientHighWaterByMember.get(memberId);
+            if (hw != null && hw > 0L) {
+              clientHw = hw;
+            }
+          }
+          if (floor > 0L && clientHw < floor) {
+            violations.add(new ReplayFloorViolationRecord(bucketId, memberId, clientHw, floor));
           }
         }
-        if (floor > 0L && clientHw < floor) {
-          violations.add(new ReplayFloorViolationRecord(bucketId, memberId, clientHw, floor));
+        if (violations.isEmpty() && subscriberId != null && !subscriberId.isEmpty()) {
+          registeredCheckpointSubscribers.add(subscriberId);
+          Set<String> healthy =
+              Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
+          for (String memberId : members) {
+            Long hw = clientHighWaterByMember != null ? clientHighWaterByMember.get(memberId)
+                : null;
+            long clientHw = (hw != null && hw > 0L) ? hw : 0L;
+            state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHw);
+            state.recomputeMinHealthyCheckpoint(memberId, healthy);
+          }
         }
       }
     }
@@ -1286,7 +1444,7 @@ public class RvvMonotonicVectorDispatcher {
   /**
    * Advances checkpoint {@code V_ckpt[bucketId, memberId]} monotonically up to
    * {@code ackedVersion} (maintaining {@code V_ckpt[b, m] <= V_client[b, m]}) and compacts tail
-   * entries with {@code regionVersion <= V_ckpt[b, m]}.
+   * entries with {@code regionVersion <= V_ckpt[b, m]}, advancing {@code V_floor[b, m]}.
    */
   public void acknowledgeCheckpoint(int bucketId, String memberId, long ackedVersion) {
     if (memberId == null || memberId.isEmpty() || ackedVersion <= 0L) {
@@ -1294,6 +1452,20 @@ public class RvvMonotonicVectorDispatcher {
     }
     BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
     state.advanceCheckpoint(memberId, ackedVersion);
+  }
+
+  /**
+   * Advances logical replicated checkpoint {@code V_ckpt[bucketId, memberId]} monotonically without
+   * yet compacting tail entries in {@code (V_floor[b, m], V_ckpt[b, m]]} (preserving the joint
+   * invariant {@code V_floor <= V_ckpt} so returning subscribers with
+   * {@code V_floor <= V_client < V_ckpt} replay strictly above {@code V_client} without gaps).
+   */
+  public void recordReplicatedCheckpoint(int bucketId, String memberId, long checkpointVersion) {
+    if (memberId == null || memberId.isEmpty() || checkpointVersion <= 0L) {
+      return;
+    }
+    BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+    state.advanceCheckpointWithoutCompaction(memberId, checkpointVersion);
   }
 
   /**
@@ -1311,7 +1483,9 @@ public class RvvMonotonicVectorDispatcher {
 
   /**
    * Removes a subscriber from healthy checkpoint tracking and immediately advances {@code V_ckpt}
-   * unconditionally to {@code min_{i in remainingHealthy} ack[i]} across all active streams.
+   * unconditionally to {@code min_{i in remainingHealthy} ack[i]} across all active streams. When
+   * both {@code S_healthy} and the active subscription set {@code S} become empty, compacts any
+   * remaining tail entries and advances {@code V_floor} and {@code V_ckpt} cleanly to {@code V_S}.
    */
   public boolean unregisterSubscriberForCheckpoint(String subscriberId) {
     if (subscriberId == null || subscriberId.isEmpty()) {
@@ -1324,8 +1498,12 @@ public class RvvMonotonicVectorDispatcher {
       }
       Set<String> healthy =
           Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
+      boolean emptyAll = healthy.isEmpty() && router.getSubscriptionCount() == 0;
       for (BucketState state : bucketStates.values()) {
         state.removeSubscriberFromAcks(subscriberId, healthy);
+        if (emptyAll) {
+          state.advanceFloorForEmptyHealthySet();
+        }
       }
       return true;
     }
