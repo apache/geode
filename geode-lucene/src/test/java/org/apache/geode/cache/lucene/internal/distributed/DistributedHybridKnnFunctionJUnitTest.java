@@ -99,9 +99,11 @@ import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
@@ -3475,6 +3477,571 @@ public class DistributedHybridKnnFunctionJUnitTest {
       List<EntryScore<Object>> retryHits = retryCaptor.getValue().getEntries().getHits();
       assertThat(retryHits).extracting(EntryScore::getKey)
           .containsExactlyElementsOf(expectedTopKeys);
+    }
+  }
+
+  /**
+   * Verifies Theorem 2(1) / Algorithm 1 R2 M1: when all 16 optimistic attempts capture a stale
+   * Tier-0 snapshot ({@code x=v1}) and suffer searcher-epoch mismatches, and on the 16th mismatch
+   * a concurrent flush commits {@code (x=v2, y)} into Lucene and completely empties the Tier-0
+   * buffer, the write-barrier fallback path MUST unconditionally reset {@code tier0Snapshot} and
+   * {@code maskedKeys} before acquiring the refreshed {@code IndexSearcher} — returning strictly
+   * {@code (x=v2, y)} from Lucene with zero stale {@code x=v1} leakage or masking of {@code x=v2}.
+   * Also verifies the direct unsupported-filter Path B with an already-empty buffer.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void pathBAlreadyEmptyFallbackAfterOptimisticEpochMismatchResetsMaskAndReturnsFreshSearcherOnly()
+      throws Exception {
+    float[] queryVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] v0 = new float[] {0.20f, (float) Math.sqrt(1.0 - 0.04), 0.0f, 0.0f};
+    float[] v1 = new float[] {0.75f, (float) Math.sqrt(1.0 - 0.75 * 0.75), 0.0f, 0.0f};
+    float[] v2 = new float[] {0.99f, (float) Math.sqrt(1.0 - 0.99 * 0.99), 0.0f, 0.0f};
+    float[] vY = new float[] {0.90f, (float) Math.sqrt(1.0 - 0.81), 0.0f, 0.0f};
+    float scoreV2 = VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+    float scoreY = VectorSimilarityScorer.score(queryVec, vY, VectorSimilarityFunction.COSINE);
+
+    Object[] payloadV0 = new Object[] {v0, "books"};
+    Object[] payloadV1 = new Object[] {v1, "books"};
+    Object[] payloadV2 = new Object[] {v2, "books"};
+    Object[] payloadY = new Object[] {vY, "books"};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl delegate = new IndexRepositoryImpl(
+          mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex);
+      delegate.update("x", payloadV0);
+      delegate.commitAndRefreshBlocking();
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+      Tier0VectorDeltaBuffer<Object> buffer =
+          registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+      buffer.put("x", v1, Map.of("category", "books"), payloadV1);
+
+      java.util.concurrent.atomic.AtomicInteger queryAttempts =
+          new java.util.concurrent.atomic.AtomicInteger(0);
+      AtomicBoolean fallbackBarrierHeld = new AtomicBoolean(false);
+      AtomicBoolean fallbackBufferWasEmpty = new AtomicBoolean(false);
+
+      IndexRepository contendedRepo = new IndexRepository() {
+        @Override
+        public void create(Object key, Object value) throws IOException {
+          delegate.create(key, value);
+        }
+
+        @Override
+        public void update(Object key, Object value) throws IOException {
+          delegate.update(key, value);
+        }
+
+        @Override
+        public void delete(Object key) throws IOException {
+          delegate.delete(key);
+        }
+
+        @Override
+        public void query(Query query, int limit, IndexResultCollector collector)
+            throws IOException {
+          delegate.query(query, limit, collector);
+        }
+
+        @Override
+        public void query(Query query, int limit, IndexResultCollector collector,
+            Runnable onSearcherAcquired) throws IOException {
+          delegate.query(query, limit, collector, onSearcherAcquired);
+        }
+
+        @Override
+        public long getSearcherEpoch() {
+          return delegate.getSearcherEpoch();
+        }
+
+        @Override
+        public boolean tryQueryAtEpoch(long expectedEpoch, Query query, int limit,
+            IndexResultCollector collector, Runnable onSearcherAcquired) throws IOException {
+          int call = queryAttempts.incrementAndGet();
+          if (call < DistributedHybridKnnFunction.MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES) {
+            // Advance epoch without emptying Tier-0 so attempts 1..15 keep seeing stale x=v1.
+            delegate.commitAndRefreshBlocking();
+            return false;
+          }
+          if (call == DistributedHybridKnnFunction.MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES) {
+            // On the final optimistic attempt (after it snapshotted stale x=v1!), commit x=v2
+            // and y into Lucene and completely empty Tier-0 so Path-B fallback sees an empty
+            // buffer!
+            long seqX = buffer.put("x", v2, Map.of("category", "books"), payloadV2);
+            long seqY = buffer.put("y", vY, Map.of("category", "books"), payloadY);
+            delegate.update("x", payloadV2);
+            delegate.update("y", payloadY);
+            delegate.commitAndRefreshBlocking();
+            buffer.evictCommitted(Map.of("x", seqX, "y", seqY));
+            assertThat(buffer.getTotalSize()).isEqualTo(0);
+            return false;
+          }
+          // Fallback write-barrier attempt (#17): buffer is ALREADY empty!
+          fallbackBarrierHeld.set(buffer.isPathBWriteHeldByCurrentThread());
+          fallbackBufferWasEmpty.set(buffer.getTotalSize() == 0);
+          return delegate.tryQueryAtEpoch(
+              expectedEpoch, query, limit, collector, onSearcherAcquired);
+        }
+
+        @Override
+        public void commit() throws IOException {
+          delegate.commit();
+        }
+
+        @Override
+        public void commitAndRefreshBlocking() throws IOException {
+          delegate.commitAndRefreshBlocking();
+        }
+
+        @Override
+        public Region<?, ?> getRegion() {
+          return delegate.getRegion();
+        }
+
+        @Override
+        public boolean isClosed() {
+          return delegate.isClosed();
+        }
+
+        @Override
+        public IndexWriter getWriter() {
+          return delegate.getWriter();
+        }
+
+        @Override
+        public void cleanup() {
+          delegate.cleanup();
+        }
+      };
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, contendedRepo));
+      ResultSender<TopEntriesCollector> fallbackSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(fallbackSender);
+
+      HybridKnnQueryContext supportedCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      when(mockContext.getArguments()).thenReturn(supportedCtx);
+
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      assertThat(queryAttempts.get())
+          .isEqualTo(DistributedHybridKnnFunction.MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES + 1);
+      assertThat(fallbackBarrierHeld.get()).isTrue();
+      assertThat(fallbackBufferWasEmpty.get()).isTrue();
+      assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
+
+      ArgumentCaptor<TopEntriesCollector> fallbackCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(fallbackSender).lastResult(fallbackCaptor.capture());
+      List<EntryScore<Object>> fallbackHits = fallbackCaptor.getValue().getEntries().getHits();
+      // Strictly (x=v2, y) from fresh Lucene searcher — NEVER stale x=v1 or masked x=v2!
+      assertThat(fallbackHits).extracting(EntryScore::getKey).containsExactly("x", "y");
+      assertThat(fallbackHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(fallbackHits.get(1).getScore()).isCloseTo(scoreY, within(1e-4f));
+
+      // Also exercise direct unsupported-filter Path B (FuzzyQuery) when buffer starts already
+      // empty: T_mask MUST be empty and fresh searcher returns strictly (x=v2, y).
+      ResultSender<TopEntriesCollector> directEmptyPathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(directEmptyPathBSender);
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      ArgumentCaptor<TopEntriesCollector> directCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(directEmptyPathBSender).lastResult(directCaptor.capture());
+      List<EntryScore<Object>> directHits = directCaptor.getValue().getEntries().getHits();
+      assertThat(directHits).extracting(EntryScore::getKey).containsExactly("x", "y");
+      assertThat(directHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(directHits.get(1).getScore()).isCloseTo(scoreY, within(1e-4f));
+    }
+  }
+
+  /**
+   * Verifies Theorem 2(1) R1 M1 cross-epoch seal-to-commit hydration fence: when a promotion scan
+   * reads stale pre-promotion state ({@code w1} / stale tombstone) and pauses while new-term
+   * mutations ({@code w2} overwrite, {@code destroy}, recreate) install into {@code E_active} and
+   * are sealed into {@code E_flushing} via {@code beginFlush()} (so {@code E_active} is EMPTY and
+   * {@code committedKeySequences} is STILL {@code 0L}), resuming the scan in that seal-to-commit
+   * window MUST deterministically reject every stale install ({@code -1L}) via atomic
+   * {@code evictionLock} cross-epoch checking, so zero stale entries enter {@code E_active} or
+   * survive {@code completeFlush}.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void promotionScanPausedAfterReadingW1RejectsStaleInstallInSealToCommitWindow()
+      throws Exception {
+    float[] queryVec = new float[] {1.0f, 0.0f};
+    float[] w1 = new float[] {0.35f, (float) Math.sqrt(1.0 - 0.35 * 0.35)};
+    float[] w2 = new float[] {0.98f, (float) Math.sqrt(1.0 - 0.98 * 0.98)};
+    float[] w3 = new float[] {0.95f, (float) Math.sqrt(1.0 - 0.95 * 0.95)};
+    float scoreW2 = VectorSimilarityScorer.score(queryVec, w2, VectorSimilarityFunction.COSINE);
+    float scoreW3 = VectorSimilarityScorer.score(queryVec, w3, VectorSimilarityFunction.COSINE);
+
+    Object[] payloadW1 = new Object[] {w1, "books"};
+    Object[] payloadW2 = new Object[] {w2, "books"};
+    Object[] payloadW3 = new Object[] {w3, "books"};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(advisor.isPrimary()).thenReturn(true);
+
+    BucketRegion promotedBucket = mock(BucketRegion.class);
+    when(promotedBucket.getId()).thenReturn(0);
+    when(promotedBucket.isDestroyed()).thenReturn(false);
+    when(promotedBucket.isEmpty()).thenReturn(false);
+    when(promotedBucket.getBucketAdvisor()).thenReturn(advisor);
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(0)).thenReturn(promotedBucket);
+
+    PartitionedRegion promotedPr = mock(PartitionedRegion.class);
+    when(promotedPr.getFullPath()).thenReturn(REGION_PATH);
+    when(promotedPr.getRegionService()).thenReturn(mockCache);
+    when(promotedPr.getDataStore()).thenReturn(dataStore);
+    when(promotedPr.isDestroyed()).thenReturn(false);
+
+    when(mockContext.getDataSet()).thenReturn(promotedPr);
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+    when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          promotedBucket, writer, serializer, mockStats, promotedBucket, null, "lock", mockIndex);
+      repo.update("k-live", payloadW1);
+      repo.update("k-del", payloadW1);
+      repo.commitAndRefreshBlocking();
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      // Pause the promotion scan right after reading stale w1 for k-live: install all 3 new-term
+      // mutations (k-live=w2, k-del=destroy, k-tomb-race=w3) and seal them into E_flushing via
+      // beginFlush() WITHOUT advancing committedKeySequences (exact seal-to-commit window!).
+      final Tier0VectorDeltaBuffer.FlushBatch<Object>[] sealedBatch =
+          new Tier0VectorDeltaBuffer.FlushBatch[1];
+      final AtomicBoolean sealedOnce = new AtomicBoolean(false);
+      Runnable sealNewTermWritesIntoFlushing = () -> {
+        if (sealedOnce.compareAndSet(false, true)) {
+          Tier0VectorDeltaBuffer<Object> buf =
+              registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+          long s1 = buf.put("k-live", w2, Map.of("category", "books"), payloadW2);
+          long s2 = buf.destroy("k-del");
+          long s3 = buf.put("k-tomb-race", w3, Map.of("category", "books"), payloadW3);
+          assertThat(s1).isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
+          assertThat(s2).isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
+          assertThat(s3).isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
+          sealedBatch[0] = buf.beginFlush();
+          assertThat(sealedBatch[0]).isNotNull();
+          // Confirm exact seal-to-commit window: E_active is EMPTY, E_flushing holds all 3 keys,
+          // and committedKeySequences is STILL 0L for all 3 keys!
+          assertThat(buf.getActiveSize()).isEqualTo(0);
+          assertThat(buf.getFlushingSize()).isEqualTo(3);
+          assertThat(buf.getMaxCommittedSequence("k-live")).isEqualTo(0L);
+          assertThat(buf.getMaxCommittedSequence("k-del")).isEqualTo(0L);
+          assertThat(buf.getMaxCommittedSequence("k-tomb-race")).isEqualTo(0L);
+        }
+      };
+
+      EntrySnapshot esStaleLive = mock(EntrySnapshot.class);
+      when(esStaleLive.getRawValue(true)).thenAnswer(inv -> {
+        sealNewTermWritesIntoFlushing.run();
+        return payloadW1;
+      });
+      EntrySnapshot esStaleDel = mock(EntrySnapshot.class);
+      when(esStaleDel.getRawValue(true)).thenAnswer(inv -> {
+        sealNewTermWritesIntoFlushing.run();
+        return payloadW1;
+      });
+      RegionEntry reStaleTomb = mock(RegionEntry.class);
+      when(reStaleTomb.isTombstone()).thenReturn(true);
+      when(reStaleTomb.getKey()).thenReturn("k-tomb-race");
+      RegionMap regionMap = mock(RegionMap.class);
+      when(regionMap.regionEntries()).thenReturn(Collections.singleton(reStaleTomb));
+
+      when(promotedBucket.keySet()).thenReturn(Set.of("k-live", "k-del"));
+      when(promotedBucket.getEntry("k-live")).thenReturn(esStaleLive);
+      when(promotedBucket.getEntry("k-del")).thenReturn(esStaleDel);
+      when(promotedBucket.getEntry("k-tomb-race")).thenReturn(null);
+      when(promotedBucket.getRegionMap()).thenReturn(regionMap);
+
+      Tier0VectorBucketListener<String, Object[]> listener = new Tier0VectorBucketListener<>(
+          INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("category", (String) pair[1]));
+      PartitionListener partitionListener = listener.createPartitionListener();
+      partitionListener.afterRegionCreate(promotedPr);
+
+      // Run afterPrimary while all 3 new-term entries sit sealed in E_flushing (committed == 0L).
+      partitionListener.afterPrimary(0);
+
+      Tier0VectorDeltaBuffer<Object> buf = registry.getBuffer(REGION_PATH, INDEX_NAME, 0);
+      assertThat(sealedBatch[0]).isNotNull();
+      // ZERO stale entries may have entered E_active during the seal-to-commit window!
+      assertThat(buf.getActiveSize()).isEqualTo(0);
+      assertThat(buf.getFlushingSize()).isEqualTo(3);
+
+      // Direct calls in the seal-to-commit window also deterministically return -1L.
+      long promoStart = Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START;
+      assertThat(buf.putIfSequenceBefore("k-live", w1, Map.of("category", "books"), promoStart,
+          payloadW1)).isEqualTo(-1L);
+      assertThat(buf.putIfSequenceBefore("k-del", w1, Map.of("category", "books"), promoStart,
+          payloadW1)).isEqualTo(-1L);
+      assertThat(buf.deleteIfSequenceBefore("k-tomb-race", promoStart)).isEqualTo(-1L);
+      assertThat(buf.getActiveSize()).isEqualTo(0);
+
+      // Complete the sealed flush -> buffer drains completely to 0 with ZERO surviving stale w1!
+      for (Tier0VectorDeltaBuffer.DeltaEntry<Object> entry : sealedBatch[0].getEntries().values()) {
+        if (entry.isTombstone()) {
+          repo.delete(entry.getKey());
+        } else {
+          repo.update(entry.getKey(), entry.getRegionValue());
+        }
+      }
+      repo.commitAndRefreshBlocking();
+      buf.completeFlush(sealedBatch[0].getEpoch());
+
+      assertThat(buf.getTotalSize()).isEqualTo(0);
+      assertThat(buf.getMaxCommittedSequence("k-live")).isGreaterThanOrEqualTo(promoStart);
+      assertThat(buf.getMaxCommittedSequence("k-del")).isGreaterThanOrEqualTo(promoStart);
+      assertThat(buf.getMaxCommittedSequence("k-tomb-race")).isGreaterThanOrEqualTo(promoStart);
+
+      ResultSender<TopEntriesCollector> sender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(sender);
+      HybridKnnQueryContext hybridCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 10)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      ArgumentCaptor<TopEntriesCollector> captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(sender).lastResult(captor.capture());
+      List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("k-live", "k-tomb-race");
+      assertThat(hits.get(0).getScore()).isCloseTo(scoreW2, within(1e-4f));
+      assertThat(hits.get(1).getScore()).isCloseTo(scoreW3, within(1e-4f));
+    }
+  }
+
+  /**
+   * Verifies Theorem 2(1) R2 M2: when a new-term writer {@code w2} updates {@code BucketRegion}
+   * and pauses strictly BEFORE pinning Tier-0 ({@code recordPut}) while {@code afterPrimary} runs,
+   * the authoritative promotion scan adopts {@code w2} at {@code t_adopt}
+   * ({@code inv(w2) < t_adopt < resp(w2)}) before releasing {@code hydrationLatch}. An immediate
+   * hybrid k-NN read right after {@code hydrationLatch} opens (while {@code w2} is still paused
+   * before {@code recordPut}) observes strictly the consistent adopted state {@code w2}, and
+   * resuming {@code w2}'s delayed {@code recordPut} is an idempotent {@code seq >= 1} pin that
+   * drains cleanly to {@code 0} across Path A and Path B with zero duplicates or stale leakage.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void promotionScanAdoptsNewTermWritePausedBeforePinAtHydrationLatchAndPinIsIdempotent()
+      throws Exception {
+    float[] queryVec = new float[] {1.0f, 0.0f};
+    float[] v1 = new float[] {0.40f, (float) Math.sqrt(1.0 - 0.16)};
+    float[] v2 = new float[] {0.99f, (float) Math.sqrt(1.0 - 0.99 * 0.99)};
+    float scoreV2 = VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+
+    Object[] payloadV1 = new Object[] {v1, "books"};
+    Object[] payloadV2 = new Object[] {v2, "books"};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(advisor.isPrimary()).thenReturn(true);
+
+    EntrySnapshot esV2 = mock(EntrySnapshot.class);
+    when(esV2.getRawValue(true)).thenReturn(payloadV2);
+
+    BucketRegion promotedBucket = mock(BucketRegion.class);
+    when(promotedBucket.getId()).thenReturn(0);
+    when(promotedBucket.isDestroyed()).thenReturn(false);
+    when(promotedBucket.isEmpty()).thenReturn(false);
+    when(promotedBucket.getBucketAdvisor()).thenReturn(advisor);
+    when(promotedBucket.keySet()).thenReturn(Set.of("k-paused-pin"));
+    when(promotedBucket.getEntry("k-paused-pin")).thenReturn(esV2);
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(0)).thenReturn(promotedBucket);
+
+    PartitionedRegion promotedPr = mock(PartitionedRegion.class);
+    when(promotedPr.getFullPath()).thenReturn(REGION_PATH);
+    when(promotedPr.getRegionService()).thenReturn(mockCache);
+    when(promotedPr.getDataStore()).thenReturn(dataStore);
+    when(promotedPr.isDestroyed()).thenReturn(false);
+    KeyInfo keyInfo0 = mock(KeyInfo.class);
+    when(keyInfo0.getBucketId()).thenReturn(0);
+    when(promotedPr.getKeyInfo(eq("k-paused-pin"), any())).thenReturn(keyInfo0);
+
+    when(mockContext.getDataSet()).thenReturn(promotedPr);
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+    when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+
+    Tier0VectorBucketListener<String, Object[]> listener = new Tier0VectorBucketListener<>(
+        INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("category", (String) pair[1]));
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(promotedPr);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+
+    CountDownLatch writerPausedBeforePin = new CountDownLatch(1);
+    CountDownLatch allowWriterPin = new CountDownLatch(1);
+
+    ExecutorService pool = Executors.newSingleThreadExecutor();
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          promotedBucket, writer, serializer, mockStats, promotedBucket, null, "lock", mockIndex);
+      repo.update("k-paused-pin", payloadV1);
+      repo.commitAndRefreshBlocking();
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+      when(mockRepoManager.getRepository(any(), any(), any())).thenReturn(repo);
+
+      // New-term writer w2 updates BucketRegion (reflected by esV2 above) and pauses strictly
+      // BEFORE recordPut inside Tier0VectorBucketListener.afterUpdate.
+      EventID idW2 = new EventID(new byte[] {1, 2}, 7L, 101L);
+      EntryEventImpl entryEventW2 = mock(EntryEventImpl.class);
+      doReturn(promotedPr).when(entryEventW2).getRegion();
+      when(entryEventW2.getKey()).thenReturn("k-paused-pin");
+      when(entryEventW2.getNewValue()).thenReturn(payloadV2);
+      when(entryEventW2.getEventId()).thenReturn(idW2);
+
+      Tier0VectorBucketListener.setBeforeRecordPutHookForTest((bId, k) -> {
+        if (bId == 0 && "k-paused-pin".equals(k)) {
+          writerPausedBeforePin.countDown();
+          try {
+            allowWriterPin.await(5, TimeUnit.SECONDS);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+
+      Future<?> writerFuture =
+          pool.submit(() -> listener.afterUpdate((EntryEventImpl) entryEventW2));
+      assertThat(writerPausedBeforePin.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(writerFuture.isDone()).isFalse();
+
+      // While w2 is paused before recordPut, afterPrimary runs, adopts v2 at t_adopt, and opens
+      // hydrationLatch.
+      partitionListener.afterPrimary(0);
+      assertThat(registry.isHydrating(REGION_PATH, INDEX_NAME, 0)).isFalse();
+
+      Tier0VectorDeltaBuffer<Object> buf = registry.getBuffer(REGION_PATH, INDEX_NAME, 0);
+      assertThat(buf).isNotNull();
+      long adoptedSeq = buf.getKeySequence("k-paused-pin");
+      assertThat(adoptedSeq).isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
+      assertThat(buf.getPinnedEventSequence(idW2)).isEqualTo(-1L);
+
+      // Immediate read right after hydrationLatch opens (w2 STILL paused before recordPut!):
+      // MUST observe strictly adopted v2 (linearized at t_adopt, zero stale v1!).
+      HybridKnnQueryContext hybridCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      ResultSender<TopEntriesCollector> immediateSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(immediateSender);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      ArgumentCaptor<TopEntriesCollector> immediateCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(immediateSender).lastResult(immediateCaptor.capture());
+      List<EntryScore<Object>> immediateHits = immediateCaptor.getValue().getEntries().getHits();
+      assertThat(immediateHits).extracting(EntryScore::getKey).containsExactly("k-paused-pin");
+      assertThat(immediateHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+
+      // Resume w2's delayed recordPut -> idempotent seq >= 1 pin preserving v2 and pinning idW2.
+      allowWriterPin.countDown();
+      writerFuture.get(5, TimeUnit.SECONDS);
+
+      long pinnedSeq = buf.getKeySequence("k-paused-pin");
+      assertThat(pinnedSeq).isGreaterThan(adoptedSeq);
+      assertThat(buf.getPinnedEventSequence(idW2)).isEqualTo(pinnedSeq);
+      assertThat(buf.getTotalSize()).isEqualTo(1);
+
+      // Path-A AEQ drain commits v2 cleanly and evicts Tier-0 to 0.
+      GatewaySenderEventImpl aeqEventW2 = mock(GatewaySenderEventImpl.class);
+      doReturn(promotedPr).when(aeqEventW2).getRegion();
+      when(aeqEventW2.getKey()).thenReturn("k-paused-pin");
+      when(aeqEventW2.getOperation()).thenReturn(Operation.UPDATE);
+      when(aeqEventW2.getDeserializedValue()).thenReturn(payloadV2);
+      when(aeqEventW2.getEventId()).thenReturn(idW2);
+      LuceneEventListener aeqListener = new LuceneEventListener(mockCache, mockRepoManager);
+      assertThat(aeqListener.processEvents(List.of(aeqEventW2))).isTrue();
+      assertThat(buf.getTotalSize()).isEqualTo(0);
+      assertThat(buf.getMaxCommittedSequence("k-paused-pin")).isEqualTo(pinnedSeq);
+
+      // Post-drain Path-A and Path-B queries both return strictly k-paused-pin = v2.
+      ResultSender<TopEntriesCollector> postPinSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(postPinSender);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> postPinCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(postPinSender).lastResult(postPinCaptor.capture());
+      List<EntryScore<Object>> postPinHits = postPinCaptor.getValue().getEntries().getHits();
+      assertThat(postPinHits).extracting(EntryScore::getKey).containsExactly("k-paused-pin");
+      assertThat(postPinHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+
+      ResultSender<TopEntriesCollector> pathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSender);
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> pathBCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathBSender).lastResult(pathBCaptor.capture());
+      List<EntryScore<Object>> pathBHits = pathBCaptor.getValue().getEntries().getHits();
+      assertThat(pathBHits).extracting(EntryScore::getKey).containsExactly("k-paused-pin");
+      assertThat(pathBHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+    } finally {
+      allowWriterPin.countDown();
+      Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+      pool.shutdownNow();
     }
   }
 

@@ -304,6 +304,9 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     boolean cutCompleted = false;
     for (int ownershipAttempt = 0; ownershipAttempt < MAX_OWNERSHIP_FENCE_RETRIES
         && !cutCompleted; ownershipAttempt++) {
+      // Unconditionally reset candidate/mask state at the start of every ownership attempt.
+      tier0Snapshot = null;
+      maskedKeys = Collections.emptySet();
       ensureBucketLocallyPrimary(region, bucketId);
       if (ownershipAttempt > 0 || (repo != null && repo.isClosed())) {
         repo = refreshBucketRepository(repoManager, ctx, waitForRepository, bucketId, repo);
@@ -320,6 +323,10 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         ensureBucketLocallyPrimary(region, bucketId);
 
         if (unsupportedFilter && buffer != null && repo != null) {
+          // Path B (R2 M1): reset live candidates and mask set unconditionally upon entry,
+          // strictly before acquiring the write barrier or inspecting the buffer/drain loop.
+          tier0Snapshot = null;
+          maskedKeys = Collections.emptySet();
           LockedBucketBuffer locked = acquireLatestPathBWriteBarrier(
               region, registry, regionPath, indexName, bucketId);
           pathBBuffer = locked.buffer;
@@ -483,6 +490,11 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
           }
 
           if (!queryCompleted && repo != null) {
+            // Path-B write-barrier fallback (R2 M1): unconditionally clear any invalidated
+            // snapshot/mask state left over from exhausted optimistic attempts before acquiring
+            // the write barrier, even if the buffer is already empty.
+            tier0Snapshot = null;
+            maskedKeys = Collections.emptySet();
             LockedBucketBuffer locked = acquireLatestPathBWriteBarrier(
                 region, registry, regionPath, indexName, bucketId);
             pathBBuffer = locked.buffer;

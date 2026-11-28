@@ -288,62 +288,79 @@ public class Tier0VectorDeltaBuffer<K> {
       boolean tombstone, boolean provisionalHydration, long maxExclusiveSeq, Object regionValue) {
     pathBBarrierLock.readLock().lock();
     try {
-      while (true) {
-        EpochState<K> state = stateRef.get();
-        EpochBucket<K> active = state.active;
-        int writerCount = active.writerState.get();
-        if ((writerCount & SEALED_BIT) != 0) {
-          Thread.onSpinWait();
-          continue;
-        }
-        if (!active.writerState.compareAndSet(writerCount, writerCount + 1)) {
-          continue;
-        }
-        try {
-          EpochBucket<K> flushing = stateRef.get().flushing;
-          if (flushing != null) {
-            if (flushing != active) {
-              // Wait for any in-flight writers pinned to oldActive before inspecting flushing
-              // so a concurrent live put cannot finish in E_flushing after a newer tombstone
-              // is placed in E_active.
-              while ((flushing.writerState.get() & WRITER_MASK) != 0) {
-                Thread.onSpinWait();
+      // Synchronize on evictionLock (preserving strict lock hierarchy flushLock ->
+      // pathBBarrierLock -> evictionLock -> active.writerState) so the cross-epoch check across
+      // E_flushing, committedKeySequences, and E_active is atomic with respect to completeFlush,
+      // evictCommitted, evictCommittedEntries, and clear(). A delayed hydration scan resuming in
+      // the beginFlush seal-to-commit window deterministically observes sealed E_flushing entries
+      // (or, after completeFlush acquires evictionLock first, the advanced committedKeySequences)
+      // and rejects stale installs.
+      synchronized (evictionLock) {
+        while (true) {
+          EpochState<K> state = stateRef.get();
+          EpochBucket<K> active = state.active;
+          int writerCount = active.writerState.get();
+          if ((writerCount & SEALED_BIT) != 0) {
+            Thread.onSpinWait();
+            continue;
+          }
+          if (!active.writerState.compareAndSet(writerCount, writerCount + 1)) {
+            continue;
+          }
+          try {
+            EpochBucket<K> flushing = stateRef.get().flushing;
+            if (flushing != null) {
+              if (flushing != active) {
+                // Wait for any in-flight writers pinned to oldActive before inspecting flushing
+                // so a concurrent live put cannot finish in E_flushing after a newer tombstone
+                // is placed in E_active.
+                while ((flushing.writerState.get() & WRITER_MASK) != 0) {
+                  Thread.onSpinWait();
+                }
+              }
+              DeltaEntry<K> flushingEntry = flushing.entries.get(key);
+              if (flushingEntry != null
+                  && !shouldOverwriteEntry(flushingEntry, maxExclusiveSeq)) {
+                return -1L;
               }
             }
-            DeltaEntry<K> flushingEntry = flushing.entries.get(key);
-            if (flushingEntry != null
-                && !shouldOverwriteEntry(flushingEntry, maxExclusiveSeq)) {
+            if (isBlockedByCommittedSequence(key, maxExclusiveSeq)) {
               return -1L;
             }
-          }
-          if (isBlockedByCommittedSequence(key, maxExclusiveSeq)) {
-            return -1L;
-          }
-          boolean[] mutated = new boolean[] {false};
-          long[] stampedSeq = new long[] {-1L};
-          try {
-            active.entries.compute(key, (k, existing) -> {
-              if (isBlockedByCommittedSequence(k, maxExclusiveSeq)
-                  || !shouldOverwriteEntry(existing, maxExclusiveSeq)) {
-                return existing;
+            boolean[] mutated = new boolean[] {false};
+            long[] stampedSeq = new long[] {-1L};
+            try {
+              active.entries.compute(key, (k, existing) -> {
+                EpochBucket<K> currentFlushing = stateRef.get().flushing;
+                if (currentFlushing != null) {
+                  DeltaEntry<K> currentFlushingEntry = currentFlushing.entries.get(k);
+                  if (currentFlushingEntry != null
+                      && !shouldOverwriteEntry(currentFlushingEntry, maxExclusiveSeq)) {
+                    return existing;
+                  }
+                }
+                if (isBlockedByCommittedSequence(k, maxExclusiveSeq)
+                    || !shouldOverwriteEntry(existing, maxExclusiveSeq)) {
+                  return existing;
+                }
+                mutationVersion.incrementAndGet();
+                mutated[0] = true;
+                long seq = provisionalHydration
+                    ? PROVISIONAL_HYDRATION_SEQUENCE
+                    : sequenceGenerator.incrementAndGet();
+                stampedSeq[0] = seq;
+                return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq,
+                    regionValue);
+              });
+            } finally {
+              if (mutated[0]) {
+                mutationVersion.incrementAndGet();
               }
-              mutationVersion.incrementAndGet();
-              mutated[0] = true;
-              long seq = provisionalHydration
-                  ? PROVISIONAL_HYDRATION_SEQUENCE
-                  : sequenceGenerator.incrementAndGet();
-              stampedSeq[0] = seq;
-              return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq,
-                  regionValue);
-            });
-          } finally {
-            if (mutated[0]) {
-              mutationVersion.incrementAndGet();
             }
+            return stampedSeq[0];
+          } finally {
+            active.writerState.decrementAndGet();
           }
-          return stampedSeq[0];
-        } finally {
-          active.writerState.decrementAndGet();
         }
       }
     } finally {
