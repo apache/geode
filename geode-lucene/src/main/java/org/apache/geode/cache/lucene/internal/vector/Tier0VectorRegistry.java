@@ -364,6 +364,12 @@ public class Tier0VectorRegistry {
 
   /**
    * Marks the specified hydration barrier complete and unblocks waiting readers.
+   *
+   * <p>
+   * Establishes the Theorem 2(1) promotion cut linearization instant {@code t_hyd} strictly before
+   * {@code latch.countDown()}: every pre-promotion replicated entry and every scan-observed
+   * concurrent new-term write {@code w_2} satisfies {@code inv(w_2) < t_scan(k_2) < t_hyd} before
+   * any post-promotion reader can acquire a snapshot or Lucene searcher cut.
    */
   public void completeHydration(String regionPath, String indexName, int bucketId,
       CountDownLatch latch) {

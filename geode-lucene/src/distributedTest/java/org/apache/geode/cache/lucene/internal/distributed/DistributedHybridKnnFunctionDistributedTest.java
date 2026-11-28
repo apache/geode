@@ -118,11 +118,14 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   private static volatile CountDownLatch RECORD_PUT_HOOK_RELEASE;
   private static volatile CountDownLatch RECORD_DESTROY_HOOK_ENTERED;
   private static volatile CountDownLatch RECORD_DESTROY_HOOK_RELEASE;
+  private static volatile CountDownLatch BEGIN_HYDRATION_HOOK_ENTERED;
+  private static volatile CountDownLatch BEGIN_HYDRATION_HOOK_RELEASE;
   private static volatile GatewaySenderEventImpl CAPTURED_STALE_EVENT_W1;
   private static volatile GatewaySenderEventImpl CAPTURED_STALE_EVENT_DEL;
 
   private VM dataStore1;
   private VM dataStore2;
+  private VM dataStore3;
   private VM accessor;
 
   @Before
@@ -131,16 +134,18 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     dataStore1 = host.getVM(0);
     dataStore2 = host.getVM(1);
     accessor = host.getVM(2);
+    dataStore3 = host.getVM(3);
   }
 
   @After
   public void cleanUpRegistries() {
-    for (VM vm : Arrays.asList(dataStore1, dataStore2, accessor)) {
+    for (VM vm : Arrays.asList(dataStore1, dataStore2, dataStore3, accessor)) {
       if (vm != null) {
         vm.invoke(() -> {
           DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = null;
           Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
           Tier0VectorBucketListener.setBeforeRecordDestroyHookForTest(null);
+          Tier0VectorBucketListener.setAfterBeginHydrationHookForTest(null);
           IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
           CAPTURED_STALE_EVENT_W1 = null;
           CAPTURED_STALE_EVENT_DEL = null;
@@ -156,12 +161,18 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
           if (destroyRelease != null) {
             destroyRelease.countDown();
           }
+          CountDownLatch beginHydRelease = BEGIN_HYDRATION_HOOK_RELEASE;
+          if (beginHydRelease != null) {
+            beginHydRelease.countDown();
+          }
           OWNERSHIP_HOOK_ENTERED = null;
           OWNERSHIP_HOOK_RELEASE = null;
           RECORD_PUT_HOOK_ENTERED = null;
           RECORD_PUT_HOOK_RELEASE = null;
           RECORD_DESTROY_HOOK_ENTERED = null;
           RECORD_DESTROY_HOOK_RELEASE = null;
+          BEGIN_HYDRATION_HOOK_ENTERED = null;
+          BEGIN_HYDRATION_HOOK_RELEASE = null;
           if (hasCache()) {
             Tier0VectorRegistry.removeCache(getCache());
           }
@@ -3376,6 +3387,283 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     assertThat(pathBHits).containsOnlyKeys(kRecreate, kOv);
     assertThat(pathBHits.get(kRecreate)).isCloseTo(scoreV3, within(1e-4f));
     assertThat(pathBHits.get(kOv)).isCloseTo(scoreV2, within(1e-4f));
+  }
+
+  /**
+   * Real 4-VM Geode cluster ({@code rf = 2}: 3 data stores + 1 accessor) verification of Theorem
+   * 2(1) v24 (R1 M1 + R2 M1):
+   * <ol>
+   * <li>Crashes primary {@code dataStore1}; the promoted primary pauses inside
+   * {@code afterPrimary} strictly AFTER {@code beginHydration} advances
+   * {@code ownershipGeneration} ({@code t_gen_change}) while holding both Geode's
+   * {@code BucketAdvisor.primaryMoveWriteLock} and {@code hydrationLatch}.</li>
+   * <li>Strictly AFTER {@code t_gen_change}, launches a new-term writer {@code w2}
+   * ({@code k2 -> v2}) and a concurrent reader from {@code accessor}; verifies {@code w2} is
+   * gated by {@code primaryMoveReadLock} while {@code afterPrimary} runs, then pauses {@code w2}
+   * strictly BEFORE {@code recordPut} (after synchronous {@code rf>=1} backup replication!).</li>
+   * <li>Releases {@code afterPrimary} ({@code t_hyd}) and {@code w2}'s delayed {@code recordPut},
+   * verifies consistent multi-key cut {@code (k2=v2, k1=vBase)}, executes subsequent overwrite
+   * {@code w2'} ({@code k2 -> v3}), and IMMEDIATELY crashes the first promoted primary BEFORE
+   * Lucene AEQ flush.</li>
+   * <li>Verifies the SECOND promoted primary ({@code backup2}) hydrates and serves strictly
+   * {@code (k2=v3, k1=vBase)} on both Path A and Path B with zero stale {@code v1}/{@code v2}
+   * regression and Tier-0 draining cleanly to {@code 0}.</li>
+   * </ol>
+   */
+  @Test
+  public void postGenerationChangeWriterDuringPromotionLinearizesAtHydrationCutAndSurvivesSecondPromotion()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(2));
+    dataStore2.invoke(() -> initServer(2));
+    dataStore3.invoke(() -> initServer(2));
+    accessor.invoke(() -> initAccessor(2));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    float[] orthogonalSeed = new float[DIM];
+    orthogonalSeed[DIM - 1] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("v24-seed-" + i, new VectorRecord(orthogonalSeed, "other", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    final int targetBucketId = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+    });
+
+    List<String> bucketKeys = accessor.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<String> keys = new ArrayList<>();
+      for (int i = 0; keys.size() < 2 && i < 20_000; i++) {
+        String candidate = "v24-promo-" + i;
+        if (pr.getKeyInfo(candidate).getBucketId() == targetBucketId) {
+          keys.add(candidate);
+        }
+      }
+      return keys;
+    });
+    assertThat(bucketKeys).hasSize(2);
+    String k1 = bucketKeys.get(0);
+    String k2 = bucketKeys.get(1);
+
+    float[] vecBase = unitVectorWithCos0(0.70f);
+    float[] vecV1 = unitVectorWithCos0(0.35f);
+    float[] vecV2 = unitVectorWithCos0(0.95f);
+    float[] vecV3 = unitVectorWithCos0(0.995f);
+    float scoreBase = VectorSimilarityScorer.score(query, vecBase, VectorSimilarityFunction.COSINE);
+    float scoreV1 = VectorSimilarityScorer.score(query, vecV1, VectorSimilarityFunction.COSINE);
+    float scoreV2 = VectorSimilarityScorer.score(query, vecV2, VectorSimilarityFunction.COSINE);
+    float scoreV3 = VectorSimilarityScorer.score(query, vecV3, VectorSimilarityFunction.COSINE);
+
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(k1, new VectorRecord(vecBase, "v24", "all", "all"));
+      region.put(k2, new VectorRecord(vecV1, "v24", "all", "all"));
+    });
+    waitForLuceneFlush(accessor);
+
+    // Arm one-shot afterBeginHydration hook on BOTH surviving backups (whichever promotes
+    // targetBucketId will pause strictly after t_gen_change while holding hydrationLatch &
+    // BucketAdvisor.primaryMoveWriteLock!).
+    for (VM survivor : Arrays.asList(dataStore2, dataStore3)) {
+      survivor.invoke(() -> {
+        BEGIN_HYDRATION_HOOK_ENTERED = new CountDownLatch(1);
+        BEGIN_HYDRATION_HOOK_RELEASE = new CountDownLatch(1);
+        AtomicBoolean fired = new AtomicBoolean(false);
+        Tier0VectorBucketListener.setAfterBeginHydrationHookForTest(bId -> {
+          if (bId == targetBucketId && fired.compareAndSet(false, true)) {
+            BEGIN_HYDRATION_HOOK_ENTERED.countDown();
+            try {
+              BEGIN_HYDRATION_HOOK_RELEASE.await(30, TimeUnit.SECONDS);
+            } catch (InterruptedException ie) {
+              Thread.currentThread().interrupt();
+            }
+          }
+        });
+      });
+    }
+
+    ExecutorService clientPool = Executors.newFixedThreadPool(2);
+    try {
+      // 1. Crash primary dataStore1 -> one of {dataStore2, dataStore3} promotes targetBucketId
+      // and pauses inside afterPrimary strictly after t_gen_change.
+      DistributedTestUtils.crashDistributedSystem(dataStore1);
+
+      GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        boolean ds2 = dataStore2.invoke(
+            () -> BEGIN_HYDRATION_HOOK_ENTERED != null
+                && BEGIN_HYDRATION_HOOK_ENTERED.getCount() == 0L);
+        boolean ds3 = dataStore3.invoke(
+            () -> BEGIN_HYDRATION_HOOK_ENTERED != null
+                && BEGIN_HYDRATION_HOOK_ENTERED.getCount() == 0L);
+        return ds2 || ds3;
+      });
+
+      boolean ds2Promoted = dataStore2.invoke(
+          () -> BEGIN_HYDRATION_HOOK_ENTERED != null
+              && BEGIN_HYDRATION_HOOK_ENTERED.getCount() == 0L);
+      VM promoted1 = ds2Promoted ? dataStore2 : dataStore3;
+      VM backup2 = ds2Promoted ? dataStore3 : dataStore2;
+      assertThat((boolean) promoted1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+          .isHydrating("/" + REGION_NAME, INDEX_NAME, targetBucketId))).isTrue();
+
+      // Arm beforeRecordPutHook on promoted1 so w2 pauses between sync replication to backup2
+      // and Tier-0 pin!
+      armOneShotBeforeRecordPutHook(promoted1, targetBucketId, k2);
+
+      // 2. Strictly AFTER t_gen_change, launch new-term writer w2 (k2 -> v2) AND a concurrent
+      // reader from accessor! While afterPrimary holds primaryMoveWriteLock + hydrationLatch,
+      // w2 cannot bypass the write-side exclusion gate.
+      Future<?> writerW2Future = clientPool.submit(() -> accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(k2, new VectorRecord(vecV2, "v24", "all", "all"));
+      }));
+      Future<Map<String, Float>> concurrentReadFuture =
+          clientPool.submit(() -> accessor.invoke(() -> {
+            Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+            HybridKnnQueryContext ctx = HybridKnnQueryContext
+                .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+                .similarityFunction(VectorSimilarityFunction.COSINE)
+                .addMetadataFilter("sel1", "v24")
+                .build();
+            Map<String, Float> out = new LinkedHashMap<>();
+            for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+                .getHits()) {
+              out.put(hit.getKey(), hit.getScore());
+            }
+            return out;
+          }));
+
+      Thread.sleep(150L);
+      assertThat(writerW2Future.isDone())
+          .as("w2 must not finish bypassing primaryMoveWriteLock while afterPrimary runs")
+          .isFalse();
+
+      // 3. Release afterPrimary -> finishes hydration at t_hyd, unlocks primaryMoveWriteLock ->
+      // w2 acquires primaryMoveReadLock, replicates v2 synchronously to backup2, and pauses before
+      // recordPut!
+      for (VM survivor : Arrays.asList(promoted1, backup2)) {
+        survivor.invoke(() -> {
+          Tier0VectorBucketListener.setAfterBeginHydrationHookForTest(null);
+          CountDownLatch rel = BEGIN_HYDRATION_HOOK_RELEASE;
+          if (rel != null) {
+            rel.countDown();
+          }
+        });
+      }
+
+      awaitBeforeRecordPutHookEntered(promoted1);
+      // Release w2's delayed recordPut so w2 completes cleanly.
+      releaseBeforeRecordPutHook(promoted1);
+      writerW2Future.get(30, TimeUnit.SECONDS);
+
+      Map<String, Float> concurrentHits = concurrentReadFuture.get(30, TimeUnit.SECONDS);
+      assertThat(concurrentHits).containsOnlyKeys(k1, k2);
+      assertThat(concurrentHits.get(k1)).isCloseTo(scoreBase, within(1e-4f));
+      // Concurrent read linearized either at t_hyd (before w2: scoreV1) or after w2 (scoreV2) —
+      // strictly a consistent multi-key cut!
+      float k2ConcurrentScore = concurrentHits.get(k2);
+      assertThat(
+          Math.abs(k2ConcurrentScore - scoreV1) < 1e-3f
+              || Math.abs(k2ConcurrentScore - scoreV2) < 1e-3f)
+                  .as("k2 concurrent cut score must match v1 (%s) or v2 (%s), got %s",
+                      scoreV1, scoreV2, k2ConcurrentScore)
+                  .isTrue();
+
+      // Post-w2 immediate read observes strictly (k2=v2, k1=vBase).
+      Map<String, Float> afterW2Hits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "v24")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(afterW2Hits).containsOnlyKeys(k1, k2);
+      assertThat(afterW2Hits.get(k2)).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(afterW2Hits.get(k1)).isCloseTo(scoreBase, within(1e-4f));
+
+      // 4. Subsequent overwrite w2' (k2 -> v3) BEFORE Lucene flush, followed IMMEDIATELY by
+      // crashing promoted1 (chained SECOND promotion onto backup2!).
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(k2, new VectorRecord(vecV3, "v24", "all", "all"));
+      });
+      DistributedTestUtils.crashDistributedSystem(promoted1);
+      GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat((int) backup2.invoke(this::countLocalPrimaryBuckets))
+              .isEqualTo(NUM_BUCKETS));
+
+      // 5. Verify BOTH Path A and Path B on the SECOND promoted primary (backup2) observe strictly
+      // (k2=v3, k1=vBase) with zero stale v1/v2 leakage and Path B drains Tier-0 cleanly to 0!
+      Map<String, Float> secondPromoPathA = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "v24")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(secondPromoPathA).containsOnlyKeys(k1, k2);
+      assertThat(secondPromoPathA.get(k2)).isCloseTo(scoreV3, within(1e-4f));
+      assertThat(secondPromoPathA.get(k1)).isCloseTo(scoreBase, within(1e-4f));
+
+      Map<String, Float> secondPromoPathB = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:v2~1", "sel1")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(secondPromoPathB).containsOnlyKeys(k1, k2);
+      assertThat(secondPromoPathB.get(k2)).isCloseTo(scoreV3, within(1e-4f));
+      assertThat(secondPromoPathB.get(k1)).isCloseTo(scoreBase, within(1e-4f));
+
+      int remainingOnBackup2 = backup2.invoke(() -> {
+        Tier0VectorDeltaBuffer<Object> b = Tier0VectorRegistry.forCache(getCache())
+            .getBuffer("/" + REGION_NAME, INDEX_NAME, targetBucketId);
+        return b == null ? 0 : b.getTotalSize();
+      });
+      assertThat(remainingOnBackup2).isEqualTo(0);
+    } finally {
+      clientPool.shutdownNow();
+      clearBeforeRecordPutHook(dataStore2);
+      clearBeforeRecordPutHook(dataStore3);
+      for (VM vm : Arrays.asList(dataStore2, dataStore3)) {
+        if (vm != null) {
+          vm.invoke(() -> {
+            Tier0VectorBucketListener.setAfterBeginHydrationHookForTest(null);
+            CountDownLatch rel = BEGIN_HYDRATION_HOOK_RELEASE;
+            if (rel != null) {
+              rel.countDown();
+            }
+          });
+        }
+      }
+    }
   }
 
   private void armOneShotBeforeRecordDestroyHook(VM vm, int targetBucketId, String targetKey) {

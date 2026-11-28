@@ -28,6 +28,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 
 import org.apache.lucene.store.AlreadyClosedException;
 
@@ -82,10 +83,21 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
 
   private static volatile BiConsumer<Integer, Object> beforeRecordPutHookForTest;
   private static volatile BiConsumer<Integer, Object> beforeRecordDestroyHookForTest;
+  private static volatile IntConsumer afterBeginHydrationHookForTest;
 
   private final String indexName;
   private final Function<V, float[]> vectorExtractor;
   private final Function<V, Map<String, Object>> metadataExtractor;
+
+  /**
+   * Test-only hook invoked inside {@code afterPrimary} strictly after
+   * {@link Tier0VectorRegistry#beginHydration} advances {@code ownershipGeneration}
+   * ({@code t_gen_change}) and installs {@code hydrationLatch}, and strictly before AEQ/bucket
+   * reconciliation begins.
+   */
+  public static void setAfterBeginHydrationHookForTest(IntConsumer hook) {
+    afterBeginHydrationHookForTest = hook;
+  }
 
   /**
    * Test-only hook invoked inside {@code afterCreate}/{@code afterUpdate} strictly after the
@@ -281,6 +293,10 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       CountDownLatch hydrationLatch =
           registry.beginHydration(pr.getFullPath(), indexName, bucketId);
       try {
+        IntConsumer beginHook = afterBeginHydrationHookForTest;
+        if (beginHook != null) {
+          beginHook.accept(bucketId);
+        }
         Tier0VectorDeltaBuffer<Object> buffer =
             registry.getOrCreateBuffer(pr.getFullPath(), indexName, bucketId);
         // Live new-term puts/destroys (recordPut/recordDestroy) execute before or concurrently with
@@ -610,12 +626,22 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       RegionMap regionMap = bucket.getRegionMap();
       if (regionMap != null) {
         for (RegionEntry re : regionMap.regionEntries()) {
-          if (re != null && re.isTombstone()) {
-            eventsInspected++;
-            Object tombKey = re.getKey();
-            if (tombKey != null && reconcileTombstone(
-                tombKey, buffer, registry, promotionStartSeq, aeqResult)) {
-              keysRestored++;
+          if (re != null) {
+            boolean isTombstone;
+            Object tombKey;
+            // Synchronize on the per-key RegionEntry monitor held by RegionMapDestroy across
+            // tombstone mutation -> synchronous rf>=1 backup replication -> AEQ enqueue ->
+            // recordDestroy so the scan never observes an un-replicated tombstone.
+            synchronized (re) {
+              isTombstone = re.isTombstone();
+              tombKey = isTombstone ? re.getKey() : null;
+            }
+            if (isTombstone && tombKey != null) {
+              eventsInspected++;
+              if (reconcileTombstone(
+                  tombKey, buffer, registry, promotionStartSeq, aeqResult)) {
+                keysRestored++;
+              }
             }
           }
         }
@@ -751,6 +777,23 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
 
     @SuppressWarnings("unchecked")
     private V readEntryValueWithoutDeserializingPdx(BucketRegion bucket, Object key) {
+      RegionEntry re = bucket.getRegionEntry(key);
+      if (re != null) {
+        // Synchronize on the per-key RegionEntry monitor held by AbstractRegionMapPut /
+        // RegionMapDestroy across local mutation -> synchronous rf>=1 backup replication
+        // (BucketRegion.basicPutPart2 / distributeDestroyOperation) -> AEQ enqueue ->
+        // Tier0VectorBucketListener.recordPut / recordDestroy. Guarantees the hydration scan
+        // never observes an un-replicated local write before backup replication completes,
+        // preserving survival across any subsequent second promotion.
+        synchronized (re) {
+          return readEntryValueLocked(bucket, key);
+        }
+      }
+      return readEntryValueLocked(bucket, key);
+    }
+
+    @SuppressWarnings("unchecked")
+    private V readEntryValueLocked(BucketRegion bucket, Object key) {
       Region.Entry<?, ?> entry = bucket.getEntry(key);
       if (entry == null) {
         return null;

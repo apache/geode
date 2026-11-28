@@ -4045,6 +4045,309 @@ public class DistributedHybridKnnFunctionJUnitTest {
     }
   }
 
+  /**
+   * Verifies Theorem 2(1) v24 (R1 M1 + R2 M1) promotion cut linearization at {@code t_hyd}
+   * (immediately before {@code hydrationLatch.countDown()}) and chained second-promotion
+   * persistence:
+   * <ol>
+   * <li>Promotion begins and advances {@code ownershipGeneration} at {@code t_gen_change} while
+   * holding {@code hydrationLatch}.</li>
+   * <li>Strictly AFTER {@code t_gen_change} ({@code inv(w2) > t_gen_change}), writer {@code w2}
+   * updates {@code BucketRegion} for {@code k2} ({@code v1 -> v2}) and pauses strictly BEFORE
+   * {@code recordPut}.</li>
+   * <li>The authoritative scan observes {@code (k1=vBase, k2=v2)} at {@code t_scan < t_hyd},
+   * installs both into Tier-0, and releases {@code hydrationLatch} at {@code t_hyd} while
+   * {@code w2} is still paused before {@code recordPut}
+   * ({@code t_gen_change < inv(w2) < t_scan < t_hyd < resp(w2)}).</li>
+   * <li>A concurrent reader blocked on {@code hydrationLatch} wakes strictly after {@code t_hyd}
+   * and observes the atomic multi-key cut {@code (k2=v2, k1=vBase)} with zero stale
+   * {@code v1}.</li>
+   * <li>Resuming {@code w2}'s delayed {@code recordPut} is an idempotent {@code seq >= 1} pin, and
+   * a later overwrite {@code w2'} ({@code k2 -> v3}) monotonically supersedes {@code v2}.</li>
+   * <li>{@code readEntryValueWithoutDeserializingPdx} synchronizes on the per-key
+   * {@code RegionEntry} monitor (blocking while a writer holds {@code synchronized(re)} across
+   * local mutation -> sync backup replication -> {@code recordPut}).</li>
+   * <li>A subsequent second promotion ({@code afterSecondary -> afterPrimary} on a second backup
+   * holding replicated {@code (k1=vBase, k2=v3)} while Lucene still has stale {@code v1})
+   * preserves {@code (k2=v3, k1=vBase)} and drains cleanly to {@code 0}.</li>
+   * </ol>
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void postGenerationChangePrePinWriterLinearizesAtHydrationLatchPreservesMultiKeyCutAndSurvivesSecondPromotion()
+      throws Exception {
+    float[] queryVec = new float[] {1.0f, 0.0f};
+    float[] v1Old = new float[] {0.35f, (float) Math.sqrt(1.0 - 0.35 * 0.35)};
+    float[] vBase = new float[] {0.70f, (float) Math.sqrt(1.0 - 0.70 * 0.70)};
+    float[] v2 = new float[] {0.95f, (float) Math.sqrt(1.0 - 0.95 * 0.95)};
+    float[] v3 = new float[] {0.995f, (float) Math.sqrt(1.0 - 0.995 * 0.995)};
+    float scoreBase =
+        VectorSimilarityScorer.score(queryVec, vBase, VectorSimilarityFunction.COSINE);
+    float scoreV2 = VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+    float scoreV3 = VectorSimilarityScorer.score(queryVec, v3, VectorSimilarityFunction.COSINE);
+
+    Object[] payloadV1Old = new Object[] {v1Old, "books"};
+    Object[] payloadBase = new Object[] {vBase, "books"};
+    Object[] payloadV2 = new Object[] {v2, "books"};
+    Object[] payloadV3 = new Object[] {v3, "books"};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(advisor.isPrimary()).thenReturn(true);
+
+    java.util.concurrent.atomic.AtomicReference<Object[]> k2BucketValue =
+        new java.util.concurrent.atomic.AtomicReference<>(payloadV1Old);
+    EntrySnapshot esK1 = mock(EntrySnapshot.class);
+    when(esK1.getRawValue(true)).thenReturn(payloadBase);
+    EntrySnapshot esK2 = mock(EntrySnapshot.class);
+    when(esK2.getRawValue(true)).thenAnswer(inv -> k2BucketValue.get());
+
+    BucketRegion promotedBucket = mock(BucketRegion.class);
+    when(promotedBucket.getId()).thenReturn(0);
+    when(promotedBucket.isDestroyed()).thenReturn(false);
+    when(promotedBucket.isEmpty()).thenReturn(false);
+    when(promotedBucket.getBucketAdvisor()).thenReturn(advisor);
+    when(promotedBucket.keySet()).thenReturn(Set.of("k1", "k2"));
+    when(promotedBucket.getEntry("k1")).thenReturn(esK1);
+    when(promotedBucket.getEntry("k2")).thenReturn(esK2);
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(0)).thenReturn(promotedBucket);
+
+    PartitionedRegion promotedPr = mock(PartitionedRegion.class);
+    when(promotedPr.getFullPath()).thenReturn(REGION_PATH);
+    when(promotedPr.getRegionService()).thenReturn(mockCache);
+    when(promotedPr.getDataStore()).thenReturn(dataStore);
+    when(promotedPr.isDestroyed()).thenReturn(false);
+    KeyInfo keyInfo0 = mock(KeyInfo.class);
+    when(keyInfo0.getBucketId()).thenReturn(0);
+    when(promotedPr.getKeyInfo(eq("k2"), any())).thenReturn(keyInfo0);
+
+    when(mockContext.getDataSet()).thenReturn(promotedPr);
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+    when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+
+    Tier0VectorBucketListener<String, Object[]> listener = new Tier0VectorBucketListener<>(
+        INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("category", (String) pair[1]));
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(promotedPr);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    long genBeforePromotion = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, 0);
+
+    java.util.concurrent.atomic.AtomicLong tGenChange =
+        new java.util.concurrent.atomic.AtomicLong();
+    java.util.concurrent.atomic.AtomicLong tInvW2 = new java.util.concurrent.atomic.AtomicLong();
+    java.util.concurrent.atomic.AtomicLong tHyd = new java.util.concurrent.atomic.AtomicLong();
+    java.util.concurrent.atomic.AtomicLong tRespW2 = new java.util.concurrent.atomic.AtomicLong();
+    CountDownLatch genChangedLatch = new CountDownLatch(1);
+    CountDownLatch allowScanProceed = new CountDownLatch(1);
+    CountDownLatch writerPausedBeforePin = new CountDownLatch(1);
+    CountDownLatch allowWriterPin = new CountDownLatch(1);
+
+    ExecutorService pool = Executors.newFixedThreadPool(3);
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          promotedBucket, writer, serializer, mockStats, promotedBucket, null, "lock", mockIndex);
+      repo.update("k1", payloadBase);
+      repo.update("k2", payloadV1Old);
+      repo.commitAndRefreshBlocking();
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      Tier0VectorBucketListener.setAfterBeginHydrationHookForTest(bId -> {
+        if (bId == 0) {
+          assertThat(registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, 0))
+              .isGreaterThan(genBeforePromotion);
+          assertThat(registry.isHydrating(REGION_PATH, INDEX_NAME, 0)).isTrue();
+          tGenChange.set(System.nanoTime());
+          genChangedLatch.countDown();
+          try {
+            allowScanProceed.await(5, TimeUnit.SECONDS);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+
+      Tier0VectorBucketListener.setBeforeRecordPutHookForTest((bId, k) -> {
+        if (bId == 0 && "k2".equals(k)) {
+          writerPausedBeforePin.countDown();
+          try {
+            allowWriterPin.await(5, TimeUnit.SECONDS);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+
+      // 1. Start afterPrimary -> advances ownershipGeneration (t_gen_change), holds hydrationLatch
+      Future<?> promoFuture = pool.submit(() -> {
+        partitionListener.afterPrimary(0);
+        tHyd.set(System.nanoTime());
+      });
+      assertThat(genChangedLatch.await(5, TimeUnit.SECONDS)).isTrue();
+
+      // 2. Launch a concurrent reader while hydrationLatch is held -> MUST block until t_hyd!
+      HybridKnnQueryContext hybridCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      ResultSender<TopEntriesCollector> concurrentReaderSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(concurrentReaderSender);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      Future<?> readerFuture =
+          pool.submit(() -> new DistributedHybridKnnFunction().execute(mockContext));
+      Thread.sleep(30L);
+      assertThat(readerFuture.isDone()).isFalse();
+
+      // 3. Strictly AFTER t_gen_change, invoke writer w2 -> updates BucketRegion to v2 and pauses
+      // strictly BEFORE recordPut!
+      EventID idW2 = new EventID(new byte[] {3, 4}, 9L, 201L);
+      EntryEventImpl evW2 = mock(EntryEventImpl.class);
+      doReturn(promotedPr).when(evW2).getRegion();
+      when(evW2.getKey()).thenReturn("k2");
+      when(evW2.getNewValue()).thenReturn(payloadV2);
+      when(evW2.getEventId()).thenReturn(idW2);
+      Future<?> writerW2Future = pool.submit(() -> {
+        tInvW2.set(System.nanoTime());
+        k2BucketValue.set(payloadV2);
+        listener.afterUpdate((EntryEventImpl) evW2);
+        tRespW2.set(System.nanoTime());
+      });
+      assertThat(writerPausedBeforePin.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(tInvW2.get()).isGreaterThanOrEqualTo(tGenChange.get());
+      assertThat(writerW2Future.isDone()).isFalse();
+
+      // 4. Release hydration scan -> scans (k1=vBase, k2=v2) and releases hydrationLatch at t_hyd
+      // strictly WHILE w2 is still paused before recordPut!
+      allowScanProceed.countDown();
+      promoFuture.get(5, TimeUnit.SECONDS);
+      readerFuture.get(5, TimeUnit.SECONDS);
+      assertThat(writerW2Future.isDone()).isFalse();
+      assertThat(tHyd.get()).isGreaterThanOrEqualTo(tInvW2.get());
+
+      // Concurrent reader blocked on hydrationLatch MUST observe the atomic multi-key cut
+      // (k2=v2, k1=vBase) right after t_hyd with zero stale v1Old!
+      ArgumentCaptor<TopEntriesCollector> readerCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(concurrentReaderSender).lastResult(readerCaptor.capture());
+      List<EntryScore<Object>> cutHits = readerCaptor.getValue().getEntries().getHits();
+      assertThat(cutHits).extracting(EntryScore::getKey).containsExactly("k2", "k1");
+      assertThat(cutHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(cutHits.get(1).getScore()).isCloseTo(scoreBase, within(1e-4f));
+
+      Tier0VectorDeltaBuffer<Object> buf1 = registry.getBuffer(REGION_PATH, INDEX_NAME, 0);
+      long seqAdoptedK2 = buf1.getKeySequence("k2");
+      assertThat(seqAdoptedK2).isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
+
+      // 5. Release delayed recordPut of w2 -> completes strictly AFTER t_hyd (inv < t_hyd < resp)
+      // as an idempotent seq >= 1 pin, then execute subsequent overwrite w2' (k2 -> v3).
+      allowWriterPin.countDown();
+      writerW2Future.get(5, TimeUnit.SECONDS);
+      assertThat(tRespW2.get()).isGreaterThanOrEqualTo(tHyd.get());
+      long seqPinnedW2 = buf1.getKeySequence("k2");
+      assertThat(seqPinnedW2).isGreaterThan(seqAdoptedK2);
+
+      Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+      Tier0VectorBucketListener.setAfterBeginHydrationHookForTest(null);
+
+      EventID idW2Prime = new EventID(new byte[] {3, 4}, 9L, 202L);
+      EntryEventImpl evW2Prime = mock(EntryEventImpl.class);
+      doReturn(promotedPr).when(evW2Prime).getRegion();
+      when(evW2Prime.getKey()).thenReturn("k2");
+      when(evW2Prime.getNewValue()).thenReturn(payloadV3);
+      when(evW2Prime.getEventId()).thenReturn(idW2Prime);
+      k2BucketValue.set(payloadV3);
+      listener.afterUpdate((EntryEventImpl) evW2Prime);
+      long seqPinnedW2Prime = buf1.getKeySequence("k2");
+      assertThat(seqPinnedW2Prime).isGreaterThan(seqPinnedW2);
+
+      // 6. Verify RegionEntry monitor synchronization in readEntryValueWithoutDeserializingPdx:
+      // holding synchronized(re) on k2 blocks second promotion's bucket scan until released!
+      RegionEntry lockedRe = mock(RegionEntry.class);
+      when(promotedBucket.getRegionEntry("k2")).thenReturn(lockedRe);
+      CountDownLatch reLockAcquired = new CountDownLatch(1);
+      CountDownLatch allowReLockRelease = new CountDownLatch(1);
+      AtomicBoolean scanCompletedWhileReLocked = new AtomicBoolean(false);
+
+      // 7. Chained SECOND promotion: demote primary 1 (afterSecondary), hold synchronized(re)
+      // briefly on second backup, then release and promote second backup while Lucene still has
+      // stale v1Old!
+      partitionListener.afterSecondary(0);
+      Future<?> reHolder = pool.submit(() -> {
+        synchronized (lockedRe) {
+          reLockAcquired.countDown();
+          try {
+            allowReLockRelease.await(5, TimeUnit.SECONDS);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+      assertThat(reLockAcquired.await(5, TimeUnit.SECONDS)).isTrue();
+      Future<?> secondPromoFuture = pool.submit(() -> {
+        partitionListener.afterPrimary(0);
+        scanCompletedWhileReLocked.set(allowReLockRelease.getCount() > 0L);
+      });
+      Thread.sleep(30L);
+      assertThat(secondPromoFuture.isDone()).isFalse();
+      allowReLockRelease.countDown();
+      reHolder.get(5, TimeUnit.SECONDS);
+      secondPromoFuture.get(5, TimeUnit.SECONDS);
+      assertThat(scanCompletedWhileReLocked.get()).isFalse();
+
+      // Second promoted primary MUST observe strictly (k2=v3, k1=vBase) and drain cleanly via
+      // Path B!
+      ResultSender<TopEntriesCollector> secondPromoSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(secondPromoSender);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> secondPromoCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(secondPromoSender).lastResult(secondPromoCaptor.capture());
+      List<EntryScore<Object>> secondPromoHits =
+          secondPromoCaptor.getValue().getEntries().getHits();
+      assertThat(secondPromoHits).extracting(EntryScore::getKey).containsExactly("k2", "k1");
+      assertThat(secondPromoHits.get(0).getScore()).isCloseTo(scoreV3, within(1e-4f));
+      assertThat(secondPromoHits.get(1).getScore()).isCloseTo(scoreBase, within(1e-4f));
+
+      ResultSender<TopEntriesCollector> pathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSender);
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      assertThat(registry.getBuffer(REGION_PATH, INDEX_NAME, 0).getTotalSize()).isEqualTo(0);
+      ArgumentCaptor<TopEntriesCollector> pathBCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathBSender).lastResult(pathBCaptor.capture());
+      List<EntryScore<Object>> pathBHits = pathBCaptor.getValue().getEntries().getHits();
+      assertThat(pathBHits).extracting(EntryScore::getKey).containsExactly("k2", "k1");
+      assertThat(pathBHits.get(0).getScore()).isCloseTo(scoreV3, within(1e-4f));
+      assertThat(pathBHits.get(1).getScore()).isCloseTo(scoreBase, within(1e-4f));
+    } finally {
+      allowScanProceed.countDown();
+      allowWriterPin.countDown();
+      Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+      Tier0VectorBucketListener.setAfterBeginHydrationHookForTest(null);
+      pool.shutdownNow();
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private List<EntryScore<Object>> executeHybridQuery(float[] query, int k, int rerankFactor) {
     ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
