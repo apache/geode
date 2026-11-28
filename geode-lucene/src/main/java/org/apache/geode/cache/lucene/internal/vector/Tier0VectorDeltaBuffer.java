@@ -181,11 +181,12 @@ public class Tier0VectorDeltaBuffer<K> {
   /**
    * Inserts or overwrites a live vector entry in {@code E_active} ONLY when {@code key} is absent,
    * holds a provisional AEQ-hydrated entry, or has a sequence strictly less than
-   * {@code maxExclusiveSeq} across both {@code E_active} and {@code E_flushing}. Preserves any
-   * concurrent live post-promotion mutation with {@code sequence >= maxExclusiveSeq}.
+   * {@code maxExclusiveSeq} across {@code E_active}, {@code E_flushing}, AND
+   * {@code committedKeySequences}. Preserves any concurrent live post-promotion mutation with
+   * {@code sequence >= maxExclusiveSeq} even after it has flushed and evicted from Tier-0.
    *
    * @return newly stamped sequence number if applied, or {@code -1L} if preserved by a newer live
-   *         entry
+   *         or already-committed entry
    */
   public long putIfSequenceBefore(K key, float[] vector, Map<String, Object> metadata,
       long maxExclusiveSeq) {
@@ -228,11 +229,12 @@ public class Tier0VectorDeltaBuffer<K> {
   /**
    * Inserts or overwrites a tombstone in {@code E_active} ONLY when {@code key} is absent, holds a
    * provisional AEQ-hydrated entry, or has a sequence strictly less than {@code maxExclusiveSeq}
-   * across both {@code E_active} and {@code E_flushing}. Preserves any concurrent live
-   * post-promotion mutation with {@code sequence >= maxExclusiveSeq}.
+   * across {@code E_active}, {@code E_flushing}, AND {@code committedKeySequences}. Preserves any
+   * concurrent live post-promotion mutation with {@code sequence >= maxExclusiveSeq} even after it
+   * has flushed and evicted from Tier-0.
    *
    * @return newly stamped sequence number if applied, or {@code -1L} if preserved by a newer live
-   *         entry
+   *         or already-committed entry
    */
   public long deleteIfSequenceBefore(K key, long maxExclusiveSeq) {
     Objects.requireNonNull(key, "key must not be null");
@@ -289,11 +291,15 @@ public class Tier0VectorDeltaBuffer<K> {
               return -1L;
             }
           }
+          if (isBlockedByCommittedSequence(key, maxExclusiveSeq)) {
+            return -1L;
+          }
           boolean[] mutated = new boolean[] {false};
           long[] stampedSeq = new long[] {-1L};
           try {
             active.entries.compute(key, (k, existing) -> {
-              if (!shouldOverwriteEntry(existing, maxExclusiveSeq)) {
+              if (isBlockedByCommittedSequence(k, maxExclusiveSeq)
+                  || !shouldOverwriteEntry(existing, maxExclusiveSeq)) {
                 return existing;
               }
               mutationVersion.incrementAndGet();
@@ -316,6 +322,17 @@ public class Tier0VectorDeltaBuffer<K> {
     } finally {
       pathBBarrierLock.readLock().unlock();
     }
+  }
+
+  private boolean isBlockedByCommittedSequence(K key, long maxExclusiveSeq) {
+    Long committedSeq = committedKeySequences.get(key);
+    if (committedSeq == null) {
+      return false;
+    }
+    if (maxExclusiveSeq < 0L) {
+      return committedSeq > 0L;
+    }
+    return committedSeq >= maxExclusiveSeq;
   }
 
   private static <K> boolean shouldOverwriteEntry(DeltaEntry<K> existing, long maxExclusiveSeq) {

@@ -3222,6 +3222,158 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     }
   }
 
+  /**
+   * Real 3-VM Geode cluster verification of Theorem 2(1) v21: after primary crash and backup
+   * promotion, when new-term writes (overwrite {@code kOv: v1 -> v2}, destroy {@code kDel}, and
+   * delete+recreate {@code kRecreate -> v3}) pin with {@code seq >= 1}, flush to Lucene, and evict
+   * from Tier-0 (leaving Tier-0 empty), delayed promotion-scan installs
+   * ({@code putIfSequenceBefore}
+   * / {@code deleteIfSequenceBefore} at {@code promotionStartSeq = 0L} and {@code putIfAbsent} /
+   * {@code deleteIfAbsent}) are deterministically rejected via {@code committedKeySequences},
+   * preserving strictly {@code kOv=v2}, {@code kRecreate=v3}, and {@code kDel} absent on both Path
+   * A and Path B queries.
+   */
+  @Test
+  public void promotionScanRejectsStaleCapturedValueAfterNewTermWriteFlushesAndEvicts()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    float[] orthogonalSeed = new float[DIM];
+    orthogonalSeed[DIM - 1] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("v21-seed-" + i, new VectorRecord(orthogonalSeed, "other", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    final int targetBucketId = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+    });
+
+    List<String> bucketKeys = accessor.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<String> keys = new ArrayList<>();
+      for (int i = 0; keys.size() < 3 && i < 20_000; i++) {
+        String candidate = "v21-stale-scan-" + i;
+        if (pr.getKeyInfo(candidate).getBucketId() == targetBucketId) {
+          keys.add(candidate);
+        }
+      }
+      return keys;
+    });
+    assertThat(bucketKeys).hasSize(3);
+    String kOv = bucketKeys.get(0);
+    String kDel = bucketKeys.get(1);
+    String kRecreate = bucketKeys.get(2);
+
+    float[] vecV1 = unitVectorWithCos0(0.40f);
+    float[] vecV2 = unitVectorWithCos0(0.95f);
+    float[] vecV3 = unitVectorWithCos0(0.99f);
+    float scoreV2 = VectorSimilarityScorer.score(query, vecV2, VectorSimilarityFunction.COSINE);
+    float scoreV3 = VectorSimilarityScorer.score(query, vecV3, VectorSimilarityFunction.COSINE);
+
+    // Seed pre-crash state: kOv=v1, kDel=v1, kRecreate destroyed (tombstone).
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(kOv, new VectorRecord(vecV1, "v21", "all", "all"));
+      region.put(kDel, new VectorRecord(vecV1, "v21", "all", "all"));
+      region.put(kRecreate, new VectorRecord(vecV1, "v21", "all", "all"));
+      region.destroy(kRecreate);
+    });
+    waitForLuceneFlush(accessor);
+
+    // Crash primary dataStore1 and wait for dataStore2 to promote all buckets to primary.
+    DistributedTestUtils.crashDistributedSystem(dataStore1);
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat((int) dataStore2.invoke(this::countLocalPrimaryBuckets))
+            .isEqualTo(NUM_BUCKETS));
+    waitForLuceneFlush(accessor);
+
+    // Execute new-term writes on promoted primary dataStore2: overwrite kOv->v2, destroy kDel,
+    // recreate kRecreate->v3, then flush & evict all three from Tier-0!
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(kOv, new VectorRecord(vecV2, "v21", "all", "all"));
+      region.destroy(kDel);
+      region.put(kRecreate, new VectorRecord(vecV3, "v21", "all", "all"));
+    });
+    waitForLuceneFlush(accessor);
+
+    // On promoted primary dataStore2, Tier-0 is now EMPTY for all three keys, while
+    // committedKeySequences >= 1 -> delayed promotion-scan installs at promotionStartSeq=0L (and
+    // putIfAbsent/deleteIfAbsent) MUST be rejected!
+    dataStore2.invoke(() -> {
+      Tier0VectorDeltaBuffer<Object> buf =
+          Tier0VectorRegistry.forCache(getCache()).getBuffer("/" + REGION_NAME, INDEX_NAME,
+              targetBucketId);
+      assertThat(buf).isNotNull();
+      assertThat(buf.getEntry(kOv)).isNull();
+      assertThat(buf.getEntry(kDel)).isNull();
+      assertThat(buf.getEntry(kRecreate)).isNull();
+      assertThat(buf.getMaxCommittedSequence(kOv)).isGreaterThanOrEqualTo(1L);
+      assertThat(buf.getMaxCommittedSequence(kDel)).isGreaterThanOrEqualTo(1L);
+      assertThat(buf.getMaxCommittedSequence(kRecreate)).isGreaterThanOrEqualTo(1L);
+
+      int sizeBeforeStaleCalls = buf.getTotalSize();
+      VectorRecord staleRec = new VectorRecord(vecV1, "v21", "all", "all");
+      Map<String, Object> staleMeta = staleRec.getMetadata();
+      assertThat(buf.putIfSequenceBefore(kOv, vecV1, staleMeta, 0L, staleRec)).isEqualTo(-1L);
+      assertThat(buf.putIfAbsent(kOv, vecV1, staleMeta, staleRec)).isEqualTo(-1L);
+      assertThat(buf.putIfSequenceBefore(kDel, vecV1, staleMeta, 0L, staleRec)).isEqualTo(-1L);
+      assertThat(buf.deleteIfSequenceBefore(kRecreate, 0L)).isEqualTo(-1L);
+      assertThat(buf.deleteIfAbsent(kRecreate)).isEqualTo(-1L);
+      assertThat(buf.getEntry(kOv)).isNull();
+      assertThat(buf.getEntry(kDel)).isNull();
+      assertThat(buf.getEntry(kRecreate)).isNull();
+      assertThat(buf.getTotalSize()).isEqualTo(sizeBeforeStaleCalls);
+    });
+
+    // Verify BOTH Path A (metadata filter) and Path B (FuzzyQuery) observe strictly kRecreate=v3
+    // and kOv=v2, with kDel absent (zero stale overwrite, zero resurrection, zero wipeout!).
+    Map<String, Float> pathAHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("sel1", "v21")
+          .build();
+      Map<String, Float> out = new LinkedHashMap<>();
+      for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+          .getHits()) {
+        out.put(hit.getKey(), hit.getScore());
+      }
+      return out;
+    });
+    assertThat(pathAHits).containsOnlyKeys(kRecreate, kOv);
+    assertThat(pathAHits.get(kRecreate)).isCloseTo(scoreV3, within(1e-4f));
+    assertThat(pathAHits.get(kOv)).isCloseTo(scoreV2, within(1e-4f));
+
+    Map<String, Float> pathBHits = accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("sel1:v2~1", "sel1")
+          .build();
+      Map<String, Float> out = new LinkedHashMap<>();
+      for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+          .getHits()) {
+        out.put(hit.getKey(), hit.getScore());
+      }
+      return out;
+    });
+    assertThat(pathBHits).containsOnlyKeys(kRecreate, kOv);
+    assertThat(pathBHits.get(kRecreate)).isCloseTo(scoreV3, within(1e-4f));
+    assertThat(pathBHits.get(kOv)).isCloseTo(scoreV2, within(1e-4f));
+  }
+
   private void armOneShotBeforeRecordDestroyHook(VM vm, int targetBucketId, String targetKey) {
     vm.invoke(() -> {
       RECORD_DESTROY_HOOK_ENTERED = new CountDownLatch(1);

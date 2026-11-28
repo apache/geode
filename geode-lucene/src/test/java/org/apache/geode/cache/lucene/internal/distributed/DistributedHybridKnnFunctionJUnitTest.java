@@ -3157,6 +3157,167 @@ public class DistributedHybridKnnFunctionJUnitTest {
     }
   }
 
+  /**
+   * Verifies Theorem 2(1) v21 promotion-scan committed-sequence fence: when a slow promotion scan
+   * captures a stale pre-promotion value or tombstone BEFORE a new-term write ({@code seq >= 1 >
+   * promotionStartSeq = 0}) pins, flushes to Lucene, and evicts from Tier-0 (leaving Tier-0 empty
+   * for that key), {@code putIfSequenceBefore}, {@code deleteIfSequenceBefore},
+   * {@code putIfAbsent}, and {@code deleteIfAbsent} MUST reject the stale install using
+   * {@code committedKeySequences >= promotionStartSeq} across overwrite, delete, and
+   * delete/recreate interleavings.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void promotionScanRejectsStaleCapturedValueAfterNewTermWriteFlushesAndEvicts()
+      throws Exception {
+    float[] queryVec = new float[] {1.0f, 0.0f};
+    float[] v1 = new float[] {0.40f, 0.9165151f};
+    float[] v2 = new float[] {0.95f, 0.3122499f};
+    float[] v3 = new float[] {0.99f, 0.14106736f};
+    float scoreV2 = VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+    float scoreV3 = VectorSimilarityScorer.score(queryVec, v3, VectorSimilarityFunction.COSINE);
+
+    Object[] payloadV1 = new Object[] {v1, "books"};
+    Object[] payloadV2 = new Object[] {v2, "books"};
+    Object[] payloadV3 = new Object[] {v3, "books"};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(advisor.isPrimary()).thenReturn(true);
+
+    BucketRegion promotedBucket = mock(BucketRegion.class);
+    when(promotedBucket.getId()).thenReturn(0);
+    when(promotedBucket.isDestroyed()).thenReturn(false);
+    when(promotedBucket.isEmpty()).thenReturn(false);
+    when(promotedBucket.getBucketAdvisor()).thenReturn(advisor);
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(0)).thenReturn(promotedBucket);
+
+    PartitionedRegion promotedPr = mock(PartitionedRegion.class);
+    when(promotedPr.getFullPath()).thenReturn(REGION_PATH);
+    when(promotedPr.getRegionService()).thenReturn(mockCache);
+    when(promotedPr.getDataStore()).thenReturn(dataStore);
+    when(promotedPr.isDestroyed()).thenReturn(false);
+
+    when(mockContext.getDataSet()).thenReturn(promotedPr);
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+    when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          promotedBucket, writer, serializer, mockStats, promotedBucket, null, "lock", mockIndex);
+      repo.update("k-ov", payloadV1);
+      repo.update("k-del", payloadV1);
+      repo.commitAndRefreshBlocking();
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      // Wire slow promotion scan: when afterPrimary reads stale v1 for k-ov/k-del and stale
+      // tombstone for k-recreate, simulate new-term writes (v2 overwrite, destroy, v3 recreate)
+      // pinning, flushing to Lucene via flushBuffer, and evicting from Tier-0 BEFORE the scan
+      // returns its captured stale values to putIfSequenceBefore / deleteIfSequenceBefore!
+      EntrySnapshot esStaleOv = mock(EntrySnapshot.class);
+      when(esStaleOv.getRawValue(true)).thenAnswer(inv -> {
+        Tier0VectorDeltaBuffer<Object> buf =
+            registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+        long seqOv = buf.put("k-ov", v2, Map.of("category", "books"), payloadV2);
+        assertThat(seqOv).isGreaterThanOrEqualTo(1L);
+        registry.flushBuffer(buf, repo, Tier0VectorDeltaBuffer.DeltaEntry::getRegionValue, false);
+        assertThat(buf.getEntry("k-ov")).isNull();
+        assertThat(buf.getMaxCommittedSequence("k-ov")).isEqualTo(seqOv);
+        return payloadV1;
+      });
+      EntrySnapshot esStaleDel = mock(EntrySnapshot.class);
+      when(esStaleDel.getRawValue(true)).thenAnswer(inv -> {
+        Tier0VectorDeltaBuffer<Object> buf =
+            registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+        long seqDel = buf.destroy("k-del");
+        assertThat(seqDel).isGreaterThanOrEqualTo(1L);
+        registry.flushBuffer(buf, repo, Tier0VectorDeltaBuffer.DeltaEntry::getRegionValue, false);
+        assertThat(buf.getEntry("k-del")).isNull();
+        assertThat(buf.getMaxCommittedSequence("k-del")).isEqualTo(seqDel);
+        return payloadV1;
+      });
+      RegionEntry reStaleTomb = mock(RegionEntry.class);
+      when(reStaleTomb.isTombstone()).thenReturn(true);
+      when(reStaleTomb.getKey()).thenAnswer(inv -> {
+        Tier0VectorDeltaBuffer<Object> buf =
+            registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+        long seqRecreate = buf.put("k-recreate", v3, Map.of("category", "books"), payloadV3);
+        assertThat(seqRecreate).isGreaterThanOrEqualTo(1L);
+        registry.flushBuffer(buf, repo, Tier0VectorDeltaBuffer.DeltaEntry::getRegionValue, false);
+        assertThat(buf.getEntry("k-recreate")).isNull();
+        assertThat(buf.getMaxCommittedSequence("k-recreate")).isEqualTo(seqRecreate);
+        return "k-recreate";
+      });
+      RegionMap regionMap = mock(RegionMap.class);
+      when(regionMap.regionEntries()).thenReturn(Collections.singleton(reStaleTomb));
+
+      when(promotedBucket.keySet()).thenReturn(Set.of("k-ov", "k-del"));
+      when(promotedBucket.getEntry("k-ov")).thenReturn(esStaleOv);
+      when(promotedBucket.getEntry("k-del")).thenReturn(esStaleDel);
+      when(promotedBucket.getEntry("k-recreate")).thenReturn(null);
+      when(promotedBucket.getRegionMap()).thenReturn(regionMap);
+
+      Tier0VectorBucketListener<String, Object[]> listener = new Tier0VectorBucketListener<>(
+          INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("category", (String) pair[1]));
+      PartitionListener partitionListener = listener.createPartitionListener();
+      partitionListener.afterRegionCreate(promotedPr);
+
+      // Run afterPrimary: EVERY stale captured install MUST be rejected even though Tier-0 is
+      // empty for all three keys after their new-term flushes evicted!
+      partitionListener.afterPrimary(0);
+
+      Tier0VectorDeltaBuffer<Object> buf = registry.getBuffer(REGION_PATH, INDEX_NAME, 0);
+      assertThat(buf.getTotalSize()).isEqualTo(0);
+
+      // Also verify direct calls to putIfSequenceBefore / deleteIfSequenceBefore / putIfAbsent /
+      // deleteIfAbsent return -1L on all three already-committed keys.
+      assertThat(buf.putIfSequenceBefore("k-ov", v1, Map.of("category", "books"), 0L, payloadV1))
+          .isEqualTo(-1L);
+      assertThat(buf.putIfAbsent("k-ov", v1, Map.of("category", "books"), payloadV1))
+          .isEqualTo(-1L);
+      assertThat(buf.putIfSequenceBefore("k-del", v1, Map.of("category", "books"), 0L, payloadV1))
+          .isEqualTo(-1L);
+      assertThat(buf.deleteIfSequenceBefore("k-recreate", 0L)).isEqualTo(-1L);
+      assertThat(buf.deleteIfAbsent("k-recreate")).isEqualTo(-1L);
+      assertThat(buf.getTotalSize()).isEqualTo(0);
+
+      // Hybrid search observes strictly the new-term committed values: k-recreate=v3, k-ov=v2,
+      // and k-del absent (zero stale overwrite, zero resurrection, zero wipeout!).
+      ResultSender<TopEntriesCollector> sender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(sender);
+      HybridKnnQueryContext hybridCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 10)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      ArgumentCaptor<TopEntriesCollector> captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(sender).lastResult(captor.capture());
+      List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("k-recreate", "k-ov");
+      assertThat(hits.get(0).getScore()).isCloseTo(scoreV3, within(1e-4f));
+      assertThat(hits.get(1).getScore()).isCloseTo(scoreV2, within(1e-4f));
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private List<EntryScore<Object>> executeHybridQuery(float[] query, int k, int rerankFactor) {
     ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
