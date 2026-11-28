@@ -17,6 +17,8 @@ package org.apache.geode.cache.lucene.internal;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.store.AlreadyClosedException;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.PrimaryBucketException;
@@ -35,6 +37,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
 
   @Override
   public void afterPrimary(int bucketId) {
+    advanceTier0OwnershipGeneration(bucketId);
     dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
         lucenePartitionRepositoryManager.computeRepository(bucketId);
@@ -51,6 +54,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
 
   @Override
   public void afterSecondary(int bucketId) {
+    cleanupTier0Bucket(bucketId);
     dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
         lucenePartitionRepositoryManager.computeRepository(bucketId);
@@ -58,5 +62,29 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
         logger.debug("Exception while cleaning up Lucene Index Repository", e);
       }
     });
+  }
+
+  private void advanceTier0OwnershipGeneration(int bucketId) {
+    InternalLuceneIndex index = lucenePartitionRepositoryManager.getIndex();
+    if (index == null || lucenePartitionRepositoryManager.userRegion == null) {
+      return;
+    }
+    Cache cache = (Cache) lucenePartitionRepositoryManager.userRegion.getRegionService();
+    if (cache != null && !cache.isClosed()) {
+      Tier0VectorRegistry.forCache(cache)
+          .advanceOwnershipGeneration(index.getRegionPath(), index.getName(), bucketId);
+    }
+  }
+
+  private void cleanupTier0Bucket(int bucketId) {
+    InternalLuceneIndex index = lucenePartitionRepositoryManager.getIndex();
+    if (index == null || lucenePartitionRepositoryManager.userRegion == null) {
+      return;
+    }
+    Cache cache = (Cache) lucenePartitionRepositoryManager.userRegion.getRegionService();
+    if (cache != null && !cache.isClosed()) {
+      Tier0VectorRegistry.forCache(cache)
+          .removeBucket(index.getRegionPath(), index.getName(), bucketId);
+    }
   }
 }

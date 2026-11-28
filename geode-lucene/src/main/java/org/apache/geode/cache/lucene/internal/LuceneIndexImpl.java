@@ -31,6 +31,7 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -233,6 +234,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
     // Close the repository manager
     repositoryManager.close();
+
+    // Clear any Tier-0 vector delta buffers associated with this index
+    if (cache != null) {
+      Tier0VectorRegistry.forCache(cache).removeIndex(regionPath, indexName);
+    }
 
     RegionListener listenerToRemove = getRegionListener();
     if (listenerToRemove != null) {

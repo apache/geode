@@ -16,9 +16,12 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.store.AlreadyClosedException;
@@ -26,16 +29,21 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -81,29 +89,234 @@ public class LuceneEventListener implements AsyncEventListener {
     Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
 
-    Set<IndexRepository> affectedRepos = new HashSet<>();
+    Map<IndexRepository, List<AsyncEvent>> eventsByRepo = new LinkedHashMap<>();
+    InternalLuceneIndex partitionedIndex =
+        (repositoryManager instanceof PartitionedRepositoryManager)
+            ? ((PartitionedRepositoryManager) repositoryManager).getIndex()
+            : null;
+    Tier0VectorRegistry tier0Registry =
+        (partitionedIndex != null && cache != null) ? Tier0VectorRegistry.forCache(cache) : null;
+    final boolean trackFlushCycles =
+        tier0Registry != null && tier0Registry.isFlushCycleSamplingEnabled();
 
     try {
       for (AsyncEvent event : events) {
-
         Region region = event.getRegion();
         Object key = event.getKey();
         Object callbackArgument = event.getCallbackArgument();
-
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
-
-        Object value = getValue(region.getEntry(key));
-        if (value != null) {
-          repository.update(key, value);
-        } else {
-          repository.delete(key);
-        }
-
-        affectedRepos.add(repository);
+        eventsByRepo.computeIfAbsent(repository, r -> new ArrayList<>()).add(event);
       }
 
-      for (IndexRepository repo : affectedRepos) {
-        repo.commit();
+      boolean deferredUnpinned = false;
+      Map<Tier0VectorDeltaBuffer<Object>, List<Object>> ackEventIdsByBuffer = null;
+
+      for (Map.Entry<IndexRepository, List<AsyncEvent>> repoEntry : eventsByRepo.entrySet()) {
+        IndexRepository repo = repoEntry.getKey();
+        List<AsyncEvent> repoEvents = repoEntry.getValue();
+        int bucketId =
+            (tier0Registry != null && repo.getRegion() instanceof BucketRegion)
+                ? ((BucketRegion) repo.getRegion()).getId()
+                : -1;
+        ReentrantLock flushLock = (tier0Registry != null && bucketId >= 0)
+            ? tier0Registry.getBucketFlushLock(
+                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId)
+            : null;
+        if (flushLock != null) {
+          flushLock.lock();
+        }
+        try {
+          Tier0VectorDeltaBuffer<Object> buffer = null;
+          boolean isTier0Managed = false;
+          Map<Object, Tier0VectorDeltaBuffer.DeltaEntry<Object>> committedEntries = null;
+          Map<Object, Long> fallbackCommittedKeySeqs = null;
+          List<Object> bucketAckEventIds = null;
+          boolean appliedRepoOps = false;
+          int batchCount = 0;
+          long updateNanos = 0L;
+
+          if (tier0Registry != null && bucketId >= 0) {
+            tier0Registry.awaitHydration(
+                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+            buffer = tier0Registry.getBuffer(
+                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+            isTier0Managed = buffer != null
+                || tier0Registry.isIndexManaged(
+                    partitionedIndex.getRegionPath(), partitionedIndex.getName());
+          }
+
+          for (AsyncEvent event : repoEvents) {
+            Region region = event.getRegion();
+            Object key = event.getKey();
+
+            if (buffer == null && tier0Registry != null && bucketId >= 0) {
+              buffer = tier0Registry.getBuffer(
+                  partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+              if (buffer != null) {
+                isTier0Managed = true;
+              }
+            }
+
+            if (!isTier0Managed) {
+              Object value = resolveEventPayload(event, region, key);
+              if (value != null) {
+                repo.update(key, value);
+              } else {
+                repo.delete(key);
+              }
+              appliedRepoOps = true;
+              continue;
+            }
+
+            Object eventId = extractEventId(event);
+            if (buffer != null && eventId != null && buffer.isNonVectorEvent(eventId)) {
+              Object value = resolveEventPayload(event, region, key);
+              if (value != null) {
+                repo.update(key, value);
+              } else {
+                repo.delete(key);
+              }
+              appliedRepoOps = true;
+              if (bucketAckEventIds == null) {
+                bucketAckEventIds = new ArrayList<>();
+              }
+              bucketAckEventIds.add(eventId);
+              continue;
+            }
+
+            // Pre-pin fence (Theorem 2(1)): on a Tier-0-managed bucket, an AEQ event whose
+            // originating write has not yet reached its Tier-0 linearization point MUST NOT be
+            // published into Lucene; defer so Geode's AEQ retries once Tier-0 pins the write.
+            long pinnedSeq =
+                (buffer != null && eventId != null) ? buffer.getPinnedEventSequence(eventId) : -1L;
+            if (eventId != null && (buffer == null || pinnedSeq < 0L)) {
+              tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+              deferredUnpinned = true;
+              continue;
+            }
+
+            long opStartNanos = (buffer != null && trackFlushCycles) ? System.nanoTime() : 0L;
+            Tier0VectorDeltaBuffer.DeltaEntry<Object> boundEntry =
+                buffer != null ? buffer.getEntry(key) : null;
+            if (boundEntry != null) {
+              Object value;
+              if (boundEntry.isTombstone() || boundEntry.getRegionValue() != null) {
+                // Atomically bind sequence and immutable payload from a single DeltaEntry without
+                // re-reading live mutable BucketRegion state (eliminating the Path-A publication
+                // window race).
+                if (committedEntries == null) {
+                  committedEntries = new HashMap<>();
+                }
+                committedEntries.merge(key, boundEntry,
+                    (existing, incoming) -> incoming.getSequence() >= existing.getSequence()
+                        ? incoming : existing);
+                value = boundEntry.isTombstone() ? null : boundEntry.getRegionValue();
+              } else {
+                if (fallbackCommittedKeySeqs == null) {
+                  fallbackCommittedKeySeqs = new HashMap<>();
+                }
+                fallbackCommittedKeySeqs.merge(key, boundEntry.getSequence(), Math::max);
+                value = resolveEventPayload(event, region, key);
+              }
+
+              if (value != null) {
+                repo.update(key, value);
+              } else {
+                repo.delete(key);
+              }
+              appliedRepoOps = true;
+              if (eventId != null) {
+                if (bucketAckEventIds == null) {
+                  bucketAckEventIds = new ArrayList<>();
+                }
+                bucketAckEventIds.add(eventId);
+              }
+              if (trackFlushCycles) {
+                batchCount++;
+                updateNanos += System.nanoTime() - opStartNanos;
+              }
+              continue;
+            }
+
+            // Tier-0 lookup is empty for key on a Tier-0-managed bucket: enforce both pre-pin and
+            // stale-AEQ regression fences (never falling back to an unfenced AsyncEvent or live
+            // BucketRegion read).
+            if (buffer == null) {
+              tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+              deferredUnpinned = true;
+              continue;
+            }
+            long maxCommittedSeq = buffer.getMaxCommittedSequence(key);
+            if (eventId != null) {
+              if (pinnedSeq <= maxCommittedSeq) {
+                // Delayed stale AEQ event already superseded and committed (e.g., by Path B across
+                // overwrites, deletes, or delete+recreate): drop without regressing Lucene.
+                tier0Registry.incrementStaleAeqEventsDroppedCount();
+                if (bucketAckEventIds == null) {
+                  bucketAckEventIds = new ArrayList<>();
+                }
+                bucketAckEventIds.add(eventId);
+              } else {
+                tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+                deferredUnpinned = true;
+              }
+            } else if (maxCommittedSeq > 0L) {
+              tier0Registry.incrementStaleAeqEventsDroppedCount();
+            } else {
+              tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+              deferredUnpinned = true;
+            }
+          }
+
+          boolean hasCommittedTier0 = buffer != null
+              && ((committedEntries != null && !committedEntries.isEmpty())
+                  || (fallbackCommittedKeySeqs != null && !fallbackCommittedKeySeqs.isEmpty()));
+          if (hasCommittedTier0) {
+            long commitStartNanos = trackFlushCycles ? System.nanoTime() : 0L;
+            repo.commitAndRefreshBlocking();
+            long commitEndNanos = trackFlushCycles ? System.nanoTime() : 0L;
+            int preEvictTier0Size = trackFlushCycles ? buffer.getTotalSize() : 0;
+            if (committedEntries != null && !committedEntries.isEmpty()) {
+              buffer.evictCommittedEntries(committedEntries);
+            }
+            if (fallbackCommittedKeySeqs != null && !fallbackCommittedKeySeqs.isEmpty()) {
+              buffer.evictCommitted(fallbackCommittedKeySeqs);
+            }
+            if (trackFlushCycles) {
+              long flushDurationNanos = updateNanos + (commitEndNanos - commitStartNanos);
+              tier0Registry.recordFlushCycle(
+                  partitionedIndex.getRegionPath(),
+                  partitionedIndex.getName(),
+                  bucketId,
+                  batchCount,
+                  preEvictTier0Size,
+                  flushDurationNanos);
+            }
+          } else if (appliedRepoOps) {
+            repo.commit();
+          }
+
+          if (buffer != null && bucketAckEventIds != null && !bucketAckEventIds.isEmpty()) {
+            if (ackEventIdsByBuffer == null) {
+              ackEventIdsByBuffer = new LinkedHashMap<>();
+            }
+            ackEventIdsByBuffer.computeIfAbsent(buffer, b -> new ArrayList<>())
+                .addAll(bucketAckEventIds);
+          }
+        } finally {
+          if (flushLock != null) {
+            flushLock.unlock();
+          }
+        }
+      }
+      if (deferredUnpinned) {
+        return false;
+      }
+      if (ackEventIdsByBuffer != null) {
+        for (Map.Entry<Tier0VectorDeltaBuffer<Object>, List<Object>> ackEntry : ackEventIdsByBuffer
+            .entrySet()) {
+          ackEntry.getKey().acknowledgeEventIds(ackEntry.getValue());
+        }
       }
       return true;
     } catch (BucketNotFoundException | RegionDestroyedException | PrimaryBucketException e) {
@@ -120,6 +333,37 @@ public class LuceneEventListener implements AsyncEventListener {
     } finally {
       cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
     }
+  }
+
+  private static Object extractEventId(AsyncEvent event) {
+    if (event instanceof GatewaySenderEventImpl) {
+      Object eventId = ((GatewaySenderEventImpl) event).getEventId();
+      if (eventId != null) {
+        return eventId;
+      }
+    }
+    return event.getEventSequenceID();
+  }
+
+  private Object resolveEventPayload(AsyncEvent event, Region region, Object key) {
+    Operation op = event.getOperation();
+    if (op != null) {
+      if (op.isDestroy() || op.isInvalidate()) {
+        return null;
+      }
+      Object eventValue = event.getDeserializedValue();
+      if (eventValue != null) {
+        return eventValue;
+      }
+      if (event instanceof GatewaySenderEventImpl) {
+        return null;
+      }
+    }
+    Object eventValue = event.getDeserializedValue();
+    if (eventValue != null) {
+      return eventValue;
+    }
+    return getValue(region.getEntry(key));
   }
 
   private Object getValue(Region.Entry entry) {
