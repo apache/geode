@@ -344,6 +344,25 @@ public class ContinuousVectorQueryService {
     dispatcher.recordReplicatedCheckpoint(bucketId, memberId, checkpointVersion);
   }
 
+  /**
+   * Atomically applies a replicated {@code (V_floor, V_ckpt)} pair on a replica, compacting ONLY
+   * {@code <= replicatedFloor} while preserving {@code (V_floor, V_head]} and
+   * {@code V_floor <= V_ckpt}.
+   */
+  public void applyReplicatedFloorAndCheckpoint(int bucketId, String memberId, long replicatedFloor,
+      long replicatedCheckpoint) {
+    dispatcher.applyReplicatedFloorAndCheckpoint(bucketId, memberId, replicatedFloor,
+        replicatedCheckpoint);
+  }
+
+  /**
+   * Atomically compacts tail entries up to the current {@code V_ckpt[bucketId, memberId]} and
+   * advances {@code V_floor[bucketId, memberId]} to match in the same critical section.
+   */
+  public long compactUpToCheckpoint(int bucketId, String memberId) {
+    return dispatcher.compactUpToCheckpoint(bucketId, memberId);
+  }
+
   public void registerSubscriberForCheckpoint(String subscriberId) {
     dispatcher.registerSubscriberForCheckpoint(subscriberId);
   }

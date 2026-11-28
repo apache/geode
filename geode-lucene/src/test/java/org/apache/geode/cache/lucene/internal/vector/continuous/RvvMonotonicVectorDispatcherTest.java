@@ -2813,6 +2813,123 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
   }
 
+  @Test
+  public void reconnectAfterCompactionAndPromotionNearCapacityWithLaggingSubscriberAndHeartbeat() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 32;
+
+    // Part (i): Compaction up to V_ckpt=64 atomically advances V_floor=64 (and replicates
+    // (V_floor=64, V_ckpt=64) to secondary) -> after primary crash + promotion, a returning
+    // subscriber at V_client=63 < V_floor=64 is IMMEDIATELY rejected into resyncRequired!
+    ChordalVoronoiRouter rSec1 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dSec1 = new RvvMonotonicVectorDispatcher(rSec1, cTail, null, 64);
+    ContinuousVectorQueryService sec1 = new ContinuousVectorQueryService(rSec1, dSec1);
+    sec1.registerSubscription("sub-lagging", vec, 0.90f);
+    int b1 = 29;
+    String mP1 = "srv-compact-P1";
+    for (long v = 1L; v <= 68L; v++) {
+      sec1.onBucketMutation(b1, mP1, v, "k1-" + v, vec, false);
+      if (v == 60L) {
+        sec1.applyReplicatedFloorAndCheckpoint(b1, mP1, 60L, 64L);
+      }
+    }
+    assertThat(sec1.compactUpToCheckpoint(b1, mP1)).isEqualTo(64L);
+    assertThat(sec1.getReplayFloorVersion(b1, mP1)).isEqualTo(64L);
+    assertThat(sec1.getCheckpointVersion(b1, mP1)).isEqualTo(64L);
+    assertThat(dSec1.getTailSize(b1)).isEqualTo(4); // [65..68]
+
+    sec1.onPrimaryPromotion(b1);
+    List<ContinuousVectorEvent> staleReplay = sec1.admitAndReplayForReconnect("sub-lagging", b1,
+        Collections.singletonMap(mP1, 63L));
+    assertThat(staleReplay).isEmpty();
+    assertThat(sec1.isResyncRequired(b1, mP1)).isTrue();
+    assertThat(sec1.isSubscriberResyncRequired("sub-lagging", b1, mP1)).isTrue();
+    assertThat(dSec1.getRegisteredCheckpointSubscribers()).doesNotContain("sub-lagging");
+
+    // Part (ii): Uncompacted V_floor=60 <= V_client=63 < V_ckpt=64 replicated to secondary near
+    // capacity (C_tail - 1 = 31 retained entries [61..91]) + promotion + concurrent heartbeat +
+    // compactUpToCheckpoint -> admission lower-pins V_ckpt = min(64, 63) = 63 BEFORE lock release,
+    // protecting [64..91] from compaction and delivering every version [64..91] with 0 overflow!
+    ChordalVoronoiRouter rPrim2 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dPrim2 = new RvvMonotonicVectorDispatcher(rPrim2, cTail, null, 64);
+    ContinuousVectorQueryService prim2 = new ContinuousVectorQueryService(rPrim2, dPrim2);
+
+    ChordalVoronoiRouter rSec2 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dSec2 = new RvvMonotonicVectorDispatcher(rSec2, cTail, null, 64);
+    ContinuousVectorQueryService sec2 = new ContinuousVectorQueryService(rSec2, dSec2);
+
+    prim2.registerSubscription("sub-fast", vec, 0.90f);
+    prim2.registerSubscription("sub-lagging", vec, 0.90f);
+    sec2.registerSubscription("sub-fast", vec, 0.90f);
+    sec2.registerSubscription("sub-lagging", vec, 0.90f);
+    sec2.registerSubscriberForCheckpoint("sub-fast");
+
+    RvvClientGate lagGate = new RvvClientGate();
+    lagGate.registerSubscription("sub-lagging");
+    List<ContinuousVectorEvent> lagDelivered = new ArrayList<>();
+    lagGate.addListener(ev -> {
+      if ("sub-lagging".equals(ev.getSubscriptionId())) {
+        lagDelivered.add(ev);
+      }
+    });
+    ContinuousVectorEventSink lagSink = lagGate::tryAccept;
+    prim2.addEventSink(lagSink);
+
+    int b2 = 30;
+    String mP2 = "srv-compact-P2";
+    for (long v = 1L; v <= 91L; v++) {
+      if (v == 64L) {
+        prim2.removeEventSink(lagSink); // sub-lagging disconnects at V_client=63
+      }
+      prim2.onBucketMutation(b2, mP2, v, "k2-" + v, vec, true);
+      sec2.onBucketMutation(b2, mP2, v, "k2-" + v, vec, false);
+      if (v == 30L) {
+        prim2.applyReplicatedFloorAndCheckpoint(b2, mP2, 30L, 30L);
+        sec2.applyReplicatedFloorAndCheckpoint(b2, mP2, 30L, 30L);
+      } else if (v == 60L) {
+        prim2.applyReplicatedFloorAndCheckpoint(b2, mP2, 60L, 64L);
+        sec2.applyReplicatedFloorAndCheckpoint(b2, mP2, 60L, 64L);
+      }
+    }
+    assertThat(lagGate.getSafeCheckpointVersion(b2, mP2)).isEqualTo(63L);
+    assertThat(sec2.getReplayFloorVersion(b2, mP2)).isEqualTo(60L);
+    assertThat(sec2.getCheckpointVersion(b2, mP2)).isEqualTo(64L);
+    assertThat(dSec2.getTailSize(b2)).isEqualTo(cTail - 1); // [61..91] = 31 entries
+    assertThat(dSec2.getTailOverflowCount()).isZero();
+
+    // Secondary promotes to primary near C_tail - 1 and flushes a concurrent idle heartbeat
+    sec2.onPrimaryPromotion(b2);
+    int flushed = sec2.flushIdleHeartbeats(System.currentTimeMillis() + 500L, 100L);
+    assertThat(flushed).isGreaterThanOrEqualTo(0);
+
+    // Admit sub-lagging at V_client=63 -> lower-pins V_ckpt = min(64, 63) = 63 so
+    // compactUpToCheckpoint CANNOT remove version 64!
+    List<ContinuousVectorEvent> replayed = sec2.admitAndReplayForReconnect("sub-lagging", b2,
+        Collections.singletonMap(mP2, 63L), lagSink, null);
+    assertThat(sec2.getCheckpointVersion(b2, mP2)).isEqualTo(63L);
+    assertThat(sec2.compactUpToCheckpoint(b2, mP2)).isEqualTo(63L);
+    assertThat(sec2.getReplayFloorVersion(b2, mP2)).isEqualTo(63L);
+    assertThat(dSec2.getTailSize(b2)).isEqualTo(28); // [64..91] protected and intact!
+
+    assertThat(replayed).filteredOn(e -> "sub-lagging".equals(e.getSubscriptionId()))
+        .extracting(ContinuousVectorEvent::getRegionVersion)
+        .contains(64L, 65L, 91L)
+        .hasSize(28);
+    assertThat(lagDelivered).hasSize(91);
+    assertThat(lagDelivered).extracting(ContinuousVectorEvent::getRegionVersion)
+        .doesNotHaveDuplicates();
+    assertThat(lagGate.getSafeCheckpointVersion(b2, mP2)).isEqualTo(91L);
+
+    // Both healthy subscribers ACK 91 -> V_ckpt=91, V_floor=91, tailSize=0, 0 overflow, 0 resync
+    sec2.acknowledgeSubscriberCheckpoint("sub-fast", b2, mP2, 91L);
+    sec2.acknowledgeSubscriberCheckpoint("sub-lagging", b2, mP2, 91L);
+    assertThat(sec2.getCheckpointVersion(b2, mP2)).isEqualTo(91L);
+    assertThat(sec2.getReplayFloorVersion(b2, mP2)).isEqualTo(91L);
+    assertThat(dSec2.getTailSize(b2)).isZero();
+    assertThat(dSec2.getTailOverflowCount()).isZero();
+    assertThat(sec2.isResyncRequired(b2, mP2)).isFalse();
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

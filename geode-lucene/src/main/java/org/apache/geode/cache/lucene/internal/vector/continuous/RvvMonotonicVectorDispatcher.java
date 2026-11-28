@@ -522,6 +522,37 @@ public class RvvMonotonicVectorDispatcher {
       }
     }
 
+    /**
+     * Atomically lower-pins {@code V_ckpt[b, m] = max(V_floor[b, m], min(V_ckpt[b, m], V_client))}
+     * when a returning subscriber with {@code V_floor <= V_client < V_ckpt} is admitted into
+     * {@code S_healthy}, preventing subsequent checkpoint-driven compaction from removing
+     * {@code (V_client, V_head]} during replay while preserving {@code V_floor <= V_ckpt}.
+     */
+    synchronized void pinCheckpointForAdmittedSubscriber(String memberId, long clientHighWater) {
+      long floor = replayFloorByMember.getOrDefault(memberId, 0L);
+      long prevCkpt = checkpointByMember.getOrDefault(memberId, 0L);
+      long pinned = Math.max(floor, Math.min(prevCkpt, Math.max(0L, clientHighWater)));
+      if (pinned < prevCkpt) {
+        checkpointByMember.put(memberId, pinned);
+      }
+    }
+
+    /**
+     * Atomically advances {@code V_floor} to {@code targetFloor} and physically removes ONLY
+     * entries with {@code regionVersion <= targetFloor}, preserving the exact retention invariant
+     * that every version in {@code (V_floor, V_head]} remains physically present in {@code tail}.
+     */
+    synchronized void compactToFloor(String memberId, long targetFloor) {
+      long prevFloor = replayFloorByMember.getOrDefault(memberId, 0L);
+      if (targetFloor > prevFloor) {
+        replayFloorByMember.put(memberId, targetFloor);
+        TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+        if (stream != null) {
+          stream.headMap(targetFloor, true).clear();
+        }
+      }
+    }
+
     synchronized long getCheckpoint(String memberId) {
       return checkpointByMember.getOrDefault(memberId, 0L);
     }
@@ -1396,6 +1427,7 @@ public class RvvMonotonicVectorDispatcher {
                   : null;
               long clientHw = (hw != null && hw > 0L) ? hw : 0L;
               state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHw);
+              state.pinCheckpointForAdmittedSubscriber(memberId, clientHw);
               state.recomputeMinHealthyCheckpoint(memberId, healthy);
             }
           }
@@ -1451,6 +1483,7 @@ public class RvvMonotonicVectorDispatcher {
           registeredCheckpointSubscribers.add(subscriberId);
           clearSubscriberResyncRequired(subscriberId, bucketId, memberId);
           state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHighWater);
+          state.pinCheckpointForAdmittedSubscriber(memberId, clientHighWater);
           Set<String> healthy =
               Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
           state.recomputeMinHealthyCheckpoint(memberId, healthy);
@@ -1524,6 +1557,7 @@ public class RvvMonotonicVectorDispatcher {
                 : null;
             long clientHw = (hw != null && hw > 0L) ? hw : 0L;
             state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHw);
+            state.pinCheckpointForAdmittedSubscriber(memberId, clientHw);
             state.recomputeMinHealthyCheckpoint(memberId, healthy);
           }
         } else if (!violations.isEmpty() && subscriberId != null && !subscriberId.isEmpty()) {
@@ -1565,6 +1599,82 @@ public class RvvMonotonicVectorDispatcher {
     }
     BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
     state.advanceCheckpointWithoutCompaction(memberId, checkpointVersion);
+  }
+
+  /**
+   * Atomically applies a replicated {@code (V_floor, V_ckpt)} pair on a replica under
+   * {@code (subscriberRegistryLock, state)}: physically compacts ONLY entries
+   * {@code <= replicatedFloor} while advancing {@code V_floor} to {@code replicatedFloor} in the
+   * same critical section, evicts any healthy subscriber with {@code ack < V_floor} into
+   * {@code resyncRequired}, and preserves {@code V_floor <= V_ckpt} with every version in
+   * {@code (V_floor, V_head]} retained.
+   */
+  public void applyReplicatedFloorAndCheckpoint(int bucketId, String memberId, long replicatedFloor,
+      long replicatedCheckpoint) {
+    if (memberId == null || memberId.isEmpty()) {
+      return;
+    }
+    long sanitizedFloor = Math.max(0L, replicatedFloor);
+    long sanitizedCkpt = Math.max(sanitizedFloor, replicatedCheckpoint);
+    synchronized (subscriberRegistryLock) {
+      BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+      synchronized (state) {
+        if (sanitizedFloor > 0L) {
+          state.compactToFloor(memberId, sanitizedFloor);
+          long effectiveFloor = state.getReplayFloor(memberId);
+          RvvStreamKey streamKey = new RvvStreamKey(bucketId, memberId);
+          List<String> lagging = null;
+          for (String subId : registeredCheckpointSubscribers) {
+            if (state.getSubscriberAck(subId, memberId) < effectiveFloor) {
+              if (lagging == null) {
+                lagging = new ArrayList<>(2);
+              }
+              lagging.add(subId);
+            }
+          }
+          if (lagging != null) {
+            Set<String> resyncSubs = resyncRequiredSubscribersByStream.computeIfAbsent(streamKey,
+                ignored -> ConcurrentHashMap.newKeySet());
+            for (String subId : lagging) {
+              registeredCheckpointSubscribers.remove(subId);
+              state.removeSubscriberAckForMember(subId, memberId);
+              resyncSubs.add(subId);
+            }
+          }
+        }
+        if (sanitizedCkpt > 0L) {
+          state.advanceCheckpointWithoutCompaction(memberId, sanitizedCkpt);
+        }
+      }
+    }
+  }
+
+  /**
+   * Atomically compacts tail entries up to the current {@code V_ckpt[bucketId, memberId]} and
+   * advances {@code V_floor[bucketId, memberId]} to match in the same
+   * {@code (subscriberRegistryLock, state)} critical section, so any subsequent returning
+   * subscriber below the new floor is rejected into {@code resyncRequired} and any admitted
+   * lower-pinned subscriber protects {@code (V_client, V_head]}.
+   *
+   * @return resulting {@code V_floor[bucketId, memberId]}.
+   */
+  public long compactUpToCheckpoint(int bucketId, String memberId) {
+    if (memberId == null || memberId.isEmpty()) {
+      return 0L;
+    }
+    synchronized (subscriberRegistryLock) {
+      BucketState state = bucketStates.get(bucketId);
+      if (state == null) {
+        return 0L;
+      }
+      synchronized (state) {
+        long target = state.getCheckpoint(memberId);
+        if (target > 0L) {
+          state.compactToFloor(memberId, target);
+        }
+        return state.getReplayFloor(memberId);
+      }
+    }
   }
 
   /**
