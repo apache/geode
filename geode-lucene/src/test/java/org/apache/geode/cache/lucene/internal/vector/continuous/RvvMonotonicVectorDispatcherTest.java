@@ -1786,6 +1786,246 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(5L);
   }
 
+  @Test
+  public void connectionLossAfterDurablePendingStagingBeforeEffectRetires() {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] zeroMatchQuery = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+
+    ContinuousVectorQueryService server = new ContinuousVectorQueryService(4);
+    server.setHeartbeatIntervalEvents(8);
+    server.registerSubscription("sub-match", matchVec, 0.90f);
+    server.registerSubscription("sub-zero", zeroMatchQuery, 0.99f);
+
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore durableStore =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> appliedEffectLog = new CopyOnWriteArrayList<>();
+    Set<IdempotentRvvConsumer.EventDeliveryId> idempotentExternalSink =
+        java.util.concurrent.ConcurrentHashMap.newKeySet();
+    List<ContinuousVectorEvent> gateAccepted = new CopyOnWriteArrayList<>();
+
+    int bucketId = 14;
+    String memberId = "srv-conn-loss";
+
+    class PreStageDisconnectException extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+    }
+    class PostStageConnectionLossException extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+    }
+
+    RvvClientGate gate = new RvvClientGate();
+    gate.addListener(gateAccepted::add);
+    server.attachClientGate(gate);
+
+    // Phase selector: 1 = fail BEFORE durable PENDING stage; 2 = fail AFTER PENDING stage before
+    // effect; 0 = healthy delivery on ordinary reconnect using the same live consumer instance.
+    AtomicInteger faultPhase = new AtomicInteger(1);
+    IdempotentRvvConsumer consumer = new IdempotentRvvConsumer(gate, durableStore,
+        (ev, id) -> {
+          if (idempotentExternalSink.add(id)) {
+            appliedEffectLog.add(id);
+          }
+        },
+        (phase, ev, id) -> {
+          int mode = faultPhase.get();
+          if (mode == 1
+              && phase == IdempotentRvvConsumer.CrashPhase.BEFORE_DURABLE_PENDING_STAGE
+              && ev.getRegionVersion() == 4L) {
+            throw new PreStageDisconnectException();
+          }
+          if (mode == 2
+              && phase == IdempotentRvvConsumer.CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT
+              && ev.getRegionVersion() == 4L) {
+            throw new PostStageConnectionLossException();
+          }
+        });
+    server.addEventSink(consumer);
+
+    // 1. Gate-to-staging boundary test: abort strictly BEFORE durable PENDING WAL commit
+    for (long v = 1L; v <= 3L; v++) {
+      server.onBucketMutation(bucketId, memberId, v, "k" + v, matchVec, true);
+    }
+    boolean abortedBeforeStage = false;
+    try {
+      server.onBucketMutation(bucketId, memberId, 4L, "k4", matchVec, true);
+    } catch (PreStageDisconnectException expected) {
+      abortedBeforeStage = true;
+    }
+    assertThat(abortedBeforeStage).isTrue();
+    IdempotentRvvConsumer.EventDeliveryId id4 =
+        new IdempotentRvvConsumer.EventDeliveryId("sub-match", bucketId, memberId, 4L);
+    assertThat(durableStore.isPendingIntent(id4)).isFalse();
+    assertThat(consumer.getDurableAdmissionsCount()).isEqualTo(3L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(3L);
+    assertThat(gate.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(3L);
+    assertThat(gateAccepted).hasSize(3);
+
+    // 2. Reconnect delivers k4 -> durably stages PENDING WAL (durableAdmissionsCount=4), then loses
+    // connection BEFORE effect retires and BEFORE V_client advances!
+    faultPhase.set(2);
+    boolean droppedAfterStage = false;
+    try {
+      server.replayUncheckpointedForReconnect(bucketId,
+          consumer.getCommittedHighWaterByMember(bucketId));
+    } catch (PostStageConnectionLossException expected) {
+      droppedAfterStage = true;
+    }
+    assertThat(droppedAfterStage).isTrue();
+    assertThat(durableStore.isPendingIntent(id4)).isTrue();
+    assertThat(consumer.getDurableAdmissionsCount()).isEqualTo(4L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(3L);
+    assertThat(gate.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(3L);
+    assertThat(appliedEffectLog).hasSize(3);
+
+    // Heartbeat v=4 during disconnect advances unblocked sub-zero to 4 while PENDING v=4 holds
+    // sub-match at 3; once reconnect retires PENDING v=4, V_client becomes 4!
+    consumer.processEvent(
+        ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, 4L,
+            System.currentTimeMillis()));
+    assertThat(durableStore.getCommittedWatermark("sub-zero", bucketId, memberId)).isEqualTo(4L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(3L);
+
+    // Simulate network disconnect while server ingests k5
+    server.removeEventSink(consumer);
+    server.onBucketMutation(bucketId, memberId, 5L, "k5", matchVec, true);
+
+    // 3. Ordinary reconnect WITHOUT process restart on the SAME consumer instance: retires durable
+    // PENDING v=4 BEFORE replayUncheckpointedForReconnect so v=4 is never delivered a second time!
+    faultPhase.set(0);
+    server.addEventSink(consumer);
+    List<ContinuousVectorEvent> replayed = consumer.reconnectAndReplay(server, bucketId);
+
+    // Server replay only emitted k5 (>4), never re-sending already-staged k4!
+    assertThat(replayed).extracting(ContinuousVectorEvent::getRegionVersion).containsExactly(5L);
+    assertThat(durableStore.isPendingIntent(id4)).isFalse();
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 3L, 4L, 5L)
+        .doesNotHaveDuplicates();
+    assertThat(consumer.getDurableAdmissionsCount()).isEqualTo(5L);
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(5L);
+    assertThat(gate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(5L);
+  }
+
+  @Test
+  public void staggeredAcksFromMultipleHealthySubscribersAdvanceCheckpointToMinimumOnIdleTail() {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    service.registerSubscription("sub-stagger", matchVec, 0.90f);
+    service.registerSubscriberForCheckpoint("sub-A");
+    service.registerSubscriberForCheckpoint("sub-B");
+    service.registerSubscriberForCheckpoint("sub-C");
+
+    int bucketId = 15;
+    String memberId = "srv-stagger-acks";
+    for (long v = 1L; v <= 10L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "doc-" + v, matchVec, false);
+    }
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isEqualTo(10);
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isZero();
+
+    // Idle tail (no further mutations): staggered ACKs advance V_ckpt unconditionally to min_i
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-A", bucketId, memberId, 10L))
+        .isZero();
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-B", bucketId, memberId, 4L)).isZero();
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-C", bucketId, memberId, 6L))
+        .isEqualTo(4L);
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isEqualTo(6);
+
+    // Reordered stale ACK from sub-A must not regress ACK or V_ckpt
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-A", bucketId, memberId, 2L))
+        .isEqualTo(4L);
+    assertThat(service.getSubscriberCheckpointAck("sub-A", bucketId, memberId)).isEqualTo(10L);
+
+    // Catching up lagging subscribers advances V_ckpt immediately to new minimum (4 -> 6 -> 8 ->
+    // 10)
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-B", bucketId, memberId, 10L))
+        .isEqualTo(6L);
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-C", bucketId, memberId, 8L))
+        .isEqualTo(8L);
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-C", bucketId, memberId, 10L))
+        .isEqualTo(10L);
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isZero();
+
+    // Unregistering a lagging subscriber on an idle tail immediately unblocks V_ckpt to remaining
+    // min
+    for (long v = 11L; v <= 15L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "doc-" + v, matchVec, false);
+    }
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-A", bucketId, memberId, 15L))
+        .isEqualTo(10L);
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-B", bucketId, memberId, 15L))
+        .isEqualTo(10L);
+    assertThat(service.acknowledgeSubscriberCheckpoint("sub-C", bucketId, memberId, 12L))
+        .isEqualTo(12L);
+    assertThat(service.unregisterSubscriberForCheckpoint("sub-C")).isTrue();
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isEqualTo(15L);
+    assertThat(service.getDispatcher().getTailSize(bucketId)).isZero();
+  }
+
+  @Test
+  public void emptySubscriptionIntervalMaintainsVersionContinuityAndAvoidsTailOverflow() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dispatcher = new RvvMonotonicVectorDispatcher(router, 4);
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(router, dispatcher);
+
+    List<ContinuousVectorEvent> dispatched = new ArrayList<>();
+    service.addEventSink(dispatched::add);
+
+    int bucketId = 16;
+    String memberId = "srv-empty-s";
+
+    // Phase 1: Initial |S| = 0 with out-of-order arrival v=4 before v=3 -> contiguous sequencing!
+    service.onBucketMutation(bucketId, memberId, 1L, "k1", vec, true);
+    service.onBucketMutation(bucketId, memberId, 2L, "k2", vec, true);
+    service.onBucketMutation(bucketId, memberId, 4L, "k4", vec, true);
+    assertThat(dispatcher.getHoldbackSize(bucketId)).isEqualTo(1);
+    service.onBucketMutation(bucketId, memberId, 3L, "k3", vec, true);
+    service.onBucketMutation(bucketId, memberId, 5L, "k5", vec, true);
+
+    assertThat(service.getLastDispatchedVersion(bucketId, memberId)).isEqualTo(5L);
+    assertThat(service.getNextExpectedVersion(bucketId, memberId)).isEqualTo(6L);
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isEqualTo(5L);
+    assertThat(dispatcher.getTailSize(bucketId)).isZero();
+    assertThat(dispatcher.getTailOverflowCount()).isZero();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+
+    // Phase 2: |S| = 1 interval v=6..8, ack & unregister sub-1 -> |S| returns to 0
+    service.registerSubscription("sub-1", vec, 0.90f);
+    for (long v = 6L; v <= 8L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k" + v, vec, true);
+    }
+    assertThat(dispatched).extracting(ContinuousVectorEvent::getRegionVersion).containsExactly(6L,
+        7L, 8L);
+    service.acknowledgeCheckpoint(bucketId, memberId, 8L);
+    assertThat(service.unregisterSubscription("sub-1")).isTrue();
+    assertThat(service.getActiveSubscriptionCount()).isZero();
+
+    // Phase 3: Middle |S| = 0 exceeding maxTailPerStream=4 (20 mutations v=9..28) -> zero overflow
+    for (long v = 9L; v <= 28L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k" + v, vec, true);
+    }
+    assertThat(service.getLastDispatchedVersion(bucketId, memberId)).isEqualTo(28L);
+    assertThat(service.getNextExpectedVersion(bucketId, memberId)).isEqualTo(29L);
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isEqualTo(28L);
+    assertThat(dispatcher.getTailSize(bucketId)).isZero();
+    assertThat(dispatcher.getTailOverflowCount()).isZero();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+
+    // Phase 4: New subscriber joins -> contiguous versions v=29..31 flow & replay cleanly
+    dispatched.clear();
+    service.registerSubscription("sub-2", vec, 0.90f);
+    for (long v = 29L; v <= 31L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k" + v, vec, true);
+    }
+    assertThat(dispatched).extracting(ContinuousVectorEvent::getRegionVersion).containsExactly(29L,
+        30L, 31L);
+    assertThat(dispatcher.getTailSize(bucketId)).isEqualTo(3);
+    assertThat(service.onPrimaryPromotion(bucketId))
+        .extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(29L, 30L, 31L);
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

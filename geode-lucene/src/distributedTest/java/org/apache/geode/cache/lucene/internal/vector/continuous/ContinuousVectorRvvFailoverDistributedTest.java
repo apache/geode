@@ -28,6 +28,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -1288,6 +1290,309 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  /**
+   * R1 M2 / R2 M2 DUnit regression: proves that when TCP connection loss occurs strictly AFTER a
+   * match notification is durably staged into client {@code PENDING} WAL and BEFORE its effect
+   * retires, ordinary reconnect invokes {@code prepareForReconnect()} before server replay so the
+   * notification is retired once and never re-delivered twice (while post-disconnect writes replay
+   * seamlessly).
+   */
+  @Test
+  public void connectionLossAfterDurablePendingStagingBeforeEffectRetires() throws Exception {
+    RvvClientGate clientGate = new RvvClientGate();
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore durableStore =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> appliedEffectLog = new CopyOnWriteArrayList<>();
+    Set<IdempotentRvvConsumer.EventDeliveryId> externalIdempotentSink =
+        ConcurrentHashMap.newKeySet();
+
+    CountDownLatch v4StagedLatch = new CountDownLatch(1);
+    class TransientDisconnectException extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+    }
+
+    IdempotentRvvConsumer consumer = new IdempotentRvvConsumer(clientGate, durableStore,
+        (ev, id) -> {
+          if (externalIdempotentSink.add(id)) {
+            appliedEffectLog.add(id);
+          }
+        },
+        (phase, ev, id) -> {
+          if (phase == IdempotentRvvConsumer.CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT
+              && "pending-doc-4".equals(ev.getKey())) {
+            v4StagedLatch.countDown();
+            throw new TransientDisconnectException();
+          }
+        });
+    receiver = new ClientEventReceiver(consumer);
+    int initialPort = receiver.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+
+    try {
+      Random rng = new Random(20261128L);
+      float[] queryVec = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+      List<VectorSubscription> subscriptions = Collections
+          .singletonList(new VectorSubscription("sub-conn-loss", queryVec, 0.90f));
+      clientGate.registerSubscription("sub-conn-loss");
+
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(() -> initializeServerNode(subscriptions, initialPort, -1, 1, 64, 1));
+      }
+
+      // Put v=1..3 -> all 3 apply and commit cleanly
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("doc-1", queryVec);
+        region.put("doc-2", queryVec);
+        region.put("doc-3", queryVec);
+      });
+
+      String primaryMemberId = null;
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        String candidate = server.invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          return null;
+        });
+        if (candidate != null) {
+          primaryMemberId = candidate;
+          break;
+        }
+      }
+      assertThat(primaryMemberId).isNotNull();
+      final String bucket0Member = primaryMemberId;
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(appliedEffectLog).hasSize(3);
+        assertThat(durableStore.getCommittedWatermark("sub-conn-loss", 0, bucket0Member))
+            .isEqualTo(3L);
+        assertThat(clientGate.getHighWaterVersion("sub-conn-loss", 0, bucket0Member))
+            .isEqualTo(3L);
+      });
+
+      // Put pending-doc-4 -> stages PENDING WAL, drops before effect retires, then sever TCP link
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("pending-doc-4", queryVec);
+      });
+      assertThat(v4StagedLatch.await(15, TimeUnit.SECONDS)).isTrue();
+
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(() -> dropOutboundEvents.set(true));
+      }
+      receiver.close();
+
+      long v4Admissions = consumer.getDurableAdmissionsCount();
+      assertThat(v4Admissions).isEqualTo(4L);
+      assertThat(appliedEffectLog).hasSize(3);
+      assertThat(durableStore.getCommittedWatermark("sub-conn-loss", 0, bucket0Member))
+          .isEqualTo(3L);
+
+      // Server continues accepting doc-5 while disconnected
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("doc-5", queryVec);
+      });
+
+      // Ordinary reconnect WITHOUT crash/restart: create non-failing consumer on same durableStore
+      // & clientGate, run prepareForReconnect(0) to retire PENDING pending-doc-4 FIRST, then
+      // attach new TCP receiver and replay strictly (4, V_S] = [doc-5]!
+      IdempotentRvvConsumer reconnectedConsumer = new IdempotentRvvConsumer(clientGate,
+          durableStore, (ev, id) -> {
+            if (externalIdempotentSink.add(id)) {
+              appliedEffectLog.add(id);
+            }
+          });
+      receiver = new ClientEventReceiver(reconnectedConsumer);
+      int reconnectPort = receiver.getPort();
+      Map<String, Long> clientHw = reconnectedConsumer.prepareForReconnect(0);
+      assertThat(clientHw).containsEntry(bucket0Member, 4L);
+      assertThat(appliedEffectLog).hasSize(4);
+
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(() -> {
+          if (serverTcpSink != null) {
+            serverService.removeEventSink(serverTcpSink);
+            serverTcpSink.close();
+          }
+          dropOutboundEvents.set(false);
+          serverTcpSink = new TcpEventSink(reconnectPort, dropOutboundEvents);
+          serverService.addEventSink(serverTcpSink);
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            serverService.replayUncheckpointedForReconnect(0, clientHw);
+          }
+        });
+      }
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(appliedEffectLog)
+            .extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+            .containsExactly(1L, 2L, 3L, 4L, 5L)
+            .doesNotHaveDuplicates();
+        assertThat(durableStore.getCommittedWatermark("sub-conn-loss", 0, bucket0Member))
+            .isEqualTo(5L);
+        assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member)).isEqualTo(5L);
+        assertThat(reconnectedConsumer.getDurableAdmissionsCount()).isEqualTo(1L);
+      });
+    } finally {
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+      }
+    }
+  }
+
+  /**
+   * R2 M3 &amp; R1 M3 / R2 m2 DUnit regression: proves (a) empty {@code |S| = 0} subscription
+   * intervals preserve strict server version continuity with zero tail overflow, and (b) staggered
+   * ACKs from multiple healthy subscribers advance {@code V_ckpt} unconditionally to
+   * {@code min_i ack[i]} on an idle tail (including unblocking when a lagging subscriber exits).
+   */
+  @Test
+  public void staggeredSubscriberAcksAndEmptySubscriptionIntervalMaintainContinuityAcrossCluster()
+      throws Exception {
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> accepted = new CopyOnWriteArrayList<>();
+    clientGate.addListener(accepted::add);
+    receiver = new ClientEventReceiver(clientGate);
+    int receiverPort = receiver.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+
+    try {
+      // Phase (a): Start both servers with |S| = 0 (empty subscription set) and ingest 5 puts
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(() -> initializeServerNode(Collections.emptyList(), receiverPort, -1, 1,
+            64, 1));
+      }
+
+      Random rng = new Random(20261129L);
+      float[] queryVec = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 1; i <= 5; i++) {
+          region.put("empty-s-" + i, queryVec);
+        }
+      });
+
+      MemberVM primaryVm = null;
+      String primaryMemberId = null;
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        String candidate = server.invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          return null;
+        });
+        if (candidate != null) {
+          primaryVm = server;
+          primaryMemberId = candidate;
+          break;
+        }
+      }
+      assertThat(primaryVm).isNotNull();
+      assertThat(primaryMemberId).isNotNull();
+      final MemberVM resolvedPrimary = primaryVm;
+      final String bucket0Member = primaryMemberId;
+
+      long emptyLastDispatched =
+          resolvedPrimary.invoke(() -> serverService.getLastDispatchedVersion(0, bucket0Member));
+      long emptyNextExpected =
+          resolvedPrimary.invoke(() -> serverService.getNextExpectedVersion(0, bucket0Member));
+      assertThat(emptyLastDispatched).isGreaterThanOrEqualTo(5L);
+      assertThat(emptyNextExpected).isEqualTo(emptyLastDispatched + 1L);
+      assertThat(resolvedPrimary.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isZero();
+      assertThat(resolvedPrimary.invoke(() -> serverService.isResyncRequired(0, bucket0Member)))
+          .isFalse();
+      assertThat(accepted).isEmpty();
+
+      // Phase (b): Transition |S| 0 -> 2 subscribers, ingest 6 puts onto an idle tail, then
+      // deliver staggered ACKs -> V_ckpt advances unconditionally to min_i ack[i]
+      List<VectorSubscription> activeSubs = Arrays.asList(
+          new VectorSubscription("sub-A", queryVec, 0.90f),
+          new VectorSubscription("sub-B", queryVec, 0.90f));
+      clientGate.registerSubscription("sub-A");
+      clientGate.registerSubscription("sub-B");
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(() -> {
+          serverService.registerSubscriptions(activeSubs);
+          serverService.registerSubscriberForCheckpoint("sub-A");
+          serverService.registerSubscriberForCheckpoint("sub-B");
+        });
+      }
+
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 1; i <= 6; i++) {
+          region.put("active-doc-" + i, queryVec);
+        }
+      });
+
+      final long targetTip = emptyLastDispatched + 6L;
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(clientGate.getSafeCheckpointVersion(0, bucket0Member)).isEqualTo(targetTip);
+        assertThat(accepted).hasSize(12);
+      });
+      assertThat(resolvedPrimary.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isEqualTo(6);
+
+      // Staggered ACKs on idle tail: sub-A acks tip, sub-B acks behind -> V_ckpt = min -> tip
+      long ackMid = emptyLastDispatched + 2L;
+      assertThat(resolvedPrimary.invoke(() -> serverService.acknowledgeSubscriberCheckpoint(
+          "sub-A", 0, bucket0Member, targetTip)))
+              .isEqualTo(emptyLastDispatched);
+      assertThat(resolvedPrimary.invoke(
+          () -> serverService.acknowledgeSubscriberCheckpoint("sub-B", 0, bucket0Member, ackMid)))
+              .isEqualTo(ackMid);
+      assertThat(resolvedPrimary.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isEqualTo(4);
+      assertThat(resolvedPrimary.invoke(() -> serverService.acknowledgeSubscriberCheckpoint(
+          "sub-B", 0, bucket0Member, targetTip)))
+              .isEqualTo(targetTip);
+      assertThat(resolvedPrimary.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isZero();
+
+      // Ingest 2 more mutations and unregister lagging sub-B -> V_ckpt immediately unblocks
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("active-doc-7", queryVec);
+        region.put("active-doc-8", queryVec);
+      });
+      final long finalTip = targetTip + 2L;
+      await().atMost(15, TimeUnit.SECONDS).until(
+          () -> clientGate.getSafeCheckpointVersion(0, bucket0Member) == finalTip);
+      assertThat(resolvedPrimary.invoke(() -> serverService.acknowledgeSubscriberCheckpoint(
+          "sub-A", 0, bucket0Member, finalTip)))
+              .isEqualTo(targetTip);
+      assertThat(resolvedPrimary
+          .invoke(() -> serverService.unregisterSubscriberForCheckpoint("sub-B"))).isTrue();
+      assertThat(resolvedPrimary
+          .invoke(() -> serverService.getCheckpointVersion(0, bucket0Member)))
+              .isEqualTo(finalTip);
+      assertThat(resolvedPrimary.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isZero();
+    } finally {
+      for (MemberVM server : new MemberVM[] {server1, server2}) {
+        server.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+      }
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);
@@ -1474,12 +1779,16 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     private final AtomicBoolean running = new AtomicBoolean(true);
 
     ClientEventReceiver(RvvClientGate gate) throws IOException {
+      this(gate::tryAccept);
+    }
+
+    ClientEventReceiver(ContinuousVectorEventSink sink) throws IOException {
       this.serverSocket = new ServerSocket(0, 16, InetAddress.getLoopbackAddress());
       executor.submit(() -> {
         while (running.get()) {
           try {
             Socket client = serverSocket.accept();
-            executor.submit(() -> handleConnection(client, gate));
+            executor.submit(() -> handleConnection(client, sink));
           } catch (SocketException e) {
             if (!running.get()) {
               break;
@@ -1494,12 +1803,12 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
       return serverSocket.getLocalPort();
     }
 
-    private void handleConnection(Socket socket, RvvClientGate gate) {
+    private void handleConnection(Socket socket, ContinuousVectorEventSink sink) {
       try (Socket s = socket; ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
         while (running.get()) {
           Object obj = in.readObject();
           if (obj instanceof ContinuousVectorEvent) {
-            gate.tryAccept((ContinuousVectorEvent) obj);
+            sink.onEvent((ContinuousVectorEvent) obj);
           }
         }
       } catch (EOFException | SocketException ignored) {

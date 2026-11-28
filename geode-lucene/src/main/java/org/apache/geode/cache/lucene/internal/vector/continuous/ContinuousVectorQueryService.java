@@ -305,6 +305,36 @@ public class ContinuousVectorQueryService {
     dispatcher.acknowledgeCheckpoint(bucketId, memberId, ackedVersion);
   }
 
+  public void registerSubscriberForCheckpoint(String subscriberId) {
+    dispatcher.registerSubscriberForCheckpoint(subscriberId);
+  }
+
+  public boolean unregisterSubscriberForCheckpoint(String subscriberId) {
+    return dispatcher.unregisterSubscriberForCheckpoint(subscriberId);
+  }
+
+  public long acknowledgeSubscriberCheckpoint(String subscriberId, int bucketId, String memberId,
+      long ackedVersion) {
+    return dispatcher.acknowledgeSubscriberCheckpoint(subscriberId, bucketId, memberId,
+        ackedVersion);
+  }
+
+  public long getSubscriberCheckpointAck(String subscriberId, int bucketId, String memberId) {
+    return dispatcher.getSubscriberCheckpointAck(subscriberId, bucketId, memberId);
+  }
+
+  public long getCheckpointVersion(int bucketId, String memberId) {
+    return dispatcher.getCheckpointVersion(bucketId, memberId);
+  }
+
+  public long getLastDispatchedVersion(int bucketId, String memberId) {
+    return dispatcher.getLastDispatchedVersion(bucketId, memberId);
+  }
+
+  public long getNextExpectedVersion(int bucketId, String memberId) {
+    return dispatcher.getNextExpectedVersion(bucketId, memberId);
+  }
+
   /**
    * Compacts acknowledged tail entries up to {@code ackedVersion}.
    */

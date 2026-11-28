@@ -142,6 +142,8 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
 
   /** Crash-boundary phases used for deterministic fault-injection testing. */
   public enum CrashPhase {
+    /** Fires after gate admission check, strictly BEFORE atomic durable PENDING intent staging. */
+    BEFORE_DURABLE_PENDING_STAGE,
     /** Fires after staging durable intent & received watermark, BEFORE executing effect. */
     AFTER_WATERMARK_PERSIST_BEFORE_EFFECT,
     /** Fires after executing effect & ledger deduplication record, BEFORE committed watermark. */
@@ -157,6 +159,15 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   /** Durable client-side store holding pending WAL intents, applied ledger IDs, and watermarks. */
   public interface DurableDeliveryStore {
     void stagePendingIntent(ContinuousVectorEvent event, EventDeliveryId id);
+
+    default boolean stagePendingIntentIfAbsent(ContinuousVectorEvent event, EventDeliveryId id) {
+      stagePendingIntent(event, id);
+      return true;
+    }
+
+    default boolean isPendingIntent(EventDeliveryId id) {
+      return false;
+    }
 
     void markPendingCompleted(EventDeliveryId id);
 
@@ -235,6 +246,16 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     @Override
     public void stagePendingIntent(ContinuousVectorEvent event, EventDeliveryId id) {
       pendingIntents.putIfAbsent(id, event);
+    }
+
+    @Override
+    public boolean stagePendingIntentIfAbsent(ContinuousVectorEvent event, EventDeliveryId id) {
+      return pendingIntents.putIfAbsent(id, event) == null;
+    }
+
+    @Override
+    public boolean isPendingIntent(EventDeliveryId id) {
+      return pendingIntents.containsKey(id);
     }
 
     @Override
@@ -389,6 +410,7 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   private final AtomicLong effectsExecutedCount = new AtomicLong();
   private final AtomicLong deduplicatedEffectsCount = new AtomicLong();
   private final AtomicLong recoveredPendingCount = new AtomicLong();
+  private final AtomicLong durableAdmissionsCount = new AtomicLong();
 
   public IdempotentRvvConsumer(RvvClientGate gate, DurableDeliveryStore store,
       EffectHandler effectHandler) {
@@ -430,7 +452,14 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     }
     EventDeliveryId id = EventDeliveryId.fromEvent(event);
     synchronized (getStreamStageLock(event.getBucketId(), event.getMemberId())) {
-      store.stagePendingIntent(event, id);
+      if (!store.isPendingIntent(id)) {
+        if (crashHook != null) {
+          crashHook.onBoundary(CrashPhase.BEFORE_DURABLE_PENDING_STAGE, event, id);
+        }
+        if (store.stagePendingIntentIfAbsent(event, id) && !store.isEffectApplied(id)) {
+          durableAdmissionsCount.incrementAndGet();
+        }
+      }
       store.persistReceivedWatermark(event.getSubscriptionId(), event.getBucketId(),
           event.getMemberId(), event.getRegionVersion());
     }
@@ -524,8 +553,16 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
 
       // Window A: durably stage pending intent + received watermark sequentially on receipt BEFORE
       // releasing streamLock for side-effect execution so later matches & heartbeats cannot bypass
-      // an in-flight or delayed predecessor intent.
-      store.stagePendingIntent(event, id);
+      // an in-flight or delayed predecessor intent, and never double-admit already staged PENDING
+      // intents across reconnect retries.
+      if (!store.isPendingIntent(id)) {
+        if (crashHook != null) {
+          crashHook.onBoundary(CrashPhase.BEFORE_DURABLE_PENDING_STAGE, event, id);
+        }
+        if (store.stagePendingIntentIfAbsent(event, id) && !store.isEffectApplied(id)) {
+          durableAdmissionsCount.incrementAndGet();
+        }
+      }
       store.persistReceivedWatermark(subId, bucketId, memberId, ver);
     }
 
@@ -628,6 +665,34 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   }
 
   /**
+   * Prepares an ordinary client reconnect (without process restart) by draining every unfinished
+   * durable {@code PENDING} intent whose effect has not yet retired, committing watermarks, and
+   * returning the safe {@code V_client} high-water map by member for {@code bucketId}.
+   */
+  public Map<String, Long> prepareForReconnect(int bucketId) {
+    recover();
+    return getCommittedHighWaterByMember(bucketId);
+  }
+
+  /**
+   * Executes client-side pending intent retirement via {@link #prepareForReconnect(int)} before
+   * issuing server-side reconnect replay for {@code bucketId}, ensuring notifications already
+   * staged in durable {@code PENDING} WAL prior to connection loss are never re-delivered twice.
+   */
+  public List<ContinuousVectorEvent> reconnectAndReplay(ContinuousVectorQueryService service,
+      int bucketId) {
+    return reconnectAndReplay(service, bucketId, null, null);
+  }
+
+  public List<ContinuousVectorEvent> reconnectAndReplay(ContinuousVectorQueryService service,
+      int bucketId, ContinuousVectorEventSink targetSink, Runnable onReplayedUnderLock) {
+    Objects.requireNonNull(service, "service must not be null");
+    Map<String, Long> clientHw = prepareForReconnect(bucketId);
+    return service.replayUncheckpointedForReconnect(bucketId, clientHw, targetSink,
+        onReplayedUnderLock);
+  }
+
+  /**
    * Returns safe committed high-water marks keyed by {@code memberId} for passing to
    * {@link RvvMonotonicVectorDispatcher#replayUncheckpointedForReconnect} after recovery.
    */
@@ -653,5 +718,9 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
 
   public long getRecoveredPendingCount() {
     return recoveredPendingCount.get();
+  }
+
+  public long getDurableAdmissionsCount() {
+    return durableAdmissionsCount.get();
   }
 }

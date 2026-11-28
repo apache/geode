@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -263,6 +264,7 @@ public class RvvMonotonicVectorDispatcher {
   private static final class BucketState {
     final Map<String, TreeMap<Long, TailMutation>> tailByMember = new HashMap<>();
     final Map<String, Long> checkpointByMember = new HashMap<>();
+    final Map<String, Map<String, Long>> subscriberAcksByMember = new HashMap<>();
     final Map<String, AtomicLong> fallbackVersionByMember = new HashMap<>();
     final Map<String, Long> eventsSinceHeartbeatByMember = new HashMap<>();
     final Map<String, Long> oldestUncoveredMutationTimeMsByMember = new HashMap<>();
@@ -419,6 +421,68 @@ public class RvvMonotonicVectorDispatcher {
       return checkpointByMember.getOrDefault(memberId, 0L);
     }
 
+    synchronized long recordSubscriberAck(String subscriberId, String memberId, long ackedVersion,
+        Set<String> healthySubscribers) {
+      Map<String, Long> acks =
+          subscriberAcksByMember.computeIfAbsent(memberId, ignored -> new HashMap<>());
+      acks.merge(subscriberId, ackedVersion, Math::max);
+      return recomputeMinHealthyCheckpoint(memberId, healthySubscribers);
+    }
+
+    synchronized void removeSubscriberFromAcks(String subscriberId,
+        Set<String> remainingHealthySubscribers) {
+      if (subscriberAcksByMember.isEmpty()) {
+        return;
+      }
+      List<String> members = new ArrayList<>(subscriberAcksByMember.keySet());
+      for (String memberId : members) {
+        Map<String, Long> acks = subscriberAcksByMember.get(memberId);
+        if (acks != null) {
+          acks.remove(subscriberId);
+        }
+        recomputeMinHealthyCheckpoint(memberId, remainingHealthySubscribers);
+      }
+    }
+
+    synchronized long recomputeMinHealthyCheckpoint(String memberId,
+        Set<String> healthySubscribers) {
+      if (healthySubscribers == null || healthySubscribers.isEmpty()) {
+        return checkpointByMember.getOrDefault(memberId, 0L);
+      }
+      Map<String, Long> acks = subscriberAcksByMember.get(memberId);
+      if (acks == null || acks.isEmpty()) {
+        return checkpointByMember.getOrDefault(memberId, 0L);
+      }
+      long minAck = Long.MAX_VALUE;
+      for (String subscriberId : healthySubscribers) {
+        long ack = acks.getOrDefault(subscriberId, 0L);
+        if (ack <= 0L) {
+          minAck = 0L;
+          break;
+        }
+        if (ack < minAck) {
+          minAck = ack;
+        }
+      }
+      if (minAck > 0L && minAck != Long.MAX_VALUE) {
+        advanceCheckpoint(memberId, minAck);
+      }
+      return checkpointByMember.getOrDefault(memberId, 0L);
+    }
+
+    synchronized long getSubscriberAck(String subscriberId, String memberId) {
+      Map<String, Long> acks = subscriberAcksByMember.get(memberId);
+      return acks == null ? 0L : acks.getOrDefault(subscriberId, 0L);
+    }
+
+    synchronized long getLastDispatchedVersion(String memberId) {
+      return lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
+    }
+
+    synchronized long getNextExpectedVersion(String memberId) {
+      return nextExpectedVersionByMember.getOrDefault(memberId, 1L);
+    }
+
     synchronized int getTailSize() {
       int total = 0;
       for (TreeMap<Long, TailMutation> stream : tailByMember.values()) {
@@ -477,6 +541,8 @@ public class RvvMonotonicVectorDispatcher {
   private final CopyOnWriteArrayList<HoldbackGapListener> holdbackGapListeners =
       new CopyOnWriteArrayList<>();
   private final Set<RvvStreamKey> resyncRequiredStreams = ConcurrentHashMap.newKeySet();
+  private final Set<String> registeredCheckpointSubscribers = ConcurrentHashMap.newKeySet();
+  private final Object subscriberRegistryLock = new Object();
 
   private final AtomicLong totalEventsDispatched = new AtomicLong();
   private final AtomicLong totalBatchesDispatched = new AtomicLong();
@@ -1100,6 +1166,77 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   /**
+   * Registers a healthy subscriber whose ACK stream participates in the bounded
+   * {@code min_{i in healthy} ack[i]} checkpoint calculation.
+   */
+  public void registerSubscriberForCheckpoint(String subscriberId) {
+    if (subscriberId == null || subscriberId.isEmpty()) {
+      throw new IllegalArgumentException("subscriberId must not be null or empty");
+    }
+    synchronized (subscriberRegistryLock) {
+      registeredCheckpointSubscribers.add(subscriberId);
+    }
+  }
+
+  /**
+   * Removes a subscriber from healthy checkpoint tracking and immediately advances {@code V_ckpt}
+   * unconditionally to {@code min_{i in remainingHealthy} ack[i]} across all active streams.
+   */
+  public boolean unregisterSubscriberForCheckpoint(String subscriberId) {
+    if (subscriberId == null || subscriberId.isEmpty()) {
+      return false;
+    }
+    synchronized (subscriberRegistryLock) {
+      boolean removed = registeredCheckpointSubscribers.remove(subscriberId);
+      if (!removed) {
+        return false;
+      }
+      Set<String> healthy =
+          Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
+      for (BucketState state : bucketStates.values()) {
+        state.removeSubscriberFromAcks(subscriberId, healthy);
+      }
+      return true;
+    }
+  }
+
+  public Set<String> getRegisteredCheckpointSubscribers() {
+    synchronized (subscriberRegistryLock) {
+      return Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
+    }
+  }
+
+  /**
+   * Records a healthy subscriber ACK {@code ack[subscriberId, bucketId, memberId]} monotonically
+   * and advances server checkpoint {@code V_ckpt[bucketId, memberId]} unconditionally to
+   * {@code min_{i in healthy} ack[i]} without lagging behind on idle tails or staggered arrival
+   * order.
+   *
+   * @return resulting {@code V_ckpt[bucketId, memberId]}.
+   */
+  public long acknowledgeSubscriberCheckpoint(String subscriberId, int bucketId, String memberId,
+      long ackedVersion) {
+    if (subscriberId == null || subscriberId.isEmpty()) {
+      throw new IllegalArgumentException("subscriberId must not be null or empty");
+    }
+    if (memberId == null || memberId.isEmpty() || ackedVersion <= 0L) {
+      return getCheckpointVersion(bucketId, memberId);
+    }
+    synchronized (subscriberRegistryLock) {
+      registeredCheckpointSubscribers.add(subscriberId);
+      Set<String> healthy =
+          Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
+      BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+      return state.recordSubscriberAck(subscriberId, memberId, ackedVersion, healthy);
+    }
+  }
+
+  public long getSubscriberCheckpointAck(String subscriberId, int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0L : state.getSubscriberAck(subscriberId, memberId);
+  }
+
+  /**
    * Alias for {@link #acknowledgeCheckpoint(int, String, long)} that advances {@code V_ckpt} and
    * compacts acknowledged tail entries up to {@code ackedVersion}.
    */
@@ -1110,6 +1247,16 @@ public class RvvMonotonicVectorDispatcher {
   public long getCheckpointVersion(int bucketId, String memberId) {
     BucketState state = bucketStates.get(bucketId);
     return state == null ? 0L : state.getCheckpoint(memberId);
+  }
+
+  public long getLastDispatchedVersion(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0L : state.getLastDispatchedVersion(memberId);
+  }
+
+  public long getNextExpectedVersion(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 1L : state.getNextExpectedVersion(memberId);
   }
 
   public int getTailSize(int bucketId) {
@@ -1330,6 +1477,13 @@ public class RvvMonotonicVectorDispatcher {
     state.lastDispatchedVersionByMember.merge(mutation.memberId, mutation.regionVersion, Math::max);
     state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
         Math::max);
+    if (!replayed && router.getSubscriptionCount() == 0
+        && registeredCheckpointSubscribers.isEmpty()) {
+      // Across empty |S| = 0 intervals with no registered checkpoint subscribers, maintain strict
+      // version continuity while reclaiming pre-subscription tail entries so zero-subscriber load
+      // never triggers spurious tail overflow.
+      state.advanceCheckpoint(mutation.memberId, mutation.regionVersion);
+    }
     if (mutation.isNonMatchingMarker()) {
       boolean emitHeartbeat =
           !replayed
