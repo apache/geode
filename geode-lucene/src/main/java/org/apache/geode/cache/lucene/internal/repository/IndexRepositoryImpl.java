@@ -184,21 +184,38 @@ public class IndexRepositoryImpl implements IndexRepository {
     return executeQuery(true, expectedEpoch, query, limit, collector, onSearcherAcquired);
   }
 
+  protected IndexSearcher acquireSearcher() throws IOException {
+    return searcherManager.acquire();
+  }
+
+  private IndexSearcher acquireSearcherAtEpoch(boolean validateEpoch, long expectedEpoch)
+      throws IOException {
+    if (validateEpoch && ((expectedEpoch & 1L) != 0L || searcherEpoch.get() != expectedEpoch)) {
+      return null;
+    }
+    IndexSearcher searcher = acquireSearcher();
+    if (validateEpoch && searcherEpoch.get() != expectedEpoch) {
+      searcherManager.release(searcher);
+      return null;
+    }
+    return searcher;
+  }
+
   private boolean executeQuery(boolean validateEpoch, long expectedEpoch, Query query, int limit,
       IndexResultCollector collector, Runnable onSearcherAcquired) throws IOException {
-    if (validateEpoch && ((expectedEpoch & 1L) != 0L || searcherEpoch.get() != expectedEpoch)) {
+    IndexSearcher searcher = acquireSearcherAtEpoch(validateEpoch, expectedEpoch);
+    if (searcher == null) {
       return false;
     }
-    long start = stats.startRepositoryQuery();
+    long start = 0L;
+    boolean statsStarted = false;
     int totalHits = 0;
-    IndexSearcher searcher = searcherManager.acquire();
     try {
-      if (validateEpoch && searcherEpoch.get() != expectedEpoch) {
-        return false;
-      }
       if (onSearcherAcquired != null) {
         onSearcherAcquired.run();
       }
+      start = stats.startRepositoryQuery();
+      statsStarted = true;
       TopDocs docs = searcher.search(query, limit);
       // Lucene 9.x: totalHits is now a TotalHits object with value field
       totalHits = (int) docs.totalHits.value;
@@ -213,7 +230,9 @@ public class IndexRepositoryImpl implements IndexRepository {
       return true;
     } finally {
       searcherManager.release(searcher);
-      stats.endRepositoryQuery(start, totalHits);
+      if (statsStarted) {
+        stats.endRepositoryQuery(start, totalHits);
+      }
     }
   }
 
@@ -246,10 +265,10 @@ public class IndexRepositoryImpl implements IndexRepository {
       Query query, int k, int oversampleK, String vectorField, float[] queryVector,
       VectorSimilarityFunction similarity, IndexResultCollector collector,
       Runnable onSearcherAcquired) throws IOException {
-    if (validateEpoch && ((expectedEpoch & 1L) != 0L || searcherEpoch.get() != expectedEpoch)) {
-      return false;
-    }
     if (k <= 0 || oversampleK <= 0) {
+      if (validateEpoch && ((expectedEpoch & 1L) != 0L || searcherEpoch.get() != expectedEpoch)) {
+        return false;
+      }
       if (onSearcherAcquired != null) {
         onSearcherAcquired.run();
       }
@@ -259,16 +278,19 @@ public class IndexRepositoryImpl implements IndexRepository {
       return executeQuery(validateEpoch, expectedEpoch, query, k, collector, onSearcherAcquired);
     }
     int effectiveOversampleK = Math.max(k, oversampleK);
-    long start = stats.startRepositoryQuery();
+    IndexSearcher searcher = acquireSearcherAtEpoch(validateEpoch, expectedEpoch);
+    if (searcher == null) {
+      return false;
+    }
+    long start = 0L;
+    boolean statsStarted = false;
     int totalHits = 0;
-    IndexSearcher searcher = searcherManager.acquire();
     try {
-      if (validateEpoch && searcherEpoch.get() != expectedEpoch) {
-        return false;
-      }
       if (onSearcherAcquired != null) {
         onSearcherAcquired.run();
       }
+      start = stats.startRepositoryQuery();
+      statsStarted = true;
       TopDocs docs = searcher.search(query, effectiveOversampleK);
       totalHits = (int) docs.totalHits.value;
       if (docs.scoreDocs.length == 0) {
@@ -341,7 +363,9 @@ public class IndexRepositoryImpl implements IndexRepository {
       return true;
     } finally {
       searcherManager.release(searcher);
-      stats.endRepositoryQuery(start, totalHits);
+      if (statsStarted) {
+        stats.endRepositoryQuery(start, totalHits);
+      }
     }
   }
 

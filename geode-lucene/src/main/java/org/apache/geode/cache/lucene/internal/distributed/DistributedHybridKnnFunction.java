@@ -290,54 +290,62 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     boolean usedInlineMask = false;
     boolean usedOversampleFallback = false;
     try {
-      Tier0VectorDeltaBuffer<Object> buffer = null;
-      if (registry != null) {
-        registry.awaitHydration(regionPath, knnContext.getIndexName(), bucketId);
-        buffer = registry.getBuffer(regionPath, knnContext.getIndexName(), bucketId);
-      }
+      Tier0VectorDeltaBuffer<Object> buffer =
+          resolveBucketBuffer(registry, regionPath, knnContext.getIndexName(), bucketId);
 
       if (unsupportedFilter && buffer != null && repo != null) {
-        buffer.lockPathBWrite();
-        pathBBuffer = buffer;
-        final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
-        pathBReleaseBarrier = () -> {
-          if (pathBWriteReleased.compareAndSet(false, true)) {
-            lockedBuffer.unlockPathBWrite();
-          }
-        };
-        tier0Snapshot = buffer.snapshot();
-        if (!tier0Snapshot.isEmpty()) {
-          // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
-          // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
-          // bucket into Lucene + blocking-refresh while holding the write barrier so
-          // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
-          flushBucketForUnsupportedFilter(
-              cache, region, regionPath, knnContext.getIndexName(), bucketId, registry,
-              buffer, repo);
+        pathBBuffer = acquireLatestPathBWriteBarrier(
+            registry, regionPath, knnContext.getIndexName(), bucketId);
+        buffer = pathBBuffer;
+        if (buffer != null) {
+          final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
+          pathBReleaseBarrier = () -> {
+            if (pathBWriteReleased.compareAndSet(false, true)) {
+              lockedBuffer.unlockPathBWrite();
+            }
+          };
           tier0Snapshot = buffer.snapshot();
+          if (!tier0Snapshot.isEmpty()) {
+            // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
+            // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
+            // bucket into Lucene + blocking-refresh while holding the write barrier so
+            // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
+            flushBucketForUnsupportedFilter(
+                cache, region, regionPath, knnContext.getIndexName(), bucketId, registry,
+                buffer, repo);
+            tier0Snapshot = buffer.snapshot();
+          }
+          maskedKeys = tier0Snapshot.getMaskedKeys();
         }
-        maskedKeys = tier0Snapshot.getMaskedKeys();
         PreparedBucketQuery prepared = prepareBucketQuery(
             knnContext, k, queryVector, userFilterQuery, maskedKeys);
         usedInlineMask = prepared.usedInlineMask;
         usedOversampleFallback = prepared.usedOversampleFallback;
         luceneRawCollector = new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
-        if (prepared.executeFp32Rerank) {
-          repo.queryWithFp32Rerank(prepared.knnQuery, prepared.luceneK, prepared.queryK,
-              knnContext.getVectorFieldName(), queryVector, knnContext.getSimilarityFunction(),
-              luceneRawCollector, pathBReleaseBarrier);
-        } else {
-          repo.query(prepared.knnQuery, prepared.luceneK, luceneRawCollector, pathBReleaseBarrier);
-        }
+        executeRepoQuery(
+            repo, prepared, knnContext, queryVector, luceneRawCollector, pathBReleaseBarrier);
       } else {
         boolean queryCompleted = false;
         for (int attempt = 0; attempt < MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES; attempt++) {
+          if (attempt > 0) {
+            buffer = resolveBucketBuffer(
+                registry, regionPath, knnContext.getIndexName(), bucketId);
+          }
           long epoch0 = repo != null ? repo.getSearcherEpoch() : 0L;
           if (repo != null && (epoch0 & 1L) != 0L) {
             Thread.onSpinWait();
             continue;
           }
           tier0Snapshot = buffer != null ? buffer.snapshot() : null;
+          if (registry != null
+              && (registry.isHydrating(regionPath, knnContext.getIndexName(), bucketId)
+                  || registry.getBuffer(regionPath, knnContext.getIndexName(),
+                      bucketId) != buffer)) {
+            buffer = resolveBucketBuffer(
+                registry, regionPath, knnContext.getIndexName(), bucketId);
+            Thread.onSpinWait();
+            continue;
+          }
           maskedKeys =
               tier0Snapshot != null ? tier0Snapshot.getMaskedKeys() : Collections.emptySet();
           PreparedBucketQuery prepared = prepareBucketQuery(
@@ -351,12 +359,8 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
             queryCompleted = true;
             break;
           }
-          boolean epochMatched = prepared.executeFp32Rerank
-              ? repo.tryQueryWithFp32RerankAtEpoch(epoch0, prepared.knnQuery, prepared.luceneK,
-                  prepared.queryK, knnContext.getVectorFieldName(), queryVector,
-                  knnContext.getSimilarityFunction(), attemptCollector)
-              : repo.tryQueryAtEpoch(epoch0, prepared.knnQuery, prepared.luceneK, attemptCollector);
-          if (epochMatched) {
+          if (tryExecuteRepoQueryAtEpoch(repo, epoch0, prepared, knnContext, queryVector,
+              attemptCollector, null)) {
             luceneRawCollector = attemptCollector;
             usedInlineMask = prepared.usedInlineMask;
             usedOversampleFallback = prepared.usedOversampleFallback;
@@ -367,9 +371,10 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         }
 
         if (!queryCompleted && repo != null) {
+          pathBBuffer = acquireLatestPathBWriteBarrier(
+              registry, regionPath, knnContext.getIndexName(), bucketId);
+          buffer = pathBBuffer;
           if (buffer != null) {
-            buffer.lockPathBWrite();
-            pathBBuffer = buffer;
             final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
             pathBReleaseBarrier = () -> {
               if (pathBWriteReleased.compareAndSet(false, true)) {
@@ -393,13 +398,8 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
                 new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
             boolean epochMatched = false;
             if ((fallbackEpoch & 1L) == 0L) {
-              epochMatched = prepared.executeFp32Rerank
-                  ? repo.tryQueryWithFp32RerankAtEpoch(fallbackEpoch, prepared.knnQuery,
-                      prepared.luceneK, prepared.queryK, knnContext.getVectorFieldName(),
-                      queryVector, knnContext.getSimilarityFunction(), attemptCollector,
-                      pathBReleaseBarrier)
-                  : repo.tryQueryAtEpoch(fallbackEpoch, prepared.knnQuery, prepared.luceneK,
-                      attemptCollector, pathBReleaseBarrier);
+              epochMatched = tryExecuteRepoQueryAtEpoch(repo, fallbackEpoch, prepared, knnContext,
+                  queryVector, attemptCollector, pathBReleaseBarrier);
             }
             if (epochMatched) {
               luceneRawCollector = attemptCollector;
@@ -412,14 +412,8 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
               // continuous commit contention hit bounded wait: run once under the write barrier.
               RawListResultCollector finalCollector =
                   new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
-              if (prepared.executeFp32Rerank) {
-                repo.queryWithFp32Rerank(prepared.knnQuery, prepared.luceneK, prepared.queryK,
-                    knnContext.getVectorFieldName(), queryVector,
-                    knnContext.getSimilarityFunction(), finalCollector, pathBReleaseBarrier);
-              } else {
-                repo.query(
-                    prepared.knnQuery, prepared.luceneK, finalCollector, pathBReleaseBarrier);
-              }
+              executeRepoQuery(
+                  repo, prepared, knnContext, queryVector, finalCollector, pathBReleaseBarrier);
               luceneRawCollector = finalCollector;
               usedInlineMask = prepared.usedInlineMask;
               usedOversampleFallback = prepared.usedOversampleFallback;
@@ -541,6 +535,56 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     }
   }
 
+  private static Tier0VectorDeltaBuffer<Object> resolveBucketBuffer(
+      Tier0VectorRegistry registry, String regionPath, String indexName, int bucketId) {
+    if (registry == null) {
+      return null;
+    }
+    registry.awaitHydration(regionPath, indexName, bucketId);
+    return registry.getBuffer(regionPath, indexName, bucketId);
+  }
+
+  private static Tier0VectorDeltaBuffer<Object> acquireLatestPathBWriteBarrier(
+      Tier0VectorRegistry registry, String regionPath, String indexName, int bucketId) {
+    while (true) {
+      Tier0VectorDeltaBuffer<Object> buffer =
+          resolveBucketBuffer(registry, regionPath, indexName, bucketId);
+      if (buffer == null) {
+        return null;
+      }
+      buffer.lockPathBWrite();
+      if (!registry.isHydrating(regionPath, indexName, bucketId)
+          && registry.getBuffer(regionPath, indexName, bucketId) == buffer) {
+        return buffer;
+      }
+      buffer.unlockPathBWrite();
+    }
+  }
+
+  private static boolean tryExecuteRepoQueryAtEpoch(IndexRepository repo, long expectedEpoch,
+      PreparedBucketQuery prepared, HybridKnnQueryContext knnContext, float[] queryVector,
+      RawListResultCollector collector, Runnable onSearcherAcquired) throws IOException {
+    if (prepared.executeFp32Rerank) {
+      return repo.tryQueryWithFp32RerankAtEpoch(expectedEpoch, prepared.knnQuery,
+          prepared.luceneK, prepared.queryK, knnContext.getVectorFieldName(), queryVector,
+          knnContext.getSimilarityFunction(), collector, onSearcherAcquired);
+    }
+    return repo.tryQueryAtEpoch(
+        expectedEpoch, prepared.knnQuery, prepared.luceneK, collector, onSearcherAcquired);
+  }
+
+  private static void executeRepoQuery(IndexRepository repo, PreparedBucketQuery prepared,
+      HybridKnnQueryContext knnContext, float[] queryVector, RawListResultCollector collector,
+      Runnable onSearcherAcquired) throws IOException {
+    if (prepared.executeFp32Rerank) {
+      repo.queryWithFp32Rerank(prepared.knnQuery, prepared.luceneK, prepared.queryK,
+          knnContext.getVectorFieldName(), queryVector, knnContext.getSimilarityFunction(),
+          collector, onSearcherAcquired);
+    } else {
+      repo.query(prepared.knnQuery, prepared.luceneK, collector, onSearcherAcquired);
+    }
+  }
+
   private void flushBucketForUnsupportedFilter(Cache cache, Region<?, ?> region, String regionPath,
       String indexName, int bucketId, Tier0VectorRegistry registry,
       Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repo) throws IOException {
@@ -567,11 +611,25 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
           // Concurrent flush completed while we were racing to beginFlush; retry immediately.
           continue;
         }
-        try {
-          Thread.sleep(1L);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-          break;
+        if (buffer.isPathBWriteHeldByCurrentThread()) {
+          // Temporarily drop writeLock so the active flusher can acquire readLock in
+          // completeFlush()/abortFlush() cleanly instead of stalling until deadlineNanos.
+          buffer.unlockPathBWrite();
+          try {
+            Thread.sleep(1L);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            break;
+          } finally {
+            buffer.lockPathBWrite();
+          }
+        } else {
+          try {
+            Thread.sleep(1L);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            break;
+          }
         }
       }
     }

@@ -1377,6 +1377,287 @@ public class DistributedHybridKnnFunctionJUnitTest {
     assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
   }
 
+  @Test
+  @SuppressWarnings("unchecked")
+  public void abortFlushPreservesConsistentCutWithSearcherEpochAcrossBothQueryPaths()
+      throws Exception {
+    for (boolean rerankBeam : new boolean[] {false, true}) {
+      Tier0VectorRegistry.removeCache(mockCache);
+      LuceneSerializer<float[]> serializer = (idx, vec) -> {
+        Document doc = new Document();
+        doc.add(new KnnFloatVectorField(VECTOR_FIELD, vec, VectorSimilarityFunction.COSINE));
+        doc.add(new StringField("tag", "all", Field.Store.NO));
+        return Collections.singletonList(doc);
+      };
+
+      try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+          IndexWriter writer =
+              new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+        float[] v0 = new float[] {0.20f, (float) Math.sqrt(1.0 - 0.04), 0f, 0f};
+        float[] v1 = new float[] {0.98f, (float) Math.sqrt(1.0 - 0.98 * 0.98), 0f, 0f};
+        float[] staleK2 = new float[] {0.99f, (float) Math.sqrt(1.0 - 0.99 * 0.99), 0f, 0f};
+        float[] queryVec = new float[] {1f, 0f, 0f, 0f};
+
+        Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+        Tier0VectorDeltaBuffer<Object> buffer =
+            registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+
+        IndexRepositoryImpl repo = new IndexRepositoryImpl(
+            mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex);
+
+        // Initial Lucene segment holds k0 and stale k2; Tier-0 holds k1 (live) and k2 (tombstone)
+        repo.update("k0", v0);
+        repo.update("k2", staleK2);
+        repo.commitAndRefreshBlocking();
+        long initialEpoch = repo.getSearcherEpoch();
+        assertThat(initialEpoch % 2L).isEqualTo(0L);
+
+        buffer.put("k1", v1, Map.of("tag", "all"));
+        buffer.destroy("k2");
+
+        // Sub-case (a): Pre-commit abortFlush (IOException from valueResolver before commit) does
+        // not lose Tier-0 visibility or tear epoch cut
+        assertThatThrownBy(() -> registry.flushBucket(REGION_PATH, INDEX_NAME, 0, repo, entry -> {
+          throw new IllegalStateException("valueResolver transient abort");
+        })).isInstanceOf(IllegalStateException.class);
+        assertThat(buffer.isFlushing()).isFalse();
+        assertThat(buffer.snapshot().getLiveEntries()).containsOnlyKeys("k1");
+        assertThat(buffer.snapshot().getTombstonedKeys()).containsExactly("k2");
+
+        // Sub-case (b): Trigger flush commit + abortFlush strictly AFTER acquireSearcher() returned
+        // S_0 and BEFORE post-acquire epoch check runs in IndexRepositoryImpl.tryQuery*AtEpoch().
+        java.util.concurrent.atomic.AtomicInteger delegatedAcquires =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+        IndexRepositoryImpl instrumentedRepo = new IndexRepositoryImpl(
+            mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex) {
+          @Override
+          protected IndexSearcher acquireSearcher() throws IOException {
+            IndexSearcher s = super.acquireSearcher();
+            if (delegatedAcquires.incrementAndGet() == 1) {
+              Tier0VectorDeltaBuffer.FlushBatch<Object> batch = buffer.beginFlush();
+              assertThat(batch).isNotNull();
+              try {
+                super.update("k1", v1);
+                super.delete("k2");
+                // Advance searcherEpoch and refresh NRT reader, then abortFlush back into E_active
+                commit();
+              } finally {
+                buffer.abortFlush(batch.getEpoch());
+              }
+            }
+            return s;
+          }
+        };
+
+        long epochBeforeQuery = instrumentedRepo.getSearcherEpoch();
+        when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+            .thenReturn(Map.of(0, instrumentedRepo));
+        ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+        when(mockContext.getResultSender()).thenReturn(localSender);
+
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("tag", "all")
+            .rerankBeamCandidates(rerankBeam)
+            .build();
+        when(mockContext.getArguments()).thenReturn(ctx);
+
+        new DistributedHybridKnnFunction().execute(mockContext);
+
+        // Attempt 1 MUST have been rejected after acquireSearcher() saw epoch advance, and
+        // attempt 2 succeeded against aborted+restored E_active and post-commit epoch.
+        assertThat(delegatedAcquires.get()).isEqualTo(2);
+        assertThat(instrumentedRepo.getSearcherEpoch()).isGreaterThan(epochBeforeQuery);
+        assertThat(buffer.isFlushing()).isFalse();
+
+        ArgumentCaptor<TopEntriesCollector> captor =
+            ArgumentCaptor.forClass(TopEntriesCollector.class);
+        verify(localSender).lastResult(captor.capture());
+        List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+        assertThat(hits).extracting(EntryScore::getKey).containsExactly("k1", "k0");
+      }
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void rePromotionDuringOptimisticRetriesAwaitsHydrationAndRebindsBuffer() throws Exception {
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    Tier0VectorDeltaBuffer<Object> oldBuffer =
+        registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+    float[] oldVec = new float[] {0.1f, 0.99f, 0f, 0f};
+    float[] repromotedVec = new float[] {0.99f, 0.14f, 0f, 0f};
+    float[] queryVec = new float[] {1f, 0f, 0f, 0f};
+    oldBuffer.put("stale-before-demote", oldVec, Map.of("tag", "all"));
+
+    java.util.concurrent.atomic.AtomicInteger attemptCounter =
+        new java.util.concurrent.atomic.AtomicInteger(0);
+    java.util.concurrent.atomic.AtomicLong epoch = new java.util.concurrent.atomic.AtomicLong(2L);
+    ExecutorService promoPool = Executors.newSingleThreadExecutor();
+    try {
+      IndexRepository repo = new IndexRepository() {
+        @Override
+        public void create(Object key, Object value) {}
+
+        @Override
+        public void update(Object key, Object value) {}
+
+        @Override
+        public void delete(Object key) {}
+
+        @Override
+        public void query(Query query, int limit, IndexResultCollector collector) {}
+
+        @Override
+        public long getSearcherEpoch() {
+          return epoch.get();
+        }
+
+        @Override
+        public boolean tryQueryAtEpoch(long expectedEpoch, Query query, int limit,
+            IndexResultCollector collector, Runnable onSearcherAcquired) {
+          if (attemptCounter.incrementAndGet() == 1) {
+            // Demote (clears oldBuffer) and start re-promotion hydration asynchronously while
+            // advancing epoch so attempt 1 retries and MUST wait for new buffer hydration!
+            registry.removeBucket(REGION_PATH, INDEX_NAME, 0);
+            CountDownLatch latch = registry.beginHydration(REGION_PATH, INDEX_NAME, 0);
+            Tier0VectorDeltaBuffer<Object> newBuffer =
+                registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+            promoPool.submit(() -> {
+              try {
+                Thread.sleep(25L);
+                newBuffer.put("repromoted-key", repromotedVec, Map.of("tag", "all"));
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+              } finally {
+                registry.completeHydration(REGION_PATH, INDEX_NAME, 0, latch);
+              }
+            });
+            epoch.addAndGet(2L);
+            return false;
+          }
+          if (onSearcherAcquired != null) {
+            onSearcherAcquired.run();
+          }
+          return true;
+        }
+
+        @Override
+        public void commit() {}
+
+        @Override
+        public Region<?, ?> getRegion() {
+          return mockRegion;
+        }
+
+        @Override
+        public boolean isClosed() {
+          return false;
+        }
+
+        @Override
+        public IndexWriter getWriter() {
+          return null;
+        }
+
+        @Override
+        public void cleanup() {}
+      };
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+      ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(localSender);
+
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("tag", "all")
+          .build();
+      when(mockContext.getArguments()).thenReturn(ctx);
+
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      assertThat(attemptCounter.get()).isEqualTo(2);
+      ArgumentCaptor<TopEntriesCollector> captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(localSender).lastResult(captor.capture());
+      List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("repromoted-key");
+    } finally {
+      promoPool.shutdownNow();
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void pathBUnsupportedFilterDoesNotDeadlockAgainstInFlightFlushAbort() throws Exception {
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+    float[] vec = new float[] {1f, 0f, 0f, 0f};
+    buffer.put("k-inflight", vec, Map.of("category", "books"));
+    when(mockRegion.get("k-inflight")).thenReturn(new Object[] {vec, "books"});
+
+    // In-flight flush moves k-inflight into E_flushing before Path B starts
+    Tier0VectorDeltaBuffer.FlushBatch<Object> inFlightBatch = buffer.beginFlush();
+    assertThat(inFlightBatch).isNotNull();
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.YES));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex);
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+      ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(localSender);
+
+      ExecutorService flushPool = Executors.newSingleThreadExecutor();
+      long elapsedMs;
+      try {
+        Future<?> abortFuture = flushPool.submit(() -> {
+          Thread.sleep(30L);
+          // abortFlush requires pathBBarrierLock.readLock()!
+          buffer.abortFlush(inFlightBatch.getEpoch());
+          return null;
+        });
+
+        HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, vec, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("category:boks~1", "category")
+            .build();
+        when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+
+        long startNanos = System.nanoTime();
+        new DistributedHybridKnnFunction().execute(mockContext);
+        elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+        abortFuture.get(5, TimeUnit.SECONDS);
+      } finally {
+        flushPool.shutdownNow();
+      }
+
+      // Must complete far below the 5,000 ms MAX_CONCURRENT_FLUSH_WAIT_MILLIS deadline
+      assertThat(elapsedMs).isLessThan(2000L);
+      assertThat(buffer.isFlushing()).isFalse();
+      assertThat(buffer.getTotalSize()).isEqualTo(0);
+
+      ArgumentCaptor<TopEntriesCollector> captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(localSender).lastResult(captor.capture());
+      List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("k-inflight");
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private List<EntryScore<Object>> executeHybridQuery(float[] query, int k, int rerankFactor) {
     ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
