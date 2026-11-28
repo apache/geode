@@ -725,6 +725,11 @@ public class RvvMonotonicVectorDispatcher {
       return total;
     }
 
+    synchronized int getTailSize(String memberId) {
+      TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+      return stream == null ? 0 : stream.size();
+    }
+
     synchronized int getHoldbackSize() {
       int total = 0;
       for (TreeMap<Long, TailMutation> holdback : holdbackByMember.values()) {
@@ -2043,6 +2048,19 @@ public class RvvMonotonicVectorDispatcher {
   public int getTailSize(int bucketId) {
     BucketState state = bucketStates.get(bucketId);
     return state == null ? 0 : state.getTailSize();
+  }
+
+  /**
+   * Returns the physical tail occupancy {@code |tail[bucketId, memberId]|} currently retained on
+   * this replica for {@code memberId}. Because {@code applyReplicatedLowerPin} and
+   * {@code compactToFloor} only delete entries {@code <= V_floor} and never add entries, across
+   * partial lower-pin replication and up to {@code f} promotions every promoted replica
+   * {@code r*}'s occupancy satisfies {@code |tail_{r*}(t)| <= max_r |tail_r(t_0)| + |arrivals(t_0,
+   * t]|}.
+   */
+  public int getTailSize(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0 : state.getTailSize(memberId);
   }
 
   public int getHoldbackSize(int bucketId) {

@@ -3993,6 +3993,189 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(svcOvf.getReplayFloorVersion(bOvf, mOvf)).isEqualTo(4L);
   }
 
+  @Test
+  public void multiReplicaAsymmetricTailOccupancyAfterPartialLowerPinPromotesLargestReplicaWithoutOverflow() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 32;
+    int bucketId = 42;
+    String memberP = "srv-asym-multi";
+
+    // Primary P + two backups B1, B2 all ingest v=1..84 with replicated (30,30) and (60,64)
+    ChordalVoronoiRouter rP = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dP = new RvvMonotonicVectorDispatcher(rP, cTail, null, 64);
+    ContinuousVectorQueryService primary = new ContinuousVectorQueryService(rP, dP);
+
+    ChordalVoronoiRouter rB1 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dB1 = new RvvMonotonicVectorDispatcher(rB1, cTail, null, 64);
+    ContinuousVectorQueryService backup1 = new ContinuousVectorQueryService(rB1, dB1);
+
+    ChordalVoronoiRouter rB2 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dB2 = new RvvMonotonicVectorDispatcher(rB2, cTail, null, 64);
+    ContinuousVectorQueryService backup2 = new ContinuousVectorQueryService(rB2, dB2);
+
+    for (ContinuousVectorQueryService svc : new ContinuousVectorQueryService[] {primary, backup1,
+        backup2}) {
+      svc.registerSubscription("sub-lag", vec, 0.90f);
+    }
+    for (long v = 1L; v <= 84L; v++) {
+      primary.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, true);
+      backup1.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, false);
+      backup2.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, false);
+      if (v == 30L) {
+        for (ContinuousVectorQueryService svc : new ContinuousVectorQueryService[] {primary,
+            backup1, backup2}) {
+          svc.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+        }
+      } else if (v == 60L) {
+        for (ContinuousVectorQueryService svc : new ContinuousVectorQueryService[] {primary,
+            backup1, backup2}) {
+          svc.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+        }
+      }
+    }
+
+    // Partial lower-pin replication + compaction asymmetry at t_0:
+    // P and B1 apply lower pin (60, 63) and compact to 63 -> |tail_P(t_0)| = |tail_{B1}(t_0)| = 21.
+    // B2 misses lower pin and remains uncompacted at (60, 64) -> |tail_{B2}(t_0)| = 24 > 21!
+    primary.applyReplicatedLowerPin(bucketId, memberP, "sub-lag", 60L, 63L);
+    backup1.applyReplicatedLowerPin(bucketId, memberP, "sub-lag", 60L, 63L);
+    assertThat(primary.compactUpToCheckpoint(bucketId, memberP)).isEqualTo(63L);
+    assertThat(backup1.compactUpToCheckpoint(bucketId, memberP)).isEqualTo(63L);
+
+    int tailP0 = primary.getTailSize(bucketId, memberP);
+    int tailB10 = backup1.getTailSize(bucketId, memberP);
+    int tailB20 = backup2.getTailSize(bucketId, memberP);
+    int maxR0 = Math.max(tailP0, Math.max(tailB10, tailB20));
+    assertThat(tailP0).isEqualTo(21);
+    assertThat(tailB10).isEqualTo(21);
+    assertThat(tailB20).isEqualTo(24);
+    assertThat(maxR0).isEqualTo(24);
+
+    // 7 post-t_0 arrivals (v=85..91) satisfy max_r |tail_r(t_0)| + 7 = 24 + 7 = 31 < C_tail = 32!
+    for (long v = 85L; v <= 91L; v++) {
+      primary.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, true);
+      backup1.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, false);
+      backup2.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, false);
+    }
+    assertThat(primary.getTailSize(bucketId, memberP)).isEqualTo(28);
+    assertThat(backup1.getTailSize(bucketId, memberP)).isEqualTo(28);
+    assertThat(backup2.getTailSize(bucketId, memberP)).isEqualTo(31);
+    assertThat(dB2.getTailOverflowCount()).isZero();
+
+    // Both P and B1 fail -> largest-occupancy replica B2 promotes and replays without overflow!
+    backup2.onPrimaryPromotion(bucketId);
+    assertThat(backup2.getTailSize(bucketId, memberP)).isEqualTo(31).isLessThan(cTail);
+    assertThat(dB2.getTailOverflowCount()).isZero();
+
+    List<ContinuousVectorEvent> replayed = backup2.admitAndReplayForReconnect("sub-lag", bucketId,
+        Collections.singletonMap(memberP, 63L));
+    assertThat(backup2.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(replayed).extracting(ContinuousVectorEvent::getRegionVersion)
+        .hasSize(28)
+        .contains(64L, 84L, 91L);
+    assertThat(dB2.getTailOverflowCount()).isZero();
+    assertThat(backup2.isResyncRequired(bucketId, memberP)).isFalse();
+    // Subsequent compaction is strictly monotone (shrinks tail from 31 -> 28, never increases!)
+    assertThat(backup2.compactUpToCheckpoint(bucketId, memberP)).isEqualTo(63L);
+    assertThat(backup2.getTailSize(bucketId, memberP)).isEqualTo(28);
+  }
+
+  @Test
+  public void primaryCrashOnBothSidesOfReplicationBoundaryWithArrivalsStoppedPreservesDurableHeartbeatLiveness() {
+    float[] queryVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    int bucketId = 43;
+    String memberP = "srv-durable-t0";
+
+    // Side (i): Primary observes unacked v_0 = V_ckpt + 1 = 5 locally, crashes BEFORE v_0
+    // replicates to surviving backup, and ALL arrivals stop -> survivor stays at V_enq = V_ckpt = 4
+    // with ZERO phantom heartbeats!
+    ChordalVoronoiRouter rP1 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dP1 = new RvvMonotonicVectorDispatcher(rP1, 32, null, 64);
+    ContinuousVectorQueryService prim1 = new ContinuousVectorQueryService(rP1, dP1);
+    ChordalVoronoiRouter rS1 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dS1 = new RvvMonotonicVectorDispatcher(rS1, 32, null, 64);
+    ContinuousVectorQueryService sec1 = new ContinuousVectorQueryService(rS1, dS1);
+    prim1.registerSubscription("sub-zero", queryVec, 0.90f);
+    sec1.registerSubscription("sub-zero", queryVec, 0.90f);
+
+    RvvClientGate gate1 = new RvvClientGate();
+    gate1.registerSubscription("sub-zero");
+    gate1.restoreHighWaterVersion("sub-zero", bucketId, memberP, 4L);
+    List<ContinuousVectorEvent> sec1Heartbeats = new ArrayList<>();
+    sec1.addEventSink(ev -> {
+      if (ev.isHeartbeat()) {
+        sec1Heartbeats.add(ev);
+      }
+      gate1.tryAccept(ev);
+    });
+
+    for (long v = 1L; v <= 4L; v++) {
+      prim1.onBucketMutation(bucketId, memberP, v, "k-" + v, nonMatchVec, true);
+      sec1.onBucketMutation(bucketId, memberP, v, "k-" + v, nonMatchVec, false);
+    }
+    prim1.acknowledgeCheckpoint(bucketId, memberP, 4L);
+    sec1.acknowledgeCheckpoint(bucketId, memberP, 4L);
+    // Unacked v_0 = 5 observed ONLY on primary before crash; never reaches sec1!
+    prim1.onBucketMutation(bucketId, memberP, 5L, "k-5-unacked", nonMatchVec, true);
+    assertThat(prim1.getEnqueuedHeadVersion(bucketId, memberP)).isEqualTo(5L);
+    assertThat(sec1.getEnqueuedHeadVersion(bucketId, memberP)).isEqualTo(4L);
+
+    sec1.onPrimaryPromotion(bucketId);
+    assertThat(sec1.getEnqueuedHeadVersion(bucketId, memberP)).isEqualTo(4L);
+    assertThat(sec1.getCheckpointVersion(bucketId, memberP)).isEqualTo(4L);
+    assertThat(dS1.getTotalHeartbeatsDispatched()).isZero();
+    assertThat(sec1Heartbeats).isEmpty();
+    assertThat(gate1.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(4L);
+
+    // Side (ii): v_0 = V_ckpt + 1 = 5 replicates into surviving backup (durable boundary t_0:
+    // V_enq^{(r)} >= 5 on all promotable replicas), primary crashes BEFORE dispatching v_0/HB(5),
+    // and ALL arrivals stop (H=64, NO age-trigger flush) -> promoted survivor IMMEDIATELY emits
+    // covering HB(5)!
+    Queue<Runnable> stalledFifo = new ArrayDeque<>();
+    ChordalVoronoiRouter rP2 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dP2 =
+        new RvvMonotonicVectorDispatcher(rP2, 32, stalledFifo::add, 64);
+    ContinuousVectorQueryService prim2 = new ContinuousVectorQueryService(rP2, dP2);
+    ChordalVoronoiRouter rS2 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dS2 = new RvvMonotonicVectorDispatcher(rS2, 32, null, 64);
+    ContinuousVectorQueryService sec2 = new ContinuousVectorQueryService(rS2, dS2);
+    prim2.registerSubscription("sub-zero", queryVec, 0.90f);
+    sec2.registerSubscription("sub-zero", queryVec, 0.90f);
+
+    RvvClientGate gate2 = new RvvClientGate();
+    gate2.registerSubscription("sub-zero");
+    gate2.restoreHighWaterVersion("sub-zero", bucketId, memberP, 4L);
+    List<ContinuousVectorEvent> sec2Heartbeats = new ArrayList<>();
+    sec2.addEventSink(ev -> {
+      if (ev.isHeartbeat()) {
+        sec2Heartbeats.add(ev);
+      }
+      gate2.tryAccept(ev);
+    });
+
+    for (long v = 1L; v <= 4L; v++) {
+      prim2.onBucketMutation(bucketId, memberP, v, "k-" + v, nonMatchVec, true);
+      sec2.onBucketMutation(bucketId, memberP, v, "k-" + v, nonMatchVec, false);
+    }
+    prim2.acknowledgeCheckpoint(bucketId, memberP, 4L);
+    sec2.acknowledgeCheckpoint(bucketId, memberP, 4L);
+    stalledFifo.clear();
+
+    // Durable replication boundary t_0: v_0 = 5 replicates to sec2 before primary crashes!
+    prim2.onBucketMutation(bucketId, memberP, 5L, "k-5-durable", nonMatchVec, true);
+    sec2.onBucketMutation(bucketId, memberP, 5L, "k-5-durable", nonMatchVec, false);
+    assertThat(sec2.getEnqueuedHeadVersion(bucketId, memberP)).isEqualTo(5L);
+    assertThat(gate2.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(4L);
+
+    stalledFifo.clear(); // Primary crashes before dispatch; ALL arrivals stop!
+    sec2.onPrimaryPromotion(bucketId);
+    assertThat(dS2.getTotalHeartbeatsDispatched()).isEqualTo(1L);
+    assertThat(sec2Heartbeats).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(5L);
+    assertThat(gate2.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(5L);
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

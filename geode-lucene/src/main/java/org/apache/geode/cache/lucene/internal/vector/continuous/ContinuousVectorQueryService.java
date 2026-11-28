@@ -424,6 +424,10 @@ public class ContinuousVectorQueryService {
     return dispatcher.getPendingDispatchQueueSize(bucketId);
   }
 
+  public int getTailSize(int bucketId, String memberId) {
+    return dispatcher.getTailSize(bucketId, memberId);
+  }
+
   public long getOldestUncoveredMutationTimeMs(int bucketId, String memberId) {
     return dispatcher.getOldestUncoveredMutationTimeMs(bucketId, memberId);
   }
