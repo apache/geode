@@ -105,6 +105,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -174,6 +176,8 @@ public class DistributedHybridKnnFunctionJUnitTest {
   @After
   public void tearDown() {
     IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
+    Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+    Tier0VectorBucketListener.setBeforeRecordDestroyHookForTest(null);
     Tier0VectorRegistry.removeCache(mockCache);
   }
 
@@ -2976,6 +2980,180 @@ public class DistributedHybridKnnFunctionJUnitTest {
       assertThat(finalHitsA).filteredOn(h -> "k-postcommit-a".equals(h.getKey()))
           .singleElement()
           .satisfies(h -> assertThat(h.getScore()).isCloseTo(scoreV2, within(1e-4f)));
+    }
+  }
+
+  /**
+   * Verifies Theorem 2(1) replicate-before-pin crash boundary adoption across primary promotion:
+   * when an old primary synchronously replicates BOTH an overwrite ({@code k-ov: v1 -> v2}) and a
+   * delete ({@code k-del: v1 -> tombstone}) to the backup bucket and crashes strictly BEFORE
+   * pinning either write into Tier-0 (even if the replicated shadow AEQ events were lost),
+   * {@code afterPrimary} adopts both replicated states into the promoted primary's Tier-0 buffer
+   * at {@code t_adopt} strictly BEFORE opening {@code hydrationLatch}, so a concurrent reader
+   * running across promotion blocks until {@code t_adopt} and observes strictly the atomic adopted
+   * cut ({@code k-ov=v2}, {@code k-del} absent, {@code k-base=vBase}) with zero stale leakage or
+   * tombstone ghosts, and subsequent Path-B drain flushes cleanly to {@code 0}.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void primaryCrashBetweenSyncReplicationAndTier0PinAdoptsOverwriteAndDeleteAcrossPromotion()
+      throws Exception {
+    float[] queryVec = new float[] {1.0f, 0.0f};
+    float[] v1 = new float[] {0.40f, 0.9165151f};
+    float[] v2 = new float[] {0.99f, 0.14106736f};
+    float[] vBase = new float[] {0.70f, 0.71414284f};
+    float scoreV2 = VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+    float scoreBase =
+        VectorSimilarityScorer.score(queryVec, vBase, VectorSimilarityFunction.COSINE);
+
+    Object[] payloadOvV1 = new Object[] {v1, "books"};
+    Object[] payloadOvV2 = new Object[] {v2, "books"};
+    Object[] payloadDelV1 = new Object[] {v1, "books"};
+    Object[] payloadBase = new Object[] {vBase, "books"};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    // Promoted backup PartitionedRegion & BucketRegion holding synchronously replicated v2 for
+    // k-ov, tombstone for k-del, and unchanged vBase for k-base, while Lucene .files still holds
+    // pre-crash committed v1 for k-ov and k-del (primary crashed strictly after sync replication
+    // and strictly before Tier-0 pin).
+    CountDownLatch hydrationEntered = new CountDownLatch(1);
+    CountDownLatch allowHydrationFinish = new CountDownLatch(1);
+
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(advisor.isPrimary()).thenReturn(true);
+
+    EntrySnapshot esOvV2 = mock(EntrySnapshot.class);
+    when(esOvV2.getRawValue(true)).thenReturn(payloadOvV2);
+    EntrySnapshot esBase = mock(EntrySnapshot.class);
+    when(esBase.getRawValue(true)).thenReturn(payloadBase);
+
+    RegionEntry reTombDel = mock(RegionEntry.class);
+    when(reTombDel.isTombstone()).thenReturn(true);
+    when(reTombDel.getKey()).thenReturn("k-del");
+    RegionMap regionMap = mock(RegionMap.class);
+    when(regionMap.regionEntries()).thenReturn(Collections.singleton(reTombDel));
+
+    BucketRegion promotedBucket = mock(BucketRegion.class);
+    when(promotedBucket.getId()).thenReturn(0);
+    when(promotedBucket.isDestroyed()).thenReturn(false);
+    when(promotedBucket.isEmpty()).thenReturn(false);
+    when(promotedBucket.getBucketAdvisor()).thenReturn(advisor);
+    when(promotedBucket.getEntry("k-ov")).thenReturn(esOvV2);
+    when(promotedBucket.getEntry("k-base")).thenReturn(esBase);
+    when(promotedBucket.getEntry("k-del")).thenReturn(null);
+    when(promotedBucket.getRegionMap()).thenReturn(regionMap);
+    when(promotedBucket.keySet()).thenAnswer(inv -> {
+      hydrationEntered.countDown();
+      allowHydrationFinish.await(5, TimeUnit.SECONDS);
+      return Set.of("k-ov", "k-base");
+    });
+
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(0)).thenReturn(promotedBucket);
+
+    PartitionedRegion promotedPr = mock(PartitionedRegion.class);
+    when(promotedPr.getFullPath()).thenReturn(REGION_PATH);
+    when(promotedPr.getRegionService()).thenReturn(mockCache);
+    when(promotedPr.getDataStore()).thenReturn(dataStore);
+    when(promotedPr.isDestroyed()).thenReturn(false);
+
+    when(mockContext.getDataSet()).thenReturn(promotedPr);
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+    when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+
+    Tier0VectorBucketListener<String, Object[]> listener = new Tier0VectorBucketListener<>(
+        INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("category", (String) pair[1]));
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(promotedPr);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          promotedBucket, writer, serializer, mockStats, promotedBucket, null, "lock", mockIndex);
+      // Pre-crash committed Lucene segment holds stale v1 for k-ov and k-del, plus k-base.
+      repo.update("k-ov", payloadOvV1);
+      repo.update("k-del", payloadDelV1);
+      repo.update("k-base", payloadBase);
+      repo.commitAndRefreshBlocking();
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      // Trigger primary promotion hydration on promoted backup; pauses mid-adoption while holding
+      // hydrationLatch (strictly before t_adopt).
+      Future<?> promotionFuture = pool.submit(() -> partitionListener.afterPrimary(0));
+      assertThat(hydrationEntered.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(registry.isHydrating(REGION_PATH, INDEX_NAME, 0)).isTrue();
+
+      // Launch a concurrent hybrid k-NN reader across promotion -> MUST block on hydrationLatch
+      // until adoption completes at t_adopt (never exposing stale pre-adoption v1 or k-del ghost!).
+      ResultSender<TopEntriesCollector> readerSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(readerSender);
+      HybridKnnQueryContext hybridCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+
+      Future<?> readerFuture = pool.submit(() -> new DistributedHybridKnnFunction().execute(
+          mockContext));
+      Thread.sleep(40L);
+      assertThat(readerFuture.isDone()).isFalse();
+
+      // Release hydration -> adopts k-ov=v2 and k-del=tombstone into Tier-0 at t_adopt and opens
+      // hydrationLatch.
+      allowHydrationFinish.countDown();
+      promotionFuture.get(5, TimeUnit.SECONDS);
+      readerFuture.get(5, TimeUnit.SECONDS);
+
+      assertThat(registry.isHydrating(REGION_PATH, INDEX_NAME, 0)).isFalse();
+      assertThat(registry.getHydrationWaitCount()).isGreaterThanOrEqualTo(1L);
+
+      ArgumentCaptor<TopEntriesCollector> readerCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(readerSender).lastResult(readerCaptor.capture());
+      List<EntryScore<Object>> adoptedHits = readerCaptor.getValue().getEntries().getHits();
+      assertThat(adoptedHits).extracting(EntryScore::getKey).containsExactly("k-ov", "k-base");
+      assertThat(adoptedHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(adoptedHits.get(1).getScore()).isCloseTo(scoreBase, within(1e-4f));
+
+      // Verify Path B drains the adopted cut cleanly to 0 while preserving k-ov=v2 & k-del absent.
+      ResultSender<TopEntriesCollector> pathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSender);
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      Tier0VectorDeltaBuffer<Object> promotedBuf =
+          registry.getBuffer(REGION_PATH, INDEX_NAME, 0);
+      assertThat(promotedBuf.getTotalSize()).isEqualTo(0);
+
+      ArgumentCaptor<TopEntriesCollector> pathBCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathBSender).lastResult(pathBCaptor.capture());
+      List<EntryScore<Object>> drainedHits = pathBCaptor.getValue().getEntries().getHits();
+      assertThat(drainedHits).extracting(EntryScore::getKey).containsExactly("k-ov", "k-base");
+      assertThat(drainedHits.get(0).getScore()).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(drainedHits.get(1).getScore()).isCloseTo(scoreBase, within(1e-4f));
+    } finally {
+      allowHydrationFinish.countDown();
+      pool.shutdownNow();
     }
   }
 

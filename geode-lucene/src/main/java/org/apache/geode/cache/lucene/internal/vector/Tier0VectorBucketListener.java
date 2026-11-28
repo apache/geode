@@ -81,6 +81,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> {
 
   private static volatile BiConsumer<Integer, Object> beforeRecordPutHookForTest;
+  private static volatile BiConsumer<Integer, Object> beforeRecordDestroyHookForTest;
 
   private final String indexName;
   private final Function<V, float[]> vectorExtractor;
@@ -88,11 +89,21 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
 
   /**
    * Test-only hook invoked inside {@code afterCreate}/{@code afterUpdate} strictly after the
-   * {@code BucketRegion} entry update and AEQ enqueue and strictly before
-   * {@link Tier0VectorRegistry#recordPut} acquires {@code pathBBarrierLock.readLock()}.
+   * {@code BucketRegion} entry update, synchronous bucket replication, and AEQ enqueue and strictly
+   * before {@link Tier0VectorRegistry#recordPut} acquires {@code pathBBarrierLock.readLock()}.
    */
   public static void setBeforeRecordPutHookForTest(BiConsumer<Integer, Object> hook) {
     beforeRecordPutHookForTest = hook;
+  }
+
+  /**
+   * Test-only hook invoked inside {@code afterDestroy}/{@code afterInvalidate} strictly after the
+   * {@code BucketRegion} tombstone update, synchronous bucket replication, and AEQ enqueue and
+   * strictly before {@link Tier0VectorRegistry#recordDestroy} acquires
+   * {@code pathBBarrierLock.readLock()}.
+   */
+  public static void setBeforeRecordDestroyHookForTest(BiConsumer<Integer, Object> hook) {
+    beforeRecordDestroyHookForTest = hook;
   }
 
   public Tier0VectorBucketListener(String indexName, Function<V, float[]> vectorExtractor,
@@ -194,6 +205,10 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
     registry.markIndexManaged(region.getFullPath(), indexName);
     Object eventId = extractEventId(event);
+    BiConsumer<Integer, Object> hook = beforeRecordDestroyHookForTest;
+    if (hook != null) {
+      hook.accept(bucketId, event.getKey());
+    }
     registry.recordDestroy(region.getFullPath(), indexName, bucketId, event.getKey(), eventId);
   }
 

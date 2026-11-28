@@ -116,6 +116,8 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   private static volatile CountDownLatch OWNERSHIP_HOOK_RELEASE;
   private static volatile CountDownLatch RECORD_PUT_HOOK_ENTERED;
   private static volatile CountDownLatch RECORD_PUT_HOOK_RELEASE;
+  private static volatile CountDownLatch RECORD_DESTROY_HOOK_ENTERED;
+  private static volatile CountDownLatch RECORD_DESTROY_HOOK_RELEASE;
   private static volatile GatewaySenderEventImpl CAPTURED_STALE_EVENT_W1;
   private static volatile GatewaySenderEventImpl CAPTURED_STALE_EVENT_DEL;
 
@@ -138,6 +140,7 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
         vm.invoke(() -> {
           DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = null;
           Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+          Tier0VectorBucketListener.setBeforeRecordDestroyHookForTest(null);
           IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
           CAPTURED_STALE_EVENT_W1 = null;
           CAPTURED_STALE_EVENT_DEL = null;
@@ -149,10 +152,16 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
           if (putRelease != null) {
             putRelease.countDown();
           }
+          CountDownLatch destroyRelease = RECORD_DESTROY_HOOK_RELEASE;
+          if (destroyRelease != null) {
+            destroyRelease.countDown();
+          }
           OWNERSHIP_HOOK_ENTERED = null;
           OWNERSHIP_HOOK_RELEASE = null;
           RECORD_PUT_HOOK_ENTERED = null;
           RECORD_PUT_HOOK_RELEASE = null;
+          RECORD_DESTROY_HOOK_ENTERED = null;
+          RECORD_DESTROY_HOOK_RELEASE = null;
           if (hasCache()) {
             Tier0VectorRegistry.removeCache(getCache());
           }
@@ -2936,6 +2945,335 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
       writerPool.shutdownNow();
       dataStore1.invoke(() -> resumeIndexAeq(getCache()));
       dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+    }
+  }
+
+  /**
+   * Real 3-VM Geode cluster verification of the Theorem 2(1) replicate-before-pin crash boundary:
+   * executes BOTH an overwrite ({@code kOv: v1 -> v2}) and a delete ({@code kDel: v1 -> tombstone})
+   * directly on primary {@code dataStore1}, pauses both writers strictly AFTER synchronous bucket
+   * replication to backup {@code dataStore2} and strictly BEFORE {@code dataStore1} pins either
+   * mutation into Tier-0, confirms zero Tier-0 pin on {@code dataStore1} and replicated {@code v2}
+   * + tombstone on {@code dataStore2}, then crashes {@code dataStore1} (killing the originating
+   * writer threads so zero client retries reach {@code dataStore2}) while a continuous reader
+   * queries across promotion. Verifies every read across promotion observes either the exact
+   * pre-adoption cut or the atomic adopted cut at {@code t_adopt} (zero torn cuts, zero tombstone
+   * ghosts), and verifies clean AEQ drain to {@code 0} post-promotion.
+   */
+  @Test
+  public void primaryCrashBetweenSyncReplicationAndTier0PinAdoptsOverwriteAndDeleteAcrossPromotion()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    float[] orthogonalSeed = new float[DIM];
+    orthogonalSeed[DIM - 1] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("v20-seed-" + i, new VectorRecord(orthogonalSeed, "other", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    final int targetBucketId = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+    });
+
+    List<String> bucketKeys = accessor.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<String> keys = new ArrayList<>();
+      for (int i = 0; keys.size() < 3 && i < 20_000; i++) {
+        String candidate = "v20-adopt-" + i;
+        if (pr.getKeyInfo(candidate).getBucketId() == targetBucketId) {
+          keys.add(candidate);
+        }
+      }
+      return keys;
+    });
+    assertThat(bucketKeys).hasSize(3);
+    String kOv = bucketKeys.get(0);
+    String kDel = bucketKeys.get(1);
+    String kBase = bucketKeys.get(2);
+
+    float[] vecV1 = unitVectorWithCos0(0.40f);
+    float[] vecV2 = unitVectorWithCos0(0.99f);
+    float[] vecBase = unitVectorWithCos0(0.70f);
+    float scoreV1 = VectorSimilarityScorer.score(query, vecV1, VectorSimilarityFunction.COSINE);
+    float scoreV2 = VectorSimilarityScorer.score(query, vecV2, VectorSimilarityFunction.COSINE);
+    float scoreBase =
+        VectorSimilarityScorer.score(query, vecBase, VectorSimilarityFunction.COSINE);
+
+    // Seed baseline committed state in Lucene (and replicated .files on backup dataStore2).
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      region.put(kOv, new VectorRecord(vecV1, "adopt", "all", "all"));
+      region.put(kDel, new VectorRecord(vecV1, "adopt", "all", "all"));
+      region.put(kBase, new VectorRecord(vecBase, "adopt", "all", "all"));
+    });
+    waitForLuceneFlush(accessor);
+    assertThat((int) dataStore1.invoke(this::countTier0Entries)).isEqualTo(0);
+
+    // Pause AEQs so post-promotion inspection observes the adopted Tier-0 cut before flush.
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    // Arm BOTH put and destroy replicate-before-pin hooks on primary dataStore1.
+    armOneShotBeforeRecordPutHook(dataStore1, targetBucketId, kOv);
+    armOneShotBeforeRecordDestroyHook(dataStore1, targetBucketId, kDel);
+
+    ExecutorService localPool = Executors.newFixedThreadPool(3);
+    AtomicBoolean stopReader = new AtomicBoolean(false);
+    try {
+      // Launch overwrite (kOv: v1 -> v2) and destroy (kDel: v1 -> tombstone) directly on primary
+      // dataStore1 so crashing dataStore1 kills both originating writers with zero client retries.
+      Future<?> putOnPrimary = localPool.submit(() -> {
+        try {
+          dataStore1.invoke(() -> {
+            Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+            region.put(kOv, new VectorRecord(vecV2, "adopt", "all", "all"));
+          });
+        } catch (Throwable ignored) {
+          // Expected when primary dataStore1 crashes mid-write.
+        }
+      });
+      Future<?> destroyOnPrimary = localPool.submit(() -> {
+        try {
+          dataStore1.invoke(() -> {
+            Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+            region.destroy(kDel);
+          });
+        } catch (Throwable ignored) {
+          // Expected when primary dataStore1 crashes mid-destroy.
+        }
+      });
+
+      awaitBeforeRecordPutHookEntered(dataStore1);
+      awaitBeforeRecordDestroyHookEntered(dataStore1);
+
+      // Prove exact replicate-before-pin boundary BEFORE crash:
+      // (1) dataStore1 (primary) has pinned NEITHER kOv NOR kDel into Tier-0.
+      dataStore1.invoke(() -> {
+        Tier0VectorDeltaBuffer<Object> buf =
+            Tier0VectorRegistry.forCache(getCache()).getBuffer("/" + REGION_NAME, INDEX_NAME,
+                targetBucketId);
+        if (buf != null) {
+          assertThat(buf.getEntry(kOv)).isNull();
+          assertThat(buf.getEntry(kDel)).isNull();
+        }
+      });
+      // (2) dataStore2 (backup) ALREADY holds synchronously replicated kOv=v2 AND kDel tombstone!
+      dataStore2.invoke(() -> {
+        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+        BucketRegion backupBucket = pr.getDataStore().getLocalBucketById(targetBucketId);
+        assertThat(backupBucket).isNotNull();
+        Object rawOv = backupBucket.getValueInVM(kOv);
+        if (rawOv instanceof org.apache.geode.internal.cache.CachedDeserializable) {
+          rawOv = ((org.apache.geode.internal.cache.CachedDeserializable) rawOv)
+              .getDeserializedForReading();
+        }
+        VectorRecord replicatedOv = (VectorRecord) rawOv;
+        assertThat(replicatedOv).isNotNull();
+        assertThat(replicatedOv.getVector()[0]).isCloseTo(0.99f, within(1e-5f));
+
+        RegionEntry replicatedDel = backupBucket.getRegionMap().getEntry(kDel);
+        assertThat(replicatedDel).isNotNull();
+        assertThat(replicatedDel.isTombstone()).isTrue();
+      });
+
+      // Start a continuous hybrid k-NN reader on accessor across the primary crash + promotion:
+      // every successful cut MUST be either the exact pre-adoption cut or the atomic adopted cut
+      // (never a torn half-adopted cut).
+      Future<int[]> readerCountsFuture = localPool.submit(() -> {
+        int preAdoptionCuts = 0;
+        int postAdoptionCuts = 0;
+        while (!stopReader.get()) {
+          try {
+            Map<String, Float> cut = accessor.invoke(() -> {
+              Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+              HybridKnnQueryContext ctx = HybridKnnQueryContext
+                  .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+                  .similarityFunction(VectorSimilarityFunction.COSINE)
+                  .addMetadataFilter("sel1", "adopt")
+                  .build();
+              Map<String, Float> out = new LinkedHashMap<>();
+              for (EntryScore<String> hit : DistributedHybridKnnFunction
+                  .executeOnRegion(region, ctx).getHits()) {
+                out.put(hit.getKey(), hit.getScore());
+              }
+              return out;
+            });
+            boolean isPreCut = cut.size() == 3
+                && cut.containsKey(kOv) && Math.abs(cut.get(kOv) - scoreV1) < 1e-3f
+                && cut.containsKey(kDel) && Math.abs(cut.get(kDel) - scoreV1) < 1e-3f
+                && cut.containsKey(kBase) && Math.abs(cut.get(kBase) - scoreBase) < 1e-3f;
+            boolean isPostCut = cut.size() == 2
+                && cut.containsKey(kOv) && Math.abs(cut.get(kOv) - scoreV2) < 1e-3f
+                && !cut.containsKey(kDel)
+                && cut.containsKey(kBase) && Math.abs(cut.get(kBase) - scoreBase) < 1e-3f;
+            assertThat(isPreCut || isPostCut)
+                .as("Reader across promotion observed torn cut: %s", cut)
+                .isTrue();
+            if (isPreCut) {
+              preAdoptionCuts++;
+            } else {
+              postAdoptionCuts++;
+            }
+          } catch (RuntimeException transientFailover) {
+            // Transient membership/PrimaryBucket failover exception while view converges.
+          }
+        }
+        return new int[] {preAdoptionCuts, postAdoptionCuts};
+      });
+
+      // Crash primary dataStore1 while BOTH writers are paused at replicate-before-pin boundary!
+      DistributedTestUtils.crashDistributedSystem(dataStore1);
+
+      // Wait for backup dataStore2 to promote all buckets to primary and complete hydration.
+      GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertThat((int) dataStore2.invoke(this::countLocalPrimaryBuckets))
+              .isEqualTo(NUM_BUCKETS));
+
+      // Verify adopted cut immediately post-promotion (BEFORE AEQ resumes / flushes):
+      // kOv=v2 adopted live, kDel adopted as tombstone (0 ghosts), kBase intact!
+      Map<String, Float> postPromoPathAHits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "adopt")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(postPromoPathAHits).containsOnlyKeys(kOv, kBase);
+      assertThat(postPromoPathAHits.get(kOv)).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(postPromoPathAHits.get(kBase)).isCloseTo(scoreBase, within(1e-4f));
+
+      stopReader.set(true);
+      int[] readerCounts = readerCountsFuture.get(30, TimeUnit.SECONDS);
+      assertThat(readerCounts[1])
+          .as("Continuous reader across promotion must observe adopted post-promotion cut")
+          .isGreaterThanOrEqualTo(1);
+
+      // Resume AEQ on promoted primary dataStore2 and drain via Path B + waitForLuceneFlush ->
+      // Tier-0 drains cleanly to 0 while preserving exact adopted state in Lucene!
+      dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+      Map<String, Float> postPromoPathBHits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:adpt~1", "sel1")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(postPromoPathBHits).containsOnlyKeys(kOv, kBase);
+      assertThat(postPromoPathBHits.get(kOv)).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(postPromoPathBHits.get(kBase)).isCloseTo(scoreBase, within(1e-4f));
+
+      waitForLuceneFlush(accessor);
+      assertThat((int) dataStore2.invoke(this::countTier0Entries)).isEqualTo(0);
+      assertThat((int) dataStore2.invoke(this::countTier0Tombstones)).isEqualTo(0);
+
+      Map<String, Float> postFlushHits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 10)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "adopt")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(postFlushHits).containsOnlyKeys(kOv, kBase);
+      assertThat(postFlushHits.get(kOv)).isCloseTo(scoreV2, within(1e-4f));
+      assertThat(postFlushHits.get(kBase)).isCloseTo(scoreBase, within(1e-4f));
+
+      // Release paused threads on crashed VM 0 cleanly before teardown.
+      releaseBeforeRecordPutHook(dataStore1);
+      releaseBeforeRecordDestroyHook(dataStore1);
+      putOnPrimary.get(30, TimeUnit.SECONDS);
+      destroyOnPrimary.get(30, TimeUnit.SECONDS);
+    } finally {
+      stopReader.set(true);
+      clearBeforeRecordPutHook(dataStore1);
+      clearBeforeRecordDestroyHook(dataStore1);
+      clearBeforeRecordPutHook(dataStore2);
+      clearBeforeRecordDestroyHook(dataStore2);
+      localPool.shutdownNow();
+    }
+  }
+
+  private void armOneShotBeforeRecordDestroyHook(VM vm, int targetBucketId, String targetKey) {
+    vm.invoke(() -> {
+      RECORD_DESTROY_HOOK_ENTERED = new CountDownLatch(1);
+      RECORD_DESTROY_HOOK_RELEASE = new CountDownLatch(1);
+      AtomicBoolean fired = new AtomicBoolean(false);
+      Tier0VectorBucketListener.setBeforeRecordDestroyHookForTest((bucketId, key) -> {
+        if (bucketId == targetBucketId && targetKey.equals(key)
+            && fired.compareAndSet(false, true)) {
+          RECORD_DESTROY_HOOK_ENTERED.countDown();
+          try {
+            RECORD_DESTROY_HOOK_RELEASE.await(30, TimeUnit.SECONDS);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+    });
+  }
+
+  private void awaitBeforeRecordDestroyHookEntered(VM vm) {
+    boolean entered = vm.invoke(() -> {
+      try {
+        return RECORD_DESTROY_HOOK_ENTERED.await(30, TimeUnit.SECONDS);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        return false;
+      }
+    });
+    assertThat(entered)
+        .as("Destroy writer must pause between sync replication and Tier-0 pin")
+        .isTrue();
+  }
+
+  private void releaseBeforeRecordDestroyHook(VM vm) {
+    vm.invoke(() -> {
+      Tier0VectorBucketListener.setBeforeRecordDestroyHookForTest(null);
+      CountDownLatch release = RECORD_DESTROY_HOOK_RELEASE;
+      if (release != null) {
+        release.countDown();
+      }
+    });
+  }
+
+  private void clearBeforeRecordDestroyHook(VM vm) {
+    if (vm != null) {
+      vm.invoke(() -> {
+        Tier0VectorBucketListener.setBeforeRecordDestroyHookForTest(null);
+        CountDownLatch release = RECORD_DESTROY_HOOK_RELEASE;
+        if (release != null) {
+          release.countDown();
+        }
+      });
     }
   }
 
