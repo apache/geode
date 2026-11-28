@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -55,6 +56,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
@@ -62,6 +64,8 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
+import org.apache.geode.cache.lucene.internal.LuceneEventListener;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorBucketListener;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
@@ -108,6 +112,8 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   private static final AtomicBoolean REMOTE_WRITER_STOP = new AtomicBoolean(false);
   private static volatile CountDownLatch OWNERSHIP_HOOK_ENTERED;
   private static volatile CountDownLatch OWNERSHIP_HOOK_RELEASE;
+  private static volatile CountDownLatch RECORD_PUT_HOOK_ENTERED;
+  private static volatile CountDownLatch RECORD_PUT_HOOK_RELEASE;
 
   private VM dataStore1;
   private VM dataStore2;
@@ -127,12 +133,19 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
       if (vm != null) {
         vm.invoke(() -> {
           DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = null;
+          Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
           CountDownLatch release = OWNERSHIP_HOOK_RELEASE;
           if (release != null) {
             release.countDown();
           }
+          CountDownLatch putRelease = RECORD_PUT_HOOK_RELEASE;
+          if (putRelease != null) {
+            putRelease.countDown();
+          }
           OWNERSHIP_HOOK_ENTERED = null;
           OWNERSHIP_HOOK_RELEASE = null;
+          RECORD_PUT_HOOK_ENTERED = null;
+          RECORD_PUT_HOOK_RELEASE = null;
           if (hasCache()) {
             Tier0VectorRegistry.removeCache(getCache());
           }
@@ -2235,6 +2248,305 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     vec[0] = cos0;
     vec[1] = (float) Math.sqrt(Math.max(0.0, 1.0 - (double) cos0 * cos0));
     return vec;
+  }
+
+  @Test
+  public void writerPausedBetweenBucketUpdateAndTier0PinNeverDeadlocksOrLeaksDuringPathAAndPathBDrain()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    float[] orthogonalSeed = new float[DIM];
+    orthogonalSeed[DIM - 1] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("seed-" + i, new VectorRecord(orthogonalSeed, "other", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    int targetBucketId = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+    });
+
+    List<String> bucketKeys = accessor.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<String> keys = new ArrayList<>();
+      for (int i = 0; keys.size() < 2 && i < 20_000; i++) {
+        String candidate = "pub-win-" + i;
+        if (pr.getKeyInfo(candidate).getBucketId() == targetBucketId) {
+          keys.add(candidate);
+        }
+      }
+      return keys;
+    });
+    assertThat(bucketKeys).hasSize(2);
+    String kPathB = bucketKeys.get(0);
+    String kPathA = bucketKeys.get(1);
+
+    float[] vecV1 = unitVectorWithCos0(0.40f);
+    float[] vecV2 = unitVectorWithCos0(0.99f);
+    float expectedScoreV1 =
+        VectorSimilarityScorer.score(query, vecV1, VectorSimilarityFunction.COSINE);
+    float expectedScoreV2 =
+        VectorSimilarityScorer.score(query, vecV2, VectorSimilarityFunction.COSINE);
+
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    ExecutorService writerPool = Executors.newSingleThreadExecutor();
+    try {
+      // Case 1 (Path B unsupported FuzzyQuery): Put v1 into Tier-0, then launch a real region put
+      // for v2 that pauses inside BucketRegion.basicPutPart2 (holding synchronized(RegionEntry)
+      // with BucketRegion ALREADY updated to v2, strictly BEFORE Tier0VectorRegistry.recordPut).
+      // Path B MUST complete without deadlocking and return strictly v1 (zero unpinned v2 leak!).
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kPathB, new VectorRecord(vecV1, "books", "all", "all"));
+      });
+
+      armOneShotBeforeRecordPutHook(dataStore1, targetBucketId, kPathB);
+      Future<?> putV2PathB = writerPool.submit(() -> accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kPathB, new VectorRecord(vecV2, "books", "all", "all"));
+      }));
+      awaitBeforeRecordPutHookEntered(dataStore1);
+
+      // Confirm live BucketRegion ALREADY holds v2 while Tier-0 still holds v1!
+      dataStore1.invoke(() -> {
+        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+        BucketRegion br = pr.getDataStore().getLocalBucketById(targetBucketId);
+        Object rawVal = br.getValueInVM(kPathB);
+        if (rawVal instanceof org.apache.geode.internal.cache.CachedDeserializable) {
+          rawVal = ((org.apache.geode.internal.cache.CachedDeserializable) rawVal)
+              .getDeserializedForReading();
+        }
+        VectorRecord bucketVal = (VectorRecord) rawVal;
+        assertThat(bucketVal).isNotNull();
+        assertThat(bucketVal.getVector()[0]).isCloseTo(0.99f, within(1e-5f));
+      });
+
+      Map<String, Float> pathBHitsDuringPause = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:boks~1", "sel1")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(pathBHitsDuringPause).containsOnlyKeys(kPathB);
+      assertThat(pathBHitsDuringPause.get(kPathB)).isCloseTo(expectedScoreV1, within(1e-4f));
+
+      releaseBeforeRecordPutHook(dataStore1);
+      putV2PathB.get(30, TimeUnit.SECONDS);
+
+      Map<String, Float> pathBHitsAfterPin = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:boks~1", "sel1")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(pathBHitsAfterPin).containsOnlyKeys(kPathB);
+      assertThat(pathBHitsAfterPin.get(kPathB)).isCloseTo(expectedScoreV2, within(1e-4f));
+
+      // Case 2 (Path A LuceneEventListener drain + hybrid read): Put v1 into Tier-0, pause real
+      // region put for v2 strictly between BucketRegion update (v2) and Tier-0 pin, flush event1
+      // via real LuceneEventListener on dataStore1, and confirm zero unpinned v2 leakage!
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kPathA, new VectorRecord(vecV1, "pathA", "all", "all"));
+      });
+
+      armOneShotBeforeRecordPutHook(dataStore1, targetBucketId, kPathA);
+      Future<?> putV2PathA = writerPool.submit(() -> accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kPathA, new VectorRecord(vecV2, "pathA", "all", "all"));
+      }));
+      awaitBeforeRecordPutHookEntered(dataStore1);
+
+      // Flush event_1 via real LuceneEventListener on dataStore1 while BucketRegion holds v2 and
+      // Tier-0 still holds immutable boundEntry(v1).
+      dataStore1.invoke(() -> {
+        InternalCache ic = (InternalCache) getCache();
+        PartitionedRegion pr = (PartitionedRegion) ic.getRegion(REGION_NAME);
+        BucketRegion br = pr.getDataStore().getLocalBucketById(targetBucketId);
+        Object rawVal = br.getValueInVM(kPathA);
+        if (rawVal instanceof org.apache.geode.internal.cache.CachedDeserializable) {
+          rawVal = ((org.apache.geode.internal.cache.CachedDeserializable) rawVal)
+              .getDeserializedForReading();
+        }
+        VectorRecord bucketVal = (VectorRecord) rawVal;
+        assertThat(bucketVal).isNotNull();
+        assertThat(bucketVal.getVector()[0]).isCloseTo(0.99f, within(1e-5f));
+
+        InternalLuceneIndex idx =
+            (InternalLuceneIndex) LuceneServiceProvider.get(ic).getIndex(INDEX_NAME, REGION_NAME);
+        LuceneEventListener aeqListener = new LuceneEventListener(ic, idx.getRepositoryManager());
+        AsyncEvent<Object, Object> eventForV1 = new AsyncEvent<Object, Object>() {
+          @Override
+          public boolean getPossibleDuplicate() {
+            return false;
+          }
+
+          @Override
+          public org.apache.geode.cache.wan.EventSequenceID getEventSequenceID() {
+            return null;
+          }
+
+          @Override
+          public Region<Object, Object> getRegion() {
+            return pr;
+          }
+
+          @Override
+          public org.apache.geode.cache.Operation getOperation() {
+            return org.apache.geode.cache.Operation.CREATE;
+          }
+
+          @Override
+          public Object getKey() {
+            return kPathA;
+          }
+
+          @Override
+          public Object getDeserializedValue() {
+            return new VectorRecord(vecV1, "pathA", "all", "all");
+          }
+
+          @Override
+          public byte[] getSerializedValue() {
+            return null;
+          }
+
+          @Override
+          public Object getCallbackArgument() {
+            return null;
+          }
+        };
+        assertThat(aeqListener.processEvents(Collections.singletonList(eventForV1))).isTrue();
+        Tier0VectorDeltaBuffer<Object> buf =
+            Tier0VectorRegistry.forCache(ic).getBuffer("/" + REGION_NAME, INDEX_NAME,
+                targetBucketId);
+        assertThat(buf.getEntry(kPathA)).isNull();
+      });
+
+      // Hybrid read while w2 is STILL paused before pin MUST observe strictly v1 (~0.40)
+      Map<String, Float> pathAHitsDuringPause = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "pathA")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(pathAHitsDuringPause).containsOnlyKeys(kPathA);
+      assertThat(pathAHitsDuringPause.get(kPathA)).isCloseTo(expectedScoreV1, within(1e-4f));
+
+      releaseBeforeRecordPutHook(dataStore1);
+      putV2PathA.get(30, TimeUnit.SECONDS);
+
+      // Immediately after w2 finishes pinning v2 into Tier-0, hybrid read observes v2 (~0.99)!
+      Map<String, Float> pathAHitsAfterPin = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "pathA")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(pathAHitsAfterPin).containsOnlyKeys(kPathA);
+      assertThat(pathAHitsAfterPin.get(kPathA)).isCloseTo(expectedScoreV2, within(1e-4f));
+    } finally {
+      clearBeforeRecordPutHook(dataStore1);
+      clearBeforeRecordPutHook(dataStore2);
+      writerPool.shutdownNow();
+      dataStore1.invoke(() -> resumeIndexAeq(getCache()));
+      dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+    }
+  }
+
+  private void armOneShotBeforeRecordPutHook(VM vm, int targetBucketId, String targetKey) {
+    vm.invoke(() -> {
+      RECORD_PUT_HOOK_ENTERED = new CountDownLatch(1);
+      RECORD_PUT_HOOK_RELEASE = new CountDownLatch(1);
+      AtomicBoolean fired = new AtomicBoolean(false);
+      Tier0VectorBucketListener.setBeforeRecordPutHookForTest((bucketId, key) -> {
+        if (bucketId == targetBucketId && targetKey.equals(key)
+            && fired.compareAndSet(false, true)) {
+          RECORD_PUT_HOOK_ENTERED.countDown();
+          try {
+            RECORD_PUT_HOOK_RELEASE.await(30, TimeUnit.SECONDS);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+    });
+  }
+
+  private void awaitBeforeRecordPutHookEntered(VM vm) {
+    boolean entered = vm.invoke(() -> {
+      try {
+        return RECORD_PUT_HOOK_ENTERED.await(30, TimeUnit.SECONDS);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        return false;
+      }
+    });
+    assertThat(entered).as("Writer must pause between BucketRegion update and Tier-0 pin").isTrue();
+  }
+
+  private void releaseBeforeRecordPutHook(VM vm) {
+    vm.invoke(() -> {
+      Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+      CountDownLatch release = RECORD_PUT_HOOK_RELEASE;
+      if (release != null) {
+        release.countDown();
+      }
+    });
+  }
+
+  private void clearBeforeRecordPutHook(VM vm) {
+    if (vm != null) {
+      vm.invoke(() -> {
+        Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+        CountDownLatch release = RECORD_PUT_HOOK_RELEASE;
+        if (release != null) {
+          release.countDown();
+        }
+      });
+    }
   }
 
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,

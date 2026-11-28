@@ -104,8 +104,24 @@ public class Tier0VectorDeltaBuffer<K> {
    * @return monotonically increasing mutation sequence number
    */
   public long put(K key, float[] vector, Map<String, Object> metadata) {
+    return put(key, vector, metadata, null);
+  }
+
+  /**
+   * Captures a live vector put, metadata, and the immutable region payload atomically inside
+   * {@code E_active} so both Path-A and Path-B flushers drain the exact published payload without
+   * re-reading live mutable {@code BucketRegion} state.
+   *
+   * @param key region key (non-null)
+   * @param vector embedding vector (non-null, non-empty; defensively copied)
+   * @param metadata optional metadata fields for pre-filter evaluation
+   * @param regionValue immutable region payload (e.g., {@code PdxInstance} or domain value) bound
+   *        to this mutation sequence, or {@code null} when unspecified
+   * @return monotonically increasing mutation sequence number
+   */
+  public long put(K key, float[] vector, Map<String, Object> metadata, Object regionValue) {
     Objects.requireNonNull(key, "key must not be null");
-    return recordMutation(key, copyVector(vector), copyMetadata(metadata), false);
+    return recordMutation(key, copyVector(vector), copyMetadata(metadata), false, regionValue);
   }
 
   /**
@@ -118,8 +134,13 @@ public class Tier0VectorDeltaBuffer<K> {
    *         was already present
    */
   public long putIfAbsent(K key, float[] vector, Map<String, Object> metadata) {
+    return putIfAbsent(key, vector, metadata, null);
+  }
+
+  public long putIfAbsent(K key, float[] vector, Map<String, Object> metadata, Object regionValue) {
     Objects.requireNonNull(key, "key must not be null");
-    return insertOrOverwrite(key, copyVector(vector), copyMetadata(metadata), false, false, -1L);
+    return insertOrOverwrite(
+        key, copyVector(vector), copyMetadata(metadata), false, false, -1L, regionValue);
   }
 
   /**
@@ -130,8 +151,14 @@ public class Tier0VectorDeltaBuffer<K> {
    * {@link #deleteIfSequenceBefore(Object, long)}.
    */
   long putProvisionalIfAbsent(K key, float[] vector, Map<String, Object> metadata) {
+    return putProvisionalIfAbsent(key, vector, metadata, null);
+  }
+
+  long putProvisionalIfAbsent(K key, float[] vector, Map<String, Object> metadata,
+      Object regionValue) {
     Objects.requireNonNull(key, "key must not be null");
-    return insertOrOverwrite(key, copyVector(vector), copyMetadata(metadata), false, true, -1L);
+    return insertOrOverwrite(
+        key, copyVector(vector), copyMetadata(metadata), false, true, -1L, regionValue);
   }
 
   /**
@@ -145,12 +172,17 @@ public class Tier0VectorDeltaBuffer<K> {
    */
   public long putIfSequenceBefore(K key, float[] vector, Map<String, Object> metadata,
       long maxExclusiveSeq) {
+    return putIfSequenceBefore(key, vector, metadata, maxExclusiveSeq, null);
+  }
+
+  public long putIfSequenceBefore(K key, float[] vector, Map<String, Object> metadata,
+      long maxExclusiveSeq, Object regionValue) {
     Objects.requireNonNull(key, "key must not be null");
     if (maxExclusiveSeq < 0L) {
       throw new IllegalArgumentException("maxExclusiveSeq must be >= 0");
     }
-    return insertOrOverwrite(
-        key, copyVector(vector), copyMetadata(metadata), false, false, maxExclusiveSeq);
+    return insertOrOverwrite(key, copyVector(vector), copyMetadata(metadata), false, false,
+        maxExclusiveSeq, regionValue);
   }
 
   /**
@@ -164,7 +196,7 @@ public class Tier0VectorDeltaBuffer<K> {
    */
   public long deleteIfAbsent(K key) {
     Objects.requireNonNull(key, "key must not be null");
-    return insertOrOverwrite(key, null, Collections.emptyMap(), true, false, -1L);
+    return insertOrOverwrite(key, null, Collections.emptyMap(), true, false, -1L, null);
   }
 
   /**
@@ -173,7 +205,7 @@ public class Tier0VectorDeltaBuffer<K> {
    */
   long deleteProvisionalIfAbsent(K key) {
     Objects.requireNonNull(key, "key must not be null");
-    return insertOrOverwrite(key, null, Collections.emptyMap(), true, true, -1L);
+    return insertOrOverwrite(key, null, Collections.emptyMap(), true, true, -1L, null);
   }
 
   /**
@@ -191,7 +223,7 @@ public class Tier0VectorDeltaBuffer<K> {
       throw new IllegalArgumentException("maxExclusiveSeq must be >= 0");
     }
     return insertOrOverwrite(
-        key, null, Collections.emptyMap(), true, false, maxExclusiveSeq);
+        key, null, Collections.emptyMap(), true, false, maxExclusiveSeq, null);
   }
 
   private static float[] copyVector(float[] vector) {
@@ -209,7 +241,7 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   private long insertOrOverwrite(K key, float[] vector, Map<String, Object> metadata,
-      boolean tombstone, boolean provisionalHydration, long maxExclusiveSeq) {
+      boolean tombstone, boolean provisionalHydration, long maxExclusiveSeq, Object regionValue) {
     pathBBarrierLock.readLock().lock();
     try {
       while (true) {
@@ -251,8 +283,8 @@ public class Tier0VectorDeltaBuffer<K> {
               mutated[0] = true;
               long seq = sequenceGenerator.incrementAndGet();
               stampedSeq[0] = seq;
-              return new DeltaEntry<>(
-                  k, vector, metadata, tombstone, active.epoch, seq, provisionalHydration);
+              return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq,
+                  provisionalHydration, regionValue);
             });
           } finally {
             if (mutated[0]) {
@@ -288,22 +320,22 @@ public class Tier0VectorDeltaBuffer<K> {
    */
   public long destroy(K key) {
     Objects.requireNonNull(key, "key must not be null");
-    return recordMutation(key, null, Collections.emptyMap(), true);
+    return recordMutation(key, null, Collections.emptyMap(), true, null);
   }
 
   private long recordMutation(K key, float[] vector, Map<String, Object> metadata,
-      boolean tombstone) {
-    return recordMutation(key, vector, metadata, tombstone, null);
+      boolean tombstone, Object regionValue) {
+    return recordMutation(key, vector, metadata, tombstone, regionValue, null);
   }
 
   long putWithPreMutateHookForTest(K key, float[] vector, Map<String, Object> metadata,
       Runnable afterPreIncBeforeMutateHook) {
     return recordMutation(
-        key, copyVector(vector), copyMetadata(metadata), false, afterPreIncBeforeMutateHook);
+        key, copyVector(vector), copyMetadata(metadata), false, null, afterPreIncBeforeMutateHook);
   }
 
   private long recordMutation(K key, float[] vector, Map<String, Object> metadata,
-      boolean tombstone, Runnable afterPreIncBeforeMutateHook) {
+      boolean tombstone, Object regionValue, Runnable afterPreIncBeforeMutateHook) {
     pathBBarrierLock.readLock().lock();
     try {
       while (true) {
@@ -328,7 +360,8 @@ public class Tier0VectorDeltaBuffer<K> {
               if (existing == null || active.epoch > existing.epoch
                   || (active.epoch == existing.epoch && seq > existing.sequence)) {
                 stampedSeq[0] = seq;
-                return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq);
+                return new DeltaEntry<>(
+                    k, vector, metadata, tombstone, active.epoch, seq, false, regionValue);
               }
               stampedSeq[0] = existing.sequence;
               return existing;
@@ -569,6 +602,72 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
+   * Evicts specific keys from both {@code E_active} and {@code E_flushing} ONLY when the currently
+   * buffered entry matches the exact immutable {@link DeltaEntry} committed to Lucene (or has
+   * {@code sequence <= committed.sequence} with matching tombstone state and payload). Guarantees
+   * that a newer mutation pinned while an earlier batch was flushing can never be evicted under the
+   * earlier batch's commit.
+   */
+  public void evictCommittedEntries(Map<K, DeltaEntry<K>> committedEntries) {
+    if (committedEntries == null || committedEntries.isEmpty()) {
+      return;
+    }
+    pathBBarrierLock.readLock().lock();
+    try {
+      synchronized (evictionLock) {
+        evictionVersion.incrementAndGet();
+        try {
+          while (true) {
+            EpochState<K> state = stateRef.get();
+            EpochBucket<K> active = state.active;
+            int writerCount = active.writerState.get();
+            if ((writerCount & SEALED_BIT) != 0) {
+              Thread.onSpinWait();
+              continue;
+            }
+            if (!active.writerState.compareAndSet(writerCount, writerCount + 1)) {
+              continue;
+            }
+            try {
+              EpochBucket<K> flushing = state.flushing;
+              for (Map.Entry<K, DeltaEntry<K>> item : committedEntries.entrySet()) {
+                K key = item.getKey();
+                DeltaEntry<K> committed = item.getValue();
+                if (committed == null) {
+                  continue;
+                }
+                active.entries.computeIfPresent(key,
+                    (k, existing) -> shouldEvictCommittedEntry(existing, committed)
+                        ? null : existing);
+                if (flushing != null) {
+                  flushing.entries.computeIfPresent(key,
+                      (k, existing) -> shouldEvictCommittedEntry(existing, committed)
+                          ? null : existing);
+                }
+              }
+              return;
+            } finally {
+              active.writerState.decrementAndGet();
+            }
+          }
+        } finally {
+          evictionVersion.incrementAndGet();
+        }
+      }
+    } finally {
+      pathBBarrierLock.readLock().unlock();
+    }
+  }
+
+  private static <K> boolean shouldEvictCommittedEntry(
+      DeltaEntry<K> existing, DeltaEntry<K> committed) {
+    return existing == committed
+        || (existing.sequence <= committed.sequence
+            && existing.tombstone == committed.tombstone
+            && Objects.equals(existing.regionValue, committed.regionValue));
+  }
+
+  /**
    * Returns {@code true} if {@code key} is currently present (live or tombstoned) in either
    * {@code E_active} or {@code E_flushing}.
    */
@@ -581,22 +680,29 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
+   * Returns the latest immutable {@link DeltaEntry} for {@code key} across
+   * {@code (E_active, E_flushing)} in reverse epoch order, or {@code null} if absent. Reading the
+   * returned entry atomically binds its stamped sequence number to its immutable payload/tombstone.
+   */
+  public DeltaEntry<K> getEntry(K key) {
+    EpochState<K> state = stateRef.get();
+    DeltaEntry<K> activeEntry = state.active.entries.get(key);
+    if (activeEntry != null) {
+      return activeEntry;
+    }
+    if (state.flushing != null) {
+      return state.flushing.entries.get(key);
+    }
+    return null;
+  }
+
+  /**
    * Returns the current stamped sequence number for {@code key} across
    * {@code (E_active, E_flushing)}, or {@code -1L} if absent.
    */
   public long getKeySequence(K key) {
-    EpochState<K> state = stateRef.get();
-    DeltaEntry<K> activeEntry = state.active.entries.get(key);
-    if (activeEntry != null) {
-      return activeEntry.sequence;
-    }
-    if (state.flushing != null) {
-      DeltaEntry<K> flushingEntry = state.flushing.entries.get(key);
-      if (flushingEntry != null) {
-        return flushingEntry.sequence;
-      }
-    }
-    return -1L;
+    DeltaEntry<K> entry = getEntry(key);
+    return entry == null ? -1L : entry.sequence;
   }
 
   /**
@@ -888,14 +994,15 @@ public class Tier0VectorDeltaBuffer<K> {
     private final long epoch;
     private final long sequence;
     private final boolean provisionalHydration;
+    private final Object regionValue;
 
     DeltaEntry(K key, float[] vector, Map<String, Object> metadata, boolean tombstone, long epoch,
         long sequence) {
-      this(key, vector, metadata, tombstone, epoch, sequence, false);
+      this(key, vector, metadata, tombstone, epoch, sequence, false, null);
     }
 
     DeltaEntry(K key, float[] vector, Map<String, Object> metadata, boolean tombstone, long epoch,
-        long sequence, boolean provisionalHydration) {
+        long sequence, boolean provisionalHydration, Object regionValue) {
       this.key = key;
       this.vector = vector;
       this.metadata = metadata;
@@ -903,6 +1010,7 @@ public class Tier0VectorDeltaBuffer<K> {
       this.epoch = epoch;
       this.sequence = sequence;
       this.provisionalHydration = provisionalHydration;
+      this.regionValue = regionValue;
     }
 
     public K getKey() {
@@ -931,6 +1039,15 @@ public class Tier0VectorDeltaBuffer<K> {
 
     public long getSequence() {
       return sequence;
+    }
+
+    /**
+     * Returns the immutable region payload (e.g., {@code PdxInstance} or domain object) atomically
+     * captured when this entry was published into Tier-0, or {@code null} for tombstones or
+     * metadata-only unit-test inserts.
+     */
+    public Object getRegionValue() {
+      return regionValue;
     }
 
     boolean isNewerThan(DeltaEntry<K> other) {

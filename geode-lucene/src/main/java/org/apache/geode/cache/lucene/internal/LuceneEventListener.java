@@ -29,6 +29,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
@@ -42,6 +43,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -122,7 +124,8 @@ public class LuceneEventListener implements AsyncEventListener {
         }
         try {
           Tier0VectorDeltaBuffer<Object> buffer = null;
-          Map<Object, Long> committedKeySeqs = null;
+          Map<Object, Tier0VectorDeltaBuffer.DeltaEntry<Object>> committedEntries = null;
+          Map<Object, Long> fallbackCommittedKeySeqs = null;
           int batchCount = 0;
           long updateNanos = 0L;
 
@@ -141,21 +144,33 @@ public class LuceneEventListener implements AsyncEventListener {
               buffer = tier0Registry.getBuffer(
                   partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
             }
-            if (buffer != null) {
-              // Capture the Tier-0 eviction watermark strictly BEFORE reading the live region
-              // payload via region.getEntry(key) so a newer concurrent overlay write arriving
-              // after the flushed payload was read can NEVER be evicted by this batch's commit.
-              long seqBeforeRead = buffer.getKeySequence(key);
-              if (seqBeforeRead >= 0L) {
-                if (committedKeySeqs == null) {
-                  committedKeySeqs = new HashMap<>();
-                }
-                committedKeySeqs.merge(key, seqBeforeRead, Math::max);
-              }
-            }
 
             long opStartNanos = (buffer != null && trackFlushCycles) ? System.nanoTime() : 0L;
-            Object value = getValue(region.getEntry(key));
+            Object value;
+            Tier0VectorDeltaBuffer.DeltaEntry<Object> boundEntry =
+                buffer != null ? buffer.getEntry(key) : null;
+            if (boundEntry != null
+                && (boundEntry.isTombstone() || boundEntry.getRegionValue() != null)) {
+              // Atomically bind sequence and immutable payload from a single DeltaEntry without
+              // re-reading live mutable BucketRegion state (eliminating the Path-A publication
+              // window race).
+              if (committedEntries == null) {
+                committedEntries = new HashMap<>();
+              }
+              committedEntries.merge(key, boundEntry,
+                  (existing, incoming) -> incoming.getSequence() >= existing.getSequence()
+                      ? incoming : existing);
+              value = boundEntry.isTombstone() ? null : boundEntry.getRegionValue();
+            } else {
+              if (boundEntry != null) {
+                if (fallbackCommittedKeySeqs == null) {
+                  fallbackCommittedKeySeqs = new HashMap<>();
+                }
+                fallbackCommittedKeySeqs.merge(key, boundEntry.getSequence(), Math::max);
+              }
+              value = resolveEventPayload(event, region, key);
+            }
+
             if (value != null) {
               repo.update(key, value);
             } else {
@@ -167,12 +182,20 @@ public class LuceneEventListener implements AsyncEventListener {
             }
           }
 
-          if (buffer != null && committedKeySeqs != null && !committedKeySeqs.isEmpty()) {
+          boolean hasCommittedTier0 = buffer != null
+              && ((committedEntries != null && !committedEntries.isEmpty())
+                  || (fallbackCommittedKeySeqs != null && !fallbackCommittedKeySeqs.isEmpty()));
+          if (hasCommittedTier0) {
             long commitStartNanos = trackFlushCycles ? System.nanoTime() : 0L;
             repo.commitAndRefreshBlocking();
             long commitEndNanos = trackFlushCycles ? System.nanoTime() : 0L;
             int preEvictTier0Size = trackFlushCycles ? buffer.getTotalSize() : 0;
-            buffer.evictCommitted(committedKeySeqs);
+            if (committedEntries != null && !committedEntries.isEmpty()) {
+              buffer.evictCommittedEntries(committedEntries);
+            }
+            if (fallbackCommittedKeySeqs != null && !fallbackCommittedKeySeqs.isEmpty()) {
+              buffer.evictCommitted(fallbackCommittedKeySeqs);
+            }
             if (trackFlushCycles) {
               long flushDurationNanos = updateNanos + (commitEndNanos - commitStartNanos);
               tier0Registry.recordFlushCycle(
@@ -207,6 +230,27 @@ public class LuceneEventListener implements AsyncEventListener {
     } finally {
       cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
     }
+  }
+
+  private Object resolveEventPayload(AsyncEvent event, Region region, Object key) {
+    Operation op = event.getOperation();
+    if (op != null) {
+      if (op.isDestroy() || op.isInvalidate()) {
+        return null;
+      }
+      Object eventValue = event.getDeserializedValue();
+      if (eventValue != null) {
+        return eventValue;
+      }
+      if (event instanceof GatewaySenderEventImpl) {
+        return null;
+      }
+    }
+    Object eventValue = event.getDeserializedValue();
+    if (eventValue != null) {
+      return eventValue;
+    }
+    return getValue(region.getEntry(key));
   }
 
   private Object getValue(Region.Entry entry) {

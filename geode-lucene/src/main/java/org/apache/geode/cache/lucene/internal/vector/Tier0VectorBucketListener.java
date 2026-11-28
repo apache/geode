@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.apache.lucene.store.AlreadyClosedException;
@@ -78,9 +79,20 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
  */
 public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> {
 
+  private static volatile BiConsumer<Integer, Object> beforeRecordPutHookForTest;
+
   private final String indexName;
   private final Function<V, float[]> vectorExtractor;
   private final Function<V, Map<String, Object>> metadataExtractor;
+
+  /**
+   * Test-only hook invoked inside {@code afterCreate}/{@code afterUpdate} strictly after the
+   * {@code BucketRegion} entry update and AEQ enqueue and strictly before
+   * {@link Tier0VectorRegistry#recordPut} acquires {@code pathBBarrierLock.readLock()}.
+   */
+  public static void setBeforeRecordPutHookForTest(BiConsumer<Integer, Object> hook) {
+    beforeRecordPutHookForTest = hook;
+  }
 
   public Tier0VectorBucketListener(String indexName, Function<V, float[]> vectorExtractor,
       Function<V, Map<String, Object>> metadataExtractor) {
@@ -147,8 +159,12 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
         return;
       }
       Map<String, Object> metadata = metadataExtractor.apply(value);
+      BiConsumer<Integer, Object> hook = beforeRecordPutHookForTest;
+      if (hook != null) {
+        hook.accept(bucketId, event.getKey());
+      }
       Tier0VectorRegistry.forCache(cache).recordPut(
-          region.getFullPath(), indexName, bucketId, event.getKey(), vector, metadata);
+          region.getFullPath(), indexName, bucketId, event.getKey(), vector, metadata, value);
     } finally {
       if (internalCache != null) {
         internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
@@ -617,8 +633,8 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       // entries while preserving any concurrent live post-promotion destroy or newer put.
       if (bucket.getEntry(key) != null) {
         long seq = promotionStartSeq >= 0L
-            ? buffer.putIfSequenceBefore(key, vec, metadata, promotionStartSeq)
-            : buffer.putProvisionalIfAbsent(key, vec, metadata);
+            ? buffer.putIfSequenceBefore(key, vec, metadata, promotionStartSeq, val)
+            : buffer.putProvisionalIfAbsent(key, vec, metadata, val);
         if (seq >= 0L) {
           if (aeqResult == null || aeqResult.hydratedKeys.add(key)) {
             registry.incrementHydratedKeysCount();

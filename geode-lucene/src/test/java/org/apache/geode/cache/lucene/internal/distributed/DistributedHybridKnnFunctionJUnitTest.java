@@ -2361,6 +2361,238 @@ public class DistributedHybridKnnFunctionJUnitTest {
     }
   }
 
+  @Test
+  @SuppressWarnings("unchecked")
+  public void writerPausedBetweenBucketUpdateAndTier0PinNeverDeadlocksOrLeaksDuringPathAAndPathBDrain()
+      throws Exception {
+    float[] queryVec = new float[] {1f, 0f, 0f, 0f};
+    float[] v1 = new float[] {0.40f, (float) Math.sqrt(1.0 - 0.16), 0f, 0f};
+    float[] v2 = new float[] {0.99f, (float) Math.sqrt(1.0 - 0.99 * 0.99), 0f, 0f};
+    Object[] payloadV1 = new Object[] {v1, "books"};
+    Object[] payloadV2 = new Object[] {v2, "books"};
+    float expectedScoreV1 =
+        VectorSimilarityScorer.score(queryVec, v1, VectorSimilarityFunction.COSINE);
+    float expectedScoreV2 =
+        VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.YES));
+      return Collections.singletonList(doc);
+    };
+
+    // Sub-case (a): Path B (unsupported FuzzyQuery) while writer w2 ALREADY updated BucketRegion
+    // to v2 and holds the RegionEntry lock while paused/blocked before acquiring
+    // pathBBarrierLock.readLock() in Tier0VectorDeltaBuffer.put().
+    // Path B MUST drain strictly the immutable FlushBatch payload (v1), NEVER touch BucketRegion
+    // (zero deadlock!), NEVER leak unpinned v2, and unblock w2 cleanly.
+    Tier0VectorRegistry.removeCache(mockCache);
+    Tier0VectorRegistry registryB = Tier0VectorRegistry.forCache(mockCache);
+    Tier0VectorDeltaBuffer<Object> bufferB =
+        registryB.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+    bufferB.put("k", v1, Map.of("category", "books"), payloadV1);
+
+    Object regionEntryLock = new Object();
+    java.util.concurrent.ConcurrentHashMap<Object, Object[]> liveBucketB =
+        new java.util.concurrent.ConcurrentHashMap<>();
+    liveBucketB.put("k", payloadV1);
+
+    when(mockRegion.getEntry("k")).thenAnswer(inv -> {
+      throw new AssertionError("Path B must NEVER read live BucketRegion when DeltaEntry holds "
+          + "immutable regionValue");
+    });
+    when(mockRegion.get("k")).thenAnswer(inv -> {
+      throw new AssertionError("Path B must NEVER read live BucketRegion when DeltaEntry holds "
+          + "immutable regionValue");
+    });
+
+    CountDownLatch w2UpdatedBucketHoldingEntryLock = new CountDownLatch(1);
+    CountDownLatch pathBHoldsWriteBarrier = new CountDownLatch(1);
+    CountDownLatch allowPathBToContinue = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repoB = new IndexRepositoryImpl(
+          mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex) {
+        @Override
+        public void update(Object key, Object value) throws IOException {
+          if (bufferB.isPathBWriteHeldByCurrentThread()) {
+            pathBHoldsWriteBarrier.countDown();
+            try {
+              allowPathBToContinue.await(5, TimeUnit.SECONDS);
+            } catch (InterruptedException ie) {
+              Thread.currentThread().interrupt();
+            }
+          }
+          super.update(key, value);
+        }
+      };
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repoB));
+
+      Future<?> writerW2 = pool.submit(() -> {
+        synchronized (regionEntryLock) {
+          // Writer updates BucketRegion to v2, then waits to pin Tier-0 while holding entry lock.
+          liveBucketB.put("k", payloadV2);
+          w2UpdatedBucketHoldingEntryLock.countDown();
+          try {
+            assertThat(pathBHoldsWriteBarrier.await(5, TimeUnit.SECONDS)).isTrue();
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            return;
+          }
+          // Release Path B so Path B finishes draining while w2 blocks on pathBBarrierLock.readLock
+          allowPathBToContinue.countDown();
+          bufferB.put("k", v2, Map.of("category", "books"), payloadV2);
+        }
+      });
+
+      assertThat(w2UpdatedBucketHoldingEntryLock.await(5, TimeUnit.SECONDS)).isTrue();
+
+      ResultSender<TopEntriesCollector> pathBSender1 = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSender1);
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+
+      new DistributedHybridKnnFunction().execute(mockContext);
+      writerW2.get(5, TimeUnit.SECONDS);
+
+      ArgumentCaptor<TopEntriesCollector> captorB1 =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathBSender1).lastResult(captorB1.capture());
+      List<EntryScore<Object>> hitsB1 = captorB1.getValue().getEntries().getHits();
+      assertThat(hitsB1).extracting(EntryScore::getKey).containsExactly("k");
+      assertThat(hitsB1.get(0).getScore()).isCloseTo(expectedScoreV1, within(1e-4f));
+
+      // After w2 finishes pinning v2 into Tier-0, subsequent Path-B query observes v2.
+      ResultSender<TopEntriesCollector> pathBSender2 = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSender2);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> captorB2 =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathBSender2).lastResult(captorB2.capture());
+      List<EntryScore<Object>> hitsB2 = captorB2.getValue().getEntries().getHits();
+      assertThat(hitsB2.get(0).getScore()).isCloseTo(expectedScoreV2, within(1e-4f));
+    } finally {
+      pool.shutdownNow();
+    }
+
+    // Sub-case (b): Path A (LuceneEventListener) while writer w2 ALREADY updated BucketRegion to
+    // v2 and is PAUSED before pinning Tier-0 -> Path A MUST drain immutable boundEntry (v1) without
+    // reading BucketRegion, commit v1, evict w1, and a concurrent hybrid read before w2's pin MUST
+    // observe v1 (zero unpinned v2 leakage!).
+    Tier0VectorRegistry.removeCache(mockCache);
+    Tier0VectorRegistry registryA = Tier0VectorRegistry.forCache(mockCache);
+    Tier0VectorDeltaBuffer<Object> bufferA =
+        registryA.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+    bufferA.put("k", v1, Map.of("category", "books"), payloadV1);
+
+    BucketRegion mockBucketA = mock(BucketRegion.class);
+    when(mockBucketA.getId()).thenReturn(0);
+    when(mockBucketA.isDestroyed()).thenReturn(false);
+
+    Region<Object, Object> aeqRegionA = mock(Region.class);
+    when(aeqRegionA.getFullPath()).thenReturn(REGION_PATH);
+    when(aeqRegionA.getEntry("k")).thenAnswer(inv -> {
+      throw new AssertionError("Path A must NEVER read live BucketRegion when DeltaEntry holds "
+          + "immutable regionValue");
+    });
+
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repoA = new IndexRepositoryImpl(
+          mockBucketA, writer, serializer, mockStats, mockBucketA, null, "lock", mockIndex);
+      when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+      when(mockRepoManager.getRepository(eq(aeqRegionA), eq("k"), any())).thenReturn(repoA);
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repoA));
+
+      AsyncEvent aeqEventV1 = mock(AsyncEvent.class);
+      when(aeqEventV1.getRegion()).thenReturn(aeqRegionA);
+      when(aeqEventV1.getKey()).thenReturn("k");
+
+      // w2 has updated BucketRegion to v2, but is paused BEFORE calling bufferA.put(v2)!
+      LuceneEventListener aeqListener = new LuceneEventListener(mockCache, mockRepoManager);
+      assertThat(aeqListener.processEvents(List.of(aeqEventV1))).isTrue();
+      assertThat(bufferA.getTotalSize()).isEqualTo(0);
+
+      // Hybrid read while w2 is STILL paused before pin sees strictly v1 (zero v2 leakage)
+      ResultSender<TopEntriesCollector> pathASender1 = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathASender1);
+      HybridKnnQueryContext ctxA = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      when(mockContext.getArguments()).thenReturn(ctxA);
+
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> captorA1 =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathASender1).lastResult(captorA1.capture());
+      List<EntryScore<Object>> hitsA1 = captorA1.getValue().getEntries().getHits();
+      assertThat(hitsA1.get(0).getScore()).isCloseTo(expectedScoreV1, within(1e-4f));
+
+      // Now w2 resumes and pins v2 into Tier-0 -> hybrid read immediately observes v2!
+      bufferA.put("k", v2, Map.of("category", "books"), payloadV2);
+      ResultSender<TopEntriesCollector> pathASender2 = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathASender2);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> captorA2 =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathASender2).lastResult(captorA2.capture());
+      List<EntryScore<Object>> hitsA2 = captorA2.getValue().getEntries().getHits();
+      assertThat(hitsA2.get(0).getScore()).isCloseTo(expectedScoreV2, within(1e-4f));
+
+      // Sub-case (c): If w2 pins seq2 DURING w1's repo.update/commit, evictCommittedEntries MUST
+      // NOT evict w2 under w1's flush!
+      Tier0VectorRegistry.removeCache(mockCache);
+      Tier0VectorRegistry registryC = Tier0VectorRegistry.forCache(mockCache);
+      Tier0VectorDeltaBuffer<Object> bufferC =
+          registryC.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+      long seq1 = bufferC.put("k", v1, Map.of("category", "books"), payloadV1);
+      long[] seq2Holder = new long[] {-1L};
+
+      IndexRepositoryImpl repoC = new IndexRepositoryImpl(
+          mockBucketA, writer, serializer, mockStats, mockBucketA, null, "lock", mockIndex) {
+        @Override
+        public void update(Object key, Object value) throws IOException {
+          super.update(key, value);
+          // w2 pins strictly after Path A read boundEntry(w1) and before evictCommittedEntries
+          seq2Holder[0] = bufferC.put("k", v2, Map.of("category", "books"), payloadV2);
+        }
+      };
+      when(mockRepoManager.getRepository(eq(aeqRegionA), eq("k"), any())).thenReturn(repoC);
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repoC));
+
+      assertThat(aeqListener.processEvents(List.of(aeqEventV1))).isTrue();
+      assertThat(seq2Holder[0]).isGreaterThan(seq1);
+      // w2 MUST survive in Tier-0 with exact sequence seq2 and payload v2!
+      assertThat(bufferC.getTotalSize()).isEqualTo(1);
+      assertThat(bufferC.getEntry("k").getSequence()).isEqualTo(seq2Holder[0]);
+      assertThat(bufferC.getEntry("k").getRegionValue()).isSameAs(payloadV2);
+
+      ResultSender<TopEntriesCollector> pathCSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathCSender);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> captorC =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathCSender).lastResult(captorC.capture());
+      List<EntryScore<Object>> hitsC = captorC.getValue().getEntries().getHits();
+      assertThat(hitsC.get(0).getScore()).isCloseTo(expectedScoreV2, within(1e-4f));
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private List<EntryScore<Object>> executeHybridQuery(float[] query, int k, int rerankFactor) {
     ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);

@@ -900,8 +900,19 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
       }
       try {
-        registry.flushBuffer(buffer, repo,
-            entry -> readRegionValueForFlush(cache, region, bucketId, entry.getKey()), true);
+        registry.flushBuffer(buffer, repo, entry -> {
+          // Drain strictly the immutable payload already captured inside FlushBatch<K> when
+          // present (never reading live BucketRegion or acquiring RegionEntry locks under
+          // pathBWrite), falling back to readRegionValueForFlush only for legacy metadata-only
+          // unit-test puts where regionValue was omitted.
+          Object captured = entry.getRegionValue();
+          if (captured != null) {
+            return (captured instanceof CachedDeserializable)
+                ? ((CachedDeserializable) captured).getDeserializedValue(null, null)
+                : captured;
+          }
+          return readRegionValueForFlush(cache, region, bucketId, entry.getKey());
+        }, true);
         flushedOrRefreshed = true;
         break;
       } catch (IllegalStateException flushAlreadyInProgress) {

@@ -153,7 +153,13 @@ public class Tier0VectorRegistry {
 
   public long recordPut(String regionPath, String indexName, int bucketId, Object key,
       float[] vector, Map<String, Object> metadata) {
-    return getOrCreateBuffer(regionPath, indexName, bucketId).put(key, vector, metadata);
+    return recordPut(regionPath, indexName, bucketId, key, vector, metadata, null);
+  }
+
+  public long recordPut(String regionPath, String indexName, int bucketId, Object key,
+      float[] vector, Map<String, Object> metadata, Object regionValue) {
+    return getOrCreateBuffer(regionPath, indexName, bucketId)
+        .put(key, vector, metadata, regionValue);
   }
 
   public long recordDestroy(String regionPath, String indexName, int bucketId, Object key) {
