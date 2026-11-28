@@ -412,16 +412,39 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   private final Set<EventDeliveryId> inFlightExecutions = ConcurrentHashMap.newKeySet();
   private final ConcurrentHashMap<Integer, AtomicLong> activeSessionEpochByBucket =
       new ConcurrentHashMap<>();
+
+  private static final class OrderedIngressBarrier {
+    final int bucketId;
+    long nextExpectedSeq = 1L;
+
+    OrderedIngressBarrier(int bucketId) {
+      this.bucketId = bucketId;
+    }
+  }
+
+  private final ConcurrentHashMap<String, OrderedIngressBarrier> orderedIngressBarriers =
+      new ConcurrentHashMap<>();
   private final AtomicLong effectsExecutedCount = new AtomicLong();
   private final AtomicLong deduplicatedEffectsCount = new AtomicLong();
   private final AtomicLong recoveredPendingCount = new AtomicLong();
   private final AtomicLong durableAdmissionsCount = new AtomicLong();
   private final AtomicLong staleSessionEventsRejectedCount = new AtomicLong();
+  private volatile BiConsumer<ContinuousVectorEvent, Long> beforeDurableStageHookForTest;
   private volatile BiConsumer<ContinuousVectorEvent, EventDeliveryId> beforeExecutionFenceHookForTest;
 
   public IdempotentRvvConsumer(RvvClientGate gate, DurableDeliveryStore store,
       EffectHandler effectHandler) {
     this(gate, store, effectHandler, null);
+  }
+
+  /**
+   * Package/test seam invoked strictly after {@link #processOrderedFrame} claims its monotonic
+   * per-stream ingress turn and strictly before entering {@code streamStageLock} for Phase-1
+   * durable staging.
+   */
+  public void setBeforeDurableStageHookForTest(
+      BiConsumer<ContinuousVectorEvent, Long> hook) {
+    this.beforeDurableStageHookForTest = hook;
   }
 
   /**
@@ -494,8 +517,16 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
    * session.
    */
   public long advanceSessionEpoch(int bucketId) {
-    return activeSessionEpochByBucket.computeIfAbsent(bucketId, ignored -> new AtomicLong(1L))
+    long next = activeSessionEpochByBucket.computeIfAbsent(bucketId, ignored -> new AtomicLong(1L))
         .incrementAndGet();
+    for (OrderedIngressBarrier barrier : orderedIngressBarriers.values()) {
+      if (barrier.bucketId == bucketId) {
+        synchronized (barrier) {
+          barrier.notifyAll();
+        }
+      }
+    }
+    return next;
   }
 
   /**
@@ -538,6 +569,111 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
         }
       }
     };
+  }
+
+  /**
+   * Returns a single-stream ordered-ingress {@link ContinuousVectorEventSink} bound to
+   * {@code sessionEpoch} that assigns monotonic per-{@code (bucketId, memberId)} ingress sequence
+   * numbers and enforces synchronous Phase-1 durable admission order before any later match or
+   * covering heartbeat can enter {@code streamStageLock}.
+   */
+  public ContinuousVectorEventSink createOrderedSessionSink(int bucketId, long sessionEpoch) {
+    if (sessionEpoch <= 0L) {
+      throw new IllegalArgumentException("sessionEpoch must be > 0, got: " + sessionEpoch);
+    }
+    Map<String, AtomicLong> seqByMember = new ConcurrentHashMap<>();
+    return new ContinuousVectorEventSink() {
+      @Override
+      public synchronized void onEvent(ContinuousVectorEvent event) {
+        if (event != null) {
+          long seq = seqByMember.computeIfAbsent(event.getMemberId(), ignored -> new AtomicLong(0L))
+              .incrementAndGet();
+          processOrderedFrame(event, sessionEpoch, seq);
+        }
+      }
+
+      @Override
+      public synchronized void onEventBatch(List<ContinuousVectorEvent> events) {
+        if (events != null) {
+          for (ContinuousVectorEvent event : events) {
+            if (event != null) {
+              onEvent(event);
+            }
+          }
+        }
+      }
+    };
+  }
+
+  /**
+   * Processes a wire frame carrying a monotonic per-{@code (bucketId, memberId, sessionEpoch)}
+   * ingress sequence {@code ingressSeq >= 1}, enforcing the client ordered-ingress durable
+   * admission invariant: frame {@code k + 1} (whether a later match {@code v + 1} or a covering
+   * watermark heartbeat {@code HB(v_h)}) cannot enter {@code streamStageLock}, durably stage,
+   * execute Phase 2, or advance {@code V_client} until frame {@code k} has completed Phase-1
+   * durable {@code PENDING} staging (or the session epoch has been invalidated by disconnect).
+   */
+  public boolean processOrderedFrame(ContinuousVectorEvent event, long sessionEpoch,
+      long ingressSeq) {
+    Objects.requireNonNull(event, "event must not be null");
+    if (ingressSeq <= 0L) {
+      throw new IllegalArgumentException("ingressSeq must be > 0, got: " + ingressSeq);
+    }
+    int bucketId = event.getBucketId();
+    String memberId = event.getMemberId();
+    String barrierKey = bucketId + "|" + memberId + "|" + sessionEpoch;
+    OrderedIngressBarrier barrier = orderedIngressBarriers.computeIfAbsent(barrierKey,
+        ignored -> new OrderedIngressBarrier(bucketId));
+
+    synchronized (barrier) {
+      while (barrier.nextExpectedSeq < ingressSeq && !isStaleSessionEpoch(bucketId, sessionEpoch)) {
+        try {
+          barrier.wait();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return false;
+        }
+      }
+      if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
+        staleSessionEventsRejectedCount.incrementAndGet();
+        return false;
+      }
+      if (barrier.nextExpectedSeq > ingressSeq) {
+        deduplicatedEffectsCount.incrementAndGet();
+        return false;
+      }
+    }
+
+    BiConsumer<ContinuousVectorEvent, Long> preStageHook = this.beforeDurableStageHookForTest;
+    if (preStageHook != null) {
+      preStageHook.accept(event, ingressSeq);
+    }
+
+    if (event.isHeartbeat()) {
+      boolean accepted = processEvent(event, sessionEpoch);
+      synchronized (barrier) {
+        if (barrier.nextExpectedSeq == ingressSeq) {
+          barrier.nextExpectedSeq = ingressSeq + 1L;
+          barrier.notifyAll();
+        }
+      }
+      return accepted;
+    }
+
+    // Complete Phase-1 durable PENDING staging strictly BEFORE releasing the ingress turn for
+    // frame ingressSeq + 1; if staging throws (e.g., pre-stage crash), do NOT advance the ingress
+    // turn so no later match or heartbeat can overtake the unstaged frame!
+    EventDeliveryId staged = stagePendingIntent(event, sessionEpoch);
+    synchronized (barrier) {
+      if (barrier.nextExpectedSeq == ingressSeq) {
+        barrier.nextExpectedSeq = ingressSeq + 1L;
+        barrier.notifyAll();
+      }
+    }
+    if (staged == null) {
+      return false;
+    }
+    return processEvent(event, sessionEpoch);
   }
 
   private boolean isStaleSessionEpoch(int bucketId, long sessionEpoch) {

@@ -2171,8 +2171,8 @@ public class RvvMonotonicVectorDispatcher {
       long targetCkpt = Math.max(newFloor, minHealthyAck);
       state.advanceCheckpoint(memberId, targetCkpt);
     } else {
-      long streamHead = state.getStreamHeadVersion(memberId);
-      state.advanceCheckpointWithoutCompaction(memberId, Math.max(newFloor, streamHead));
+      long contiguousHead = state.getContiguousHeadVersion(memberId, enforceContiguousVersions);
+      state.advanceCheckpointWithoutCompaction(memberId, Math.max(newFloor, contiguousHead));
     }
   }
 
@@ -2677,14 +2677,29 @@ public class RvvMonotonicVectorDispatcher {
 
   private void emitPromotionWatermarksLocked(BucketState state, int bucketId,
       List<TailMutation> replayedMutations) {
-    if (heartbeatIntervalEvents <= 0 || replayedMutations == null || replayedMutations.isEmpty()) {
+    if (heartbeatIntervalEvents <= 0) {
       return;
     }
     TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
-    for (TailMutation m : replayedMutations) {
-      maxVersionByMember.merge(m.memberId, m.regionVersion, Math::max);
+    if (replayedMutations != null) {
+      for (TailMutation m : replayedMutations) {
+        maxVersionByMember.merge(m.memberId, m.regionVersion, Math::max);
+      }
     }
-    emitStreamWatermarksLocked(state, bucketId, maxVersionByMember, null);
+    Set<String> trackedMembers = new HashSet<>(state.tailByMember.keySet());
+    trackedMembers.addAll(state.lastDispatchedVersionByMember.keySet());
+    trackedMembers.addAll(state.checkpointByMember.keySet());
+    trackedMembers.addAll(state.replayFloorByMember.keySet());
+    for (String memberId : trackedMembers) {
+      long vEnq = state.getContiguousHeadVersion(memberId, enforceContiguousVersions);
+      long vCkpt = state.getCheckpoint(memberId);
+      if (vEnq > vCkpt) {
+        maxVersionByMember.merge(memberId, vEnq, Math::max);
+      }
+    }
+    if (!maxVersionByMember.isEmpty()) {
+      emitStreamWatermarksLocked(state, bucketId, maxVersionByMember, null);
+    }
   }
 
   private void emitStreamWatermarksLocked(BucketState state, int bucketId,

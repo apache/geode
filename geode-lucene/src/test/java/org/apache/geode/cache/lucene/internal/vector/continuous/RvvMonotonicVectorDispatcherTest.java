@@ -3760,6 +3760,239 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(backup2Uncompacted.isResyncRequired(bucketId, memberP)).isFalse();
   }
 
+  @Test
+  public void orderedClientIngressPreventsLaterMatchAndHeartbeatFromOvertakingPausedEarlierStaging()
+      throws Exception {
+    int bucketId = 39;
+    String memberId = "srv-ordered-ingress";
+    RvvClientGate gate = new RvvClientGate();
+    gate.registerSubscription("sub-ing");
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore store =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<Long> handlerOrder = new CopyOnWriteArrayList<>();
+    class PreStageCrashException extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+    }
+
+    AtomicBoolean crashV5PreStage = new AtomicBoolean(false);
+    IdempotentRvvConsumer consumer = new IdempotentRvvConsumer(gate, store,
+        (ev, id) -> handlerOrder.add(ev.getRegionVersion()),
+        (phase, ev, id) -> {
+          if (phase == IdempotentRvvConsumer.CrashPhase.BEFORE_DURABLE_PENDING_STAGE
+              && ev.getRegionVersion() == 5L && crashV5PreStage.get()) {
+            throw new PreStageCrashException();
+          }
+        });
+
+    long session1 = consumer.getActiveSessionEpoch(bucketId);
+    assertThat(session1).isEqualTo(1L);
+    ContinuousVectorEventSink orderedSink = consumer.createOrderedSessionSink(bucketId, session1);
+    orderedSink.onEvent(
+        new ContinuousVectorEvent("sub-ing", "k-1", 0.99f, bucketId, memberId, 1L, 1, 100L, false));
+    orderedSink.onEvent(
+        new ContinuousVectorEvent("sub-ing", "k-2", 0.99f, bucketId, memberId, 2L, 1, 101L, false));
+    assertThat(handlerOrder).containsExactly(1L, 2L);
+    assertThat(store.getCommittedWatermark("sub-ing", bucketId, memberId)).isEqualTo(2L);
+
+    ExecutorService pool = Executors.newFixedThreadPool(4);
+    try {
+      // Part (a): Pause frame seq=3 (v=3) strictly BEFORE streamStageLock / durable staging, while
+      // frame seq=4 (later match v=4) and frame seq=5 (covering HB(4)) arrive concurrently!
+      CountDownLatch v3PausedPreStage = new CountDownLatch(1);
+      CountDownLatch releaseV3PreStage = new CountDownLatch(1);
+      CountDownLatch v3PausedPreFence = new CountDownLatch(1);
+      CountDownLatch releaseV3PreFence = new CountDownLatch(1);
+      consumer.setBeforeDurableStageHookForTest((ev, seq) -> {
+        if (ev.getRegionVersion() == 3L) {
+          v3PausedPreStage.countDown();
+          try {
+            releaseV3PreStage.await(15, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+      consumer.setBeforeExecutionFenceHookForTest((ev, id) -> {
+        if (ev.getRegionVersion() == 3L) {
+          v3PausedPreFence.countDown();
+          try {
+            releaseV3PreFence.await(15, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+
+      ContinuousVectorEvent ev3 =
+          new ContinuousVectorEvent("sub-ing", "k-3", 0.99f, bucketId, memberId, 3L, 1, 102L,
+              false);
+      ContinuousVectorEvent ev4 =
+          new ContinuousVectorEvent("sub-ing", "k-4", 0.99f, bucketId, memberId, 4L, 1, 103L,
+              false);
+      ContinuousVectorEvent hb4 =
+          ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, 4L, 104L);
+
+      Future<Boolean> f3 = pool.submit(() -> consumer.processOrderedFrame(ev3, session1, 3L));
+      assertThat(v3PausedPreStage.await(10, TimeUnit.SECONDS)).isTrue();
+
+      // Fire later match v=4 (seq=4) and covering heartbeat HB(4) (seq=5) while v=3 is paused
+      // BEFORE durable staging! Neither may stage, execute, or advance V_client past 2!
+      Future<Boolean> f4 = pool.submit(() -> consumer.processOrderedFrame(ev4, session1, 4L));
+      Future<Boolean> fHb4 = pool.submit(() -> consumer.processOrderedFrame(hb4, session1, 5L));
+      Thread.sleep(100L);
+      assertThat(f4.isDone()).isFalse();
+      assertThat(fHb4.isDone()).isFalse();
+      assertThat(store.isPendingIntent(IdempotentRvvConsumer.EventDeliveryId.fromEvent(ev4)))
+          .isFalse();
+      assertThat(handlerOrder).containsExactly(1L, 2L);
+      assertThat(store.getCommittedWatermark("sub-ing", bucketId, memberId)).isEqualTo(2L);
+      assertThat(gate.getHighWaterVersion("sub-ing", bucketId, memberId)).isEqualTo(2L);
+
+      // Release v=3 from pre-stage pause: v=3 durably stages PENDING(3) FIRST, then pauses before
+      // execFence while v=4 races ahead into Phase 2 -> drainPendingBeforeLocked executes [3, 4]
+      // strictly in order and HB(4) completes only after [3, 4] are durable!
+      releaseV3PreStage.countDown();
+      assertThat(v3PausedPreFence.await(10, TimeUnit.SECONDS)).isTrue();
+      f4.get(10, TimeUnit.SECONDS);
+      fHb4.get(10, TimeUnit.SECONDS);
+      assertThat(handlerOrder).containsExactly(1L, 2L, 3L, 4L);
+      assertThat(store.getCommittedWatermark("sub-ing", bucketId, memberId)).isEqualTo(4L);
+
+      releaseV3PreFence.countDown();
+      f3.get(10, TimeUnit.SECONDS);
+      assertThat(handlerOrder).containsExactly(1L, 2L, 3L, 4L);
+      assertThat(gate.getHighWaterVersion("sub-ing", bucketId, memberId)).isEqualTo(4L);
+
+      // Part (b): Pre-stage crash on seq=6 (v=5) blocks seq=7 (v=6) and seq=8 (HB(6)); disconnect
+      // advances sessionEpoch and wakes blocked waiters cleanly with zero staging or advance!
+      consumer.setBeforeDurableStageHookForTest(null);
+      consumer.setBeforeExecutionFenceHookForTest(null);
+      crashV5PreStage.set(true);
+      ContinuousVectorEvent ev5 =
+          new ContinuousVectorEvent("sub-ing", "k-5", 0.99f, bucketId, memberId, 5L, 1, 105L,
+              false);
+      ContinuousVectorEvent ev6 =
+          new ContinuousVectorEvent("sub-ing", "k-6", 0.99f, bucketId, memberId, 6L, 1, 106L,
+              false);
+      ContinuousVectorEvent hb6 =
+          ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, 6L, 107L);
+
+      boolean preStageCrashed = false;
+      try {
+        consumer.processOrderedFrame(ev5, session1, 6L);
+      } catch (PreStageCrashException expected) {
+        preStageCrashed = true;
+      }
+      assertThat(preStageCrashed).isTrue();
+      Future<Boolean> f6 = pool.submit(() -> consumer.processOrderedFrame(ev6, session1, 7L));
+      Future<Boolean> fHb6 = pool.submit(() -> consumer.processOrderedFrame(hb6, session1, 8L));
+      Thread.sleep(80L);
+      assertThat(f6.isDone()).isFalse();
+      assertThat(fHb6.isDone()).isFalse();
+      assertThat(store.isPendingIntent(IdempotentRvvConsumer.EventDeliveryId.fromEvent(ev6)))
+          .isFalse();
+      assertThat(store.getCommittedWatermark("sub-ing", bucketId, memberId)).isEqualTo(4L);
+
+      long staleBefore = consumer.getStaleSessionEventsRejectedCount();
+      consumer.onSessionDisconnect(bucketId);
+      assertThat(f6.get(10, TimeUnit.SECONDS)).isFalse();
+      assertThat(fHb6.get(10, TimeUnit.SECONDS)).isFalse();
+      assertThat(consumer.getStaleSessionEventsRejectedCount()).isEqualTo(staleBefore + 2L);
+      assertThat(handlerOrder).containsExactly(1L, 2L, 3L, 4L);
+      assertThat(store.getCommittedWatermark("sub-ing", bucketId, memberId)).isEqualTo(4L);
+    } finally {
+      consumer.setBeforeDurableStageHookForTest(null);
+      consumer.setBeforeExecutionFenceHookForTest(null);
+      pool.shutdownNow();
+    }
+  }
+
+  @Test
+  public void primaryCrashBetweenCountTriggerHeartbeatEnqueueAndDispatchReEmitsHeartbeatOnPromotionWhenArrivalsStop() {
+    float[] queryVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] nonMatchVec = new float[] {0.0f, 1.0f, 0.0f, 0.0f};
+    int bucketId = 40;
+    String memberP = "srv-lost-hb-P";
+
+    // Part (a) (R1 M3): H = 4 count-triggered heartbeat queued on stalled primary FIFO; primary
+    // crashes BEFORE dispatching HB(4) and ALL arrivals stop! Secondary promotion MUST immediately
+    // re-emit covering HB(4) for V_enq=4 > V_ckpt=0 without waiting for any age trigger!
+    Queue<Runnable> stalledPrimaryFifo = new ArrayDeque<>();
+    ChordalVoronoiRouter rPrim = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dPrim =
+        new RvvMonotonicVectorDispatcher(rPrim, 32, stalledPrimaryFifo::add, 4);
+    ContinuousVectorQueryService primary = new ContinuousVectorQueryService(rPrim, dPrim);
+    primary.registerSubscription("sub-zero", queryVec, 0.90f);
+
+    ChordalVoronoiRouter rSec = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dSec = new RvvMonotonicVectorDispatcher(rSec, 32, null, 4);
+    ContinuousVectorQueryService secondary = new ContinuousVectorQueryService(rSec, dSec);
+    secondary.registerSubscription("sub-zero", queryVec, 0.90f);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    clientGate.registerSubscription("sub-zero");
+    List<ContinuousVectorEvent> wireHeartbeats = new ArrayList<>();
+    ContinuousVectorEventSink sink = ev -> {
+      if (ev.isHeartbeat()) {
+        wireHeartbeats.add(ev);
+      }
+      clientGate.tryAccept(ev);
+    };
+    primary.addEventSink(sink);
+    secondary.addEventSink(sink);
+
+    for (long v = 1L; v <= 4L; v++) {
+      primary.onBucketMutation(bucketId, memberP, v, "nm-" + v, nonMatchVec, true);
+      secondary.onBucketMutation(bucketId, memberP, v, "nm-" + v, nonMatchVec, false);
+    }
+    // Primary's count trigger queued HB(4) onto stalled FIFO, NOT YET dispatched to client!
+    assertThat(dPrim.getTotalHeartbeatsDispatched()).isEqualTo(1L);
+    assertThat(primary.getPendingDispatchQueueSize(bucketId)).isEqualTo(1);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberP)).isZero();
+    assertThat(wireHeartbeats).isEmpty();
+
+    // Primary crashes (stalledPrimaryFifo dropped, HB(4) lost!) and arrivals stop completely!
+    stalledPrimaryFifo.clear();
+    secondary.onPrimaryPromotion(bucketId);
+
+    // Promoted secondary IMMEDIATELY re-emits HB(4) without any age-trigger flush or new writes!
+    assertThat(dSec.getTotalHeartbeatsDispatched()).isEqualTo(1L);
+    assertThat(wireHeartbeats).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(4L);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(4L);
+
+    // Part (b) (R2 m1): Overflow with open holdback gap and empty S_healthy' MUST keep
+    // V_floor <= V_ckpt <= V_enq (NEVER setting V_ckpt = V_recv > V_enq)!
+    ChordalVoronoiRouter rOvf = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dOvf = new RvvMonotonicVectorDispatcher(rOvf, 8, null, 64);
+    ContinuousVectorQueryService svcOvf = new ContinuousVectorQueryService(rOvf, dOvf);
+    svcOvf.registerSubscription("sub-slow", queryVec, 0.90f);
+    svcOvf.registerSubscriberForCheckpoint("sub-slow");
+    int bOvf = 41;
+    String mOvf = "srv-ovf-gap";
+    for (long v = 1L; v <= 8L; v++) {
+      svcOvf.onBucketMutation(bOvf, mOvf, v, "ko-" + v, queryVec, true);
+      if (v == 2L) {
+        svcOvf.acknowledgeSubscriberCheckpoint("sub-slow", bOvf, mOvf, 2L);
+      }
+    }
+    // Open gap at v=9 (missing), inject v=10..13 -> triggers overflow while gap is open, evicting
+    // sub-slow so S_healthy' becomes empty!
+    for (long v = 10L; v <= 13L; v++) {
+      svcOvf.onBucketMutation(bOvf, mOvf, v, "ko-" + v, queryVec, true);
+      long vFloor = svcOvf.getReplayFloorVersion(bOvf, mOvf);
+      long vCkpt = svcOvf.getCheckpointVersion(bOvf, mOvf);
+      long vEnq = svcOvf.getEnqueuedHeadVersion(bOvf, mOvf);
+      assertThat(vFloor).isLessThanOrEqualTo(vCkpt);
+      assertThat(vCkpt).isLessThanOrEqualTo(vEnq);
+    }
+    assertThat(dOvf.getRegisteredCheckpointSubscribers()).isEmpty();
+    assertThat(svcOvf.getReceivedHeadVersion(bOvf, mOvf)).isEqualTo(13L);
+    assertThat(svcOvf.getEnqueuedHeadVersion(bOvf, mOvf)).isEqualTo(8L);
+    assertThat(svcOvf.getCheckpointVersion(bOvf, mOvf)).isEqualTo(8L);
+    assertThat(svcOvf.getReplayFloorVersion(bOvf, mOvf)).isEqualTo(4L);
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

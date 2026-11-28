@@ -3707,6 +3707,135 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  /**
+   * R1 M3 DUnit regression: proves that when a primary's count-triggered watermark heartbeat
+   * ({@code H = 4}) is enqueued and lost due to a live 3-server {@code kill -9} primary crash
+   * strictly before wire dispatch AND all subsequent arrivals stop completely, promoting the
+   * backup immediately re-emits a covering {@code HB(V_enq)} for {@code V_enq > V_ckpt} without
+   * waiting for any age-trigger flush or new writes.
+   */
+  @Test
+  public void primaryCrashBetweenCountTriggerHeartbeatEnqueueAndDispatchReEmitsHeartbeatOnPromotionWhenArrivalsStop()
+      throws Exception {
+    IgnoredException.addIgnoredException("MemberDepartedException");
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("PartitionOfflineException");
+    IgnoredException.addIgnoredException("CacheClosedException");
+    IgnoredException.addIgnoredException("CancelException");
+    IgnoredException.addIgnoredException("SocketException");
+    IgnoredException.addIgnoredException("EOFException");
+    IgnoredException.addIgnoredException("IOException");
+    IgnoredException.addIgnoredException("Membership: lead member");
+    IgnoredException.addIgnoredException("crashed");
+
+    RvvClientGate clientGate = new RvvClientGate();
+    clientGate.registerSubscription("sub-zero");
+    List<ContinuousVectorEvent> receivedHeartbeats = new CopyOnWriteArrayList<>();
+    receiver = new ClientEventReceiver(ev -> {
+      if (ev.isHeartbeat()) {
+        receivedHeartbeats.add(ev);
+      }
+      clientGate.tryAccept(ev);
+    });
+    int receiverPort = receiver.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM server3 = cluster.startServerVM(3, locatorPort);
+    MemberVM[] servers = new MemberVM[] {server1, server2, server3};
+    boolean[] alive = new boolean[] {true, true, true};
+
+    try {
+      float[] queryVec = new float[VECTOR_DIM];
+      queryVec[0] = 1.0f;
+      float[] nonMatchVec = new float[VECTOR_DIM];
+      nonMatchVec[1] = 1.0f;
+      List<VectorSubscription> subscriptions =
+          Collections.singletonList(new VectorSubscription("sub-zero", queryVec, 0.90f));
+
+      // H = 4 count-triggered heartbeat; NO idle heartbeat scheduler running!
+      for (MemberVM server : servers) {
+        server.invoke(() -> initializeServerNode(subscriptions, receiverPort, -1, 1, 4, 1));
+      }
+
+      // Put 3 non-matching mutations to create bucket 0 and identify primary + backup VMs
+      server3.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("nm-1", nonMatchVec);
+        region.put("nm-2", nonMatchVec);
+        region.put("nm-3", nonMatchVec);
+      });
+
+      int primaryIdx = -1;
+      int secondaryIdx = -1;
+      String primaryMemberId = null;
+      for (int idx = 0; idx < servers.length; idx++) {
+        String roleAndMember = servers[idx].invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return "P|" + pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          if (pr.getDataStore().getAllLocalBucketIds().contains(0)) {
+            return "S|secondary";
+          }
+          return null;
+        });
+        if (roleAndMember != null && roleAndMember.startsWith("P|")) {
+          primaryIdx = idx;
+          primaryMemberId = roleAndMember.substring(2);
+        } else if (roleAndMember != null && roleAndMember.startsWith("S|")) {
+          secondaryIdx = idx;
+        }
+      }
+      assertThat(primaryIdx).isGreaterThanOrEqualTo(0);
+      assertThat(secondaryIdx).isGreaterThanOrEqualTo(0);
+      final String mP = primaryMemberId;
+      final MemberVM primaryVm = servers[primaryIdx];
+      final MemberVM secondaryVm = servers[secondaryIdx];
+
+      // Drop outbound events on primary right before 4th put so count-triggered HB(4) is enqueued
+      // on primary but LOST before dispatch to client!
+      primaryVm.invoke(() -> dropOutboundEvents.set(true));
+      secondaryVm.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("nm-4", nonMatchVec);
+      });
+
+      assertThat(
+          primaryVm.invoke(() -> serverService.getDispatcher().getTotalHeartbeatsDispatched()))
+              .isEqualTo(1L);
+      assertThat(clientGate.getSafeCheckpointVersion(0, mP)).isZero();
+      assertThat(receivedHeartbeats).isEmpty();
+
+      // Kill primary VM (losing HB(4) before wire dispatch) and STOP ALL ARRIVALS!
+      alive[primaryIdx] = false;
+      cluster.crashVM(primaryIdx + 1);
+
+      // Promoted secondary MUST immediately re-emit covering HB(4) for V_enq=4 > V_ckpt=0 with
+      // ZERO new puts and ZERO age-trigger flushes!
+      await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(secondaryVm.invoke(
+            () -> serverService.getDispatcher().getTotalPromotionsHandled()))
+                .isGreaterThanOrEqualTo(1L);
+        assertThat(secondaryVm.invoke(
+            () -> serverService.getDispatcher().getTotalHeartbeatsDispatched()))
+                .isGreaterThanOrEqualTo(1L);
+        assertThat(clientGate.getSafeCheckpointVersion(0, mP)).isGreaterThanOrEqualTo(4L);
+        assertThat(receivedHeartbeats).anyMatch(
+            hb -> mP.equals(hb.getMemberId()) && hb.getRegionVersion() >= 4L);
+      });
+    } finally {
+      for (int idx = 0; idx < servers.length; idx++) {
+        if (alive[idx]) {
+          servers[idx].invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+        }
+      }
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);
