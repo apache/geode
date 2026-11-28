@@ -1200,10 +1200,20 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
       Tier0VectorDeltaBuffer<Object> preBuffer =
           registry.getBuffer(REGION_PATH, INDEX_NAME, bucketId);
       partitionListener.afterPrimary(bucketId, () -> {
-        // Right after tryHydrateFromAeqDelta, AEQ placed a provisional tombstone for
-        // aeq-destroy-bucket-live and provisional stale v1 entries for the remaining AEQ keys.
+        // Right after tryHydrateFromAeqDelta, AEQ placed provisional entries stamped with
+        // PROVISIONAL_HYDRATION_SEQUENCE (0L), while live post-promotion writes carry seq >= 1L.
         Tier0VectorDeltaBuffer.Snapshot<Object> midSnap = preBuffer.snapshot();
         assertThat(midSnap.getTombstonedKeys()).contains("aeq-destroy-bucket-live");
+        assertThat(preBuffer.getKeySequence("aeq-destroy-bucket-live"))
+            .isEqualTo(Tier0VectorDeltaBuffer.PROVISIONAL_HYDRATION_SEQUENCE);
+        assertThat(preBuffer.getKeySequence("aeq-v1-bucket-v2"))
+            .isEqualTo(Tier0VectorDeltaBuffer.PROVISIONAL_HYDRATION_SEQUENCE);
+        assertThat(preBuffer.getKeySequence("aeq-put-bucket-tomb"))
+            .isEqualTo(Tier0VectorDeltaBuffer.PROVISIONAL_HYDRATION_SEQUENCE);
+        assertThat(preBuffer.getKeySequence("aeq-put-stale-lucene"))
+            .isEqualTo(Tier0VectorDeltaBuffer.PROVISIONAL_HYDRATION_SEQUENCE);
+        assertThat(preBuffer.getKeySequence("post-promo-before-afterprimary"))
+            .isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
         assertThat(midSnap.getLiveEntries().get("aeq-v1-bucket-v2").getVector())
             .containsExactly(v1Stale);
         assertThat(midSnap.getLiveEntries().get("aeq-put-bucket-tomb").getVector())
@@ -1229,6 +1239,14 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
           "post-promo-before-afterprimary",
           "post-promo-live-race",
           "post-promo-destroy-race");
+      // Authoritative bucket reconciliation overwrote every seq == 0L provisional AEQ entry with
+      // seq >= 1L while preserving every live post-promotion write (seq >= 1L).
+      for (String k : List.of("aeq-destroy-bucket-live", "aeq-v1-bucket-v2",
+          "aeq-put-bucket-tomb", "aeq-put-stale-lucene",
+          "post-promo-before-afterprimary", "post-promo-live-race", "post-promo-destroy-race")) {
+        assertThat(preBuffer.getKeySequence(k))
+            .isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
+      }
       assertThat(snap.getLiveEntries().get("aeq-destroy-bucket-live").getVector())
           .containsExactly(v2Authoritative);
       assertThat(snap.getLiveEntries().get("aeq-v1-bucket-v2").getVector())

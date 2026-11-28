@@ -3223,12 +3223,12 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   }
 
   /**
-   * Real 3-VM Geode cluster verification of Theorem 2(1) v21: after primary crash and backup
+   * Real 3-VM Geode cluster verification of Theorem 2(1) v21/v22: after primary crash and backup
    * promotion, when new-term writes (overwrite {@code kOv: v1 -> v2}, destroy {@code kDel}, and
    * delete+recreate {@code kRecreate -> v3}) pin with {@code seq >= 1}, flush to Lucene, and evict
    * from Tier-0 (leaving Tier-0 empty), delayed promotion-scan installs
-   * ({@code putIfSequenceBefore}
-   * / {@code deleteIfSequenceBefore} at {@code promotionStartSeq = 0L} and {@code putIfAbsent} /
+   * ({@code putIfSequenceBefore} / {@code deleteIfSequenceBefore} at
+   * {@code promotionStartSeq = LIVE_SEQUENCE_START (1L)} and {@code putIfAbsent} /
    * {@code deleteIfAbsent}) are deterministically rejected via {@code committedKeySequences},
    * preserving strictly {@code kOv=v2}, {@code kRecreate=v3}, and {@code kDel} absent on both Path
    * A and Path B queries.
@@ -3307,8 +3307,9 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     waitForLuceneFlush(accessor);
 
     // On promoted primary dataStore2, Tier-0 is now EMPTY for all three keys, while
-    // committedKeySequences >= 1 -> delayed promotion-scan installs at promotionStartSeq=0L (and
-    // putIfAbsent/deleteIfAbsent) MUST be rejected!
+    // committedKeySequences >= 1 -> delayed promotion-scan installs at
+    // promotionStartSeq = LIVE_SEQUENCE_START (1L) (and putIfAbsent/deleteIfAbsent) MUST be
+    // rejected!
     dataStore2.invoke(() -> {
       Tier0VectorDeltaBuffer<Object> buf =
           Tier0VectorRegistry.forCache(getCache()).getBuffer("/" + REGION_NAME, INDEX_NAME,
@@ -3322,12 +3323,15 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
       assertThat(buf.getMaxCommittedSequence(kRecreate)).isGreaterThanOrEqualTo(1L);
 
       int sizeBeforeStaleCalls = buf.getTotalSize();
+      final long promoStart = Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START;
       VectorRecord staleRec = new VectorRecord(vecV1, "v21", "all", "all");
       Map<String, Object> staleMeta = staleRec.getMetadata();
-      assertThat(buf.putIfSequenceBefore(kOv, vecV1, staleMeta, 0L, staleRec)).isEqualTo(-1L);
+      assertThat(buf.putIfSequenceBefore(kOv, vecV1, staleMeta, promoStart, staleRec))
+          .isEqualTo(-1L);
       assertThat(buf.putIfAbsent(kOv, vecV1, staleMeta, staleRec)).isEqualTo(-1L);
-      assertThat(buf.putIfSequenceBefore(kDel, vecV1, staleMeta, 0L, staleRec)).isEqualTo(-1L);
-      assertThat(buf.deleteIfSequenceBefore(kRecreate, 0L)).isEqualTo(-1L);
+      assertThat(buf.putIfSequenceBefore(kDel, vecV1, staleMeta, promoStart, staleRec))
+          .isEqualTo(-1L);
+      assertThat(buf.deleteIfSequenceBefore(kRecreate, promoStart)).isEqualTo(-1L);
       assertThat(buf.deleteIfAbsent(kRecreate)).isEqualTo(-1L);
       assertThat(buf.getEntry(kOv)).isNull();
       assertThat(buf.getEntry(kDel)).isNull();

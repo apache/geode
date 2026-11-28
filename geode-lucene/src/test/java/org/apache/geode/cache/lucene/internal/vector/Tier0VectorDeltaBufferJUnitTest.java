@@ -1212,13 +1212,16 @@ public class Tier0VectorDeltaBufferJUnitTest {
     long sStaleTomb = buffer.destroy("stale-tomb");
     long sProvisionalPut = buffer.putProvisionalIfAbsent("prov-put", v1, Map.of("v", 1));
     long sProvisionalTomb = buffer.deleteProvisionalIfAbsent("prov-tomb");
+    assertThat(sProvisionalPut).isEqualTo(Tier0VectorDeltaBuffer.PROVISIONAL_HYDRATION_SEQUENCE);
+    assertThat(sProvisionalTomb).isEqualTo(Tier0VectorDeltaBuffer.PROVISIONAL_HYDRATION_SEQUENCE);
 
     long promotionStartSeq = buffer.nextSequence();
+    assertThat(sStalePut).isGreaterThanOrEqualTo(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
     assertThat(sStalePut).isLessThan(promotionStartSeq);
     assertThat(sStaleLiveToTomb).isLessThan(promotionStartSeq);
     assertThat(sStaleTomb).isLessThan(promotionStartSeq);
-    assertThat(sProvisionalPut).isLessThan(promotionStartSeq);
-    assertThat(sProvisionalTomb).isLessThan(promotionStartSeq);
+    assertThat(sProvisionalPut).isLessThan(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
+    assertThat(sProvisionalTomb).isLessThan(Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START);
 
     long sPostPut = buffer.put("post-put", v3, Map.of("v", 3));
     long sPostDestroy = buffer.destroy("post-destroy");

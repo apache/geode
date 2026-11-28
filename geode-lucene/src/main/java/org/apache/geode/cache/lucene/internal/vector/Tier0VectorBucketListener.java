@@ -283,10 +283,12 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       try {
         Tier0VectorDeltaBuffer<Object> buffer =
             registry.getOrCreateBuffer(pr.getFullPath(), indexName, bucketId);
-        // Live region puts/destroys (recordPut/recordDestroy) execute before or concurrently with
-        // afterPrimary with provisionalHydration=false and sequence >= 1, so only absent slots or
-        // provisional AEQ entries (maxExclusiveSeq = 0L) may be overwritten by bucket scan.
-        final long promotionStartSeq = 0L;
+        // Live new-term puts/destroys (recordPut/recordDestroy) execute before or concurrently with
+        // afterPrimary with sequence >= LIVE_SEQUENCE_START (1L), whereas provisional AEQ delta
+        // hydration stamps PROVISIONAL_HYDRATION_SEQUENCE (0L). Using promotionStartSeq = 1L
+        // enforces the single unified guard: overwrite iff (existing == null || existing.sequence
+        // < 1L) && committedKeySequences < 1L.
+        final long promotionStartSeq = Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START;
 
         InternalCache internalCache =
             (cache instanceof InternalCache) ? (InternalCache) cache : null;
@@ -393,7 +395,7 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
           continue;
         }
         long keySeq = buffer.getKeySequence(userKey);
-        if (keySeq > 0L) {
+        if (keySeq >= Tier0VectorDeltaBuffer.PROVISIONAL_HYDRATION_SEQUENCE) {
           buffer.recordPinnedEvent(eventId, keySeq);
         } else {
           long committedSeq = buffer.getMaxCommittedSequence(userKey);

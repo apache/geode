@@ -345,11 +345,12 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
                 expectedBuffer, activeRepo)) {
               throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
             }
-            if (!tier0Snapshot.isEmpty()) {
+            if (!tier0Snapshot.isEmpty() || buffer.getTotalSize() > 0 || buffer.isFlushing()) {
               // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
-              // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
-              // bucket into Lucene + blocking-refresh while holding the write barrier so
-              // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
+              // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously drain BOTH
+              // E_flushing and E_active into Lucene + blocking-refresh while holding the write
+              // barrier so IndexSearcher evaluates the filter with T_mask empty at the searcher
+              // cut (even when > B_max keys are pending or after a prior commit/refresh abort).
               flushBucketForUnsupportedFilter(
                   cache, region, regionPath, indexName, bucketId, registry,
                   buffer, activeRepo, expectedGen, ownershipInvalidated, retryExhausted);
@@ -900,7 +901,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
       }
       try {
-        registry.flushBuffer(buffer, repo, entry -> {
+        boolean flushed = registry.flushBuffer(buffer, repo, entry -> {
           // Drain strictly the immutable payload already captured inside FlushBatch<K> when
           // present (never reading live BucketRegion or acquiring RegionEntry locks under
           // pathBWrite), falling back to readRegionValueForFlush only for legacy metadata-only
@@ -912,9 +913,22 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
                 : captured;
           }
           return readRegionValueForFlush(cache, region, bucketId, entry.getKey());
-        }, true);
+        }, !flushedOrRefreshed);
         flushedOrRefreshed = true;
-        break;
+        // Loop until BOTH E_active and E_flushing are completely empty so T_mask = empty before
+        // acquiring IndexSearcher, even when > B_max keys are buffered or after a prior abort.
+        if (buffer.getTotalSize() == 0 && !buffer.isFlushing()) {
+          break;
+        }
+        if (System.nanoTime() >= deadlineNanos) {
+          retryExhausted.set(true);
+          throw new PrimaryBucketException("Bucket " + bucketId + " on region " + regionPath
+              + " exhausted Path-B drain wait before Tier-0 emptied (remaining="
+              + buffer.getTotalSize() + ")");
+        }
+        if (!flushed) {
+          Thread.onSpinWait();
+        }
       } catch (IllegalStateException flushAlreadyInProgress) {
         boolean inProgressMsg = flushAlreadyInProgress.getMessage() != null
             && flushAlreadyInProgress.getMessage().contains("Flush already in progress");

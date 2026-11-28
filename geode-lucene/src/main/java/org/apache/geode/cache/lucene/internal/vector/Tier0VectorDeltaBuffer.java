@@ -64,6 +64,23 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
  */
 public class Tier0VectorDeltaBuffer<K> {
 
+  /**
+   * Reserved sequence number stamped on provisional AEQ-hydrated entries during primary promotion
+   * before authoritative bucket reconciliation. Live new-term writes and authoritative bucket-scan
+   * installs always stamp sequences {@code >= LIVE_SEQUENCE_START (1L)}.
+   */
+  public static final long PROVISIONAL_HYDRATION_SEQUENCE = 0L;
+
+  /**
+   * Minimum sequence number stamped on live new-term mutations ({@link #put}, {@link #destroy})
+   * and authoritative bucket-scan installs. Authoritative promotion hydration passes this constant
+   * as {@code maxExclusiveSeq} so the single unified predicate
+   * {@code (existing == null || existing.sequence < 1L) && committedSeq < 1L} overwrites
+   * provisional AEQ entries ({@code seq == 0L}) while rejecting any live or already-committed
+   * new-term entry ({@code seq >= 1L}).
+   */
+  public static final long LIVE_SEQUENCE_START = 1L;
+
   private static final int SEALED_BIT = 0x80000000;
   private static final int WRITER_MASK = ~SEALED_BIT;
   private static final int MAX_OPTIMISTIC_SNAPSHOT_RETRIES = 64;
@@ -161,11 +178,13 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
-   * Inserts a provisional AEQ-hydrated live vector entry into {@code E_active} ONLY if {@code key}
-   * is currently absent from both {@code E_active} and {@code E_flushing}. Subsequent authoritative
-   * bucket reconciliation can overwrite provisional entries via
+   * Inserts a provisional AEQ-hydrated live vector entry stamped with
+   * {@link #PROVISIONAL_HYDRATION_SEQUENCE} ({@code 0L}) into {@code E_active} ONLY if {@code key}
+   * is currently absent from both {@code E_active} and {@code E_flushing} and has no committed
+   * new-term sequence ({@code committedKeySequences < 1L}). Subsequent authoritative bucket
+   * reconciliation overwrites provisional entries via
    * {@link #putIfSequenceBefore(Object, float[], Map, long)} or
-   * {@link #deleteIfSequenceBefore(Object, long)}.
+   * {@link #deleteIfSequenceBefore(Object, long)} using {@code maxExclusiveSeq = 1L}.
    */
   long putProvisionalIfAbsent(K key, float[] vector, Map<String, Object> metadata) {
     return putProvisionalIfAbsent(key, vector, metadata, null);
@@ -179,14 +198,16 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
-   * Inserts or overwrites a live vector entry in {@code E_active} ONLY when {@code key} is absent,
-   * holds a provisional AEQ-hydrated entry, or has a sequence strictly less than
-   * {@code maxExclusiveSeq} across {@code E_active}, {@code E_flushing}, AND
-   * {@code committedKeySequences}. Preserves any concurrent live post-promotion mutation with
-   * {@code sequence >= maxExclusiveSeq} even after it has flushed and evicted from Tier-0.
+   * Inserts or overwrites a live vector entry in {@code E_active} ONLY when {@code key} is absent
+   * or has a sequence strictly less than {@code maxExclusiveSeq} across {@code E_active},
+   * {@code E_flushing}, AND {@code committedKeySequences}. With
+   * {@code maxExclusiveSeq = LIVE_SEQUENCE_START (1L)}, authoritative bucket reconciliation
+   * overwrites absent slots and provisional AEQ entries ({@code sequence == 0L}) while preserving
+   * any concurrent live post-promotion mutation ({@code sequence >= 1L}) even after it has flushed
+   * and evicted from Tier-0.
    *
-   * @return newly stamped sequence number if applied, or {@code -1L} if preserved by a newer live
-   *         or already-committed entry
+   * @return newly stamped sequence number ({@code >= 1L}) if applied, or {@code -1L} if preserved
+   *         by a newer live or already-committed entry
    */
   public long putIfSequenceBefore(K key, float[] vector, Map<String, Object> metadata,
       long maxExclusiveSeq) {
@@ -218,8 +239,10 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
-   * Inserts a provisional AEQ-hydrated tombstone into {@code E_active} ONLY if {@code key} is
-   * currently absent from both {@code E_active} and {@code E_flushing}.
+   * Inserts a provisional AEQ-hydrated tombstone stamped with
+   * {@link #PROVISIONAL_HYDRATION_SEQUENCE} ({@code 0L}) into {@code E_active} ONLY if {@code key}
+   * is currently absent from both {@code E_active} and {@code E_flushing} and has no committed
+   * new-term sequence.
    */
   long deleteProvisionalIfAbsent(K key) {
     Objects.requireNonNull(key, "key must not be null");
@@ -227,14 +250,16 @@ public class Tier0VectorDeltaBuffer<K> {
   }
 
   /**
-   * Inserts or overwrites a tombstone in {@code E_active} ONLY when {@code key} is absent, holds a
-   * provisional AEQ-hydrated entry, or has a sequence strictly less than {@code maxExclusiveSeq}
-   * across {@code E_active}, {@code E_flushing}, AND {@code committedKeySequences}. Preserves any
-   * concurrent live post-promotion mutation with {@code sequence >= maxExclusiveSeq} even after it
-   * has flushed and evicted from Tier-0.
+   * Inserts or overwrites a tombstone in {@code E_active} ONLY when {@code key} is absent or has a
+   * sequence strictly less than {@code maxExclusiveSeq} across {@code E_active},
+   * {@code E_flushing}, AND {@code committedKeySequences}. With
+   * {@code maxExclusiveSeq = LIVE_SEQUENCE_START (1L)}, authoritative bucket reconciliation
+   * overwrites absent slots and provisional AEQ entries ({@code sequence == 0L}) while preserving
+   * any concurrent live post-promotion mutation ({@code sequence >= 1L}) even after it has flushed
+   * and evicted from Tier-0.
    *
-   * @return newly stamped sequence number if applied, or {@code -1L} if preserved by a newer live
-   *         or already-committed entry
+   * @return newly stamped sequence number ({@code >= 1L}) if applied, or {@code -1L} if preserved
+   *         by a newer live or already-committed entry
    */
   public long deleteIfSequenceBefore(K key, long maxExclusiveSeq) {
     Objects.requireNonNull(key, "key must not be null");
@@ -304,10 +329,12 @@ public class Tier0VectorDeltaBuffer<K> {
               }
               mutationVersion.incrementAndGet();
               mutated[0] = true;
-              long seq = sequenceGenerator.incrementAndGet();
+              long seq = provisionalHydration
+                  ? PROVISIONAL_HYDRATION_SEQUENCE
+                  : sequenceGenerator.incrementAndGet();
               stampedSeq[0] = seq;
               return new DeltaEntry<>(k, vector, metadata, tombstone, active.epoch, seq,
-                  provisionalHydration, regionValue);
+                  regionValue);
             });
           } finally {
             if (mutated[0]) {
@@ -330,7 +357,7 @@ public class Tier0VectorDeltaBuffer<K> {
       return false;
     }
     if (maxExclusiveSeq < 0L) {
-      return committedSeq > 0L;
+      return committedSeq > PROVISIONAL_HYDRATION_SEQUENCE;
     }
     return committedSeq >= maxExclusiveSeq;
   }
@@ -342,7 +369,7 @@ public class Tier0VectorDeltaBuffer<K> {
     if (maxExclusiveSeq < 0L) {
       return false;
     }
-    return existing.provisionalHydration || existing.sequence < maxExclusiveSeq;
+    return existing.sequence < maxExclusiveSeq;
   }
 
   /**
@@ -400,7 +427,7 @@ public class Tier0VectorDeltaBuffer<K> {
                   || (active.epoch == existing.epoch && seq > existing.sequence)) {
                 stampedSeq[0] = seq;
                 return new DeltaEntry<>(
-                    k, vector, metadata, tombstone, active.epoch, seq, false, regionValue);
+                    k, vector, metadata, tombstone, active.epoch, seq, regionValue);
               }
               stampedSeq[0] = existing.sequence;
               return existing;
@@ -492,7 +519,10 @@ public class Tier0VectorDeltaBuffer<K> {
             // clearing E_flushing so Path A never observes an empty Tier-0 slot without the
             // monotonic committed watermark already visible.
             for (Map.Entry<K, DeltaEntry<K>> entry : current.flushing.entries.entrySet()) {
-              committedKeySequences.merge(entry.getKey(), entry.getValue().sequence, Math::max);
+              long seq = entry.getValue().sequence;
+              if (seq > PROVISIONAL_HYDRATION_SEQUENCE) {
+                committedKeySequences.merge(entry.getKey(), seq, Math::max);
+              }
             }
             EpochState<K> next = new EpochState<>(current.active, null);
             if (stateRef.compareAndSet(current, next)) {
@@ -766,10 +796,11 @@ public class Tier0VectorDeltaBuffer<K> {
 
   /**
    * Associates a Geode event identity with its pinned Tier-0 sequence number (used during primary
-   * promotion AEQ hydration so pre-crash shadow events are recognized as pinned).
+   * promotion AEQ hydration so pre-crash shadow events with {@code sequence >= 0L}, including
+   * provisional {@link #PROVISIONAL_HYDRATION_SEQUENCE} ({@code 0L}), are recognized as pinned).
    */
   public void recordPinnedEvent(Object eventId, long sequence) {
-    if (eventId != null && sequence > 0L) {
+    if (eventId != null && sequence >= PROVISIONAL_HYDRATION_SEQUENCE) {
       pinnedEventSequences.merge(normalizeEventId(eventId), sequence, Math::max);
     }
   }
@@ -1060,7 +1091,13 @@ public class Tier0VectorDeltaBuffer<K> {
 
   /**
    * Clears both epochs and advances the clear generation so any in-flight {@link #abortFlush(long)}
-   * cannot resurrect cleared entries (used when a bucket is removed or destroyed).
+   * cannot resurrect cleared entries.
+   *
+   * <p>
+   * Theorem 2 lifecycle precondition: invoked exclusively by {@link Tier0VectorRegistry} on bucket
+   * demotion/removal ({@code afterSecondary}/{@code afterBucketRemoved}), index/region teardown, or
+   * cache close strictly AFTER detaching this buffer from the registry and advancing the monotonic
+   * {@code ownershipGeneration} — never while an active primary ownership term remains valid.
    *
    * <p>
    * Synchronizes only on {@code evictionLock} (never blocking on {@code pathBBarrierLock}) so
@@ -1148,23 +1185,21 @@ public class Tier0VectorDeltaBuffer<K> {
     private final boolean tombstone;
     private final long epoch;
     private final long sequence;
-    private final boolean provisionalHydration;
     private final Object regionValue;
 
     DeltaEntry(K key, float[] vector, Map<String, Object> metadata, boolean tombstone, long epoch,
         long sequence) {
-      this(key, vector, metadata, tombstone, epoch, sequence, false, null);
+      this(key, vector, metadata, tombstone, epoch, sequence, null);
     }
 
     DeltaEntry(K key, float[] vector, Map<String, Object> metadata, boolean tombstone, long epoch,
-        long sequence, boolean provisionalHydration, Object regionValue) {
+        long sequence, Object regionValue) {
       this.key = key;
       this.vector = vector;
       this.metadata = metadata;
       this.tombstone = tombstone;
       this.epoch = epoch;
       this.sequence = sequence;
-      this.provisionalHydration = provisionalHydration;
       this.regionValue = regionValue;
     }
 

@@ -3158,13 +3158,14 @@ public class DistributedHybridKnnFunctionJUnitTest {
   }
 
   /**
-   * Verifies Theorem 2(1) v21 promotion-scan committed-sequence fence: when a slow promotion scan
-   * captures a stale pre-promotion value or tombstone BEFORE a new-term write ({@code seq >= 1 >
-   * promotionStartSeq = 0}) pins, flushes to Lucene, and evicts from Tier-0 (leaving Tier-0 empty
-   * for that key), {@code putIfSequenceBefore}, {@code deleteIfSequenceBefore},
+   * Verifies Theorem 2(1) v21/v22 unified promotion-scan committed-sequence fence: when a slow
+   * promotion scan captures a stale pre-promotion value or tombstone BEFORE a new-term write
+   * ({@code seq >= LIVE_SEQUENCE_START (1L)}) pins, flushes to Lucene, and evicts from Tier-0
+   * (leaving Tier-0 empty for that key), {@code putIfSequenceBefore},
+   * {@code deleteIfSequenceBefore} at {@code promotionStartSeq = LIVE_SEQUENCE_START (1L)},
    * {@code putIfAbsent}, and {@code deleteIfAbsent} MUST reject the stale install using
-   * {@code committedKeySequences >= promotionStartSeq} across overwrite, delete, and
-   * delete/recreate interleavings.
+   * {@code committedKeySequences >= 1L} across overwrite, delete, and delete/recreate
+   * interleavings.
    */
   @Test
   @SuppressWarnings("unchecked")
@@ -3284,15 +3285,19 @@ public class DistributedHybridKnnFunctionJUnitTest {
       Tier0VectorDeltaBuffer<Object> buf = registry.getBuffer(REGION_PATH, INDEX_NAME, 0);
       assertThat(buf.getTotalSize()).isEqualTo(0);
 
-      // Also verify direct calls to putIfSequenceBefore / deleteIfSequenceBefore / putIfAbsent /
-      // deleteIfAbsent return -1L on all three already-committed keys.
-      assertThat(buf.putIfSequenceBefore("k-ov", v1, Map.of("category", "books"), 0L, payloadV1))
-          .isEqualTo(-1L);
+      // Also verify direct calls to putIfSequenceBefore / deleteIfSequenceBefore at
+      // promotionStartSeq = LIVE_SEQUENCE_START (1L) and putIfAbsent / deleteIfAbsent return -1L
+      // on all three already-committed keys.
+      final long promoStart = Tier0VectorDeltaBuffer.LIVE_SEQUENCE_START;
+      assertThat(
+          buf.putIfSequenceBefore("k-ov", v1, Map.of("category", "books"), promoStart, payloadV1))
+              .isEqualTo(-1L);
       assertThat(buf.putIfAbsent("k-ov", v1, Map.of("category", "books"), payloadV1))
           .isEqualTo(-1L);
-      assertThat(buf.putIfSequenceBefore("k-del", v1, Map.of("category", "books"), 0L, payloadV1))
-          .isEqualTo(-1L);
-      assertThat(buf.deleteIfSequenceBefore("k-recreate", 0L)).isEqualTo(-1L);
+      assertThat(
+          buf.putIfSequenceBefore("k-del", v1, Map.of("category", "books"), promoStart, payloadV1))
+              .isEqualTo(-1L);
+      assertThat(buf.deleteIfSequenceBefore("k-recreate", promoStart)).isEqualTo(-1L);
       assertThat(buf.deleteIfAbsent("k-recreate")).isEqualTo(-1L);
       assertThat(buf.getTotalSize()).isEqualTo(0);
 
@@ -3315,6 +3320,161 @@ public class DistributedHybridKnnFunctionJUnitTest {
       assertThat(hits).extracting(EntryScore::getKey).containsExactly("k-recreate", "k-ov");
       assertThat(hits.get(0).getScore()).isCloseTo(scoreV3, within(1e-4f));
       assertThat(hits.get(1).getScore()).isCloseTo(scoreV2, within(1e-4f));
+    }
+  }
+
+  /**
+   * Verifies Theorem 2(2) Path-B full drain with {@code > B_max} ({@code 1,200}) pending Tier-0
+   * keys after a simulated post-commit/pre-refresh interruption:
+   * <ol>
+   * <li>First Path-B ({@code FuzzyQuery}) fails strictly after {@code IndexWriter.commit()} and
+   * before {@code SearcherManager.maybeRefreshBlocking()}: {@code searcherEpoch} returns to even,
+   * {@code flushLock} and {@code pathBBarrierLock} release cleanly, {@code abortFlush} restores
+   * all {@code 1,200} pending keys to {@code E_active} with {@code committedKeySequences == 0},
+   * and an immediate Path-A hybrid query sees exact top-k matches with zero lost visibility.</li>
+   * <li>Second Path-B ({@code FuzzyQuery}) drains BOTH {@code E_flushing} and {@code E_active}
+   * completely ({@code buffer.getTotalSize() == 0}, {@code !buffer.isFlushing()},
+   * {@code T_mask = empty}) before acquiring the refreshed {@code IndexSearcher}, returning exact
+   * top-k matches with zero tombstoned ghosts.</li>
+   * </ol>
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void pathBDrainsAllKeysAboveBMaxAfterPostCommitPreRefreshInterruption() throws Exception {
+    final int totalPendingKeys = 1_200; // > B_max (1,024) and > MAX_INLINE_MASK_TERMS (512)
+    final int k = 5;
+    float[] queryVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    float[] staleDeletedVec = new float[] {0.9999f, 0.0141f, 0.0f, 0.0f};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex);
+      // Seed 10 pre-committed high-scoring keys in Lucene that will be tombstoned in the 1,200-key
+      // pending delta batch so we verify tombstones also drain cleanly with zero ghosts.
+      for (int i = 0; i < 10; i++) {
+        repo.update("del-" + i, new Object[] {staleDeletedVec, "books"});
+      }
+      repo.commitAndRefreshBlocking();
+      assertThat(repo.getSearcherEpoch() & 1L).isEqualTo(0L);
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+      Tier0VectorDeltaBuffer<Object> buffer =
+          registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+
+      // Populate 1,190 live pending puts + 10 pending tombstones = 1,200 total keys (> B_max).
+      // Keys top-0 .. top-4 have strictly highest cosine similarity to queryVec.
+      List<String> expectedTopKeys = new ArrayList<>(k);
+      for (int i = 0; i < totalPendingKeys - 10; i++) {
+        String key;
+        float x;
+        if (i < k) {
+          key = "top-" + i;
+          x = 0.995f - i * 0.002f;
+          expectedTopKeys.add(key);
+        } else {
+          key = "bulk-" + i;
+          x = 0.10f + 0.50f * ((float) (i % 100) / 100.0f);
+        }
+        float y = (float) Math.sqrt(Math.max(0.0, 1.0 - (double) x * x));
+        float[] vec = new float[] {x, y, 0.0f, 0.0f};
+        Object[] payload = new Object[] {vec, "books"};
+        buffer.put(key, vec, Map.of("category", "books"), payload);
+      }
+      for (int i = 0; i < 10; i++) {
+        buffer.destroy("del-" + i);
+      }
+      assertThat(buffer.getTotalSize()).isEqualTo(totalPendingKeys);
+
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, k)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+
+      // Phase 1: Interrupt Path-B flush strictly AFTER IndexWriter.commit() and BEFORE
+      // SearcherManager.maybeRefreshBlocking().
+      AtomicBoolean failOnce = new AtomicBoolean(true);
+      IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(() -> {
+        if (failOnce.compareAndSet(true, false)) {
+          throw new RuntimeException(
+              "simulated post-commit pre-refresh interruption (> B_max Path B)");
+        }
+      });
+      ResultSender<TopEntriesCollector> failSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(failSender);
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+      boolean threw = false;
+      try {
+        new DistributedHybridKnnFunction().execute(mockContext);
+      } catch (RuntimeException expected) {
+        threw = true;
+      } finally {
+        IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
+      }
+      assertThat(threw).isTrue();
+
+      // Post-interruption invariants: even searcherEpoch, locks released, all 1,200 keys restored
+      // into E_active via abortFlush, E_flushing empty, committedKeySequences untouched.
+      assertThat(repo.getSearcherEpoch() & 1L).isEqualTo(0L);
+      assertThat(buffer.isFlushLocked()).isFalse();
+      assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
+      assertThat(buffer.isFlushing()).isFalse();
+      assertThat(buffer.getActiveSize()).isEqualTo(totalPendingKeys);
+      assertThat(buffer.getTotalSize()).isEqualTo(totalPendingKeys);
+      assertThat(buffer.getMaxCommittedSequence("top-0")).isEqualTo(0L);
+      assertThat(buffer.getMaxCommittedSequence("del-0")).isEqualTo(0L);
+
+      // Immediate supported-filter hybrid read (oversample fallback since 1,200 > 512) MUST still
+      // observe exact top-5 with zero lost visibility and zero deleted ghosts.
+      ResultSender<TopEntriesCollector> midSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(midSender);
+      HybridKnnQueryContext supportedCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, k)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      when(mockContext.getArguments()).thenReturn(supportedCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> midCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(midSender).lastResult(midCaptor.capture());
+      List<EntryScore<Object>> midHits = midCaptor.getValue().getEntries().getHits();
+      assertThat(midHits).extracting(EntryScore::getKey)
+          .containsExactlyElementsOf(expectedTopKeys);
+
+      // Phase 2: Retry Path-B FuzzyQuery -> drains ALL 1,200 pending keys (both E_active and
+      // E_flushing completely empty, T_mask = empty) and returns exact top-5 from Lucene.
+      ResultSender<TopEntriesCollector> retrySender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(retrySender);
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      assertThat(buffer.getTotalSize()).isEqualTo(0);
+      assertThat(buffer.getActiveSize()).isEqualTo(0);
+      assertThat(buffer.getFlushingSize()).isEqualTo(0);
+      assertThat(buffer.isFlushing()).isFalse();
+      assertThat(buffer.snapshot().getMaskedKeys()).isEmpty();
+      assertThat(buffer.getMaxCommittedSequence("top-0")).isGreaterThanOrEqualTo(1L);
+      assertThat(buffer.getMaxCommittedSequence("del-0")).isGreaterThanOrEqualTo(1L);
+
+      ArgumentCaptor<TopEntriesCollector> retryCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(retrySender).lastResult(retryCaptor.capture());
+      List<EntryScore<Object>> retryHits = retryCaptor.getValue().getEntries().getHits();
+      assertThat(retryHits).extracting(EntryScore::getKey)
+          .containsExactlyElementsOf(expectedTopKeys);
     }
   }
 

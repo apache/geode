@@ -203,6 +203,11 @@ public class Tier0VectorRegistry {
     }
   }
 
+  /**
+   * Detaches the per-bucket delta buffer on demotion or removal ({@code afterSecondary} /
+   * {@code afterBucketRemoved}), strictly advances {@code ownershipGeneration} FIRST so no active
+   * primary read cut can observe the cleared buffer, and then clears the detached buffer.
+   */
   public void removeBucket(String regionPath, String indexName, int bucketId) {
     IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
     ConcurrentHashMap<Integer, Tier0VectorDeltaBuffer<Object>> bucketMap = buffers.get(key);
