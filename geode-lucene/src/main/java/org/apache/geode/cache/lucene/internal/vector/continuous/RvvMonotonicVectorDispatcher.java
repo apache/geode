@@ -265,10 +265,18 @@ public class RvvMonotonicVectorDispatcher {
   private static final class PendingDispatchBatch {
     final List<ContinuousVectorEvent> events;
     final ContinuousVectorEventSink targetSink;
+    final Runnable barrierAction;
 
     PendingDispatchBatch(List<ContinuousVectorEvent> events, ContinuousVectorEventSink targetSink) {
       this.events = events;
       this.targetSink = targetSink;
+      this.barrierAction = null;
+    }
+
+    PendingDispatchBatch(Runnable barrierAction) {
+      this.events = Collections.emptyList();
+      this.targetSink = null;
+      this.barrierAction = barrierAction;
     }
   }
 
@@ -318,6 +326,36 @@ public class RvvMonotonicVectorDispatcher {
     synchronized void resetHeartbeatCounter(String memberId) {
       eventsSinceHeartbeatByMember.put(memberId, 0L);
       oldestUncoveredMutationTimeMsByMember.put(memberId, 0L);
+    }
+
+    synchronized boolean wouldOverflow(String memberId, long regionVersion, int maxTailPerStream) {
+      long floor = replayFloorByMember.getOrDefault(memberId, 0L);
+      if (regionVersion <= floor) {
+        return false;
+      }
+      TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+      if (stream == null) {
+        return maxTailPerStream <= 0;
+      }
+      return !stream.containsKey(regionVersion) && (stream.size() + 1 > maxTailPerStream);
+    }
+
+    synchronized long getStreamHeadVersion(String memberId) {
+      long head = lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
+      TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+      if (stream != null && !stream.isEmpty()) {
+        head = Math.max(head, stream.lastKey());
+      }
+      head = Math.max(head, replayFloorByMember.getOrDefault(memberId, 0L));
+      head = Math.max(head, checkpointByMember.getOrDefault(memberId, 0L));
+      return head;
+    }
+
+    synchronized void removeSubscriberAckForMember(String subscriberId, String memberId) {
+      Map<String, Long> acks = subscriberAcksByMember.get(memberId);
+      if (acks != null) {
+        acks.remove(subscriberId);
+      }
     }
 
     synchronized List<Long> append(TailMutation mutation, int maxTailPerStream) {
@@ -629,6 +667,8 @@ public class RvvMonotonicVectorDispatcher {
   private final CopyOnWriteArrayList<ReplayFloorResyncListener> replayFloorListeners =
       new CopyOnWriteArrayList<>();
   private final Set<RvvStreamKey> resyncRequiredStreams = ConcurrentHashMap.newKeySet();
+  private final ConcurrentHashMap<RvvStreamKey, Set<String>> resyncRequiredSubscribersByStream =
+      new ConcurrentHashMap<>();
   private final Set<String> registeredCheckpointSubscribers = ConcurrentHashMap.newKeySet();
   private final Object subscriberRegistryLock = new Object();
 
@@ -1007,29 +1047,60 @@ public class RvvMonotonicVectorDispatcher {
 
     List<TailOverflowRecord> overflows = null;
     List<HoldbackGapRecord> gapRecords = null;
-    List<ContinuousVectorEvent> emitted;
-    // Serialize append + contiguous ordering + dispatch per bucket to preserve per-(b, m) order
+    List<ContinuousVectorEvent> emitted = null;
+    boolean needsOverflowReconciliation = false;
+
+    // Fast path: serialize append + contiguous ordering + dispatch per bucket under state lock
+    // without contending on subscriberRegistryLock when the bounded tail does not overflow.
     synchronized (state) {
       if (isPrimary && state.pendingAsyncPromotions > 0) {
         // Gate live primary writes behind the pending async promotion replay barrier
         state.pendingLiveMutations.add(mutation);
         return Collections.emptyList();
       }
-      List<Long> evicted = state.append(mutation, maxTailPerStream);
-      if (!evicted.isEmpty()) {
-        long ckpt = state.getCheckpoint(memberId);
-        overflows = new ArrayList<>(evicted.size());
-        for (long evictedVersion : evicted) {
-          overflows.add(new TailOverflowRecord(bucketId, memberId, evictedVersion, ckpt));
+      if (state.wouldOverflow(memberId, effectiveVersion, maxTailPerStream)) {
+        needsOverflowReconciliation = true;
+      } else {
+        state.append(mutation, maxTailPerStream);
+        if (!isPrimary) {
+          emitted = Collections.emptyList();
+        } else if (enforceContiguousVersions) {
+          gapRecords = new ArrayList<>(1);
+          emitted = dispatchContiguousOrHoldLocked(state, bucketId, mutation, gapRecords);
+        } else {
+          emitted = dispatchSingleVersionLocked(state, mutation, false);
         }
       }
-      if (!isPrimary) {
-        emitted = Collections.emptyList();
-      } else if (enforceContiguousVersions) {
-        gapRecords = new ArrayList<>(1);
-        emitted = dispatchContiguousOrHoldLocked(state, bucketId, mutation, gapRecords);
-      } else {
-        emitted = dispatchSingleVersionLocked(state, mutation, false);
+    }
+
+    // Overflow slow path: acquire subscriberRegistryLock -> state atomically so lagging
+    // subscribers with V_client < V_floor are evicted from S_healthy into resyncRequired and
+    // V_ckpt is recomputed to preserve V_floor <= V_ckpt across every transition.
+    if (needsOverflowReconciliation) {
+      synchronized (subscriberRegistryLock) {
+        synchronized (state) {
+          if (isPrimary && state.pendingAsyncPromotions > 0) {
+            state.pendingLiveMutations.add(mutation);
+            return Collections.emptyList();
+          }
+          long ckptBefore = state.getCheckpoint(memberId);
+          List<Long> evicted = state.append(mutation, maxTailPerStream);
+          if (!evicted.isEmpty()) {
+            reconcileOverflowLocked(bucketId, state, memberId);
+            overflows = new ArrayList<>(evicted.size());
+            for (long evictedVersion : evicted) {
+              overflows.add(new TailOverflowRecord(bucketId, memberId, evictedVersion, ckptBefore));
+            }
+          }
+          if (!isPrimary) {
+            emitted = Collections.emptyList();
+          } else if (enforceContiguousVersions) {
+            gapRecords = new ArrayList<>(1);
+            emitted = dispatchContiguousOrHoldLocked(state, bucketId, mutation, gapRecords);
+          } else {
+            emitted = dispatchSingleVersionLocked(state, mutation, false);
+          }
+        }
       }
     }
     if (overflows != null) {
@@ -1100,22 +1171,30 @@ public class RvvMonotonicVectorDispatcher {
     List<TailOverflowRecord> overflows = new ArrayList<>();
     List<HoldbackGapRecord> gapRecords = new ArrayList<>();
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
-    synchronized (state) {
-      List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
-          maxTailPerStream, overflows);
-      for (TailMutation mutation : toReplay) {
-        emitted.addAll(dispatchSingleVersionLocked(state, mutation, true));
-        state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
-            Math::max);
-      }
-      List<TailMutation> allReplayed = new ArrayList<>(toReplay);
-      drainAllHoldbackOnPromotionLocked(state, emitted, allReplayed);
-      emitPromotionWatermarksLocked(state, bucketId, allReplayed);
-      if (state.pendingAsyncPromotions > 0) {
-        state.pendingAsyncPromotions--;
-      }
-      if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
-        drainPendingLiveMutationsLocked(state, emitted, overflows, gapRecords);
+    synchronized (subscriberRegistryLock) {
+      synchronized (state) {
+        List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
+            maxTailPerStream, overflows);
+        reconcileOverflowRecordsLocked(state, overflows);
+        for (TailMutation mutation : toReplay) {
+          emitted.addAll(dispatchSingleVersionLocked(state, mutation, true));
+          state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
+              Math::max);
+        }
+        List<TailMutation> allReplayed = new ArrayList<>(toReplay);
+        drainAllHoldbackOnPromotionLocked(state, emitted, allReplayed);
+        emitPromotionWatermarksLocked(state, bucketId, allReplayed);
+        if (state.pendingAsyncPromotions > 0) {
+          state.pendingAsyncPromotions--;
+        }
+        if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
+          int beforeLiveOverflows = overflows.size();
+          drainPendingLiveMutationsLocked(state, emitted, overflows, gapRecords);
+          if (overflows.size() > beforeLiveOverflows) {
+            reconcileOverflowRecordsLocked(state,
+                overflows.subList(beforeLiveOverflows, overflows.size()));
+          }
+        }
       }
     }
     if (!overflows.isEmpty()) {
@@ -1139,12 +1218,15 @@ public class RvvMonotonicVectorDispatcher {
     List<TailOverflowRecord> overflows = new ArrayList<>();
     List<HoldbackGapRecord> gapRecords = new ArrayList<>();
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
-    synchronized (state) {
-      if (state.pendingAsyncPromotions > 0) {
-        state.pendingAsyncPromotions--;
-      }
-      if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
-        drainPendingLiveMutationsLocked(state, emitted, overflows, gapRecords);
+    synchronized (subscriberRegistryLock) {
+      synchronized (state) {
+        if (state.pendingAsyncPromotions > 0) {
+          state.pendingAsyncPromotions--;
+        }
+        if (state.pendingAsyncPromotions == 0 && !state.pendingLiveMutations.isEmpty()) {
+          drainPendingLiveMutationsLocked(state, emitted, overflows, gapRecords);
+          reconcileOverflowRecordsLocked(state, overflows);
+        }
       }
     }
     if (!overflows.isEmpty()) {
@@ -1174,17 +1256,20 @@ public class RvvMonotonicVectorDispatcher {
     BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
     List<TailOverflowRecord> overflows = new ArrayList<>();
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
-    synchronized (state) {
-      List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
-          maxTailPerStream, overflows);
-      for (TailMutation mutation : toReplay) {
-        emitted.addAll(dispatchSingleVersionLocked(state, mutation, true));
-        state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
-            Math::max);
+    synchronized (subscriberRegistryLock) {
+      synchronized (state) {
+        List<TailMutation> toReplay = state.collectReplayableTail(recoveredBucketEntries,
+            maxTailPerStream, overflows);
+        reconcileOverflowRecordsLocked(state, overflows);
+        for (TailMutation mutation : toReplay) {
+          emitted.addAll(dispatchSingleVersionLocked(state, mutation, true));
+          state.nextExpectedVersionByMember.merge(mutation.memberId, mutation.regionVersion + 1L,
+              Math::max);
+        }
+        List<TailMutation> allReplayed = new ArrayList<>(toReplay);
+        drainAllHoldbackOnPromotionLocked(state, emitted, allReplayed);
+        emitPromotionWatermarksLocked(state, bucketId, allReplayed);
       }
-      List<TailMutation> allReplayed = new ArrayList<>(toReplay);
-      drainAllHoldbackOnPromotionLocked(state, emitted, allReplayed);
-      emitPromotionWatermarksLocked(state, bucketId, allReplayed);
     }
     if (!overflows.isEmpty()) {
       notifyOverflows(overflows);
@@ -1247,7 +1332,7 @@ public class RvvMonotonicVectorDispatcher {
       }
       emitStreamWatermarksLocked(state, bucketId, maxVersionByMember, targetSink);
       if (onReplayedUnderLock != null) {
-        onReplayedUnderLock.run();
+        enqueueOrDispatchBarrierLocked(state, onReplayedUnderLock);
       }
     }
     if (!floorViolations.isEmpty()) {
@@ -1306,6 +1391,7 @@ public class RvvMonotonicVectorDispatcher {
             Set<String> healthy =
                 Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
             for (String memberId : sortedMembers) {
+              clearSubscriberResyncRequired(subscriberId, bucketId, memberId);
               Long hw = clientHighWaterByMember != null ? clientHighWaterByMember.get(memberId)
                   : null;
               long clientHw = (hw != null && hw > 0L) ? hw : 0L;
@@ -1322,7 +1408,11 @@ public class RvvMonotonicVectorDispatcher {
           }
           emitStreamWatermarksLocked(state, bucketId, maxVersionByMember, targetSink);
           if (onReplayedUnderLock != null) {
-            onReplayedUnderLock.run();
+            enqueueOrDispatchBarrierLocked(state, onReplayedUnderLock);
+          }
+        } else if (subscriberId != null && !subscriberId.isEmpty()) {
+          for (ReplayFloorViolationRecord rec : floorViolations) {
+            markSubscriberResyncRequired(subscriberId, rec.bucketId, rec.memberId);
           }
         }
       }
@@ -1354,8 +1444,12 @@ public class RvvMonotonicVectorDispatcher {
         long floor = state.getReplayFloor(memberId);
         if (floor > 0L && clientHighWater < floor) {
           violation = new ReplayFloorViolationRecord(bucketId, memberId, clientHighWater, floor);
+          if (subscriberId != null && !subscriberId.isEmpty()) {
+            markSubscriberResyncRequired(subscriberId, bucketId, memberId);
+          }
         } else if (subscriberId != null && !subscriberId.isEmpty()) {
           registeredCheckpointSubscribers.add(subscriberId);
+          clearSubscriberResyncRequired(subscriberId, bucketId, memberId);
           state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHighWater);
           Set<String> healthy =
               Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
@@ -1425,11 +1519,16 @@ public class RvvMonotonicVectorDispatcher {
           Set<String> healthy =
               Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
           for (String memberId : members) {
+            clearSubscriberResyncRequired(subscriberId, bucketId, memberId);
             Long hw = clientHighWaterByMember != null ? clientHighWaterByMember.get(memberId)
                 : null;
             long clientHw = (hw != null && hw > 0L) ? hw : 0L;
             state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHw);
             state.recomputeMinHealthyCheckpoint(memberId, healthy);
+          }
+        } else if (!violations.isEmpty() && subscriberId != null && !subscriberId.isEmpty()) {
+          for (ReplayFloorViolationRecord rec : violations) {
+            markSubscriberResyncRequired(subscriberId, rec.bucketId, rec.memberId);
           }
         }
       }
@@ -1598,6 +1697,22 @@ public class RvvMonotonicVectorDispatcher {
     return resyncRequiredStreams.contains(new RvvStreamKey(bucketId, memberId));
   }
 
+  public boolean isSubscriberResyncRequired(String subscriberId, int bucketId, String memberId) {
+    if (subscriberId == null || subscriberId.isEmpty() || memberId == null || memberId.isEmpty()) {
+      return false;
+    }
+    Set<String> subs = resyncRequiredSubscribersByStream.get(new RvvStreamKey(bucketId, memberId));
+    return subs != null && subs.contains(subscriberId);
+  }
+
+  public Set<String> getResyncRequiredSubscribers(int bucketId, String memberId) {
+    if (memberId == null || memberId.isEmpty()) {
+      return Collections.emptySet();
+    }
+    Set<String> subs = resyncRequiredSubscribersByStream.get(new RvvStreamKey(bucketId, memberId));
+    return subs == null ? Collections.emptySet() : Collections.unmodifiableSet(new HashSet<>(subs));
+  }
+
   public Set<RvvStreamKey> getResyncRequiredStreams() {
     return Collections.unmodifiableSet(resyncRequiredStreams);
   }
@@ -1606,12 +1721,95 @@ public class RvvMonotonicVectorDispatcher {
     if (memberId == null || memberId.isEmpty()) {
       return;
     }
-    resyncRequiredStreams.remove(new RvvStreamKey(bucketId, memberId));
+    RvvStreamKey key = new RvvStreamKey(bucketId, memberId);
+    resyncRequiredStreams.remove(key);
+    resyncRequiredSubscribersByStream.remove(key);
   }
 
   public void onBucketRemoved(int bucketId) {
     bucketStates.remove(bucketId);
     resyncRequiredStreams.removeIf(key -> key.getBucketId() == bucketId);
+    resyncRequiredSubscribersByStream.keySet().removeIf(key -> key.getBucketId() == bucketId);
+  }
+
+  private void markSubscriberResyncRequired(String subscriberId, int bucketId, String memberId) {
+    resyncRequiredSubscribersByStream
+        .computeIfAbsent(new RvvStreamKey(bucketId, memberId),
+            ignored -> ConcurrentHashMap.newKeySet())
+        .add(subscriberId);
+  }
+
+  private void clearSubscriberResyncRequired(String subscriberId, int bucketId, String memberId) {
+    RvvStreamKey key = new RvvStreamKey(bucketId, memberId);
+    Set<String> subs = resyncRequiredSubscribersByStream.get(key);
+    if (subs != null) {
+      subs.remove(subscriberId);
+      if (subs.isEmpty()) {
+        resyncRequiredSubscribersByStream.remove(key, subs);
+      }
+    }
+  }
+
+  private void reconcileOverflowRecordsLocked(BucketState state,
+      List<TailOverflowRecord> overflowRecords) {
+    if (overflowRecords == null || overflowRecords.isEmpty()) {
+      return;
+    }
+    Set<String> seenMembers = new HashSet<>();
+    for (TailOverflowRecord rec : overflowRecords) {
+      if (seenMembers.add(rec.memberId)) {
+        reconcileOverflowLocked(rec.bucketId, state, rec.memberId);
+      }
+    }
+  }
+
+  /**
+   * Atomically restores the joint {@code V_floor <= V_ckpt} invariant under
+   * {@code (subscriberRegistryLock, state)} after tail-overflow eviction bumps {@code V_floor}:
+   * evicts every lagging subscriber with {@code V_client[i] < V_floor} from {@code S_healthy} into
+   * {@code resyncRequired}, then recomputes {@code V_ckpt = max(V_floor, min_{i in S_healthy'}
+   * V_client[i])} (or {@code V_head} without discarding the surviving {@code (V_floor, V_head]}
+   * tail when {@code S_healthy'} is empty).
+   */
+  private void reconcileOverflowLocked(int bucketId, BucketState state, String memberId) {
+    long newFloor = state.getReplayFloor(memberId);
+    RvvStreamKey streamKey = new RvvStreamKey(bucketId, memberId);
+    resyncRequiredStreams.add(streamKey);
+
+    List<String> lagging = null;
+    for (String subId : registeredCheckpointSubscribers) {
+      long subAck = state.getSubscriberAck(subId, memberId);
+      if (subAck < newFloor) {
+        if (lagging == null) {
+          lagging = new ArrayList<>(2);
+        }
+        lagging.add(subId);
+      }
+    }
+    if (lagging != null) {
+      Set<String> resyncSubs = resyncRequiredSubscribersByStream.computeIfAbsent(streamKey,
+          ignored -> ConcurrentHashMap.newKeySet());
+      for (String subId : lagging) {
+        registeredCheckpointSubscribers.remove(subId);
+        state.removeSubscriberAckForMember(subId, memberId);
+        resyncSubs.add(subId);
+      }
+    }
+
+    if (!registeredCheckpointSubscribers.isEmpty()) {
+      long minHealthyAck = Long.MAX_VALUE;
+      for (String subId : registeredCheckpointSubscribers) {
+        long ack = state.getSubscriberAck(subId, memberId);
+        if (ack < minHealthyAck) {
+          minHealthyAck = ack;
+        }
+      }
+      long targetCkpt = Math.max(newFloor, minHealthyAck);
+      state.advanceCheckpoint(memberId, targetCkpt);
+    } else {
+      long streamHead = state.getStreamHeadVersion(memberId);
+      state.advanceCheckpointWithoutCompaction(memberId, Math.max(newFloor, streamHead));
+    }
   }
 
   private void drainPendingLiveMutationsLocked(BucketState state,
@@ -2159,6 +2357,16 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
+  private void enqueueOrDispatchBarrierLocked(BucketState state, Runnable barrierAction) {
+    state.pendingDispatchBatches.offer(new PendingDispatchBatch(barrierAction));
+    Executor exec = this.dispatchExecutor;
+    if (exec != null) {
+      scheduleBucketDrain(state, exec);
+    } else {
+      drainSynchronously(state);
+    }
+  }
+
   private void drainSynchronously(BucketState state) {
     Thread current = Thread.currentThread();
     while (!state.pendingDispatchBatches.isEmpty()) {
@@ -2217,6 +2425,10 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   private void dispatchBatchToSinks(PendingDispatchBatch batch) {
+    if (batch.barrierAction != null) {
+      batch.barrierAction.run();
+      return;
+    }
     if (batch.targetSink != null) {
       batch.targetSink.onEventBatch(batch.events);
       return;

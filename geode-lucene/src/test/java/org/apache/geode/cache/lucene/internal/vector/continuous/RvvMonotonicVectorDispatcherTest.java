@@ -389,7 +389,7 @@ public class RvvMonotonicVectorDispatcherTest {
     dispatcher.addTailOverflowListener((bucketId, memberId, evictedVersion, ckpt, maxTail) -> {
       assertThat(bucketId).isEqualTo(3);
       assertThat(memberId).isEqualTo("srv-overflow");
-      assertThat(ckpt).isZero();
+      assertThat(ckpt).isGreaterThanOrEqualTo(0L);
       assertThat(maxTail).isEqualTo(4);
       evictedVersions.add(evictedVersion);
     });
@@ -397,11 +397,15 @@ public class RvvMonotonicVectorDispatcherTest {
     for (long v = 1L; v <= 7L; v++) {
       dispatcher.onBucketMutation(3, "srv-overflow", v, 1, "k-" + v, new float[] {1, 0, 0, 0},
           false);
+      assertThat(dispatcher.getReplayFloorVersion(3, "srv-overflow"))
+          .isLessThanOrEqualTo(dispatcher.getCheckpointVersion(3, "srv-overflow"));
     }
 
     assertThat(dispatcher.getTailSize(3)).isEqualTo(4);
     assertThat(dispatcher.getTailOverflowCount()).isEqualTo(3L);
     assertThat(evictedVersions).containsExactly(1L, 2L, 3L);
+    assertThat(dispatcher.getReplayFloorVersion(3, "srv-overflow")).isEqualTo(3L);
+    assertThat(dispatcher.getCheckpointVersion(3, "srv-overflow")).isEqualTo(7L);
     assertThat(dispatcher.isResyncRequired(3, "srv-overflow")).isTrue();
     assertThat(dispatcher.getResyncRequiredStreams())
         .containsExactly(new RvvStreamKey(3, "srv-overflow"));
@@ -2575,6 +2579,238 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(secondary.admitAndReplayForReconnect("stale-sub", bucketId,
         Collections.singletonMap(memberP, 59L))).isEmpty();
     assertThat(secondary.isResyncRequired(bucketId, memberP)).isTrue();
+  }
+
+  @Test
+  public void tailOverflowAtomicallyEvictsLaggingSubscribersAndPreservesFloorLeqCheckpoint() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 8;
+
+    // Case A: Non-empty surviving S_healthy' (sub-fast at 6 survives, sub-slow at 2 evicted)
+    ChordalVoronoiRouter routerA = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dispA = new RvvMonotonicVectorDispatcher(routerA, cTail);
+    ContinuousVectorQueryService svcA = new ContinuousVectorQueryService(routerA, dispA);
+    svcA.registerSubscription("sub-fast", vec, 0.90f);
+    svcA.registerSubscription("sub-slow", vec, 0.90f);
+    svcA.registerSubscriberForCheckpoint("sub-fast");
+    svcA.registerSubscriberForCheckpoint("sub-slow");
+
+    int bucketA = 25;
+    String memberA = "srv-ovf-a";
+    for (long v = 1L; v <= 6L; v++) {
+      svcA.onBucketMutation(bucketA, memberA, v, "ka-" + v, vec, true);
+    }
+    svcA.acknowledgeSubscriberCheckpoint("sub-fast", bucketA, memberA, 6L);
+    svcA.acknowledgeSubscriberCheckpoint("sub-slow", bucketA, memberA, 2L);
+    assertThat(svcA.getReplayFloorVersion(bucketA, memberA)).isEqualTo(2L);
+    assertThat(svcA.getCheckpointVersion(bucketA, memberA)).isEqualTo(2L);
+
+    // Mutations v=7..11 overflow v=3 (V_floor bumps to 3 > sub-slow's 2):
+    // atomically evicts sub-slow from S_healthy into resyncRequired and recomputes
+    // V_ckpt = max(V_floor, min_{S_healthy'}) = 6 (V_floor == 6 <= V_ckpt == 6)!
+    for (long v = 7L; v <= 11L; v++) {
+      svcA.onBucketMutation(bucketA, memberA, v, "ka-" + v, vec, true);
+      assertThat(svcA.getReplayFloorVersion(bucketA, memberA))
+          .isLessThanOrEqualTo(svcA.getCheckpointVersion(bucketA, memberA));
+    }
+    assertThat(svcA.isResyncRequired(bucketA, memberA)).isTrue();
+    assertThat(svcA.isSubscriberResyncRequired("sub-slow", bucketA, memberA)).isTrue();
+    assertThat(svcA.isSubscriberResyncRequired("sub-fast", bucketA, memberA)).isFalse();
+    assertThat(dispA.getRegisteredCheckpointSubscribers()).containsExactly("sub-fast");
+    assertThat(svcA.getReplayFloorVersion(bucketA, memberA)).isEqualTo(6L);
+    assertThat(svcA.getCheckpointVersion(bucketA, memberA)).isEqualTo(6L);
+    assertThat(svcA.admitSubscriberForContinuity("sub-slow", bucketA, memberA, 2L)).isFalse();
+
+    // Case B: S_healthy' becomes empty when sole lagging subscriber is evicted ->
+    // V_ckpt advances atomically to V_head (V_floor <= V_ckpt) while retaining (V_floor, V_head]
+    ChordalVoronoiRouter routerB = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dispB = new RvvMonotonicVectorDispatcher(routerB, cTail);
+    ContinuousVectorQueryService svcB = new ContinuousVectorQueryService(routerB, dispB);
+    svcB.registerSubscription("sub-slow", vec, 0.90f);
+    svcB.registerSubscriberForCheckpoint("sub-slow");
+
+    int bucketB = 26;
+    String memberB = "srv-ovf-b";
+    for (long v = 1L; v <= 11L; v++) {
+      svcB.onBucketMutation(bucketB, memberB, v, "kb-" + v, vec, true);
+      if (v == 2L) {
+        svcB.acknowledgeSubscriberCheckpoint("sub-slow", bucketB, memberB, 2L);
+      }
+      assertThat(svcB.getReplayFloorVersion(bucketB, memberB))
+          .isLessThanOrEqualTo(svcB.getCheckpointVersion(bucketB, memberB));
+    }
+    assertThat(dispB.getRegisteredCheckpointSubscribers()).isEmpty();
+    assertThat(svcB.isSubscriberResyncRequired("sub-slow", bucketB, memberB)).isTrue();
+    assertThat(svcB.getReplayFloorVersion(bucketB, memberB)).isEqualTo(3L);
+    assertThat(svcB.getCheckpointVersion(bucketB, memberB)).isEqualTo(11L);
+    assertThat(dispB.getTailSize(bucketB)).isEqualTo(cTail);
+    assertThat(svcB.admitAndReplayForReconnect("sub-slow", bucketB,
+        Collections.singletonMap(memberB, 2L))).isEmpty();
+
+    // Caught-up subscriber (V_client=5 >= V_floor=3) re-admits cleanly and replays [6..11]
+    List<ContinuousVectorEvent> replayed = svcB.admitAndReplayForReconnect("sub-caught-up",
+        bucketB, Collections.singletonMap(memberB, 5L));
+    assertThat(replayed).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(6L, 7L, 8L, 9L, 10L, 11L);
+    assertThat(dispB.getRegisteredCheckpointSubscribers()).containsExactly("sub-caught-up");
+  }
+
+  @Test
+  public void disconnectBetweenMatchBatchAndCoveringHeartbeatCannotAdvanceWatermarkPastDroppedMatch() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ContinuousVectorQueryService server = new ContinuousVectorQueryService(4);
+    server.setHeartbeatIntervalEvents(4);
+    server.registerSubscription("sub-A", vec, 0.90f);
+    server.registerSubscription("sub-B", vec, 0.90f);
+
+    RvvClientGate gate = new RvvClientGate();
+    gate.registerSubscription("sub-A");
+    gate.registerSubscription("sub-B");
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore store =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> applied = new ArrayList<>();
+    IdempotentRvvConsumer consumer = new IdempotentRvvConsumer(gate, store,
+        (ev, id) -> applied.add(id));
+
+    int bucketId = 27;
+    String memberId = "srv-session-fence";
+    long session1 = consumer.getActiveSessionEpoch(bucketId);
+    assertThat(session1).isEqualTo(1L);
+    ContinuousVectorEventSink session1Sink = consumer.createSessionSink(bucketId, session1);
+
+    // Capture server wire events to simulate a transport break between match batch v=4 and HB(4)
+    List<ContinuousVectorEvent> wireBuffer = new ArrayList<>();
+    ContinuousVectorEventSink capturingSink = ev -> {
+      wireBuffer.add(ev);
+      if (ev.getRegionVersion() <= 3L) {
+        session1Sink.onEvent(ev);
+      }
+    };
+    server.addEventSink(capturingSink);
+
+    for (long v = 1L; v <= 3L; v++) {
+      server.onBucketMutation(bucketId, memberId, v, "k-" + v, vec, true);
+    }
+    assertThat(applied).hasSize(6);
+    assertThat(consumer.getCommittedHighWaterByMember(bucketId)).containsEntry(memberId, 3L);
+
+    // v=4 generates [match(sub-A, 4), match(sub-B, 4), HB(4)]; disconnect drops the match batch
+    // BEFORE it reaches the client!
+    server.onBucketMutation(bucketId, memberId, 4L, "k-4", vec, true);
+    ContinuousVectorEvent droppedHb4 = wireBuffer.stream()
+        .filter(e -> e.isHeartbeat() && e.getRegionVersion() == 4L)
+        .findFirst()
+        .orElseThrow(AssertionError::new);
+    server.removeEventSink(capturingSink);
+
+    // Client detects disconnect and calls prepareForReconnect(bucketId) -> advances sessionEpoch
+    // 1->2
+    Map<String, Long> clientHw = consumer.prepareForReconnect(bucketId);
+    long session2 = consumer.getActiveSessionEpoch(bucketId);
+    assertThat(session2).isEqualTo(2L);
+    assertThat(clientHw).containsEntry(memberId, 3L);
+
+    // Late covering heartbeat HB(4) from dead session 1 arrives -> MUST be rejected by receiver
+    // sessionEpoch fence and MUST NOT advance V_client past 3!
+    session1Sink.onEvent(droppedHb4);
+    assertThat(consumer.getStaleSessionEventsRejectedCount()).isEqualTo(1L);
+    assertThat(store.getCommittedWatermark("sub-A", bucketId, memberId)).isEqualTo(3L);
+    assertThat(store.getCommittedWatermark("sub-B", bucketId, memberId)).isEqualTo(3L);
+    assertThat(consumer.getCommittedHighWaterByMember(bucketId)).containsEntry(memberId, 3L);
+
+    // Reconnect on new session 2 -> server replays (3, 4] strictly matches-before-heartbeat!
+    ContinuousVectorEventSink session2Sink = consumer.createSessionSink(bucketId, session2);
+    server.admitAndReplayForReconnect("sub-session-client", bucketId, clientHw, session2Sink, null);
+
+    assertThat(applied).hasSize(8).doesNotHaveDuplicates();
+    assertThat(applied).contains(
+        new IdempotentRvvConsumer.EventDeliveryId("sub-A", bucketId, memberId, 4L),
+        new IdempotentRvvConsumer.EventDeliveryId("sub-B", bucketId, memberId, 4L));
+    assertThat(store.getCommittedWatermark("sub-A", bucketId, memberId)).isEqualTo(4L);
+    assertThat(store.getCommittedWatermark("sub-B", bucketId, memberId)).isEqualTo(4L);
+    assertThat(consumer.getCommittedHighWaterByMember(bucketId)).containsEntry(memberId, 4L);
+  }
+
+  @Test
+  public void idleHeartbeatAndFloorToCheckpointReconnectNearCapacityAdvancesCheckpointWithoutOverflow() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 32;
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dispatcher =
+        new RvvMonotonicVectorDispatcher(router, cTail, null, 64);
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(router, dispatcher);
+    service.registerSubscription("sub-fast", vec, 0.90f);
+    service.registerSubscription("sub-lagging", vec, 0.90f);
+    service.registerSubscriberForCheckpoint("sub-fast");
+
+    RvvClientGate fastGate = new RvvClientGate();
+    fastGate.registerSubscription("sub-fast");
+    service.addEventSink(fastGate::tryAccept);
+
+    RvvClientGate lagGate = new RvvClientGate();
+    lagGate.registerSubscription("sub-lagging");
+    List<ContinuousVectorEvent> lagDelivered = new ArrayList<>();
+    lagGate.addListener(ev -> {
+      if ("sub-lagging".equals(ev.getSubscriptionId())) {
+        lagDelivered.add(ev);
+      }
+    });
+    ContinuousVectorEventSink lagSink = lagGate::tryAccept;
+    service.addEventSink(lagSink);
+
+    int bucketId = 28;
+    String memberId = "srv-idle-cap";
+    for (long v = 1L; v <= 10L; v++) {
+      if (v == 9L) {
+        service.removeEventSink(lagSink); // sub-lagging disconnects at V_client = 8
+      }
+      service.onBucketMutation(bucketId, memberId, v, "k-" + v, vec, true);
+    }
+    assertThat(lagGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(8L);
+
+    // Compact V_floor=6 and advance logical V_ckpt=10 -> retained prefix R_ret = |(6, 10]| = 4
+    service.acknowledgeCheckpoint(bucketId, memberId, 6L);
+    service.recordReplicatedCheckpoint(bucketId, memberId, 10L);
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isEqualTo(6L);
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isEqualTo(10L);
+    assertThat(dispatcher.getTailSize(bucketId)).isEqualTo(4);
+
+    // Append 27 more mutations (v=11..37, below H=64 count trigger!) -> total occupancy = 4 + 27 =
+    // 31 == C_tail - 1 with 0 overflow!
+    long v0 = 11L;
+    for (long v = v0; v <= 37L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k-" + v, vec, true);
+    }
+    assertThat(dispatcher.getTailSize(bucketId)).isEqualTo(cTail - 1);
+    assertThat(dispatcher.getTailOverflowCount()).isZero();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+
+    // Flush idle heartbeat covering v=37 (>= v0=11) while tail is at C_tail - 1 and reconnect
+    // sub-lagging at V_client=8 in V_floor=6 < V_client=8 < V_ckpt=10!
+    long hbBefore = dispatcher.getTotalHeartbeatsDispatched();
+    int flushed = service.flushIdleHeartbeats(System.currentTimeMillis() + 500L, 100L);
+    assertThat(flushed).isEqualTo(1);
+    assertThat(dispatcher.getTotalHeartbeatsDispatched()).isEqualTo(hbBefore + 1L);
+    assertThat(fastGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(37L);
+
+    service.admitAndReplayForReconnect("sub-lagging", bucketId,
+        Collections.singletonMap(memberId, 8L), lagSink, null);
+    assertThat(lagDelivered).hasSize(37);
+    assertThat(lagDelivered).extracting(ContinuousVectorEvent::getRegionVersion)
+        .contains(9L, 10L, 11L, 37L)
+        .doesNotHaveDuplicates();
+    assertThat(lagGate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(37L);
+
+    // Both healthy subscribers ACK covering heartbeat v=37 -> V_ckpt >= v0 (37), V_floor=37,
+    // tailSize=0, 0 overflow!
+    service.acknowledgeSubscriberCheckpoint("sub-fast", bucketId, memberId, 37L);
+    service.acknowledgeSubscriberCheckpoint("sub-lagging", bucketId, memberId, 37L);
+    assertThat(service.getCheckpointVersion(bucketId, memberId)).isGreaterThanOrEqualTo(v0)
+        .isEqualTo(37L);
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isEqualTo(37L);
+    assertThat(dispatcher.getTailSize(bucketId)).isZero();
+    assertThat(dispatcher.getTailOverflowCount()).isZero();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
   }
 
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(

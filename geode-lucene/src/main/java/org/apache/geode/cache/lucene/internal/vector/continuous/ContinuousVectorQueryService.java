@@ -156,6 +156,14 @@ public class ContinuousVectorQueryService {
     return dispatcher.isResyncRequired(bucketId, memberId);
   }
 
+  public boolean isSubscriberResyncRequired(String subscriberId, int bucketId, String memberId) {
+    return dispatcher.isSubscriberResyncRequired(subscriberId, bucketId, memberId);
+  }
+
+  public Set<String> getResyncRequiredSubscribers(int bucketId, String memberId) {
+    return dispatcher.getResyncRequiredSubscribers(bucketId, memberId);
+  }
+
   public void addHoldbackGapListener(RvvMonotonicVectorDispatcher.HoldbackGapListener listener) {
     dispatcher.addHoldbackGapListener(listener);
   }

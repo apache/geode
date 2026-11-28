@@ -2519,6 +2519,336 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  /**
+   * R1 M3 DUnit regression: proves that when a client disconnects between a match batch
+   * ({@code v=4}
+   * matching {@code sub-A} and {@code sub-B}) and its covering heartbeat {@code HB(4)}, the
+   * receiver-side monotonic {@code sessionEpoch} fence rejects the late dead-session heartbeat
+   * before advancing {@code V_client}, and reconnect on the new session replays {@code (3, 4]}
+   * strictly matches-before-heartbeat across a live multi-JVM cluster.
+   */
+  @Test
+  public void disconnectBetweenMatchBatchAndCoveringHeartbeatCannotAdvanceWatermarkPastDroppedMatch()
+      throws Exception {
+    RvvClientGate clientGate = new RvvClientGate();
+    clientGate.registerSubscription("sub-A");
+    clientGate.registerSubscription("sub-B");
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore durableStore =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> appliedEffects = new CopyOnWriteArrayList<>();
+    IdempotentRvvConsumer consumer =
+        new IdempotentRvvConsumer(clientGate, durableStore, (ev, id) -> appliedEffects.add(id));
+
+    long session1 = consumer.getActiveSessionEpoch(0);
+    assertThat(session1).isEqualTo(1L);
+    ContinuousVectorEventSink session1Sink = consumer.createSessionSink(0, session1);
+    receiver = new ClientEventReceiver(session1Sink);
+    int receiverPort1 = receiver.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM[] servers = new MemberVM[] {server1, server2};
+
+    try {
+      Random rng = new Random(20261205L);
+      float[] queryVec = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+      List<VectorSubscription> subscriptions = Arrays.asList(
+          new VectorSubscription("sub-A", queryVec, 0.90f),
+          new VectorSubscription("sub-B", queryVec, 0.90f));
+
+      for (MemberVM server : servers) {
+        server.invoke(() -> initializeServerNode(subscriptions, receiverPort1, -1, 1, 4, 1));
+      }
+
+      // Live v=1..3 delivered on session 1 -> 6 effects, V_client=3
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 1; i <= 3; i++) {
+          region.put("sf-doc-" + i, queryVec);
+        }
+      });
+
+      int primaryIdx = -1;
+      String primaryMemberId = null;
+      for (int idx = 0; idx < servers.length; idx++) {
+        String candidate = servers[idx].invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          return null;
+        });
+        if (candidate != null) {
+          primaryIdx = idx;
+          primaryMemberId = candidate;
+          break;
+        }
+      }
+      assertThat(primaryIdx).isGreaterThanOrEqualTo(0);
+      final String mP = primaryMemberId;
+      final MemberVM primaryVm = servers[primaryIdx];
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(appliedEffects).hasSize(6);
+        assertThat(durableStore.getCommittedWatermark("sub-A", 0, mP)).isEqualTo(3L);
+        assertThat(durableStore.getCommittedWatermark("sub-B", 0, mP)).isEqualTo(3L);
+      });
+
+      // Disconnect drops match batch v=4 (and triggers HB(4) at H=4 on primary!)
+      for (MemberVM server : servers) {
+        server.invoke(() -> dropOutboundEvents.set(true));
+      }
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("sf-doc-4", queryVec);
+      });
+      assertThat(
+          primaryVm.invoke(() -> serverService.getDispatcher().getTotalHeartbeatsDispatched()))
+              .isGreaterThanOrEqualTo(1L);
+
+      // Client prepares reconnect -> advances sessionEpoch 1 -> 2; late covering HB(4) from dead
+      // session 1 MUST be rejected and MUST NOT advance V_client past 3!
+      Map<String, Long> clientHw = consumer.prepareForReconnect(0);
+      long session2 = consumer.getActiveSessionEpoch(0);
+      assertThat(session2).isEqualTo(2L);
+      assertThat(clientHw).containsEntry(mP, 3L);
+
+      session1Sink.onEvent(
+          ContinuousVectorEvent.watermarkHeartbeat(0, mP, 4L, System.currentTimeMillis()));
+      assertThat(consumer.getStaleSessionEventsRejectedCount()).isEqualTo(1L);
+      assertThat(durableStore.getCommittedWatermark("sub-A", 0, mP)).isEqualTo(3L);
+      assertThat(durableStore.getCommittedWatermark("sub-B", 0, mP)).isEqualTo(3L);
+
+      // Reconnect on new session 2 -> server replays (3, 4] strictly matches-before-heartbeat
+      receiver.close();
+      ContinuousVectorEventSink session2Sink = consumer.createSessionSink(0, session2);
+      receiver = new ClientEventReceiver(session2Sink);
+      int receiverPort2 = receiver.getPort();
+      for (MemberVM server : servers) {
+        server.invoke(() -> {
+          if (serverTcpSink != null) {
+            serverService.removeEventSink(serverTcpSink);
+            serverTcpSink.close();
+          }
+          dropOutboundEvents.set(false);
+          serverTcpSink = new TcpEventSink(receiverPort2, dropOutboundEvents);
+          serverService.addEventSink(serverTcpSink);
+        });
+      }
+      primaryVm.invoke(() -> {
+        serverTcpSink.enableReconnectBucketGate();
+        serverService.admitAndReplayForReconnect("sub-session-dunit", 0, clientHw, serverTcpSink,
+            () -> serverTcpSink.allowLiveBucket(0));
+      });
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(appliedEffects).hasSize(8).doesNotHaveDuplicates();
+        assertThat(appliedEffects).contains(
+            new IdempotentRvvConsumer.EventDeliveryId("sub-A", 0, mP, 4L),
+            new IdempotentRvvConsumer.EventDeliveryId("sub-B", 0, mP, 4L));
+        assertThat(durableStore.getCommittedWatermark("sub-A", 0, mP)).isEqualTo(4L);
+        assertThat(durableStore.getCommittedWatermark("sub-B", 0, mP)).isEqualTo(4L);
+      });
+    } finally {
+      for (MemberVM server : servers) {
+        server.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+      }
+    }
+  }
+
+  /**
+   * R1 M2 / R2 M2 / R2 M3 DUnit regression: exercises (a) an idle heartbeat + floor-to-checkpoint
+   * reconnect
+   * ({@code V_floor=6 < V_client=8 < V_ckpt=10}) right at tail capacity {@code C_tail - 1}
+   * with zero overflow and exact {@code V_ckpt >= v_0} progress, and (b) subsequent tail overflow
+   * atomically evicting a lagging subscriber from {@code S_healthy} into {@code resyncRequired}
+   * while preserving {@code V_floor <= V_ckpt}.
+   */
+  @Test
+  public void idleHeartbeatAndFloorToCheckpointReconnectNearCapacityAndOverflowAcrossCluster()
+      throws Exception {
+    RvvClientGate fastGate = new RvvClientGate();
+    fastGate.registerSubscription("sub-fast");
+    receiver = new ClientEventReceiver(fastGate);
+    int fastPort = receiver.getPort();
+
+    RvvClientGate lagGate = new RvvClientGate();
+    lagGate.registerSubscription("sub-lagging");
+    List<ContinuousVectorEvent> lagAccepted = new CopyOnWriteArrayList<>();
+    lagGate.addListener(ev -> {
+      if ("sub-lagging".equals(ev.getSubscriptionId())) {
+        lagAccepted.add(ev);
+      }
+    });
+    receiverB = new ClientEventReceiver(lagGate);
+    int lagPort = receiverB.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM[] servers = new MemberVM[] {server1, server2};
+    final int cTail = 32;
+
+    try {
+      Random rng = new Random(20261206L);
+      float[] queryVec = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+      List<VectorSubscription> subscriptions = Arrays.asList(
+          new VectorSubscription("sub-fast", queryVec, 0.90f),
+          new VectorSubscription("sub-lagging", queryVec, 0.90f));
+
+      for (MemberVM server : servers) {
+        server.invoke(() -> {
+          initializeServerNode(subscriptions, fastPort, lagPort, 1, 64, 1, cTail);
+          serverService.registerSubscriberForCheckpoint("sub-fast");
+        });
+      }
+
+      // Baseline v=1..8 live on both fast and lagging clients, then disconnect lagging at
+      // V_client=8
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 1; i <= 8; i++) {
+          region.put("cap-idle-" + i, queryVec);
+        }
+      });
+
+      int primaryIdx = -1;
+      String primaryMemberId = null;
+      for (int idx = 0; idx < servers.length; idx++) {
+        String candidate = servers[idx].invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          return null;
+        });
+        if (candidate != null) {
+          primaryIdx = idx;
+          primaryMemberId = candidate;
+          break;
+        }
+      }
+      assertThat(primaryIdx).isGreaterThanOrEqualTo(0);
+      final String mP = primaryMemberId;
+      final MemberVM primaryVm = servers[primaryIdx];
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(lagAccepted).hasSize(8);
+        assertThat(lagGate.getSafeCheckpointVersion(0, mP)).isEqualTo(8L);
+      });
+
+      for (MemberVM server : servers) {
+        server.invoke(() -> dropOutboundEventsB.set(true));
+      }
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("cap-idle-9", queryVec);
+        region.put("cap-idle-10", queryVec);
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> fastGate.getSafeCheckpointVersion(0, mP) == 10L);
+
+      // Compact V_floor=6 and advance logical V_ckpt=10 -> R_ret=4 retained entries [7..10]
+      for (MemberVM server : servers) {
+        server.invoke(() -> {
+          serverService.acknowledgeCheckpoint(0, mP, 6L);
+          serverService.recordReplicatedCheckpoint(0, mP, 10L);
+        });
+      }
+
+      // Write 27 more mutations (v=11..37, < H=64) -> occupancy = 4 + 27 = 31 == C_tail - 1!
+      final long v0 = 11L;
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 11; i <= 37; i++) {
+          region.put("cap-idle-" + i, queryVec);
+        }
+      });
+      assertThat(primaryVm.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isEqualTo(cTail - 1);
+      assertThat(primaryVm.invoke(() -> serverService.getDispatcher().getTailOverflowCount()))
+          .isZero();
+
+      // Trigger idle heartbeat covering v=37 (>= v0) AND reconnect sub-lagging at V_client=8
+      long flushNow = System.currentTimeMillis() + 500L;
+      int flushed = primaryVm.invoke(() -> serverService.flushIdleHeartbeats(flushNow, 100L));
+      assertThat(flushed).isGreaterThanOrEqualTo(1);
+
+      Map<String, Long> lagHw = lagGate.getSafeHighWaterByMember(0);
+      assertThat(lagHw).containsEntry(mP, 8L);
+      primaryVm.invoke(() -> {
+        serverTcpSinkB.enableReconnectBucketGate();
+        dropOutboundEventsB.set(false);
+        serverService.admitAndReplayForReconnect("sub-lagging", 0, lagHw, serverTcpSinkB,
+            () -> serverTcpSinkB.allowLiveBucket(0));
+      });
+
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(lagAccepted).hasSize(37);
+        assertThat(lagAccepted).extracting(ContinuousVectorEvent::getRegionVersion)
+            .contains(9L, 10L, 11L, 37L)
+            .doesNotHaveDuplicates();
+        assertThat(fastGate.getSafeCheckpointVersion(0, mP)).isEqualTo(37L);
+        assertThat(lagGate.getSafeCheckpointVersion(0, mP)).isEqualTo(37L);
+      });
+
+      // Both subscribers ACK covering idle heartbeat 37 -> V_ckpt >= v0 (37), V_floor=37, tail=0
+      primaryVm.invoke(() -> {
+        serverService.acknowledgeSubscriberCheckpoint("sub-fast", 0, mP, 37L);
+        serverService.acknowledgeSubscriberCheckpoint("sub-lagging", 0, mP, 37L);
+      });
+      assertThat(primaryVm.invoke(() -> serverService.getCheckpointVersion(0, mP)))
+          .isGreaterThanOrEqualTo(v0)
+          .isEqualTo(37L);
+      assertThat(primaryVm.invoke(() -> serverService.getReplayFloorVersion(0, mP)))
+          .isEqualTo(37L);
+      assertThat(primaryVm.invoke(() -> serverService.getDispatcher().getTailSize(0))).isZero();
+      assertThat(primaryVm.invoke(() -> serverService.getDispatcher().getTailOverflowCount()))
+          .isZero();
+
+      // Part (b) R2 M2: Advance sub-fast to 45 while sub-lagging stalls at 37; ingest 33 puts
+      // (v=38..70 -> overflow evicts v=38) -> atomically evicts sub-lagging into resyncRequired,
+      // keeps sub-fast in S_healthy, and advances V_ckpt = 45 (V_floor <= V_ckpt)!
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 38; i <= 45; i++) {
+          region.put("ovf-" + i, queryVec);
+        }
+      });
+      primaryVm.invoke(() -> serverService.acknowledgeSubscriberCheckpoint("sub-fast", 0, mP, 45L));
+      server2.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 46; i <= 70; i++) {
+          region.put("ovf-" + i, queryVec);
+        }
+      });
+
+      assertThat(primaryVm.invoke(() -> serverService.isResyncRequired(0, mP))).isTrue();
+      assertThat(primaryVm
+          .invoke(() -> serverService.isSubscriberResyncRequired("sub-lagging", 0, mP))).isTrue();
+      assertThat(
+          primaryVm.invoke(() -> serverService.isSubscriberResyncRequired("sub-fast", 0, mP)))
+              .isFalse();
+      assertThat(primaryVm.invoke(
+          () -> serverService.getDispatcher().getRegisteredCheckpointSubscribers()))
+              .containsExactly("sub-fast");
+      long floorAfter = primaryVm.invoke(() -> serverService.getReplayFloorVersion(0, mP));
+      long ckptAfter = primaryVm.invoke(() -> serverService.getCheckpointVersion(0, mP));
+      assertThat(floorAfter).isEqualTo(45L);
+      assertThat(ckptAfter).isEqualTo(45L);
+      assertThat(floorAfter).isLessThanOrEqualTo(ckptAfter);
+    } finally {
+      for (MemberVM server : servers) {
+        server.invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+      }
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);

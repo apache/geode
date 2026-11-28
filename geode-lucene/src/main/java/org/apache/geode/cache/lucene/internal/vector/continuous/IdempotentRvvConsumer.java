@@ -409,10 +409,13 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   private final ConcurrentHashMap<String, ReentrantLock> streamExecutionFences =
       new ConcurrentHashMap<>();
   private final Set<EventDeliveryId> inFlightExecutions = ConcurrentHashMap.newKeySet();
+  private final ConcurrentHashMap<Integer, AtomicLong> activeSessionEpochByBucket =
+      new ConcurrentHashMap<>();
   private final AtomicLong effectsExecutedCount = new AtomicLong();
   private final AtomicLong deduplicatedEffectsCount = new AtomicLong();
   private final AtomicLong recoveredPendingCount = new AtomicLong();
   private final AtomicLong durableAdmissionsCount = new AtomicLong();
+  private final AtomicLong staleSessionEventsRejectedCount = new AtomicLong();
 
   public IdempotentRvvConsumer(RvvClientGate gate, DurableDeliveryStore store,
       EffectHandler effectHandler) {
@@ -462,6 +465,73 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     }
   }
 
+  /**
+   * Returns the current monotonic receiver session epoch ({@code >= 1}) active for
+   * {@code bucketId}. Transport connections bind to this epoch via
+   * {@link #createSessionSink(int)} so any delayed heartbeat or match from a disconnected prior
+   * session is deterministically rejected before advancing watermarks.
+   */
+  public long getActiveSessionEpoch(int bucketId) {
+    return activeSessionEpochByBucket.computeIfAbsent(bucketId, ignored -> new AtomicLong(1L))
+        .get();
+  }
+
+  /**
+   * Atomically advances the monotonic receiver session epoch for {@code bucketId}, immediately
+   * fencing out any late heartbeats or unadmitted matches arriving on a disconnected prior
+   * session.
+   */
+  public long advanceSessionEpoch(int bucketId) {
+    return activeSessionEpochByBucket.computeIfAbsent(bucketId, ignored -> new AtomicLong(1L))
+        .incrementAndGet();
+  }
+
+  /**
+   * Invoked on transport/session disconnect for {@code bucketId}; advances the monotonic session
+   * epoch so stale heartbeats from the dead session cannot advance {@code V_client} past any
+   * dropped match batch.
+   */
+  public long onSessionDisconnect(int bucketId) {
+    return advanceSessionEpoch(bucketId);
+  }
+
+  /**
+   * Returns a session-scoped {@link ContinuousVectorEventSink} bound to the current active
+   * {@code sessionEpoch} for {@code bucketId}.
+   */
+  public ContinuousVectorEventSink createSessionSink(int bucketId) {
+    return createSessionSink(bucketId, getActiveSessionEpoch(bucketId));
+  }
+
+  /**
+   * Returns a session-scoped {@link ContinuousVectorEventSink} bound to an explicit
+   * {@code sessionEpoch} for {@code bucketId}.
+   */
+  public ContinuousVectorEventSink createSessionSink(int bucketId, long sessionEpoch) {
+    if (sessionEpoch <= 0L) {
+      throw new IllegalArgumentException("sessionEpoch must be > 0, got: " + sessionEpoch);
+    }
+    return new ContinuousVectorEventSink() {
+      @Override
+      public void onEvent(ContinuousVectorEvent event) {
+        if (event != null) {
+          processEvent(event, sessionEpoch);
+        }
+      }
+
+      @Override
+      public void onEventBatch(List<ContinuousVectorEvent> events) {
+        if (events != null) {
+          processEventBatch(events, sessionEpoch);
+        }
+      }
+    };
+  }
+
+  private boolean isStaleSessionEpoch(int bucketId, long sessionEpoch) {
+    return sessionEpoch > 0L && sessionEpoch != getActiveSessionEpoch(bucketId);
+  }
+
   @Override
   public void onEvent(ContinuousVectorEvent event) {
     processEvent(event);
@@ -478,6 +548,14 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
    * admission lock.
    */
   public EventDeliveryId stagePendingIntent(ContinuousVectorEvent event) {
+    return stagePendingIntent(event, 0L);
+  }
+
+  /**
+   * Session-epoch fenced variant of {@link #stagePendingIntent(ContinuousVectorEvent)}; rejects
+   * events tagged with a stale {@code sessionEpoch != activeSessionEpoch(bucketId)} before staging.
+   */
+  public EventDeliveryId stagePendingIntent(ContinuousVectorEvent event, long sessionEpoch) {
     Objects.requireNonNull(event, "event must not be null");
     if (event.isHeartbeat()) {
       return null;
@@ -488,6 +566,10 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     String memberId = event.getMemberId();
     long ver = event.getRegionVersion();
     synchronized (getStreamStageLock(bucketId, memberId)) {
+      if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
+        staleSessionEventsRejectedCount.incrementAndGet();
+        return null;
+      }
       long committed = store.getCommittedWatermark(subId, bucketId, memberId);
       if (ver <= committed || store.isEffectApplied(id) || store.isPendingIntent(id)) {
         return id;
@@ -511,15 +593,34 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
    * @return number of first-time match effects / heartbeats processed.
    */
   public int processEventBatch(List<ContinuousVectorEvent> events) {
+    return processEventBatch(events, 0L);
+  }
+
+  /**
+   * Session-epoch fenced variant of {@link #processEventBatch(List)}; rejects any event belonging
+   * to a stale {@code sessionEpoch} before staging or advancing watermarks.
+   */
+  public int processEventBatch(List<ContinuousVectorEvent> events, long sessionEpoch) {
     Objects.requireNonNull(events, "events must not be null");
+    List<ContinuousVectorEvent> eligible = new ArrayList<>(events.size());
     for (ContinuousVectorEvent event : events) {
-      if (event != null && !event.isHeartbeat()) {
-        stagePendingIntent(event);
+      if (event == null) {
+        continue;
       }
+      if (isStaleSessionEpoch(event.getBucketId(), sessionEpoch)) {
+        staleSessionEventsRejectedCount.incrementAndGet();
+        continue;
+      }
+      if (!event.isHeartbeat()) {
+        if (stagePendingIntent(event, sessionEpoch) == null) {
+          continue;
+        }
+      }
+      eligible.add(event);
     }
     int processed = 0;
-    for (ContinuousVectorEvent event : events) {
-      if (event != null && processEvent(event)) {
+    for (ContinuousVectorEvent event : eligible) {
+      if (processEvent(event, sessionEpoch)) {
         processed++;
       }
     }
@@ -535,6 +636,15 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
    *         time, or {@code false} if deterministically suppressed as an already-applied duplicate.
    */
   public boolean processEvent(ContinuousVectorEvent event) {
+    return processEvent(event, 0L);
+  }
+
+  /**
+   * Session-epoch fenced variant of {@link #processEvent(ContinuousVectorEvent)}; rejects any
+   * match or covering heartbeat whose {@code sessionEpoch} does not match the active epoch for
+   * {@code event.getBucketId()} under {@code streamStageLock}.
+   */
+  public boolean processEvent(ContinuousVectorEvent event, long sessionEpoch) {
     Objects.requireNonNull(event, "event must not be null");
     int bucketId = event.getBucketId();
     String memberId = event.getMemberId();
@@ -543,6 +653,10 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
 
     if (event.isHeartbeat()) {
       synchronized (streamLock) {
+        if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
+          staleSessionEventsRejectedCount.incrementAndGet();
+          return false;
+        }
         Collection<String> subs = gate.getActiveSubscriptionIds();
         if (subs.isEmpty()) {
           subs = store.getTrackedSubscriptions(bucketId, memberId);
@@ -581,9 +695,13 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
 
     EventDeliveryId id = EventDeliveryId.fromEvent(event);
     String subId = event.getSubscriptionId();
-    // Phase 1: Atomic durable admission check over committed + applied + pending state AND WAL
-    // staging inside ONE streamStageLock (no unlocked RvvClientGate pre-check).
+    // Phase 1: Atomic durable admission check over sessionEpoch + committed + applied + pending
+    // state AND WAL staging inside ONE streamStageLock (no unlocked RvvClientGate pre-check).
     synchronized (streamLock) {
+      if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
+        staleSessionEventsRejectedCount.incrementAndGet();
+        return false;
+      }
       long committed = store.getCommittedWatermark(subId, bucketId, memberId);
       if (ver <= committed || store.isEffectApplied(id)) {
         deduplicatedEffectsCount.incrementAndGet();
@@ -772,12 +890,15 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   }
 
   /**
-   * Prepares an ordinary client reconnect (without process restart) by fencing every in-flight
-   * handler on {@code bucketId}, draining every unfinished durable {@code PENDING} intent whose
-   * effect has not yet retired, committing watermarks, and returning the safe {@code V_client}
-   * high-water map by member for {@code bucketId} while fenced.
+   * Prepares an ordinary client reconnect (without process restart) by first advancing the
+   * monotonic {@code sessionEpoch} for {@code bucketId} (fencing out any delayed covering heartbeat
+   * or unadmitted match from the disconnected session), then fencing every in-flight handler on
+   * {@code bucketId}, draining every unfinished durable {@code PENDING} intent whose effect has not
+   * yet retired, committing watermarks, and returning the safe {@code V_client} high-water map by
+   * member for {@code bucketId} while fenced.
    */
   public Map<String, Long> prepareForReconnect(int bucketId) {
+    advanceSessionEpoch(bucketId);
     Set<String> fenceKeys = new HashSet<>();
     String bucketToken = "|" + bucketId + "|";
     for (String existingKey : streamExecutionFences.keySet()) {
@@ -867,5 +988,9 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
 
   public long getDurableAdmissionsCount() {
     return durableAdmissionsCount.get();
+  }
+
+  public long getStaleSessionEventsRejectedCount() {
+    return staleSessionEventsRejectedCount.get();
   }
 }
