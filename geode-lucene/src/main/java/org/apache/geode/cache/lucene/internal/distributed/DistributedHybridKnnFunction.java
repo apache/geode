@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,7 @@ import org.apache.lucene.search.KnnFloatVectorQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.store.AlreadyClosedException;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -77,6 +79,7 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
@@ -113,6 +116,8 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
    */
   static final int MAX_INLINE_MASK_TERMS = 512;
   static final int MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES = 16;
+  static final int MAX_OWNERSHIP_FENCE_RETRIES = 16;
+  static volatile IntConsumer beforeAcquireSearcherHookForTest;
   private static final int MAX_LUCENE_K = 100_000;
   private static final long MAX_CONCURRENT_FLUSH_WAIT_MILLIS = 500L;
   private static final AtomicLong UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT = new AtomicLong(0L);
@@ -245,8 +250,8 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
           IndexRepository repo = bucketEntry.getValue();
 
           TopEntriesCollector bucketCollector = executeOnBucket(
-              cache, region, bucketId, repo, knnContext, queryVector, userFilterQuery,
-              tier0FilterPredicate, registry, manager);
+              cache, region, repoManager, ctx, waitForRepository, bucketId, repo, knnContext,
+              queryVector, userFilterQuery, tier0FilterPredicate, registry, manager);
           bucketCollectors.add(bucketCollector);
         }
 
@@ -257,7 +262,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
       stats.incNumberOfQueryExecuted();
       resultSender.lastResult(mergedResult);
     } catch (IOException | BucketNotFoundException | CacheClosedException
-        | PrimaryBucketException e) {
+        | PrimaryBucketException | AlreadyClosedException e) {
       logger.debug("Exception during distributed hybrid k-NN query function", e);
       throw new InternalFunctionInvocationTargetException(e);
     } catch (LuceneIndexCreationInProgressException ex) {
@@ -266,114 +271,58 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     }
   }
 
-  private TopEntriesCollector executeOnBucket(Cache cache, Region<?, ?> region, int bucketId,
-      IndexRepository repo, HybridKnnQueryContext knnContext, float[] queryVector,
-      Query userFilterQuery, Predicate<Map<String, Object>> tier0FilterPredicate,
-      Tier0VectorRegistry registry, TopEntriesCollectorManager manager) throws IOException {
+  private TopEntriesCollector executeOnBucket(Cache cache, Region<?, ?> region,
+      RepositoryManager repoManager, RegionFunctionContext ctx, boolean waitForRepository,
+      int bucketId, IndexRepository initialRepo, HybridKnnQueryContext knnContext,
+      float[] queryVector, Query userFilterQuery,
+      Predicate<Map<String, Object>> tier0FilterPredicate, Tier0VectorRegistry registry,
+      TopEntriesCollectorManager manager)
+      throws IOException, BucketNotFoundException, PrimaryBucketException {
     int k = knnContext.getK();
     String regionPath = region.getFullPath();
+    String indexName = knnContext.getIndexName();
     boolean unsupportedFilter =
         userFilterQuery != null && !Tier0MetadataMatcher.isSupported(userFilterQuery);
 
-    // Theorem 2 ordering: wait for any in-flight primary promotion hydration, then bind the
-    // Tier-0 snapshot and Lucene IndexSearcher acquisition to a single consistent epoch/cut.
-    // For unsupported filters (Path B), acquire the per-bucket write barrier around flush +
-    // snapshot + IndexSearcher acquisition so T_mask is empty at the searcher cut. For supported
-    // filters, validate IndexRepository.getSearcherEpoch() optimistically up to 16 times across
-    // snapshot -> searcher acquisition, falling back to the per-bucket write barrier if contended.
+    // Theorem 2 ordering with per-bucket ownership/generation fencing:
+    // Wait for any in-flight primary promotion hydration, capture the monotonic
+    // ownershipGeneration, and bind Tier-0 snapshot + Lucene IndexSearcher acquisition to a single
+    // consistent primary ownership term and searcherEpoch on BOTH Path A (optimistic + fallback)
+    // and Path B (unsupported-filter write barrier). Any demotion or re-promotion before or during
+    // searcher acquisition invalidates the attempt and either fails over via PrimaryBucketException
+    // (if no longer locally primary) or refreshes repo/buffer/generation and retries.
+    IndexRepository repo = initialRepo;
     Tier0VectorDeltaBuffer.Snapshot<Object> tier0Snapshot = null;
     Set<Object> maskedKeys = Collections.emptySet();
-    Tier0VectorDeltaBuffer<Object> pathBBuffer = null;
-    final AtomicBoolean pathBWriteReleased = new AtomicBoolean(false);
-    Runnable pathBReleaseBarrier = null;
     RawListResultCollector luceneRawCollector = null;
     boolean usedInlineMask = false;
     boolean usedOversampleFallback = false;
-    try {
-      Tier0VectorDeltaBuffer<Object> buffer =
-          resolveBucketBuffer(registry, regionPath, knnContext.getIndexName(), bucketId);
 
-      if (unsupportedFilter && buffer != null && repo != null) {
-        pathBBuffer = acquireLatestPathBWriteBarrier(
-            registry, regionPath, knnContext.getIndexName(), bucketId);
-        buffer = pathBBuffer;
-        if (buffer != null) {
-          final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
-          pathBReleaseBarrier = () -> {
-            if (pathBWriteReleased.compareAndSet(false, true)) {
-              lockedBuffer.unlockPathBWrite();
-            }
-          };
-          tier0Snapshot = buffer.snapshot();
-          if (!tier0Snapshot.isEmpty()) {
-            // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
-            // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
-            // bucket into Lucene + blocking-refresh while holding the write barrier so
-            // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
-            flushBucketForUnsupportedFilter(
-                cache, region, regionPath, knnContext.getIndexName(), bucketId, registry,
-                buffer, repo);
-            tier0Snapshot = buffer.snapshot();
-          }
-          maskedKeys = tier0Snapshot.getMaskedKeys();
-        }
-        PreparedBucketQuery prepared = prepareBucketQuery(
-            knnContext, k, queryVector, userFilterQuery, maskedKeys);
-        usedInlineMask = prepared.usedInlineMask;
-        usedOversampleFallback = prepared.usedOversampleFallback;
-        luceneRawCollector = new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
-        executeRepoQuery(
-            repo, prepared, knnContext, queryVector, luceneRawCollector, pathBReleaseBarrier);
-      } else {
-        boolean queryCompleted = false;
-        for (int attempt = 0; attempt < MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES; attempt++) {
-          if (attempt > 0) {
-            buffer = resolveBucketBuffer(
-                registry, regionPath, knnContext.getIndexName(), bucketId);
-          }
-          long epoch0 = repo != null ? repo.getSearcherEpoch() : 0L;
-          if (repo != null && (epoch0 & 1L) != 0L) {
-            Thread.onSpinWait();
-            continue;
-          }
-          tier0Snapshot = buffer != null ? buffer.snapshot() : null;
-          if (registry != null
-              && (registry.isHydrating(regionPath, knnContext.getIndexName(), bucketId)
-                  || registry.getBuffer(regionPath, knnContext.getIndexName(),
-                      bucketId) != buffer)) {
-            buffer = resolveBucketBuffer(
-                registry, regionPath, knnContext.getIndexName(), bucketId);
-            Thread.onSpinWait();
-            continue;
-          }
-          maskedKeys =
-              tier0Snapshot != null ? tier0Snapshot.getMaskedKeys() : Collections.emptySet();
-          PreparedBucketQuery prepared = prepareBucketQuery(
-              knnContext, k, queryVector, userFilterQuery, maskedKeys);
-          RawListResultCollector attemptCollector =
-              new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
-          if (repo == null) {
-            luceneRawCollector = attemptCollector;
-            usedInlineMask = prepared.usedInlineMask;
-            usedOversampleFallback = prepared.usedOversampleFallback;
-            queryCompleted = true;
-            break;
-          }
-          if (tryExecuteRepoQueryAtEpoch(repo, epoch0, prepared, knnContext, queryVector,
-              attemptCollector, null)) {
-            luceneRawCollector = attemptCollector;
-            usedInlineMask = prepared.usedInlineMask;
-            usedOversampleFallback = prepared.usedOversampleFallback;
-            queryCompleted = true;
-            break;
-          }
-          Thread.onSpinWait();
-        }
+    boolean cutCompleted = false;
+    for (int ownershipAttempt = 0; ownershipAttempt < MAX_OWNERSHIP_FENCE_RETRIES
+        && !cutCompleted; ownershipAttempt++) {
+      ensureBucketLocallyPrimary(region, bucketId);
+      if (ownershipAttempt > 0 || (repo != null && repo.isClosed())) {
+        repo = refreshBucketRepository(repoManager, ctx, waitForRepository, bucketId, repo);
+      }
 
-        if (!queryCompleted && repo != null) {
-          pathBBuffer = acquireLatestPathBWriteBarrier(
-              registry, regionPath, knnContext.getIndexName(), bucketId);
+      Tier0VectorDeltaBuffer<Object> pathBBuffer = null;
+      final AtomicBoolean pathBWriteReleased = new AtomicBoolean(false);
+      final AtomicBoolean ownershipInvalidated = new AtomicBoolean(false);
+      Runnable pathBReleaseBarrier = null;
+      try {
+        Tier0VectorDeltaBuffer<Object> buffer =
+            resolveBucketBuffer(registry, regionPath, indexName, bucketId);
+        ensureBucketLocallyPrimary(region, bucketId);
+
+        if (unsupportedFilter && buffer != null && repo != null) {
+          LockedBucketBuffer locked = acquireLatestPathBWriteBarrier(
+              region, registry, regionPath, indexName, bucketId);
+          pathBBuffer = locked.buffer;
           buffer = pathBBuffer;
+          final long expectedGen = locked.ownershipGeneration;
+          final Tier0VectorDeltaBuffer<Object> expectedBuffer = buffer;
+          final IndexRepository activeRepo = repo;
           if (buffer != null) {
             final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
             pathBReleaseBarrier = () -> {
@@ -382,53 +331,280 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
               }
             };
           }
-          long deadlineNanos = System.nanoTime() + MAX_CONCURRENT_FLUSH_WAIT_MILLIS * 1_000_000L;
-          while (!queryCompleted) {
-            long fallbackEpoch = repo.getSearcherEpoch();
-            if ((fallbackEpoch & 1L) != 0L && System.nanoTime() < deadlineNanos) {
-              Thread.yield();
+          if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+              expectedBuffer, activeRepo)) {
+            throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+          }
+          if (buffer != null) {
+            tier0Snapshot = buffer.snapshot();
+            if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+                expectedBuffer, activeRepo)) {
+              throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+            }
+            if (!tier0Snapshot.isEmpty()) {
+              // Instead of silently dropping fresh Tier-0 entries via fail-closed evaluation on an
+              // unsupported Lucene Query AST (e.g., FuzzyQuery/SpanQuery), synchronously flush the
+              // bucket into Lucene + blocking-refresh while holding the write barrier so
+              // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
+              flushBucketForUnsupportedFilter(
+                  cache, region, regionPath, indexName, bucketId, registry,
+                  buffer, activeRepo, expectedGen, ownershipInvalidated);
+              if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                  expectedGen, expectedBuffer, activeRepo)) {
+                throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+              }
+              tier0Snapshot = buffer.snapshot();
+            }
+            if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+                expectedBuffer, activeRepo)) {
+              throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+            }
+            maskedKeys = tier0Snapshot.getMaskedKeys();
+          } else {
+            tier0Snapshot = null;
+            maskedKeys = Collections.emptySet();
+          }
+          PreparedBucketQuery prepared = prepareBucketQuery(
+              knnContext, k, queryVector, userFilterQuery, maskedKeys);
+          RawListResultCollector attemptCollector =
+              new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
+          invokeBeforeAcquireSearcherHookForTest(bucketId);
+          final Runnable releaseBarrier = pathBReleaseBarrier;
+          final AtomicBoolean postAcquireValidated = new AtomicBoolean(false);
+          Runnable postAcquireValidatorAndRelease = () -> {
+            try {
+              if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                  expectedGen, expectedBuffer, activeRepo)) {
+                throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+              }
+              postAcquireValidated.set(true);
+            } finally {
+              if (releaseBarrier != null) {
+                releaseBarrier.run();
+              }
+            }
+          };
+          executeRepoQuery(activeRepo, prepared, knnContext, queryVector, attemptCollector,
+              postAcquireValidatorAndRelease);
+          if (!postAcquireValidated.get()
+              && !isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                  expectedGen, expectedBuffer, activeRepo)) {
+            throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+          }
+          luceneRawCollector = attemptCollector;
+          usedInlineMask = prepared.usedInlineMask;
+          usedOversampleFallback = prepared.usedOversampleFallback;
+          cutCompleted = true;
+        } else {
+          boolean queryCompleted = false;
+          for (int attempt = 0; attempt < MAX_OPTIMISTIC_SEARCHER_EPOCH_RETRIES; attempt++) {
+            ensureBucketLocallyPrimary(region, bucketId);
+            if (registry != null) {
+              registry.awaitHydration(regionPath, indexName, bucketId);
+              ensureBucketLocallyPrimary(region, bucketId);
+            }
+            final long expectedGen = registry != null
+                ? registry.getOwnershipGeneration(regionPath, indexName, bucketId)
+                : 0L;
+            if (registry != null && registry.isHydrating(regionPath, indexName, bucketId)) {
+              Thread.onSpinWait();
               continue;
             }
+            buffer = registry != null ? registry.getBuffer(regionPath, indexName, bucketId) : null;
+            if (unsupportedFilter && buffer != null && repo != null) {
+              // Buffer appeared concurrently on an unsupported-filter query; switch to Path B.
+              throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+            }
+            if (repo != null && repo.isClosed()) {
+              throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+            }
+            final long epoch0 = repo != null ? repo.getSearcherEpoch() : 0L;
+            if (repo != null && (epoch0 & 1L) != 0L) {
+              Thread.onSpinWait();
+              continue;
+            }
+            final Tier0VectorDeltaBuffer<Object> expectedBuffer = buffer;
+            final IndexRepository activeRepo = repo;
+            if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+                expectedBuffer, activeRepo)) {
+              throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+            }
             tier0Snapshot = buffer != null ? buffer.snapshot() : null;
+            if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+                expectedBuffer, activeRepo)) {
+              throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+            }
             maskedKeys =
                 tier0Snapshot != null ? tier0Snapshot.getMaskedKeys() : Collections.emptySet();
             PreparedBucketQuery prepared = prepareBucketQuery(
                 knnContext, k, queryVector, userFilterQuery, maskedKeys);
             RawListResultCollector attemptCollector =
                 new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
-            boolean epochMatched = false;
-            if ((fallbackEpoch & 1L) == 0L) {
-              epochMatched = tryExecuteRepoQueryAtEpoch(repo, fallbackEpoch, prepared, knnContext,
-                  queryVector, attemptCollector, pathBReleaseBarrier);
-            }
-            if (epochMatched) {
+            if (activeRepo == null) {
               luceneRawCollector = attemptCollector;
               usedInlineMask = prepared.usedInlineMask;
               usedOversampleFallback = prepared.usedOversampleFallback;
               queryCompleted = true;
-            } else if (((fallbackEpoch & 1L) == 0L && repo.getSearcherEpoch() == fallbackEpoch)
-                || System.nanoTime() >= deadlineNanos) {
-              // Either repository is a non-epoch-tracking implementation (e.g. unstubbed mock) or
-              // continuous commit contention hit bounded wait: run once under the write barrier.
-              RawListResultCollector finalCollector =
-                  new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
-              executeRepoQuery(
-                  repo, prepared, knnContext, queryVector, finalCollector, pathBReleaseBarrier);
-              luceneRawCollector = finalCollector;
+              break;
+            }
+            invokeBeforeAcquireSearcherHookForTest(bucketId);
+            final AtomicBoolean postAcquireValidated = new AtomicBoolean(false);
+            Runnable postAcquireValidator = () -> {
+              if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                  expectedGen, expectedBuffer, activeRepo)
+                  || activeRepo.getSearcherEpoch() != epoch0) {
+                throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+              }
+              postAcquireValidated.set(true);
+            };
+            if (tryExecuteRepoQueryAtEpoch(activeRepo, epoch0, prepared, knnContext, queryVector,
+                attemptCollector, postAcquireValidator)) {
+              if (!postAcquireValidated.get()
+                  && !isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                      expectedGen, expectedBuffer, activeRepo)) {
+                throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+              }
+              luceneRawCollector = attemptCollector;
               usedInlineMask = prepared.usedInlineMask;
               usedOversampleFallback = prepared.usedOversampleFallback;
               queryCompleted = true;
-            } else {
-              Thread.yield();
+              break;
+            }
+            if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+                expectedBuffer, activeRepo)) {
+              throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+            }
+            Thread.onSpinWait();
+          }
+
+          if (!queryCompleted && repo != null) {
+            LockedBucketBuffer locked = acquireLatestPathBWriteBarrier(
+                region, registry, regionPath, indexName, bucketId);
+            pathBBuffer = locked.buffer;
+            buffer = pathBBuffer;
+            final long expectedGen = locked.ownershipGeneration;
+            final Tier0VectorDeltaBuffer<Object> expectedBuffer = buffer;
+            final IndexRepository activeRepo = repo;
+            if (buffer != null) {
+              final Tier0VectorDeltaBuffer<Object> lockedBuffer = buffer;
+              pathBReleaseBarrier = () -> {
+                if (pathBWriteReleased.compareAndSet(false, true)) {
+                  lockedBuffer.unlockPathBWrite();
+                }
+              };
+            }
+            final Runnable releaseBarrier = pathBReleaseBarrier;
+            long deadlineNanos = System.nanoTime() + MAX_CONCURRENT_FLUSH_WAIT_MILLIS * 1_000_000L;
+            while (!queryCompleted) {
+              if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                  expectedGen, expectedBuffer, activeRepo)) {
+                throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+              }
+              long fallbackEpoch = activeRepo.getSearcherEpoch();
+              if ((fallbackEpoch & 1L) != 0L && System.nanoTime() < deadlineNanos) {
+                Thread.yield();
+                continue;
+              }
+              tier0Snapshot = buffer != null ? buffer.snapshot() : null;
+              if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                  expectedGen, expectedBuffer, activeRepo)) {
+                throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+              }
+              maskedKeys =
+                  tier0Snapshot != null ? tier0Snapshot.getMaskedKeys() : Collections.emptySet();
+              PreparedBucketQuery prepared = prepareBucketQuery(
+                  knnContext, k, queryVector, userFilterQuery, maskedKeys);
+              RawListResultCollector attemptCollector =
+                  new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
+              final AtomicBoolean postAcquireValidated = new AtomicBoolean(false);
+              final long checkedFallbackEpoch = fallbackEpoch;
+              Runnable epochPostAcquireValidatorAndRelease = () -> {
+                try {
+                  if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                      expectedGen, expectedBuffer, activeRepo)
+                      || activeRepo.getSearcherEpoch() != checkedFallbackEpoch) {
+                    throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+                  }
+                  postAcquireValidated.set(true);
+                } finally {
+                  if (releaseBarrier != null) {
+                    releaseBarrier.run();
+                  }
+                }
+              };
+              boolean epochMatched = false;
+              if ((fallbackEpoch & 1L) == 0L) {
+                epochMatched = tryExecuteRepoQueryAtEpoch(activeRepo, fallbackEpoch, prepared,
+                    knnContext, queryVector, attemptCollector,
+                    epochPostAcquireValidatorAndRelease);
+              }
+              if (epochMatched) {
+                if (!postAcquireValidated.get()
+                    && !isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                        expectedGen, expectedBuffer, activeRepo)) {
+                  throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+                }
+                luceneRawCollector = attemptCollector;
+                usedInlineMask = prepared.usedInlineMask;
+                usedOversampleFallback = prepared.usedOversampleFallback;
+                queryCompleted = true;
+              } else if (((fallbackEpoch & 1L) == 0L
+                  && activeRepo.getSearcherEpoch() == fallbackEpoch)
+                  || System.nanoTime() >= deadlineNanos) {
+                // Either repository is a non-epoch-tracking implementation (e.g. unstubbed mock) or
+                // continuous commit contention hit bounded wait: run once under the write barrier.
+                final AtomicBoolean fallbackPostAcquireValidated = new AtomicBoolean(false);
+                Runnable fallbackPostAcquireValidatorAndRelease = () -> {
+                  try {
+                    if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                        expectedGen, expectedBuffer, activeRepo)) {
+                      throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+                    }
+                    fallbackPostAcquireValidated.set(true);
+                  } finally {
+                    if (releaseBarrier != null) {
+                      releaseBarrier.run();
+                    }
+                  }
+                };
+                RawListResultCollector finalCollector =
+                    new RawListResultCollector("bucket-" + bucketId, prepared.luceneK);
+                executeRepoQuery(activeRepo, prepared, knnContext, queryVector, finalCollector,
+                    fallbackPostAcquireValidatorAndRelease);
+                if (!fallbackPostAcquireValidated.get()
+                    && !isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
+                        expectedGen, expectedBuffer, activeRepo)) {
+                  throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+                }
+                luceneRawCollector = finalCollector;
+                usedInlineMask = prepared.usedInlineMask;
+                usedOversampleFallback = prepared.usedOversampleFallback;
+                queryCompleted = true;
+              } else {
+                Thread.yield();
+              }
             }
           }
+          cutCompleted = queryCompleted;
         }
-      }
-    } finally {
-      if (pathBReleaseBarrier != null) {
-        pathBReleaseBarrier.run();
-      } else if (pathBBuffer != null && pathBWriteReleased.compareAndSet(false, true)) {
-        pathBBuffer.unlockPathBWrite();
+      } catch (PrimaryBucketException | AlreadyClosedException ownershipChanged) {
+        if (registry != null && (ownershipInvalidated.get()
+            || ownershipChanged instanceof AlreadyClosedException
+            || isBucketLocallyPrimary(region, bucketId))) {
+          registry.incrementOwnershipFenceRetryCount();
+        }
+        ensureBucketLocallyPrimary(region, bucketId);
+        if (ownershipAttempt + 1 >= MAX_OWNERSHIP_FENCE_RETRIES) {
+          throw new PrimaryBucketException("Bucket " + bucketId + " on region " + regionPath
+              + " ownership generation changed repeatedly during hybrid k-NN query");
+        }
+        Thread.onSpinWait();
+      } finally {
+        if (pathBReleaseBarrier != null) {
+          pathBReleaseBarrier.run();
+        } else if (pathBBuffer != null && pathBWriteReleased.compareAndSet(false, true)) {
+          pathBBuffer.unlockPathBWrite();
+        }
       }
     }
 
@@ -535,6 +711,16 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     }
   }
 
+  private static final class LockedBucketBuffer {
+    final Tier0VectorDeltaBuffer<Object> buffer;
+    final long ownershipGeneration;
+
+    LockedBucketBuffer(Tier0VectorDeltaBuffer<Object> buffer, long ownershipGeneration) {
+      this.buffer = buffer;
+      this.ownershipGeneration = ownershipGeneration;
+    }
+  }
+
   private static Tier0VectorDeltaBuffer<Object> resolveBucketBuffer(
       Tier0VectorRegistry registry, String regionPath, String indexName, int bucketId) {
     if (registry == null) {
@@ -544,18 +730,116 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
     return registry.getBuffer(regionPath, indexName, bucketId);
   }
 
-  private static Tier0VectorDeltaBuffer<Object> acquireLatestPathBWriteBarrier(
-      Tier0VectorRegistry registry, String regionPath, String indexName, int bucketId) {
+  private static boolean isBucketLocallyPrimary(Region<?, ?> region, int bucketId) {
+    if (!(region instanceof PartitionedRegion)) {
+      return true;
+    }
+    PartitionedRegion pr = (PartitionedRegion) region;
+    if (pr.isDestroyed()) {
+      return false;
+    }
+    PartitionedRegionDataStore dataStore = pr.getDataStore();
+    if (dataStore == null) {
+      return true;
+    }
+    BucketRegion bucket = dataStore.getLocalBucketById(bucketId);
+    if (bucket == null || bucket.isDestroyed()) {
+      return false;
+    }
+    if (bucket.getBucketAdvisor() != null) {
+      return bucket.getBucketAdvisor().isPrimary();
+    }
+    return true;
+  }
+
+  private static void ensureBucketLocallyPrimary(Region<?, ?> region, int bucketId)
+      throws PrimaryBucketException {
+    if (!isBucketLocallyPrimary(region, bucketId)) {
+      throw new PrimaryBucketException(
+          "Bucket " + bucketId + " on region " + region.getFullPath() + " is no longer primary");
+    }
+  }
+
+  private static boolean isOwnershipCutValid(Region<?, ?> region, Tier0VectorRegistry registry,
+      String regionPath, String indexName, int bucketId, long expectedGen,
+      Tier0VectorDeltaBuffer<Object> expectedBuffer, IndexRepository repo) {
+    if (!isBucketLocallyPrimary(region, bucketId)) {
+      return false;
+    }
+    if (repo != null && repo.isClosed()) {
+      return false;
+    }
+    if (registry != null) {
+      if (registry.getOwnershipGeneration(regionPath, indexName, bucketId) != expectedGen) {
+        return false;
+      }
+      if (registry.isHydrating(regionPath, indexName, bucketId)) {
+        return false;
+      }
+      if (registry.getBuffer(regionPath, indexName, bucketId) != expectedBuffer) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static PrimaryBucketException ownershipChangedSignal(
+      AtomicBoolean ownershipInvalidated, String regionPath, int bucketId) {
+    ownershipInvalidated.set(true);
+    return new PrimaryBucketException("Bucket " + bucketId + " on region " + regionPath
+        + " ownership generation changed during hybrid k-NN query");
+  }
+
+  private static void invokeBeforeAcquireSearcherHookForTest(int bucketId) {
+    IntConsumer hook = beforeAcquireSearcherHookForTest;
+    if (hook != null) {
+      hook.accept(bucketId);
+    }
+  }
+
+  private IndexRepository refreshBucketRepository(RepositoryManager repoManager,
+      RegionFunctionContext ctx, boolean waitForRepository, int bucketId,
+      IndexRepository currentRepo) throws BucketNotFoundException {
+    if (repoManager == null) {
+      return currentRepo;
+    }
+    Map<Integer, IndexRepository> repos =
+        resolveRepositoriesByBucket(repoManager, ctx, waitForRepository);
+    if (repos != null && repos.containsKey(bucketId)) {
+      return repos.get(bucketId);
+    }
+    return currentRepo;
+  }
+
+  private static LockedBucketBuffer acquireLatestPathBWriteBarrier(Region<?, ?> region,
+      Tier0VectorRegistry registry, String regionPath, String indexName, int bucketId)
+      throws PrimaryBucketException {
     while (true) {
-      Tier0VectorDeltaBuffer<Object> buffer =
-          resolveBucketBuffer(registry, regionPath, indexName, bucketId);
+      ensureBucketLocallyPrimary(region, bucketId);
+      if (registry == null) {
+        return new LockedBucketBuffer(null, 0L);
+      }
+      registry.awaitHydration(regionPath, indexName, bucketId);
+      ensureBucketLocallyPrimary(region, bucketId);
+      long expectedGen = registry.getOwnershipGeneration(regionPath, indexName, bucketId);
+      if (registry.isHydrating(regionPath, indexName, bucketId)) {
+        continue;
+      }
+      Tier0VectorDeltaBuffer<Object> buffer = registry.getBuffer(regionPath, indexName, bucketId);
       if (buffer == null) {
-        return null;
+        if (isBucketLocallyPrimary(region, bucketId)
+            && registry.getOwnershipGeneration(regionPath, indexName, bucketId) == expectedGen
+            && !registry.isHydrating(regionPath, indexName, bucketId)) {
+          return new LockedBucketBuffer(null, expectedGen);
+        }
+        continue;
       }
       buffer.lockPathBWrite();
-      if (!registry.isHydrating(regionPath, indexName, bucketId)
+      if (isBucketLocallyPrimary(region, bucketId)
+          && registry.getOwnershipGeneration(regionPath, indexName, bucketId) == expectedGen
+          && !registry.isHydrating(regionPath, indexName, bucketId)
           && registry.getBuffer(regionPath, indexName, bucketId) == buffer) {
-        return buffer;
+        return new LockedBucketBuffer(buffer, expectedGen);
       }
       buffer.unlockPathBWrite();
     }
@@ -587,14 +871,23 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
 
   private void flushBucketForUnsupportedFilter(Cache cache, Region<?, ?> region, String regionPath,
       String indexName, int bucketId, Tier0VectorRegistry registry,
-      Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repo) throws IOException {
+      Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repo, long expectedGen,
+      AtomicBoolean ownershipInvalidated) throws IOException, PrimaryBucketException {
     long deadlineNanos = System.nanoTime() + MAX_CONCURRENT_FLUSH_WAIT_MILLIS * 1_000_000L;
     boolean flushedOrRefreshed = false;
     while (true) {
+      if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+          buffer, repo)) {
+        throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+      }
       try {
-        boolean flushed = registry.flushBucket(regionPath, indexName, bucketId, repo,
+        boolean flushed = registry.flushBuffer(buffer, repo,
             entry -> readRegionValueForFlush(cache, region, bucketId, entry.getKey()));
         if (!flushed) {
+          if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+              buffer, repo)) {
+            throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+          }
           repo.commitAndRefreshBlocking();
         }
         flushedOrRefreshed = true;
@@ -603,6 +896,10 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         boolean inProgressMsg = flushAlreadyInProgress.getMessage() != null
             && flushAlreadyInProgress.getMessage().contains("Flush already in progress");
         if (System.nanoTime() >= deadlineNanos || (!inProgressMsg && !buffer.isFlushing())) {
+          if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
+              buffer, repo)) {
+            throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
+          }
           repo.commitAndRefreshBlocking();
           flushedOrRefreshed = true;
           break;

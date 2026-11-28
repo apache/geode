@@ -58,8 +58,17 @@ public class Tier0VectorRegistry {
       new ConcurrentHashMap<>();
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, FlushCycleRing>> flushCycleRings =
       new ConcurrentHashMap<>();
+  private final AtomicLong ownershipGenerationSequence = new AtomicLong(0L);
+  private final AtomicLong globalResetGeneration = new AtomicLong(0L);
+  private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, AtomicLong>> ownershipGenerations =
+      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<IndexKey, AtomicLong> indexResetGenerations =
+      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, AtomicLong> regionResetGenerations =
+      new ConcurrentHashMap<>();
   private volatile boolean flushCycleSamplingEnabled = true;
   private final AtomicLong hydrationWaitCount = new AtomicLong(0L);
+  private final AtomicLong ownershipFenceRetryCount = new AtomicLong(0L);
   private final AtomicLong hydratedKeysCount = new AtomicLong(0L);
   private final AtomicLong hydratedTombstonesCount = new AtomicLong(0L);
   private final AtomicLong aeqDeltaHydrationCount = new AtomicLong(0L);
@@ -134,12 +143,8 @@ public class Tier0VectorRegistry {
   public void removeBucket(String regionPath, String indexName, int bucketId) {
     IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
     ConcurrentHashMap<Integer, Tier0VectorDeltaBuffer<Object>> bucketMap = buffers.get(key);
-    if (bucketMap != null) {
-      Tier0VectorDeltaBuffer<Object> removed = bucketMap.remove(bucketId);
-      if (removed != null) {
-        removed.clear();
-      }
-    }
+    Tier0VectorDeltaBuffer<Object> removed = bucketMap != null ? bucketMap.remove(bucketId) : null;
+    advanceOwnershipGeneration(key, bucketId);
     releaseHydrationLatch(key, bucketId);
     ConcurrentHashMap<Integer, FlushCycleRing> ringMap = flushCycleRings.get(key);
     if (ringMap != null) {
@@ -148,20 +153,27 @@ public class Tier0VectorRegistry {
         ring.clear();
       }
     }
+    if (removed != null) {
+      removed.clear();
+    }
   }
 
   public void removeIndex(String regionPath, String indexName) {
     IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
     ConcurrentHashMap<Integer, Tier0VectorDeltaBuffer<Object>> removed = buffers.remove(key);
-    if (removed != null) {
-      removed.values().forEach(Tier0VectorDeltaBuffer::clear);
-      removed.clear();
-    }
+    long resetGen = ownershipGenerationSequence.incrementAndGet();
+    indexResetGenerations.computeIfAbsent(key, k -> new AtomicLong(0L))
+        .accumulateAndGet(resetGen, Math::max);
+    ownershipGenerations.remove(key);
     releaseHydrationLatchesForIndex(key);
     ConcurrentHashMap<Integer, FlushCycleRing> removedRings = flushCycleRings.remove(key);
     if (removedRings != null) {
       removedRings.values().forEach(FlushCycleRing::clear);
       removedRings.clear();
+    }
+    if (removed != null) {
+      removed.values().forEach(Tier0VectorDeltaBuffer::clear);
+      removed.clear();
     }
   }
 
@@ -170,18 +182,24 @@ public class Tier0VectorRegistry {
    */
   public void removeRegion(String regionPath) {
     String normalized = normalizeRegionPath(regionPath);
+    List<Tier0VectorDeltaBuffer<Object>> removedBuffers = new ArrayList<>();
     buffers.keySet().removeIf(indexKey -> {
       if (indexKey.regionPath.equals(normalized)) {
         ConcurrentHashMap<Integer, Tier0VectorDeltaBuffer<Object>> removed =
             buffers.remove(indexKey);
         if (removed != null) {
-          removed.values().forEach(Tier0VectorDeltaBuffer::clear);
+          removedBuffers.addAll(removed.values());
           removed.clear();
         }
         return true;
       }
       return false;
     });
+    long resetGen = ownershipGenerationSequence.incrementAndGet();
+    regionResetGenerations.computeIfAbsent(normalized, r -> new AtomicLong(0L))
+        .accumulateAndGet(resetGen, Math::max);
+    indexResetGenerations.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
+    ownershipGenerations.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
     hydrationBarriers.keySet().removeIf(indexKey -> {
       if (indexKey.regionPath.equals(normalized)) {
         releaseHydrationLatchesForIndex(indexKey);
@@ -200,6 +218,56 @@ public class Tier0VectorRegistry {
       }
       return false;
     });
+    for (Tier0VectorDeltaBuffer<Object> removed : removedBuffers) {
+      removed.clear();
+    }
+  }
+
+  /**
+   * Returns the monotonic per-bucket ownership generation for
+   * {@code (regionPath, indexName, bucketId)}. Strictly increases across every primary promotion,
+   * hydration completion, demotion/removal, index destroy, region destroy, and cache clear.
+   */
+  public long getOwnershipGeneration(String regionPath, String indexName, int bucketId) {
+    String normalized = normalizeRegionPath(regionPath);
+    IndexKey key = new IndexKey(normalized, indexName);
+    long gen = 0L;
+    ConcurrentHashMap<Integer, AtomicLong> bucketMap = ownershipGenerations.get(key);
+    if (bucketMap != null) {
+      AtomicLong bucketGen = bucketMap.get(bucketId);
+      if (bucketGen != null) {
+        gen = Math.max(gen, bucketGen.get());
+      }
+    }
+    AtomicLong indexReset = indexResetGenerations.get(key);
+    if (indexReset != null) {
+      gen = Math.max(gen, indexReset.get());
+    }
+    AtomicLong regionReset = regionResetGenerations.get(normalized);
+    if (regionReset != null) {
+      gen = Math.max(gen, regionReset.get());
+    }
+    return Math.max(gen, globalResetGeneration.get());
+  }
+
+  /**
+   * Monotonically advances the ownership generation for {@code (regionPath, indexName, bucketId)}
+   * so any in-flight hybrid k-NN read from an earlier ownership term invalidates and retries.
+   *
+   * @return the newly assigned strictly larger ownership generation
+   */
+  public long advanceOwnershipGeneration(String regionPath, String indexName, int bucketId) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    return advanceOwnershipGeneration(key, bucketId);
+  }
+
+  private long advanceOwnershipGeneration(IndexKey key, int bucketId) {
+    long next = ownershipGenerationSequence.incrementAndGet();
+    ownershipGenerations
+        .computeIfAbsent(key, k -> new ConcurrentHashMap<>())
+        .computeIfAbsent(bucketId, b -> new AtomicLong(0L))
+        .accumulateAndGet(next, Math::max);
+    return next;
   }
 
   /**
@@ -215,6 +283,7 @@ public class Tier0VectorRegistry {
     CountDownLatch previous = hydrationBarriers
         .computeIfAbsent(key, k -> new ConcurrentHashMap<>())
         .put(bucketId, latch);
+    advanceOwnershipGeneration(key, bucketId);
     if (previous != null) {
       previous.countDown();
     }
@@ -232,6 +301,7 @@ public class Tier0VectorRegistry {
     }
     try {
       IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+      advanceOwnershipGeneration(key, bucketId);
       ConcurrentHashMap<Integer, CountDownLatch> bucketMap = hydrationBarriers.get(key);
       if (bucketMap != null) {
         bucketMap.remove(bucketId, latch);
@@ -246,6 +316,7 @@ public class Tier0VectorRegistry {
    */
   public void completeHydration(String regionPath, String indexName, int bucketId) {
     IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    advanceOwnershipGeneration(key, bucketId);
     releaseHydrationLatch(key, bucketId);
   }
 
@@ -295,6 +366,14 @@ public class Tier0VectorRegistry {
 
   public long getHydrationWaitCount() {
     return hydrationWaitCount.get();
+  }
+
+  public long getOwnershipFenceRetryCount() {
+    return ownershipFenceRetryCount.get();
+  }
+
+  public long incrementOwnershipFenceRetryCount() {
+    return ownershipFenceRetryCount.incrementAndGet();
   }
 
   public long getHydratedKeysCount() {
@@ -463,11 +542,17 @@ public class Tier0VectorRegistry {
   }
 
   public void clearAll() {
+    List<Tier0VectorDeltaBuffer<Object>> removedBuffers = new ArrayList<>();
     buffers.values().forEach(map -> {
-      map.values().forEach(Tier0VectorDeltaBuffer::clear);
+      removedBuffers.addAll(map.values());
       map.clear();
     });
     buffers.clear();
+    long resetGen = ownershipGenerationSequence.incrementAndGet();
+    globalResetGeneration.accumulateAndGet(resetGen, Math::max);
+    regionResetGenerations.clear();
+    indexResetGenerations.clear();
+    ownershipGenerations.clear();
     hydrationBarriers.values().forEach(map -> {
       map.values().forEach(CountDownLatch::countDown);
       map.clear();
@@ -478,6 +563,9 @@ public class Tier0VectorRegistry {
       map.clear();
     });
     flushCycleRings.clear();
+    for (Tier0VectorDeltaBuffer<Object> removed : removedBuffers) {
+      removed.clear();
+    }
   }
 
   /**
@@ -500,7 +588,20 @@ public class Tier0VectorRegistry {
       throws IOException {
     Objects.requireNonNull(repository, "repository must not be null");
     Objects.requireNonNull(valueResolver, "valueResolver must not be null");
-    Tier0VectorDeltaBuffer<Object> buffer = getBuffer(regionPath, indexName, bucketId);
+    return flushBuffer(getBuffer(regionPath, indexName, bucketId), repository, valueResolver);
+  }
+
+  /**
+   * Executes a complete Theorem 2 dual-epoch flush cycle against a specific pinned
+   * {@link Tier0VectorDeltaBuffer} instance.
+   *
+   * @return {@code true} if a non-empty batch was flushed, {@code false} otherwise
+   */
+  public boolean flushBuffer(Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repository,
+      Function<Tier0VectorDeltaBuffer.DeltaEntry<Object>, Object> valueResolver)
+      throws IOException {
+    Objects.requireNonNull(repository, "repository must not be null");
+    Objects.requireNonNull(valueResolver, "valueResolver must not be null");
     if (buffer == null) {
       return false;
     }

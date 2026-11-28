@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -105,6 +106,8 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   private static final int NUM_BUCKETS = 16;
   private static final int DIM = 16;
   private static final AtomicBoolean REMOTE_WRITER_STOP = new AtomicBoolean(false);
+  private static volatile CountDownLatch OWNERSHIP_HOOK_ENTERED;
+  private static volatile CountDownLatch OWNERSHIP_HOOK_RELEASE;
 
   private VM dataStore1;
   private VM dataStore2;
@@ -123,6 +126,13 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     for (VM vm : Arrays.asList(dataStore1, dataStore2, accessor)) {
       if (vm != null) {
         vm.invoke(() -> {
+          DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = null;
+          CountDownLatch release = OWNERSHIP_HOOK_RELEASE;
+          if (release != null) {
+            release.countDown();
+          }
+          OWNERSHIP_HOOK_ENTERED = null;
+          OWNERSHIP_HOOK_RELEASE = null;
           if (hasCache()) {
             Tier0VectorRegistry.removeCache(getCache());
           }
@@ -1939,6 +1949,292 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
     expectedPostFlush.add(postPromoLiveKey);
     assertThat(allPostFlush).doesNotContain(aeqPutVsBucketTombKey);
     assertThat(allPostFlush).containsExactlyInAnyOrderElementsOf(expectedPostFlush);
+  }
+
+  @Test
+  public void inFlightReadInvalidatesAndRetriesAcrossBucketDemotionAndRePromotion()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    // Seed committed Lucene segments across all 16 buckets so every bucket repository is ready
+    // before pausing AEQ.
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    float[] orthogonalSeed = new float[DIM];
+    orthogonalSeed[DIM - 1] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("seed-" + i, new VectorRecord(orthogonalSeed, "other", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(dataStore1.invoke(this::countLocalBuckets)).isEqualTo(NUM_BUCKETS);
+      assertThat(dataStore2.invoke(this::countLocalBuckets)).isEqualTo(NUM_BUCKETS);
+      int shadowSize = dataStore1.invoke(() -> countShadowQueueLocalSize(getCache()))
+          + dataStore2.invoke(() -> countShadowQueueLocalSize(getCache()));
+      assertThat(shadowSize).isEqualTo(0);
+    });
+
+    int targetBucketId = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+    });
+
+    List<String> targetKeys = accessor.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<String> keys = new ArrayList<>();
+      for (int i = 0; keys.size() < 6 && i < 20_000; i++) {
+        String candidate = "own-fence-" + i;
+        if (pr.getKeyInfo(candidate).getBucketId() == targetBucketId) {
+          keys.add(candidate);
+        }
+      }
+      return keys;
+    });
+    assertThat(targetKeys).hasSize(6);
+
+    String kTerm1Stale = targetKeys.get(0);
+    String kTerm1Keep = targetKeys.get(1);
+    String kTerm2Fresh = targetKeys.get(2);
+    String kFuzzyStale = targetKeys.get(3);
+    String kFuzzyFresh = targetKeys.get(4);
+    String kDs2Only = targetKeys.get(5);
+
+    float[] vecCos85 = unitVectorWithCos0(0.85f);
+    float[] vecCos96 = unitVectorWithCos0(0.96f);
+    float[] vecCos98 = unitVectorWithCos0(0.98f);
+    float[] vecCos99 = unitVectorWithCos0(0.99f);
+    float[] vecCos995 = unitVectorWithCos0(0.995f);
+
+    // Pause AEQ on both servers so Term-1 / Term-2 mutations stay in Tier-0 / replicated bucket
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    ExecutorService queryPool = Executors.newSingleThreadExecutor();
+    try {
+      // Case 1 (Path A supported filter): pause in-flight read on dataStore1 strictly between
+      // buffer snapshot and searcher acquisition, demote targetBucketId ds1 -> ds2, mutate on ds2,
+      // re-promote ds2 -> ds1, then release read. Ownership fence MUST invalidate Term-1 snapshot
+      // and retry against the re-promoted cut.
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kTerm1Stale, new VectorRecord(vecCos96, "pathA", "all", "all"));
+        region.put(kTerm1Keep, new VectorRecord(vecCos85, "pathA", "all", "all"));
+      });
+
+      long genBeforePathA = dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+          .getOwnershipGeneration("/" + REGION_NAME, INDEX_NAME, targetBucketId));
+      long retriesBeforePathA = dataStore1.invoke(
+          () -> Tier0VectorRegistry.forCache(getCache()).getOwnershipFenceRetryCount());
+
+      armOneShotBeforeAcquireHook(dataStore1, targetBucketId);
+
+      Future<List<String>> pathAFuture = queryPool.submit(() -> accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "pathA")
+            .rerankBeamCandidates(true)
+            .build();
+        return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+      }));
+
+      awaitBeforeAcquireHookEntered(dataStore1);
+
+      transferPrimaryBucket(dataStore2, dataStore1, targetBucketId);
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.destroy(kTerm1Stale);
+        region.put(kTerm2Fresh, new VectorRecord(vecCos99, "pathA", "all", "all"));
+      });
+      transferPrimaryBucket(dataStore1, dataStore2, targetBucketId);
+
+      releaseBeforeAcquireHook(dataStore1);
+
+      List<String> pathAHits = pathAFuture.get(30, TimeUnit.SECONDS);
+      assertThat(pathAHits).containsExactly(kTerm2Fresh, kTerm1Keep);
+      assertThat(dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+          .getOwnershipGeneration("/" + REGION_NAME, INDEX_NAME, targetBucketId)))
+              .isGreaterThan(genBeforePathA);
+      assertThat(dataStore1.invoke(
+          () -> Tier0VectorRegistry.forCache(getCache()).getOwnershipFenceRetryCount()))
+              .isGreaterThan(retriesBeforePathA);
+
+      // Case 2 (Path B unsupported FuzzyQuery): pause Path B on dataStore1 strictly after flush +
+      // snapshot while holding pathBWrite and before searcher acquisition, demote ds1 -> ds2,
+      // mutate on ds2, re-promote ds2 -> ds1 (proving zero deadlock against pathBWrite!), then
+      // release read. Path B MUST invalidate and return the exact re-promoted fuzzy cut.
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kFuzzyStale, new VectorRecord(vecCos96, "books", "all", "all"));
+      });
+
+      long genBeforePathB = dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+          .getOwnershipGeneration("/" + REGION_NAME, INDEX_NAME, targetBucketId));
+      long retriesBeforePathB = dataStore1.invoke(
+          () -> Tier0VectorRegistry.forCache(getCache()).getOwnershipFenceRetryCount());
+
+      armOneShotBeforeAcquireHook(dataStore1, targetBucketId);
+
+      Future<List<String>> pathBFuture = queryPool.submit(() -> accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:boks~1", "sel1")
+            .build();
+        return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+      }));
+
+      awaitBeforeAcquireHookEntered(dataStore1);
+
+      transferPrimaryBucket(dataStore2, dataStore1, targetBucketId);
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.destroy(kFuzzyStale);
+        region.put(kFuzzyFresh, new VectorRecord(vecCos98, "books", "all", "all"));
+      });
+      transferPrimaryBucket(dataStore1, dataStore2, targetBucketId);
+
+      releaseBeforeAcquireHook(dataStore1);
+
+      List<String> pathBHits = pathBFuture.get(30, TimeUnit.SECONDS);
+      assertThat(pathBHits).containsExactly(kFuzzyFresh);
+      assertThat(dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+          .getOwnershipGeneration("/" + REGION_NAME, INDEX_NAME, targetBucketId)))
+              .isGreaterThan(genBeforePathB);
+      assertThat(dataStore1.invoke(
+          () -> Tier0VectorRegistry.forCache(getCache()).getOwnershipFenceRetryCount()))
+              .isGreaterThan(retriesBeforePathB);
+
+      // Case 3 (Permanent demotion ds1 -> ds2 without re-promotion): dataStore1 MUST reject the
+      // stale cut via PrimaryBucketException so Geode HA transparently retries on dataStore2 and
+      // returns the exact post-demotion cut from dataStore2.
+      long genBeforePerm = dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+          .getOwnershipGeneration("/" + REGION_NAME, INDEX_NAME, targetBucketId));
+
+      armOneShotBeforeAcquireHook(dataStore1, targetBucketId);
+
+      Future<List<String>> permFuture = queryPool.submit(() -> accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "pathA")
+            .build();
+        return extractKeys(DistributedHybridKnnFunction.executeOnRegion(region, ctx));
+      }));
+
+      awaitBeforeAcquireHookEntered(dataStore1);
+
+      transferPrimaryBucket(dataStore2, dataStore1, targetBucketId);
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.destroy(kTerm2Fresh);
+        region.put(kDs2Only, new VectorRecord(vecCos995, "pathA", "all", "all"));
+      });
+
+      releaseBeforeAcquireHook(dataStore1);
+
+      List<String> permHits = permFuture.get(30, TimeUnit.SECONDS);
+      assertThat(permHits).containsExactly(kDs2Only, kTerm1Keep);
+      assertThat(dataStore1.invoke(() -> Tier0VectorRegistry.forCache(getCache())
+          .getOwnershipGeneration("/" + REGION_NAME, INDEX_NAME, targetBucketId)))
+              .isGreaterThan(genBeforePerm);
+    } finally {
+      clearBeforeAcquireHook(dataStore1);
+      clearBeforeAcquireHook(dataStore2);
+      queryPool.shutdownNow();
+      dataStore1.invoke(() -> resumeIndexAeq(getCache()));
+      dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+    }
+  }
+
+  private void armOneShotBeforeAcquireHook(VM vm, int targetBucketId) {
+    vm.invoke(() -> {
+      OWNERSHIP_HOOK_ENTERED = new CountDownLatch(1);
+      OWNERSHIP_HOOK_RELEASE = new CountDownLatch(1);
+      AtomicBoolean fired = new AtomicBoolean(false);
+      DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = bucketId -> {
+        if (bucketId == targetBucketId && fired.compareAndSet(false, true)) {
+          OWNERSHIP_HOOK_ENTERED.countDown();
+          try {
+            OWNERSHIP_HOOK_RELEASE.await(30, TimeUnit.SECONDS);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      };
+    });
+  }
+
+  private void awaitBeforeAcquireHookEntered(VM vm) {
+    boolean entered = vm.invoke(() -> {
+      try {
+        return OWNERSHIP_HOOK_ENTERED.await(30, TimeUnit.SECONDS);
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        return false;
+      }
+    });
+    assertThat(entered).as("In-flight read must pause before searcher acquisition").isTrue();
+  }
+
+  private void releaseBeforeAcquireHook(VM vm) {
+    vm.invoke(() -> {
+      DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = null;
+      CountDownLatch release = OWNERSHIP_HOOK_RELEASE;
+      if (release != null) {
+        release.countDown();
+      }
+    });
+  }
+
+  private void clearBeforeAcquireHook(VM vm) {
+    if (vm != null) {
+      vm.invoke(() -> {
+        DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = null;
+        CountDownLatch release = OWNERSHIP_HOOK_RELEASE;
+        if (release != null) {
+          release.countDown();
+        }
+      });
+    }
+  }
+
+  private void transferPrimaryBucket(VM targetPrimary, VM formerPrimary, int bucketId) {
+    boolean moved = targetPrimary.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getRegionAdvisor().getBucketAdvisor(bucketId).becomePrimary(false);
+    });
+    assertThat(moved).as("Bucket %d must transfer primary cleanly", bucketId).isTrue();
+    GeodeAwaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      assertThat(targetPrimary.invoke(() -> {
+        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+        BucketRegion br = pr.getDataStore().getLocalBucketById(bucketId);
+        Tier0VectorRegistry reg = Tier0VectorRegistry.forCache(getCache());
+        return br != null && br.getBucketAdvisor().isPrimary()
+            && !reg.isHydrating("/" + REGION_NAME, INDEX_NAME, bucketId);
+      })).isTrue();
+      assertThat(formerPrimary.invoke(() -> {
+        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+        BucketRegion br = pr.getDataStore().getLocalBucketById(bucketId);
+        return br == null || !br.getBucketAdvisor().isPrimary();
+      })).isTrue();
+    });
+  }
+
+  private static float[] unitVectorWithCos0(float cos0) {
+    float[] vec = new float[DIM];
+    vec[0] = cos0;
+    vec[1] = (float) Math.sqrt(Math.max(0.0, 1.0 - (double) cos0 * cos0));
+    return vec;
   }
 
   private void verifySelectivityRegime(Map<String, VectorRecord> dataset, float[] query,

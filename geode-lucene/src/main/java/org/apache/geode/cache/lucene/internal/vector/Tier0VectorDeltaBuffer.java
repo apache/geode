@@ -780,29 +780,30 @@ public class Tier0VectorDeltaBuffer<K> {
   /**
    * Clears both epochs and advances the clear generation so any in-flight {@link #abortFlush(long)}
    * cannot resurrect cleared entries (used when a bucket is removed or destroyed).
+   *
+   * <p>
+   * Synchronizes only on {@code evictionLock} (never blocking on {@code pathBBarrierLock}) so
+   * bucket demotion callbacks ({@code afterSecondary}/{@code afterBucketRemoved}) cannot deadlock
+   * with an in-flight Path-B write barrier that is simultaneously flushing or committing to the
+   * colocated file region.
    */
   public void clear() {
-    pathBBarrierLock.readLock().lock();
-    try {
-      synchronized (evictionLock) {
-        evictionVersion.incrementAndGet();
-        try {
-          while (true) {
-            EpochState<K> current = stateRef.get();
-            EpochBucket<K> fresh =
-                new EpochBucket<>(current.active.epoch + 1L, current.active.generation + 1L);
-            if (stateRef.compareAndSet(current, new EpochState<>(fresh, null))) {
-              lastClearedEpoch.accumulateAndGet(current.active.epoch, Math::max);
-              current.active.writerState.getAndUpdate(v -> v | SEALED_BIT);
-              return;
-            }
+    synchronized (evictionLock) {
+      evictionVersion.incrementAndGet();
+      try {
+        while (true) {
+          EpochState<K> current = stateRef.get();
+          EpochBucket<K> fresh =
+              new EpochBucket<>(current.active.epoch + 1L, current.active.generation + 1L);
+          if (stateRef.compareAndSet(current, new EpochState<>(fresh, null))) {
+            lastClearedEpoch.accumulateAndGet(current.active.epoch, Math::max);
+            current.active.writerState.getAndUpdate(v -> v | SEALED_BIT);
+            return;
           }
-        } finally {
-          evictionVersion.incrementAndGet();
         }
+      } finally {
+        evictionVersion.incrementAndGet();
       }
-    } finally {
-      pathBBarrierLock.readLock().unlock();
     }
   }
 

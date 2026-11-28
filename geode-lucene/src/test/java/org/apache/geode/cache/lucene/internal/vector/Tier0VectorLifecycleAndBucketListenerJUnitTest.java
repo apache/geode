@@ -1244,6 +1244,62 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     }
   }
 
+  @Test
+  public void ownershipGenerationStrictlyIncreasesAcrossLifecycleTransitionsWithoutAba() {
+    final int bucketId = 4;
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    long g0 = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(g0).isEqualTo(0L);
+
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isEmpty()).thenReturn(true);
+    when(bucket.keySet()).thenReturn(Collections.emptySet());
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(dataStore.getLocalBucketById(bucketId)).thenReturn(bucket);
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(pr.getFullPath()).thenReturn(REGION_PATH);
+    when(pr.getRegionService()).thenReturn(cache);
+    when(pr.getDataStore()).thenReturn(dataStore);
+
+    Tier0VectorBucketListener<String, float[]> listener =
+        new Tier0VectorBucketListener<>(INDEX_NAME, v -> v, v -> Map.of());
+    PartitionListener partitionListener = listener.createPartitionListener();
+    partitionListener.afterRegionCreate(pr);
+
+    // 1. Primary promotion (beginHydration + completeHydration) strictly advances generation
+    partitionListener.afterPrimary(bucketId);
+    long gAfterPrimary1 = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(gAfterPrimary1).isGreaterThan(g0);
+
+    // 2. Demotion (afterSecondary -> removeBucket) strictly advances generation without resetting
+    partitionListener.afterSecondary(bucketId);
+    long gAfterSecondary = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(gAfterSecondary).isGreaterThan(gAfterPrimary1);
+
+    // 3. Re-promotion strictly advances generation again (zero ABA across term reuse)
+    partitionListener.afterPrimary(bucketId);
+    long gAfterPrimary2 = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(gAfterPrimary2).isGreaterThan(gAfterSecondary);
+
+    // 4. Bucket removal strictly advances generation
+    partitionListener.afterBucketRemoved(bucketId, Collections.emptyList());
+    long gAfterRemoved = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(gAfterRemoved).isGreaterThan(gAfterPrimary2);
+
+    // 5. Index removal, region removal, and cache clearAll strictly advance generation (zero ABA)
+    registry.removeIndex(REGION_PATH, INDEX_NAME);
+    long gAfterRemoveIndex = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(gAfterRemoveIndex).isGreaterThan(gAfterRemoved);
+
+    registry.removeRegion(REGION_PATH);
+    long gAfterRemoveRegion = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(gAfterRemoveRegion).isGreaterThan(gAfterRemoveIndex);
+
+    registry.clearAll();
+    long gAfterClearAll = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(gAfterClearAll).isGreaterThan(gAfterRemoveRegion);
+  }
+
   private GatewaySenderEventImpl mockShadowEvent(String key, Operation op, long shadowKey) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
     when(event.getKey()).thenReturn(key);

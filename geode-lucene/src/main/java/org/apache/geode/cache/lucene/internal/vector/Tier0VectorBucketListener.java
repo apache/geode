@@ -212,11 +212,15 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
         return;
       }
       BucketRegion bucket = pr.getDataStore().getLocalBucketById(bucketId);
-      if (bucket == null) {
+      Cache cache = (Cache) pr.getRegionService();
+      if (cache == null || cache.isClosed()) {
         return;
       }
-      Cache cache = (Cache) pr.getRegionService();
       Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+      if (bucket == null) {
+        registry.advanceOwnershipGeneration(pr.getFullPath(), indexName, bucketId);
+        return;
+      }
       CountDownLatch hydrationLatch =
           registry.beginHydration(pr.getFullPath(), indexName, bucketId);
       try {

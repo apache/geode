@@ -28,6 +28,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,11 +87,19 @@ import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
+import org.apache.geode.cache.lucene.internal.vector.Tier0VectorBucketListener;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
 import org.apache.geode.cache.lucene.internal.vector.VectorSimilarityScorer;
+import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -1655,6 +1664,312 @@ public class DistributedHybridKnnFunctionJUnitTest {
       verify(localSender).lastResult(captor.capture());
       List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
       assertThat(hits).extracting(EntryScore::getKey).containsExactly("k-inflight");
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void inFlightReadInvalidatesAndRetriesAcrossBucketDemotionAndRePromotion()
+      throws Exception {
+    float[] queryVec = new float[] {1f, 0f, 0f, 0f};
+    float[] vBase = new float[] {0.50f, (float) Math.sqrt(1.0 - 0.25), 0f, 0f};
+    float[] vOldTerm = new float[] {0.92f, (float) Math.sqrt(1.0 - 0.92 * 0.92), 0f, 0f};
+    float[] vStale = new float[] {0.95f, (float) Math.sqrt(1.0 - 0.95 * 0.95), 0f, 0f};
+    float[] vNewTerm = new float[] {0.99f, (float) Math.sqrt(1.0 - 0.99 * 0.99), 0f, 0f};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("tag", (String) pair[1], Field.Store.YES));
+      return Collections.singletonList(doc);
+    };
+
+    // Sub-case (a): Path A (both rerankBeam=false and rerankBeam=true) when demotion -> remote
+    // mutation -> re-promotion occurs strictly between buffer snapshot and searcher acquisition
+    // WITHOUT advancing searcherEpoch. The ownershipGeneration fence MUST invalidate attempt 1 and
+    // retry against the re-promoted term cut.
+    for (boolean rerankBeam : new boolean[] {false, true}) {
+      Tier0VectorRegistry.removeCache(mockCache);
+      Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+      AtomicBoolean advisorIsPrimary = new AtomicBoolean(true);
+      Map<Object, Object[]> backingEntries = new java.util.concurrent.ConcurrentHashMap<>();
+      backingEntries.put("k_base", new Object[] {vBase, "all"});
+      backingEntries.put("k_stale", new Object[] {vStale, "all"});
+      backingEntries.put("k_old_term", new Object[] {vOldTerm, "all"});
+
+      BucketAdvisor advisor = mock(BucketAdvisor.class);
+      when(advisor.isPrimary()).thenAnswer(inv -> advisorIsPrimary.get());
+
+      BucketRegion bucket = mock(BucketRegion.class);
+      when(bucket.isDestroyed()).thenReturn(false);
+      when(bucket.getBucketAdvisor()).thenReturn(advisor);
+      when(bucket.keySet()).thenAnswer(inv -> new HashSet<>(backingEntries.keySet()));
+      when(bucket.getEntry(any())).thenAnswer(inv -> {
+        Object[] val = backingEntries.get(inv.getArgument(0));
+        if (val == null) {
+          return null;
+        }
+        EntrySnapshot es = mock(EntrySnapshot.class);
+        when(es.getRawValue(true)).thenReturn(val);
+        return es;
+      });
+
+      PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+      when(dataStore.getLocalBucketById(0)).thenReturn(bucket);
+
+      PartitionedRegion pr = mock(PartitionedRegion.class);
+      when(pr.isDestroyed()).thenReturn(false);
+      when(pr.getFullPath()).thenReturn(REGION_PATH);
+      when(pr.getRegionService()).thenReturn(mockCache);
+      when(pr.getDataStore()).thenReturn(dataStore);
+      when(mockContext.getDataSet()).thenReturn(pr);
+
+      Tier0VectorBucketListener<Object, Object[]> listener = new Tier0VectorBucketListener<>(
+          INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("tag", pair[1]));
+      PartitionListener partitionListener = listener.createPartitionListener();
+      partitionListener.afterRegionCreate(pr);
+
+      try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+          IndexWriter writer =
+              new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+        java.util.concurrent.atomic.AtomicInteger acquireCalls =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+        IndexRepositoryImpl repo = new IndexRepositoryImpl(
+            pr, writer, serializer, mockStats, pr, null, "lock", mockIndex) {
+          @Override
+          protected IndexSearcher acquireSearcher() throws IOException {
+            IndexSearcher s = super.acquireSearcher();
+            if (acquireCalls.incrementAndGet() == 1) {
+              // Demote bucket -> mutate remotely -> re-promote locally, leaving searcherEpoch
+              // untouched so ONLY the ownershipGeneration fence catches the stale term!
+              advisorIsPrimary.set(false);
+              partitionListener.afterSecondary(0);
+
+              backingEntries.remove("k_old_term");
+              backingEntries.remove("k_stale");
+              backingEntries.put("k_new_term", new Object[] {vNewTerm, "all"});
+
+              advisorIsPrimary.set(true);
+              partitionListener.afterPrimary(0);
+            }
+            return s;
+          }
+        };
+
+        // Initial Lucene segments hold k_base and k_stale; Term-1 Tier-0 holds k_old_term & k_stale
+        repo.update("k_base", new Object[] {vBase, "all"});
+        repo.update("k_stale", new Object[] {vStale, "all"});
+        repo.commitAndRefreshBlocking();
+        long epochBefore = repo.getSearcherEpoch();
+
+        Tier0VectorDeltaBuffer<Object> term1Buffer =
+            registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+        term1Buffer.put("k_old_term", vOldTerm, Map.of("tag", "all"));
+        term1Buffer.put("k_stale", vStale, Map.of("tag", "all"));
+        long genBefore = registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, 0);
+
+        when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+            .thenReturn(Map.of(0, repo));
+        when(mockRepoManager.collectIndexedKeysIfReady(0))
+            .thenReturn(Set.of("k_base", "k_stale"));
+        ResultSender<TopEntriesCollector> localSender = mock(ResultSender.class);
+        when(mockContext.getResultSender()).thenReturn(localSender);
+
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("tag", "all")
+            .rerankBeamCandidates(rerankBeam)
+            .build();
+        when(mockContext.getArguments()).thenReturn(ctx);
+
+        new DistributedHybridKnnFunction().execute(mockContext);
+
+        assertThat(acquireCalls.get()).isEqualTo(2);
+        assertThat(repo.getSearcherEpoch()).isEqualTo(epochBefore);
+        assertThat(registry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, 0))
+            .isGreaterThan(genBefore);
+        assertThat(registry.getOwnershipFenceRetryCount()).isGreaterThanOrEqualTo(1L);
+
+        ArgumentCaptor<TopEntriesCollector> captor =
+            ArgumentCaptor.forClass(TopEntriesCollector.class);
+        verify(localSender).lastResult(captor.capture());
+        List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+        assertThat(hits).extracting(EntryScore::getKey).containsExactly("k_new_term", "k_base");
+      }
+    }
+
+    // Sub-case (b): Path B (unsupported FuzzyQuery) when concurrent demotion + re-promotion occurs
+    // from another thread right inside acquireSearcher() while Path B holds pathBWrite -> zero
+    // deadlock with removeBucket/clear(), Path B invalidates and retries on the new term.
+    Tier0VectorRegistry.removeCache(mockCache);
+    Tier0VectorRegistry pathBRegistry = Tier0VectorRegistry.forCache(mockCache);
+    AtomicBoolean pathBIsPrimary = new AtomicBoolean(true);
+    Map<Object, Object[]> pathBEntries = new java.util.concurrent.ConcurrentHashMap<>();
+    pathBEntries.put("k_old_fuzzy", new Object[] {vOldTerm, "books"});
+
+    BucketAdvisor pathBAdvisor = mock(BucketAdvisor.class);
+    when(pathBAdvisor.isPrimary()).thenAnswer(inv -> pathBIsPrimary.get());
+
+    BucketRegion pathBBucket = mock(BucketRegion.class);
+    when(pathBBucket.isDestroyed()).thenReturn(false);
+    when(pathBBucket.getBucketAdvisor()).thenReturn(pathBAdvisor);
+    when(pathBBucket.keySet()).thenAnswer(inv -> new HashSet<>(pathBEntries.keySet()));
+    when(pathBBucket.getEntry(any())).thenAnswer(inv -> {
+      Object[] val = pathBEntries.get(inv.getArgument(0));
+      if (val == null) {
+        return null;
+      }
+      EntrySnapshot es = mock(EntrySnapshot.class);
+      when(es.getRawValue(true)).thenReturn(val);
+      return es;
+    });
+
+    PartitionedRegionDataStore pathBStore = mock(PartitionedRegionDataStore.class);
+    when(pathBStore.getLocalBucketById(0)).thenReturn(pathBBucket);
+    PartitionedRegion pathBPr = mock(PartitionedRegion.class);
+    when(pathBPr.isDestroyed()).thenReturn(false);
+    when(pathBPr.getFullPath()).thenReturn(REGION_PATH);
+    when(pathBPr.getRegionService()).thenReturn(mockCache);
+    when(pathBPr.getDataStore()).thenReturn(pathBStore);
+    when(mockContext.getDataSet()).thenReturn(pathBPr);
+
+    Tier0VectorBucketListener<Object, Object[]> pathBListener = new Tier0VectorBucketListener<>(
+        INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("tag", pair[1]));
+    PartitionListener pathBPartListener = pathBListener.createPartitionListener();
+    pathBPartListener.afterRegionCreate(pathBPr);
+
+    ExecutorService ownershipPool = Executors.newSingleThreadExecutor();
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer =
+            new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      Tier0VectorDeltaBuffer<Object> term1PathBBuffer =
+          pathBRegistry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+      term1PathBBuffer.put("k_old_fuzzy", vOldTerm, Map.of("tag", "books"));
+      long pathBGenBefore = pathBRegistry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, 0);
+
+      java.util.concurrent.atomic.AtomicInteger pathBAcquires =
+          new java.util.concurrent.atomic.AtomicInteger(0);
+      IndexRepositoryImpl pathBRepo = new IndexRepositoryImpl(
+          pathBPr, writer, serializer, mockStats, pathBPr, null, "lock", mockIndex) {
+        @Override
+        protected IndexSearcher acquireSearcher() throws IOException {
+          IndexSearcher s = super.acquireSearcher();
+          if (pathBAcquires.incrementAndGet() == 1) {
+            assertThat(term1PathBBuffer.isPathBWriteHeldByCurrentThread()).isTrue();
+            Future<?> transition = ownershipPool.submit(() -> {
+              pathBIsPrimary.set(false);
+              pathBPartListener.afterSecondary(0);
+              pathBEntries.remove("k_old_fuzzy");
+              pathBEntries.put("k_repromoted_fuzzy", new Object[] {vNewTerm, "books"});
+              pathBIsPrimary.set(true);
+              pathBPartListener.afterPrimary(0);
+            });
+            try {
+              // Must finish immediately without deadlocking against pathBWrite!
+              transition.get(5, TimeUnit.SECONDS);
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+          return s;
+        }
+      };
+
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, pathBRepo));
+      when(mockRepoManager.collectIndexedKeysIfReady(0))
+          .thenReturn(Collections.singleton("k_old_fuzzy"));
+      ResultSender<TopEntriesCollector> pathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSender);
+
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("tag:boks~1", "tag")
+          .build();
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+
+      new DistributedHybridKnnFunction().execute(mockContext);
+
+      assertThat(pathBAcquires.get()).isEqualTo(2);
+      assertThat(term1PathBBuffer.isPathBWriteHeldByCurrentThread()).isFalse();
+      Tier0VectorDeltaBuffer<Object> term2PathBBuffer =
+          pathBRegistry.getBuffer(REGION_PATH, INDEX_NAME, 0);
+      assertThat(term2PathBBuffer).isNotNull().isNotSameAs(term1PathBBuffer);
+      assertThat(term2PathBBuffer.isPathBWriteHeldByCurrentThread()).isFalse();
+      assertThat(pathBRegistry.getOwnershipGeneration(REGION_PATH, INDEX_NAME, 0))
+          .isGreaterThan(pathBGenBefore);
+      assertThat(pathBRegistry.getOwnershipFenceRetryCount()).isGreaterThanOrEqualTo(1L);
+
+      ArgumentCaptor<TopEntriesCollector> captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathBSender).lastResult(captor.capture());
+      List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("k_repromoted_fuzzy");
+    } finally {
+      ownershipPool.shutdownNow();
+    }
+
+    // Sub-case (c): Permanent demotion during acquireSearcher() without re-promotion MUST fail
+    // over via InternalFunctionInvocationTargetException(PrimaryBucketException) and emit 0 hits.
+    Tier0VectorRegistry.removeCache(mockCache);
+    Tier0VectorRegistry demoteRegistry = Tier0VectorRegistry.forCache(mockCache);
+    AtomicBoolean demoteIsPrimary = new AtomicBoolean(true);
+    BucketAdvisor demoteAdvisor = mock(BucketAdvisor.class);
+    when(demoteAdvisor.isPrimary()).thenAnswer(inv -> demoteIsPrimary.get());
+    BucketRegion demoteBucket = mock(BucketRegion.class);
+    when(demoteBucket.isDestroyed()).thenReturn(false);
+    when(demoteBucket.getBucketAdvisor()).thenReturn(demoteAdvisor);
+    PartitionedRegionDataStore demoteStore = mock(PartitionedRegionDataStore.class);
+    when(demoteStore.getLocalBucketById(0)).thenReturn(demoteBucket);
+    PartitionedRegion demotePr = mock(PartitionedRegion.class);
+    when(demotePr.isDestroyed()).thenReturn(false);
+    when(demotePr.getFullPath()).thenReturn(REGION_PATH);
+    when(demotePr.getRegionService()).thenReturn(mockCache);
+    when(demotePr.getDataStore()).thenReturn(demoteStore);
+    when(mockContext.getDataSet()).thenReturn(demotePr);
+
+    Tier0VectorBucketListener<Object, Object[]> demoteListener = new Tier0VectorBucketListener<>(
+        INDEX_NAME, pair -> (float[]) pair[0], pair -> Map.of("tag", pair[1]));
+    PartitionListener demotePartListener = demoteListener.createPartitionListener();
+    demotePartListener.afterRegionCreate(demotePr);
+
+    demoteRegistry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0)
+        .put("k_demoted", vOldTerm, Map.of("tag", "all"));
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer =
+            new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl demoteRepo = new IndexRepositoryImpl(
+          demotePr, writer, serializer, mockStats, demotePr, null, "lock", mockIndex) {
+        @Override
+        protected IndexSearcher acquireSearcher() throws IOException {
+          IndexSearcher s = super.acquireSearcher();
+          demoteIsPrimary.set(false);
+          demotePartListener.afterSecondary(0);
+          return s;
+        }
+      };
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, demoteRepo));
+      ResultSender<TopEntriesCollector> demoteSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(demoteSender);
+
+      HybridKnnQueryContext ctx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      when(mockContext.getArguments()).thenReturn(ctx);
+
+      assertThatThrownBy(() -> new DistributedHybridKnnFunction().execute(mockContext))
+          .isInstanceOf(InternalFunctionInvocationTargetException.class)
+          .hasCauseInstanceOf(PrimaryBucketException.class);
+      verify(demoteSender, never()).lastResult(any());
+      assertThat(demoteRegistry.getOwnershipFenceRetryCount()).isGreaterThanOrEqualTo(1L);
+    } finally {
+      when(mockContext.getDataSet()).thenReturn(mockRegion);
     }
   }
 
