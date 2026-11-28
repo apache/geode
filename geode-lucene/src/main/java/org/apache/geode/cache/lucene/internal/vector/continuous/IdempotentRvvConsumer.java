@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 
 /**
  * End-to-end crash-idempotent wrapper around {@link RvvClientGate} closing both client-crash
@@ -416,10 +417,21 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   private final AtomicLong recoveredPendingCount = new AtomicLong();
   private final AtomicLong durableAdmissionsCount = new AtomicLong();
   private final AtomicLong staleSessionEventsRejectedCount = new AtomicLong();
+  private volatile BiConsumer<ContinuousVectorEvent, EventDeliveryId> beforeExecutionFenceHookForTest;
 
   public IdempotentRvvConsumer(RvvClientGate gate, DurableDeliveryStore store,
       EffectHandler effectHandler) {
     this(gate, store, effectHandler, null);
+  }
+
+  /**
+   * Package/test seam invoked strictly after Phase-1 durable staging releases
+   * {@code streamStageLock} and strictly before Phase-2 acquires {@code streamExecutionFences},
+   * enabling deterministic verification of old-session epoch+intent revalidation under the fence.
+   */
+  public void setBeforeExecutionFenceHookForTest(
+      BiConsumer<ContinuousVectorEvent, EventDeliveryId> hook) {
+    this.beforeExecutionFenceHookForTest = hook;
   }
 
   public IdempotentRvvConsumer(RvvClientGate gate, DurableDeliveryStore store,
@@ -731,11 +743,23 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     }
 
     // Phase 2: Per-stream execution/recovery fence serializes handler execution against both
-    // out-of-order later versions on the same stream and reconnect/restart recovery.
+    // out-of-order later versions on the same stream and reconnect/restart recovery. Revalidate
+    // sessionEpoch, committed watermark, applied ledger, and durable PENDING intent AFTER
+    // acquiring execFence so an old-session batch paused before the fence can never execute out
+    // of order after disconnect or reconnect recovery.
+    BiConsumer<ContinuousVectorEvent, EventDeliveryId> preFenceHook =
+        this.beforeExecutionFenceHookForTest;
+    if (preFenceHook != null) {
+      preFenceHook.accept(event, id);
+    }
     ReentrantLock execFence = getStreamExecutionFence(subId, bucketId, memberId);
     execFence.lock();
     try {
       synchronized (streamLock) {
+        if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
+          staleSessionEventsRejectedCount.incrementAndGet();
+          return false;
+        }
         long committed = store.getCommittedWatermark(subId, bucketId, memberId);
         if (ver <= committed || store.isEffectApplied(id)) {
           deduplicatedEffectsCount.incrementAndGet();
@@ -746,6 +770,10 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
                 advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, ver);
             gate.restoreHighWaterVersion(subId, bucketId, memberId, updated);
           }
+          return false;
+        }
+        if (!store.isPendingIntent(id)) {
+          deduplicatedEffectsCount.incrementAndGet();
           return false;
         }
         inFlightExecutions.add(id);

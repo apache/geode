@@ -389,6 +389,14 @@ public class ContinuousVectorQueryService {
     return dispatcher.getReplayFloorVersion(bucketId, memberId);
   }
 
+  public long getReceivedHeadVersion(int bucketId, String memberId) {
+    return dispatcher.getReceivedHeadVersion(bucketId, memberId);
+  }
+
+  public long getContiguousHeadVersion(int bucketId, String memberId) {
+    return dispatcher.getContiguousHeadVersion(bucketId, memberId);
+  }
+
   public long getReplayFloorResyncCount() {
     return dispatcher.getReplayFloorResyncCount();
   }

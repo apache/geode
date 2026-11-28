@@ -3076,6 +3076,339 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  /**
+   * R1 M2 / R2 M2 &amp; R1 M3 / R2 M3 DUnit regression: exercises (a) reconnect with an active
+   * holdback gap ({@code v=65} resident while {@code v=64} is missing so {@code V_recv=65},
+   * {@code V_contig=63}) verifying {@code V_S = V_contig} replays strictly {@code [62, 63]} +
+   * trailing {@code HB(63)} without skipping the missing hole and hands off contiguously
+   * {@code 64 -> 65 -> 66}, (b) a live 3-server {@code kill -9} primary crash during lower-pin
+   * admission where the promoted secondary still holds {@code V_floor=60, V_ckpt=64} and cleanly
+   * re-admits {@code V_client=61 >= V_floor=60}, and (c) a combined delayed hole + continuing
+   * arrivals + {@code maxHoldbackAgeMillis} age trigger near {@code C_tail=32} closing the gap,
+   * emitting a covering idle heartbeat, and compacting to zero tail with zero overflow.
+   */
+  @Test
+  public void reconnectWithActiveGapAndDelayedHoleAgeTriggerNearCapacityAcrossCluster()
+      throws Exception {
+    IgnoredException.addIgnoredException("MemberDepartedException");
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("PartitionOfflineException");
+    IgnoredException.addIgnoredException("CacheClosedException");
+    IgnoredException.addIgnoredException("CancelException");
+    IgnoredException.addIgnoredException("SocketException");
+    IgnoredException.addIgnoredException("EOFException");
+    IgnoredException.addIgnoredException("IOException");
+    IgnoredException.addIgnoredException("Membership: lead member");
+    IgnoredException.addIgnoredException("crashed");
+
+    RvvClientGate fastGate = new RvvClientGate();
+    fastGate.registerSubscription("sub-gap");
+    List<ContinuousVectorEvent> fastAccepted = new CopyOnWriteArrayList<>();
+    fastGate.addListener(ev -> {
+      if ("sub-gap".equals(ev.getSubscriptionId())) {
+        fastAccepted.add(ev);
+      }
+    });
+    receiver = new ClientEventReceiver(fastGate);
+    int fastPort = receiver.getPort();
+
+    RvvClientGate lagGate = new RvvClientGate();
+    lagGate.registerSubscription("sub-lag");
+    List<ContinuousVectorEvent> lagAccepted = new CopyOnWriteArrayList<>();
+    lagGate.addListener(ev -> {
+      if ("sub-lag".equals(ev.getSubscriptionId())) {
+        lagAccepted.add(ev);
+      }
+    });
+    List<ContinuousVectorEvent> lagWireEvents = new CopyOnWriteArrayList<>();
+    receiverB = new ClientEventReceiver(ev -> {
+      lagWireEvents.add(ev);
+      lagGate.tryAccept(ev);
+    });
+    int lagPort = receiverB.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM server3 = cluster.startServerVM(3, locatorPort);
+    MemberVM[] servers = new MemberVM[] {server1, server2, server3};
+    boolean[] alive = new boolean[] {true, true, true};
+    final int cTail = 32;
+
+    try {
+      Random rng = new Random(20261208L);
+      float[] queryVec = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+      List<VectorSubscription> subscriptions = Arrays.asList(
+          new VectorSubscription("sub-gap", queryVec, 0.90f),
+          new VectorSubscription("sub-lag", queryVec, 0.90f));
+
+      for (MemberVM server : servers) {
+        server
+            .invoke(() -> initializeServerNode(subscriptions, fastPort, lagPort, 1, 64, 1, cTail));
+      }
+
+      // Ingest v=1..30, apply replicated (30, 30); then v=31..60, apply replicated (60, 64)
+      server3.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 1; i <= 30; i++) {
+          region.put("gap-init-" + i, queryVec);
+        }
+      });
+
+      int primaryIdx = -1;
+      int secondaryIdx = -1;
+      String primaryMemberId = null;
+      for (int idx = 0; idx < servers.length; idx++) {
+        String roleAndMember = servers[idx].invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return "P|" + pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          if (pr.getDataStore().getAllLocalBucketIds().contains(0)) {
+            return "S|secondary";
+          }
+          return null;
+        });
+        if (roleAndMember != null && roleAndMember.startsWith("P|")) {
+          primaryIdx = idx;
+          primaryMemberId = roleAndMember.substring(2);
+        } else if (roleAndMember != null && roleAndMember.startsWith("S|")) {
+          secondaryIdx = idx;
+        }
+      }
+      assertThat(primaryIdx).isGreaterThanOrEqualTo(0);
+      assertThat(secondaryIdx).isGreaterThanOrEqualTo(0);
+      final String mP = primaryMemberId;
+      final MemberVM primaryVm = servers[primaryIdx];
+      final MemberVM secondaryVm = servers[secondaryIdx];
+
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> lagGate.getSafeCheckpointVersion(0, mP) == 30L);
+      for (MemberVM server : servers) {
+        server.invoke(() -> serverService.applyReplicatedFloorAndCheckpoint(0, mP, 30L, 30L));
+      }
+
+      secondaryVm.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 31; i <= 60; i++) {
+          region.put("gap-init-" + i, queryVec);
+        }
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> lagGate.getSafeCheckpointVersion(0, mP) == 60L);
+      for (MemberVM server : servers) {
+        server.invoke(() -> serverService.applyReplicatedFloorAndCheckpoint(0, mP, 60L, 64L));
+      }
+
+      // Deliver v=61 to both clients, then disconnect sub-lag at V_client=61 and ingest v=62..63
+      secondaryVm.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("gap-init-61", queryVec);
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> lagGate.getSafeCheckpointVersion(0, mP) == 61L);
+      for (MemberVM server : servers) {
+        server.invoke(() -> dropOutboundEventsB.set(true));
+      }
+      secondaryVm.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put("gap-init-62", queryVec);
+        region.put("gap-init-63", queryVec);
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> fastGate.getSafeCheckpointVersion(0, mP) == 63L);
+
+      // Phase (a): Inject out-of-order v=65 while v=64 is missing on both primary and secondary ->
+      // V_recv = 65, V_contig = 63, holdbackSize = 1 on primary.
+      primaryVm.invoke(() -> serverService.onBucketMutation(0, mP, 65L, "gap-65", queryVec, true));
+      secondaryVm
+          .invoke(() -> serverService.onBucketMutation(0, mP, 65L, "gap-65", queryVec, false));
+      assertThat(primaryVm.invoke(() -> serverService.getReceivedHeadVersion(0, mP)))
+          .isEqualTo(65L);
+      assertThat(primaryVm.invoke(() -> serverService.getContiguousHeadVersion(0, mP)))
+          .isEqualTo(63L);
+      assertThat(primaryVm.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
+          .isEqualTo(1);
+      assertThat(secondaryVm.invoke(() -> serverService.getReceivedHeadVersion(0, mP)))
+          .isEqualTo(65L);
+      assertThat(secondaryVm.invoke(() -> serverService.getContiguousHeadVersion(0, mP)))
+          .isEqualTo(63L);
+
+      // Reconnect sub-lag at V_client=61 while v=64 is missing -> MUST choose V_S = V_contig = 63,
+      // replay ONLY [62, 63] + trailing HB(63) (NEVER HB(64) or 65), and lower-pin V_ckpt = 61!
+      int wireBeforeReconnect = lagWireEvents.size();
+      Map<String, Long> lagHw = lagGate.getSafeHighWaterByMember(0);
+      assertThat(lagHw).containsEntry(mP, 61L);
+      primaryVm.invoke(() -> {
+        serverTcpSinkB.enableReconnectBucketGate();
+        dropOutboundEventsB.set(false);
+        serverService.admitAndReplayForReconnect("sub-lag", 0, lagHw, serverTcpSinkB,
+            () -> serverTcpSinkB.allowLiveBucket(0));
+      });
+      assertThat(primaryVm.invoke(() -> serverService.getCheckpointVersion(0, mP))).isEqualTo(61L);
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(lagAccepted).hasSize(63);
+        assertThat(lagGate.getSafeCheckpointVersion(0, mP)).isEqualTo(63L);
+      });
+      List<ContinuousVectorEvent> reconnectWire =
+          new ArrayList<>(lagWireEvents.subList(wireBeforeReconnect, lagWireEvents.size()));
+      assertThat(reconnectWire).filteredOn(ContinuousVectorEvent::isHeartbeat)
+          .extracting(ContinuousVectorEvent::getRegionVersion)
+          .containsExactly(63L);
+      assertThat(reconnectWire)
+          .filteredOn(e -> !e.isHeartbeat() && "sub-lag".equals(e.getSubscriptionId()))
+          .extracting(ContinuousVectorEvent::getRegionVersion)
+          .containsExactly(62L, 63L);
+
+      // Hole v=64 and concurrent v=66 arrive on primary -> contiguous live handoff 64 -> 65 -> 66!
+      primaryVm.invoke(() -> {
+        serverService.onBucketMutation(0, mP, 64L, "gap-64", queryVec, true);
+        serverService.onBucketMutation(0, mP, 66L, "gap-66", queryVec, true);
+      });
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(primaryVm.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
+            .isZero();
+        assertThat(lagAccepted).hasSize(66);
+        assertThat(lagAccepted).extracting(ContinuousVectorEvent::getRegionVersion)
+            .containsSequence(61L, 62L, 63L, 64L, 65L, 66L)
+            .doesNotHaveDuplicates();
+        assertThat(lagGate.getSafeCheckpointVersion(0, mP)).isEqualTo(66L);
+      });
+
+      // Phase (b): Primary crashes BEFORE lower-pin V_ckpt=61 replicated to secondary (secondary
+      // still holds V_floor=60, V_ckpt=64 and finishes replicating v=64 before promotion).
+      secondaryVm
+          .invoke(() -> serverService.onBucketMutation(0, mP, 64L, "gap-64", queryVec, false));
+      assertThat(secondaryVm.invoke(() -> serverService.getReplayFloorVersion(0, mP)))
+          .isEqualTo(60L);
+      assertThat(secondaryVm.invoke(() -> serverService.getCheckpointVersion(0, mP)))
+          .isEqualTo(64L);
+      assertThat(secondaryVm.invoke(() -> serverService.getContiguousHeadVersion(0, mP)))
+          .isEqualTo(65L);
+
+      alive[primaryIdx] = false;
+      cluster.crashVM(primaryIdx + 1);
+      await().atMost(30, TimeUnit.SECONDS).until(() -> secondaryVm.invoke(() -> {
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        return pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)
+            && serverService.getDispatcher().getTotalPromotionsHandled() >= 1L;
+      }));
+      secondaryVm.invoke(() -> {
+        try {
+          serverReplayExecutor.submit(() -> {
+          }).get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
+
+      // Client whose lower-pin admission was interrupted by crash retries at V_client=61 >=
+      // V_floor=60 on promoted secondary -> admits cleanly, lower-pins V_ckpt=61, replays [62..65]!
+      List<Long> retryVersions = secondaryVm.invoke(() -> {
+        List<ContinuousVectorEvent> replayed = serverService.admitAndReplayForReconnect(
+            "sub-retry", 0, Collections.singletonMap(mP, 61L), ev -> {
+            }, null);
+        List<Long> versions = new ArrayList<>();
+        for (ContinuousVectorEvent ev : replayed) {
+          if ("sub-lag".equals(ev.getSubscriptionId()) && mP.equals(ev.getMemberId())) {
+            versions.add(ev.getRegionVersion());
+          }
+        }
+        return versions;
+      });
+      assertThat(retryVersions).containsExactly(62L, 63L, 64L, 65L);
+      assertThat(secondaryVm.invoke(() -> serverService.getCheckpointVersion(0, mP)))
+          .isEqualTo(61L);
+      assertThat(secondaryVm.invoke(() -> serverService.isResyncRequired(0, mP))).isFalse();
+
+      // Compact mP completely so Phase (c) measures exact tail occupancy on post-promotion mS
+      secondaryVm.invoke(() -> {
+        serverService.unregisterSubscriberForCheckpoint("sub-retry");
+        serverService.acknowledgeCheckpoint(0, mP, 65L);
+      });
+      assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getTailSize(0))).isZero();
+
+      // Phase (c): Combined delayed hole + continuing arrivals + age trigger near C_tail=32 on mS
+      final String mS = secondaryVm.invoke(() -> {
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        return pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+      });
+      secondaryVm.invoke(() -> {
+        serverService.setMaxHoldbackGap(16);
+        serverService.setMaxHoldbackAgeMillis(150L);
+        serverService.registerSubscriberForCheckpoint("sub-gap");
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 1; i <= 10; i++) {
+          region.put("post-age-" + i, queryVec);
+        }
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> fastGate.getSafeCheckpointVersion(0, mS) >= 10L);
+      final long mSBase =
+          secondaryVm.invoke(() -> serverService.getLastDispatchedVersion(0, mS));
+      secondaryVm.invoke(() -> {
+        serverService.acknowledgeCheckpoint(0, mS, mSBase - 4L);
+        serverService.recordReplicatedCheckpoint(0, mS, mSBase);
+      });
+      assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isEqualTo(4);
+
+      // Delayed hole at mSBase + 1 with continuing arrivals mSBase + 2 .. mSBase + 15 (14 held)
+      secondaryVm.invoke(() -> {
+        for (long v = mSBase + 2L; v <= mSBase + 15L; v++) {
+          serverService.onBucketMutation(0, mS, v, "post-hold-" + v, queryVec, true);
+        }
+      });
+      assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
+          .isEqualTo(14);
+      assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getTailSize(0)))
+          .isEqualTo(18);
+      assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getTailOverflowCount()))
+          .isZero();
+      assertThat(secondaryVm.invoke(() -> serverService.getReceivedHeadVersion(0, mS)))
+          .isEqualTo(mSBase + 15L);
+      assertThat(secondaryVm.invoke(() -> serverService.getContiguousHeadVersion(0, mS)))
+          .isEqualTo(mSBase);
+      assertThat(secondaryVm.invoke(() -> serverService.isResyncRequired(0, mS))).isFalse();
+
+      // Age trigger fires via flushIdleHeartbeats -> closes gap, drains 14 held entries, and emits
+      // covering idle heartbeat for mSBase + 15!
+      long flushAgeNow = System.currentTimeMillis() + 500L;
+      int flushed =
+          secondaryVm.invoke(() -> serverService.flushIdleHeartbeats(flushAgeNow, 100L));
+      assertThat(flushed).isEqualTo(1);
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getHoldbackSize(0)))
+            .isZero();
+        assertThat(secondaryVm.invoke(() -> serverService.isResyncRequired(0, mS))).isTrue();
+        assertThat(secondaryVm.invoke(() -> serverService.getHoldbackGapClosedCount()))
+            .isGreaterThanOrEqualTo(1L);
+        assertThat(fastGate.getSafeCheckpointVersion(0, mS)).isEqualTo(mSBase + 15L);
+      });
+
+      // Healthy subscriber ACKs mSBase + 15 -> compacts to tailSize=0 with 0 tail overflow!
+      secondaryVm.invoke(() -> serverService.acknowledgeSubscriberCheckpoint("sub-gap", 0, mS,
+          mSBase + 15L));
+      assertThat(secondaryVm.invoke(() -> serverService.getCheckpointVersion(0, mS)))
+          .isEqualTo(mSBase + 15L);
+      assertThat(secondaryVm.invoke(() -> serverService.getReplayFloorVersion(0, mS)))
+          .isEqualTo(mSBase + 15L);
+      assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getTailSize(0))).isZero();
+      assertThat(secondaryVm.invoke(() -> serverService.getDispatcher().getTailOverflowCount()))
+          .isZero();
+    } finally {
+      for (int idx = 0; idx < servers.length; idx++) {
+        if (alive[idx]) {
+          servers[idx].invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+        }
+      }
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);

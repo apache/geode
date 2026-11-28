@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -2928,6 +2929,378 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(dSec2.getTailSize(b2)).isZero();
     assertThat(dSec2.getTailOverflowCount()).isZero();
     assertThat(sec2.isResyncRequired(b2, mP2)).isFalse();
+  }
+
+  @Test
+  public void reconnectWithActiveHoldbackGapConcurrentArrivalAndCrashDuringLowerPinPreservesContiguousHandoff() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 64;
+
+    // Part (a): Live primary has active holdback gap (v=64 missing, v=65 held in holdback).
+    // V_recv = 65, V_contig = 63. Reconnect at V_client=61 MUST choose V_S = V_contig = 63,
+    // replay ONLY [62, 63] + trailing HB(63) (NEVER HB(64) or 65), lower-pin V_ckpt = 61, and
+    // hand off live dispatch cleanly at V_contig + 1 = 64 when v=64 and concurrent v=66 arrive.
+    ChordalVoronoiRouter rPrim = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dPrim = new RvvMonotonicVectorDispatcher(rPrim, cTail, null, 64);
+    ContinuousVectorQueryService prim = new ContinuousVectorQueryService(rPrim, dPrim);
+    prim.registerSubscription("sub-gap", vec, 0.90f);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    clientGate.registerSubscription("sub-gap");
+    List<ContinuousVectorEvent> delivered = new ArrayList<>();
+    clientGate.addListener(ev -> {
+      if ("sub-gap".equals(ev.getSubscriptionId())) {
+        delivered.add(ev);
+      }
+    });
+    List<ContinuousVectorEvent> wireEvents = new ArrayList<>();
+    AtomicBoolean liveAllowed = new AtomicBoolean(true);
+    ContinuousVectorEventSink gatedSink = ev -> {
+      if (!ev.isReplayed() && !liveAllowed.get()) {
+        return;
+      }
+      wireEvents.add(ev);
+      clientGate.tryAccept(ev);
+    };
+    prim.addEventSink(gatedSink);
+
+    int bucketId = 31;
+    String memberP = "srv-gap-P";
+    for (long v = 1L; v <= 63L; v++) {
+      if (v == 62L) {
+        liveAllowed.set(false); // Client disconnects after receiving v=61
+      }
+      prim.onBucketMutation(bucketId, memberP, v, "kg-" + v, vec, true);
+      if (v == 30L) {
+        prim.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+      } else if (v == 60L) {
+        prim.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+      }
+    }
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(61L);
+
+    // Inject out-of-order v=65 while v=64 is still missing -> enters holdback
+    prim.onBucketMutation(bucketId, memberP, 65L, "kg-65", vec, true);
+    assertThat(dPrim.getHoldbackSize(bucketId)).isEqualTo(1);
+    assertThat(prim.getReceivedHeadVersion(bucketId, memberP)).isEqualTo(65L);
+    assertThat(prim.getContiguousHeadVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(prim.isResyncRequired(bucketId, memberP)).isFalse();
+
+    // Reconnect client at V_client=61 -> replays ONLY [62, 63] + trailing HB(63) (NO HB(64)!)
+    int wireBeforeReconnect = wireEvents.size();
+    List<ContinuousVectorEvent> replayed = prim.admitAndReplayForReconnect("sub-gap", bucketId,
+        Collections.singletonMap(memberP, 61L), gatedSink, () -> liveAllowed.set(true));
+    assertThat(liveAllowed.get()).isTrue();
+    assertThat(prim.getCheckpointVersion(bucketId, memberP)).isEqualTo(61L);
+    assertThat(replayed).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(62L, 63L);
+    List<ContinuousVectorEvent> reconnectWire =
+        wireEvents.subList(wireBeforeReconnect, wireEvents.size());
+    assertDataStrictlyBeforeEqualVersionHeartbeat(reconnectWire);
+    assertThat(reconnectWire).filteredOn(ContinuousVectorEvent::isHeartbeat)
+        .extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(63L);
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+
+    // Hole v=64 arrives + concurrent v=66 -> contiguous live handoff 64 -> 65 -> 66 with 0 gaps!
+    prim.onBucketMutation(bucketId, memberP, 64L, "kg-64", vec, true);
+    prim.onBucketMutation(bucketId, memberP, 66L, "kg-66", vec, true);
+    assertThat(dPrim.getHoldbackSize(bucketId)).isZero();
+    assertThat(prim.getReceivedHeadVersion(bucketId, memberP)).isEqualTo(66L);
+    assertThat(prim.getContiguousHeadVersion(bucketId, memberP)).isEqualTo(66L);
+    assertThat(delivered).hasSize(66);
+    assertThat(delivered).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsSequence(61L, 62L, 63L, 64L, 65L, 66L)
+        .doesNotHaveDuplicates();
+    assertThat(clientGate.getSafeCheckpointVersion(bucketId, memberP)).isEqualTo(66L);
+    assertThat(prim.isResyncRequired(bucketId, memberP)).isFalse();
+
+    // Part (b): Simulated primary crash during lower-pin admission (before lower-pin V_ckpt=61
+    // replicated to secondary, so secondary still has V_floor=60, V_ckpt=64 and tail [61..63, 65]).
+    ChordalVoronoiRouter rSec = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dSec = new RvvMonotonicVectorDispatcher(rSec, cTail, null, 64);
+    ContinuousVectorQueryService sec = new ContinuousVectorQueryService(rSec, dSec);
+    sec.registerSubscription("sub-gap", vec, 0.90f);
+    for (long v = 1L; v <= 63L; v++) {
+      sec.onBucketMutation(bucketId, memberP, v, "kg-" + v, vec, false);
+      if (v == 30L) {
+        sec.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+      } else if (v == 60L) {
+        sec.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+      }
+    }
+    sec.onBucketMutation(bucketId, memberP, 65L, "kg-65", vec, false);
+    assertThat(sec.getReceivedHeadVersion(bucketId, memberP)).isEqualTo(65L);
+    assertThat(sec.getContiguousHeadVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(sec.getReplayFloorVersion(bucketId, memberP)).isEqualTo(60L);
+    assertThat(sec.getCheckpointVersion(bucketId, memberP)).isEqualTo(64L);
+
+    // Pre-crash missing v=64 finishes replicating to secondary before promotion, secondary promotes
+    // and processes post-promotion m_S=[1, 2]; client retries admission at V_client=61 >=
+    // V_floor=60
+    sec.onBucketMutation(bucketId, memberP, 64L, "kg-64", vec, false);
+    assertThat(sec.getContiguousHeadVersion(bucketId, memberP)).isEqualTo(65L);
+    sec.onPrimaryPromotion(bucketId);
+    String memberS = "srv-gap-S";
+    sec.onBucketMutation(bucketId, memberS, 1L, "ks-1", vec, true);
+    sec.onBucketMutation(bucketId, memberS, 2L, "ks-2", vec, true);
+
+    RvvClientGate retryGate = new RvvClientGate();
+    retryGate.registerSubscription("sub-gap");
+    retryGate.restoreHighWaterVersion("sub-gap", bucketId, memberP, 61L);
+    List<ContinuousVectorEvent> retryDelivered = new ArrayList<>();
+    retryGate.addListener(ev -> {
+      if ("sub-gap".equals(ev.getSubscriptionId())) {
+        retryDelivered.add(ev);
+      }
+    });
+    sec.admitAndReplayForReconnect("sub-gap", bucketId,
+        Collections.singletonMap(memberP, 61L), retryGate::tryAccept, null);
+    assertThat(sec.getCheckpointVersion(bucketId, memberP)).isEqualTo(61L);
+    assertThat(retryDelivered).filteredOn(e -> memberP.equals(e.getMemberId()))
+        .extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(62L, 63L, 64L, 65L);
+    assertThat(retryDelivered).filteredOn(e -> memberS.equals(e.getMemberId()))
+        .extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(1L, 2L);
+    assertThat(sec.isResyncRequired(bucketId, memberP)).isFalse();
+  }
+
+  @Test
+  public void oldSessionStagedBatchPausingBeforeExecutionFenceCannotExecuteOutOfOrderAfterReconnect()
+      throws Exception {
+    int bucketId = 32;
+    String memberId = "srv-exec-fence-epoch";
+    RvvClientGate gate = new RvvClientGate();
+    gate.registerSubscription("sub-ef");
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore store =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<Long> appliedVersions = new CopyOnWriteArrayList<>();
+    AtomicInteger v3HandlerCount = new AtomicInteger();
+    AtomicInteger v5HandlerCount = new AtomicInteger();
+    IdempotentRvvConsumer consumer = new IdempotentRvvConsumer(gate, store, (ev, id) -> {
+      if (ev.getRegionVersion() == 3L) {
+        v3HandlerCount.incrementAndGet();
+      } else if (ev.getRegionVersion() == 5L) {
+        v5HandlerCount.incrementAndGet();
+      }
+      appliedVersions.add(ev.getRegionVersion());
+    });
+
+    long session1 = consumer.getActiveSessionEpoch(bucketId);
+    assertThat(session1).isEqualTo(1L);
+    ContinuousVectorEventSink session1Sink = consumer.createSessionSink(bucketId, session1);
+    session1Sink.onEvent(
+        new ContinuousVectorEvent("sub-ef", "k-1", 0.99f, bucketId, memberId, 1L, 1, 100L, false));
+    session1Sink.onEvent(
+        new ContinuousVectorEvent("sub-ef", "k-2", 0.99f, bucketId, memberId, 2L, 1, 101L, false));
+    assertThat(appliedVersions).containsExactly(1L, 2L);
+
+    ExecutorService bg = Executors.newFixedThreadPool(2);
+    try {
+      // Part (a): Old-session (epoch=1) thread stages v=3 in Phase 1 and pauses right BEFORE
+      // acquiring streamExecutionFences. Disconnect + prepareForReconnect retires PENDING v=3 and
+      // new session (epoch=2) commits v=4. Released epoch=1 thread MUST reject under execFence!
+      CountDownLatch v3BeforeFence = new CountDownLatch(1);
+      CountDownLatch releaseV3 = new CountDownLatch(1);
+      consumer.setBeforeExecutionFenceHookForTest((ev, id) -> {
+        if (ev.getRegionVersion() == 3L) {
+          v3BeforeFence.countDown();
+          try {
+            releaseV3.await(15, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+
+      ContinuousVectorEvent ev3 =
+          new ContinuousVectorEvent("sub-ef", "k-3", 0.99f, bucketId, memberId, 3L, 1, 102L, false);
+      Future<?> oldSessionV3Task = bg.submit(() -> session1Sink.onEvent(ev3));
+      assertThat(v3BeforeFence.await(10, TimeUnit.SECONDS)).isTrue();
+      assertThat(store.isPendingIntent(IdempotentRvvConsumer.EventDeliveryId.fromEvent(ev3)))
+          .isTrue();
+
+      // Reconnect advances epoch 1 -> 2, retires v=3 strictly in order, then epoch=2 delivers v=4
+      Map<String, Long> hwAfterReconnect1 = consumer.prepareForReconnect(bucketId);
+      long session2 = consumer.getActiveSessionEpoch(bucketId);
+      assertThat(session2).isEqualTo(2L);
+      assertThat(hwAfterReconnect1).containsEntry(memberId, 3L);
+      assertThat(v3HandlerCount.get()).isEqualTo(1);
+      assertThat(appliedVersions).containsExactly(1L, 2L, 3L);
+
+      ContinuousVectorEventSink session2Sink = consumer.createSessionSink(bucketId, session2);
+      session2Sink.onEvent(
+          new ContinuousVectorEvent("sub-ef", "k-4", 0.99f, bucketId, memberId, 4L, 1, 103L,
+              false));
+      assertThat(appliedVersions).containsExactly(1L, 2L, 3L, 4L);
+
+      // Release paused old-session (epoch=1) v=3 thread -> rejected under execFence!
+      long staleBeforeA = consumer.getStaleSessionEventsRejectedCount();
+      releaseV3.countDown();
+      oldSessionV3Task.get(10, TimeUnit.SECONDS);
+      assertThat(consumer.getStaleSessionEventsRejectedCount()).isEqualTo(staleBeforeA + 1L);
+      assertThat(v3HandlerCount.get()).isEqualTo(1);
+      assertThat(appliedVersions).containsExactly(1L, 2L, 3L, 4L);
+      assertThat(store.getCommittedWatermark("sub-ef", bucketId, memberId)).isEqualTo(4L);
+
+      // Part (b): Old-session (epoch=2) thread stages v=5 in Phase 1 and pauses right BEFORE
+      // execFence; onSessionDisconnect bumps epoch 2 -> 3 BEFORE prepareForReconnect runs (so v=5
+      // is still PENDING and NOT yet applied). Released epoch=2 thread MUST still reject under
+      // execFence without invoking effectHandler, leaving v=5 for ordered retirement by reconnect!
+      CountDownLatch v5BeforeFence = new CountDownLatch(1);
+      CountDownLatch releaseV5 = new CountDownLatch(1);
+      consumer.setBeforeExecutionFenceHookForTest((ev, id) -> {
+        if (ev.getRegionVersion() == 5L) {
+          v5BeforeFence.countDown();
+          try {
+            releaseV5.await(15, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+
+      ContinuousVectorEvent ev5 =
+          new ContinuousVectorEvent("sub-ef", "k-5", 0.99f, bucketId, memberId, 5L, 1, 104L, false);
+      Future<?> oldSessionV5Task = bg.submit(() -> session2Sink.onEvent(ev5));
+      assertThat(v5BeforeFence.await(10, TimeUnit.SECONDS)).isTrue();
+      assertThat(store.isPendingIntent(IdempotentRvvConsumer.EventDeliveryId.fromEvent(ev5)))
+          .isTrue();
+
+      long session3 = consumer.onSessionDisconnect(bucketId);
+      assertThat(session3).isEqualTo(3L);
+
+      long staleBeforeB = consumer.getStaleSessionEventsRejectedCount();
+      releaseV5.countDown();
+      oldSessionV5Task.get(10, TimeUnit.SECONDS);
+      assertThat(consumer.getStaleSessionEventsRejectedCount()).isEqualTo(staleBeforeB + 1L);
+      assertThat(v5HandlerCount.get()).isZero();
+      assertThat(appliedVersions).containsExactly(1L, 2L, 3L, 4L);
+      assertThat(store.isPendingIntent(IdempotentRvvConsumer.EventDeliveryId.fromEvent(ev5)))
+          .isTrue();
+
+      // Now prepareForReconnect retires PENDING v=5 strictly in order!
+      consumer.setBeforeExecutionFenceHookForTest(null);
+      Map<String, Long> hwAfterReconnect2 = consumer.prepareForReconnect(bucketId);
+      assertThat(hwAfterReconnect2).containsEntry(memberId, 5L);
+      assertThat(v5HandlerCount.get()).isEqualTo(1);
+      assertThat(appliedVersions).containsExactly(1L, 2L, 3L, 4L, 5L);
+      assertThat(store.getCommittedWatermark("sub-ef", bucketId, memberId)).isEqualTo(5L);
+      assertThat(store.isPendingIntent(IdempotentRvvConsumer.EventDeliveryId.fromEvent(ev5)))
+          .isFalse();
+    } finally {
+      consumer.setBeforeExecutionFenceHookForTest(null);
+      bg.shutdownNow();
+    }
+  }
+
+  @Test
+  public void holdbackForwardSpanBoundAndDelayedHoleWithContinuingArrivalsAndAgeTriggerNearCapacity() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+
+    // Part (a): Exact default maxHoldbackGap = 128 forward-span bound (v - nextExpected <= 128).
+    // With nextExpected = 11 (v=11 missing), v=12..138 (127 entries, span 138 - 11 = 127 <= 128)
+    // remain buffered in holdback (B_ooo <= 128, resyncRequired=false); arrival of v=140 (span
+    // 140 - 11 = 129 > 128) immediately closes the missing hole at 11 with
+    // MAX_HOLDBACK_GAP_EXCEEDED!
+    ChordalVoronoiRouter rSpan = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dSpan = new RvvMonotonicVectorDispatcher(rSpan, 160, null, 256);
+    ContinuousVectorQueryService svcSpan = new ContinuousVectorQueryService(rSpan, dSpan);
+    svcSpan.registerSubscription("sub-span", vec, 0.90f);
+    assertThat(dSpan.getMaxHoldbackGap())
+        .isEqualTo(RvvMonotonicVectorDispatcher.DEFAULT_MAX_HOLDBACK_GAP)
+        .isEqualTo(128);
+
+    List<String> spanGaps = new ArrayList<>();
+    dSpan.addHoldbackGapListener(
+        (b, m, expected, resumed, reason) -> spanGaps
+            .add(expected + "->" + resumed + ":" + reason));
+
+    int bSpan = 33;
+    String mSpan = "srv-span-128";
+    for (long v = 1L; v <= 10L; v++) {
+      svcSpan.onBucketMutation(bSpan, mSpan, v, "ks-" + v, vec, true);
+    }
+    // Missing v=11; ingest v=12..138 -> forward span = 138 - 11 = 127 <= 128, size = 127 <= 128
+    for (long v = 12L; v <= 138L; v++) {
+      svcSpan.onBucketMutation(bSpan, mSpan, v, "ks-" + v, vec, true);
+    }
+    assertThat(dSpan.getHoldbackSize(bSpan)).isEqualTo(127);
+    assertThat(svcSpan.getReceivedHeadVersion(bSpan, mSpan)).isEqualTo(138L);
+    assertThat(svcSpan.getContiguousHeadVersion(bSpan, mSpan)).isEqualTo(10L);
+    assertThat(svcSpan.isResyncRequired(bSpan, mSpan)).isFalse();
+    assertThat(spanGaps).isEmpty();
+
+    // Arrival of v=140 -> forward span 140 - 11 = 129 > 128 immediately closes gap at 11!
+    svcSpan.onBucketMutation(bSpan, mSpan, 140L, "ks-140", vec, true);
+    assertThat(spanGaps).containsExactly("11->12:MAX_HOLDBACK_GAP_EXCEEDED");
+    assertThat(svcSpan.isResyncRequired(bSpan, mSpan)).isTrue();
+    assertThat(dSpan.getHoldbackSize(bSpan)).isEqualTo(1); // only v=140 held behind missing v=139
+    assertThat(svcSpan.getContiguousHeadVersion(bSpan, mSpan)).isEqualTo(138L);
+
+    // Part (b): Combined delayed hole + continuing arrivals + age trigger near C_tail = 32.
+    int cTail = 32;
+    ChordalVoronoiRouter rCap = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dCap = new RvvMonotonicVectorDispatcher(rCap, cTail, null, 64);
+    dCap.setMaxHoldbackGap(16);
+    dCap.setMaxHoldbackAgeMillis(150L);
+    ContinuousVectorQueryService svcCap = new ContinuousVectorQueryService(rCap, dCap);
+    svcCap.registerSubscription("sub-cap", vec, 0.90f);
+    svcCap.registerSubscriberForCheckpoint("sub-cap");
+
+    RvvClientGate capGate = new RvvClientGate();
+    capGate.registerSubscription("sub-cap");
+    List<ContinuousVectorEvent> capDelivered = new ArrayList<>();
+    capGate.addListener(ev -> {
+      if ("sub-cap".equals(ev.getSubscriptionId())) {
+        capDelivered.add(ev);
+      }
+    });
+    svcCap.addEventSink(capGate::tryAccept);
+
+    List<String> capGaps = new ArrayList<>();
+    dCap.addHoldbackGapListener(
+        (b, m, expected, resumed, reason) -> capGaps.add(expected + "->" + resumed + ":" + reason));
+
+    int bCap = 34;
+    String mCap = "srv-hole-age-cap";
+    for (long v = 1L; v <= 10L; v++) {
+      svcCap.onBucketMutation(bCap, mCap, v, "kc-" + v, vec, true);
+    }
+    svcCap.acknowledgeCheckpoint(bCap, mCap, 6L);
+    svcCap.recordReplicatedCheckpoint(bCap, mCap, 10L);
+    assertThat(svcCap.getReplayFloorVersion(bCap, mCap)).isEqualTo(6L);
+    assertThat(svcCap.getCheckpointVersion(bCap, mCap)).isEqualTo(10L);
+    assertThat(dCap.getTailSize(bCap)).isEqualTo(4); // R_ret = |(6, 10]| = 4
+
+    // Delayed hole at v=11 with continuing arrivals v=12..25 (14 held entries, total tail 18 < 32)
+    for (long v = 12L; v <= 25L; v++) {
+      svcCap.onBucketMutation(bCap, mCap, v, "kc-" + v, vec, true);
+    }
+    assertThat(dCap.getHoldbackSize(bCap)).isEqualTo(14);
+    assertThat(dCap.getTailSize(bCap)).isEqualTo(18);
+    assertThat(dCap.getTailOverflowCount()).isZero();
+    assertThat(svcCap.getReceivedHeadVersion(bCap, mCap)).isEqualTo(25L);
+    assertThat(svcCap.getContiguousHeadVersion(bCap, mCap)).isEqualTo(10L);
+    assertThat(svcCap.isResyncRequired(bCap, mCap)).isFalse();
+
+    // Age trigger fires via flushIdleHeartbeats -> closes delayed hole at 11, drains 12..25, and
+    // emits covering idle heartbeat for v=25!
+    int flushed = svcCap.flushIdleHeartbeats(System.currentTimeMillis() + 500L, 100L);
+    assertThat(flushed).isEqualTo(1);
+    assertThat(capGaps).containsExactly("11->12:MAX_HOLDBACK_AGE_EXCEEDED");
+    assertThat(dCap.getHoldbackSize(bCap)).isZero();
+    assertThat(svcCap.isResyncRequired(bCap, mCap)).isTrue();
+    assertThat(capGate.getSafeCheckpointVersion(bCap, mCap)).isEqualTo(25L);
+    assertThat(capDelivered).hasSize(24); // [1..10] + [12..25]
+
+    // Subscriber ACKs 25 -> V_ckpt = V_floor = 25, tail compacts cleanly to 0 with 0 overflow!
+    svcCap.acknowledgeSubscriberCheckpoint("sub-cap", bCap, mCap, 25L);
+    assertThat(svcCap.getCheckpointVersion(bCap, mCap)).isEqualTo(25L);
+    assertThat(svcCap.getReplayFloorVersion(bCap, mCap)).isEqualTo(25L);
+    assertThat(dCap.getTailSize(bCap)).isZero();
+    assertThat(dCap.getTailOverflowCount()).isZero();
   }
 
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(

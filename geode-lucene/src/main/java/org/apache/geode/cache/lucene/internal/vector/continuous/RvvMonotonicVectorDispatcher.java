@@ -351,6 +351,41 @@ public class RvvMonotonicVectorDispatcher {
       return head;
     }
 
+    /**
+     * Returns {@code V_contig[b, m]}: the highest contiguous recoverable version with zero holes in
+     * {@code (V_floor[b, m], V_contig[b, m]]}. When an active holdback gap exists, strictly caps at
+     * {@code nextExpectedVersion - 1} so reconnect replay and trailing heartbeats never skip over a
+     * missing hole.
+     */
+    synchronized long getContiguousHeadVersion(String memberId, boolean enforceContiguous) {
+      long floor = replayFloorByMember.getOrDefault(memberId, 0L);
+      long lastDispatched = lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
+      TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+      if (!enforceContiguous) {
+        long head = Math.max(floor, lastDispatched);
+        if (stream != null && !stream.isEmpty()) {
+          head = Math.max(head, stream.lastKey());
+        }
+        return head;
+      }
+      TreeMap<Long, TailMutation> held = holdbackByMember.get(memberId);
+      if (held != null && !held.isEmpty()) {
+        long nextExpected = nextExpectedVersionByMember.getOrDefault(memberId, 1L);
+        return Math.max(floor, Math.min(lastDispatched, nextExpected - 1L));
+      }
+      long contig = Math.max(floor, lastDispatched);
+      if (stream != null && !stream.isEmpty()) {
+        for (Long v : stream.tailMap(contig, false).keySet()) {
+          if (v == contig + 1L) {
+            contig = v;
+          } else {
+            break;
+          }
+        }
+      }
+      return contig;
+    }
+
     synchronized void removeSubscriberAckForMember(String subscriberId, String memberId) {
       Map<String, Long> acks = subscriberAcksByMember.get(memberId);
       if (acks != null) {
@@ -455,11 +490,7 @@ public class RvvMonotonicVectorDispatcher {
         if (stream == null || stream.isEmpty()) {
           continue;
         }
-        long streamHighWater = stream.lastKey();
-        TreeMap<Long, TailMutation> held = holdbackByMember.get(memberId);
-        if (respectHoldbackCeiling && held != null && !held.isEmpty()) {
-          streamHighWater = Math.min(streamHighWater, held.firstKey() - 1L);
-        }
+        long streamHighWater = getContiguousHeadVersion(memberId, respectHoldbackCeiling);
         if (lowerExclusive < streamHighWater) {
           maxVersionByMemberOut.put(memberId, streamHighWater);
           NavigableMap<Long, TailMutation> tail =
@@ -1770,6 +1801,25 @@ public class RvvMonotonicVectorDispatcher {
   public long getReplayFloorVersion(int bucketId, String memberId) {
     BucketState state = bucketStates.get(bucketId);
     return state == null ? 0L : state.getReplayFloor(memberId);
+  }
+
+  /**
+   * Returns {@code V_recv[bucketId, memberId]}: the highest RVV version physically received or
+   * observed on this replica (including out-of-order entries buffered in holdback).
+   */
+  public long getReceivedHeadVersion(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0L : state.getStreamHeadVersion(memberId);
+  }
+
+  /**
+   * Returns {@code V_contig[bucketId, memberId]}: the highest contiguous recoverable RVV version
+   * with zero holes in {@code (V_floor, V_contig]}; reconnect replay sets {@code V_S = V_contig}
+   * and hands off live dispatch strictly at {@code V_contig + 1}.
+   */
+  public long getContiguousHeadVersion(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0L : state.getContiguousHeadVersion(memberId, enforceContiguousVersions);
   }
 
   public int getMaxTailPerStream() {
