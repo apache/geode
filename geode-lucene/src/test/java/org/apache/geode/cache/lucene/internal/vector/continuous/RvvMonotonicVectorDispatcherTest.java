@@ -1693,25 +1693,42 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(v2EnteredEffect.await(10, TimeUnit.SECONDS)).isTrue();
     assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId)).isEqualTo(2L);
 
-    // While earlier intent v1=2 is delayed in PENDING, deliver later match v2=3 AND heartbeat v=4
-    // via sequential processEventBatch -> NEITHER may advance committedWatermark or gate past 1!
-    consumer1.processEventBatch(java.util.Arrays.asList(
-        new ContinuousVectorEvent("sub-match", "k3", 1.0f, bucketId, memberId, 3L, 1, now + 2L,
-            false),
-        ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, 4L, now + 3L)));
+    // While earlier intent v1=2 is delayed in PENDING inside its per-stream execution fence:
+    // (a) staging v2=3 succeeds without blocking and heartbeat v=4 leaves sub-match at 1 (while
+    // unblocked sub-zero advances to 4), and (b) executing v2=3 is strictly fenced behind in-flight
+    // v1=2 until v1=2 exits the execution fence!
+    consumer1.stagePendingIntent(new ContinuousVectorEvent("sub-match", "k3", 1.0f, bucketId,
+        memberId, 3L, 1, now + 2L, false));
+    consumer1.processEvent(
+        ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, 4L, now + 3L));
+    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(1L);
+    assertThat(gate1.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(1L);
+    assertThat(durableStore.getCommittedWatermark("sub-zero", bucketId, memberId)).isEqualTo(4L);
 
+    CountDownLatch v3Executed = new CountDownLatch(1);
+    Thread laterMatchThread = new Thread(() -> {
+      consumer1.processEvent(new ContinuousVectorEvent("sub-match", "k3", 1.0f, bucketId, memberId,
+          3L, 1, now + 2L, false));
+      v3Executed.countDown();
+    }, "later-match-v3");
+    laterMatchThread.start();
+    // While v1=2 remains in flight, v2=3 cannot execute out-of-order ahead of it
+    assertThat(v3Executed.await(100L, TimeUnit.MILLISECONDS)).isFalse();
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L);
+
+    // Abort/crash instance 1 while v1=2 stays PENDING -> v2=3 finishes after fence release yet
+    // STILL cannot advance committedWatermark or gate past 1 because v1=2 remains PENDING!
+    allowV2Abort.countDown();
+    delayedThread.join(10_000L);
+    assertThat(v3Executed.await(10, TimeUnit.SECONDS)).isTrue();
+    laterMatchThread.join(10_000L);
+    assertThat(delayedThreadAbortCount.get()).isEqualTo(1);
     assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
         .containsExactly(1L, 3L);
     assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(1L);
     assertThat(gate1.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(1L);
-    assertThat(durableStore.getCommittedWatermark("sub-zero", bucketId, memberId)).isEqualTo(4L);
     assertThat(consumer1.getCommittedHighWaterByMember(bucketId)).containsEntry(memberId, 1L);
-
-    // Abort/crash instance 1 while v1=2 stays PENDING, then restart & recover
-    allowV2Abort.countDown();
-    delayedThread.join(10_000L);
-    assertThat(delayedThreadAbortCount.get()).isEqualTo(1);
-    assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(1L);
 
     server.detachClientGate(gate1);
     RvvClientGate gate2 = new RvvClientGate();
@@ -2024,6 +2041,310 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(service.onPrimaryPromotion(bucketId))
         .extracting(ContinuousVectorEvent::getRegionVersion)
         .containsExactly(29L, 30L, 31L);
+  }
+
+  @Test
+  public void ordinaryReconnectFencesInFlightHandlerAndPreventsDuplicateAdmissionOrOverlap()
+      throws Exception {
+    float[] matchVec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ContinuousVectorQueryService server = new ContinuousVectorQueryService(4);
+    server.setHeartbeatIntervalEvents(8);
+    server.registerSubscription("sub-fence", matchVec, 0.90f);
+
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore durableStore =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<IdempotentRvvConsumer.EventDeliveryId> appliedEffectLog = new CopyOnWriteArrayList<>();
+    java.util.concurrent.ConcurrentHashMap<Long, AtomicInteger> handlerInvocationsByVer =
+        new java.util.concurrent.ConcurrentHashMap<>();
+    AtomicInteger activeHandlers = new AtomicInteger();
+    AtomicInteger maxConcurrentHandlers = new AtomicInteger();
+
+    CountDownLatch v3InFlight = new CountDownLatch(1);
+    CountDownLatch allowV3Finish = new CountDownLatch(1);
+
+    int bucketId = 17;
+    String memberId = "srv-fence";
+
+    RvvClientGate gate = new RvvClientGate();
+    server.attachClientGate(gate);
+    IdempotentRvvConsumer consumer = new IdempotentRvvConsumer(gate, durableStore, (ev, id) -> {
+      int concurrent = activeHandlers.incrementAndGet();
+      maxConcurrentHandlers.accumulateAndGet(concurrent, Math::max);
+      handlerInvocationsByVer.computeIfAbsent(ev.getRegionVersion(), ignored -> new AtomicInteger())
+          .incrementAndGet();
+      try {
+        if (ev.getRegionVersion() == 3L) {
+          v3InFlight.countDown();
+          try {
+            allowV3Finish.await(10, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+        appliedEffectLog.add(id);
+      } finally {
+        activeHandlers.decrementAndGet();
+      }
+    });
+    server.addEventSink(consumer);
+
+    server.onBucketMutation(bucketId, memberId, 1L, "k1", matchVec, true);
+    server.onBucketMutation(bucketId, memberId, 2L, "k2", matchVec, true);
+    assertThat(durableStore.getCommittedWatermark("sub-fence", bucketId, memberId)).isEqualTo(2L);
+    assertThat(consumer.getDurableAdmissionsCount()).isEqualTo(2L);
+
+    // Trigger v=3 on background thread so its handler remains actively in flight
+    Thread inFlightThread = new Thread(
+        () -> server.onBucketMutation(bucketId, memberId, 3L, "k3", matchVec, true),
+        "in-flight-handler-v3");
+    inFlightThread.start();
+    assertThat(v3InFlight.await(10, TimeUnit.SECONDS)).isTrue();
+    assertThat(consumer.getDurableAdmissionsCount()).isEqualTo(3L);
+
+    // Concurrent duplicate of in-flight v=3 is rejected atomically without overlap or re-admission
+    ContinuousVectorEvent dupV3 = new ContinuousVectorEvent("sub-fence", "k3", 1.0f, bucketId,
+        memberId, 3L, 1, System.currentTimeMillis(), true);
+    assertThat(consumer.processEvent(dupV3)).isFalse();
+    assertThat(consumer.getDurableAdmissionsCount()).isEqualTo(3L);
+    assertThat(maxConcurrentHandlers.get()).isEqualTo(1);
+
+    // Ordinary reconnect calls prepareForReconnect(bucketId) WHILE v=3 handler is still in flight;
+    // the per-stream execution/recovery fence must block reconnect until v=3 completes cleanly!
+    server.removeEventSink(consumer);
+
+    CountDownLatch reconnectCompleted = new CountDownLatch(1);
+    java.util.concurrent.atomic.AtomicReference<Map<String, Long>> reconnectHwRef =
+        new java.util.concurrent.atomic.AtomicReference<>();
+    Thread reconnectThread = new Thread(() -> {
+      reconnectHwRef.set(consumer.prepareForReconnect(bucketId));
+      reconnectCompleted.countDown();
+    }, "ordinary-reconnect-fenced");
+    reconnectThread.start();
+    assertThat(reconnectCompleted.await(120L, TimeUnit.MILLISECONDS)).isFalse();
+    assertThat(maxConcurrentHandlers.get()).isEqualTo(1);
+
+    // Release in-flight handler v=3 -> completes, unblocks reconnect with V_client=3, then
+    // server records v=4 while consumer is still detached and replays [4] cleanly on reconnect
+    allowV3Finish.countDown();
+    inFlightThread.join(10_000L);
+    assertThat(reconnectCompleted.await(10, TimeUnit.SECONDS)).isTrue();
+    reconnectThread.join(10_000L);
+
+    assertThat(reconnectHwRef.get()).containsEntry(memberId, 3L);
+    server.onBucketMutation(bucketId, memberId, 4L, "k4", matchVec, true);
+    server.addEventSink(consumer);
+    List<ContinuousVectorEvent> replayed =
+        server.replayUncheckpointedForReconnect(bucketId, reconnectHwRef.get());
+    assertThat(replayed).extracting(ContinuousVectorEvent::getRegionVersion).containsExactly(4L);
+
+    assertThat(maxConcurrentHandlers.get()).isEqualTo(1);
+    assertThat(handlerInvocationsByVer.get(3L).get()).isEqualTo(1);
+    assertThat(consumer.getDurableAdmissionsCount()).isEqualTo(4L);
+    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
+        .containsExactly(1L, 2L, 3L, 4L)
+        .doesNotHaveDuplicates();
+    assertThat(durableStore.getCommittedWatermark("sub-fence", bucketId, memberId)).isEqualTo(4L);
+    assertThat(gate.getSafeCheckpointVersion(bucketId, memberId)).isEqualTo(4L);
+  }
+
+  @Test
+  public void subscriberRejoinBelowCompactedReplayFloorImmediatelyFlagsResyncRequired() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(4);
+    service.registerSubscription("sub-healthy", vec, 0.90f);
+    service.registerSubscriberForCheckpoint("sub-healthy");
+
+    List<String> floorAlerts = new ArrayList<>();
+    service.addReplayFloorResyncListener((bId, mId, clientHw, floor) -> floorAlerts
+        .add(bId + "|" + mId + "|" + clientHw + "<" + floor));
+
+    int bucketId = 18;
+    String memberId = "srv-floor";
+    for (long v = 1L; v <= 10L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k" + v, vec, true);
+    }
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isZero();
+
+    // Compact tail through v=6 -> V_floor advances to 6
+    service.acknowledgeSubscriberCheckpoint("sub-healthy", bucketId, memberId, 6L);
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isEqualTo(6L);
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+
+    // (a) Disconnected subscriber rejoining at V_client=4 < V_floor=6 -> immediate resyncRequired
+    assertThat(service.admitSubscriberForContinuity("sub-stale", bucketId, memberId, 4L))
+        .isFalse();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isTrue();
+    assertThat(service.getReplayFloorResyncCount()).isEqualTo(1L);
+    assertThat(service.getDispatcher().getRegisteredCheckpointSubscribers())
+        .doesNotContain("sub-stale");
+    assertThat(floorAlerts).containsExactly("18|srv-floor|4<6");
+
+    // Reconnect replay presenting V_client=4 < V_floor=6 refuses misleading partial replay
+    service.getDispatcher().clearResyncRequired(bucketId, memberId);
+    assertThat(service.replayUncheckpointedForReconnect(bucketId,
+        Collections.singletonMap(memberId, 4L))).isEmpty();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isTrue();
+    assertThat(service.getReplayFloorResyncCount()).isEqualTo(2L);
+
+    // Healthy subscriber at V_client=6 >= V_floor=6 admits cleanly and replays 7..10
+    service.getDispatcher().clearResyncRequired(bucketId, memberId);
+    assertThat(service.admitSubscriberForContinuity("sub-caught-up", bucketId, memberId, 6L))
+        .isTrue();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isFalse();
+    assertThat(service.replayUncheckpointedForReconnect(bucketId,
+        Collections.singletonMap(memberId, 6L)))
+            .extracting(ContinuousVectorEvent::getRegionVersion)
+            .containsExactly(7L, 8L, 9L, 10L);
+
+    // (b) Empty |S|=0 interval advances V_floor cleanly; rejoin below it flags resyncRequired
+    assertThat(service.unregisterSubscriberForCheckpoint("sub-healthy")).isTrue();
+    assertThat(service.unregisterSubscriberForCheckpoint("sub-caught-up")).isTrue();
+    assertThat(service.unregisterSubscription("sub-healthy")).isTrue();
+    for (long v = 11L; v <= 15L; v++) {
+      service.onBucketMutation(bucketId, memberId, v, "k" + v, vec, true);
+    }
+    assertThat(service.getReplayFloorVersion(bucketId, memberId)).isEqualTo(15L);
+    assertThat(service.admitSubscriberForContinuity("sub-from-before-empty", bucketId, memberId,
+        10L)).isFalse();
+    assertThat(service.isResyncRequired(bucketId, memberId)).isTrue();
+  }
+
+  @Test
+  public void promotionAtTailCapacityMinusOneVsPlusOneWithSlowConsumerAndPendingCheckpoint() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 64;
+    int bucketId = 19;
+    String memberP = "srv-primary-cap";
+
+    // Case A: C_tail - 1 (63 uncheckpointed entries) with slow consumer at 10 and pending
+    // un-replicated checkpoint -> promotion replays all 63 entries cleanly with 0 resync!
+    ChordalVoronoiRouter routerA = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher secA = new RvvMonotonicVectorDispatcher(routerA, cTail);
+    ContinuousVectorQueryService serviceA = new ContinuousVectorQueryService(routerA, secA);
+    serviceA.registerSubscription("sub-cap", vec, 0.90f);
+    RvvClientGate slowGateA = new RvvClientGate();
+    List<ContinuousVectorEvent> deliveredA = new ArrayList<>();
+    slowGateA.addListener(deliveredA::add);
+    serviceA.attachClientGate(slowGateA);
+    serviceA.addEventSink(slowGateA::tryAccept);
+
+    // Replicated checkpoint baseline V_ckpt = 10 on secondary (v=1..10 already delivered)
+    serviceA.acknowledgeCheckpoint(bucketId, memberP, 10L);
+    slowGateA.restoreHighWaterVersion("sub-cap", bucketId, memberP, 10L);
+    for (long v = 11L; v <= 10L + (cTail - 1); v++) {
+      serviceA.onBucketMutation(bucketId, memberP, v, "k-" + v, vec, false);
+    }
+    assertThat(secA.getTailSize(bucketId)).isEqualTo(cTail - 1);
+    assertThat(secA.getTailOverflowCount()).isZero();
+    assertThat(secA.isResyncRequired(bucketId, memberP)).isFalse();
+    assertThat(secA.getReplayFloorVersion(bucketId, memberP)).isEqualTo(10L);
+
+    List<ContinuousVectorEvent> promoA = serviceA.onPrimaryPromotion(bucketId);
+    assertThat(promoA).hasSize(cTail - 1);
+    assertThat(deliveredA).hasSize(cTail - 1);
+    assertThat(secA.isResyncRequired(bucketId, memberP)).isFalse();
+    assertThat(serviceA.admitSubscriberForContinuity("sub-cap", bucketId, memberP, 10L)).isTrue();
+    assertThat(RvvClientGate.verifyStrictMonotonicity(deliveredA)).isEmpty();
+    assertThat(slowGateA.getHighWaterVersion("sub-cap", bucketId, memberP))
+        .isEqualTo(10L + (cTail - 1));
+
+    // Case B: C_tail + 1 (65 uncheckpointed entries) before pending checkpoint replicates ->
+    // deterministic eviction of v=11, V_floor=11, resyncRequired=true, slow rejoin rejected!
+    ChordalVoronoiRouter routerB = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher secB = new RvvMonotonicVectorDispatcher(routerB, cTail);
+    ContinuousVectorQueryService serviceB = new ContinuousVectorQueryService(routerB, secB);
+    serviceB.registerSubscription("sub-cap", vec, 0.90f);
+    serviceB.acknowledgeCheckpoint(bucketId, memberP, 10L);
+    for (long v = 11L; v <= 10L + (cTail + 1); v++) {
+      serviceB.onBucketMutation(bucketId, memberP, v, "k-" + v, vec, false);
+    }
+    assertThat(secB.getTailSize(bucketId)).isEqualTo(cTail);
+    assertThat(secB.getTailOverflowCount()).isEqualTo(1L);
+    assertThat(secB.isResyncRequired(bucketId, memberP)).isTrue();
+    assertThat(secB.getReplayFloorVersion(bucketId, memberP)).isEqualTo(11L);
+    assertThat(serviceB.admitSubscriberForContinuity("sub-cap", bucketId, memberP, 10L)).isFalse();
+
+    // Case C: Configured production default C_tail = DEFAULT_MAX_TAIL_PER_STREAM (100,000)
+    int defaultCap = RvvMonotonicVectorDispatcher.DEFAULT_MAX_TAIL_PER_STREAM;
+    ChordalVoronoiRouter routerDef = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher secDef = new RvvMonotonicVectorDispatcher(routerDef, defaultCap);
+    routerDef.addSubscription(new VectorSubscription("sub-def", vec, 0.90f));
+    for (long v = 1L; v <= defaultCap - 1L; v++) {
+      secDef.onBucketMutation(20, "srv-def", v, 1, "k-" + v, vec, false);
+    }
+    assertThat(secDef.getTailSize(20)).isEqualTo(defaultCap - 1);
+    assertThat(secDef.getTailOverflowCount()).isZero();
+    assertThat(secDef.isResyncRequired(20, "srv-def")).isFalse();
+    secDef.onBucketMutation(20, "srv-def", defaultCap, 1, "k-" + defaultCap, vec, false);
+    assertThat(secDef.getTailOverflowCount()).isZero();
+    secDef.onBucketMutation(20, "srv-def", defaultCap + 1L, 1, "k-over", vec, false);
+    assertThat(secDef.getTailOverflowCount()).isEqualTo(1L);
+    assertThat(secDef.isResyncRequired(20, "srv-def")).isTrue();
+    assertThat(secDef.getReplayFloorVersion(20, "srv-def")).isEqualTo(1L);
+  }
+
+  @Test
+  public void repeatedKeyFailoverPreservesEveryPerVersionNotificationWithoutCoalescingLoss() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    ContinuousVectorQueryService primary = new ContinuousVectorQueryService(4);
+    ContinuousVectorQueryService secondary = new ContinuousVectorQueryService(4);
+    primary.registerSubscription("sub-hot", vec, 0.90f);
+    secondary.registerSubscription("sub-hot", vec, 0.90f);
+
+    RvvClientGate clientGate = new RvvClientGate();
+    List<ContinuousVectorEvent> delivered = new ArrayList<>();
+    clientGate.addListener(delivered::add);
+    primary.attachClientGate(clientGate);
+    secondary.attachClientGate(clientGate);
+    ContinuousVectorEventSink gateSink = clientGate::tryAccept;
+    primary.addEventSink(gateSink);
+
+    int bucketId = 21;
+    String memberP = "srv-hot-P";
+    String memberS = "srv-hot-S";
+    List<String> expectedStreamVersions = new ArrayList<>();
+
+    // Phase 1: 20 mutations repeatedly overwriting the SAME 4 hot keys ("hot-0".."hot-3").
+    // Client disconnects after v=12; v=13..20 survive in secondary's per-version tail buffer.
+    List<RvvMonotonicVectorDispatcher.TailMutation> coalescedStateSnapshot = new ArrayList<>();
+    for (long v = 1L; v <= 20L; v++) {
+      String hotKey = "hot-" + (v % 4L);
+      expectedStreamVersions.add(bucketId + "|" + memberP + "|" + v);
+      if (v == 13L) {
+        primary.removeEventSink(gateSink);
+      }
+      primary.onBucketMutation(bucketId, memberP, v, hotKey, vec, true);
+      secondary.onBucketMutation(bucketId, memberP, v, hotKey, vec, false);
+      if (v >= 17L) {
+        coalescedStateSnapshot.add(new RvvMonotonicVectorDispatcher.TailMutation(hotKey, vec,
+            bucketId, memberP, v, (int) v, System.currentTimeMillis()));
+      }
+    }
+    assertThat(coalescedStateSnapshot).hasSize(4); // State store holds only 4 latest key values
+    assertThat(delivered).hasSize(12);
+
+    // Phase 2: Primary crashes -> secondary promotes merging 4-key state snapshot with full
+    // per-version tail (1..20), then processes 20 more repeated-key updates on m_S
+    secondary.addEventSink(gateSink);
+    secondary.getDispatcher().onPrimaryPromotion(bucketId, coalescedStateSnapshot);
+    for (long v = 1L; v <= 20L; v++) {
+      String hotKey = "hot-" + (v % 4L);
+      expectedStreamVersions.add(bucketId + "|" + memberS + "|" + v);
+      secondary.onBucketMutation(bucketId, memberS, v, hotKey, vec, true);
+    }
+
+    // Verify 40/40 per-version (b, m, v) notifications delivered with 0 misses, 0 duplicates,
+    // and 0 resyncRequired despite only 4 distinct keys existing in region state!
+    List<String> deliveredStreamVersions = new ArrayList<>(delivered.size());
+    for (ContinuousVectorEvent ev : delivered) {
+      deliveredStreamVersions.add(ev.getBucketId() + "|" + ev.getMemberId() + "|"
+          + ev.getRegionVersion());
+    }
+    assertThat(deliveredStreamVersions).containsExactlyElementsOf(expectedStreamVersions);
+    assertThat(deliveredStreamVersions).doesNotHaveDuplicates();
+    assertThat(RvvClientGate.verifyStrictMonotonicity(delivered)).isEmpty();
+    assertThat(secondary.isResyncRequired(bucketId, memberP)).isFalse();
+    assertThat(secondary.isResyncRequired(bucketId, memberS)).isFalse();
   }
 
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(

@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * End-to-end crash-idempotent wrapper around {@link RvvClientGate} closing both client-crash
@@ -399,14 +401,14 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     }
   }
 
-  private static final int DELIVERY_STRIPE_COUNT = 256;
-
   private final RvvClientGate gate;
   private final DurableDeliveryStore store;
   private final EffectHandler effectHandler;
   private final CrashBoundaryHook crashHook;
   private final ConcurrentHashMap<String, Object> streamStageLocks = new ConcurrentHashMap<>();
-  private final Object[] deliveryStripes = new Object[DELIVERY_STRIPE_COUNT];
+  private final ConcurrentHashMap<String, ReentrantLock> streamExecutionFences =
+      new ConcurrentHashMap<>();
+  private final Set<EventDeliveryId> inFlightExecutions = ConcurrentHashMap.newKeySet();
   private final AtomicLong effectsExecutedCount = new AtomicLong();
   private final AtomicLong deduplicatedEffectsCount = new AtomicLong();
   private final AtomicLong recoveredPendingCount = new AtomicLong();
@@ -423,17 +425,41 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     this.store = Objects.requireNonNull(store, "store must not be null");
     this.effectHandler = Objects.requireNonNull(effectHandler, "effectHandler must not be null");
     this.crashHook = crashHook;
-    for (int i = 0; i < deliveryStripes.length; i++) {
-      deliveryStripes[i] = new Object();
-    }
   }
 
   private Object getStreamStageLock(int bucketId, String memberId) {
     return streamStageLocks.computeIfAbsent(bucketId + "|" + memberId, ignored -> new Object());
   }
 
-  private Object getDeliveryLock(EventDeliveryId id) {
-    return deliveryStripes[(id.hashCode() & 0x7fffffff) % deliveryStripes.length];
+  private static String streamFenceKey(String subscriptionId, int bucketId, String memberId) {
+    return subscriptionId + "|" + bucketId + "|" + memberId;
+  }
+
+  private ReentrantLock getStreamExecutionFence(String subscriptionId, int bucketId,
+      String memberId) {
+    return streamExecutionFences.computeIfAbsent(streamFenceKey(subscriptionId, bucketId, memberId),
+        ignored -> new ReentrantLock());
+  }
+
+  private List<ReentrantLock> acquireSortedExecutionFences(Set<String> keys) {
+    if (keys.isEmpty()) {
+      return Collections.emptyList();
+    }
+    TreeSet<String> sorted = new TreeSet<>(keys);
+    List<ReentrantLock> acquired = new ArrayList<>(sorted.size());
+    for (String key : sorted) {
+      ReentrantLock lock =
+          streamExecutionFences.computeIfAbsent(key, ignored -> new ReentrantLock());
+      lock.lock();
+      acquired.add(lock);
+    }
+    return acquired;
+  }
+
+  private static void releaseExecutionFences(List<ReentrantLock> acquired) {
+    for (int i = acquired.size() - 1; i >= 0; i--) {
+      acquired.get(i).unlock();
+    }
   }
 
   @Override
@@ -442,8 +468,9 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   }
 
   /**
-   * Sequentially stages an incoming match event into the durable pending-intent log before effect
-   * execution or downstream watermark evaluation.
+   * Sequentially stages an incoming match event into the durable pending-intent log after
+   * atomically verifying it has not already been committed, applied, or staged under the stream
+   * admission lock.
    */
   public EventDeliveryId stagePendingIntent(ContinuousVectorEvent event) {
     Objects.requireNonNull(event, "event must not be null");
@@ -451,17 +478,22 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
       return null;
     }
     EventDeliveryId id = EventDeliveryId.fromEvent(event);
-    synchronized (getStreamStageLock(event.getBucketId(), event.getMemberId())) {
-      if (!store.isPendingIntent(id)) {
-        if (crashHook != null) {
-          crashHook.onBoundary(CrashPhase.BEFORE_DURABLE_PENDING_STAGE, event, id);
-        }
-        if (store.stagePendingIntentIfAbsent(event, id) && !store.isEffectApplied(id)) {
-          durableAdmissionsCount.incrementAndGet();
-        }
+    String subId = event.getSubscriptionId();
+    int bucketId = event.getBucketId();
+    String memberId = event.getMemberId();
+    long ver = event.getRegionVersion();
+    synchronized (getStreamStageLock(bucketId, memberId)) {
+      long committed = store.getCommittedWatermark(subId, bucketId, memberId);
+      if (ver <= committed || store.isEffectApplied(id) || store.isPendingIntent(id)) {
+        return id;
       }
-      store.persistReceivedWatermark(event.getSubscriptionId(), event.getBucketId(),
-          event.getMemberId(), event.getRegionVersion());
+      if (crashHook != null) {
+        crashHook.onBoundary(CrashPhase.BEFORE_DURABLE_PENDING_STAGE, event, id);
+      }
+      if (store.stagePendingIntentIfAbsent(event, id)) {
+        durableAdmissionsCount.incrementAndGet();
+      }
+      store.persistReceivedWatermark(subId, bucketId, memberId, ver);
     }
     return id;
   }
@@ -544,79 +576,144 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
 
     EventDeliveryId id = EventDeliveryId.fromEvent(event);
     String subId = event.getSubscriptionId();
+    // Phase 1: Atomic durable admission check over committed + applied + pending state AND WAL
+    // staging inside ONE streamStageLock (no unlocked RvvClientGate pre-check).
     synchronized (streamLock) {
-      long gateHighWater = gate.getHighWaterVersion(subId, bucketId, memberId);
-      if (ver <= gateHighWater && store.isEffectApplied(id)) {
+      long committed = store.getCommittedWatermark(subId, bucketId, memberId);
+      if (ver <= committed || store.isEffectApplied(id)) {
+        deduplicatedEffectsCount.incrementAndGet();
         store.markPendingCompleted(id);
+        long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
+        if (lowestPending > ver) {
+          long updated = advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, ver);
+          gate.restoreHighWaterVersion(subId, bucketId, memberId, updated);
+        }
         return false;
       }
 
-      // Window A: durably stage pending intent + received watermark sequentially on receipt BEFORE
-      // releasing streamLock for side-effect execution so later matches & heartbeats cannot bypass
-      // an in-flight or delayed predecessor intent, and never double-admit already staged PENDING
-      // intents across reconnect retries.
-      if (!store.isPendingIntent(id)) {
+      if (store.isPendingIntent(id)) {
+        if (inFlightExecutions.contains(id)) {
+          deduplicatedEffectsCount.incrementAndGet();
+          return false;
+        }
+      } else {
         if (crashHook != null) {
           crashHook.onBoundary(CrashPhase.BEFORE_DURABLE_PENDING_STAGE, event, id);
         }
-        if (store.stagePendingIntentIfAbsent(event, id) && !store.isEffectApplied(id)) {
+        if (store.stagePendingIntentIfAbsent(event, id)) {
           durableAdmissionsCount.incrementAndGet();
         }
       }
       store.persistReceivedWatermark(subId, bucketId, memberId, ver);
     }
 
-    boolean appliedNow;
-    synchronized (getDeliveryLock(id)) {
-      if (crashHook != null) {
-        crashHook.onBoundary(CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT, event, id);
-      }
-
-      appliedNow = executeIdempotentlyLocked(event, id);
-
-      // Window B: crash-hook point right after effect+ledger execution, BEFORE committed watermark
-      if (crashHook != null) {
-        crashHook.onBoundary(CrashPhase.AFTER_EFFECT_BEFORE_WATERMARK_COMMIT, event, id);
-      }
-    }
-
-    synchronized (streamLock) {
-      store.markPendingCompleted(id);
-      long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
-      if (lowestPending > ver) {
-        long prevCommitted = store.getCommittedWatermark(subId, bucketId, memberId);
-        long committed = advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, ver);
-        gate.tryAccept(event);
-        if (committed > prevCommitted && committed > ver) {
-          gate.restoreHighWaterVersion(subId, bucketId, memberId, committed);
+    // Phase 2: Per-stream execution/recovery fence serializes handler execution against both
+    // out-of-order later versions on the same stream and reconnect/restart recovery.
+    ReentrantLock execFence = getStreamExecutionFence(subId, bucketId, memberId);
+    execFence.lock();
+    try {
+      synchronized (streamLock) {
+        long committed = store.getCommittedWatermark(subId, bucketId, memberId);
+        if (ver <= committed || store.isEffectApplied(id)) {
+          deduplicatedEffectsCount.incrementAndGet();
+          store.markPendingCompleted(id);
+          long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
+          if (lowestPending > ver) {
+            long updated =
+                advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, ver);
+            gate.restoreHighWaterVersion(subId, bucketId, memberId, updated);
+          }
+          return false;
         }
+        inFlightExecutions.add(id);
       }
-      return appliedNow;
+
+      boolean appliedNow;
+      try {
+        if (crashHook != null) {
+          crashHook.onBoundary(CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT, event, id);
+        }
+
+        appliedNow = executeIdempotentlyLocked(event, id);
+
+        // Window B: crash-hook point right after effect+ledger execution, BEFORE committed
+        // watermark
+        if (crashHook != null) {
+          crashHook.onBoundary(CrashPhase.AFTER_EFFECT_BEFORE_WATERMARK_COMMIT, event, id);
+        }
+      } finally {
+        inFlightExecutions.remove(id);
+      }
+
+      synchronized (streamLock) {
+        store.markPendingCompleted(id);
+        long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
+        if (lowestPending > ver) {
+          long prevCommitted = store.getCommittedWatermark(subId, bucketId, memberId);
+          long committed =
+              advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, ver);
+          gate.tryAccept(event);
+          if (committed > prevCommitted && committed > ver) {
+            gate.restoreHighWaterVersion(subId, bucketId, memberId, committed);
+          }
+        }
+        return appliedNow;
+      }
+    } finally {
+      execFence.unlock();
     }
   }
 
   /**
-   * Executes client crash recovery on restart: drains every uncompleted durable pending intent in
-   * ascending {@link EventDeliveryId} order (executing effects only if absent from the applied
-   * ledger), advances committed watermarks, and restores {@link RvvClientGate}'s in-memory state.
+   * Executes client crash recovery on restart or ordinary reconnect: acquires per-stream
+   * execution/recovery fences so no in-flight handler can overlap recovery, drains every
+   * uncompleted durable pending intent in ascending {@link EventDeliveryId} order, advances
+   * committed watermarks, and restores {@link RvvClientGate}'s in-memory state.
    *
    * @return number of durable pending intents recovered and closed.
    */
   public int recover() {
+    Set<String> fenceKeys = new HashSet<>(streamExecutionFences.keySet());
+    for (ContinuousVectorEvent ev : store.getPendingIntentsOrdered()) {
+      fenceKeys.add(streamFenceKey(ev.getSubscriptionId(), ev.getBucketId(), ev.getMemberId()));
+    }
+    for (EventDeliveryId key : store.getCommittedWatermarkSnapshot().keySet()) {
+      fenceKeys.add(streamFenceKey(key.getSubscriptionId(), key.getBucketId(), key.getMemberId()));
+    }
+    List<ReentrantLock> acquired = acquireSortedExecutionFences(fenceKeys);
+    try {
+      return recoverUnderFencesLocked(null);
+    } finally {
+      releaseExecutionFences(acquired);
+    }
+  }
+
+  private int recoverUnderFencesLocked(Integer bucketFilter) {
     List<ContinuousVectorEvent> pending = store.getPendingIntentsOrdered();
     int recovered = 0;
     for (ContinuousVectorEvent event : pending) {
+      if (bucketFilter != null && event.getBucketId() != bucketFilter) {
+        continue;
+      }
       EventDeliveryId id = EventDeliveryId.fromEvent(event);
-      synchronized (getStreamStageLock(event.getBucketId(), event.getMemberId())) {
-        synchronized (getDeliveryLock(id)) {
-          executeIdempotentlyLocked(event, id);
+      ReentrantLock fence = getStreamExecutionFence(event.getSubscriptionId(), event.getBucketId(),
+          event.getMemberId());
+      fence.lock();
+      try {
+        if (!store.isPendingIntent(id)) {
+          continue;
         }
-        store.markPendingCompleted(id);
-        long committed = advanceContiguousCommittedWatermarkLocked(event.getSubscriptionId(),
-            event.getBucketId(), event.getMemberId(), event.getRegionVersion());
-        gate.restoreHighWaterVersion(event.getSubscriptionId(), event.getBucketId(),
-            event.getMemberId(), committed);
-        recovered++;
+        executeIdempotentlyLocked(event, id);
+        synchronized (getStreamStageLock(event.getBucketId(), event.getMemberId())) {
+          store.markPendingCompleted(id);
+          long committed = advanceContiguousCommittedWatermarkLocked(event.getSubscriptionId(),
+              event.getBucketId(), event.getMemberId(), event.getRegionVersion());
+          gate.restoreHighWaterVersion(event.getSubscriptionId(), event.getBucketId(),
+              event.getMemberId(), committed);
+          recovered++;
+        }
+      } finally {
+        fence.unlock();
       }
     }
     if (recovered > 0) {
@@ -628,8 +725,13 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     for (Map.Entry<EventDeliveryId, Long> entry : store.getCommittedWatermarkSnapshot()
         .entrySet()) {
       EventDeliveryId key = entry.getKey();
-      gate.restoreHighWaterVersion(key.getSubscriptionId(), key.getBucketId(), key.getMemberId(),
-          entry.getValue());
+      if (bucketFilter != null && key.getBucketId() != bucketFilter) {
+        continue;
+      }
+      synchronized (getStreamStageLock(key.getBucketId(), key.getMemberId())) {
+        gate.restoreHighWaterVersion(key.getSubscriptionId(), key.getBucketId(),
+            key.getMemberId(), entry.getValue());
+      }
     }
     return recovered;
   }
@@ -665,13 +767,37 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
   }
 
   /**
-   * Prepares an ordinary client reconnect (without process restart) by draining every unfinished
-   * durable {@code PENDING} intent whose effect has not yet retired, committing watermarks, and
-   * returning the safe {@code V_client} high-water map by member for {@code bucketId}.
+   * Prepares an ordinary client reconnect (without process restart) by fencing every in-flight
+   * handler on {@code bucketId}, draining every unfinished durable {@code PENDING} intent whose
+   * effect has not yet retired, committing watermarks, and returning the safe {@code V_client}
+   * high-water map by member for {@code bucketId} while fenced.
    */
   public Map<String, Long> prepareForReconnect(int bucketId) {
-    recover();
-    return getCommittedHighWaterByMember(bucketId);
+    Set<String> fenceKeys = new HashSet<>();
+    String bucketToken = "|" + bucketId + "|";
+    for (String existingKey : streamExecutionFences.keySet()) {
+      if (existingKey.contains(bucketToken)) {
+        fenceKeys.add(existingKey);
+      }
+    }
+    for (ContinuousVectorEvent ev : store.getPendingIntentsOrdered()) {
+      if (ev.getBucketId() == bucketId) {
+        fenceKeys.add(streamFenceKey(ev.getSubscriptionId(), ev.getBucketId(), ev.getMemberId()));
+      }
+    }
+    for (EventDeliveryId key : store.getCommittedWatermarkSnapshot().keySet()) {
+      if (key.getBucketId() == bucketId) {
+        fenceKeys.add(streamFenceKey(key.getSubscriptionId(), key.getBucketId(),
+            key.getMemberId()));
+      }
+    }
+    List<ReentrantLock> acquired = acquireSortedExecutionFences(fenceKeys);
+    try {
+      recoverUnderFencesLocked(bucketId);
+      return getCommittedHighWaterByMember(bucketId);
+    } finally {
+      releaseExecutionFences(acquired);
+    }
   }
 
   /**

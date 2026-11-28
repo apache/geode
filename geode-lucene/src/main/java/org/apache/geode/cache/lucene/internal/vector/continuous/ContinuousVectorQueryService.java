@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -31,6 +33,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
@@ -327,6 +330,35 @@ public class ContinuousVectorQueryService {
     return dispatcher.getCheckpointVersion(bucketId, memberId);
   }
 
+  public long getReplayFloorVersion(int bucketId, String memberId) {
+    return dispatcher.getReplayFloorVersion(bucketId, memberId);
+  }
+
+  public long getReplayFloorResyncCount() {
+    return dispatcher.getReplayFloorResyncCount();
+  }
+
+  public boolean admitSubscriberForContinuity(String subscriberId, int bucketId, String memberId,
+      long clientHighWater) {
+    return dispatcher.admitSubscriberForContinuity(subscriberId, bucketId, memberId,
+        clientHighWater);
+  }
+
+  public boolean admitSubscriberForContinuity(int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
+    return dispatcher.admitSubscriberForContinuity(bucketId, clientHighWaterByMember);
+  }
+
+  public void addReplayFloorResyncListener(
+      RvvMonotonicVectorDispatcher.ReplayFloorResyncListener listener) {
+    dispatcher.addReplayFloorResyncListener(listener);
+  }
+
+  public boolean removeReplayFloorResyncListener(
+      RvvMonotonicVectorDispatcher.ReplayFloorResyncListener listener) {
+    return dispatcher.removeReplayFloorResyncListener(listener);
+  }
+
   public long getLastDispatchedVersion(int bucketId, String memberId) {
     return dispatcher.getLastDispatchedVersion(bucketId, memberId);
   }
@@ -403,22 +435,91 @@ public class ContinuousVectorQueryService {
   }
 
   /**
-   * Creates a Geode {@link PartitionListener} that snapshots the promoted bucket on
-   * {@code afterPrimary(bucketId)} and dispatches replay either synchronously (when
-   * {@code replayExecutor == null}) or via the supplied {@code replayExecutor} to avoid blocking
-   * Geode's bucket promotion lock during network I/O.
+   * Creates a Geode {@link PartitionListener} that:
+   * <ol>
+   * <li>Attaches a lightweight per-bucket shadow-tail {@link CacheListener} to every local
+   * {@link BucketRegion} so secondary replicas capture every replicated vector mutation version
+   * (preserving per-version history even under repeated overwrites to the same key, which
+   * region-state snapshots alone coalesce); and</li>
+   * <li>Snapshots and merges the promoted bucket on {@code afterPrimary(bucketId)}, dispatching
+   * replay either synchronously (when {@code replayExecutor == null}) or via the supplied
+   * {@code replayExecutor} to avoid blocking Geode's bucket promotion lock during network I/O.</li>
+   * </ol>
    */
   public PartitionListener createPartitionListener(Function<Object, float[]> vectorExtractor,
       Executor replayExecutor) {
     Objects.requireNonNull(vectorExtractor, "vectorExtractor must not be null");
+    final Set<BucketRegion> attachedBuckets = Collections.newSetFromMap(new WeakHashMap<>());
+    final CacheListener<Object, Object> secondaryTailListener =
+        new CacheListenerAdapter<Object, Object>() {
+          @Override
+          public void afterCreate(EntryEvent<Object, Object> event) {
+            handleSecondaryEvent(event);
+          }
+
+          @Override
+          public void afterUpdate(EntryEvent<Object, Object> event) {
+            handleSecondaryEvent(event);
+          }
+
+          private void handleSecondaryEvent(EntryEvent<Object, Object> event) {
+            RvvMonotonicVectorDispatcher.ExtractedRvvStamp stamp =
+                RvvMonotonicVectorDispatcher.extractFromEntryEvent(event);
+            if (stamp.isPrimary() || stamp.getRegionVersion() <= 0L) {
+              return;
+            }
+            Object newValue = event.getNewValue();
+            if (newValue == null) {
+              return;
+            }
+            float[] embedding = vectorExtractor.apply(newValue);
+            if (embedding != null) {
+              onBucketMutation(stamp.getBucketId(), stamp.getMemberId(), stamp.getRegionVersion(),
+                  stamp.getEntryVersion(), event.getKey(), embedding, false);
+            }
+          }
+        };
     return new PartitionListenerAdapter() {
       private volatile PartitionedRegion partitionedRegion;
+
+      private void attachSecondaryTailListener(int bucketId) {
+        PartitionedRegion pr = this.partitionedRegion;
+        if (pr == null || pr.getDataStore() == null) {
+          return;
+        }
+        BucketRegion bucketRegion = pr.getDataStore().getLocalBucketById(bucketId);
+        if (bucketRegion == null || bucketRegion.isDestroyed()) {
+          return;
+        }
+        synchronized (attachedBuckets) {
+          if (!attachedBuckets.add(bucketRegion)) {
+            return;
+          }
+        }
+        bucketRegion.getAttributesMutator().addCacheListener(secondaryTailListener);
+      }
 
       @Override
       public void afterRegionCreate(Region<?, ?> region) {
         if (region instanceof PartitionedRegion) {
-          this.partitionedRegion = (PartitionedRegion) region;
+          PartitionedRegion pr = (PartitionedRegion) region;
+          this.partitionedRegion = pr;
+          if (pr.getDataStore() != null) {
+            for (Integer bucketId : pr.getDataStore().getAllLocalBucketIds()) {
+              attachSecondaryTailListener(bucketId);
+            }
+          }
         }
+      }
+
+      @Override
+      public void afterBucketCreated(int bucketId, Iterable<?> keys) {
+        attachSecondaryTailListener(bucketId);
+      }
+
+      @Override
+      public void afterSecondary(int bucketId) {
+        attachSecondaryTailListener(bucketId);
       }
 
       @Override

@@ -108,6 +108,17 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   /**
+   * Callback invoked whenever a rejoining or reconnecting subscriber presents a client high-water
+   * mark strictly below the stream's compacted replay-retention floor {@code V_floor[b, m]},
+   * requiring a full snapshot resynchronization before continuity admission.
+   */
+  @FunctionalInterface
+  public interface ReplayFloorResyncListener {
+    void onReplayFloorResyncRequired(int bucketId, String memberId, long clientHighWater,
+        long replayFloor);
+  }
+
+  /**
    * Callback invoked whenever a per-{@code (bucketId, memberId)} tail buffer exceeds
    * {@code maxTailPerStream} and must evict an un-checkpointed mutation, signaling that a client
    * behind the evicted version requires a full bucket resync.
@@ -264,6 +275,7 @@ public class RvvMonotonicVectorDispatcher {
   private static final class BucketState {
     final Map<String, TreeMap<Long, TailMutation>> tailByMember = new HashMap<>();
     final Map<String, Long> checkpointByMember = new HashMap<>();
+    final Map<String, Long> replayFloorByMember = new HashMap<>();
     final Map<String, Map<String, Long>> subscriberAcksByMember = new HashMap<>();
     final Map<String, AtomicLong> fallbackVersionByMember = new HashMap<>();
     final Map<String, Long> eventsSinceHeartbeatByMember = new HashMap<>();
@@ -320,6 +332,7 @@ public class RvvMonotonicVectorDispatcher {
       while (stream.size() > maxTailPerStream) {
         Map.Entry<Long, TailMutation> evicted = stream.pollFirstEntry();
         if (evicted != null) {
+          replayFloorByMember.merge(mutation.memberId, evicted.getKey(), Math::max);
           if (evictedVersions == null) {
             evictedVersions = new ArrayList<>(2);
           }
@@ -370,17 +383,17 @@ public class RvvMonotonicVectorDispatcher {
       return replay;
     }
 
-    synchronized List<TailMutation> collectReplayableTailForReconnect(
+    synchronized List<TailMutation> collectReplayableTailForReconnect(int bucketId,
         Map<String, Long> clientHighWaterByMember, boolean respectHoldbackCeiling,
-        Map<String, Long> maxVersionByMemberOut) {
+        Map<String, Long> maxVersionByMemberOut,
+        List<ReplayFloorViolationRecord> floorViolationsOut) {
       List<TailMutation> replay = new ArrayList<>();
-      List<String> sortedMembers = new ArrayList<>(tailByMember.keySet());
+      Set<String> allMembers = new HashSet<>(tailByMember.keySet());
+      allMembers.addAll(replayFloorByMember.keySet());
+      List<String> sortedMembers = new ArrayList<>(allMembers);
       Collections.sort(sortedMembers);
       for (String memberId : sortedMembers) {
-        TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
-        if (stream == null || stream.isEmpty()) {
-          continue;
-        }
+        long floor = replayFloorByMember.getOrDefault(memberId, 0L);
         long ckpt = checkpointByMember.getOrDefault(memberId, 0L);
         long clientHighWater = 0L;
         if (clientHighWaterByMember != null) {
@@ -388,8 +401,19 @@ public class RvvMonotonicVectorDispatcher {
           if (hw != null && hw > 0L) {
             clientHighWater = hw;
           }
+          if (floor > 0L && clientHighWater < floor) {
+            if (floorViolationsOut != null) {
+              floorViolationsOut.add(
+                  new ReplayFloorViolationRecord(bucketId, memberId, clientHighWater, floor));
+            }
+            continue;
+          }
         }
-        long lowerExclusive = Math.max(ckpt, clientHighWater);
+        TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+        if (stream == null || stream.isEmpty()) {
+          continue;
+        }
+        long lowerExclusive = Math.max(Math.max(ckpt, floor), clientHighWater);
         long streamHighWater = stream.lastKey();
         TreeMap<Long, TailMutation> held = holdbackByMember.get(memberId);
         if (respectHoldbackCeiling && held != null && !held.isEmpty()) {
@@ -411,6 +435,7 @@ public class RvvMonotonicVectorDispatcher {
         return;
       }
       checkpointByMember.put(memberId, ackedVersion);
+      replayFloorByMember.merge(memberId, ackedVersion, Math::max);
       TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
       if (stream != null) {
         stream.headMap(ackedVersion, true).clear();
@@ -419,6 +444,10 @@ public class RvvMonotonicVectorDispatcher {
 
     synchronized long getCheckpoint(String memberId) {
       return checkpointByMember.getOrDefault(memberId, 0L);
+    }
+
+    synchronized long getReplayFloor(String memberId) {
+      return replayFloorByMember.getOrDefault(memberId, 0L);
     }
 
     synchronized long recordSubscriberAck(String subscriberId, String memberId, long ackedVersion,
@@ -531,6 +560,21 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
+  private static final class ReplayFloorViolationRecord {
+    final int bucketId;
+    final String memberId;
+    final long clientHighWater;
+    final long replayFloor;
+
+    ReplayFloorViolationRecord(int bucketId, String memberId, long clientHighWater,
+        long replayFloor) {
+      this.bucketId = bucketId;
+      this.memberId = memberId;
+      this.clientHighWater = clientHighWater;
+      this.replayFloor = replayFloor;
+    }
+  }
+
   private final ChordalVoronoiRouter router;
   private final int maxTailPerStream;
   private final ConcurrentHashMap<Integer, BucketState> bucketStates = new ConcurrentHashMap<>();
@@ -539,6 +583,8 @@ public class RvvMonotonicVectorDispatcher {
   private final CopyOnWriteArrayList<TailOverflowListener> overflowListeners =
       new CopyOnWriteArrayList<>();
   private final CopyOnWriteArrayList<HoldbackGapListener> holdbackGapListeners =
+      new CopyOnWriteArrayList<>();
+  private final CopyOnWriteArrayList<ReplayFloorResyncListener> replayFloorListeners =
       new CopyOnWriteArrayList<>();
   private final Set<RvvStreamKey> resyncRequiredStreams = ConcurrentHashMap.newKeySet();
   private final Set<String> registeredCheckpointSubscribers = ConcurrentHashMap.newKeySet();
@@ -552,6 +598,7 @@ public class RvvMonotonicVectorDispatcher {
   private final AtomicLong totalReconnectReplaysHandled = new AtomicLong();
   private final AtomicLong tailOverflowCount = new AtomicLong();
   private final AtomicLong holdbackGapClosedCount = new AtomicLong();
+  private final AtomicLong replayFloorResyncCount = new AtomicLong();
   private final AtomicLong totalIdleHeartbeatsFlushed = new AtomicLong();
   private final AtomicLong totalHoldbackBufferedCount = new AtomicLong();
   private final AtomicLong totalNonMatchingVersionsObserved = new AtomicLong();
@@ -879,6 +926,14 @@ public class RvvMonotonicVectorDispatcher {
     return holdbackGapListeners.remove(listener);
   }
 
+  public void addReplayFloorResyncListener(ReplayFloorResyncListener listener) {
+    replayFloorListeners.add(Objects.requireNonNull(listener, "listener must not be null"));
+  }
+
+  public boolean removeReplayFloorResyncListener(ReplayFloorResyncListener listener) {
+    return replayFloorListeners.remove(listener);
+  }
+
   /**
    * Handles a bucket mutation on either a primary or secondary replica.
    *
@@ -1137,10 +1192,11 @@ public class RvvMonotonicVectorDispatcher {
       return Collections.emptyList();
     }
     List<ContinuousVectorEvent> emitted = new ArrayList<>();
+    List<ReplayFloorViolationRecord> floorViolations = new ArrayList<>();
     synchronized (state) {
       TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
-      List<TailMutation> toReplay = state.collectReplayableTailForReconnect(
-          clientHighWaterByMember, enforceContiguousVersions, maxVersionByMember);
+      List<TailMutation> toReplay = state.collectReplayableTailForReconnect(bucketId,
+          clientHighWaterByMember, enforceContiguousVersions, maxVersionByMember, floorViolations);
       for (TailMutation mutation : toReplay) {
         emitted.addAll(evaluateAndDispatch(state, mutation, true, targetSink));
       }
@@ -1149,7 +1205,82 @@ public class RvvMonotonicVectorDispatcher {
         onReplayedUnderLock.run();
       }
     }
+    if (!floorViolations.isEmpty()) {
+      notifyReplayFloorViolations(floorViolations);
+    }
     return emitted;
+  }
+
+  /**
+   * Validates a reconnecting or newly joining subscriber's high-water mark against the stream's
+   * compacted replay-retention floor {@code V_floor[bucketId, memberId]} before admitting it to
+   * uninterrupted continuity. If {@code clientHighWater < V_floor}, immediately flags
+   * {@code resyncRequired} and returns {@code false} without enrolling {@code subscriberId}.
+   */
+  public boolean admitSubscriberForContinuity(String subscriberId, int bucketId, String memberId,
+      long clientHighWater) {
+    if (memberId == null || memberId.isEmpty()) {
+      throw new IllegalArgumentException("memberId must not be null or empty");
+    }
+    ReplayFloorViolationRecord violation = null;
+    synchronized (subscriberRegistryLock) {
+      BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+      long floor = state.getReplayFloor(memberId);
+      if (floor > 0L && clientHighWater < floor) {
+        violation = new ReplayFloorViolationRecord(bucketId, memberId, clientHighWater, floor);
+      } else if (subscriberId != null && !subscriberId.isEmpty()) {
+        registeredCheckpointSubscribers.add(subscriberId);
+        if (clientHighWater > 0L) {
+          Set<String> healthy =
+              Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
+          state.recordSubscriberAck(subscriberId, memberId, clientHighWater, healthy);
+        }
+      }
+    }
+    if (violation != null) {
+      notifyReplayFloorViolations(Collections.singletonList(violation));
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Validates every tracked member stream on {@code bucketId} against
+   * {@code clientHighWaterByMember}; flags {@code resyncRequired} for any stream whose compacted
+   * replay floor {@code V_floor[bucketId, m]} exceeds {@code clientHighWaterByMember[m]}.
+   *
+   * @return {@code true} if all streams satisfy {@code V_client >= V_floor}, or {@code false} if
+   *         one or more streams require full snapshot resynchronization.
+   */
+  public boolean admitSubscriberForContinuity(int bucketId,
+      Map<String, Long> clientHighWaterByMember) {
+    BucketState state = bucketStates.get(bucketId);
+    if (state == null) {
+      return true;
+    }
+    List<ReplayFloorViolationRecord> violations = new ArrayList<>();
+    synchronized (state) {
+      List<String> members = new ArrayList<>(state.replayFloorByMember.keySet());
+      Collections.sort(members);
+      for (String memberId : members) {
+        long floor = state.replayFloorByMember.getOrDefault(memberId, 0L);
+        long clientHw = 0L;
+        if (clientHighWaterByMember != null) {
+          Long hw = clientHighWaterByMember.get(memberId);
+          if (hw != null && hw > 0L) {
+            clientHw = hw;
+          }
+        }
+        if (floor > 0L && clientHw < floor) {
+          violations.add(new ReplayFloorViolationRecord(bucketId, memberId, clientHw, floor));
+        }
+      }
+    }
+    if (!violations.isEmpty()) {
+      notifyReplayFloorViolations(violations);
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -1247,6 +1378,15 @@ public class RvvMonotonicVectorDispatcher {
   public long getCheckpointVersion(int bucketId, String memberId) {
     BucketState state = bucketStates.get(bucketId);
     return state == null ? 0L : state.getCheckpoint(memberId);
+  }
+
+  public long getReplayFloorVersion(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0L : state.getReplayFloor(memberId);
+  }
+
+  public int getMaxTailPerStream() {
+    return maxTailPerStream;
   }
 
   public long getLastDispatchedVersion(int bucketId, String memberId) {
@@ -1530,6 +1670,21 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
+  private void notifyReplayFloorViolations(List<ReplayFloorViolationRecord> violations) {
+    for (ReplayFloorViolationRecord rec : violations) {
+      replayFloorResyncCount.incrementAndGet();
+      resyncRequiredStreams.add(new RvvStreamKey(rec.bucketId, rec.memberId));
+      logger.warn(
+          "RVV subscriber rejoin below compacted replay floor on bucket={}, member={}: "
+              + "V_client={} < V_floor={}; stream marked for full resync",
+          rec.bucketId, rec.memberId, rec.clientHighWater, rec.replayFloor);
+      for (ReplayFloorResyncListener listener : replayFloorListeners) {
+        listener.onReplayFloorResyncRequired(rec.bucketId, rec.memberId, rec.clientHighWater,
+            rec.replayFloor);
+      }
+    }
+  }
+
   public long getTotalEventsDispatched() {
     return totalEventsDispatched.get();
   }
@@ -1564,6 +1719,10 @@ public class RvvMonotonicVectorDispatcher {
 
   public long getHoldbackGapClosedCount() {
     return holdbackGapClosedCount.get();
+  }
+
+  public long getReplayFloorResyncCount() {
+    return replayFloorResyncCount.get();
   }
 
   /**
@@ -1612,13 +1771,20 @@ public class RvvMonotonicVectorDispatcher {
     }
 
     if (memberId == null) {
-      if (bucketRegion != null && bucketRegion.getVersionMember() != null) {
-        // In Geode, a null VersionTag.getMemberID() on a local BucketRegion always identifies
+      if (isPrimary && bucketRegion != null && bucketRegion.getVersionMember() != null) {
+        // In Geode, a null VersionTag.getMemberID() on a local primary BucketRegion identifies
         // bucketRegion.getVersionMember() (the primary that generated regionVersion from its RVV),
         // even when event.isOriginRemote() is true (put routed from another cluster member).
         memberId = bucketRegion.getVersionMember().toString();
+      } else if (!isPrimary && bucketRegion != null
+          && bucketRegion.getBucketAdvisor().basicGetPrimaryMember() != null) {
+        // On a secondary BucketRegion, never misattribute replicated mutations to the secondary's
+        // own getVersionMember(); attribute to the bucket's primary member instead.
+        memberId = bucketRegion.getBucketAdvisor().basicGetPrimaryMember().toString();
       } else if (event.getDistributedMember() != null) {
         memberId = event.getDistributedMember().toString();
+      } else if (bucketRegion != null && bucketRegion.getVersionMember() != null) {
+        memberId = bucketRegion.getVersionMember().toString();
       } else {
         memberId = "local";
       }
