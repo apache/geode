@@ -3409,6 +3409,304 @@ public class ContinuousVectorRvvFailoverDistributedTest implements Serializable 
     }
   }
 
+  /**
+   * R1 M2 / R1 M3 / R2 M2 DUnit regression: exercises BOTH sides of the synchronous lower-pin
+   * durability point across a live 3-server {@code kill -9} primary crash AND verifies that
+   * {@code oldestUncoveredMutationTimeMs} is initialized when reconnect lowers {@code V_ckpt} with
+   * {@code (V_ckpt, V_contig]} already resident after an earlier heartbeat reset.
+   *
+   * <ul>
+   * <li>Side 1 (crash BEFORE lower-pin replication reaches backup on stream {@code mP-pre-pin}):
+   * failing replicator aborts before any replay release; promoted backup compacts up to
+   * {@code V_ckpt=64} ({@code V_floor=64}) and deterministically rejects {@code V_client=63} into
+   * {@code resyncRequired}.</li>
+   * <li>Side 2 (crash AFTER synchronous lower-pin replication completes on backup on live stream
+   * {@code mP}): promoted backup honors {@code V_ckpt_lowered=63} under
+   * {@code compactUpToCheckpoint} (stopping at {@code 63}, protecting {@code [64..68]}) so
+   * returning {@code V_client=63} cleanly replays {@code [64..68]} with zero resync.</li>
+   * </ul>
+   */
+  @Test
+  public void lowerPinDurabilityPointCrashSidesAndHeartbeatTimerAcrossCluster() throws Exception {
+    IgnoredException.addIgnoredException("MemberDepartedException");
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    IgnoredException.addIgnoredException("PartitionOfflineException");
+    IgnoredException.addIgnoredException("CacheClosedException");
+    IgnoredException.addIgnoredException("CancelException");
+    IgnoredException.addIgnoredException("SocketException");
+    IgnoredException.addIgnoredException("EOFException");
+    IgnoredException.addIgnoredException("IOException");
+    IgnoredException.addIgnoredException("Membership: lead member");
+    IgnoredException.addIgnoredException("crashed");
+
+    RvvClientGate fastGate = new RvvClientGate();
+    fastGate.registerSubscription("sub-fast");
+    receiver = new ClientEventReceiver(fastGate);
+    int fastPort = receiver.getPort();
+
+    RvvClientGate lagGate = new RvvClientGate();
+    lagGate.registerSubscription("sub-lag");
+    List<ContinuousVectorEvent> lagAccepted = new CopyOnWriteArrayList<>();
+    lagGate.addListener(ev -> {
+      if ("sub-lag".equals(ev.getSubscriptionId())) {
+        lagAccepted.add(ev);
+      }
+    });
+    receiverB = new ClientEventReceiver(lagGate);
+    int lagPort = receiverB.getPort();
+
+    MemberVM locator = cluster.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM server3 = cluster.startServerVM(3, locatorPort);
+    MemberVM[] servers = new MemberVM[] {server1, server2, server3};
+    boolean[] alive = new boolean[] {true, true, true};
+    final int cTail = 32;
+
+    try {
+      Random rng = new Random(20261209L);
+      float[] queryVec = randomUnitVectorZeroLastDim(rng, VECTOR_DIM);
+      List<VectorSubscription> subscriptions = Arrays.asList(
+          new VectorSubscription("sub-fast", queryVec, 0.90f),
+          new VectorSubscription("sub-lag", queryVec, 0.90f));
+
+      for (MemberVM server : servers) {
+        server.invoke(() -> {
+          initializeServerNode(subscriptions, fastPort, lagPort, 1, 64, 1, cTail);
+          serverService.registerSubscriberForCheckpoint("sub-fast");
+        });
+      }
+
+      // Seed live bucket-0 stream mP with v=1..63, applying replicated (30, 30) and (60, 64)
+      server3.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 1; i <= 30; i++) {
+          region.put("dur-" + i, queryVec);
+        }
+      });
+
+      int primaryIdx = -1;
+      int secondaryIdx = -1;
+      String primaryMemberId = null;
+      for (int idx = 0; idx < servers.length; idx++) {
+        String roleAndMember = servers[idx].invoke(() -> {
+          PartitionedRegion pr =
+              (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+          if (pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)) {
+            return "P|" + pr.getDataStore().getLocalBucketById(0).getVersionMember().toString();
+          }
+          if (pr.getDataStore().getAllLocalBucketIds().contains(0)) {
+            return "S|secondary";
+          }
+          return null;
+        });
+        if (roleAndMember != null && roleAndMember.startsWith("P|")) {
+          primaryIdx = idx;
+          primaryMemberId = roleAndMember.substring(2);
+        } else if (roleAndMember != null && roleAndMember.startsWith("S|")) {
+          secondaryIdx = idx;
+        }
+      }
+      assertThat(primaryIdx).isGreaterThanOrEqualTo(0);
+      assertThat(secondaryIdx).isGreaterThanOrEqualTo(0);
+      final String mP = primaryMemberId;
+      final String mPPrePin = mP + "-pre-durability";
+      final MemberVM primaryVm = servers[primaryIdx];
+      final MemberVM secondaryVm = servers[secondaryIdx];
+
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> lagGate.getSafeCheckpointVersion(0, mP) == 30L);
+      for (MemberVM server : servers) {
+        server.invoke(() -> serverService.applyReplicatedFloorAndCheckpoint(0, mP, 30L, 30L));
+      }
+
+      secondaryVm.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 31; i <= 60; i++) {
+          region.put("dur-" + i, queryVec);
+        }
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> lagGate.getSafeCheckpointVersion(0, mP) == 60L);
+      for (MemberVM server : servers) {
+        server.invoke(() -> serverService.applyReplicatedFloorAndCheckpoint(0, mP, 60L, 64L));
+      }
+
+      secondaryVm.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 61; i <= 63; i++) {
+          region.put("dur-" + i, queryVec);
+        }
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> lagGate.getSafeCheckpointVersion(0, mP) == 63L);
+
+      // Disconnect sub-lag at V_client=63 and ingest v=64..68 on mP
+      for (MemberVM server : servers) {
+        server.invoke(() -> dropOutboundEventsB.set(true));
+      }
+      secondaryVm.invoke(() -> {
+        Region<String, float[]> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        for (int i = 64; i <= 68; i++) {
+          region.put("dur-" + i, queryVec);
+        }
+      });
+      await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> fastGate.getSafeCheckpointVersion(0, mP) == 68L);
+
+      // Also seed parallel stream mPPrePin on primary & secondary with identical (V_floor=60,
+      // V_ckpt=64) and tail [61..68] to exercise Side 1 (crash BEFORE lower-pin durability point)
+      primaryVm.invoke(() -> {
+        for (long v = 1L; v <= 68L; v++) {
+          serverService.onBucketMutation(0, mPPrePin, v, "pre-" + v, queryVec, true);
+          if (v == 30L) {
+            serverService.applyReplicatedFloorAndCheckpoint(0, mPPrePin, 30L, 30L);
+          } else if (v == 60L) {
+            serverService.applyReplicatedFloorAndCheckpoint(0, mPPrePin, 60L, 64L);
+          }
+        }
+      });
+      secondaryVm.invoke(() -> {
+        for (long v = 1L; v <= 68L; v++) {
+          serverService.onBucketMutation(0, mPPrePin, v, "pre-" + v, queryVec, false);
+          if (v == 30L) {
+            serverService.applyReplicatedFloorAndCheckpoint(0, mPPrePin, 30L, 30L);
+          } else if (v == 60L) {
+            serverService.applyReplicatedFloorAndCheckpoint(0, mPPrePin, 60L, 64L);
+          }
+        }
+      });
+
+      // Side 1 pre-crash check on primary: failing replicator aborts BEFORE releasing any replay!
+      boolean abortedPreDurability = primaryVm.invoke(() -> {
+        serverService.setCheckpointPinReplicator((b, m, sub, floor, ckpt) -> {
+          throw new IllegalStateException("simulated crash before lower-pin durability point");
+        });
+        Map<String, Long> hwPre = new HashMap<>();
+        hwPre.put(mP, 68L);
+        hwPre.put(mPPrePin, 63L);
+        AtomicInteger released = new AtomicInteger();
+        try {
+          serverService.admitAndReplayForReconnect("sub-pre-crash", 0, hwPre,
+              ev -> released.incrementAndGet(), null);
+          return false;
+        } catch (IllegalStateException expected) {
+          return released.get() == 0
+              && serverService.getCheckpointVersion(0, mPPrePin) == 64L;
+        } finally {
+          serverService.setCheckpointPinReplicator(null);
+        }
+      });
+      assertThat(abortedPreDurability).isTrue();
+      assertThat(secondaryVm.invoke(() -> serverService.getCheckpointVersion(0, mPPrePin)))
+          .isEqualTo(64L);
+
+      // Flush idle heartbeat on primary to reset oldestUncoveredMutationTimeMs -> 0, then exercise
+      // Side 2: synchronous lower-pin replication of (V_floor=60, V_ckpt_lowered=63) to secondary
+      // strictly BEFORE primary replay release, AND verify oldestUncoveredMutationTimeMs > 0!
+      long tBase = System.currentTimeMillis();
+      assertThat(primaryVm.invoke(() -> serverService.flushIdleHeartbeats(tBase + 500L, 100L)))
+          .isGreaterThanOrEqualTo(1);
+      assertThat(primaryVm.invoke(() -> serverService.getOldestUncoveredMutationTimeMs(0, mP)))
+          .isZero();
+
+      // Synchronously replicate lower pin to secondary BEFORE primary completes admission replay
+      secondaryVm.invoke(
+          () -> serverService.applyReplicatedLowerPin(0, mP, "sub-lag", 60L, 63L));
+      assertThat(secondaryVm.invoke(() -> serverService.getCheckpointVersion(0, mP)))
+          .isEqualTo(63L);
+      assertThat(secondaryVm.invoke(() -> serverService.getReplayFloorVersion(0, mP)))
+          .isEqualTo(60L);
+
+      primaryVm.invoke(() -> {
+        List<String> order = new ArrayList<>();
+        serverService.setCheckpointPinReplicator(
+            (b, m, sub, floor, ckpt) -> order.add("PIN:" + m + ":" + floor + ":" + ckpt));
+        Map<String, Long> hwSide2 = new HashMap<>();
+        hwSide2.put(mP, 63L);
+        hwSide2.put(mPPrePin, 68L);
+        serverService.admitAndReplayForReconnect("sub-lag", 0, hwSide2,
+            ev -> order.add("EV:" + ev.getRegionVersion()), null);
+        serverService.setCheckpointPinReplicator(null);
+        if (order.isEmpty() || !order.get(0).startsWith("PIN:")) {
+          throw new AssertionError("Expected synchronous pin replication before replay: " + order);
+        }
+      });
+      assertThat(primaryVm.invoke(() -> serverService.getCheckpointVersion(0, mP))).isEqualTo(63L);
+      assertThat(primaryVm.invoke(() -> serverService.getOldestUncoveredMutationTimeMs(0, mP)))
+          .isGreaterThan(0L);
+      assertThat(primaryVm.invoke(() -> serverService.flushIdleHeartbeats(tBase + 1_200L, 100L)))
+          .isGreaterThanOrEqualTo(1);
+
+      // Live kill -9 primary crash -> secondary promotes to primary!
+      alive[primaryIdx] = false;
+      cluster.crashVM(primaryIdx + 1);
+      await().atMost(30, TimeUnit.SECONDS).until(() -> secondaryVm.invoke(() -> {
+        PartitionedRegion pr =
+            (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        return pr.getDataStore().getAllLocalPrimaryBucketIds().contains(0)
+            && serverService.getDispatcher().getTotalPromotionsHandled() >= 1L;
+      }));
+      secondaryVm.invoke(() -> {
+        try {
+          serverReplayExecutor.submit(() -> {
+          }).get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
+
+      // Immediately compact BOTH streams on promoted secondary BEFORE returning clients retry:
+      // - Side 2 (mP): lower-pin 63 was durably replicated -> compaction STOPS at 63!
+      // - Side 1 (mPPrePin): crash preceded replication -> compaction advances V_floor to 64!
+      assertThat(secondaryVm.invoke(() -> serverService.compactUpToCheckpoint(0, mP)))
+          .isEqualTo(63L);
+      assertThat(secondaryVm.invoke(() -> serverService.compactUpToCheckpoint(0, mPPrePin)))
+          .isEqualTo(64L);
+
+      // Side 2 verification: returning sub-lag at V_client=63 replays [64..68] cleanly (0 resync)!
+      Map<String, Long> lagHw = lagGate.getSafeHighWaterByMember(0);
+      assertThat(lagHw).containsEntry(mP, 63L);
+      secondaryVm.invoke(() -> {
+        serverTcpSinkB.enableReconnectBucketGate();
+        dropOutboundEventsB.set(false);
+        Map<String, Long> hwSide2 = new HashMap<>();
+        hwSide2.put(mP, 63L);
+        hwSide2.put(mPPrePin, 68L);
+        serverService.admitAndReplayForReconnect("sub-lag", 0, hwSide2, serverTcpSinkB,
+            () -> serverTcpSinkB.allowLiveBucket(0));
+      });
+      await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+        assertThat(lagAccepted).hasSize(68);
+        assertThat(lagAccepted).extracting(ContinuousVectorEvent::getRegionVersion)
+            .containsSequence(63L, 64L, 65L, 66L, 67L, 68L)
+            .doesNotHaveDuplicates();
+        assertThat(lagGate.getSafeCheckpointVersion(0, mP)).isEqualTo(68L);
+      });
+      assertThat(secondaryVm.invoke(() -> serverService.isResyncRequired(0, mP))).isFalse();
+
+      // Side 1 verification: returning sub-pre-crash at V_client=63 < V_floor=64 is
+      // deterministically rejected into resyncRequired (zero silent skip)!
+      int side1ReplayCount = secondaryVm.invoke(() -> {
+        Map<String, Long> hwSide1 = new HashMap<>();
+        hwSide1.put(mP, 68L);
+        hwSide1.put(mPPrePin, 63L);
+        return serverService.admitAndReplayForReconnect("sub-pre-crash", 0, hwSide1).size();
+      });
+      assertThat(side1ReplayCount).isZero();
+      assertThat(secondaryVm.invoke(() -> serverService.isResyncRequired(0, mPPrePin))).isTrue();
+      assertThat(secondaryVm.invoke(
+          () -> serverService.isSubscriberResyncRequired("sub-pre-crash", 0, mPPrePin))).isTrue();
+    } finally {
+      for (int idx = 0; idx < servers.length; idx++) {
+        if (alive[idx]) {
+          servers[idx].invoke(ContinuousVectorRvvFailoverDistributedTest::shutdownServerNode);
+        }
+      }
+    }
+  }
+
   private static void initializeServerNode(List<VectorSubscription> subscriptions,
       int receiverPort) throws IOException {
     initializeServerNode(subscriptions, receiverPort, -1, NUM_BUCKETS, 4, 1);

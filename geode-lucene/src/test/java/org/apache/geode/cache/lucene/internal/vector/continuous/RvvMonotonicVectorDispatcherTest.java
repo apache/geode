@@ -3303,6 +3303,164 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(dCap.getTailOverflowCount()).isZero();
   }
 
+  @Test
+  public void lowerPinDurabilityPointBothCrashSidesAndUncoveredHeartbeatTimerAcrossReconnect() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 32;
+    int bucketId = 35;
+    String memberP = "srv-durability-P";
+
+    // Part (a): Crash BEFORE lower-pin durability point (replicator throws before reaching backup).
+    // ZERO replay batches may be released; promoted backup holding (V_floor=60, V_ckpt=64) that
+    // compacts to 64 deterministically rejects V_client=63 into resyncRequired (no silent skip!).
+    ChordalVoronoiRouter rPrimA = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dPrimA = new RvvMonotonicVectorDispatcher(rPrimA, cTail, null, 64);
+    ContinuousVectorQueryService primA = new ContinuousVectorQueryService(rPrimA, dPrimA);
+    ChordalVoronoiRouter rSecA = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dSecA = new RvvMonotonicVectorDispatcher(rSecA, cTail, null, 64);
+    ContinuousVectorQueryService secA = new ContinuousVectorQueryService(rSecA, dSecA);
+    primA.registerSubscription("sub-lag", vec, 0.90f);
+    secA.registerSubscription("sub-lag", vec, 0.90f);
+
+    for (long v = 1L; v <= 68L; v++) {
+      primA.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, true);
+      secA.onBucketMutation(bucketId, memberP, v, "ka-" + v, vec, false);
+      if (v == 30L) {
+        primA.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+        secA.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+      } else if (v == 60L) {
+        primA.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+        secA.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+      }
+    }
+    primA.setCheckpointPinReplicator((b, m, sub, floor, ckpt) -> {
+      throw new IllegalStateException("simulated crash before lower-pin replication");
+    });
+
+    List<ContinuousVectorEvent> abortedWire = new ArrayList<>();
+    AtomicBoolean abortedBarrierRan = new AtomicBoolean(false);
+    boolean threw = false;
+    try {
+      primA.admitAndReplayForReconnect("sub-lag", bucketId,
+          Collections.singletonMap(memberP, 63L), abortedWire::add,
+          () -> abortedBarrierRan.set(true));
+    } catch (IllegalStateException expected) {
+      threw = true;
+    }
+    assertThat(threw).isTrue();
+    assertThat(abortedWire).isEmpty();
+    assertThat(abortedBarrierRan.get()).isFalse();
+    assertThat(primA.getCheckpointVersion(bucketId, memberP)).isEqualTo(64L);
+    assertThat(secA.getCheckpointVersion(bucketId, memberP)).isEqualTo(64L);
+
+    // Backup promotes and compacts up to its unreplicated V_ckpt=64 -> V_floor advances to 64;
+    // returning client at V_client=63 < V_floor=64 deterministically receives resyncRequired!
+    secA.onPrimaryPromotion(bucketId);
+    assertThat(secA.compactUpToCheckpoint(bucketId, memberP)).isEqualTo(64L);
+    assertThat(secA.getReplayFloorVersion(bucketId, memberP)).isEqualTo(64L);
+    List<ContinuousVectorEvent> preDurabilityRetry = secA.admitAndReplayForReconnect("sub-lag",
+        bucketId, Collections.singletonMap(memberP, 63L));
+    assertThat(preDurabilityRetry).isEmpty();
+    assertThat(secA.isResyncRequired(bucketId, memberP)).isTrue();
+    assertThat(secA.isSubscriberResyncRequired("sub-lag", bucketId, memberP)).isTrue();
+
+    // Part (b): Crash AFTER lower-pin durability point (replicator synchronously persists
+    // (V_floor=60, V_ckpt_lowered=63, "sub-lag") on backup strictly BEFORE replay release).
+    // Even if promoted backup compacts immediately before client retries, compaction stops at 63
+    // and protects version 64 intact!
+    ChordalVoronoiRouter rPrimB = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dPrimB = new RvvMonotonicVectorDispatcher(rPrimB, cTail, null, 64);
+    ContinuousVectorQueryService primB = new ContinuousVectorQueryService(rPrimB, dPrimB);
+    ChordalVoronoiRouter rSecB = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dSecB = new RvvMonotonicVectorDispatcher(rSecB, cTail, null, 64);
+    ContinuousVectorQueryService secB = new ContinuousVectorQueryService(rSecB, dSecB);
+    primB.registerSubscription("sub-lag", vec, 0.90f);
+    secB.registerSubscription("sub-lag", vec, 0.90f);
+
+    for (long v = 1L; v <= 68L; v++) {
+      primB.onBucketMutation(bucketId, memberP, v, "kb-" + v, vec, true);
+      secB.onBucketMutation(bucketId, memberP, v, "kb-" + v, vec, false);
+      if (v == 30L) {
+        primB.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+        secB.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+      } else if (v == 60L) {
+        primB.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+        secB.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+      }
+    }
+
+    List<String> durabilityOrder = new ArrayList<>();
+    primB.setCheckpointPinReplicator((b, m, sub, floor, ckpt) -> {
+      secB.applyReplicatedLowerPin(b, m, sub, floor, ckpt);
+      durabilityOrder.add("REPLICATED_LOWER_PIN:" + floor + ":" + ckpt);
+    });
+    primB.admitAndReplayForReconnect("sub-lag", bucketId,
+        Collections.singletonMap(memberP, 63L),
+        ev -> durabilityOrder
+            .add((ev.isHeartbeat() ? "HB:" : "DATA:") + ev.getRegionVersion()),
+        null);
+    assertThat(durabilityOrder.get(0)).isEqualTo("REPLICATED_LOWER_PIN:60:63");
+    assertThat(durabilityOrder).contains("DATA:64", "HB:68");
+    assertThat(secB.getReplayFloorVersion(bucketId, memberP)).isEqualTo(60L);
+    assertThat(secB.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(dSecB.getRegisteredCheckpointSubscribers()).contains("sub-lag");
+
+    // Primary crashes after durability point -> backup promotes and immediately compacts before
+    // client retries: compaction MUST stop at V_ckpt_lowered=63, protecting [64..68]!
+    secB.onPrimaryPromotion(bucketId);
+    assertThat(secB.compactUpToCheckpoint(bucketId, memberP)).isEqualTo(63L);
+    assertThat(secB.getReplayFloorVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(dSecB.getTailSize(bucketId)).isEqualTo(5); // [64..68] intact!
+
+    RvvClientGate retryGate = new RvvClientGate();
+    retryGate.registerSubscription("sub-lag");
+    retryGate.restoreHighWaterVersion("sub-lag", bucketId, memberP, 63L);
+    List<ContinuousVectorEvent> retryDelivered = new ArrayList<>();
+    retryGate.addListener(retryDelivered::add);
+    secB.admitAndReplayForReconnect("sub-lag", bucketId, Collections.singletonMap(memberP, 63L),
+        retryGate::tryAccept, null);
+    assertThat(retryDelivered).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L, 67L, 68L);
+    assertThat(secB.isResyncRequired(bucketId, memberP)).isFalse();
+
+    // Part (c): Heartbeat timer (oldestUncoveredMutationTimeMs) preserved across reconnect
+    // lower-pin when (V_ckpt, V_contig] is already resident after an earlier heartbeat reset!
+    ChordalVoronoiRouter rHb = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dHb = new RvvMonotonicVectorDispatcher(rHb, cTail, null, 64);
+    ContinuousVectorQueryService svcHb = new ContinuousVectorQueryService(rHb, dHb);
+    svcHb.registerSubscription("sub-lag", vec, 0.90f);
+    for (long v = 1L; v <= 68L; v++) {
+      svcHb.onBucketMutation(bucketId, memberP, v, "kh-" + v, vec, true);
+      if (v == 30L) {
+        svcHb.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+      } else if (v == 60L) {
+        svcHb.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+      }
+    }
+    long baseNow = System.currentTimeMillis();
+    assertThat(svcHb.flushIdleHeartbeats(baseNow + 500L, 100L)).isEqualTo(1);
+    assertThat(svcHb.getOldestUncoveredMutationTimeMs(bucketId, memberP)).isZero();
+    assertThat(svcHb.flushIdleHeartbeats(baseNow + 1_000L, 100L)).isZero();
+
+    // Unicast reconnect lowers V_ckpt 64 -> 63 while [64..68] is already resident -> MUST
+    // initialize oldestUncoveredMutationTimeMs so idle heartbeat fires within Delta_hb!
+    svcHb.admitAndReplayForReconnect("sub-lag", bucketId,
+        Collections.singletonMap(memberP, 63L), ev -> {
+        }, null);
+    assertThat(svcHb.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(svcHb.getOldestUncoveredMutationTimeMs(bucketId, memberP)).isGreaterThan(0L);
+    assertThat(svcHb.flushIdleHeartbeats(baseNow + 1_500L, 100L)).isEqualTo(1);
+    assertThat(svcHb.getOldestUncoveredMutationTimeMs(bucketId, memberP)).isZero();
+
+    // Also verify admitSubscriberForContinuity initializes oldestUncoveredMutationTimeMs when
+    // lowering V_ckpt (65 -> 63 with V_floor=63) while [64..68] is already resident!
+    svcHb.recordReplicatedCheckpoint(bucketId, memberP, 65L);
+    assertThat(svcHb.admitSubscriberForContinuity("sub-lag2", bucketId, memberP, 63L)).isTrue();
+    assertThat(svcHb.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(svcHb.getOldestUncoveredMutationTimeMs(bucketId, memberP)).isGreaterThan(0L);
+    assertThat(svcHb.flushIdleHeartbeats(baseNow + 2_000L, 100L)).isEqualTo(1);
+  }
+
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
       List<ContinuousVectorEvent> wireEvents) {
     Set<String> seenHeartbeats = new HashSet<>();

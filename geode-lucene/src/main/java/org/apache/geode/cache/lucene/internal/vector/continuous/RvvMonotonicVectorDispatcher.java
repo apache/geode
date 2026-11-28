@@ -130,6 +130,18 @@ public class RvvMonotonicVectorDispatcher {
   }
 
   /**
+   * Synchronous replication hook invoked strictly BEFORE releasing reconnect replay batches to
+   * durably replicate the lower-pinned {@code (V_floor, V_ckpt_lowered)} pair and enrolled
+   * subscriber ID to backup replicas. If replication throws (e.g., primary death prior to the
+   * lower-pin durability point), replay release is aborted atomically.
+   */
+  @FunctionalInterface
+  public interface CheckpointPinReplicator {
+    void replicateFloorAndCheckpointPin(int bucketId, String memberId, String subscriberId,
+        long replayFloor, long checkpointVersion);
+  }
+
+  /**
    * Immutable mutation record stored in a bucket's replayable delta tail buffer.
    */
   public static final class TailMutation {
@@ -328,6 +340,43 @@ public class RvvMonotonicVectorDispatcher {
       oldestUncoveredMutationTimeMsByMember.put(memberId, 0L);
     }
 
+    /**
+     * Ensures that whenever a reconnect lower-pin or recovery leaves a contiguous uncheckpointed
+     * resident suffix {@code (V_ckpt[b, m], V_contig[b, m]]}, the uncovered-event count and
+     * {@code oldestUncoveredMutationTimeMs} are initialized (anchored to the oldest resident entry
+     * above {@code V_ckpt}, clamped to {@code nowMs}) so the age-bounded heartbeat deadline
+     * {@code Delta_hb} holds unconditionally even if an earlier heartbeat already reset the
+     * counter.
+     */
+    synchronized void ensureUncoveredHeartbeatTimerInitialized(String memberId, long nowMs,
+        boolean enforceContiguous) {
+      long ckpt = checkpointByMember.getOrDefault(memberId, 0L);
+      long contig = getContiguousHeadVersion(memberId, enforceContiguous);
+      if (contig <= ckpt) {
+        return;
+      }
+      long prevPending = eventsSinceHeartbeatByMember.getOrDefault(memberId, 0L);
+      if (prevPending <= 0L) {
+        eventsSinceHeartbeatByMember.put(memberId, contig - ckpt);
+      }
+      long existingOldest = oldestUncoveredMutationTimeMsByMember.getOrDefault(memberId, 0L);
+      if (existingOldest <= 0L) {
+        long anchorTs = nowMs > 0L ? nowMs : System.currentTimeMillis();
+        TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+        if (stream != null && !stream.isEmpty()) {
+          Map.Entry<Long, TailMutation> firstUnckpt = stream.higherEntry(ckpt);
+          if (firstUnckpt != null && firstUnckpt.getValue().timestamp > 0L) {
+            anchorTs = Math.min(anchorTs, firstUnckpt.getValue().timestamp);
+          }
+        }
+        oldestUncoveredMutationTimeMsByMember.put(memberId, anchorTs);
+      }
+    }
+
+    synchronized long getOldestUncoveredMutationTimeMs(String memberId) {
+      return oldestUncoveredMutationTimeMsByMember.getOrDefault(memberId, 0L);
+    }
+
     synchronized boolean wouldOverflow(String memberId, long regionVersion, int maxTailPerStream) {
       long floor = replayFloorByMember.getOrDefault(memberId, 0L);
       if (regionVersion <= floor) {
@@ -516,6 +565,11 @@ public class RvvMonotonicVectorDispatcher {
         if (stream != null) {
           stream.headMap(ackedVersion, true).clear();
         }
+      }
+      long lastDispatched = lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
+      TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
+      if (ackedVersion >= lastDispatched && (stream == null || stream.isEmpty())) {
+        resetHeartbeatCounter(memberId);
       }
     }
 
@@ -752,6 +806,7 @@ public class RvvMonotonicVectorDispatcher {
   private volatile boolean enforceContiguousVersions = true;
   private volatile int maxHoldbackGap = DEFAULT_MAX_HOLDBACK_GAP;
   private volatile long maxHoldbackAgeMillis = DEFAULT_MAX_HOLDBACK_AGE_MILLIS;
+  private volatile CheckpointPinReplicator checkpointPinReplicator;
   private ScheduledExecutorService idleHeartbeatScheduler;
 
   public RvvMonotonicVectorDispatcher(ChordalVoronoiRouter router) {
@@ -1076,6 +1131,19 @@ public class RvvMonotonicVectorDispatcher {
 
   public boolean removeReplayFloorResyncListener(ReplayFloorResyncListener listener) {
     return replayFloorListeners.remove(listener);
+  }
+
+  /**
+   * Configures a synchronous replication callback invoked strictly BEFORE releasing reconnect
+   * replay batches to durably replicate {@code (V_floor, V_ckpt_lowered)} and the enrolled
+   * subscriber ID to backup replicas.
+   */
+  public void setCheckpointPinReplicator(CheckpointPinReplicator replicator) {
+    this.checkpointPinReplicator = replicator;
+  }
+
+  public CheckpointPinReplicator getCheckpointPinReplicator() {
+    return checkpointPinReplicator;
   }
 
   /**
@@ -1448,7 +1516,21 @@ public class RvvMonotonicVectorDispatcher {
           }
         }
         if (floorViolations.isEmpty()) {
+          CheckpointPinReplicator replicator = this.checkpointPinReplicator;
+          long nowMs = System.currentTimeMillis();
           if (subscriberId != null && !subscriberId.isEmpty()) {
+            if (replicator != null) {
+              for (String memberId : sortedMembers) {
+                long floor = state.getReplayFloor(memberId);
+                long prevCkpt = state.getCheckpoint(memberId);
+                Long hw = clientHighWaterByMember != null ? clientHighWaterByMember.get(memberId)
+                    : null;
+                long clientHw = (hw != null && hw > 0L) ? hw : 0L;
+                long pinnedCkpt = Math.max(floor, Math.min(prevCkpt, clientHw));
+                replicator.replicateFloorAndCheckpointPin(bucketId, memberId, subscriberId, floor,
+                    pinnedCkpt);
+              }
+            }
             registeredCheckpointSubscribers.add(subscriberId);
             Set<String> healthy =
                 Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
@@ -1460,6 +1542,8 @@ public class RvvMonotonicVectorDispatcher {
               state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHw);
               state.pinCheckpointForAdmittedSubscriber(memberId, clientHw);
               state.recomputeMinHealthyCheckpoint(memberId, healthy);
+              state.ensureUncoveredHeartbeatTimerInitialized(memberId, nowMs,
+                  enforceContiguousVersions);
             }
           }
           TreeMap<String, Long> maxVersionByMember = new TreeMap<>();
@@ -1511,13 +1595,24 @@ public class RvvMonotonicVectorDispatcher {
             markSubscriberResyncRequired(subscriberId, bucketId, memberId);
           }
         } else if (subscriberId != null && !subscriberId.isEmpty()) {
+          CheckpointPinReplicator replicator = this.checkpointPinReplicator;
+          long sanitizedHw = Math.max(0L, clientHighWater);
+          if (replicator != null) {
+            long prevCkpt = state.getCheckpoint(memberId);
+            long pinnedCkpt = Math.max(floor, Math.min(prevCkpt, sanitizedHw));
+            replicator.replicateFloorAndCheckpointPin(bucketId, memberId, subscriberId, floor,
+                pinnedCkpt);
+          }
+          long nowMs = System.currentTimeMillis();
           registeredCheckpointSubscribers.add(subscriberId);
           clearSubscriberResyncRequired(subscriberId, bucketId, memberId);
-          state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHighWater);
-          state.pinCheckpointForAdmittedSubscriber(memberId, clientHighWater);
+          state.pinSubscriberAckForAdmission(subscriberId, memberId, sanitizedHw);
+          state.pinCheckpointForAdmittedSubscriber(memberId, sanitizedHw);
           Set<String> healthy =
               Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
           state.recomputeMinHealthyCheckpoint(memberId, healthy);
+          state.ensureUncoveredHeartbeatTimerInitialized(memberId, nowMs,
+              enforceContiguousVersions);
         }
       }
     }
@@ -1579,6 +1674,20 @@ public class RvvMonotonicVectorDispatcher {
           }
         }
         if (violations.isEmpty() && subscriberId != null && !subscriberId.isEmpty()) {
+          CheckpointPinReplicator replicator = this.checkpointPinReplicator;
+          if (replicator != null) {
+            for (String memberId : members) {
+              long floor = state.getReplayFloor(memberId);
+              long prevCkpt = state.getCheckpoint(memberId);
+              Long hw = clientHighWaterByMember != null ? clientHighWaterByMember.get(memberId)
+                  : null;
+              long clientHw = (hw != null && hw > 0L) ? hw : 0L;
+              long pinnedCkpt = Math.max(floor, Math.min(prevCkpt, clientHw));
+              replicator.replicateFloorAndCheckpointPin(bucketId, memberId, subscriberId, floor,
+                  pinnedCkpt);
+            }
+          }
+          long nowMs = System.currentTimeMillis();
           registeredCheckpointSubscribers.add(subscriberId);
           Set<String> healthy =
               Collections.unmodifiableSet(new HashSet<>(registeredCheckpointSubscribers));
@@ -1590,6 +1699,8 @@ public class RvvMonotonicVectorDispatcher {
             state.pinSubscriberAckForAdmission(subscriberId, memberId, clientHw);
             state.pinCheckpointForAdmittedSubscriber(memberId, clientHw);
             state.recomputeMinHealthyCheckpoint(memberId, healthy);
+            state.ensureUncoveredHeartbeatTimerInitialized(memberId, nowMs,
+                enforceContiguousVersions);
           }
         } else if (!violations.isEmpty() && subscriberId != null && !subscriberId.isEmpty()) {
           for (ReplayFloorViolationRecord rec : violations) {
@@ -1676,6 +1787,40 @@ public class RvvMonotonicVectorDispatcher {
         if (sanitizedCkpt > 0L) {
           state.advanceCheckpointWithoutCompaction(memberId, sanitizedCkpt);
         }
+      }
+    }
+  }
+
+  /**
+   * Atomically applies a synchronously replicated lower-pin {@code (V_floor, V_ckpt_lowered)} and
+   * enrolled subscriber ID on a backup replica under {@code (subscriberRegistryLock, state)},
+   * lowering {@code V_ckpt} to {@code max(V_floor, min(V_ckpt, replicatedCheckpoint))} so a
+   * promoted survivor honors the lower pin against {@link #compactUpToCheckpoint(int, String)} and
+   * preserves {@code oldestUncoveredMutationTimeMs} for {@code (V_ckpt, V_contig]}.
+   */
+  public void applyReplicatedLowerPin(int bucketId, String memberId, String subscriberId,
+      long replicatedFloor, long replicatedCheckpoint) {
+    if (memberId == null || memberId.isEmpty()) {
+      return;
+    }
+    long sanitizedFloor = Math.max(0L, replicatedFloor);
+    long sanitizedCkpt = Math.max(sanitizedFloor, replicatedCheckpoint);
+    long nowMs = System.currentTimeMillis();
+    synchronized (subscriberRegistryLock) {
+      BucketState state = bucketStates.computeIfAbsent(bucketId, ignored -> new BucketState());
+      synchronized (state) {
+        if (sanitizedFloor > 0L) {
+          state.compactToFloor(memberId, sanitizedFloor);
+        }
+        long effectiveFloor = state.getReplayFloor(memberId);
+        long targetCkpt = Math.max(effectiveFloor, sanitizedCkpt);
+        if (subscriberId != null && !subscriberId.isEmpty()) {
+          registeredCheckpointSubscribers.add(subscriberId);
+          clearSubscriberResyncRequired(subscriberId, bucketId, memberId);
+          state.pinSubscriberAckForAdmission(subscriberId, memberId, targetCkpt);
+        }
+        state.pinCheckpointForAdmittedSubscriber(memberId, targetCkpt);
+        state.ensureUncoveredHeartbeatTimerInitialized(memberId, nowMs, enforceContiguousVersions);
       }
     }
   }
@@ -1820,6 +1965,15 @@ public class RvvMonotonicVectorDispatcher {
   public long getContiguousHeadVersion(int bucketId, String memberId) {
     BucketState state = bucketStates.get(bucketId);
     return state == null ? 0L : state.getContiguousHeadVersion(memberId, enforceContiguousVersions);
+  }
+
+  /**
+   * Returns {@code oldestUncoveredMutationTimeMs[bucketId, memberId]} ({@code 0} when no uncovered
+   * contiguous mutations are pending an age-bounded watermark heartbeat).
+   */
+  public long getOldestUncoveredMutationTimeMs(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0L : state.getOldestUncoveredMutationTimeMs(memberId);
   }
 
   public int getMaxTailPerStream() {

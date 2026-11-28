@@ -356,6 +356,21 @@ public class ContinuousVectorQueryService {
   }
 
   /**
+   * Atomically applies a synchronously replicated lower-pin {@code (V_floor, V_ckpt_lowered)} and
+   * enrolled subscriber ID on a backup replica.
+   */
+  public void applyReplicatedLowerPin(int bucketId, String memberId, String subscriberId,
+      long replicatedFloor, long replicatedCheckpoint) {
+    dispatcher.applyReplicatedLowerPin(bucketId, memberId, subscriberId, replicatedFloor,
+        replicatedCheckpoint);
+  }
+
+  public void setCheckpointPinReplicator(
+      RvvMonotonicVectorDispatcher.CheckpointPinReplicator replicator) {
+    dispatcher.setCheckpointPinReplicator(replicator);
+  }
+
+  /**
    * Atomically compacts tail entries up to the current {@code V_ckpt[bucketId, memberId]} and
    * advances {@code V_floor[bucketId, memberId]} to match in the same critical section.
    */
@@ -395,6 +410,10 @@ public class ContinuousVectorQueryService {
 
   public long getContiguousHeadVersion(int bucketId, String memberId) {
     return dispatcher.getContiguousHeadVersion(bucketId, memberId);
+  }
+
+  public long getOldestUncoveredMutationTimeMs(int bucketId, String memberId) {
+    return dispatcher.getOldestUncoveredMutationTimeMs(bucketId, memberId);
   }
 
   public long getReplayFloorResyncCount() {
