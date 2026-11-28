@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -61,6 +62,7 @@ public class Tier0VectorRegistry {
       new ConcurrentHashMap<>();
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, ReentrantLock>> bucketFlushLocks =
       new ConcurrentHashMap<>();
+  private final Set<IndexKey> managedIndexes = ConcurrentHashMap.newKeySet();
   private final AtomicLong ownershipGenerationSequence = new AtomicLong(0L);
   private final AtomicLong globalResetGeneration = new AtomicLong(0L);
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, AtomicLong>> ownershipGenerations =
@@ -82,6 +84,8 @@ public class Tier0VectorRegistry {
   private final AtomicLong unsupportedFilterFlushFallbackCount = new AtomicLong(0L);
   private final AtomicLong inlineMaskQueryCount = new AtomicLong(0L);
   private final AtomicLong oversampleFallbackQueryCount = new AtomicLong(0L);
+  private final AtomicLong staleAeqEventsDroppedCount = new AtomicLong(0L);
+  private final AtomicLong deferredUnpinnedAeqEventsCount = new AtomicLong(0L);
 
   public Tier0VectorRegistry() {}
 
@@ -115,10 +119,26 @@ public class Tier0VectorRegistry {
   public Tier0VectorDeltaBuffer<Object> getOrCreateBuffer(String regionPath, String indexName,
       int bucketId) {
     IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    managedIndexes.add(key);
     ReentrantLock flushLock = getOrCreateFlushLock(key, bucketId);
     return buffers
         .computeIfAbsent(key, k -> new ConcurrentHashMap<>())
         .computeIfAbsent(bucketId, b -> new Tier0VectorDeltaBuffer<>(b, flushLock));
+  }
+
+  /**
+   * Marks {@code (regionPath, indexName)} as managed by Tier-0 vector listeners so Path A can
+   * enforce the pre-pin fence even before the first write creates a bucket's delta buffer.
+   */
+  public void markIndexManaged(String regionPath, String indexName) {
+    managedIndexes.add(new IndexKey(normalizeRegionPath(regionPath), indexName));
+  }
+
+  /**
+   * Returns {@code true} if {@code (regionPath, indexName)} is managed by Tier-0 vector listeners.
+   */
+  public boolean isIndexManaged(String regionPath, String indexName) {
+    return managedIndexes.contains(new IndexKey(normalizeRegionPath(regionPath), indexName));
   }
 
   /**
@@ -158,12 +178,29 @@ public class Tier0VectorRegistry {
 
   public long recordPut(String regionPath, String indexName, int bucketId, Object key,
       float[] vector, Map<String, Object> metadata, Object regionValue) {
+    return recordPut(regionPath, indexName, bucketId, key, vector, metadata, regionValue, null);
+  }
+
+  public long recordPut(String regionPath, String indexName, int bucketId, Object key,
+      float[] vector, Map<String, Object> metadata, Object regionValue, Object eventId) {
     return getOrCreateBuffer(regionPath, indexName, bucketId)
-        .put(key, vector, metadata, regionValue);
+        .put(key, vector, metadata, regionValue, eventId);
   }
 
   public long recordDestroy(String regionPath, String indexName, int bucketId, Object key) {
-    return getOrCreateBuffer(regionPath, indexName, bucketId).destroy(key);
+    return recordDestroy(regionPath, indexName, bucketId, key, null);
+  }
+
+  public long recordDestroy(String regionPath, String indexName, int bucketId, Object key,
+      Object eventId) {
+    return getOrCreateBuffer(regionPath, indexName, bucketId).destroy(key, eventId);
+  }
+
+  public void recordNonVectorEvent(String regionPath, String indexName, int bucketId,
+      Object eventId) {
+    if (eventId != null) {
+      getOrCreateBuffer(regionPath, indexName, bucketId).recordNonVectorEvent(eventId);
+    }
   }
 
   public void removeBucket(String regionPath, String indexName, int bucketId) {
@@ -192,6 +229,7 @@ public class Tier0VectorRegistry {
         .accumulateAndGet(resetGen, Math::max);
     ownershipGenerations.remove(key);
     bucketFlushLocks.remove(key);
+    managedIndexes.remove(key);
     releaseHydrationLatchesForIndex(key);
     ConcurrentHashMap<Integer, FlushCycleRing> removedRings = flushCycleRings.remove(key);
     if (removedRings != null) {
@@ -228,6 +266,7 @@ public class Tier0VectorRegistry {
     indexResetGenerations.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
     ownershipGenerations.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
     bucketFlushLocks.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
+    managedIndexes.removeIf(indexKey -> indexKey.regionPath.equals(normalized));
     hydrationBarriers.keySet().removeIf(indexKey -> {
       if (indexKey.regionPath.equals(normalized)) {
         releaseHydrationLatchesForIndex(indexKey);
@@ -539,6 +578,22 @@ public class Tier0VectorRegistry {
     return oversampleFallbackQueryCount.incrementAndGet();
   }
 
+  public long getStaleAeqEventsDroppedCount() {
+    return staleAeqEventsDroppedCount.get();
+  }
+
+  public long incrementStaleAeqEventsDroppedCount() {
+    return staleAeqEventsDroppedCount.incrementAndGet();
+  }
+
+  public long getDeferredUnpinnedAeqEventsCount() {
+    return deferredUnpinnedAeqEventsCount.get();
+  }
+
+  public long incrementDeferredUnpinnedAeqEventsCount() {
+    return deferredUnpinnedAeqEventsCount.incrementAndGet();
+  }
+
   private void releaseHydrationLatch(IndexKey key, int bucketId) {
     ConcurrentHashMap<Integer, CountDownLatch> bucketMap = hydrationBarriers.get(key);
     if (bucketMap != null) {
@@ -582,6 +637,7 @@ public class Tier0VectorRegistry {
     indexResetGenerations.clear();
     ownershipGenerations.clear();
     bucketFlushLocks.clear();
+    managedIndexes.clear();
     hydrationBarriers.values().forEach(map -> {
       map.values().forEach(CountDownLatch::countDown);
       map.clear();

@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -76,6 +77,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.execute.ResultSender;
@@ -98,12 +100,14 @@ import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -169,6 +173,7 @@ public class DistributedHybridKnnFunctionJUnitTest {
 
   @After
   public void tearDown() {
+    IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
     Tier0VectorRegistry.removeCache(mockCache);
   }
 
@@ -2590,6 +2595,387 @@ public class DistributedHybridKnnFunctionJUnitTest {
       verify(pathCSender).lastResult(captorC.capture());
       List<EntryScore<Object>> hitsC = captorC.getValue().getEntries().getHits();
       assertThat(hitsC.get(0).getScore()).isCloseTo(expectedScoreV2, within(1e-4f));
+    }
+  }
+
+  /**
+   * Verifies Theorem 2(1) Path-A version fencing and post-commit/pre-refresh recovery across all
+   * three v19 schedules: (a) writer paused between AEQ enqueue and Tier-0 pin while Path A runs
+   * (zero pre-pin publication); (b) delayed stale AEQ event arriving after Path B committed and
+   * evicted a newer value, a delete, and a delete+recreate (zero stale regression or resurrection);
+   * and (c) interruption strictly after {@code IndexWriter.commit()} and before
+   * {@code SearcherManager.maybeRefreshBlocking()} / eviction under {@code flushLock} on both Path
+   * B and Path A (zero visibility loss, zero duplicate hits, and clean retry recovery).
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  public void pathAEnforcesPrePinFenceStaleAeqRegressionRejectionAndPostCommitPreRefreshRecovery()
+      throws Exception {
+    float[] queryVec = new float[] {1.0f, 0.0f};
+    float[] v1 = new float[] {0.4f, 0.9165151f};
+    float[] v2 = new float[] {0.95f, 0.3122499f};
+    float[] v3 = new float[] {0.99f, 0.14106736f};
+    float scoreV1 = VectorSimilarityScorer.score(queryVec, v1, VectorSimilarityFunction.COSINE);
+    float scoreV2 = VectorSimilarityScorer.score(queryVec, v2, VectorSimilarityFunction.COSINE);
+    float scoreV3 = VectorSimilarityScorer.score(queryVec, v3, VectorSimilarityFunction.COSINE);
+    Object[] payloadV1 = new Object[] {v1, "books"};
+    Object[] payloadV2 = new Object[] {v2, "books"};
+    Object[] payloadV3 = new Object[] {v3, "books"};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.NO));
+      return Collections.singletonList(doc);
+    };
+
+    BucketRegion mockBucket = mock(BucketRegion.class);
+    when(mockBucket.getId()).thenReturn(0);
+    when(mockBucket.isDestroyed()).thenReturn(false);
+
+    Region<Object, Object> aeqRegion = mock(Region.class);
+    when(aeqRegion.getFullPath()).thenReturn(REGION_PATH);
+    when(aeqRegion.getEntry(any())).thenAnswer(inv -> {
+      throw new AssertionError("Path A must never read live BucketRegion on a Tier-0 bucket");
+    });
+
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+    when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    registry.markIndexManaged(REGION_PATH, INDEX_NAME);
+
+    java.util.concurrent.atomic.AtomicInteger repoUpdates =
+        new java.util.concurrent.atomic.AtomicInteger(0);
+    java.util.concurrent.atomic.AtomicInteger repoDeletes =
+        new java.util.concurrent.atomic.AtomicInteger(0);
+    java.util.concurrent.atomic.AtomicInteger repoCommits =
+        new java.util.concurrent.atomic.AtomicInteger(0);
+
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockBucket, writer, serializer, mockStats, mockBucket, null, "lock", mockIndex) {
+        @Override
+        public void update(Object key, Object value) throws IOException {
+          repoUpdates.incrementAndGet();
+          super.update(key, value);
+        }
+
+        @Override
+        public void delete(Object key) throws IOException {
+          repoDeletes.incrementAndGet();
+          super.delete(key);
+        }
+
+        @Override
+        public synchronized void commit() throws IOException {
+          repoCommits.incrementAndGet();
+          super.commit();
+        }
+
+        @Override
+        public synchronized void commitAndRefreshBlocking() throws IOException {
+          repoCommits.incrementAndGet();
+          super.commitAndRefreshBlocking();
+        }
+      };
+
+      when(mockRepoManager.getRepository(eq(aeqRegion), any(), any())).thenReturn(repo);
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      LuceneEventListener aeqListener = new LuceneEventListener(mockCache, mockRepoManager);
+      HybridKnnQueryContext hybridCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .addMetadataFilter("category", "books")
+          .build();
+      HybridKnnQueryContext pathBCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+
+      // Schedule (a): Pre-pin fence on BOTH cold-start (buffer == null) and post-pin empty slot.
+      EventID idCold = new EventID(new byte[] {1}, 1L, 1L);
+      GatewaySenderEventImpl coldEvent = mock(GatewaySenderEventImpl.class);
+      doReturn(aeqRegion).when(coldEvent).getRegion();
+      when(coldEvent.getKey()).thenReturn("k-prepin");
+      when(coldEvent.getOperation()).thenReturn(Operation.CREATE);
+      when(coldEvent.getDeserializedValue()).thenReturn(payloadV1);
+      when(coldEvent.getEventId()).thenReturn(idCold);
+
+      long epochBeforeCold = repo.getSearcherEpoch();
+      assertThat(aeqListener.processEvents(List.of(coldEvent))).isFalse();
+      assertThat(repoUpdates.get()).isEqualTo(0);
+      assertThat(repoDeletes.get()).isEqualTo(0);
+      assertThat(repoCommits.get()).isEqualTo(0);
+      assertThat(repo.getSearcherEpoch()).isEqualTo(epochBeforeCold);
+      assertThat(registry.getDeferredUnpinnedAeqEventsCount()).isEqualTo(1L);
+
+      // Hybrid read observes zero unpinned publication.
+      ResultSender<TopEntriesCollector> prePinSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(prePinSender);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> prePinCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(prePinSender).lastResult(prePinCaptor.capture());
+      List<EntryScore<Object>> prePinHits = prePinCaptor.getValue().getEntries().getHits();
+      assertThat(prePinHits).isEmpty();
+
+      // Once writer pins k-prepin into Tier-0, AEQ retry commits cleanly and returns true.
+      Tier0VectorDeltaBuffer<Object> buffer =
+          registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+      buffer.put("k-prepin", v1, Map.of("category", "books"), payloadV1, idCold);
+      assertThat(aeqListener.processEvents(List.of(coldEvent))).isTrue();
+      assertThat(buffer.getTotalSize()).isEqualTo(0);
+      assertThat(buffer.getPinnedEventSequence(idCold)).isEqualTo(-1L);
+
+      // Also verify pre-pin fence when buffer already exists (post-eviction empty slot for
+      // k-prepin2)
+      EventID idPostEvict = new EventID(new byte[] {1}, 1L, 2L);
+      GatewaySenderEventImpl postEvictUnpinned = mock(GatewaySenderEventImpl.class);
+      doReturn(aeqRegion).when(postEvictUnpinned).getRegion();
+      when(postEvictUnpinned.getKey()).thenReturn("k-prepin2");
+      when(postEvictUnpinned.getOperation()).thenReturn(Operation.CREATE);
+      when(postEvictUnpinned.getDeserializedValue()).thenReturn(payloadV2);
+      when(postEvictUnpinned.getEventId()).thenReturn(idPostEvict);
+      int updatesBefore = repoUpdates.get();
+      int commitsBefore = repoCommits.get();
+      assertThat(aeqListener.processEvents(List.of(postEvictUnpinned))).isFalse();
+      assertThat(repoUpdates.get()).isEqualTo(updatesBefore);
+      assertThat(repoCommits.get()).isEqualTo(commitsBefore);
+
+      // Schedule (b): Delayed stale AEQ events arriving after Path B committed & evicted newer
+      // overwrite v2, delete tombstone, and recreate v3.
+      EventID idW1 = new EventID(new byte[] {1}, 2L, 10L);
+      EventID idW2 = new EventID(new byte[] {1}, 2L, 11L);
+      EventID idDel = new EventID(new byte[] {1}, 2L, 12L);
+      EventID idW3 = new EventID(new byte[] {1}, 2L, 13L);
+
+      long seqW1 = buffer.put("k-stale", v1, Map.of("category", "books"), payloadV1, idW1);
+      long seqW2 = buffer.put("k-stale", v2, Map.of("category", "books"), payloadV2, idW2);
+      assertThat(seqW2).isGreaterThan(seqW1);
+
+      // Path B commits & evicts v2 -> Tier-0 empty and maxCommittedSequence("k-stale") == seqW2.
+      ResultSender<TopEntriesCollector> pathBSenderW2 = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSenderW2);
+      when(mockContext.getArguments()).thenReturn(pathBCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      assertThat(buffer.getTotalSize()).isEqualTo(0);
+      assertThat(buffer.getMaxCommittedSequence("k-stale")).isEqualTo(seqW2);
+
+      GatewaySenderEventImpl staleEventW1 = mock(GatewaySenderEventImpl.class);
+      doReturn(aeqRegion).when(staleEventW1).getRegion();
+      when(staleEventW1.getKey()).thenReturn("k-stale");
+      when(staleEventW1.getOperation()).thenReturn(Operation.CREATE);
+      when(staleEventW1.getDeserializedValue()).thenReturn(payloadV1);
+      when(staleEventW1.getEventId()).thenReturn(idW1);
+
+      int updatesPreStale = repoUpdates.get();
+      int deletesPreStale = repoDeletes.get();
+      int commitsPreStale = repoCommits.get();
+      assertThat(aeqListener.processEvents(List.of(staleEventW1))).isTrue();
+      assertThat(repoUpdates.get()).isEqualTo(updatesPreStale);
+      assertThat(repoDeletes.get()).isEqualTo(deletesPreStale);
+      assertThat(repoCommits.get()).isEqualTo(commitsPreStale);
+      assertThat(registry.getStaleAeqEventsDroppedCount()).isEqualTo(1L);
+      assertThat(buffer.getPinnedEventSequence(idW1)).isEqualTo(-1L);
+
+      // Hybrid read still observes v2 (zero regression to v1).
+      ResultSender<TopEntriesCollector> afterStaleW1Sender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(afterStaleW1Sender);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> afterStaleW1Captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(afterStaleW1Sender).lastResult(afterStaleW1Captor.capture());
+      List<EntryScore<Object>> afterStaleW1Hits =
+          afterStaleW1Captor.getValue().getEntries().getHits();
+      assertThat(afterStaleW1Hits).filteredOn(h -> "k-stale".equals(h.getKey()))
+          .singleElement()
+          .satisfies(h -> assertThat(h.getScore()).isCloseTo(scoreV2, within(1e-4f)));
+
+      // Delete k-stale via Path B -> delayed put event idW2 MUST NOT resurrect deleted key!
+      long seqDel = buffer.destroy("k-stale", idDel);
+      assertThat(seqDel).isGreaterThan(seqW2);
+      ResultSender<TopEntriesCollector> pathBSenderDel = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSenderDel);
+      when(mockContext.getArguments()).thenReturn(pathBCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      assertThat(buffer.getMaxCommittedSequence("k-stale")).isEqualTo(seqDel);
+
+      GatewaySenderEventImpl staleEventW2 = mock(GatewaySenderEventImpl.class);
+      doReturn(aeqRegion).when(staleEventW2).getRegion();
+      when(staleEventW2.getKey()).thenReturn("k-stale");
+      when(staleEventW2.getOperation()).thenReturn(Operation.UPDATE);
+      when(staleEventW2.getDeserializedValue()).thenReturn(payloadV2);
+      when(staleEventW2.getEventId()).thenReturn(idW2);
+      int updatesPreResurrect = repoUpdates.get();
+      assertThat(aeqListener.processEvents(List.of(staleEventW2))).isTrue();
+      assertThat(repoUpdates.get()).isEqualTo(updatesPreResurrect);
+      assertThat(registry.getStaleAeqEventsDroppedCount()).isEqualTo(2L);
+
+      // Recreate k-stale with v3 via Path B -> delayed destroy event idDel MUST NOT wipe out v3!
+      long seqW3 = buffer.put("k-stale", v3, Map.of("category", "books"), payloadV3, idW3);
+      assertThat(seqW3).isGreaterThan(seqDel);
+      ResultSender<TopEntriesCollector> pathBSenderW3 = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSenderW3);
+      when(mockContext.getArguments()).thenReturn(pathBCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      assertThat(buffer.getMaxCommittedSequence("k-stale")).isEqualTo(seqW3);
+
+      GatewaySenderEventImpl staleEventDel = mock(GatewaySenderEventImpl.class);
+      doReturn(aeqRegion).when(staleEventDel).getRegion();
+      when(staleEventDel.getKey()).thenReturn("k-stale");
+      when(staleEventDel.getOperation()).thenReturn(Operation.DESTROY);
+      when(staleEventDel.getEventId()).thenReturn(idDel);
+      int deletesPreWipe = repoDeletes.get();
+      assertThat(aeqListener.processEvents(List.of(staleEventDel))).isTrue();
+      assertThat(repoDeletes.get()).isEqualTo(deletesPreWipe);
+      assertThat(registry.getStaleAeqEventsDroppedCount()).isEqualTo(3L);
+
+      ResultSender<TopEntriesCollector> afterRecreateSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(afterRecreateSender);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> afterRecreateCaptor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(afterRecreateSender).lastResult(afterRecreateCaptor.capture());
+      List<EntryScore<Object>> afterRecreateHits =
+          afterRecreateCaptor.getValue().getEntries().getHits();
+      assertThat(afterRecreateHits).filteredOn(h -> "k-stale".equals(h.getKey()))
+          .singleElement()
+          .satisfies(h -> assertThat(h.getScore()).isCloseTo(scoreV3, within(1e-4f)));
+
+      // Schedule (c): Failure strictly AFTER IndexWriter.commit() succeeds and BEFORE
+      // SearcherManager.maybeRefreshBlocking() / eviction on BOTH Path B and Path A.
+      EventID idPostCommitB = new EventID(new byte[] {1}, 3L, 20L);
+      long seqPostCommitB =
+          buffer.put("k-postcommit-b", v1, Map.of("category", "books"), payloadV1, idPostCommitB);
+      AtomicBoolean failOnce = new AtomicBoolean(true);
+      IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(() -> {
+        if (failOnce.compareAndSet(true, false)) {
+          throw new RuntimeException("simulated interruption after commit before refresh (Path B)");
+        }
+      });
+
+      ResultSender<TopEntriesCollector> failPathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(failPathBSender);
+      when(mockContext.getArguments()).thenReturn(pathBCtx);
+      boolean threwPathB = false;
+      try {
+        new DistributedHybridKnnFunction().execute(mockContext);
+      } catch (RuntimeException expected) {
+        threwPathB = true;
+        Throwable root = expected;
+        while (root.getCause() != null) {
+          root = root.getCause();
+        }
+        assertThat(expected.getMessage() + " | " + root.getMessage())
+            .contains("simulated interruption");
+      } finally {
+        IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
+      }
+      assertThat(threwPathB).isTrue();
+
+      // Even searcherEpoch, released flushLock, E_flushing cleared, entry restored to E_active,
+      // and committedKeySequences NOT prematurely advanced.
+      assertThat(repo.getSearcherEpoch() & 1L).isEqualTo(0L);
+      assertThat(buffer.isFlushLocked()).isFalse();
+      assertThat(buffer.isFlushing()).isFalse();
+      assertThat(buffer.getEntry("k-postcommit-b")).isNotNull();
+      assertThat(buffer.getEntry("k-postcommit-b").getSequence()).isEqualTo(seqPostCommitB);
+      assertThat(buffer.getMaxCommittedSequence("k-postcommit-b")).isEqualTo(0L);
+
+      // Immediate hybrid read observes k-postcommit-b with zero visibility loss & zero duplicates.
+      ResultSender<TopEntriesCollector> midRecoverSenderB = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(midRecoverSenderB);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> midRecoverCaptorB =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(midRecoverSenderB).lastResult(midRecoverCaptorB.capture());
+      List<EntryScore<Object>> midRecoverHitsB =
+          midRecoverCaptorB.getValue().getEntries().getHits();
+      assertThat(midRecoverHitsB).filteredOn(h -> "k-postcommit-b".equals(h.getKey()))
+          .singleElement()
+          .satisfies(h -> assertThat(h.getScore()).isCloseTo(scoreV1, within(1e-4f)));
+
+      // Clean Path-B retry refreshes searcherManager, records committed sequence, drains Tier-0.
+      ResultSender<TopEntriesCollector> retryPathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(retryPathBSender);
+      when(mockContext.getArguments()).thenReturn(pathBCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      assertThat(buffer.getEntry("k-postcommit-b")).isNull();
+      assertThat(buffer.getMaxCommittedSequence("k-postcommit-b")).isEqualTo(seqPostCommitB);
+
+      // Now Path A failure strictly after writer.commit() before maybeRefreshBlocking()/eviction.
+      EventID idPostCommitA = new EventID(new byte[] {1}, 3L, 21L);
+      long seqPostCommitA =
+          buffer.put("k-postcommit-a", v2, Map.of("category", "books"), payloadV2, idPostCommitA);
+      GatewaySenderEventImpl postCommitAEvent = mock(GatewaySenderEventImpl.class);
+      doReturn(aeqRegion).when(postCommitAEvent).getRegion();
+      when(postCommitAEvent.getKey()).thenReturn("k-postcommit-a");
+      when(postCommitAEvent.getOperation()).thenReturn(Operation.CREATE);
+      when(postCommitAEvent.getDeserializedValue()).thenReturn(payloadV2);
+      when(postCommitAEvent.getEventId()).thenReturn(idPostCommitA);
+
+      AtomicBoolean failOnceA = new AtomicBoolean(true);
+      IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(() -> {
+        if (failOnceA.compareAndSet(true, false)) {
+          throw new RuntimeException("simulated interruption after commit before refresh (Path A)");
+        }
+      });
+      try {
+        assertThatThrownBy(() -> aeqListener.processEvents(List.of(postCommitAEvent)))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessageContaining("simulated interruption");
+      } finally {
+        IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
+      }
+
+      assertThat(repo.getSearcherEpoch() & 1L).isEqualTo(0L);
+      assertThat(buffer.isFlushLocked()).isFalse();
+      assertThat(buffer.getEntry("k-postcommit-a")).isNotNull();
+      assertThat(buffer.getPinnedEventSequence(idPostCommitA)).isEqualTo(seqPostCommitA);
+      assertThat(buffer.getMaxCommittedSequence("k-postcommit-a")).isEqualTo(0L);
+
+      // Immediate hybrid read observes k-postcommit-a cleanly with zero loss and zero duplicates.
+      ResultSender<TopEntriesCollector> midRecoverSenderA = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(midRecoverSenderA);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> midRecoverCaptorA =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(midRecoverSenderA).lastResult(midRecoverCaptorA.capture());
+      List<EntryScore<Object>> midRecoverHitsA =
+          midRecoverCaptorA.getValue().getEntries().getHits();
+      assertThat(midRecoverHitsA).filteredOn(h -> "k-postcommit-a".equals(h.getKey()))
+          .singleElement()
+          .satisfies(h -> assertThat(h.getScore()).isCloseTo(scoreV2, within(1e-4f)));
+
+      // Retry under flushLock succeeds, drains Tier-0 cleanly to 0, and acknowledges idPostCommitA.
+      assertThat(aeqListener.processEvents(List.of(postCommitAEvent))).isTrue();
+      assertThat(buffer.getEntry("k-postcommit-a")).isNull();
+      assertThat(buffer.getMaxCommittedSequence("k-postcommit-a")).isEqualTo(seqPostCommitA);
+      assertThat(buffer.getPinnedEventSequence(idPostCommitA)).isEqualTo(-1L);
+
+      ResultSender<TopEntriesCollector> finalSenderA = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(finalSenderA);
+      when(mockContext.getArguments()).thenReturn(hybridCtx);
+      new DistributedHybridKnnFunction().execute(mockContext);
+      ArgumentCaptor<TopEntriesCollector> finalCaptorA =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(finalSenderA).lastResult(finalCaptorA.capture());
+      List<EntryScore<Object>> finalHitsA = finalCaptorA.getValue().getEntries().getHits();
+      assertThat(finalHitsA).filteredOn(h -> "k-postcommit-a".equals(h.getKey()))
+          .singleElement()
+          .satisfies(h -> assertThat(h.getScore()).isCloseTo(scoreV2, within(1e-4f)));
     }
   }
 

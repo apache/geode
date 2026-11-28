@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.ColocationHelper;
+import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -149,13 +150,22 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       initialPdxReadSerialized = internalCache.getPdxReadSerializedOverride();
       internalCache.setPdxReadSerializedOverride(true);
     }
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    registry.markIndexManaged(region.getFullPath(), indexName);
+    Object eventId = extractEventId(event);
     try {
       V value = event.getNewValue();
       if (value == null) {
+        if (eventId != null) {
+          registry.recordNonVectorEvent(region.getFullPath(), indexName, bucketId, eventId);
+        }
         return;
       }
       float[] vector = vectorExtractor.apply(value);
       if (vector == null || vector.length == 0) {
+        if (eventId != null) {
+          registry.recordNonVectorEvent(region.getFullPath(), indexName, bucketId, eventId);
+        }
         return;
       }
       Map<String, Object> metadata = metadataExtractor.apply(value);
@@ -163,8 +173,9 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
       if (hook != null) {
         hook.accept(bucketId, event.getKey());
       }
-      Tier0VectorRegistry.forCache(cache).recordPut(
-          region.getFullPath(), indexName, bucketId, event.getKey(), vector, metadata, value);
+      registry.recordPut(
+          region.getFullPath(), indexName, bucketId, event.getKey(), vector, metadata, value,
+          eventId);
     } finally {
       if (internalCache != null) {
         internalCache.setPdxReadSerializedOverride(initialPdxReadSerialized);
@@ -180,8 +191,17 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     PartitionedRegion pr = (PartitionedRegion) region;
     int bucketId = pr.getKeyInfo(event.getKey(), event.getCallbackArgument()).getBucketId();
     Cache cache = (Cache) region.getRegionService();
-    Tier0VectorRegistry.forCache(cache).recordDestroy(
-        region.getFullPath(), indexName, bucketId, event.getKey());
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    registry.markIndexManaged(region.getFullPath(), indexName);
+    Object eventId = extractEventId(event);
+    registry.recordDestroy(region.getFullPath(), indexName, bucketId, event.getKey(), eventId);
+  }
+
+  private static Object extractEventId(EntryEvent<?, ?> event) {
+    if (event instanceof EntryEventImpl) {
+      return ((EntryEventImpl) event).getEventId();
+    }
+    return null;
   }
 
   /**
@@ -211,6 +231,12 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
     @SuppressWarnings("unchecked")
     public void afterRegionCreate(Region<?, ?> region) {
       this.region = (Region<K, V>) region;
+      if (region != null && region.getRegionService() instanceof Cache) {
+        Cache cache = (Cache) region.getRegionService();
+        if (!cache.isClosed()) {
+          Tier0VectorRegistry.forCache(cache).markIndexManaged(region.getFullPath(), indexName);
+        }
+      }
     }
 
     @Override
@@ -339,6 +365,27 @@ public class Tier0VectorBucketListener<K, V> extends CacheListenerAdapter<K, V> 
         } else {
           if (hydrateLiveOrMissingEntry(bucket, key, buffer, registry, -1L, result)) {
             result.keysRestored++;
+          }
+        }
+      }
+      // Register every uncommitted shadow AEQ event identity against its hydrated sequence (or
+      // non-vector marker) so post-promotion Path-A drains recognize pre-crash shadow events as
+      // already linearized in Tier-0 while rejecting any stale events after Path-B eviction.
+      for (ShadowEventRecord record : shadowEvents) {
+        Object eventId = record.event.getEventId();
+        Object userKey = record.event.getKey();
+        if (eventId == null || userKey == null) {
+          continue;
+        }
+        long keySeq = buffer.getKeySequence(userKey);
+        if (keySeq > 0L) {
+          buffer.recordPinnedEvent(eventId, keySeq);
+        } else {
+          long committedSeq = buffer.getMaxCommittedSequence(userKey);
+          if (committedSeq > 0L) {
+            buffer.recordPinnedEvent(eventId, committedSeq);
+          } else {
+            buffer.recordNonVectorEvent(eventId);
           }
         }
       }

@@ -85,6 +85,16 @@ public class IndexRepositoryImpl implements IndexRepository {
   private final AtomicLong searcherEpoch = new AtomicLong(0L);
 
   private static final Logger logger = LogService.getLogger();
+  private static volatile Runnable afterCommitBeforeRefreshHookForTest;
+
+  /**
+   * Test-only hook invoked inside {@link #commitAndRefreshBlocking()} strictly after
+   * {@code IndexWriter.commit()} succeeds and strictly before
+   * {@code SearcherManager.maybeRefreshBlocking()} executes.
+   */
+  public static void setAfterCommitBeforeRefreshHookForTest(Runnable hook) {
+    afterCommitBeforeRefreshHookForTest = hook;
+  }
 
   public IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
       LuceneIndexStats stats, Region<?, ?> userRegion, DistributedLockService lockService,
@@ -450,6 +460,10 @@ public class IndexRepositoryImpl implements IndexRepository {
     searcherEpoch.incrementAndGet();
     try {
       writer.commit();
+      Runnable hook = afterCommitBeforeRefreshHookForTest;
+      if (hook != null) {
+        hook.run();
+      }
       searcherManager.maybeRefreshBlocking();
     } finally {
       searcherEpoch.incrementAndGet();

@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal.vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import java.util.function.Predicate;
 import org.apache.lucene.index.VectorSimilarityFunction;
 
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 
 /**
  * Per-bucket lock-free dual-epoch {@code (E_active, E_flushing)} Tier-0 vector delta buffer.
@@ -74,6 +77,9 @@ public class Tier0VectorDeltaBuffer<K> {
   private final ReentrantReadWriteLock pathBBarrierLock = new ReentrantReadWriteLock();
   private final ReentrantLock flushLock;
   private final AtomicReference<EpochState<K>> stateRef;
+  private final ConcurrentHashMap<K, Long> committedKeySequences = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Object, Long> pinnedEventSequences = new ConcurrentHashMap<>();
+  private final Set<Object> nonVectorEventIds = ConcurrentHashMap.newKeySet();
 
   public Tier0VectorDeltaBuffer(int bucketId) {
     this(bucketId, new ReentrantLock());
@@ -120,8 +126,19 @@ public class Tier0VectorDeltaBuffer<K> {
    * @return monotonically increasing mutation sequence number
    */
   public long put(K key, float[] vector, Map<String, Object> metadata, Object regionValue) {
+    return put(key, vector, metadata, regionValue, null);
+  }
+
+  /**
+   * Captures a live vector put, metadata, immutable region payload, and originating Geode event
+   * identity atomically inside {@code E_active} so Path A can distinguish unpinned pre-pin AEQ
+   * events from already-pinned and stale post-eviction AEQ events.
+   */
+  public long put(K key, float[] vector, Map<String, Object> metadata, Object regionValue,
+      Object eventId) {
     Objects.requireNonNull(key, "key must not be null");
-    return recordMutation(key, copyVector(vector), copyMetadata(metadata), false, regionValue);
+    return recordMutation(
+        key, copyVector(vector), copyMetadata(metadata), false, regionValue, eventId, null);
   }
 
   /**
@@ -319,23 +336,28 @@ public class Tier0VectorDeltaBuffer<K> {
    * @return monotonically increasing mutation sequence number
    */
   public long destroy(K key) {
-    Objects.requireNonNull(key, "key must not be null");
-    return recordMutation(key, null, Collections.emptyMap(), true, null);
+    return destroy(key, null);
   }
 
-  private long recordMutation(K key, float[] vector, Map<String, Object> metadata,
-      boolean tombstone, Object regionValue) {
-    return recordMutation(key, vector, metadata, tombstone, regionValue, null);
+  /**
+   * Captures a tombstone deletion synchronously in {@code E_active} bound to its originating Geode
+   * event identity so Path A can fence pre-pin and stale post-eviction AEQ events across deletes
+   * and recreations.
+   */
+  public long destroy(K key, Object eventId) {
+    Objects.requireNonNull(key, "key must not be null");
+    return recordMutation(key, null, Collections.emptyMap(), true, null, eventId, null);
   }
 
   long putWithPreMutateHookForTest(K key, float[] vector, Map<String, Object> metadata,
       Runnable afterPreIncBeforeMutateHook) {
-    return recordMutation(
-        key, copyVector(vector), copyMetadata(metadata), false, null, afterPreIncBeforeMutateHook);
+    return recordMutation(key, copyVector(vector), copyMetadata(metadata), false, null, null,
+        afterPreIncBeforeMutateHook);
   }
 
   private long recordMutation(K key, float[] vector, Map<String, Object> metadata,
-      boolean tombstone, Object regionValue, Runnable afterPreIncBeforeMutateHook) {
+      boolean tombstone, Object regionValue, Object eventId,
+      Runnable afterPreIncBeforeMutateHook) {
     pathBBarrierLock.readLock().lock();
     try {
       while (true) {
@@ -366,6 +388,11 @@ public class Tier0VectorDeltaBuffer<K> {
               stampedSeq[0] = existing.sequence;
               return existing;
             });
+            // Publish eventId -> seq strictly AFTER DeltaEntry is installed in E_active so Path A
+            // never observes an eventId as pinned prior to its linearization point.
+            if (eventId != null && stampedSeq[0] > 0L) {
+              pinnedEventSequences.merge(normalizeEventId(eventId), stampedSeq[0], Math::max);
+            }
             return stampedSeq[0];
           } finally {
             mutationVersion.incrementAndGet();
@@ -443,6 +470,12 @@ public class Tier0VectorDeltaBuffer<K> {
                   "Cannot complete flush for epoch " + flushEpoch + " on bucket " + bucketId
                       + " (current flushingEpoch="
                       + (current.flushing == null ? -1L : current.flushing.epoch) + ")");
+            }
+            // Record per-key committed sequences (puts and tombstones alike) strictly BEFORE
+            // clearing E_flushing so Path A never observes an empty Tier-0 slot without the
+            // monotonic committed watermark already visible.
+            for (Map.Entry<K, DeltaEntry<K>> entry : current.flushing.entries.entrySet()) {
+              committedKeySequences.merge(entry.getKey(), entry.getValue().sequence, Math::max);
             }
             EpochState<K> next = new EpochState<>(current.active, null);
             if (stateRef.compareAndSet(current, next)) {
@@ -580,6 +613,9 @@ public class Tier0VectorDeltaBuffer<K> {
               for (Map.Entry<K, Long> item : committedKeySequences.entrySet()) {
                 K key = item.getKey();
                 long committedSeq = item.getValue();
+                if (committedSeq > 0L) {
+                  this.committedKeySequences.merge(key, committedSeq, Math::max);
+                }
                 active.entries.computeIfPresent(key,
                     (k, existing) -> existing.sequence <= committedSeq ? null : existing);
                 if (flushing != null) {
@@ -636,6 +672,9 @@ public class Tier0VectorDeltaBuffer<K> {
                 if (committed == null) {
                   continue;
                 }
+                if (committed.sequence > 0L) {
+                  this.committedKeySequences.merge(key, committed.sequence, Math::max);
+                }
                 active.entries.computeIfPresent(key,
                     (k, existing) -> shouldEvictCommittedEntry(existing, committed)
                         ? null : existing);
@@ -665,6 +704,102 @@ public class Tier0VectorDeltaBuffer<K> {
         || (existing.sequence <= committed.sequence
             && existing.tombstone == committed.tombstone
             && Objects.equals(existing.regionValue, committed.regionValue));
+  }
+
+  /**
+   * Returns the highest Tier-0 sequence number durably committed and blocking-refreshed into
+   * Lucene for {@code key} (covering puts, overwrites, deletes, and recreations), or {@code 0L}
+   * if {@code key} has not yet been committed on this primary term.
+   */
+  public long getMaxCommittedSequence(K key) {
+    if (key == null) {
+      return 0L;
+    }
+    return committedKeySequences.getOrDefault(key, 0L);
+  }
+
+  /**
+   * Advances the monotonic committed sequence watermark for {@code key} (caller holds
+   * {@code flushLock}).
+   */
+  public void recordCommittedSequence(K key, long sequence) {
+    if (key != null && sequence > 0L) {
+      committedKeySequences.merge(key, sequence, Math::max);
+    }
+  }
+
+  /**
+   * Normalizes a Geode {@link EventID} by extracting the originating client/member thread ID via
+   * {@link ThreadIdentifier#getRealThreadID(long)} (stripping both the upper 32 parallel-WAN
+   * routing bits and any {@code putAll}/{@code removeAll} per-bucket fake-thread offset), so an
+   * {@code EntryEventImpl}'s {@code EventID} and its corresponding {@code GatewaySenderEventImpl}'s
+   * {@code EventID} map to the exact same canonical identity across single-key and bulk operations.
+   */
+  public static Object normalizeEventId(Object eventId) {
+    if (eventId instanceof EventID) {
+      EventID id = (EventID) eventId;
+      byte[] memberId = id.getMembershipID();
+      if (memberId != null) {
+        long baseThreadId = ThreadIdentifier.getRealThreadID(id.getThreadID());
+        return new CanonicalEventKey(memberId, baseThreadId, id.getSequenceID());
+      }
+    }
+    return eventId;
+  }
+
+  /**
+   * Associates a Geode event identity with its pinned Tier-0 sequence number (used during primary
+   * promotion AEQ hydration so pre-crash shadow events are recognized as pinned).
+   */
+  public void recordPinnedEvent(Object eventId, long sequence) {
+    if (eventId != null && sequence > 0L) {
+      pinnedEventSequences.merge(normalizeEventId(eventId), sequence, Math::max);
+    }
+  }
+
+  /**
+   * Returns the pinned Tier-0 sequence number for {@code eventId}, or {@code -1L} if
+   * {@code eventId} has not yet reached its Tier-0 linearization point.
+   */
+  public long getPinnedEventSequence(Object eventId) {
+    if (eventId == null) {
+      return -1L;
+    }
+    return pinnedEventSequences.getOrDefault(normalizeEventId(eventId), -1L);
+  }
+
+  /**
+   * Marks {@code eventId} as observed by {@code Tier0VectorBucketListener} for a non-vector entry
+   * (no vector field extracted) so Path A does not confuse it with an unpinned vector mutation.
+   */
+  public void recordNonVectorEvent(Object eventId) {
+    if (eventId != null) {
+      nonVectorEventIds.add(normalizeEventId(eventId));
+    }
+  }
+
+  /**
+   * Returns {@code true} if {@code eventId} was explicitly marked as a non-vector entry.
+   */
+  public boolean isNonVectorEvent(Object eventId) {
+    return eventId != null && nonVectorEventIds.contains(normalizeEventId(eventId));
+  }
+
+  /**
+   * Releases tracked event identities strictly after an AEQ batch returns {@code true}, keeping
+   * per-event metadata bounded by {@code O(|AEQ_b|)}.
+   */
+  public void acknowledgeEventIds(Collection<?> eventIds) {
+    if (eventIds == null || eventIds.isEmpty()) {
+      return;
+    }
+    for (Object eventId : eventIds) {
+      if (eventId != null) {
+        Object normalized = normalizeEventId(eventId);
+        pinnedEventSequences.remove(normalized);
+        nonVectorEventIds.remove(normalized);
+      }
+    }
   }
 
   /**
@@ -927,6 +1062,9 @@ public class Tier0VectorDeltaBuffer<K> {
           if (stateRef.compareAndSet(current, new EpochState<>(fresh, null))) {
             lastClearedEpoch.accumulateAndGet(current.active.epoch, Math::max);
             current.active.writerState.getAndUpdate(v -> v | SEALED_BIT);
+            committedKeySequences.clear();
+            pinnedEventSequences.clear();
+            nonVectorEventIds.clear();
             return;
           }
         }
@@ -1195,6 +1333,43 @@ public class Tier0VectorDeltaBuffer<K> {
       }
       Collections.reverse(results);
       return results;
+    }
+  }
+
+  private static final class CanonicalEventKey {
+    private final byte[] membershipId;
+    private final long baseThreadId;
+    private final long sequenceId;
+    private final int cachedHash;
+
+    CanonicalEventKey(byte[] membershipId, long baseThreadId, long sequenceId) {
+      this.membershipId = membershipId;
+      this.baseThreadId = baseThreadId;
+      this.sequenceId = sequenceId;
+      int h = 1;
+      h = 31 * h + EventID.hashCodeMemberId(membershipId);
+      h = 31 * h + (int) (sequenceId ^ (sequenceId >>> 32));
+      h = 31 * h + (int) (baseThreadId ^ (baseThreadId >>> 32));
+      this.cachedHash = h;
+    }
+
+    @Override
+    public int hashCode() {
+      return cachedHash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof CanonicalEventKey)) {
+        return false;
+      }
+      CanonicalEventKey other = (CanonicalEventKey) obj;
+      return sequenceId == other.sequenceId
+          && baseThreadId == other.baseThreadId
+          && EventID.equalMembershipIds(membershipId, other.membershipId);
     }
   }
 

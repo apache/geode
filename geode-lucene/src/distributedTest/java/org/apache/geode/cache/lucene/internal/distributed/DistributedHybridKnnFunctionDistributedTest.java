@@ -67,6 +67,8 @@ import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.internal.LuceneEventListener;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
+import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorBucketListener;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorDeltaBuffer;
 import org.apache.geode.cache.lucene.internal.vector.Tier0VectorRegistry;
@@ -114,6 +116,8 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
   private static volatile CountDownLatch OWNERSHIP_HOOK_RELEASE;
   private static volatile CountDownLatch RECORD_PUT_HOOK_ENTERED;
   private static volatile CountDownLatch RECORD_PUT_HOOK_RELEASE;
+  private static volatile GatewaySenderEventImpl CAPTURED_STALE_EVENT_W1;
+  private static volatile GatewaySenderEventImpl CAPTURED_STALE_EVENT_DEL;
 
   private VM dataStore1;
   private VM dataStore2;
@@ -134,6 +138,9 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
         vm.invoke(() -> {
           DistributedHybridKnnFunction.beforeAcquireSearcherHookForTest = null;
           Tier0VectorBucketListener.setBeforeRecordPutHookForTest(null);
+          IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
+          CAPTURED_STALE_EVENT_W1 = null;
+          CAPTURED_STALE_EVENT_DEL = null;
           CountDownLatch release = OWNERSHIP_HOOK_RELEASE;
           if (release != null) {
             release.countDown();
@@ -2494,6 +2501,485 @@ public class DistributedHybridKnnFunctionDistributedTest extends JUnit4CacheTest
       dataStore1.invoke(() -> resumeIndexAeq(getCache()));
       dataStore2.invoke(() -> resumeIndexAeq(getCache()));
     }
+  }
+
+  /**
+   * Real 3-VM Geode cluster verification of all three v19 Theorem 2(1) schedules: (a) real writer
+   * paused between AEQ shadow enqueue and Tier-0 pin while real {@link LuceneEventListener} runs
+   * with the real {@link GatewaySenderEventImpl} (must defer with {@code false} and zero pre-pin
+   * leakage); (b) delayed real {@link GatewaySenderEventImpl} events arriving after Path B
+   * committed & evicted a newer overwrite, a destroy, and a recreate (must drop stale events with
+   * zero regression/resurrection/wipeout); and (c) interruption strictly after
+   * {@code IndexWriter.commit()} and before {@code SearcherManager.maybeRefreshBlocking()} on both
+   * Path B and Path A (even {@code searcherEpoch}, released {@code flushLock}, zero visibility
+   * loss, zero duplicate hits, and clean retry recovery).
+   */
+  @Test
+  public void pathAEnforcesPrePinFenceStaleAeqRejectionAndPostCommitPreRefreshRecoveryAcrossCluster()
+      throws Exception {
+    dataStore1.invoke(() -> initServer(1));
+    dataStore2.invoke(() -> initServer(1));
+    accessor.invoke(() -> initAccessor(1));
+
+    float[] query = new float[DIM];
+    query[0] = 1.0f;
+    float[] orthogonalSeed = new float[DIM];
+    orthogonalSeed[DIM - 1] = 1.0f;
+    accessor.invoke(() -> {
+      Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < NUM_BUCKETS * 2; i++) {
+        region.put("v19-seed-" + i, new VectorRecord(orthogonalSeed, "other", "all", "all"));
+      }
+    });
+    waitForLuceneFlush(accessor);
+
+    // Pause AEQ before our controlled writes so real GatewaySenderEventImpls stay inspectable in
+    // the shadow bucket on dataStore1.
+    dataStore1.invoke(() -> pauseIndexAeq(getCache()));
+    dataStore2.invoke(() -> pauseIndexAeq(getCache()));
+
+    final int targetBucketId = dataStore1.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      return pr.getDataStore().getAllLocalPrimaryBucketIds().iterator().next();
+    });
+
+    List<String> bucketKeys = accessor.invoke(() -> {
+      PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(REGION_NAME);
+      List<String> keys = new ArrayList<>();
+      for (int i = 0; keys.size() < 4 && i < 20_000; i++) {
+        String candidate = "v19-fence-" + i;
+        if (pr.getKeyInfo(candidate).getBucketId() == targetBucketId) {
+          keys.add(candidate);
+        }
+      }
+      return keys;
+    });
+    assertThat(bucketKeys).hasSize(4);
+    String kPrePin = bucketKeys.get(0);
+    String kStale = bucketKeys.get(1);
+    String kPostB = bucketKeys.get(2);
+    String kPostA = bucketKeys.get(3);
+
+    float[] vecV1 = unitVectorWithCos0(0.40f);
+    float[] vecV2 = unitVectorWithCos0(0.90f);
+    float[] vecV3 = unitVectorWithCos0(0.99f);
+
+    float scoreV1 = VectorSimilarityScorer.score(query, vecV1, VectorSimilarityFunction.COSINE);
+    float scoreV2 = VectorSimilarityScorer.score(query, vecV2, VectorSimilarityFunction.COSINE);
+    float scoreV3 = VectorSimilarityScorer.score(query, vecV3, VectorSimilarityFunction.COSINE);
+
+    ExecutorService writerPool = Executors.newSingleThreadExecutor();
+    try {
+      // Schedule (a): Real writer paused strictly AFTER AEQ enqueue and strictly BEFORE Tier-0 pin.
+      armOneShotBeforeRecordPutHook(dataStore1, targetBucketId, kPrePin);
+      Future<?> putPrePin = writerPool.submit(() -> accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kPrePin, new VectorRecord(vecV1, "prepin", "all", "all"));
+      }));
+      awaitBeforeRecordPutHookEntered(dataStore1);
+
+      // Run real LuceneEventListener with the real GatewaySenderEventImpl already sitting in the
+      // AEQ shadow bucket -> MUST return false (pre-pin fence!) without writing to Lucene.
+      dataStore1.invoke(() -> {
+        InternalCache ic = (InternalCache) getCache();
+        GatewaySenderEventImpl realUnpinned =
+            findLatestShadowEventForKey(ic, targetBucketId, kPrePin);
+        assertThat(realUnpinned).isNotNull();
+        assertThat(realUnpinned.getEventId()).isNotNull();
+
+        InternalLuceneIndex idx =
+            (InternalLuceneIndex) LuceneServiceProvider.get(ic).getIndex(INDEX_NAME, REGION_NAME);
+        LuceneEventListener aeqListener = new LuceneEventListener(ic, idx.getRepositoryManager());
+        long beforeDeferred = Tier0VectorRegistry.forCache(ic).getDeferredUnpinnedAeqEventsCount();
+        assertThat(aeqListener.processEvents(Collections.singletonList(realUnpinned))).isFalse();
+        assertThat(Tier0VectorRegistry.forCache(ic).getDeferredUnpinnedAeqEventsCount())
+            .isGreaterThan(beforeDeferred);
+      });
+
+      // Hybrid read while writer is STILL paused before pin MUST NOT see unpinned kPrePin!
+      Map<String, Float> prePinHitsDuringPause = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "prepin")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(prePinHitsDuringPause).isEmpty();
+
+      // Release writer -> kPrePin pins into Tier-0 -> AEQ retry returns true and commits cleanly!
+      releaseBeforeRecordPutHook(dataStore1);
+      putPrePin.get(30, TimeUnit.SECONDS);
+
+      dataStore1.invoke(() -> {
+        InternalCache ic = (InternalCache) getCache();
+        GatewaySenderEventImpl realPinned =
+            findLatestShadowEventForKey(ic, targetBucketId, kPrePin);
+        assertThat(realPinned).isNotNull();
+        InternalLuceneIndex idx =
+            (InternalLuceneIndex) LuceneServiceProvider.get(ic).getIndex(INDEX_NAME, REGION_NAME);
+        LuceneEventListener aeqListener = new LuceneEventListener(ic, idx.getRepositoryManager());
+        assertThat(aeqListener.processEvents(Collections.singletonList(realPinned))).isTrue();
+      });
+
+      Map<String, Float> prePinHitsAfterCommit = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "prepin")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(prePinHitsAfterCommit).containsOnlyKeys(kPrePin);
+      assertThat(prePinHitsAfterCommit.get(kPrePin)).isCloseTo(scoreV1, within(1e-4f));
+
+      // Schedule (b): Delayed real AEQ events arriving after Path B committed & evicted newer
+      // overwrite v2, destroy tombstone, and recreate v3.
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kStale, new VectorRecord(vecV1, "stale", "all", "all"));
+      });
+      dataStore1.invoke(() -> {
+        CAPTURED_STALE_EVENT_W1 =
+            findLatestShadowEventForKey(getCache(), targetBucketId, kStale);
+        assertThat(CAPTURED_STALE_EVENT_W1).isNotNull();
+      });
+
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kStale, new VectorRecord(vecV2, "stale", "all", "all"));
+      });
+      // Path B FuzzyQuery flushes, commits, and evicts v2 (Tier-0 empty).
+      Map<String, Float> pathBW2Hits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:stle~1", "sel1")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(pathBW2Hits).containsOnlyKeys(kStale);
+      assertThat(pathBW2Hits.get(kStale)).isCloseTo(scoreV2, within(1e-4f));
+
+      // Feed delayed real e1(v1) -> MUST be dropped cleanly without regressing Lucene to v1!
+      dataStore1.invoke(() -> {
+        InternalCache ic = (InternalCache) getCache();
+        InternalLuceneIndex idx =
+            (InternalLuceneIndex) LuceneServiceProvider.get(ic).getIndex(INDEX_NAME, REGION_NAME);
+        LuceneEventListener aeqListener = new LuceneEventListener(ic, idx.getRepositoryManager());
+        long beforeDropped = Tier0VectorRegistry.forCache(ic).getStaleAeqEventsDroppedCount();
+        assertThat(aeqListener.processEvents(Collections.singletonList(CAPTURED_STALE_EVENT_W1)))
+            .isTrue();
+        assertThat(Tier0VectorRegistry.forCache(ic).getStaleAeqEventsDroppedCount())
+            .isGreaterThan(beforeDropped);
+      });
+
+      Map<String, Float> afterStaleW1Hits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "stale")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(afterStaleW1Hits).containsOnlyKeys(kStale);
+      assertThat(afterStaleW1Hits.get(kStale)).isCloseTo(scoreV2, within(1e-4f));
+
+      // Destroy kStale, capture real destroy AEQ event, recreate with v3, Path B commits & evicts
+      // v3 -> delayed real destroy event MUST be dropped without wiping out v3!
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.destroy(kStale);
+      });
+      dataStore1.invoke(() -> {
+        CAPTURED_STALE_EVENT_DEL =
+            findLatestShadowEventForKey(getCache(), targetBucketId, kStale);
+        assertThat(CAPTURED_STALE_EVENT_DEL).isNotNull();
+        assertThat(CAPTURED_STALE_EVENT_DEL.getOperation().isDestroy()).isTrue();
+      });
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kStale, new VectorRecord(vecV3, "stale", "all", "all"));
+      });
+      Map<String, Float> pathBW3Hits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:stle~1", "sel1")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(pathBW3Hits).containsOnlyKeys(kStale);
+      assertThat(pathBW3Hits.get(kStale)).isCloseTo(scoreV3, within(1e-4f));
+
+      dataStore1.invoke(() -> {
+        InternalCache ic = (InternalCache) getCache();
+        InternalLuceneIndex idx =
+            (InternalLuceneIndex) LuceneServiceProvider.get(ic).getIndex(INDEX_NAME, REGION_NAME);
+        LuceneEventListener aeqListener = new LuceneEventListener(ic, idx.getRepositoryManager());
+        long beforeDropped = Tier0VectorRegistry.forCache(ic).getStaleAeqEventsDroppedCount();
+        assertThat(aeqListener.processEvents(Collections.singletonList(CAPTURED_STALE_EVENT_DEL)))
+            .isTrue();
+        assertThat(Tier0VectorRegistry.forCache(ic).getStaleAeqEventsDroppedCount())
+            .isGreaterThan(beforeDropped);
+      });
+
+      Map<String, Float> afterStaleDelHits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "stale")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        for (EntryScore<String> hit : DistributedHybridKnnFunction.executeOnRegion(region, ctx)
+            .getHits()) {
+          out.put(hit.getKey(), hit.getScore());
+        }
+        return out;
+      });
+      assertThat(afterStaleDelHits).containsOnlyKeys(kStale);
+      assertThat(afterStaleDelHits.get(kStale)).isCloseTo(scoreV3, within(1e-4f));
+
+      // Schedule (c): Interruption strictly AFTER IndexWriter.commit() succeeds and BEFORE
+      // SearcherManager.maybeRefreshBlocking() on BOTH Path B and Path A across real 3-VM cluster.
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kPostB, new VectorRecord(vecV1, "postb", "all", "all"));
+      });
+      dataStore1.invoke(() -> {
+        AtomicBoolean fired = new AtomicBoolean(false);
+        IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(() -> {
+          if (fired.compareAndSet(false, true)) {
+            throw new RuntimeException("injected post-commit pre-refresh interruption (Path B)");
+          }
+        });
+      });
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:pstb~1", "sel1")
+            .build();
+        boolean threw = false;
+        try {
+          DistributedHybridKnnFunction.executeOnRegion(region, ctx);
+        } catch (RuntimeException expected) {
+          threw = true;
+          Throwable root = expected;
+          while (root.getCause() != null) {
+            root = root.getCause();
+          }
+          assertThat(expected.getMessage() + " | " + root.getMessage())
+              .contains("post-commit pre-refresh");
+        }
+        assertThat(threw).isTrue();
+      });
+      dataStore1.invoke(() -> {
+        IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
+        InternalCache ic = (InternalCache) getCache();
+        Tier0VectorDeltaBuffer<Object> buf =
+            Tier0VectorRegistry.forCache(ic).getBuffer("/" + REGION_NAME, INDEX_NAME,
+                targetBucketId);
+        assertThat(buf.isFlushLocked()).isFalse();
+        assertThat(buf.isFlushing()).isFalse();
+        assertThat(buf.getEntry(kPostB)).isNotNull();
+        InternalLuceneIndex idx =
+            (InternalLuceneIndex) LuceneServiceProvider.get(ic).getIndex(INDEX_NAME, REGION_NAME);
+        IndexRepository repo = idx.getRepositoryManager().getRepository(
+            ic.getRegion(REGION_NAME), kPostB, null);
+        assertThat(repo.getSearcherEpoch() & 1L).isEqualTo(0L);
+      });
+      // Immediate hybrid read observes kPostB cleanly (zero loss, zero duplicate), then retry Path
+      // B drains cleanly.
+      Map<String, Float> postBMidHits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "postb")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        List<EntryScore<String>> hits =
+            DistributedHybridKnnFunction.executeOnRegion(region, ctx).getHits();
+        assertThat(hits).hasSize(1);
+        out.put(hits.get(0).getKey(), hits.get(0).getScore());
+        return out;
+      });
+      assertThat(postBMidHits).containsOnlyKeys(kPostB);
+      assertThat(postBMidHits.get(kPostB)).isCloseTo(scoreV1, within(1e-4f));
+
+      Map<String, Float> postBRetryHits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("sel1:pstb~1", "sel1")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        List<EntryScore<String>> hits =
+            DistributedHybridKnnFunction.executeOnRegion(region, ctx).getHits();
+        assertThat(hits).hasSize(1);
+        out.put(hits.get(0).getKey(), hits.get(0).getScore());
+        return out;
+      });
+      assertThat(postBRetryHits).containsOnlyKeys(kPostB);
+      assertThat(postBRetryHits.get(kPostB)).isCloseTo(scoreV1, within(1e-4f));
+      dataStore1.invoke(() -> {
+        Tier0VectorDeltaBuffer<Object> buf =
+            Tier0VectorRegistry.forCache(getCache()).getBuffer("/" + REGION_NAME, INDEX_NAME,
+                targetBucketId);
+        assertThat(buf.getEntry(kPostB)).isNull();
+      });
+
+      // Now Path A interruption strictly after writer.commit() before maybeRefreshBlocking().
+      accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        region.put(kPostA, new VectorRecord(vecV2, "posta", "all", "all"));
+      });
+      dataStore1.invoke(() -> {
+        InternalCache ic = (InternalCache) getCache();
+        GatewaySenderEventImpl realEventA =
+            findLatestShadowEventForKey(ic, targetBucketId, kPostA);
+        assertThat(realEventA).isNotNull();
+        InternalLuceneIndex idx =
+            (InternalLuceneIndex) LuceneServiceProvider.get(ic).getIndex(INDEX_NAME, REGION_NAME);
+        LuceneEventListener aeqListener = new LuceneEventListener(ic, idx.getRepositoryManager());
+
+        AtomicBoolean fired = new AtomicBoolean(false);
+        IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(() -> {
+          if (fired.compareAndSet(false, true)) {
+            throw new RuntimeException("injected post-commit pre-refresh interruption (Path A)");
+          }
+        });
+        try {
+          boolean threw = false;
+          try {
+            aeqListener.processEvents(Collections.singletonList(realEventA));
+          } catch (RuntimeException expected) {
+            threw = true;
+            assertThat(expected.getMessage()).contains("post-commit pre-refresh");
+          }
+          assertThat(threw).isTrue();
+        } finally {
+          IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null);
+        }
+
+        Tier0VectorDeltaBuffer<Object> buf =
+            Tier0VectorRegistry.forCache(ic).getBuffer("/" + REGION_NAME, INDEX_NAME,
+                targetBucketId);
+        assertThat(buf.isFlushLocked()).isFalse();
+        assertThat(buf.getEntry(kPostA)).isNotNull();
+        assertThat(buf.getPinnedEventSequence(realEventA.getEventId())).isGreaterThan(0L);
+        IndexRepository repo = idx.getRepositoryManager().getRepository(
+            ic.getRegion(REGION_NAME), kPostA, null);
+        assertThat(repo.getSearcherEpoch() & 1L).isEqualTo(0L);
+
+        // Retry under flushLock succeeds, refreshes searcherManager, and drains Tier-0 cleanly!
+        assertThat(aeqListener.processEvents(Collections.singletonList(realEventA))).isTrue();
+        assertThat(buf.getEntry(kPostA)).isNull();
+        assertThat(buf.getPinnedEventSequence(realEventA.getEventId())).isEqualTo(-1L);
+      });
+
+      Map<String, Float> postAFinalHits = accessor.invoke(() -> {
+        Region<String, VectorRecord> region = getCache().getRegion(REGION_NAME);
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, query, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .addMetadataFilter("sel1", "posta")
+            .build();
+        Map<String, Float> out = new LinkedHashMap<>();
+        List<EntryScore<String>> hits =
+            DistributedHybridKnnFunction.executeOnRegion(region, ctx).getHits();
+        assertThat(hits).hasSize(1);
+        out.put(hits.get(0).getKey(), hits.get(0).getScore());
+        return out;
+      });
+      assertThat(postAFinalHits).containsOnlyKeys(kPostA);
+      assertThat(postAFinalHits.get(kPostA)).isCloseTo(scoreV2, within(1e-4f));
+    } finally {
+      dataStore1.invoke(() -> IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null));
+      dataStore2.invoke(() -> IndexRepositoryImpl.setAfterCommitBeforeRefreshHookForTest(null));
+      clearBeforeRecordPutHook(dataStore1);
+      clearBeforeRecordPutHook(dataStore2);
+      writerPool.shutdownNow();
+      dataStore1.invoke(() -> resumeIndexAeq(getCache()));
+      dataStore2.invoke(() -> resumeIndexAeq(getCache()));
+    }
+  }
+
+  private static GatewaySenderEventImpl findLatestShadowEventForKey(Cache cache, int bucketId,
+      String targetKey) {
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
+    AsyncEventQueueImpl q = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+    ConcurrentParallelGatewaySenderQueue cq =
+        (ConcurrentParallelGatewaySenderQueue) q.getSender().getEventProcessor().getQueue();
+    BucketRegion shadowBucket = cq.getRegion("/" + REGION_NAME)
+        .getDataStore().getLocalBucketById(bucketId);
+    GatewaySenderEventImpl latest = null;
+    long latestShadowKey = Long.MIN_VALUE;
+    if (shadowBucket != null) {
+      for (Object sk : new ArrayList<>(shadowBucket.keySet())) {
+        Region.Entry<?, ?> entry = shadowBucket.getEntry(sk);
+        Object val = entry != null ? entry.getValue() : null;
+        if (val instanceof GatewaySenderEventImpl) {
+          GatewaySenderEventImpl gse = (GatewaySenderEventImpl) val;
+          if (targetKey.equals(gse.getKey())) {
+            long skNum = gse.getShadowKey() != null && gse.getShadowKey() > 0L
+                ? gse.getShadowKey()
+                : (sk instanceof Number ? ((Number) sk).longValue() : Long.MIN_VALUE);
+            if (latest == null || skNum >= latestShadowKey) {
+              latest = gse;
+              latestShadowKey = skNum;
+            }
+          }
+        }
+      }
+    }
+    BlockingQueue<GatewaySenderEventImpl> tmpQ = cq.getBucketTmpQueue(bucketId);
+    if (tmpQ != null) {
+      for (GatewaySenderEventImpl gse : tmpQ) {
+        if (gse != null && targetKey.equals(gse.getKey())) {
+          long skNum = gse.getShadowKey() != null ? gse.getShadowKey() : Long.MIN_VALUE;
+          if (latest == null || skNum >= latestShadowKey) {
+            latest = gse;
+            latestShadowKey = skNum;
+          }
+        }
+      }
+    }
+    return latest;
   }
 
   private void armOneShotBeforeRecordPutHook(VM vm, int targetBucketId, String targetKey) {

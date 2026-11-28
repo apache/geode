@@ -108,6 +108,9 @@ public class LuceneEventListener implements AsyncEventListener {
         eventsByRepo.computeIfAbsent(repository, r -> new ArrayList<>()).add(event);
       }
 
+      boolean deferredUnpinned = false;
+      Map<Tier0VectorDeltaBuffer<Object>, List<Object>> ackEventIdsByBuffer = null;
+
       for (Map.Entry<IndexRepository, List<AsyncEvent>> repoEntry : eventsByRepo.entrySet()) {
         IndexRepository repo = repoEntry.getKey();
         List<AsyncEvent> repoEvents = repoEntry.getValue();
@@ -124,8 +127,11 @@ public class LuceneEventListener implements AsyncEventListener {
         }
         try {
           Tier0VectorDeltaBuffer<Object> buffer = null;
+          boolean isTier0Managed = false;
           Map<Object, Tier0VectorDeltaBuffer.DeltaEntry<Object>> committedEntries = null;
           Map<Object, Long> fallbackCommittedKeySeqs = null;
+          List<Object> bucketAckEventIds = null;
+          boolean appliedRepoOps = false;
           int batchCount = 0;
           long updateNanos = 0L;
 
@@ -134,6 +140,9 @@ public class LuceneEventListener implements AsyncEventListener {
                 partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
             buffer = tier0Registry.getBuffer(
                 partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+            isTier0Managed = buffer != null
+                || tier0Registry.isIndexManaged(
+                    partitionedIndex.getRegionPath(), partitionedIndex.getName());
           }
 
           for (AsyncEvent event : repoEvents) {
@@ -143,42 +152,119 @@ public class LuceneEventListener implements AsyncEventListener {
             if (buffer == null && tier0Registry != null && bucketId >= 0) {
               buffer = tier0Registry.getBuffer(
                   partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+              if (buffer != null) {
+                isTier0Managed = true;
+              }
+            }
+
+            if (!isTier0Managed) {
+              Object value = resolveEventPayload(event, region, key);
+              if (value != null) {
+                repo.update(key, value);
+              } else {
+                repo.delete(key);
+              }
+              appliedRepoOps = true;
+              continue;
+            }
+
+            Object eventId = extractEventId(event);
+            if (buffer != null && eventId != null && buffer.isNonVectorEvent(eventId)) {
+              Object value = resolveEventPayload(event, region, key);
+              if (value != null) {
+                repo.update(key, value);
+              } else {
+                repo.delete(key);
+              }
+              appliedRepoOps = true;
+              if (bucketAckEventIds == null) {
+                bucketAckEventIds = new ArrayList<>();
+              }
+              bucketAckEventIds.add(eventId);
+              continue;
+            }
+
+            // Pre-pin fence (Theorem 2(1)): on a Tier-0-managed bucket, an AEQ event whose
+            // originating write has not yet reached its Tier-0 linearization point MUST NOT be
+            // published into Lucene; defer so Geode's AEQ retries once Tier-0 pins the write.
+            long pinnedSeq =
+                (buffer != null && eventId != null) ? buffer.getPinnedEventSequence(eventId) : -1L;
+            if (eventId != null && (buffer == null || pinnedSeq < 0L)) {
+              tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+              deferredUnpinned = true;
+              continue;
             }
 
             long opStartNanos = (buffer != null && trackFlushCycles) ? System.nanoTime() : 0L;
-            Object value;
             Tier0VectorDeltaBuffer.DeltaEntry<Object> boundEntry =
                 buffer != null ? buffer.getEntry(key) : null;
-            if (boundEntry != null
-                && (boundEntry.isTombstone() || boundEntry.getRegionValue() != null)) {
-              // Atomically bind sequence and immutable payload from a single DeltaEntry without
-              // re-reading live mutable BucketRegion state (eliminating the Path-A publication
-              // window race).
-              if (committedEntries == null) {
-                committedEntries = new HashMap<>();
-              }
-              committedEntries.merge(key, boundEntry,
-                  (existing, incoming) -> incoming.getSequence() >= existing.getSequence()
-                      ? incoming : existing);
-              value = boundEntry.isTombstone() ? null : boundEntry.getRegionValue();
-            } else {
-              if (boundEntry != null) {
+            if (boundEntry != null) {
+              Object value;
+              if (boundEntry.isTombstone() || boundEntry.getRegionValue() != null) {
+                // Atomically bind sequence and immutable payload from a single DeltaEntry without
+                // re-reading live mutable BucketRegion state (eliminating the Path-A publication
+                // window race).
+                if (committedEntries == null) {
+                  committedEntries = new HashMap<>();
+                }
+                committedEntries.merge(key, boundEntry,
+                    (existing, incoming) -> incoming.getSequence() >= existing.getSequence()
+                        ? incoming : existing);
+                value = boundEntry.isTombstone() ? null : boundEntry.getRegionValue();
+              } else {
                 if (fallbackCommittedKeySeqs == null) {
                   fallbackCommittedKeySeqs = new HashMap<>();
                 }
                 fallbackCommittedKeySeqs.merge(key, boundEntry.getSequence(), Math::max);
+                value = resolveEventPayload(event, region, key);
               }
-              value = resolveEventPayload(event, region, key);
+
+              if (value != null) {
+                repo.update(key, value);
+              } else {
+                repo.delete(key);
+              }
+              appliedRepoOps = true;
+              if (eventId != null) {
+                if (bucketAckEventIds == null) {
+                  bucketAckEventIds = new ArrayList<>();
+                }
+                bucketAckEventIds.add(eventId);
+              }
+              if (trackFlushCycles) {
+                batchCount++;
+                updateNanos += System.nanoTime() - opStartNanos;
+              }
+              continue;
             }
 
-            if (value != null) {
-              repo.update(key, value);
-            } else {
-              repo.delete(key);
+            // Tier-0 lookup is empty for key on a Tier-0-managed bucket: enforce both pre-pin and
+            // stale-AEQ regression fences (never falling back to an unfenced AsyncEvent or live
+            // BucketRegion read).
+            if (buffer == null) {
+              tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+              deferredUnpinned = true;
+              continue;
             }
-            if (buffer != null && trackFlushCycles) {
-              batchCount++;
-              updateNanos += System.nanoTime() - opStartNanos;
+            long maxCommittedSeq = buffer.getMaxCommittedSequence(key);
+            if (eventId != null) {
+              if (pinnedSeq <= maxCommittedSeq) {
+                // Delayed stale AEQ event already superseded and committed (e.g., by Path B across
+                // overwrites, deletes, or delete+recreate): drop without regressing Lucene.
+                tier0Registry.incrementStaleAeqEventsDroppedCount();
+                if (bucketAckEventIds == null) {
+                  bucketAckEventIds = new ArrayList<>();
+                }
+                bucketAckEventIds.add(eventId);
+              } else {
+                tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+                deferredUnpinned = true;
+              }
+            } else if (maxCommittedSeq > 0L) {
+              tier0Registry.incrementStaleAeqEventsDroppedCount();
+            } else {
+              tier0Registry.incrementDeferredUnpinnedAeqEventsCount();
+              deferredUnpinned = true;
             }
           }
 
@@ -206,13 +292,30 @@ public class LuceneEventListener implements AsyncEventListener {
                   preEvictTier0Size,
                   flushDurationNanos);
             }
-          } else {
+          } else if (appliedRepoOps) {
             repo.commit();
+          }
+
+          if (buffer != null && bucketAckEventIds != null && !bucketAckEventIds.isEmpty()) {
+            if (ackEventIdsByBuffer == null) {
+              ackEventIdsByBuffer = new LinkedHashMap<>();
+            }
+            ackEventIdsByBuffer.computeIfAbsent(buffer, b -> new ArrayList<>())
+                .addAll(bucketAckEventIds);
           }
         } finally {
           if (flushLock != null) {
             flushLock.unlock();
           }
+        }
+      }
+      if (deferredUnpinned) {
+        return false;
+      }
+      if (ackEventIdsByBuffer != null) {
+        for (Map.Entry<Tier0VectorDeltaBuffer<Object>, List<Object>> ackEntry : ackEventIdsByBuffer
+            .entrySet()) {
+          ackEntry.getKey().acknowledgeEventIds(ackEntry.getValue());
         }
       }
       return true;
@@ -230,6 +333,16 @@ public class LuceneEventListener implements AsyncEventListener {
     } finally {
       cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
     }
+  }
+
+  private static Object extractEventId(AsyncEvent event) {
+    if (event instanceof GatewaySenderEventImpl) {
+      Object eventId = ((GatewaySenderEventImpl) event).getEventId();
+      if (eventId != null) {
+        return eventId;
+      }
+    }
+    return event.getEventSequenceID();
   }
 
   private Object resolveEventPayload(AsyncEvent event, Region region, Object key) {
