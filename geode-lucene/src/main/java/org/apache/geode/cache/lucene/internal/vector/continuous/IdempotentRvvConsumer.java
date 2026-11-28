@@ -755,6 +755,13 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     ReentrantLock execFence = getStreamExecutionFence(subId, bucketId, memberId);
     execFence.lock();
     try {
+      // Enforce strictly ascending per-stream handler execution order inside streamExecutionFences:
+      // drain any earlier unapplied PENDING intents (< ver) in ascending EventDeliveryId order
+      // BEFORE executing this intent so a racing staged v+1 can never invoke effectHandler ahead
+      // of pending v (even across disconnect/recovery).
+      if (!drainPendingBeforeLocked(streamLock, subId, bucketId, memberId, ver, sessionEpoch)) {
+        return false;
+      }
       synchronized (streamLock) {
         if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
           staleSessionEventsRejectedCount.incrementAndGet();
@@ -813,6 +820,96 @@ public class IdempotentRvvConsumer implements ContinuousVectorEventSink {
     } finally {
       execFence.unlock();
     }
+  }
+
+  /**
+   * Executes and retires every earlier durable {@code PENDING} intent
+   * ({@code pendingVersion < targetVersion}) on {@code (subId, bucketId, memberId)} in strictly
+   * ascending {@link EventDeliveryId} order while holding the stream's execution fence, ensuring
+   * handler invocations never occur out of version order when a later staged intent acquires
+   * {@code execFence} ahead of an earlier pending intent.
+   *
+   * @return {@code true} if the current {@code sessionEpoch} remains active and the caller may
+   *         proceed to execute {@code targetVersion}; {@code false} if the session became stale.
+   */
+  private boolean drainPendingBeforeLocked(Object streamLock, String subId, int bucketId,
+      String memberId, long targetVersion, long sessionEpoch) {
+    List<ContinuousVectorEvent> earlierPending = null;
+    synchronized (streamLock) {
+      if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
+        staleSessionEventsRejectedCount.incrementAndGet();
+        return false;
+      }
+      long lowestPending = store.getLowestPendingVersion(subId, bucketId, memberId);
+      if (lowestPending >= targetVersion) {
+        return true;
+      }
+      for (ContinuousVectorEvent pendingEv : store.getPendingIntentsOrdered()) {
+        if (pendingEv.getBucketId() == bucketId
+            && subId.equals(pendingEv.getSubscriptionId())
+            && memberId.equals(pendingEv.getMemberId())
+            && pendingEv.getRegionVersion() < targetVersion) {
+          if (earlierPending == null) {
+            earlierPending = new ArrayList<>(4);
+          }
+          earlierPending.add(pendingEv);
+        }
+      }
+    }
+    if (earlierPending == null) {
+      return true;
+    }
+    for (ContinuousVectorEvent prevEv : earlierPending) {
+      EventDeliveryId prevId = EventDeliveryId.fromEvent(prevEv);
+      long prevVer = prevEv.getRegionVersion();
+      synchronized (streamLock) {
+        if (isStaleSessionEpoch(bucketId, sessionEpoch)) {
+          staleSessionEventsRejectedCount.incrementAndGet();
+          return false;
+        }
+        long committed = store.getCommittedWatermark(subId, bucketId, memberId);
+        if (prevVer <= committed || store.isEffectApplied(prevId)) {
+          deduplicatedEffectsCount.incrementAndGet();
+          store.markPendingCompleted(prevId);
+          long lp = store.getLowestPendingVersion(subId, bucketId, memberId);
+          if (lp > prevVer) {
+            long updated =
+                advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, prevVer);
+            gate.restoreHighWaterVersion(subId, bucketId, memberId, updated);
+          }
+          continue;
+        }
+        if (!store.isPendingIntent(prevId)) {
+          continue;
+        }
+        inFlightExecutions.add(prevId);
+      }
+      try {
+        if (crashHook != null) {
+          crashHook.onBoundary(CrashPhase.AFTER_WATERMARK_PERSIST_BEFORE_EFFECT, prevEv, prevId);
+        }
+        executeIdempotentlyLocked(prevEv, prevId);
+        if (crashHook != null) {
+          crashHook.onBoundary(CrashPhase.AFTER_EFFECT_BEFORE_WATERMARK_COMMIT, prevEv, prevId);
+        }
+      } finally {
+        inFlightExecutions.remove(prevId);
+      }
+      synchronized (streamLock) {
+        store.markPendingCompleted(prevId);
+        long lp = store.getLowestPendingVersion(subId, bucketId, memberId);
+        if (lp > prevVer) {
+          long prevCommitted = store.getCommittedWatermark(subId, bucketId, memberId);
+          long committed =
+              advanceContiguousCommittedWatermarkLocked(subId, bucketId, memberId, prevVer);
+          gate.tryAccept(prevEv);
+          if (committed > prevCommitted && committed > prevVer) {
+            gate.restoreHighWaterVersion(subId, bucketId, memberId, committed);
+          }
+        }
+      }
+    }
+    return true;
   }
 
   /**

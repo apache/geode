@@ -412,6 +412,18 @@ public class ContinuousVectorQueryService {
     return dispatcher.getContiguousHeadVersion(bucketId, memberId);
   }
 
+  public long getEnqueuedHeadVersion(int bucketId, String memberId) {
+    return dispatcher.getEnqueuedHeadVersion(bucketId, memberId);
+  }
+
+  public long getSinkDispatchedVersion(int bucketId, String memberId) {
+    return dispatcher.getSinkDispatchedVersion(bucketId, memberId);
+  }
+
+  public int getPendingDispatchQueueSize(int bucketId) {
+    return dispatcher.getPendingDispatchQueueSize(bucketId);
+  }
+
   public long getOldestUncoveredMutationTimeMs(int bucketId, String memberId) {
     return dispatcher.getOldestUncoveredMutationTimeMs(bucketId, memberId);
   }

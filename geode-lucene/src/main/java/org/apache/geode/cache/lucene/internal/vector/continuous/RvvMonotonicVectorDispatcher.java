@@ -304,6 +304,8 @@ public class RvvMonotonicVectorDispatcher {
     final Map<String, TreeMap<Long, TailMutation>> holdbackByMember = new HashMap<>();
     final Map<String, Long> holdbackGapStartTimeMsByMember = new HashMap<>();
     final Map<String, Long> lastDispatchedVersionByMember = new HashMap<>();
+    final ConcurrentHashMap<String, Long> lastSinkDeliveredVersionByMember =
+        new ConcurrentHashMap<>();
     final List<TailMutation> pendingLiveMutations = new ArrayList<>();
     final ConcurrentLinkedQueue<PendingDispatchBatch> pendingDispatchBatches =
         new ConcurrentLinkedQueue<>();
@@ -401,17 +403,20 @@ public class RvvMonotonicVectorDispatcher {
     }
 
     /**
-     * Returns {@code V_contig[b, m]}: the highest contiguous recoverable version with zero holes in
-     * {@code (V_floor[b, m], V_contig[b, m]]}. When an active holdback gap exists, strictly caps at
-     * {@code nextExpectedVersion - 1} so reconnect replay and trailing heartbeats never skip over a
-     * missing hole.
+     * Returns {@code V_enq[b, m]} (contiguous admitted/enqueued frontier, aliased as
+     * {@code V_contig[b, m]}): the highest contiguous recoverable version admitted into the
+     * per-bucket FIFO with zero holes in {@code (V_floor[b, m], V_enq[b, m]]}. When an active
+     * holdback gap exists, strictly equals {@code max(V_floor, nextExpectedVersion - 1)} so
+     * physical entries strictly above {@code V_enq} are unconditionally bounded by
+     * {@code maxHoldbackGap = 128} independent of async FIFO dispatch backlog ({@code V_disp}),
+     * and reconnect replay sets {@code V_S = V_enq} ahead of live handoff at {@code V_enq + 1}.
      */
     synchronized long getContiguousHeadVersion(String memberId, boolean enforceContiguous) {
       long floor = replayFloorByMember.getOrDefault(memberId, 0L);
-      long lastDispatched = lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
+      long lastEnqueued = lastDispatchedVersionByMember.getOrDefault(memberId, 0L);
       TreeMap<Long, TailMutation> stream = tailByMember.get(memberId);
       if (!enforceContiguous) {
-        long head = Math.max(floor, lastDispatched);
+        long head = Math.max(floor, lastEnqueued);
         if (stream != null && !stream.isEmpty()) {
           head = Math.max(head, stream.lastKey());
         }
@@ -420,9 +425,9 @@ public class RvvMonotonicVectorDispatcher {
       TreeMap<Long, TailMutation> held = holdbackByMember.get(memberId);
       if (held != null && !held.isEmpty()) {
         long nextExpected = nextExpectedVersionByMember.getOrDefault(memberId, 1L);
-        return Math.max(floor, Math.min(lastDispatched, nextExpected - 1L));
+        return Math.max(floor, nextExpected - 1L);
       }
-      long contig = Math.max(floor, lastDispatched);
+      long contig = Math.max(floor, lastEnqueued);
       if (stream != null && !stream.isEmpty()) {
         for (Long v : stream.tailMap(contig, false).keySet()) {
           if (v == contig + 1L) {
@@ -433,6 +438,10 @@ public class RvvMonotonicVectorDispatcher {
         }
       }
       return contig;
+    }
+
+    long getSinkDeliveredVersion(String memberId) {
+      return lastSinkDeliveredVersionByMember.getOrDefault(memberId, 0L);
     }
 
     synchronized void removeSubscriberAckForMember(String subscriberId, String memberId) {
@@ -1785,7 +1794,21 @@ public class RvvMonotonicVectorDispatcher {
           }
         }
         if (sanitizedCkpt > 0L) {
-          state.advanceCheckpointWithoutCompaction(memberId, sanitizedCkpt);
+          long effectiveFloor = state.getReplayFloor(memberId);
+          long cappedCkpt = sanitizedCkpt;
+          if (!registeredCheckpointSubscribers.isEmpty()) {
+            long minHealthyAck = Long.MAX_VALUE;
+            for (String subId : registeredCheckpointSubscribers) {
+              long ack = state.getSubscriberAck(subId, memberId);
+              if (ack < minHealthyAck) {
+                minHealthyAck = ack;
+              }
+            }
+            if (minHealthyAck != Long.MAX_VALUE && minHealthyAck >= effectiveFloor) {
+              cappedCkpt = Math.max(effectiveFloor, Math.min(sanitizedCkpt, minHealthyAck));
+            }
+          }
+          state.advanceCheckpointWithoutCompaction(memberId, cappedCkpt);
         }
       }
     }
@@ -1965,6 +1988,33 @@ public class RvvMonotonicVectorDispatcher {
   public long getContiguousHeadVersion(int bucketId, String memberId) {
     BucketState state = bucketStates.get(bucketId);
     return state == null ? 0L : state.getContiguousHeadVersion(memberId, enforceContiguousVersions);
+  }
+
+  /**
+   * Returns {@code V_enq[bucketId, memberId]}: the highest contiguous admitted/enqueued RVV
+   * version (distinct from {@link #getSinkDispatchedVersion(int, String)} {@code V_disp} when
+   * async FIFO dispatch batches are still queued).
+   */
+  public long getEnqueuedHeadVersion(int bucketId, String memberId) {
+    return getContiguousHeadVersion(bucketId, memberId);
+  }
+
+  /**
+   * Returns {@code V_disp[bucketId, memberId]}: the highest live (non-replayed) RVV version
+   * actually delivered to downstream event sinks by the per-bucket FIFO drainer.
+   */
+  public long getSinkDispatchedVersion(int bucketId, String memberId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0L : state.getSinkDeliveredVersion(memberId);
+  }
+
+  /**
+   * Returns the number of undispatched batches currently queued in {@code bucketId}'s per-bucket
+   * FIFO dispatch queue.
+   */
+  public int getPendingDispatchQueueSize(int bucketId) {
+    BucketState state = bucketStates.get(bucketId);
+    return state == null ? 0 : state.pendingDispatchBatches.size();
   }
 
   /**
@@ -2711,7 +2761,7 @@ public class RvvMonotonicVectorDispatcher {
       while (true) {
         PendingDispatchBatch next;
         while ((next = state.pendingDispatchBatches.poll()) != null) {
-          dispatchBatchToSinks(next);
+          dispatchBatchToSinks(state, next);
         }
         state.drainOwnerThread = null;
         state.dispatchDraining.set(false);
@@ -2738,7 +2788,7 @@ public class RvvMonotonicVectorDispatcher {
     }
   }
 
-  private void dispatchBatchToSinks(PendingDispatchBatch batch) {
+  private void dispatchBatchToSinks(BucketState state, PendingDispatchBatch batch) {
     if (batch.barrierAction != null) {
       batch.barrierAction.run();
       return;
@@ -2749,6 +2799,12 @@ public class RvvMonotonicVectorDispatcher {
     }
     for (ContinuousVectorEventSink sink : sinks) {
       sink.onEventBatch(batch.events);
+    }
+    for (ContinuousVectorEvent ev : batch.events) {
+      if (!ev.isReplayed()) {
+        state.lastSinkDeliveredVersionByMember.merge(ev.getMemberId(), ev.getRegionVersion(),
+            Math::max);
+      }
     }
   }
 }

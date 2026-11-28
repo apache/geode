@@ -1591,8 +1591,10 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId)).isEqualTo(3L);
     assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(2L);
 
-    // Before pending v=3 recovers, out-of-order matches v=4 and v=5 execute and complete.
-    // Neither match commit nor gate high-water may advance committedWatermark past pending v=3!
+    // While pending v=3 remains unexecuted, a covering heartbeat at v=5 MUST NOT advance
+    // committedWatermark or gate high-water past 2; then when v=4 and v=5 arrive on healthy
+    // consumer2, ordered Phase-2 execution inside streamExecutionFences drains pending v=3 FIRST
+    // so effects execute strictly in ascending order [1, 2, 3, 4, 5] (never [1, 2, 4, 5, 3])!
     server.removeEventSink(consumer1);
     server.detachClientGate(gate1);
     RvvClientGate gate2 = new RvvClientGate();
@@ -1605,23 +1607,21 @@ public class RvvMonotonicVectorDispatcherTest {
     gate2.restoreHighWaterVersion("sub-match", bucketId, memberId, 2L);
 
     long now = System.currentTimeMillis();
-    consumer2.processEvent(new ContinuousVectorEvent("sub-match", "k4", 1.0f, bucketId, memberId,
-        4L, 1, now, false));
-    consumer2.processEvent(new ContinuousVectorEvent("sub-match", "k5", 1.0f, bucketId, memberId,
-        5L, 1, now, false));
-
-    assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
-        .containsExactly(1L, 2L, 4L, 5L);
+    consumer2.processEvent(ContinuousVectorEvent.watermarkHeartbeat(bucketId, memberId, 5L, now));
     assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId)).isEqualTo(3L);
     assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(2L);
     assertThat(gate2.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(2L);
     assertThat(durableStore.getCommittedHighWaterByMember(bucketId,
         Collections.singletonList("sub-match"))).containsEntry(memberId, 2L);
 
-    // Recover pending v=3 -> drains v=3 once and walks contiguous applied ledger 3->4->5 cleanly
-    assertThat(consumer2.recover()).isEqualTo(1);
+    consumer2.processEvent(new ContinuousVectorEvent("sub-match", "k4", 1.0f, bucketId, memberId,
+        4L, 1, now, false));
+    consumer2.processEvent(new ContinuousVectorEvent("sub-match", "k5", 1.0f, bucketId, memberId,
+        5L, 1, now, false));
+
     assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
-        .containsExactly(1L, 2L, 4L, 5L, 3L);
+        .containsExactly(1L, 2L, 3L, 4L, 5L);
+    assertThat(consumer2.recover()).isZero();
     assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId))
         .isEqualTo(Long.MAX_VALUE);
     assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(5L);
@@ -1710,27 +1710,36 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(gate1.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(1L);
     assertThat(durableStore.getCommittedWatermark("sub-zero", bucketId, memberId)).isEqualTo(4L);
 
-    CountDownLatch v3Executed = new CountDownLatch(1);
+    CountDownLatch v3Done = new CountDownLatch(1);
+    AtomicInteger v3BlockedByEarlierAbort = new AtomicInteger();
     Thread laterMatchThread = new Thread(() -> {
-      consumer1.processEvent(new ContinuousVectorEvent("sub-match", "k3", 1.0f, bucketId, memberId,
-          3L, 1, now + 2L, false));
-      v3Executed.countDown();
+      try {
+        consumer1.processEvent(new ContinuousVectorEvent("sub-match", "k3", 1.0f, bucketId,
+            memberId, 3L, 1, now + 2L, false));
+      } catch (DelayedAbortException expected) {
+        // Ordered Phase-2 execution tries to drain earlier pending v=2 FIRST -> refuses to run
+        // v=3 out of order ahead of failing v=2!
+        v3BlockedByEarlierAbort.incrementAndGet();
+      } finally {
+        v3Done.countDown();
+      }
     }, "later-match-v3");
     laterMatchThread.start();
     // While v1=2 remains in flight, v2=3 cannot execute out-of-order ahead of it
-    assertThat(v3Executed.await(100L, TimeUnit.MILLISECONDS)).isFalse();
+    assertThat(v3Done.await(100L, TimeUnit.MILLISECONDS)).isFalse();
     assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
         .containsExactly(1L);
 
-    // Abort/crash instance 1 while v1=2 stays PENDING -> v2=3 finishes after fence release yet
-    // STILL cannot advance committedWatermark or gate past 1 because v1=2 remains PENDING!
+    // Abort/crash instance 1 while v1=2 stays PENDING -> ordered Phase-2 execution refuses to
+    // run v=3 ahead of failed v=2, keeping committedWatermark & gate at 1 and BOTH v=2,3 PENDING!
     allowV2Abort.countDown();
     delayedThread.join(10_000L);
-    assertThat(v3Executed.await(10, TimeUnit.SECONDS)).isTrue();
+    assertThat(v3Done.await(10, TimeUnit.SECONDS)).isTrue();
     laterMatchThread.join(10_000L);
     assertThat(delayedThreadAbortCount.get()).isEqualTo(1);
+    assertThat(v3BlockedByEarlierAbort.get()).isEqualTo(1);
     assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
-        .containsExactly(1L, 3L);
+        .containsExactly(1L);
     assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(1L);
     assertThat(gate1.getHighWaterVersion("sub-match", bucketId, memberId)).isEqualTo(1L);
     assertThat(consumer1.getCommittedHighWaterByMember(bucketId)).containsEntry(memberId, 1L);
@@ -1744,10 +1753,9 @@ public class RvvMonotonicVectorDispatcherTest {
       }
     });
 
-    assertThat(consumer2.recover()).isEqualTo(1);
+    assertThat(consumer2.recover()).isEqualTo(2);
     assertThat(appliedEffectLog).extracting(IdempotentRvvConsumer.EventDeliveryId::getRegionVersion)
-        .containsExactlyInAnyOrder(1L, 2L, 3L)
-        .hasSize(3);
+        .containsExactly(1L, 2L, 3L);
     assertThat(durableStore.getLowestPendingVersion("sub-match", bucketId, memberId))
         .isEqualTo(Long.MAX_VALUE);
     assertThat(durableStore.getCommittedWatermark("sub-match", bucketId, memberId)).isEqualTo(3L);
@@ -3459,6 +3467,297 @@ public class RvvMonotonicVectorDispatcherTest {
     assertThat(svcHb.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
     assertThat(svcHb.getOldestUncoveredMutationTimeMs(bucketId, memberP)).isGreaterThan(0L);
     assertThat(svcHb.flushIdleHeartbeats(baseNow + 2_000L, 100L)).isEqualTo(1);
+  }
+
+  @Test
+  public void delayedFifoWithNewlyOpenedGapSeparatesEnqueuedAndDispatchedFrontiersNearCapacity() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 208;
+    int bucketId = 36;
+    String memberP = "srv-delayed-fifo";
+
+    // Manual deferred FIFO executor: batches stay queued undispatched until explicitly drained!
+    Queue<Runnable> deferredTasks = new ArrayDeque<>();
+    Executor deferredExecutor = deferredTasks::add;
+
+    ChordalVoronoiRouter router = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dispatcher =
+        new RvvMonotonicVectorDispatcher(router, cTail, deferredExecutor, 256);
+    ContinuousVectorQueryService service = new ContinuousVectorQueryService(router, dispatcher);
+    service.registerSubscription("sub-existing", vec, 0.90f);
+    service.registerSubscription("sub-reconnect", vec, 0.90f);
+
+    RvvClientGate existingGate = new RvvClientGate();
+    existingGate.registerSubscription("sub-existing");
+    List<Long> existingDelivered = new ArrayList<>();
+    existingGate.addListener(ev -> {
+      if ("sub-existing".equals(ev.getSubscriptionId())) {
+        existingDelivered.add(ev.getRegionVersion());
+      }
+    });
+    service.addEventSink(existingGate::tryAccept);
+
+    // Ingest v=1..200 while FIFO executor is stalled -> 200 undispatched batches queued!
+    for (long v = 1L; v <= 200L; v++) {
+      service.onBucketMutation(bucketId, memberP, v, "kf-" + v, vec, true);
+    }
+    assertThat(service.getPendingDispatchQueueSize(bucketId)).isEqualTo(200);
+    assertThat(service.getSinkDispatchedVersion(bucketId, memberP)).isZero(); // V_disp = 0
+    assertThat(service.getEnqueuedHeadVersion(bucketId, memberP)).isEqualTo(200L); // V_enq = 200
+    assertThat(service.getReceivedHeadVersion(bucketId, memberP)).isEqualTo(200L); // V_recv = 200
+    assertThat(existingDelivered).isEmpty();
+
+    // Newly opened gap: v=202 arrives while v=201 is missing (forward span = 1 <= 128).
+    // V_enq MUST remain 200 (NOT dragged down to V_disp = 0!), so physical entries above V_enq
+    // are strictly {202} (size 1 <= maxHoldbackGap=128) independent of the 200-batch FIFO backlog!
+    service.onBucketMutation(bucketId, memberP, 202L, "kf-202", vec, true);
+    assertThat(service.getSinkDispatchedVersion(bucketId, memberP)).isZero();
+    assertThat(service.getEnqueuedHeadVersion(bucketId, memberP)).isEqualTo(200L);
+    assertThat(service.getContiguousHeadVersion(bucketId, memberP)).isEqualTo(200L);
+    assertThat(service.getReceivedHeadVersion(bucketId, memberP)).isEqualTo(202L);
+    assertThat(dispatcher.getHoldbackSize(bucketId)).isEqualTo(1);
+    assertThat(dispatcher.getTailSize(bucketId)).isEqualTo(201);
+    assertThat(dispatcher.getTailOverflowCount()).isZero();
+    assertThat(service.isResyncRequired(bucketId, memberP)).isFalse();
+
+    // Reconnecting subscriber enrolls at V_client=0 while all 200 live batches are still queued:
+    // admitAndReplayForReconnect sets V_S = V_enq = 200, enqueuing (0, 200] + HB(200) + barrier
+    // strictly ahead of post-enrollment live dispatches starting at V_enq + 1 = 201!
+    RvvClientGate reconnectGate = new RvvClientGate();
+    reconnectGate.registerSubscription("sub-reconnect");
+    List<Long> reconnectDelivered = new ArrayList<>();
+    reconnectGate.addListener(ev -> {
+      if ("sub-reconnect".equals(ev.getSubscriptionId())) {
+        reconnectDelivered.add(ev.getRegionVersion());
+      }
+    });
+    AtomicBoolean liveAllowed = new AtomicBoolean(false);
+    ContinuousVectorEventSink reconnectSink = ev -> {
+      if (!ev.isReplayed() && !liveAllowed.get()) {
+        return;
+      }
+      reconnectGate.tryAccept(ev);
+    };
+    service.addEventSink(reconnectSink);
+    service.admitAndReplayForReconnect("sub-reconnect", bucketId,
+        Collections.singletonMap(memberP, 0L), reconnectSink, () -> liveAllowed.set(true));
+    assertThat(liveAllowed.get()).isFalse(); // Barrier queued behind replay on delayed FIFO!
+
+    // Hole v=201 arrives + v=203, then drain the delayed FIFO queue completely
+    service.onBucketMutation(bucketId, memberP, 201L, "kf-201", vec, true);
+    service.onBucketMutation(bucketId, memberP, 203L, "kf-203", vec, true);
+    while (!deferredTasks.isEmpty()) {
+      deferredTasks.poll().run();
+    }
+
+    assertThat(liveAllowed.get()).isTrue();
+    List<Long> expectedAll = new ArrayList<>(203);
+    for (long v = 1L; v <= 203L; v++) {
+      expectedAll.add(v);
+    }
+    assertThat(existingDelivered).containsExactlyElementsOf(expectedAll);
+    assertThat(reconnectDelivered).containsExactlyElementsOf(expectedAll);
+    assertThat(service.getSinkDispatchedVersion(bucketId, memberP)).isEqualTo(203L);
+    assertThat(service.getEnqueuedHeadVersion(bucketId, memberP)).isEqualTo(203L);
+    assertThat(service.getReceivedHeadVersion(bucketId, memberP)).isEqualTo(203L);
+    assertThat(dispatcher.getHoldbackSize(bucketId)).isZero();
+    assertThat(dispatcher.getTailOverflowCount()).isZero();
+    assertThat(service.isResyncRequired(bucketId, memberP)).isFalse();
+  }
+
+  @Test
+  public void orderedPhase2ExecutionDrainsEarlierPendingIntentWhenLaterStagedIntentRacesIntoExecutionFence()
+      throws Exception {
+    int bucketId = 37;
+    String memberId = "srv-ordered-phase2";
+    RvvClientGate gate = new RvvClientGate();
+    gate.registerSubscription("sub-ord");
+    IdempotentRvvConsumer.InMemoryDurableDeliveryStore store =
+        new IdempotentRvvConsumer.InMemoryDurableDeliveryStore();
+    List<Long> handlerInvocationSequence = new CopyOnWriteArrayList<>();
+    IdempotentRvvConsumer consumer = new IdempotentRvvConsumer(gate, store,
+        (ev, id) -> handlerInvocationSequence.add(ev.getRegionVersion()));
+
+    long session1 = consumer.getActiveSessionEpoch(bucketId);
+    ContinuousVectorEventSink session1Sink = consumer.createSessionSink(bucketId, session1);
+    session1Sink.onEvent(
+        new ContinuousVectorEvent("sub-ord", "k-1", 0.99f, bucketId, memberId, 1L, 1, 100L, false));
+    session1Sink.onEvent(
+        new ContinuousVectorEvent("sub-ord", "k-2", 0.99f, bucketId, memberId, 2L, 1, 101L, false));
+    assertThat(handlerInvocationSequence).containsExactly(1L, 2L);
+
+    ExecutorService bg = Executors.newFixedThreadPool(2);
+    try {
+      // Pause Thread A (v=3) strictly after Phase-1 durable staging and before execFence.lock()
+      CountDownLatch v3PausedBeforeFence = new CountDownLatch(1);
+      CountDownLatch releaseV3 = new CountDownLatch(1);
+      consumer.setBeforeExecutionFenceHookForTest((ev, id) -> {
+        if (ev.getRegionVersion() == 3L) {
+          v3PausedBeforeFence.countDown();
+          try {
+            releaseV3.await(15, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+
+      ContinuousVectorEvent ev3 = new ContinuousVectorEvent("sub-ord", "k-3", 0.99f, bucketId,
+          memberId, 3L, 1, 102L, false);
+      ContinuousVectorEvent ev4 = new ContinuousVectorEvent("sub-ord", "k-4", 0.99f, bucketId,
+          memberId, 4L, 1, 103L, false);
+      Future<?> t3 = bg.submit(() -> session1Sink.onEvent(ev3));
+      assertThat(v3PausedBeforeFence.await(10, TimeUnit.SECONDS)).isTrue();
+      assertThat(store.isPendingIntent(IdempotentRvvConsumer.EventDeliveryId.fromEvent(ev3)))
+          .isTrue();
+
+      // Thread B stages v=4 and races ahead of paused v=3 into streamExecutionFences:
+      // MUST drain pending v=3 FIRST and then execute v=4 -> exact sequence [1, 2, 3, 4]!
+      session1Sink.onEvent(ev4);
+      assertThat(handlerInvocationSequence).containsExactly(1L, 2L, 3L, 4L);
+      assertThat(store.getCommittedWatermark("sub-ord", bucketId, memberId)).isEqualTo(4L);
+
+      // Release paused Thread A (v=3) -> deduplicates cleanly without re-invoking handler!
+      releaseV3.countDown();
+      t3.get(10, TimeUnit.SECONDS);
+      assertThat(handlerInvocationSequence).containsExactly(1L, 2L, 3L, 4L);
+
+      // Also verify cross-reconnect ordering when v=5 and v=6 are both pending and v=6 pauses
+      // before execFence: prepareForReconnect retires [5, 6] strictly in order and rejects stale 6
+      CountDownLatch v6PausedBeforeFence = new CountDownLatch(1);
+      CountDownLatch releaseV6 = new CountDownLatch(1);
+      consumer.setBeforeExecutionFenceHookForTest((ev, id) -> {
+        if (ev.getRegionVersion() == 6L) {
+          v6PausedBeforeFence.countDown();
+          try {
+            releaseV6.await(15, TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      });
+      ContinuousVectorEvent ev5 = new ContinuousVectorEvent("sub-ord", "k-5", 0.99f, bucketId,
+          memberId, 5L, 1, 104L, false);
+      ContinuousVectorEvent ev6 = new ContinuousVectorEvent("sub-ord", "k-6", 0.99f, bucketId,
+          memberId, 6L, 1, 105L, false);
+      consumer.stagePendingIntent(ev5, session1);
+      Future<?> t6 = bg.submit(() -> session1Sink.onEvent(ev6));
+      assertThat(v6PausedBeforeFence.await(10, TimeUnit.SECONDS)).isTrue();
+
+      Map<String, Long> hw = consumer.prepareForReconnect(bucketId);
+      assertThat(hw).containsEntry(memberId, 6L);
+      assertThat(handlerInvocationSequence).containsExactly(1L, 2L, 3L, 4L, 5L, 6L);
+
+      releaseV6.countDown();
+      t6.get(10, TimeUnit.SECONDS);
+      assertThat(handlerInvocationSequence).containsExactly(1L, 2L, 3L, 4L, 5L, 6L);
+    } finally {
+      consumer.setBeforeExecutionFenceHookForTest(null);
+      bg.shutdownNow();
+    }
+  }
+
+  @Test
+  public void twoBackupPartialLowerPinApplicationCrashWindowGuaranteesZeroSilentSkipForEveryPromotableSurvivor() {
+    float[] vec = new float[] {1.0f, 0.0f, 0.0f, 0.0f};
+    int cTail = 32;
+    int bucketId = 38;
+    String memberP = "srv-2backup-P";
+
+    // Primary P + two backups B1, B2 (plus uncompacted clone B2Uncompacted) all start with
+    // (V_floor=60, V_ckpt=64) and tail [61..68].
+    ChordalVoronoiRouter rP = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dP = new RvvMonotonicVectorDispatcher(rP, cTail, null, 64);
+    ContinuousVectorQueryService primary = new ContinuousVectorQueryService(rP, dP);
+
+    ChordalVoronoiRouter rB1 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dB1 = new RvvMonotonicVectorDispatcher(rB1, cTail, null, 64);
+    ContinuousVectorQueryService backup1 = new ContinuousVectorQueryService(rB1, dB1);
+
+    ChordalVoronoiRouter rB2 = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dB2 = new RvvMonotonicVectorDispatcher(rB2, cTail, null, 64);
+    ContinuousVectorQueryService backup2Compacted = new ContinuousVectorQueryService(rB2, dB2);
+
+    ChordalVoronoiRouter rB2u = new ChordalVoronoiRouter(4);
+    RvvMonotonicVectorDispatcher dB2u = new RvvMonotonicVectorDispatcher(rB2u, cTail, null, 64);
+    ContinuousVectorQueryService backup2Uncompacted = new ContinuousVectorQueryService(rB2u, dB2u);
+
+    for (ContinuousVectorQueryService svc : new ContinuousVectorQueryService[] {primary, backup1,
+        backup2Compacted, backup2Uncompacted}) {
+      svc.registerSubscription("sub-lag", vec, 0.90f);
+    }
+    for (long v = 1L; v <= 68L; v++) {
+      primary.onBucketMutation(bucketId, memberP, v, "k2b-" + v, vec, true);
+      backup1.onBucketMutation(bucketId, memberP, v, "k2b-" + v, vec, false);
+      backup2Compacted.onBucketMutation(bucketId, memberP, v, "k2b-" + v, vec, false);
+      backup2Uncompacted.onBucketMutation(bucketId, memberP, v, "k2b-" + v, vec, false);
+      if (v == 30L) {
+        for (ContinuousVectorQueryService svc : new ContinuousVectorQueryService[] {primary,
+            backup1, backup2Compacted, backup2Uncompacted}) {
+          svc.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 30L, 30L);
+        }
+      } else if (v == 60L) {
+        for (ContinuousVectorQueryService svc : new ContinuousVectorQueryService[] {primary,
+            backup1, backup2Compacted, backup2Uncompacted}) {
+          svc.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+        }
+      }
+    }
+
+    // Partial replication crash window: B1 applies lower pin (60, 63), then primary crashes BEFORE
+    // B1's ACK reaches primary and BEFORE B2 receives the lower pin!
+    primary.setCheckpointPinReplicator((b, m, sub, floor, ckpt) -> {
+      backup1.applyReplicatedLowerPin(b, m, sub, floor, ckpt);
+      throw new IllegalStateException("primary crashed before B1 ACK and before replicating to B2");
+    });
+
+    List<ContinuousVectorEvent> abortedWire = new ArrayList<>();
+    boolean crashed = false;
+    try {
+      primary.admitAndReplayForReconnect("sub-lag", bucketId,
+          Collections.singletonMap(memberP, 63L), abortedWire::add, null);
+    } catch (IllegalStateException expected) {
+      crashed = true;
+    }
+    assertThat(crashed).isTrue();
+    assertThat(abortedWire).isEmpty();
+    assertThat(backup1.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(backup2Compacted.getCheckpointVersion(bucketId, memberP)).isEqualTo(64L);
+    assertThat(backup2Uncompacted.getCheckpointVersion(bucketId, memberP)).isEqualTo(64L);
+
+    // Delayed old checkpoint (60, 64) arriving at B1 MUST NOT overwrite sub-lag's lower pin 63!
+    backup1.applyReplicatedFloorAndCheckpoint(bucketId, memberP, 60L, 64L);
+    assertThat(backup1.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(backup1.getReplayFloorVersion(bucketId, memberP)).isEqualTo(60L);
+
+    // Survivor Outcome 1: B1 is promoted and immediately compacts -> stops at 63, replays [64..68]!
+    backup1.onPrimaryPromotion(bucketId);
+    assertThat(backup1.compactUpToCheckpoint(bucketId, memberP)).isEqualTo(63L);
+    List<ContinuousVectorEvent> b1Replay = backup1.admitAndReplayForReconnect("sub-lag", bucketId,
+        Collections.singletonMap(memberP, 63L));
+    assertThat(b1Replay).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L, 67L, 68L);
+    assertThat(backup1.isResyncRequired(bucketId, memberP)).isFalse();
+
+    // Survivor Outcome 2: B2 is promoted and compacts to 64 -> deterministically rejects 63 into
+    // resyncRequired (zero silent skip)!
+    backup2Compacted.onPrimaryPromotion(bucketId);
+    assertThat(backup2Compacted.compactUpToCheckpoint(bucketId, memberP)).isEqualTo(64L);
+    List<ContinuousVectorEvent> b2CompactedReplay = backup2Compacted.admitAndReplayForReconnect(
+        "sub-lag", bucketId, Collections.singletonMap(memberP, 63L));
+    assertThat(b2CompactedReplay).isEmpty();
+    assertThat(backup2Compacted.isResyncRequired(bucketId, memberP)).isTrue();
+    assertThat(backup2Compacted.isSubscriberResyncRequired("sub-lag", bucketId, memberP)).isTrue();
+
+    // Survivor Outcome 3: B2 is promoted WITHOUT compacting (V_floor=60 <= 63) -> re-admits 63,
+    // lower-pins V_ckpt=63, and replays [64..68] cleanly with zero silent skip!
+    backup2Uncompacted.onPrimaryPromotion(bucketId);
+    List<ContinuousVectorEvent> b2UncompactedReplay = backup2Uncompacted.admitAndReplayForReconnect(
+        "sub-lag", bucketId, Collections.singletonMap(memberP, 63L));
+    assertThat(backup2Uncompacted.getCheckpointVersion(bucketId, memberP)).isEqualTo(63L);
+    assertThat(b2UncompactedReplay).extracting(ContinuousVectorEvent::getRegionVersion)
+        .containsExactly(64L, 65L, 66L, 67L, 68L);
+    assertThat(backup2Uncompacted.isResyncRequired(bucketId, memberP)).isFalse();
   }
 
   private static void assertDataStrictlyBeforeEqualVersionHeartbeat(
