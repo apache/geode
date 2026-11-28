@@ -77,10 +77,12 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneEventListener;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
@@ -1970,6 +1972,392 @@ public class DistributedHybridKnnFunctionJUnitTest {
       assertThat(demoteRegistry.getOwnershipFenceRetryCount()).isGreaterThanOrEqualTo(1L);
     } finally {
       when(mockContext.getDataSet()).thenReturn(mockRegion);
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void retryExhaustionThrowsInsteadOfMergingUnvalidatedCut() throws Exception {
+    float[] queryVec = new float[] {1f, 0f, 0f, 0f};
+    float[] vec = new float[] {0.95f, (float) Math.sqrt(1.0 - 0.95 * 0.95), 0f, 0f};
+    LuceneSerializer<float[]> serializer = (idx, v) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, v, VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", "books", Field.Store.YES));
+      return Collections.singletonList(doc);
+    };
+
+    long savedWaitMs = DistributedHybridKnnFunction.maxConcurrentFlushWaitMillisForTest;
+    DistributedHybridKnnFunction.maxConcurrentFlushWaitMillisForTest = 25L;
+    try {
+      // Sub-case (a): Repeated ownership generation changes exhaust MAX_OWNERSHIP_FENCE_RETRIES
+      // -> MUST explicitly throw PrimaryBucketException (wrapped) and emit ZERO hits.
+      Tier0VectorRegistry.removeCache(mockCache);
+      Tier0VectorRegistry ownRegistry = Tier0VectorRegistry.forCache(mockCache);
+      ownRegistry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0)
+          .put("k-exhaust", vec, Map.of("category", "books"));
+
+      try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+          IndexWriter writer =
+              new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+        java.util.concurrent.atomic.AtomicInteger ownAcquires =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+        IndexRepositoryImpl flappingRepo = new IndexRepositoryImpl(
+            mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex) {
+          @Override
+          protected IndexSearcher acquireSearcher() throws IOException {
+            IndexSearcher s = super.acquireSearcher();
+            ownAcquires.incrementAndGet();
+            ownRegistry.advanceOwnershipGeneration(REGION_PATH, INDEX_NAME, 0);
+            return s;
+          }
+        };
+        when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+            .thenReturn(Map.of(0, flappingRepo));
+        ResultSender<TopEntriesCollector> ownSender = mock(ResultSender.class);
+        when(mockContext.getResultSender()).thenReturn(ownSender);
+
+        HybridKnnQueryContext ctx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .build();
+        when(mockContext.getArguments()).thenReturn(ctx);
+
+        assertThatThrownBy(() -> new DistributedHybridKnnFunction().execute(mockContext))
+            .isInstanceOf(InternalFunctionInvocationTargetException.class)
+            .hasCauseInstanceOf(PrimaryBucketException.class);
+        verify(ownSender, never()).lastResult(any());
+        assertThat(ownAcquires.get())
+            .isEqualTo(DistributedHybridKnnFunction.MAX_OWNERSHIP_FENCE_RETRIES);
+        assertThat(ownRegistry.getOwnershipFenceRetryCount())
+            .isEqualTo(DistributedHybridKnnFunction.MAX_OWNERSHIP_FENCE_RETRIES);
+      }
+
+      // Sub-case (b): Repository stuck at odd searcherEpoch (in-progress commit never completes
+      // within wait budget) -> MUST explicitly throw instead of merging an unvalidated odd cut!
+      Tier0VectorRegistry.removeCache(mockCache);
+      Tier0VectorRegistry oddRegistry = Tier0VectorRegistry.forCache(mockCache);
+      Tier0VectorDeltaBuffer<Object> oddBuffer =
+          oddRegistry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+      oddBuffer.put("k-odd", vec, Map.of("category", "books"));
+
+      IndexRepository stuckOddEpochRepo = new IndexRepository() {
+        @Override
+        public void create(Object key, Object value) {}
+
+        @Override
+        public void update(Object key, Object value) {}
+
+        @Override
+        public void delete(Object key) {}
+
+        @Override
+        public void query(Query query, int limit, IndexResultCollector collector) {
+          throw new AssertionError("Must NEVER query while searcherEpoch is odd");
+        }
+
+        @Override
+        public long getSearcherEpoch() {
+          return 1L;
+        }
+
+        @Override
+        public void commit() {}
+
+        @Override
+        public Region<?, ?> getRegion() {
+          return mockRegion;
+        }
+
+        @Override
+        public boolean isClosed() {
+          return false;
+        }
+
+        @Override
+        public IndexWriter getWriter() {
+          return null;
+        }
+
+        @Override
+        public void cleanup() {}
+      };
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, stuckOddEpochRepo));
+      ResultSender<TopEntriesCollector> oddSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(oddSender);
+
+      HybridKnnQueryContext oddCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .build();
+      when(mockContext.getArguments()).thenReturn(oddCtx);
+
+      assertThatThrownBy(() -> new DistributedHybridKnnFunction().execute(mockContext))
+          .isInstanceOf(InternalFunctionInvocationTargetException.class)
+          .hasCauseInstanceOf(PrimaryBucketException.class);
+      verify(oddSender, never()).lastResult(any());
+      assertThat(oddBuffer.isPathBWriteHeldByCurrentThread()).isFalse();
+
+      // Sub-case (c): Path B (unsupported FuzzyQuery) wait exhaustion against a stuck flush ->
+      // MUST explicitly throw instead of falling through with un-flushed Tier-0 entries!
+      Tier0VectorRegistry.removeCache(mockCache);
+      Tier0VectorRegistry pathBRegistry = Tier0VectorRegistry.forCache(mockCache);
+      Tier0VectorDeltaBuffer<Object> stuckBuffer =
+          pathBRegistry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+      stuckBuffer.put("k-stuck-fuzzy", vec, Map.of("category", "books"));
+      Tier0VectorDeltaBuffer.FlushBatch<Object> stuckBatch = stuckBuffer.beginFlush();
+      assertThat(stuckBatch).isNotNull();
+
+      try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+          IndexWriter writer =
+              new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+        IndexRepositoryImpl pathBRepo = new IndexRepositoryImpl(
+            mockRegion, writer, serializer, mockStats, mockRegion, null, "lock", mockIndex);
+        when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+            .thenReturn(Map.of(0, pathBRepo));
+        ResultSender<TopEntriesCollector> fuzzySender = mock(ResultSender.class);
+        when(mockContext.getResultSender()).thenReturn(fuzzySender);
+
+        HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+            .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+            .similarityFunction(VectorSimilarityFunction.COSINE)
+            .filterQuery("category:boks~1", "category")
+            .build();
+        when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+
+        assertThatThrownBy(() -> new DistributedHybridKnnFunction().execute(mockContext))
+            .isInstanceOf(InternalFunctionInvocationTargetException.class)
+            .hasCauseInstanceOf(PrimaryBucketException.class);
+        verify(fuzzySender, never()).lastResult(any());
+        assertThat(stuckBuffer.isPathBWriteHeldByCurrentThread()).isFalse();
+      } finally {
+        stuckBuffer.abortFlush(stuckBatch.getEpoch());
+      }
+    } finally {
+      DistributedHybridKnnFunction.maxConcurrentFlushWaitMillisForTest = savedWaitMs;
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void singleFlightFlushLockSerializesAeqCommitEvictAndPathBFlushAbort() throws Exception {
+    float[] queryVec = new float[] {1f, 0f, 0f, 0f};
+    float[] v1Stale = new float[] {0.30f, (float) Math.sqrt(1.0 - 0.09), 0f, 0f};
+    float[] v2Fresh = new float[] {0.99f, (float) Math.sqrt(1.0 - 0.99 * 0.99), 0f, 0f};
+
+    LuceneSerializer<Object[]> serializer = (idx, pair) -> {
+      Document doc = new Document();
+      doc.add(new KnnFloatVectorField(VECTOR_FIELD, (float[]) pair[0],
+          VectorSimilarityFunction.COSINE));
+      doc.add(new StringField("category", (String) pair[1], Field.Store.YES));
+      return Collections.singletonList(doc);
+    };
+
+    // Sub-case (a): Concurrent AEQ LuceneEventListener (holding flushLock while reading v1) vs
+    // Path-B FuzzyQuery (holding pathBWrite) MUST serialize single-flight without deadlock and
+    // without letting stale AEQ v1 overwrite newer v2 in Lucene or evict v2 from Tier-0!
+    Tier0VectorRegistry.removeCache(mockCache);
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(mockCache);
+    Tier0VectorDeltaBuffer<Object> buffer = registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, 0);
+    buffer.put("k", v1Stale, Map.of("category", "books"));
+
+    java.util.concurrent.ConcurrentHashMap<Object, Object[]> liveRegionValues =
+        new java.util.concurrent.ConcurrentHashMap<>();
+    liveRegionValues.put("k", new Object[] {v1Stale, "books"});
+
+    CountDownLatch aeqReadV1Entered = new CountDownLatch(1);
+    CountDownLatch allowAeqToProceed = new CountDownLatch(1);
+    java.util.concurrent.atomic.AtomicInteger activeCommitOrUpdate =
+        new java.util.concurrent.atomic.AtomicInteger(0);
+    java.util.concurrent.atomic.AtomicInteger maxConcurrentFlushers =
+        new java.util.concurrent.atomic.AtomicInteger(0);
+
+    BucketRegion mockBucketRegion = mock(BucketRegion.class);
+    when(mockBucketRegion.getId()).thenReturn(0);
+    when(mockBucketRegion.isDestroyed()).thenReturn(false);
+
+    Region<Object, Object> aeqRegion = mock(Region.class);
+    when(aeqRegion.getFullPath()).thenReturn(REGION_PATH);
+    when(aeqRegion.getEntry("k")).thenAnswer(inv -> {
+      Object[] snapshotVal = liveRegionValues.get("k");
+      EntrySnapshot es = mock(EntrySnapshot.class);
+      when(es.getRawValue(true)).thenAnswer(rawInv -> {
+        aeqReadV1Entered.countDown();
+        allowAeqToProceed.await(5, TimeUnit.SECONDS);
+        return snapshotVal;
+      });
+      return es;
+    });
+
+    when(mockRegion.getEntry("k")).thenAnswer(inv -> {
+      Object[] val = liveRegionValues.get("k");
+      if (val == null) {
+        return null;
+      }
+      EntrySnapshot es = mock(EntrySnapshot.class);
+      when(es.getRawValue(true)).thenReturn(val);
+      return es;
+    });
+    when(mockRegion.get("k")).thenAnswer(inv -> liveRegionValues.get("k"));
+
+    when(mockIndex.getRegionPath()).thenReturn(REGION_PATH);
+    when(mockIndex.getName()).thenReturn(INDEX_NAME);
+
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try (ByteBuffersDirectory dir = new ByteBuffersDirectory();
+        IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
+      IndexRepositoryImpl repo = new IndexRepositoryImpl(
+          mockBucketRegion, writer, serializer, mockStats, mockBucketRegion, null, "lock",
+          mockIndex) {
+        @Override
+        public void update(Object key, Object value) throws IOException {
+          int active = activeCommitOrUpdate.incrementAndGet();
+          maxConcurrentFlushers.accumulateAndGet(active, Math::max);
+          try {
+            super.update(key, value);
+          } finally {
+            activeCommitOrUpdate.decrementAndGet();
+          }
+        }
+
+        @Override
+        public synchronized void commitAndRefreshBlocking() throws IOException {
+          int active = activeCommitOrUpdate.incrementAndGet();
+          maxConcurrentFlushers.accumulateAndGet(active, Math::max);
+          try {
+            super.commitAndRefreshBlocking();
+          } finally {
+            activeCommitOrUpdate.decrementAndGet();
+          }
+        }
+      };
+
+      when(mockRepoManager.getIndex()).thenReturn(mockIndex);
+      when(mockRepoManager.getRepository(eq(aeqRegion), eq("k"), any())).thenReturn(repo);
+      when(mockRepoManager.getRepositoriesByBucket(eq(mockContext), eq(false)))
+          .thenReturn(Map.of(0, repo));
+
+      AsyncEvent aeqEvent = mock(AsyncEvent.class);
+      when(aeqEvent.getRegion()).thenReturn(aeqRegion);
+      when(aeqEvent.getKey()).thenReturn("k");
+
+      LuceneEventListener aeqListener = new LuceneEventListener(mockCache, mockRepoManager);
+      Future<Boolean> aeqFuture = pool.submit(() -> aeqListener.processEvents(List.of(aeqEvent)));
+
+      assertThat(aeqReadV1Entered.await(5, TimeUnit.SECONDS)).isTrue();
+      assertThat(buffer.isFlushLocked()).isTrue();
+
+      // Client updates "k" -> v2 while AEQ is paused inside flushLock holding stale v1
+      liveRegionValues.put("k", new Object[] {v2Fresh, "books"});
+      buffer.put("k", v2Fresh, Map.of("category", "books"));
+
+      ResultSender<TopEntriesCollector> pathBSender = mock(ResultSender.class);
+      when(mockContext.getResultSender()).thenReturn(pathBSender);
+      HybridKnnQueryContext fuzzyCtx = HybridKnnQueryContext
+          .builder(INDEX_NAME, VECTOR_FIELD, queryVec, 5)
+          .similarityFunction(VectorSimilarityFunction.COSINE)
+          .filterQuery("category:boks~1", "category")
+          .build();
+      when(mockContext.getArguments()).thenReturn(fuzzyCtx);
+
+      Future<?> pathBFuture = pool.submit(() -> new DistributedHybridKnnFunction().execute(
+          mockContext));
+
+      // Let Path B contend on flushLock (must drop pathBWrite so AEQ evictCommitted won't
+      // deadlock), then release AEQ.
+      Thread.sleep(30L);
+      assertThat(pathBFuture.isDone()).isFalse();
+      allowAeqToProceed.countDown();
+
+      assertThat(aeqFuture.get(5, TimeUnit.SECONDS)).isTrue();
+      pathBFuture.get(5, TimeUnit.SECONDS);
+
+      assertThat(maxConcurrentFlushers.get()).isEqualTo(1);
+      assertThat(buffer.isFlushLocked()).isFalse();
+      assertThat(buffer.isPathBWriteHeldByCurrentThread()).isFalse();
+      assertThat(buffer.getTotalSize()).isEqualTo(0);
+
+      ArgumentCaptor<TopEntriesCollector> captor =
+          ArgumentCaptor.forClass(TopEntriesCollector.class);
+      verify(pathBSender).lastResult(captor.capture());
+      List<EntryScore<Object>> hits = captor.getValue().getEntries().getHits();
+      assertThat(hits).extracting(EntryScore::getKey).containsExactly("k");
+      float expectedScoreV2 =
+          VectorSimilarityScorer.score(queryVec, v2Fresh, VectorSimilarityFunction.COSINE);
+      assertThat(hits.get(0).getScore()).isCloseTo(expectedScoreV2, within(1e-4f));
+
+      // Sub-case (b): Competing flushBucket abortFlush (post-commit IOException) vs concurrent
+      // AEQ LuceneEventListener batch MUST serialize strictly under flushLock!
+      buffer.put("k-abort", v2Fresh, Map.of("category", "books"));
+      liveRegionValues.put("k-abort", new Object[] {v2Fresh, "books"});
+      CountDownLatch abortFlushInsideCommit = new CountDownLatch(1);
+      CountDownLatch allowAbortToThrow = new CountDownLatch(1);
+      AtomicBoolean failFirstCommit = new AtomicBoolean(true);
+      java.util.concurrent.atomic.AtomicInteger subBActive =
+          new java.util.concurrent.atomic.AtomicInteger(0);
+      java.util.concurrent.atomic.AtomicInteger subBMaxConcurrent =
+          new java.util.concurrent.atomic.AtomicInteger(0);
+
+      IndexRepositoryImpl abortingRepo = new IndexRepositoryImpl(
+          mockBucketRegion, writer, serializer, mockStats, mockBucketRegion, null, "lock",
+          mockIndex) {
+        @Override
+        public synchronized void commitAndRefreshBlocking() throws IOException {
+          int active = subBActive.incrementAndGet();
+          subBMaxConcurrent.accumulateAndGet(active, Math::max);
+          try {
+            if (failFirstCommit.compareAndSet(true, false)) {
+              abortFlushInsideCommit.countDown();
+              try {
+                allowAbortToThrow.await(5, TimeUnit.SECONDS);
+              } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+              }
+              throw new IOException("injected post-update refresh failure");
+            }
+            super.commitAndRefreshBlocking();
+          } finally {
+            subBActive.decrementAndGet();
+          }
+        }
+      };
+
+      Region<Object, Object> aeqRegionB = mock(Region.class);
+      when(aeqRegionB.getFullPath()).thenReturn(REGION_PATH);
+      when(aeqRegionB.getEntry("k-abort")).thenAnswer(inv -> {
+        EntrySnapshot es = mock(EntrySnapshot.class);
+        when(es.getRawValue(true)).thenReturn(liveRegionValues.get("k-abort"));
+        return es;
+      });
+      when(mockRepoManager.getRepository(eq(aeqRegionB), eq("k-abort"), any()))
+          .thenReturn(abortingRepo);
+      AsyncEvent aeqEventB = mock(AsyncEvent.class);
+      when(aeqEventB.getRegion()).thenReturn(aeqRegionB);
+      when(aeqEventB.getKey()).thenReturn("k-abort");
+
+      Future<?> failingFlushFuture = pool.submit(() -> {
+        assertThatThrownBy(() -> registry.flushBucket(REGION_PATH, INDEX_NAME, 0, abortingRepo,
+            entry -> liveRegionValues.get(entry.getKey()))).isInstanceOf(IOException.class);
+      });
+      assertThat(abortFlushInsideCommit.await(5, TimeUnit.SECONDS)).isTrue();
+
+      Future<Boolean> aeqWaitFuture =
+          pool.submit(() -> aeqListener.processEvents(List.of(aeqEventB)));
+      Thread.sleep(25L);
+      // AEQ MUST block on flushLock until failingFlush finishes abortFlush() and unlocks!
+      assertThat(aeqWaitFuture.isDone()).isFalse();
+
+      allowAbortToThrow.countDown();
+      failingFlushFuture.get(5, TimeUnit.SECONDS);
+      assertThat(aeqWaitFuture.get(5, TimeUnit.SECONDS)).isTrue();
+
+      assertThat(subBMaxConcurrent.get()).isEqualTo(1);
+      assertThat(buffer.isFlushing()).isFalse();
+      assertThat(buffer.isFlushLocked()).isFalse();
+      assertThat(buffer.getTotalSize()).isEqualTo(0);
+    } finally {
+      pool.shutdownNow();
     }
   }
 

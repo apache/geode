@@ -26,8 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 
@@ -120,6 +122,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
   static volatile IntConsumer beforeAcquireSearcherHookForTest;
   private static final int MAX_LUCENE_K = 100_000;
   private static final long MAX_CONCURRENT_FLUSH_WAIT_MILLIS = 500L;
+  static volatile long maxConcurrentFlushWaitMillisForTest = MAX_CONCURRENT_FLUSH_WAIT_MILLIS;
   private static final AtomicLong UNSUPPORTED_FILTER_FLUSH_FALLBACK_COUNT = new AtomicLong(0L);
   private static final AtomicLong INLINE_MASK_QUERY_COUNT = new AtomicLong(0L);
   private static final AtomicLong OVERSAMPLE_FALLBACK_QUERY_COUNT = new AtomicLong(0L);
@@ -309,6 +312,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
       Tier0VectorDeltaBuffer<Object> pathBBuffer = null;
       final AtomicBoolean pathBWriteReleased = new AtomicBoolean(false);
       final AtomicBoolean ownershipInvalidated = new AtomicBoolean(false);
+      final AtomicBoolean retryExhausted = new AtomicBoolean(false);
       Runnable pathBReleaseBarrier = null;
       try {
         Tier0VectorDeltaBuffer<Object> buffer =
@@ -348,7 +352,7 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
               // IndexSearcher evaluates the filter with T_mask empty at the searcher cut.
               flushBucketForUnsupportedFilter(
                   cache, region, regionPath, indexName, bucketId, registry,
-                  buffer, activeRepo, expectedGen, ownershipInvalidated);
+                  buffer, activeRepo, expectedGen, ownershipInvalidated, retryExhausted);
               if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
                   expectedGen, expectedBuffer, activeRepo)) {
                 throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
@@ -494,14 +498,20 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
               };
             }
             final Runnable releaseBarrier = pathBReleaseBarrier;
-            long deadlineNanos = System.nanoTime() + MAX_CONCURRENT_FLUSH_WAIT_MILLIS * 1_000_000L;
+            long deadlineNanos =
+                System.nanoTime() + maxConcurrentFlushWaitMillisForTest * 1_000_000L;
             while (!queryCompleted) {
               if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
                   expectedGen, expectedBuffer, activeRepo)) {
                 throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
               }
               long fallbackEpoch = activeRepo.getSearcherEpoch();
-              if ((fallbackEpoch & 1L) != 0L && System.nanoTime() < deadlineNanos) {
+              if ((fallbackEpoch & 1L) != 0L) {
+                if (System.nanoTime() >= deadlineNanos) {
+                  retryExhausted.set(true);
+                  throw new PrimaryBucketException("Bucket " + bucketId + " on region "
+                      + regionPath + " exhausted searcher-epoch wait while commit in progress");
+                }
                 Thread.yield();
                 continue;
               }
@@ -532,12 +542,8 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
                   }
                 }
               };
-              boolean epochMatched = false;
-              if ((fallbackEpoch & 1L) == 0L) {
-                epochMatched = tryExecuteRepoQueryAtEpoch(activeRepo, fallbackEpoch, prepared,
-                    knnContext, queryVector, attemptCollector,
-                    epochPostAcquireValidatorAndRelease);
-              }
+              boolean epochMatched = tryExecuteRepoQueryAtEpoch(activeRepo, fallbackEpoch, prepared,
+                  knnContext, queryVector, attemptCollector, epochPostAcquireValidatorAndRelease);
               if (epochMatched) {
                 if (!postAcquireValidated.get()
                     && !isOwnershipCutValid(region, registry, regionPath, indexName, bucketId,
@@ -548,11 +554,10 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
                 usedInlineMask = prepared.usedInlineMask;
                 usedOversampleFallback = prepared.usedOversampleFallback;
                 queryCompleted = true;
-              } else if (((fallbackEpoch & 1L) == 0L
-                  && activeRepo.getSearcherEpoch() == fallbackEpoch)
-                  || System.nanoTime() >= deadlineNanos) {
-                // Either repository is a non-epoch-tracking implementation (e.g. unstubbed mock) or
-                // continuous commit contention hit bounded wait: run once under the write barrier.
+              } else if ((fallbackEpoch & 1L) == 0L
+                  && activeRepo.getSearcherEpoch() == fallbackEpoch) {
+                // Repository is a non-epoch-tracking implementation (e.g. unstubbed mock): run
+                // once under the write barrier while validating the ownership cut.
                 final AtomicBoolean fallbackPostAcquireValidated = new AtomicBoolean(false);
                 Runnable fallbackPostAcquireValidatorAndRelease = () -> {
                   try {
@@ -580,6 +585,10 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
                 usedInlineMask = prepared.usedInlineMask;
                 usedOversampleFallback = prepared.usedOversampleFallback;
                 queryCompleted = true;
+              } else if (System.nanoTime() >= deadlineNanos) {
+                retryExhausted.set(true);
+                throw new PrimaryBucketException("Bucket " + bucketId + " on region " + regionPath
+                    + " exhausted searcher-epoch contention wait without a quiescent cut");
               } else {
                 Thread.yield();
               }
@@ -588,6 +597,9 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
           cutCompleted = queryCompleted;
         }
       } catch (PrimaryBucketException | AlreadyClosedException ownershipChanged) {
+        if (retryExhausted.get()) {
+          throw ownershipChanged;
+        }
         if (registry != null && (ownershipInvalidated.get()
             || ownershipChanged instanceof AlreadyClosedException
             || isBucketLocallyPrimary(region, bucketId))) {
@@ -606,6 +618,12 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
           pathBBuffer.unlockPathBWrite();
         }
       }
+    }
+
+    if (!cutCompleted) {
+      throw new PrimaryBucketException("Bucket " + bucketId + " on region " + regionPath
+          + " failed to establish a validated hybrid k-NN cut after "
+          + MAX_OWNERSHIP_FENCE_RETRIES + " attempts");
     }
 
     if (usedInlineMask) {
@@ -872,8 +890,9 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
   private void flushBucketForUnsupportedFilter(Cache cache, Region<?, ?> region, String regionPath,
       String indexName, int bucketId, Tier0VectorRegistry registry,
       Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repo, long expectedGen,
-      AtomicBoolean ownershipInvalidated) throws IOException, PrimaryBucketException {
-    long deadlineNanos = System.nanoTime() + MAX_CONCURRENT_FLUSH_WAIT_MILLIS * 1_000_000L;
+      AtomicBoolean ownershipInvalidated, AtomicBoolean retryExhausted)
+      throws IOException, PrimaryBucketException {
+    long deadlineNanos = System.nanoTime() + maxConcurrentFlushWaitMillisForTest * 1_000_000L;
     boolean flushedOrRefreshed = false;
     while (true) {
       if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
@@ -881,51 +900,51 @@ public class DistributedHybridKnnFunction implements InternalFunction<HybridKnnQ
         throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
       }
       try {
-        boolean flushed = registry.flushBuffer(buffer, repo,
-            entry -> readRegionValueForFlush(cache, region, bucketId, entry.getKey()));
-        if (!flushed) {
-          if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
-              buffer, repo)) {
-            throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
-          }
-          repo.commitAndRefreshBlocking();
-        }
+        registry.flushBuffer(buffer, repo,
+            entry -> readRegionValueForFlush(cache, region, bucketId, entry.getKey()), true);
         flushedOrRefreshed = true;
         break;
       } catch (IllegalStateException flushAlreadyInProgress) {
         boolean inProgressMsg = flushAlreadyInProgress.getMessage() != null
             && flushAlreadyInProgress.getMessage().contains("Flush already in progress");
-        if (System.nanoTime() >= deadlineNanos || (!inProgressMsg && !buffer.isFlushing())) {
-          if (!isOwnershipCutValid(region, registry, regionPath, indexName, bucketId, expectedGen,
-              buffer, repo)) {
-            throw ownershipChangedSignal(ownershipInvalidated, regionPath, bucketId);
-          }
-          repo.commitAndRefreshBlocking();
-          flushedOrRefreshed = true;
-          break;
+        boolean flushInProgress = buffer.isFlushing() || buffer.isFlushLocked();
+        if (!inProgressMsg && !flushInProgress) {
+          throw flushAlreadyInProgress;
         }
-        if (!buffer.isFlushing()) {
-          // Concurrent flush completed while we were racing to beginFlush; retry immediately.
+        long remainingNanos = deadlineNanos - System.nanoTime();
+        if (remainingNanos <= 0L) {
+          retryExhausted.set(true);
+          throw new PrimaryBucketException("Bucket " + bucketId + " on region " + regionPath
+              + " exhausted Path-B concurrent flush wait without draining Tier-0");
+        }
+        if (!flushInProgress) {
+          // Concurrent flush completed while we were racing to acquire flushLock/beginFlush.
           continue;
         }
-        if (buffer.isPathBWriteHeldByCurrentThread()) {
-          // Temporarily drop writeLock so the active flusher can acquire readLock in
-          // completeFlush()/abortFlush() cleanly instead of stalling until deadlineNanos.
+        boolean heldPathB = buffer.isPathBWriteHeldByCurrentThread();
+        if (heldPathB) {
+          // Temporarily drop pathBWrite so the active flusher holding flushLock (or completing
+          // E_flushing) can acquire pathBBarrierLock.readLock() cleanly without AB-BA deadlock.
           buffer.unlockPathBWrite();
-          try {
+        }
+        try {
+          if (buffer.isFlushLocked()) {
+            ReentrantLock flushLock = buffer.getFlushLock();
+            long waitNanos = Math.min(remainingNanos, TimeUnit.MILLISECONDS.toNanos(10L));
+            if (flushLock.tryLock(waitNanos, TimeUnit.NANOSECONDS)) {
+              flushLock.unlock();
+            }
+          } else {
             Thread.sleep(1L);
-          } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            break;
-          } finally {
-            buffer.lockPathBWrite();
           }
-        } else {
-          try {
-            Thread.sleep(1L);
-          } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            break;
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          retryExhausted.set(true);
+          throw new PrimaryBucketException("Bucket " + bucketId + " on region " + regionPath
+              + " interrupted while waiting for in-flight flush on Path-B");
+        } finally {
+          if (heldPathB) {
+            buffer.lockPathBWrite();
           }
         }
       }

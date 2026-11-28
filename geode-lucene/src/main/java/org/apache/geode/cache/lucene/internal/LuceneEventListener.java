@@ -16,11 +16,12 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.store.AlreadyClosedException;
@@ -86,12 +87,7 @@ public class LuceneEventListener implements AsyncEventListener {
     Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
 
-    Set<IndexRepository> affectedRepos = new HashSet<>();
-    Map<IndexRepository, Tier0VectorDeltaBuffer<Object>> tier0BuffersByRepo = null;
-    Map<IndexRepository, Map<Object, Long>> committedKeySeqsByRepo = null;
-    Map<IndexRepository, Integer> batchCountsByRepo = null;
-    Map<IndexRepository, Long> updateNanosByRepo = null;
-    Set<Integer> awaitedHydrationBuckets = null;
+    Map<IndexRepository, List<AsyncEvent>> eventsByRepo = new LinkedHashMap<>();
     InternalLuceneIndex partitionedIndex =
         (repositoryManager instanceof PartitionedRepositoryManager)
             ? ((PartitionedRepositoryManager) repositoryManager).getIndex()
@@ -103,87 +99,97 @@ public class LuceneEventListener implements AsyncEventListener {
 
     try {
       for (AsyncEvent event : events) {
-
         Region region = event.getRegion();
         Object key = event.getKey();
         Object callbackArgument = event.getCallbackArgument();
-
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
-        Tier0VectorDeltaBuffer<Object> eventBuffer = null;
-
-        if (tier0Registry != null && repository.getRegion() instanceof BucketRegion) {
-          int bucketId = ((BucketRegion) repository.getRegion()).getId();
-          if (awaitedHydrationBuckets == null) {
-            awaitedHydrationBuckets = new HashSet<>();
-          }
-          if (awaitedHydrationBuckets.add(bucketId)) {
-            tier0Registry.awaitHydration(
-                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
-          }
-          eventBuffer = tier0Registry.getBuffer(
-              partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
-          if (eventBuffer != null) {
-            // Capture the Tier-0 eviction watermark strictly BEFORE reading the live region payload
-            // via region.getEntry(key) so a newer concurrent overlay write arriving after the
-            // flushed payload was read can NEVER be evicted by this batch's commit.
-            long seqBeforeRead = eventBuffer.getKeySequence(key);
-            if (seqBeforeRead >= 0L) {
-              if (tier0BuffersByRepo == null) {
-                tier0BuffersByRepo = new HashMap<>();
-                committedKeySeqsByRepo = new HashMap<>();
-              }
-              tier0BuffersByRepo.put(repository, eventBuffer);
-              committedKeySeqsByRepo.computeIfAbsent(repository, r -> new HashMap<>())
-                  .merge(key, seqBeforeRead, Math::max);
-            }
-          }
-        }
-
-        long opStartNanos = (eventBuffer != null && trackFlushCycles) ? System.nanoTime() : 0L;
-        Object value = getValue(region.getEntry(key));
-        if (value != null) {
-          repository.update(key, value);
-        } else {
-          repository.delete(key);
-        }
-        if (eventBuffer != null && trackFlushCycles) {
-          if (batchCountsByRepo == null) {
-            batchCountsByRepo = new HashMap<>();
-            updateNanosByRepo = new HashMap<>();
-          }
-          batchCountsByRepo.merge(repository, 1, Integer::sum);
-          updateNanosByRepo.merge(repository, System.nanoTime() - opStartNanos, Long::sum);
-        }
-
-        affectedRepos.add(repository);
+        eventsByRepo.computeIfAbsent(repository, r -> new ArrayList<>()).add(event);
       }
 
-      for (IndexRepository repo : affectedRepos) {
-        Tier0VectorDeltaBuffer<Object> buffer =
-            tier0BuffersByRepo == null ? null : tier0BuffersByRepo.get(repo);
-        if (buffer != null) {
-          long commitStartNanos = trackFlushCycles ? System.nanoTime() : 0L;
-          repo.commitAndRefreshBlocking();
-          long commitEndNanos = trackFlushCycles ? System.nanoTime() : 0L;
-          int preEvictTier0Size = trackFlushCycles ? buffer.getTotalSize() : 0;
-          buffer.evictCommitted(committedKeySeqsByRepo.get(repo));
-          if (trackFlushCycles) {
-            long updateNanos =
-                updateNanosByRepo == null ? 0L : updateNanosByRepo.getOrDefault(repo, 0L);
-            long flushDurationNanos = updateNanos + (commitEndNanos - commitStartNanos);
-            int bucketId = ((BucketRegion) repo.getRegion()).getId();
-            int batchSize =
-                batchCountsByRepo == null ? 0 : batchCountsByRepo.getOrDefault(repo, 0);
-            tier0Registry.recordFlushCycle(
-                partitionedIndex.getRegionPath(),
-                partitionedIndex.getName(),
-                bucketId,
-                batchSize,
-                preEvictTier0Size,
-                flushDurationNanos);
+      for (Map.Entry<IndexRepository, List<AsyncEvent>> repoEntry : eventsByRepo.entrySet()) {
+        IndexRepository repo = repoEntry.getKey();
+        List<AsyncEvent> repoEvents = repoEntry.getValue();
+        int bucketId =
+            (tier0Registry != null && repo.getRegion() instanceof BucketRegion)
+                ? ((BucketRegion) repo.getRegion()).getId()
+                : -1;
+        ReentrantLock flushLock = (tier0Registry != null && bucketId >= 0)
+            ? tier0Registry.getBucketFlushLock(
+                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId)
+            : null;
+        if (flushLock != null) {
+          flushLock.lock();
+        }
+        try {
+          Tier0VectorDeltaBuffer<Object> buffer = null;
+          Map<Object, Long> committedKeySeqs = null;
+          int batchCount = 0;
+          long updateNanos = 0L;
+
+          if (tier0Registry != null && bucketId >= 0) {
+            tier0Registry.awaitHydration(
+                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+            buffer = tier0Registry.getBuffer(
+                partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
           }
-        } else {
-          repo.commit();
+
+          for (AsyncEvent event : repoEvents) {
+            Region region = event.getRegion();
+            Object key = event.getKey();
+
+            if (buffer == null && tier0Registry != null && bucketId >= 0) {
+              buffer = tier0Registry.getBuffer(
+                  partitionedIndex.getRegionPath(), partitionedIndex.getName(), bucketId);
+            }
+            if (buffer != null) {
+              // Capture the Tier-0 eviction watermark strictly BEFORE reading the live region
+              // payload via region.getEntry(key) so a newer concurrent overlay write arriving
+              // after the flushed payload was read can NEVER be evicted by this batch's commit.
+              long seqBeforeRead = buffer.getKeySequence(key);
+              if (seqBeforeRead >= 0L) {
+                if (committedKeySeqs == null) {
+                  committedKeySeqs = new HashMap<>();
+                }
+                committedKeySeqs.merge(key, seqBeforeRead, Math::max);
+              }
+            }
+
+            long opStartNanos = (buffer != null && trackFlushCycles) ? System.nanoTime() : 0L;
+            Object value = getValue(region.getEntry(key));
+            if (value != null) {
+              repo.update(key, value);
+            } else {
+              repo.delete(key);
+            }
+            if (buffer != null && trackFlushCycles) {
+              batchCount++;
+              updateNanos += System.nanoTime() - opStartNanos;
+            }
+          }
+
+          if (buffer != null && committedKeySeqs != null && !committedKeySeqs.isEmpty()) {
+            long commitStartNanos = trackFlushCycles ? System.nanoTime() : 0L;
+            repo.commitAndRefreshBlocking();
+            long commitEndNanos = trackFlushCycles ? System.nanoTime() : 0L;
+            int preEvictTier0Size = trackFlushCycles ? buffer.getTotalSize() : 0;
+            buffer.evictCommitted(committedKeySeqs);
+            if (trackFlushCycles) {
+              long flushDurationNanos = updateNanos + (commitEndNanos - commitStartNanos);
+              tier0Registry.recordFlushCycle(
+                  partitionedIndex.getRegionPath(),
+                  partitionedIndex.getName(),
+                  bucketId,
+                  batchCount,
+                  preEvictTier0Size,
+                  flushDurationNanos);
+            }
+          } else {
+            repo.commit();
+          }
+        } finally {
+          if (flushLock != null) {
+            flushLock.unlock();
+          }
         }
       }
       return true;

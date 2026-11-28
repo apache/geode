@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 
@@ -71,10 +72,16 @@ public class Tier0VectorDeltaBuffer<K> {
   private final AtomicLong mutationVersion = new AtomicLong(0L);
   private final Object evictionLock = new Object();
   private final ReentrantReadWriteLock pathBBarrierLock = new ReentrantReadWriteLock();
+  private final ReentrantLock flushLock;
   private final AtomicReference<EpochState<K>> stateRef;
 
   public Tier0VectorDeltaBuffer(int bucketId) {
+    this(bucketId, new ReentrantLock());
+  }
+
+  Tier0VectorDeltaBuffer(int bucketId, ReentrantLock flushLock) {
     this.bucketId = bucketId;
+    this.flushLock = Objects.requireNonNull(flushLock, "flushLock must not be null");
     EpochBucket<K> initialActive = new EpochBucket<>(0L, 0L);
     this.stateRef = new AtomicReference<>(new EpochState<>(initialActive, null));
   }
@@ -759,6 +766,22 @@ public class Tier0VectorDeltaBuffer<K> {
 
   public boolean isPathBWriteHeldByCurrentThread() {
     return pathBBarrierLock.isWriteLockedByCurrentThread();
+  }
+
+  /**
+   * Returns the per-bucket single-flight flush lock serializing AEQ commits/evictions and Path-B
+   * flushes/aborts on this bucket. Lock hierarchy: {@code flushLock -> pathBBarrierLock ->
+   * evictionLock}.
+   */
+  public ReentrantLock getFlushLock() {
+    return flushLock;
+  }
+
+  /**
+   * Returns {@code true} if any thread currently holds the per-bucket single-flight flush lock.
+   */
+  public boolean isFlushLocked() {
+    return flushLock.isLocked();
   }
 
   long getEvictionVersion() {

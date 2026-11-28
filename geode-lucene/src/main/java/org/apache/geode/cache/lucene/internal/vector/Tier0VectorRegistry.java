@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 import org.apache.geode.cache.Cache;
@@ -57,6 +58,8 @@ public class Tier0VectorRegistry {
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, CountDownLatch>> hydrationBarriers =
       new ConcurrentHashMap<>();
   private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, FlushCycleRing>> flushCycleRings =
+      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<IndexKey, ConcurrentHashMap<Integer, ReentrantLock>> bucketFlushLocks =
       new ConcurrentHashMap<>();
   private final AtomicLong ownershipGenerationSequence = new AtomicLong(0L);
   private final AtomicLong globalResetGeneration = new AtomicLong(0L);
@@ -112,9 +115,26 @@ public class Tier0VectorRegistry {
   public Tier0VectorDeltaBuffer<Object> getOrCreateBuffer(String regionPath, String indexName,
       int bucketId) {
     IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    ReentrantLock flushLock = getOrCreateFlushLock(key, bucketId);
     return buffers
         .computeIfAbsent(key, k -> new ConcurrentHashMap<>())
-        .computeIfAbsent(bucketId, Tier0VectorDeltaBuffer::new);
+        .computeIfAbsent(bucketId, b -> new Tier0VectorDeltaBuffer<>(b, flushLock));
+  }
+
+  /**
+   * Returns the canonical per-bucket single-flight flush lock shared by
+   * {@code LuceneEventListener} (AEQ commits/evictions) and {@link #flushBuffer} (Path-B /
+   * dual-epoch flushes and aborts) for {@code (regionPath, indexName, bucketId)}.
+   */
+  public ReentrantLock getBucketFlushLock(String regionPath, String indexName, int bucketId) {
+    IndexKey key = new IndexKey(normalizeRegionPath(regionPath), indexName);
+    return getOrCreateFlushLock(key, bucketId);
+  }
+
+  private ReentrantLock getOrCreateFlushLock(IndexKey key, int bucketId) {
+    return bucketFlushLocks
+        .computeIfAbsent(key, k -> new ConcurrentHashMap<>())
+        .computeIfAbsent(bucketId, b -> new ReentrantLock());
   }
 
   public Tier0VectorDeltaBuffer<Object> getBuffer(String regionPath, String indexName,
@@ -165,6 +185,7 @@ public class Tier0VectorRegistry {
     indexResetGenerations.computeIfAbsent(key, k -> new AtomicLong(0L))
         .accumulateAndGet(resetGen, Math::max);
     ownershipGenerations.remove(key);
+    bucketFlushLocks.remove(key);
     releaseHydrationLatchesForIndex(key);
     ConcurrentHashMap<Integer, FlushCycleRing> removedRings = flushCycleRings.remove(key);
     if (removedRings != null) {
@@ -200,6 +221,7 @@ public class Tier0VectorRegistry {
         .accumulateAndGet(resetGen, Math::max);
     indexResetGenerations.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
     ownershipGenerations.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
+    bucketFlushLocks.keySet().removeIf(indexKey -> indexKey.regionPath.equals(normalized));
     hydrationBarriers.keySet().removeIf(indexKey -> {
       if (indexKey.regionPath.equals(normalized)) {
         releaseHydrationLatchesForIndex(indexKey);
@@ -553,6 +575,7 @@ public class Tier0VectorRegistry {
     regionResetGenerations.clear();
     indexResetGenerations.clear();
     ownershipGenerations.clear();
+    bucketFlushLocks.clear();
     hydrationBarriers.values().forEach(map -> {
       map.values().forEach(CountDownLatch::countDown);
       map.clear();
@@ -600,39 +623,77 @@ public class Tier0VectorRegistry {
   public boolean flushBuffer(Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repository,
       Function<Tier0VectorDeltaBuffer.DeltaEntry<Object>, Object> valueResolver)
       throws IOException {
+    return flushBuffer(buffer, repository, valueResolver, false);
+  }
+
+  /**
+   * Executes a complete Theorem 2 single-flight dual-epoch flush cycle against a specific pinned
+   * {@link Tier0VectorDeltaBuffer} instance, holding its canonical per-bucket {@code flushLock}
+   * across {@code beginFlush -> update/delete -> commitAndRefreshBlocking ->
+   * completeFlush/abortFlush}.
+   *
+   * <p>
+   * When the calling thread already holds {@code buffer.lockPathBWrite()}, {@code flushLock} is
+   * acquired non-blockingly via {@code tryLock()} to preserve the strict lock hierarchy
+   * ({@code flushLock -> pathBBarrierLock -> evictionLock}) and throw
+   * {@link IllegalStateException} if another flusher is currently active.
+   *
+   * @param refreshIfEmpty if {@code true} and {@code E_active} is empty, still invokes
+   *        {@link IndexRepository#commitAndRefreshBlocking()} while holding {@code flushLock}
+   * @return {@code true} if a non-empty batch was flushed, {@code false} otherwise
+   */
+  public boolean flushBuffer(Tier0VectorDeltaBuffer<Object> buffer, IndexRepository repository,
+      Function<Tier0VectorDeltaBuffer.DeltaEntry<Object>, Object> valueResolver,
+      boolean refreshIfEmpty) throws IOException {
     Objects.requireNonNull(repository, "repository must not be null");
     Objects.requireNonNull(valueResolver, "valueResolver must not be null");
     if (buffer == null) {
       return false;
     }
 
-    Tier0VectorDeltaBuffer.FlushBatch<Object> batch = buffer.beginFlush();
-    if (batch == null) {
-      return false;
+    ReentrantLock flushLock = buffer.getFlushLock();
+    if (buffer.isPathBWriteHeldByCurrentThread()) {
+      if (!flushLock.tryLock()) {
+        throw new IllegalStateException(
+            "Flush already in progress for bucket " + buffer.getBucketId());
+      }
+    } else {
+      flushLock.lock();
     }
-
-    boolean completed = false;
     try {
-      for (Tier0VectorDeltaBuffer.DeltaEntry<Object> entry : batch.getEntries().values()) {
-        if (entry.isTombstone()) {
-          repository.delete(entry.getKey());
-        } else {
-          Object value = valueResolver.apply(entry);
-          if (value != null) {
-            repository.update(entry.getKey(), value);
-          } else {
+      Tier0VectorDeltaBuffer.FlushBatch<Object> batch = buffer.beginFlush();
+      if (batch == null) {
+        if (refreshIfEmpty) {
+          repository.commitAndRefreshBlocking();
+        }
+        return false;
+      }
+
+      boolean completed = false;
+      try {
+        for (Tier0VectorDeltaBuffer.DeltaEntry<Object> entry : batch.getEntries().values()) {
+          if (entry.isTombstone()) {
             repository.delete(entry.getKey());
+          } else {
+            Object value = valueResolver.apply(entry);
+            if (value != null) {
+              repository.update(entry.getKey(), value);
+            } else {
+              repository.delete(entry.getKey());
+            }
           }
         }
+        repository.commitAndRefreshBlocking();
+        buffer.completeFlush(batch.getEpoch());
+        completed = true;
+        return true;
+      } finally {
+        if (!completed) {
+          buffer.abortFlush(batch.getEpoch());
+        }
       }
-      repository.commitAndRefreshBlocking();
-      buffer.completeFlush(batch.getEpoch());
-      completed = true;
-      return true;
     } finally {
-      if (!completed) {
-        buffer.abortFlush(batch.getEpoch());
-      }
+      flushLock.unlock();
     }
   }
 

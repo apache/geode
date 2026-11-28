@@ -1300,6 +1300,23 @@ public class Tier0VectorLifecycleAndBucketListenerJUnitTest {
     assertThat(gAfterClearAll).isGreaterThan(gAfterRemoveRegion);
   }
 
+  @Test
+  public void bucketFlushLockSharedBetweenRegistryAndDeltaBuffer() {
+    final int bucketId = 9;
+    Tier0VectorRegistry registry = Tier0VectorRegistry.forCache(cache);
+    java.util.concurrent.locks.ReentrantLock lockBeforeBuffer =
+        registry.getBucketFlushLock(REGION_PATH, INDEX_NAME, bucketId);
+    Tier0VectorDeltaBuffer<Object> buffer1 =
+        registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(buffer1.getFlushLock()).isSameAs(lockBeforeBuffer);
+
+    registry.removeBucket(REGION_PATH, INDEX_NAME, bucketId);
+    Tier0VectorDeltaBuffer<Object> buffer2 =
+        registry.getOrCreateBuffer(REGION_PATH, INDEX_NAME, bucketId);
+    assertThat(buffer2).isNotSameAs(buffer1);
+    assertThat(buffer2.getFlushLock()).isSameAs(lockBeforeBuffer);
+  }
+
   private GatewaySenderEventImpl mockShadowEvent(String key, Operation op, long shadowKey) {
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
     when(event.getKey()).thenReturn(key);
